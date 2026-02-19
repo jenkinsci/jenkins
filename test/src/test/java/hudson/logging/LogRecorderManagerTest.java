@@ -35,12 +35,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Computer;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.VirtualChannel;
-import hudson.Util;
 import hudson.util.FormValidation;
 import java.io.IOException;
 import java.net.HttpURLConnection;
