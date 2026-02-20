@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import jenkins.util.ClientHttpRedirect;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
@@ -49,6 +50,16 @@ import org.kohsuke.stapler.StaplerResponse2;
 public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
     public static HttpResponse staticResource(File f) throws IOException {
         return staticResource(f.toURI().toURL());
+    }
+
+    /**
+     * Redirect to the given URL via a client-side JS/meta tag redirect.
+     * @param url the URL to redirect to
+     * @return the HttpResponse
+     * @since TODO
+     */
+    public static HttpResponse clientRedirectTo(String url) {
+        return new ClientHttpRedirect(url);
     }
 
     /**
