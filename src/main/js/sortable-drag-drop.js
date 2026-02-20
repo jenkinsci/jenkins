@@ -12,7 +12,7 @@ import Sortable, { AutoScroll } from "sortablejs/modular/sortable.core.esm.js";
 
 Sortable.mount(new AutoScroll());
 
-function registerSortableDragDrop(e) {
+export function registerSortableDragDrop(e, onChangeFunction) {
   if (!e || !e.classList.contains("with-drag-drop")) {
     return false;
   }
@@ -61,17 +61,6 @@ function registerSortableDragDrop(e) {
         currentItem = null;
       }
     },
-  });
-}
-
-export function registerSortableTableDragDrop(e, onChangeFunction) {
-  if (!e || !e.classList.contains("with-drag-drop")) {
-    return false;
-  }
-
-  Sortable.create(e, {
-    handle: ".dd-handle",
-    items: "tr",
     onChange: function (event) {
       if (onChangeFunction) {
         onChangeFunction(event);
