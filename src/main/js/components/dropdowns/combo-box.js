@@ -32,6 +32,9 @@ function init() {
           e.dropdown = instance;
         },
         true,
+        {
+          appendTo: "parent",
+        },
       );
     }
     e.dropdown.setContent(Utils.generateDropdownItems(items, true));

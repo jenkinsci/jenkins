@@ -32,10 +32,13 @@ THE SOFTWARE.
     <st:attribute name="borderless">
       Hides the border of the bottom app bar unless its overlaying content.
     </st:attribute>
+    <st:attribute name="hidden">
+      Optionally hides the bottom button bar, can then be made visible with JavaScript. Defaults to false.
+    </st:attribute>
   </st:documentation>
 
-  <div class="jenkins-bottom-app-bar__shadow ${attrs.borderless ? 'jenkins-bottom-app-bar__shadow--borderless' : ''}"></div>
-  <div id="bottom-sticker">
+  <div class="jenkins-bottom-app-bar__shadow ${attrs.borderless ? 'jenkins-bottom-app-bar__shadow--borderless' : ''} ${attrs.hidden ? 'jenkins-hidden' : ''}"></div>
+  <div id="bottom-sticker" class="${attrs.hidden ? 'jenkins-hidden' : ''}">
     <div class="bottom-sticker-inner jenkins-buttons-row jenkins-buttons-row--equal-width">
       <d:invokeBody />
     </div>
