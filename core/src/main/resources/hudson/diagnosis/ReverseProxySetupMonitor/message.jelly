@@ -28,7 +28,7 @@ THE SOFTWARE.
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
       <f:submit name="yes" value="${%More Info}"/>
       <l:isAdmin>
-        <f:submit name="no" value="${%Dismiss}"/>
+        <f:submit name="no" value="${%Dismiss}" icon="symbol-close-circle" primary="false"/>
       </l:isAdmin>
     </form>
     <div>${%blurb}</div>
