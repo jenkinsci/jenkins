@@ -83,6 +83,7 @@ THE SOFTWARE.
             permissions="${attrs.permissions}"
             type="${(newManageJenkins or attrs.includeSidepanel) ? 'two-column' : 'one-column'}">
 
+
     <j:if test="${attrs.includeBreadcrumb}">
       <!-- Hacky - this will be improved in subsequent PRs -->
       <j:choose>
