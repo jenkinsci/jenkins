@@ -456,7 +456,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         try {
-            PASSWORD_HASH_ENCODER.encode(si.password1);
+            PASSWORD_HASH_ENCODER.encode2(si.password1);
         }  catch (RuntimeException ex) {
             si.errors.put("password1", ex.getMessage());
         }
@@ -853,7 +853,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
                 // The password is being changed
                 try {
-                    PASSWORD_HASH_ENCODER.encode(pwd);
+                    PASSWORD_HASH_ENCODER.encode2(pwd);
                 } catch (RuntimeException ex) {
                     throw new FormException(ex.getMessage(), "user.password");
                 }
@@ -934,9 +934,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         private static final Pattern BCRYPT_PATTERN = Pattern.compile("^\\$2a\\$([0-9]{2})\\$.{53}$");
 
         @Override
-        public String encode(CharSequence rawPassword) {
+        public String encode2(CharSequence rawPassword) {
             try {
-                return super.encode(rawPassword);
+                return encode(rawPassword);
             } catch (IllegalArgumentException ex) {
                 if (ex.getMessage().equals("password cannot be more than 72 bytes")) {
                     if (rawPassword.toString().matches("\\A\\p{ASCII}+\\z")) {
