@@ -64,6 +64,7 @@ import org.htmlunit.html.HtmlFormUtil;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -273,6 +274,7 @@ class SetupWizardTest {
         }
     }
 
+    @Disabled("TODO Test certificate needs to be recreated, expired 2026-02-20")
     @Test
     void testRemoteUpdateSitePerformingValidation() throws Exception {
         URL baseUrl;
