@@ -3823,10 +3823,13 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             return true;
         }
 
-        private @CheckForNull Path getDirectChild(Path parentPath, String childPath) {
+        private @NonNull Path getDirectChild(Path parentPath, String childPath) {
             Path current = parentPath.resolve(childPath);
             while (current != null && !parentPath.equals(current.getParent())) {
                 current = current.getParent();
+            }
+            if (current == null) {
+                throw new IllegalStateException("Invalid path traversal: " + parentPath + " -> " + childPath);
             }
             return current;
         }
