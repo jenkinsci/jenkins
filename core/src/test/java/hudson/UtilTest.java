@@ -110,6 +110,14 @@ class UtilTest {
     }
 
     @Test
+    void replaceMacroSelfReferenceDoesNotGrowUnbounded() {
+        Map<String, String> m = new HashMap<>();
+        m.put("PATH", "path1:$PATH");
+        String result = Util.replaceMacro("path1:$PATH", m);
+        assertTrue(result.length() < 500);
+    }
+
+    @Test
     void testTimeSpanString() {
         // Check that amounts less than 365 days are not rounded up to a whole year.
         // In the previous implementation there were 360 days in a year.
