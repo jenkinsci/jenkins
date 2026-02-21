@@ -30,14 +30,23 @@ import hudson.Util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.model.Tab;
 import jenkins.model.TransientActionFactory;
+import jenkins.model.menu.Group;
 import jenkins.security.stapler.StaplerNotDispatchable;
+import org.apache.commons.lang.StringUtils;
+import org.jenkins.ui.icon.IconSpec;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
@@ -111,6 +120,39 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             }
         }
         return Collections.unmodifiableList(_actions);
+    }
+
+    /**
+     * Collects and returns the list of actions to display in the application bar.
+     * <p>
+     * This method filters out actions that:
+     * <ul>
+     *   <li>are instances of {@link Tab}</li>
+     *   <li>lack a display name or an icon (either from {@link Action#getIconFileName()}
+     *       or, if available, {@link IconSpec#getIconClassName()})</li>
+     * </ul>
+     * <p>
+     * The resulting actions are sorted first by their {@link Group#getOrder()} value,
+     * then alphabetically by display name. The list is returned as an unmodifiable collection.
+     *
+     * @return an unmodifiable list of actions suitable for display in the app bar
+     */
+    @Restricted(NoExternalUse.class)
+    public List<Action> getAppBarActions() {
+        return getAllActions().stream()
+                .filter(e -> !(e instanceof Tab))
+                .filter(e -> {
+                    String icon = e.getIconFileName();
+
+                    if (e instanceof IconSpec iconSpec && iconSpec.getIconClassName() != null) {
+                        icon = iconSpec.getIconClassName();
+                    }
+
+                    return !StringUtils.isBlank(e.getDisplayName()) || !StringUtils.isBlank(icon);
+                })
+                .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
+                        .thenComparing(e -> Objects.requireNonNullElse(e.getDisplayName(), "")))
+                .collect(Collectors.toUnmodifiableList());
     }
 
     private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {

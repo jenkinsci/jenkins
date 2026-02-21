@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+Copyright (c) 2025, Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +22,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Side panel for the build view.
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:p="/lib/hudson/project">
-  <j:if test="${!newBuildPage}">
-    <l:task contextMenu="false" href="${buildUrl.baseUrl}/" icon="symbol-details" title="${%Status}"/>
-    <l:task href="${buildUrl.baseUrl}/changes" icon="symbol-changes" title="${%Changes}"/>
-    <p:console-link/>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <st:documentation>
+    Generates a strip of controls based on the given actions parameter.
+
+    <st:attribute name="actions">
+      The actions to show.
+    </st:attribute>
+  </st:documentation>
+
+  <j:if test="${actions != null}">
+    <button id="auto-overflow"
+            class="jenkins-button"
+            tooltip="${%More actions}"
+            data-testid="app-bar-overflow-button"
+            type="button">
+      <div class="jenkins-overflow-button__ellipsis">
+        <span />
+        <span />
+        <span />
+      </div>
+    </button>
+    <j:set var="url" value="${h.getNearestAncestorUrl(request2,it.object)}"/>
+    <template>
+      ${h.convertActionsToJson(url, actions)}
+    </template>
   </j:if>
 </j:jelly>
