@@ -68,4 +68,9 @@ public class NodesLink extends ManagementLink {
     public Category getCategory() {
         return Category.CONFIGURATION;
     }
+
+    @Override
+    public @NonNull String getSearchKeywords() {
+        return "agents executors built-in node labels";
+    }
 }
