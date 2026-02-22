@@ -47,7 +47,8 @@ import org.kohsuke.stapler.export.ExportedBean;
  * For the change list at project level, see {@link SCM}.
  *
  * <p>
- * {@link Iterator} is expected to return newer changes first then older changes later.
+ * {@link Iterator} is expected to return newer changes first then older changes
+ * later.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -116,6 +117,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
 
     /**
      * Optional identification of the kind of SCM being used.
+     *
      * @return a short token, such as the SCM's main CLI executable name
      * @since 1.284
      */
@@ -126,6 +128,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
 
     /**
      * Constant instance that represents no changes.
+     *
      * @since 1.568
      */
     public static ChangeLogSet<? extends ChangeLogSet.Entry> createEmpty(Run build) {
@@ -153,16 +156,8 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         }
 
         /**
-         * Returns a human readable display name of the commit number, revision number, and such thing
-         * that identifies this entry.
-         *
-         * <p>
-         * This method is primarily intended for visualization of the data.
-         *
-         * @return
-         *      null if such a concept doesn't make sense for the implementation. For example,
-         *      in CVS there's no single identifier for commits. Each file gets a different revision number.
-         * @since 1.405
+         * Returns a human readable display name of the commit number, revision number,
+         * etc.
          */
         @Exported
         public String getCommitId() {
@@ -171,14 +166,6 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
 
         /**
          * Returns the timestamp of this commit in the {@link Date#getTime()} format.
-         *
-         * <p>
-         * This method is primarily intended for visualization of the data.
-         *
-         * @return
-         *      -1 if the implementation doesn't support it (for example, in CVS a commit
-         *      spreads over time between multiple changes on multiple files, so there's no single timestamp.)
-         * @since 1.405
          */
         @Exported
         public long getTimestamp() {
@@ -186,59 +173,47 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         }
 
         /**
-         * Gets the "commit message".
-         *
-         * <p>
-         * The exact definition depends on the individual SCM implementation.
-         *
-         * @return
-         *      Can be empty but never null.
+         * Gets the first line commit message (short message).
          */
         @Exported
         public abstract String getMsg();
 
         /**
-         * The user who made this change.
+         * Returns the full commit message.
          *
-         * @return
-         *      never null.
+         * Default implementation returns the same value as getMsg().
+         * SCM implementations can override this if they support full message
+         * separately.
+         *
+         * @since TODO
+         */
+        @Exported
+        public String getComment() {
+            return getMsg();
+        }
+
+        /**
+         * The user who made this change.
          */
         @Exported
         public abstract User getAuthor();
 
         /**
-         * Returns a set of paths in the workspace that was
-         * affected by this change.
-         *
-         * <p>
-         * Contains string like 'foo/bar/zot'. No leading/trailing '/',
-         * and separator must be normalized to '/'.
-         *
-         * @return never null.
+         * Returns affected paths.
          */
         @Exported
         public abstract Collection<String> getAffectedPaths();
 
         /**
-         * Returns a set of paths in the workspace that was
-         * affected by this change.
-         * <p>
-         * Noted: since this is a new interface, some of the SCMs may not have
-         * implemented this interface. The default implementation for this
-         * interface is throw UnsupportedOperationException
-         * <p>
-         * It doesn't throw NoSuchMethodException because I rather to throw a
-         * runtime exception
-         *
-         * @return AffectedFile never null.
-         * @since 1.309
+         * Returns affected files.
          */
         public Collection<? extends AffectedFile> getAffectedFiles() {
             String scm = "this SCM";
             ChangeLogSet parent = getParent();
             if (null != parent) {
                 String kind = parent.getKind();
-                if (null != kind && !kind.trim().isEmpty()) scm = kind;
+                if (null != kind && !kind.trim().isEmpty())
+                    scm = kind;
             }
             throw new UnsupportedOperationException("getAffectedFiles() is not implemented by " + scm);
         }
@@ -252,9 +227,11 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
                 try {
                     a.annotate(parent.run, this, markup);
                 } catch (RuntimeException e) {
-                    LOGGER.info("ChangeLogAnnotator " + a.toString() + " failed to annotate message '" + getMsg() + "'; " + e.getMessage());
+                    LOGGER.info("ChangeLogAnnotator " + a.toString() + " failed to annotate message '" + getMsg()
+                            + "'; " + e.getMessage());
                 } catch (Error e) {
-                    LOGGER.severe("ChangeLogAnnotator " + a + " failed to annotate message '" + getMsg() + "'; " + e.getMessage());
+                    LOGGER.severe("ChangeLogAnnotator " + a + " failed to annotate message '" + getMsg() + "'; "
+                            + e.getMessage());
                 }
 
             return markup.toString(false);
@@ -288,7 +265,6 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          * @return never null.
          */
         String getPath();
-
 
         /**
          * Return whether the file is new/modified/deleted
