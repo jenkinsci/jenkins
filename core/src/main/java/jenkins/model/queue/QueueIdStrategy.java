@@ -24,7 +24,7 @@ public abstract class QueueIdStrategy implements ExtensionPoint {
         if (strategies.isEmpty()) {
             return DEFAULT;
         }
-        return strategies.get(0);
+        return strategies.getFirst();
     }
 
     /**

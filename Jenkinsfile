@@ -14,12 +14,12 @@ properties([
 
 def axes = [
   platforms: ['linux', 'windows'],
-  jdks: [17, 21, 25],
+  jdks: [21, 25],
 ]
 
 stage('Record build') {
   retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
-    node('maven-17') {
+    node('maven-21') {
       infra.checkoutSCM()
 
       /*
@@ -71,7 +71,7 @@ axes.values().combinations {
     }
     int retryCount = 0
     retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
-      if (retryCount == 1 && platform == 'windows' ) {
+      if (retryCount == 1) {
         agentContainerLabel = agentContainerLabel + '-nonspot'
       }
       // Increment before allocating the node in case it fails

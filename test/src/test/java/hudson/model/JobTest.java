@@ -277,7 +277,7 @@ class JobTest {
         // This page is a simple form to POST to /job/testJob/config.xml
         // But it posts invalid data so we expect 500 if we have permission, 403 if not
         HtmlPage page = wc.goTo("userContent/post.html");
-        p = HtmlFormUtil.submit(page.getForms().get(0));
+        p = HtmlFormUtil.submit(page.getForms().getFirst());
         assertEquals(status, p.getWebResponse().getStatusCode(), msg);
 
         p = wc.goTo("logout");
@@ -622,7 +622,7 @@ class JobTest {
         var response = project.getJobTabs();
 
         assertThat(response, hasSize(1));
-        assertThat(response.get(0).getDisplayName(), equalTo("Test"));
+        assertThat(response.getFirst().getDisplayName(), equalTo("Test"));
     }
 
     /**

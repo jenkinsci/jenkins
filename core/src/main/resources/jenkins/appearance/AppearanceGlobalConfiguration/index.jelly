@@ -24,13 +24,12 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout title="${%Appearance}" permissions="${app.MANAGE_AND_SYSTEM_READ}" type="one-column">
-    <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}"/>
-    <j:set var="pluginsUrl" value="${rootURL}/manage/pluginManager/available?filter=UI Themes" />
-    <j:set var="hasPlugins" value="${it.hasPlugins()}" />
+  <j:set var="header">
+    <l:view>
+      <j:set var="pluginsUrl" value="${rootURL}/manage/pluginManager/available?filter=UI Themes" />
+      <j:set var="hasPlugins" value="${it.hasPlugins()}" />
 
-    <l:main-panel>
-      <l:app-bar title="${%Appearance}">
+      <l:app-bar title="${it.displayName}">
         <j:if test="${hasPlugins}">
           <a href="${pluginsUrl}" class="jenkins-button">
             <l:icon src="symbol-plugins" />
@@ -39,36 +38,46 @@ THE SOFTWARE.
         </j:if>
       </l:app-bar>
 
-      <j:choose>
-        <j:when test="${!hasPlugins}">
-          <l:notice title="${%noPlugins}" icon="symbol-brush-outline">
-            <a href="${pluginsUrl}">
-              ${%findPlugins}
-            </a>
-          </l:notice>
-        </j:when>
-        <j:otherwise>
-          <l:skeleton />
+      <div class="jenkins-page-description">
+        ${it.description}
+      </div>
+    </l:view>
+  </j:set>
 
-          <f:form method="post" name="config" action="configure">
-            <j:set var="instance" value="${it}" />
-            <j:set var="descriptor" value="${instance.descriptor}" />
+  <l:settings-subpage header="${header}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
+    <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}"/>
+    <j:set var="pluginsUrl" value="${rootURL}/manage/pluginManager/available?filter=UI Themes" />
+    <j:set var="hasPlugins" value="${it.hasPlugins()}" />
 
-            <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfigByDescriptor(it.FILTER)}">
-              <j:set var="instance" value="${descriptor}" />
-              <f:rowSet name="${descriptor.jsonSafeClassName}">
-                <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
-              </f:rowSet>
-            </j:forEach>
+    <j:choose>
+      <j:when test="${!hasPlugins}">
+        <l:notice title="${%noPlugins}" icon="symbol-brush-outline">
+          <a href="${pluginsUrl}">
+            ${%findPlugins}
+          </a>
+        </l:notice>
+      </j:when>
+      <j:otherwise>
+        <l:skeleton />
 
-            <f:saveApplyBar/>
-          </f:form>
+        <f:form method="post" name="config" action="configure">
+          <j:set var="instance" value="${it}" />
+          <j:set var="descriptor" value="${instance.descriptor}" />
 
-          <l:hasAdministerOrManage>
-            <st:adjunct includes="lib.form.confirm" />
-          </l:hasAdministerOrManage>
-        </j:otherwise>
-      </j:choose>
-    </l:main-panel>
-  </l:layout>
+          <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfigByDescriptor(it.FILTER)}">
+            <j:set var="instance" value="${descriptor}" />
+            <f:rowSet name="${descriptor.jsonSafeClassName}">
+              <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
+            </f:rowSet>
+          </j:forEach>
+
+          <f:saveApplyBar/>
+        </f:form>
+
+        <l:hasAdministerOrManage>
+          <st:adjunct includes="lib.form.confirm" />
+        </l:hasAdministerOrManage>
+      </j:otherwise>
+    </j:choose>
+  </l:settings-subpage>
 </j:jelly>

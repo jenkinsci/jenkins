@@ -304,16 +304,12 @@ public class PersistedList<T> extends AbstractList<T> {
                 throw x;
             } catch (InvocationTargetException e) {
                 Throwable t = e.getCause();
-                if (t instanceof RuntimeException) {
-                    throw (RuntimeException) t;
-                } else if (t instanceof IOException) {
-                    throw new UncheckedIOException((IOException) t);
-                } else if (t instanceof Exception) {
-                    throw new RuntimeException(t);
-                } else if (t instanceof Error) {
-                    throw (Error) t;
-                } else {
-                    throw new Error(e);
+                switch (t) {
+                    case RuntimeException runtimeException -> throw runtimeException;
+                    case IOException ioException -> throw new UncheckedIOException(ioException);
+                    case Exception exception -> throw new RuntimeException(t);
+                    case Error error -> throw error;
+                    case null, default -> throw new Error(e);
                 }
             }
         }

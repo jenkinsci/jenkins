@@ -52,7 +52,7 @@ class PermissionGroupTest {
     @Email("http://jenkins-ci.361315.n4.nabble.com/Master-slave-refactor-tp391495.html")
     @Test
     void order() {
-        assertSame(Jenkins.PERMISSIONS, PermissionGroup.getAll().get(0));
+        assertSame(Jenkins.PERMISSIONS, PermissionGroup.getAll().getFirst());
     }
 
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
