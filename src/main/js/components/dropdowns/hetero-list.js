@@ -81,10 +81,11 @@ function generateButtons() {
       }
 
       convertInputsToButtons(c);
+      const enableTopButton = c.getAttribute("enableTopButton") === "true";
       let btn = Array.from(c.querySelectorAll("BUTTON.hetero-list-add")).pop();
-      let topButton = Array.from(
-        c.querySelectorAll("BUTTON.hetero-list-add-top"),
-      ).shift();
+      let topButton = enableTopButton
+        ? Array.from(c.querySelectorAll("BUTTON.hetero-list-add-top")).shift()
+        : null;
 
       let prototypes = c.lastElementChild;
       while (!prototypes.classList.contains("prototypes")) {
@@ -183,7 +184,7 @@ function generateButtons() {
             if (
               addOnTop &&
               !honorOrder &&
-              c.getAttribute("enableTopButton") === "true"
+              enableTopButton
             ) {
               let children = Array.from(c.children).filter(function (n) {
                 return n.classList.contains("repeated-chunk");
