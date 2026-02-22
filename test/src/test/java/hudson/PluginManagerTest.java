@@ -542,6 +542,37 @@ class PluginManagerTest {
         });
     }
 
+    @Issue("JENKINS-27993")
+    @WithPlugin("htmlpublisher.jpi")
+    @Test
+    void pluginManagerApiJsonReturnsPluginDetails() throws Throwable {
+        session.then(r -> {
+            JSONObject response = r.getJSON("pluginManager/api/json").getJSONObject();
+            JSONArray plugins = response.getJSONArray("plugins");
+            assertThat(plugins, not(empty()));
+
+            // Find the htmlpublisher plugin in the response
+            JSONObject htmlPublisher = null;
+            for (int i = 0; i < plugins.size(); i++) {
+                JSONObject plugin = plugins.getJSONObject(i);
+                if ("htmlpublisher".equals(plugin.optString("shortName"))) {
+                    htmlPublisher = plugin;
+                    break;
+                }
+            }
+            assertNotNull(htmlPublisher, "htmlpublisher plugin should be present in API response");
+
+            // Verify key properties are present at default depth (visibility = 2)
+            assertNotNull(htmlPublisher.optString("shortName", null), "shortName should be exported at default depth");
+            assertNotNull(htmlPublisher.optString("version", null), "version should be exported at default depth");
+            assertNotNull(htmlPublisher.optString("longName", null), "longName should be exported at default depth");
+            assertNotNull(htmlPublisher.optString("displayName", null), "displayName should be exported at default depth");
+            assertTrue(htmlPublisher.has("active"), "active should be exported at default depth");
+            assertTrue(htmlPublisher.has("enabled"), "enabled should be exported at default depth");
+            assertTrue(htmlPublisher.has("hasUpdate"), "hasUpdate should be exported at default depth");
+        });
+    }
+
     @Issue("JENKINS-41684")
     @Test
     void requireSystemDuringLoad() throws Throwable {
