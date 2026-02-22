@@ -285,9 +285,99 @@ public class RobustReflectionConverter implements Converter {
 
     @Override
     public Object unmarshal(final HierarchicalStreamReader reader, final UnmarshallingContext context) {
+        String readResolveValue = reader.getAttribute(mapper.aliasForAttribute("resolves-to"));
+        Class type = readResolveValue != null ? mapper.realClass(readResolveValue) : context.getRequiredType();
+        if (type != null && type.isRecord()) {
+            return unmarshalRecord(reader, context, type);
+        }
+
         Object result = instantiateNewInstance(reader, context);
         result = doUnmarshal(result, reader, context);
         return serializationMethodInvoker.callReadResolve(result);
+    }
+
+    private Object unmarshalRecord(final HierarchicalStreamReader reader, final UnmarshallingContext context, Class type) {
+        Map<String, Object> values = new HashMap<>();
+
+        Iterator it = reader.getAttributeNames();
+        while (it.hasNext()) {
+            String attrAlias = (String) it.next();
+            String attrName = mapper.attributeForAlias(attrAlias);
+            Field field = reflectionProvider.getFieldOrNull(type, attrName);
+            if (field != null) {
+                SingleValueConverter converter = mapper.getConverterFromAttribute(field.getDeclaringClass(), attrName, field.getType());
+                Class fieldType = field.getType();
+                if (converter == null) {
+                    converter = mapper.getConverterFromItemType(fieldType);
+                }
+                if (converter != null) {
+                    Object value = converter.fromString(reader.getAttribute(attrAlias));
+                    if (fieldType.isPrimitive()) {
+                        fieldType = Primitives.box(fieldType);
+                    }
+                    if (value != null && !fieldType.isAssignableFrom(value.getClass())) {
+                        throw new ConversionException("Cannot convert type " + value.getClass().getName() + " to type " + fieldType.getName());
+                    }
+                    values.put(attrName, value);
+                }
+            }
+        }
+
+        while (reader.hasMoreChildren()) {
+            reader.moveDown();
+            try {
+                String fieldName = mapper.realMember(type, reader.getNodeName());
+                Field field = reflectionProvider.getFieldOrNull(type, fieldName);
+                if (field != null) {
+                    Class fieldType = field.getType();
+                    Class xmlType = mapper.defaultImplementationOf(fieldType);
+                    String classAttribute = reader.getAttribute(mapper.aliasForAttribute("class"));
+                    if (classAttribute != null) {
+                        Class specifiedType = mapper.realClass(classAttribute);
+                        if (fieldType.isAssignableFrom(specifiedType)) {
+                            xmlType = specifiedType;
+                        }
+                    }
+                    Object value = unmarshalField(context, null, xmlType, field);
+                    if (value != null && !xmlType.isAssignableFrom(value.getClass())) {
+                        LOGGER.warning("Cannot convert type " + value.getClass().getName() + " to type " + xmlType.getName());
+                    } else {
+                        values.put(fieldName, value);
+                    }
+                } else {
+                    Class itemType = mapper.getItemTypeForItemFieldName(type, fieldName);
+                    Class xmlType = itemType != null ? itemType : mapper.realClass(reader.getNodeName());
+                    context.convertAnother(null, xmlType);
+                }
+            } catch (CriticalXStreamException | InputManipulationException e) {
+                throw e;
+            } catch (XStreamException | LinkageError e) {
+                addErrorInContext(context, e);
+            }
+            reader.moveUp();
+        }
+
+        try {
+            java.lang.reflect.RecordComponent[] components = type.getRecordComponents();
+            Class[] parameterTypes = new Class[components.length];
+            Object[] args = new Object[components.length];
+            for (int i = 0; i < components.length; i++) {
+                java.lang.reflect.RecordComponent component = components[i];
+                Class pType = component.getType();
+                String name = component.getName();
+                parameterTypes[i] = pType;
+                Object val = values.get(name);
+                if (val == null && pType.isPrimitive()) {
+                    val = java.lang.reflect.Array.get(java.lang.reflect.Array.newInstance(pType, 1), 0);
+                }
+                args[i] = val;
+            }
+            java.lang.reflect.Constructor constructor = type.getDeclaredConstructor(parameterTypes);
+            constructor.setAccessible(true);
+            return constructor.newInstance(args);
+        } catch (Exception e) {
+            throw new ConversionException("Failed to instantiate record " + type.getName(), e);
+        }
     }
 
     public Object doUnmarshal(final Object result, final HierarchicalStreamReader reader, final UnmarshallingContext context) {
