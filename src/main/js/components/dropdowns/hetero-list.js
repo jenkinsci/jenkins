@@ -84,7 +84,7 @@ function generateButtons() {
       let btn = Array.from(c.querySelectorAll("BUTTON.hetero-list-add")).pop();
       let topButton = Array.from(
         c.querySelectorAll("BUTTON.hetero-list-add-top"),
-      ).pop();
+      ).shift();
 
       let prototypes = c.lastElementChild;
       while (!prototypes.classList.contains("prototypes")) {

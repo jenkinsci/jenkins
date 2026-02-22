@@ -121,11 +121,11 @@ THE SOFTWARE.
   <div class="jenkins-form-item hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}"
         enableTopButton="${attrs.enableTopButton}">
     <j:if test="${!readOnlyMode and attrs.enableTopButton}">
-      <div>
+      <span>
         <button type="button" class="jenkins-button hetero-list-add hetero-list-add-top ${empty(attrs.items)?'jenkins-hidden':''}"
                 menualign="${attrs.menuAlign}" suffix="${attrs.name}"><l:icon src="symbol-add"/>${attrs.addCaption?:'%Add'}
         </button>
-      </div>
+      </span>
     </j:if>
 
     <!-- display existing items -->
