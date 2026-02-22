@@ -181,11 +181,7 @@ function generateButtons() {
               ? findInsertionPoint()
               : insertionPoint;
 
-            if (
-              addOnTop &&
-              !honorOrder &&
-              enableTopButton
-            ) {
+            if (addOnTop && !honorOrder && enableTopButton) {
               let children = Array.from(c.children).filter(function (n) {
                 return n.classList.contains("repeated-chunk");
               });
