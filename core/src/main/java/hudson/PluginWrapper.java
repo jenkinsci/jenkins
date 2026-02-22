@@ -522,6 +522,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         this.archive = archive;
     }
 
+    @Exported(visibility = 2)
     @Override
     public String getDisplayName() {
         String displayName = getLongName();
@@ -595,7 +596,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Returns the short name suitable for URL.
      */
-    @Exported
+    @Exported(visibility = 2)
     public String getShortName() {
         return shortName;
     }
@@ -627,7 +628,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      *      null if this information is unavailable.
      * @since 1.283
      */
-    @Exported
+    @Exported(visibility = 2)
     public String getUrl() {
         // first look in update center metadata
         List<UpdateSite.Plugin> siteMetadataList = getInfoFromAllSites();
@@ -662,7 +663,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      *
      * @deprecated For most purposes, use {@link #getDisplayName()}.
      */
-    @Exported
+    @Exported(visibility = 2)
     @Deprecated
     public String getLongName() {
         String name = manifest.getMainAttributes().getValue("Long-Name");
@@ -683,7 +684,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Returns the version number of this plugin
      */
-    @Exported
+    @Exported(visibility = 2)
     public String getVersion() {
         return getVersionOf(manifest);
     }
@@ -894,7 +895,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Returns true if this plugin is enabled for this session.
      */
-    @Exported
+    @Exported(visibility = 2)
     public boolean isActive() {
         return active && !hasCycleDependency();
     }
@@ -921,7 +922,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * If true, the plugin is going to be activated next time
      * Jenkins runs.
      */
-    @Exported
+    @Exported(visibility = 2)
     public boolean isEnabled() {
         return !disableFile.exists();
     }
@@ -1080,7 +1081,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * This method is conservative in the sense that if the version number is incomprehensible,
      * it always returns false.
      */
-    @Exported
+    @Exported(visibility = 2)
     public boolean hasUpdate() {
         return getUpdateInfo() != null;
     }
