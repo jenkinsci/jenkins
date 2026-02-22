@@ -77,3 +77,4 @@ node_modules/
 
 # Generated JavaScript Bundles
 war/src/main/webapp/jsbundles/
+apache-maven-3.9.6-bin.tar.gz

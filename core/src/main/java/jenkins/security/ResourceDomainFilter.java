@@ -49,8 +49,16 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class ResourceDomainFilter implements HttpServletFilter {
 
     private static final Logger LOGGER = Logger.getLogger(ResourceDomainFilter.class.getName());
-
-    private static final Set<String> ALLOWED_PATHS = new HashSet<>(Arrays.asList("/" + ResourceDomainRootAction.URL, "/favicon.ico", "/favicon.svg", "/apple-touch-icon.png", "/mask-icon.svg", "/robots.txt", "/images/rage.svg"));
+    private static final Set<String> ALLOWED_PATHS = new HashSet<>(Arrays.asList(
+            "/" + ResourceDomainRootAction.URL,
+            "/favicon.ico",
+            "/favicon.svg",
+            "/apple-touch-icon.png",
+            "/mask-icon.svg",
+            "/robots.txt",
+            //"/images/rage.svg",
+            "/images/shrug.svg"
+    ));
     public static final String ERROR_RESPONSE = "Jenkins serves only static files on this domain.";
 
     @Override
