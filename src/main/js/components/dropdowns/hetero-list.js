@@ -38,7 +38,7 @@ function convertInputsToButtons(e) {
   });
 }
 
-function udpateTopButton(container) {
+function updateTopButton(container) {
   if (container.getAttribute("enableTopButton") === "true") {
     let children = Array.from(container.children).filter(function (n) {
       return (
@@ -65,7 +65,7 @@ function generateButtons() {
         n = n.closest(".repeated-chunk");
         if (n.classList.contains("hetero-list-chunk")) {
           const container = n.closest(".hetero-list-container");
-          udpateTopButton(container);
+          updateTopButton(container);
         }
       });
     },
@@ -197,7 +197,7 @@ function generateButtons() {
             Behaviour.applySubtree(nc, true);
             ensureVisible(nc);
             nc.classList.remove("fade-in");
-            udpateTopButton(c);
+            updateTopButton(c);
             layoutUpdateCallback.call();
           },
           true,
