@@ -119,7 +119,7 @@
   window.onbeforeunload = confirmExit;
 
   function initWhenFormReady() {
-    var configForm =
+    const configForm =
       document.getElementsByName("config")[0] ||
       document.getElementsByName("viewConfig")[0];
 
