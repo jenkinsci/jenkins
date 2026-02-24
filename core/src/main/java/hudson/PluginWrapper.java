@@ -663,7 +663,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      *
      * @deprecated For most purposes, use {@link #getDisplayName()}.
      */
-    @Exported(visibility = 2)
+    @Exported
     @Deprecated
     public String getLongName() {
         String name = manifest.getMainAttributes().getValue("Long-Name");

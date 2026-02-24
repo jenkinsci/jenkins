@@ -174,7 +174,8 @@ class PluginManagerTest {
         session.then(r -> {
             HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
             HtmlForm f = page.getFormByName("uploadPlugin");
-            f.getInputByName("pluginUrl").setValue(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
+            f.getInputByName("pluginUrl")
+                    .setValue(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
             r.submit(f);
 
             assertTrue(new File(r.jenkins.getRootDir(), "plugins/htmlpublisher.jpi").exists());
@@ -199,10 +200,12 @@ class PluginManagerTest {
             return "pluginManagerGetPlugin";
         }
 
-        public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse) throws ServletException, IOException {
+        public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse)
+                throws ServletException, IOException {
             staplerResponse.setContentType("application/octet-stream");
             staplerResponse.setStatus(200);
-            staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));
+            staplerResponse.serveFile(staplerRequest,
+                    PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));
         }
     }
 
@@ -225,16 +228,21 @@ class PluginManagerTest {
     }
 
     /**
-     * Verifies that by the time {@link Plugin#start()} is called, uber classloader is fully functioning.
-     * This is necessary as plugin start method can engage in XStream loading activities, and they should
-     * resolve all the classes in the system (for example, a plugin X can define an extension point
-     * other plugins implement, so when X loads its config it better sees all the implementations defined elsewhere)
+     * Verifies that by the time {@link Plugin#start()} is called, uber classloader
+     * is fully functioning.
+     * This is necessary as plugin start method can engage in XStream loading
+     * activities, and they should
+     * resolve all the classes in the system (for example, a plugin X can define an
+     * extension point
+     * other plugins implement, so when X loads its config it better sees all the
+     * implementations defined elsewhere)
      */
     @WithPlugin("htmlpublisher.jpi")
     @WithPluginManager(PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart.class)
     @Test
     void uberClassLoaderIsAvailableDuringStart() throws Throwable {
-        session.then(r -> assertTrue(((PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart) r.jenkins.pluginManager).tested));
+        session.then(r -> assertTrue(
+                ((PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart) r.jenkins.pluginManager).tested));
     }
 
     public static class PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart extends LocalPluginManager {
@@ -263,9 +271,9 @@ class PluginManagerTest {
         }
     }
 
-
     /**
-     * Makes sure that thread context classloader isn't used by {@link UberClassLoader}, or else
+     * Makes sure that thread context classloader isn't used by
+     * {@link UberClassLoader}, or else
      * infinite cycle ensues.
      */
     @Url("http://jenkins.361315.n4.nabble.com/channel-example-and-plugin-classes-gives-ClassNotFoundException-td3756092.html")
@@ -296,7 +304,8 @@ class PluginManagerTest {
             FileUtils.copyURLToFile(res, f);
             r.jenkins.pluginManager.dynamicLoad(f);
 
-            Class c = r.jenkins.getPluginManager().uberClassLoader.loadClass("htmlpublisher.HtmlPublisher$DescriptorImpl");
+            Class c = r.jenkins.getPluginManager().uberClassLoader
+                    .loadClass("htmlpublisher.HtmlPublisher$DescriptorImpl");
             assertNotNull(r.jenkins.getDescriptorByType(c));
         });
     }
@@ -312,16 +321,21 @@ class PluginManagerTest {
             sites.add(site);
             assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
             assertNotNull(site.getData());
-            assertEquals(Collections.emptyList(), r.jenkins.getPluginManager().prevalidateConfig(new ByteArrayInputStream("<whatever><runant plugin=\"ant@1.1\"/></whatever>".getBytes(StandardCharsets.UTF_8))));
+            assertEquals(Collections.emptyList(),
+                    r.jenkins.getPluginManager().prevalidateConfig(new ByteArrayInputStream(
+                            "<whatever><runant plugin=\"ant@1.1\"/></whatever>".getBytes(StandardCharsets.UTF_8))));
             assertNull(r.jenkins.getPluginManager().getPlugin("htmlpublisher"));
-            List<Future<UpdateCenterJob>> jobs = r.jenkins.getPluginManager().prevalidateConfig(new ByteArrayInputStream("<whatever><htmlpublisher plugin=\"htmlpublisher@0.7\"/></whatever>".getBytes(StandardCharsets.UTF_8)));
+            List<Future<UpdateCenterJob>> jobs = r.jenkins.getPluginManager().prevalidateConfig(
+                    new ByteArrayInputStream("<whatever><htmlpublisher plugin=\"htmlpublisher@0.7\"/></whatever>"
+                            .getBytes(StandardCharsets.UTF_8)));
             assertEquals(1, jobs.size());
             UpdateCenterJob job = jobs.getFirst().get(); // blocks for completion
             assertEquals("InstallationJob", job.getType());
             UpdateCenter.InstallationJob ijob = (UpdateCenter.InstallationJob) job;
             assertEquals("htmlpublisher", ijob.plugin.name);
             assertNotNull(r.jenkins.getPluginManager().getPlugin("htmlpublisher"));
-            // TODO restart scheduled (SuccessButRequiresRestart) after upgrade or Support-Dynamic-Loading: false
+            // TODO restart scheduled (SuccessButRequiresRestart) after upgrade or
+            // Support-Dynamic-Loading: false
             // TODO dependencies installed or upgraded too
             // TODO required plugin installed but inactive
         });
@@ -330,35 +344,35 @@ class PluginManagerTest {
     // plugin "depender" optionally depends on plugin "dependee".
     // they are written like this:
     // org.jenkinsci.plugins.dependencytest.dependee:
-    //   public class Dependee {
-    //     public static String getValue() {
-    //       return "dependee";
-    //     }
-    //   }
+    // public class Dependee {
+    // public static String getValue() {
+    // return "dependee";
+    // }
+    // }
     //
-    //   public abstract class DependeeExtensionPoint implements ExtensionPoint {
-    //   }
+    // public abstract class DependeeExtensionPoint implements ExtensionPoint {
+    // }
     //
     // org.jenkinsci.plugins.dependencytest.depender:
-    //   public class Depender {
-    //     public static String getValue() {
-    //       if (Jenkins.get().getPlugin("dependee") != null) {
-    //         return Dependee.getValue();
-    //       }
-    //       return "depender";
-    //     }
-    //   }
+    // public class Depender {
+    // public static String getValue() {
+    // if (Jenkins.get().getPlugin("dependee") != null) {
+    // return Dependee.getValue();
+    // }
+    // return "depender";
+    // }
+    // }
     //
-    //   @Extension(optional=true)
-    //   public class DependerExtension extends DependeeExtensionPoint {
-    //   }
-
+    // @Extension(optional=true)
+    // public class DependerExtension extends DependeeExtensionPoint {
+    // }
 
     /**
      * call org.jenkinsci.plugins.dependencytest.depender.Depender.getValue().
      */
     private String callDependerValue(JenkinsRule r) throws Exception {
-        Class<?> c = r.jenkins.getPluginManager().uberClassLoader.loadClass("org.jenkinsci.plugins.dependencytest.depender.Depender");
+        Class<?> c = r.jenkins.getPluginManager().uberClassLoader
+                .loadClass("org.jenkinsci.plugins.dependencytest.depender.Depender");
         Method m = c.getMethod("getValue");
         return (String) m.invoke(null);
     }
@@ -379,7 +393,9 @@ class PluginManagerTest {
             assertThrows(ClassNotFoundException.class, () -> callDependerValue(r));
 
             // No extensions exist.
-            assertTrue(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
+            assertTrue(
+                    r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint")
+                            .isEmpty());
 
             // Load depender.
             {
@@ -390,7 +406,9 @@ class PluginManagerTest {
             assertEquals("dependee", callDependerValue(r));
 
             // Extension in depender is loaded.
-            assertFalse(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
+            assertFalse(
+                    r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint")
+                            .isEmpty());
         });
     }
 
@@ -411,9 +429,11 @@ class PluginManagerTest {
             assertEquals("depender", callDependerValue(r));
 
             // before load dependee, of course failed to list extensions for dependee.
-            assertThrows(ClassNotFoundException.class, () -> r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint"));
+            assertThrows(ClassNotFoundException.class, () -> r.jenkins
+                    .getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint"));
             // Extension extending a dependee class can't be loaded either
-            assertThrows(NoClassDefFoundError.class, () -> r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.depender.DependerExtension"));
+            assertThrows(NoClassDefFoundError.class, () -> r.jenkins
+                    .getExtensionList("org.jenkinsci.plugins.dependencytest.depender.DependerExtension"));
 
             // Load dependee.
             {
@@ -425,7 +445,8 @@ class PluginManagerTest {
             assertEquals("dependee", callDependerValue(r));
 
             // Extensions in depender are loaded.
-            assertEquals(1, r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.depender.DependerExtension").size());
+            assertEquals(1, r.jenkins
+                    .getExtensionList("org.jenkinsci.plugins.dependencytest.depender.DependerExtension").size());
         });
     }
 
@@ -458,7 +479,8 @@ class PluginManagerTest {
             }
 
             // dependee is not loaded so we cannot list any extension for it.
-            assertThrows(ClassNotFoundException.class, () -> r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint"));
+            assertThrows(ClassNotFoundException.class, () -> r.jenkins
+                    .getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint"));
         });
     }
 
@@ -488,7 +510,7 @@ class PluginManagerTest {
             pw.doDoUninstall();
 
             File disabledHpi = new File(r.jenkins.getRootDir(), "plugins/dependee.hpi.disabled");
-            assertFalse(disabledHpi.exists());  // `.disabled` file should be deleted after uninstall
+            assertFalse(disabledHpi.exists()); // `.disabled` file should be deleted after uninstall
         });
     }
 
@@ -542,7 +564,7 @@ class PluginManagerTest {
         });
     }
 
-    @Issue("JENKINS-27993")
+    @Issue("https://github.com/jenkinsci/jenkins/issues/21047")
     @WithPlugin("htmlpublisher.jpi")
     @Test
     void pluginManagerApiJsonReturnsPluginDetails() throws Throwable {
@@ -565,8 +587,8 @@ class PluginManagerTest {
             // Verify key properties are present at default depth (visibility = 2)
             assertNotNull(htmlPublisher.optString("shortName", null), "shortName should be exported at default depth");
             assertNotNull(htmlPublisher.optString("version", null), "version should be exported at default depth");
-            assertNotNull(htmlPublisher.optString("longName", null), "longName should be exported at default depth");
-            assertNotNull(htmlPublisher.optString("displayName", null), "displayName should be exported at default depth");
+            assertNotNull(htmlPublisher.optString("displayName", null),
+                    "displayName should be exported at default depth");
             assertTrue(htmlPublisher.has("active"), "active should be exported at default depth");
             assertTrue(htmlPublisher.has("enabled"), "enabled should be exported at default depth");
             assertTrue(htmlPublisher.has("hasUpdate"), "hasUpdate should be exported at default depth");
@@ -613,11 +635,13 @@ class PluginManagerTest {
         });
     }
 
-    private void dynamicLoad(JenkinsRule r, String plugin) throws IOException, InterruptedException, RestartRequiredException {
+    private void dynamicLoad(JenkinsRule r, String plugin)
+            throws IOException, InterruptedException, RestartRequiredException {
         PluginManagerUtil.dynamicLoad(plugin, r.jenkins);
     }
 
-    private void dynamicLoadAndDisable(JenkinsRule r, String plugin) throws IOException, InterruptedException, RestartRequiredException {
+    private void dynamicLoadAndDisable(JenkinsRule r, String plugin)
+            throws IOException, InterruptedException, RestartRequiredException {
         PluginManagerUtil.dynamicLoad(plugin, r.jenkins, true);
     }
 
@@ -642,7 +666,8 @@ class PluginManagerTest {
             HtmlForm f = page.getFormByName("uploadPlugin");
             File dir = newFolder(tmp, "junit");
             File plugin = new File(dir, "mandatory-depender-0.0.2.hpi");
-            FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/mandatory-depender-0.0.2.hpi"), plugin);
+            FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/mandatory-depender-0.0.2.hpi"),
+                    plugin);
             f.getInputByName("name").setValue(plugin.getAbsolutePath());
             r.submit(f);
 
@@ -681,11 +706,13 @@ class PluginManagerTest {
             PluginWrapper w = r.jenkins.getPluginManager().getPlugin("plugin-first");
             assertNotNull(w);
 
-            URL fromPlugin = w.classLoader.getResource("org/jenkinsci/plugins/pluginfirst/HelloWorldBuilder/config.jelly");
+            URL fromPlugin = w.classLoader
+                    .getResource("org/jenkinsci/plugins/pluginfirst/HelloWorldBuilder/config.jelly");
             assertNotNull(fromPlugin);
 
             // This is how UberClassLoader.findResource functions.
-            URL fromToolkit = ClassLoaderReflectionToolkit._findResource(w.classLoader, "org/jenkinsci/plugins/pluginfirst/HelloWorldBuilder/config.jelly");
+            URL fromToolkit = ClassLoaderReflectionToolkit._findResource(w.classLoader,
+                    "org/jenkinsci/plugins/pluginfirst/HelloWorldBuilder/config.jelly");
 
             assertEquals(fromPlugin, fromToolkit);
         });
@@ -693,7 +720,7 @@ class PluginManagerTest {
 
     @Test
     @Issue("JENKINS-64840")
-    @WithPlugin({"mandatory-depender-0.0.2.hpi", "dependee-0.0.2.hpi", "depender-0.0.2.hpi"})
+    @WithPlugin({ "mandatory-depender-0.0.2.hpi", "dependee-0.0.2.hpi", "depender-0.0.2.hpi" })
     void getPluginsSortedByTitle() throws Throwable {
         session.then(r -> {
             List<String> installedPlugins = r.jenkins.getPluginManager().getPluginsSortedByTitle()
@@ -711,7 +738,8 @@ class PluginManagerTest {
     void doNotThrowWithUnknownPlugins() throws Throwable {
         session.then(r -> {
             final UpdateCenter uc = Jenkins.get().getUpdateCenter();
-            assertNull(uc.getPlugin("legacy"), "This test requires the plugin with ID 'legacy' to not exist in update sites");
+            assertNull(uc.getPlugin("legacy"),
+                    "This test requires the plugin with ID 'legacy' to not exist in update sites");
 
             // ensure data is loaded - probably unnecessary, but closer to reality
             assertSame(FormValidation.Kind.OK, uc.getSite("default").updateDirectlyNow().kind);
@@ -739,21 +767,22 @@ class PluginManagerTest {
             }
             assertNotNull(site.getData());
 
-            //Dummy plugin is found in the second site (should have worked before the fix)
+            // Dummy plugin is found in the second site (should have worked before the fix)
             JenkinsRule.JSONWebResponse response = r.getJSON("pluginManager/pluginsSearch?query=dummy&limit=5");
             JSONObject json = response.getJSONObject();
             assertTrue(json.has("data"));
             JSONArray data = json.getJSONArray("data");
             assertEquals(1, data.size(), "Should be one search hit for dummy");
 
-            //token-macro plugin is found in the first site (didn't work before the fix)
+            // token-macro plugin is found in the first site (didn't work before the fix)
             response = r.getJSON("pluginManager/pluginsSearch?query=token&limit=5");
             json = response.getJSONObject();
             assertTrue(json.has("data"));
             data = json.getJSONArray("data");
             assertEquals(1, data.size(), "Should be one search hit for token");
 
-            //hello-world plugin is found in the first site and hello-huston in the second (didn't work before the fix)
+            // hello-world plugin is found in the first site and hello-huston in the second
+            // (didn't work before the fix)
             response = r.getJSON("pluginManager/pluginsSearch?query=hello&limit=5");
             json = response.getJSONObject();
             assertTrue(json.has("data"));
@@ -779,18 +808,16 @@ class PluginManagerTest {
 
             // Initialize the cookie handler and get the crumb
             URI crumbIssuer = new URI(jenkinsUrl + "crumbIssuer/api/json");
-            HttpRequest httpGet =
-                    HttpRequest.newBuilder()
-                            .uri(crumbIssuer)
-                            .header("Accept", "application/json")
-                            .timeout(Duration.ofSeconds(7))
-                            .GET()
-                            .build();
-            HttpClient clientGet =
-                    HttpClient.newBuilder()
-                            .cookieHandler(CookieHandler.getDefault())
-                            .connectTimeout(Duration.ofSeconds(2))
-                            .build();
+            HttpRequest httpGet = HttpRequest.newBuilder()
+                    .uri(crumbIssuer)
+                    .header("Accept", "application/json")
+                    .timeout(Duration.ofSeconds(7))
+                    .GET()
+                    .build();
+            HttpClient clientGet = HttpClient.newBuilder()
+                    .cookieHandler(CookieHandler.getDefault())
+                    .connectTimeout(Duration.ofSeconds(2))
+                    .build();
             HttpResponse<String> responseGet = clientGet.send(httpGet, HttpResponse.BodyHandlers.ofString());
             assertEquals(200, responseGet.statusCode(), "Bad response for crumb issuer");
             String body = responseGet.body();
@@ -802,20 +829,18 @@ class PluginManagerTest {
             // Call installNecessaryPlugins XML API for git client plugin 4.0.0 with crumb
             URI installNecessaryPlugins = new URI(jenkinsUrl + "pluginManager/installNecessaryPlugins");
             String xmlRequest = "<jenkins><install plugin=\"git-client@4.0.0\"></install></jenkins>";
-            HttpRequest request =
-                    HttpRequest.newBuilder()
-                            .uri(installNecessaryPlugins)
-                            .timeout(Duration.ofSeconds(20))
-                            .header("Content-Type", "application/xml")
-                            .header(crumbRequestField, crumb)
-                            .POST(HttpRequest.BodyPublishers.ofString(xmlRequest))
-                            .build();
-            HttpClient client =
-                    HttpClient.newBuilder()
-                            .cookieHandler(CookieHandler.getDefault())
-                            .followRedirects(HttpClient.Redirect.ALWAYS)
-                            .connectTimeout(Duration.ofSeconds(2))
-                            .build();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(installNecessaryPlugins)
+                    .timeout(Duration.ofSeconds(20))
+                    .header("Content-Type", "application/xml")
+                    .header(crumbRequestField, crumb)
+                    .POST(HttpRequest.BodyPublishers.ofString(xmlRequest))
+                    .build();
+            HttpClient client = HttpClient.newBuilder()
+                    .cookieHandler(CookieHandler.getDefault())
+                    .followRedirects(HttpClient.Redirect.ALWAYS)
+                    .connectTimeout(Duration.ofSeconds(2))
+                    .build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             // Redirect reported 404 before bug was fixed
@@ -833,7 +858,9 @@ class PluginManagerTest {
             HtmlForm f = page.getFormByName("uploadPlugin");
             File dir = newFolder(tmp, "junit");
             File plugin = new File(dir, "htmlpublisher.jpi");
-            FileUtils.copyURLToFile(Objects.requireNonNull(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi")), plugin);
+            FileUtils.copyURLToFile(
+                    Objects.requireNonNull(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi")),
+                    plugin);
             f.getInputByName("name").setValue(plugin.getAbsolutePath());
             r.submit(f);
 
@@ -841,20 +868,20 @@ class PluginManagerTest {
             File filesTmpDir = filesRef.getParentFile();
             filesRef.deleteOnExit();
 
-            final Set<PosixFilePermission>[] filesPermission = new Set[]{new HashSet<>()};
+            final Set<PosixFilePermission>[] filesPermission = new Set[] { new HashSet<>() };
             await().pollInterval(250, TimeUnit.MILLISECONDS)
                     .atMost(10, TimeUnit.SECONDS)
                     .until(() -> {
                         Optional<File> lastUploadedPluginDir = Arrays.stream(Objects.requireNonNull(
-                                        filesTmpDir.listFiles((file, fileName) ->
-                                                fileName.startsWith("uploadDir")))).
-                                max(Comparator.comparingLong(File::lastModified));
+                                filesTmpDir.listFiles((file, fileName) -> fileName.startsWith("uploadDir"))))
+                                .max(Comparator.comparingLong(File::lastModified));
                         if (lastUploadedPluginDir.isPresent()) {
-                            filesPermission[0] = Files.getPosixFilePermissions(lastUploadedPluginDir.get().toPath(), LinkOption.NOFOLLOW_LINKS);
+                            filesPermission[0] = Files.getPosixFilePermissions(lastUploadedPluginDir.get().toPath(),
+                                    LinkOption.NOFOLLOW_LINKS);
                             Optional<File> pluginFile = Arrays.stream(Objects.requireNonNull(
-                                            lastUploadedPluginDir.get().listFiles((file, fileName) ->
-                                                    fileName.startsWith("uploaded")))).
-                                    max(Comparator.comparingLong(File::lastModified));
+                                    lastUploadedPluginDir.get()
+                                            .listFiles((file, fileName) -> fileName.startsWith("uploaded"))))
+                                    .max(Comparator.comparingLong(File::lastModified));
                             assertTrue(pluginFile.isPresent());
                             return true;
                         } else {
@@ -871,7 +898,8 @@ class PluginManagerTest {
         session.then(r -> {
             DownloadService.signatureCheck = false;
             Jenkins.get().getUpdateCenter().getSites().clear();
-            UpdateSite us = new UpdateSite("Security3037", Jenkins.get().getRootUrl() + "security3037UpdateCenter/security3037-update-center.json");
+            UpdateSite us = new UpdateSite("Security3037",
+                    Jenkins.get().getRootUrl() + "security3037UpdateCenter/security3037-update-center.json");
             Jenkins.get().getUpdateCenter().getSites().add(us);
 
             try (JenkinsRule.WebClient wc = r.createWebClient()) {
@@ -902,27 +930,28 @@ class PluginManagerTest {
         session.then(r -> {
             HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
             HtmlForm f = page.getFormByName("uploadPlugin");
-            f.getInputByName("pluginUrl").setValue(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
+            f.getInputByName("pluginUrl")
+                    .setValue(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
             r.submit(f);
 
             File filesRef = Files.createTempFile("tmp", ".tmp").toFile();
             File filesTmpDir = filesRef.getParentFile();
             filesRef.deleteOnExit();
 
-            final Set<PosixFilePermission>[] filesPermission = new Set[]{new HashSet<>()};
+            final Set<PosixFilePermission>[] filesPermission = new Set[] { new HashSet<>() };
             await().pollInterval(250, TimeUnit.MILLISECONDS)
                     .atMost(10, TimeUnit.SECONDS)
                     .until(() -> {
                         Optional<File> lastUploadedPluginDir = Arrays.stream(Objects.requireNonNull(
-                                        filesTmpDir.listFiles((file, fileName) ->
-                                                fileName.startsWith("uploadDir")))).
-                                max(Comparator.comparingLong(File::lastModified));
+                                filesTmpDir.listFiles((file, fileName) -> fileName.startsWith("uploadDir"))))
+                                .max(Comparator.comparingLong(File::lastModified));
                         if (lastUploadedPluginDir.isPresent()) {
-                            filesPermission[0] = Files.getPosixFilePermissions(lastUploadedPluginDir.get().toPath(), LinkOption.NOFOLLOW_LINKS);
+                            filesPermission[0] = Files.getPosixFilePermissions(lastUploadedPluginDir.get().toPath(),
+                                    LinkOption.NOFOLLOW_LINKS);
                             Optional<File> pluginFile = Arrays.stream(Objects.requireNonNull(
-                                            lastUploadedPluginDir.get().listFiles((file, fileName) ->
-                                                    fileName.startsWith("uploaded")))).
-                                    max(Comparator.comparingLong(File::lastModified));
+                                    lastUploadedPluginDir.get()
+                                            .listFiles((file, fileName) -> fileName.startsWith("uploaded"))))
+                                    .max(Comparator.comparingLong(File::lastModified));
                             assertTrue(pluginFile.isPresent());
                             return true;
                         } else {
@@ -960,10 +989,12 @@ class PluginManagerTest {
             return "security3037UpdateCenter";
         }
 
-        public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse) throws ServletException, IOException {
+        public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse)
+                throws ServletException, IOException {
             staplerResponse.setContentType("application/json");
             staplerResponse.setStatus(200);
-            staplerResponse.serveFile(staplerRequest, PluginManagerTest.class.getResource("/plugins/security3037-update-center.json"));
+            staplerResponse.serveFile(staplerRequest,
+                    PluginManagerTest.class.getResource("/plugins/security3037-update-center.json"));
         }
     }
 
@@ -985,10 +1016,12 @@ class PluginManagerTest {
             return "pluginManagerGetPlugin";
         }
 
-        public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse) throws ServletException, IOException {
+        public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse)
+                throws ServletException, IOException {
             staplerResponse.setContentType("application/octet-stream");
             staplerResponse.setStatus(200);
-            staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));
+            staplerResponse.serveFile(staplerRequest,
+                    PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));
         }
     }
 
