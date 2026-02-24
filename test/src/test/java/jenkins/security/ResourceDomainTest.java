@@ -19,16 +19,14 @@ import hudson.model.DirectoryBrowserSupport;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.UnprotectedRootAction;
+import hudson.security.AbstractPasswordBasedSecurityRealm;
+import hudson.security.GroupDetails;
 import java.net.URI;
 import java.net.URL;
 import java.time.Instant;
 import java.util.UUID;
-
-import hudson.security.AbstractPasswordBasedSecurityRealm;
-import hudson.security.GroupDetails;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.Page;
 import org.htmlunit.html.HtmlPage;
@@ -42,6 +40,7 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.HttpResponse;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @Issue("JENKINS-41891")
@@ -464,40 +463,40 @@ class ResourceDomainTest {
         }
     }
 
-	@Test
-	@Issue("JENKINS-16639")
-	void anonymousResourceDownloadDoesNotAttemptImpersonation() throws Exception {
-		j.jenkins.setSecurityRealm(new AbstractPasswordBasedSecurityRealm() {
-			@Override
-			public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
-				if ("anonymous".equals(username)) {
-					throw new UsernameNotFoundException("Should not impersonate anonymous!");
-				}
-				throw new UsernameNotFoundException(username);
-			}
+    @Test
+    @Issue("JENKINS-16639")
+    void anonymousResourceDownloadDoesNotAttemptImpersonation() throws Exception {
+        j.jenkins.setSecurityRealm(new AbstractPasswordBasedSecurityRealm() {
+            @Override
+            public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
+                if ("anonymous".equals(username)) {
+                    throw new UsernameNotFoundException("Should not impersonate anonymous!");
+                }
+                throw new UsernameNotFoundException(username);
+            }
 
-			@Override
-			protected UserDetails authenticate2(String username, String password) {
-				return null;
-			}
+            @Override
+            protected UserDetails authenticate2(String username, String password) {
+                return null;
+            }
 
-			@Override
-			public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) {
-				return null;
-			}
-		});
+            @Override
+            public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) {
+                return null;
+            }
+        });
 
-		MockAuthorizationStrategy a = new MockAuthorizationStrategy();
-		a.grant(Jenkins.READ).everywhere().toEveryone();
-		j.jenkins.setAuthorizationStrategy(a);
+        MockAuthorizationStrategy a = new MockAuthorizationStrategy();
+        a.grant(Jenkins.READ).everywhere().toEveryone();
+        j.jenkins.setAuthorizationStrategy(a);
 
-		JenkinsRule.WebClient wc = j.createWebClient();
-		wc.setRedirectEnabled(true);
-		wc.setThrowExceptionOnFailingStatusCode(false);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.setRedirectEnabled(true);
+        wc.setThrowExceptionOnFailingStatusCode(false);
 
-		Page page = wc.goTo("userContent/readme.txt", "text/plain");
+        Page page = wc.goTo("userContent/readme.txt", "text/plain");
 
-		assertEquals(200, page.getWebResponse().getStatusCode(), "Anonymous resource download should succeed without impersonation");
-		assertTrue(page.getUrl().toString().contains("/static-files/"), "Should be served by resource domain");
-	}
+        assertEquals(200, page.getWebResponse().getStatusCode(), "Anonymous resource download should succeed without impersonation");
+        assertTrue(page.getUrl().toString().contains("/static-files/"), "Should be served by resource domain");
+    }
 }
