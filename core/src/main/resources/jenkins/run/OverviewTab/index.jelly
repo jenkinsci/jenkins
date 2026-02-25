@@ -29,6 +29,7 @@ THE SOFTWARE.
       <l:details-bar it="${it.object}">
         <t:editDescriptionButton permission="${it.object.UPDATE}"
                                  compact="true" />
+        <st:include page="logKeep.jelly" it="${it.object}" />
       </l:details-bar>
     </l:app-bar>
 
