@@ -34,6 +34,7 @@ import static hudson.init.InitMilestone.EXTENSIONS_AUGMENTED;
 import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
 import static hudson.init.InitMilestone.JOB_LOADED;
 import static hudson.init.InitMilestone.PLUGINS_PREPARED;
+import static hudson.init.InitMilestone.SYSTEM_CONFIG_ADAPTED;
 import static hudson.init.InitMilestone.SYSTEM_CONFIG_LOADED;
 import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
@@ -41,6 +42,7 @@ import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
+import static jenkins.model.Messages.Hudson_Computer_IncorrectNumberOfExecutors;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
@@ -56,7 +58,6 @@ import hudson.Extension;
 import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
 import hudson.ExtensionList;
-import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -195,7 +196,6 @@ import hudson.util.FormValidation;
 import hudson.util.Futures;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
-import hudson.util.Iterators;
 import hudson.util.JenkinsReloadFailed;
 import hudson.util.LogTaskListener;
 import hudson.util.MultipartFormDataParser;
@@ -305,7 +305,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.logging.LogFactory;
-import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Milestone;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.ReactorException;
@@ -1505,8 +1504,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressWarnings("rawtypes") // too late to fix
     public Descriptor getDescriptor(String id) {
-        // legacy descriptors that are registered manually doesn't show up in getExtensionList, so check them explicitly.
-        Iterable<Descriptor> descriptors = Iterators.sequence(getExtensionList(Descriptor.class), DescriptorExtensionList.listLegacyInstances());
+        Iterable<Descriptor> descriptors = getExtensionList(Descriptor.class);
         for (Descriptor d : descriptors) {
             if (d.getId().equals(id)) {
                 return d;
@@ -2121,7 +2119,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (name == null) {
             // if only one JDK is configured, "default JDK" should mean that JDK.
             List<JDK> jdks = getJDKs();
-            if (jdks.size() == 1)  return jdks.get(0);
+            if (jdks.size() == 1)  return jdks.getFirst();
             return null;
         }
         for (JDK j : getJDKs()) {
@@ -2815,14 +2813,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Returns {@link ExtensionList} that retains the discovered instances for the given extension type.
-     *
-     * @param extensionType
-     *      The base type that represents the extension point. Normally {@link ExtensionPoint} subtype
-     *      but that's not a hard requirement.
-     * @return
-     *      Can be an empty list but never null.
-     * @see ExtensionList#lookup
+     * An obsolete alias for {@link ExtensionList#lookup}.
      */
     @SuppressWarnings("unchecked")
     public <T> ExtensionList<T> getExtensionList(Class<T> extensionType) {
@@ -2846,7 +2837,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Returns {@link ExtensionList} that retains the discovered {@link Descriptor} instances for the given
      * kind of {@link Describable}.
-     *
+     * <p>Assuming an appropriate {@link Descriptor} subtype, for most purposes you can simply use {@link ExtensionList#lookup}.
      * @return
      *      Can be an empty list but never null.
      */
@@ -2879,7 +2870,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // if we find a new ExtensionFinder, we need it to list up all the extension points as well
         List<ExtensionComponent<ExtensionFinder>> newFinders = new ArrayList<>(delta.find(ExtensionFinder.class));
         while (!newFinders.isEmpty()) {
-            ExtensionFinder f = newFinders.remove(newFinders.size() - 1).getInstance();
+            ExtensionFinder f = newFinders.removeLast().getInstance();
             LOGGER.finer(() -> "found new ExtensionFinder " + f);
 
             ExtensionComponentSet ecs = ExtensionComponentSet.allOf(f).filtered();
@@ -3378,7 +3369,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (views.isEmpty() || primaryView == null) {
             View v = new AllView(AllView.DEFAULT_VIEW_NAME);
             setViewOwner(v);
-            views.add(0, v);
+            views.addFirst(v);
             primaryView = v.getViewName();
         }
         primaryView = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryView);
@@ -3481,95 +3472,83 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         final Set<String> loadedNames = Collections.synchronizedSet(new HashSet<>());
 
         TaskGraphBuilder g = new TaskGraphBuilder();
-        Handle loadJenkins = g.requires(EXTENSIONS_AUGMENTED).attains(SYSTEM_CONFIG_LOADED).add("Loading global config", new Executable() {
-            @Override
-            public void run(Reactor session) throws Exception {
-                load();
-                // if we are loading old data that doesn't have this field
-                if (slaves != null && !slaves.isEmpty() && nodes.isLegacy()) {
-                    nodes.setNodes(slaves);
-                    slaves = null;
-                } else {
-                    nodes.load();
-                }
+        Handle loadJenkins = g.requires(EXTENSIONS_AUGMENTED).attains(SYSTEM_CONFIG_LOADED).add("Loading global config", session -> {
+            load();
+            // if we are loading old data that doesn't have this field
+            if (slaves != null && !slaves.isEmpty() && nodes.isLegacy()) {
+                nodes.setNodes(slaves);
+                slaves = null;
+            } else {
+                nodes.load();
             }
         });
 
         List<Handle> loadJobs = new ArrayList<>();
         for (final File subdir : subdirs) {
-            loadJobs.add(g.requires(loadJenkins).attains(JOB_LOADED).notFatal().add("Loading item " + subdir.getName(), new Executable() {
-                @Override
-                public void run(Reactor session) throws Exception {
-                    if (!Items.getConfigFile(subdir).exists()) {
-                        //Does not have job config file, so it is not a jenkins job hence skip it
-                        return;
-                    }
-                    TopLevelItem item = (TopLevelItem) Items.load(Jenkins.this, subdir);
-                    items.put(item.getName(), item);
-                    loadedNames.add(item.getName());
+            loadJobs.add(g.requires(loadJenkins).requires(SYSTEM_CONFIG_ADAPTED).attains(JOB_LOADED).notFatal().add("Loading item " + subdir.getName(), session -> {
+                if (!Items.getConfigFile(subdir).exists()) {
+                    //Does not have job config file, so it is not a jenkins job hence skip it
+                    return;
                 }
+                TopLevelItem item = (TopLevelItem) Items.load(Jenkins.this, subdir);
+                items.put(item.getName(), item);
+                loadedNames.add(item.getName());
             }));
         }
 
-        g.requires(loadJobs.toArray(new Handle[0])).attains(JOB_LOADED).add("Cleaning up obsolete items deleted from the disk", new Executable() {
-            @Override
-            public void run(Reactor reactor) {
-                // anything we didn't load from disk, throw them away.
-                // doing this after loading from disk allows newly loaded items
-                // to inspect what already existed in memory (in case of reloading)
+        g.requires(loadJobs.toArray(new Handle[0])).attains(JOB_LOADED).add("Cleaning up obsolete items deleted from the disk", reactor -> {
+            // anything we didn't load from disk, throw them away.
+            // doing this after loading from disk allows newly loaded items
+            // to inspect what already existed in memory (in case of reloading)
 
-                // retainAll doesn't work well because of CopyOnWriteMap implementation, so remove one by one
-                // hopefully there shouldn't be too many of them.
-                for (String name : items.keySet()) {
-                    if (!loadedNames.contains(name))
-                        items.remove(name);
-                }
+            // retainAll doesn't work well because of CopyOnWriteMap implementation, so remove one by one
+            // hopefully there shouldn't be too many of them.
+            for (String name : items.keySet()) {
+                if (!loadedNames.contains(name))
+                    items.remove(name);
             }
         });
 
-        g.requires(JOB_CONFIG_ADAPTED).attains(COMPLETED).add("Finalizing set up", new Executable() {
-            @Override
-            public void run(Reactor session) throws Exception {
-                rebuildDependencyGraph();
+        g.requires(JOB_CONFIG_ADAPTED).attains(COMPLETED).add("Finalizing set up", session -> {
+            rebuildDependencyGraph();
 
-                { // recompute label objects - populates the labels mapping.
-                    for (Node slave : nodes.getNodes())
-                        // Note that not all labels are visible until the agents have connected.
-                        slave.getAssignedLabels();
-                    getAssignedLabels();
-                }
-
-                if (useSecurity != null && !useSecurity) {
-                    // forced reset to the unsecure mode.
-                    // this works as an escape hatch for people who locked themselves out.
-                    authorizationStrategy = AuthorizationStrategy.UNSECURED;
-                    setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
-                } else {
-                    // read in old data that doesn't have the security field set
-                    if (authorizationStrategy == null) {
-                        if (useSecurity == null)
-                            authorizationStrategy = AuthorizationStrategy.UNSECURED;
-                        else
-                            authorizationStrategy = new LegacyAuthorizationStrategy();
-                    }
-                    if (securityRealm == null) {
-                        if (useSecurity == null)
-                            setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
-                        else
-                            setSecurityRealm(new LegacySecurityRealm());
-                    }
-                }
-
-                // Allow the disabling system property to interfere here
-                setCrumbIssuer(getCrumbIssuer());
-
-                // auto register root actions
-                for (Action a : getExtensionList(RootAction.class))
-                    if (!actions.contains(a)) actions.add(a);
-
-                setupWizard = ExtensionList.lookupSingleton(SetupWizard.class);
-                getInstallState().initializeState();
+            { // recompute label objects - populates the labels mapping.
+                for (Node slave : nodes.getNodes())
+                    // Note that not all labels are visible until the agents have connected.
+                    slave.getAssignedLabels();
+                getAssignedLabels();
             }
+
+            if (useSecurity != null && !useSecurity) {
+                // forced reset to the unsecure mode.
+                // this works as an escape hatch for people who locked themselves out.
+                authorizationStrategy = AuthorizationStrategy.UNSECURED;
+                setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
+            } else {
+                // read in old data that doesn't have the security field set
+                if (authorizationStrategy == null) {
+                    if (useSecurity == null)
+                        authorizationStrategy = AuthorizationStrategy.UNSECURED;
+                    else
+                        authorizationStrategy = new LegacyAuthorizationStrategy();
+                }
+                if (securityRealm == null) {
+                    if (useSecurity == null)
+                        setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
+                    else
+                        setSecurityRealm(new LegacySecurityRealm());
+                }
+            }
+
+            // Allow the disabling system property to interfere here
+            setCrumbIssuer(getCrumbIssuer());
+
+            // auto register root actions
+            for (Action a : getExtensionList(RootAction.class))
+                if (!actions.contains(a)) actions.add(a);
+
+            setupWizard = ExtensionList.lookupSingleton(SetupWizard.class);
+            getInstallState().initializeState();
         });
 
         return g;
@@ -4098,28 +4077,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         JSONObject js = json.has(name) ? json.getJSONObject(name) : new JSONObject(); // if it doesn't have the property, the method returns invalid null object.
         json.putAll(js);
         return d.configure(req, js);
-    }
-
-    /**
-     * Accepts submission from the node configuration page.
-     */
-    @POST
-    public synchronized void doConfigExecutorsSubmit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
-        checkPermission(ADMINISTER);
-
-        try (BulkChange bc = new BulkChange(this)) {
-            JSONObject json = req.getSubmittedForm();
-
-            ExtensionList.lookupSingleton(MasterBuildConfiguration.class).configure(req, json);
-
-            getNodeProperties().rebuild(req, json.optJSONObject("nodeProperties"), NodeProperty.all());
-
-            bc.commit();
-        }
-
-        updateComputers(this);
-
-        FormApply.success(req.getContextPath() + '/' + toComputer().getUrl()).generateResponse(req, rsp, null);
     }
 
     /**
@@ -5134,17 +5091,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public Future<DependencyGraph> getFutureDependencyGraph() {
         synchronized (dependencyGraphLock) {
             // Scheduled future will be the most recent one --> Return
-            if (scheduledFutureDependencyGraph != null) {
-                return scheduledFutureDependencyGraph;
-            }
-
+            return Objects.requireNonNullElseGet(scheduledFutureDependencyGraph,
             // Calculating future will be the most recent one --> Return
-            if (calculatingFutureDependencyGraph != null) {
-                return calculatingFutureDependencyGraph;
-            }
-
+                                                 () -> Objects.requireNonNullElseGet(calculatingFutureDependencyGraph,
             // No scheduled or calculating future --> Already completed dependency graph is the most recent one
-            return CompletableFuture.completedFuture(dependencyGraph);
+                                                                                     () -> CompletableFuture.completedFuture(dependencyGraph)));
         }
     }
 
@@ -5171,11 +5122,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public Future<DependencyGraph> rebuildDependencyGraphAsync() {
         synchronized (dependencyGraphLock) {
             // Collect calls to this method to avoid unnecessary calculation of the dependency graph
-            if (scheduledFutureDependencyGraph != null) {
-                return scheduledFutureDependencyGraph;
-            }
-            // Schedule new calculation
-            return scheduledFutureDependencyGraph = scheduleCalculationOfFutureDependencyGraph(500, TimeUnit.MILLISECONDS);
+            return Objects.requireNonNullElseGet(scheduledFutureDependencyGraph, () -> scheduledFutureDependencyGraph = scheduleCalculationOfFutureDependencyGraph(500, TimeUnit.MILLISECONDS));
         }
     }
 
@@ -5508,7 +5455,44 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         @Override
         @POST
         public void doConfigSubmit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
-            Jenkins.get().doConfigExecutorsSubmit(req, rsp);
+            checkPermission(ADMINISTER);
+
+            Jenkins jenkins = Jenkins.get();
+
+            try (BulkChange bc = new BulkChange(jenkins)) {
+                JSONObject json = req.getSubmittedForm();
+
+                try {
+                    // For compatibility reasons, this value is stored in Jenkins
+                    String num = json.getString("numExecutors");
+                    if (!num.matches("\\d+")) {
+                        throw new Descriptor.FormException(Hudson_Computer_IncorrectNumberOfExecutors(), "numExecutors");
+                    }
+
+                    jenkins.setNumExecutors(json.getInt("numExecutors"));
+                    if (req.hasParameter("builtin.mode")) {
+                        jenkins.setMode(Mode.valueOf(req.getParameter("builtin.mode")));
+                    } else {
+                        jenkins.setMode(Mode.NORMAL);
+                    }
+
+                    jenkins.setLabelString(json.optString("labelString", ""));
+                } catch (IOException e) {
+                    throw new Descriptor.FormException(e, "numExecutors");
+                }
+
+                jenkins.getNodeProperties().rebuild(req, json.optJSONObject("nodeProperties"), NodeProperty.all());
+
+                bc.commit();
+            }
+
+            jenkins.updateComputers(jenkins);
+
+            Computer computer = jenkins.toComputer();
+            if (computer == null) {
+                throw new IllegalStateException("Cannot find the computer object for the controller node");
+            }
+            FormApply.success(req.getContextPath() + '/' + computer.getUrl()).generateResponse(req, rsp, null);
         }
 
         @WebMethod(name = "config.xml")
@@ -5855,15 +5839,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * are unsafe to make available to users with only this permission,
      * as they could be used to bypass permission enforcement and elevate permissions.</p>
      *
-     * <p>This permission is disabled by default and support for it considered experimental.
-     * Administrators can set the system property {@code jenkins.security.ManagePermission} to enable it.</p>
-     *
      * @since 2.222
      */
     public static final Permission MANAGE = new Permission(PERMISSIONS, "Manage",
             Messages._Jenkins_Manage_Description(),
             ADMINISTER,
-            SystemProperties.getBoolean("jenkins.security.ManagePermission"),
+            true,
             new PermissionScope[]{PermissionScope.JENKINS});
 
     /**

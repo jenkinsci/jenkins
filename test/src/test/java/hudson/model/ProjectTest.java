@@ -279,7 +279,7 @@ public class ProjectTest {
         j.jenkins.setScmCheckoutRetryCount(6);
         assertEquals(6, p.getScmCheckoutRetryCount(), "Scm retry count should be the same as global scm retry count.");
         HtmlForm form = j.createWebClient().goTo(p.getUrl() + "/configure").getFormByName("config");
-        ((HtmlElement) form.querySelectorAll(".advancedButton").get(0)).click();
+        ((HtmlElement) form.querySelectorAll(".advancedButton").getFirst()).click();
         // required due to the new default behavior of click
         form.getInputByName("hasCustomScmCheckoutRetryCount").click(new Event(), false, false, false, true);
         form.getInputByName("scmCheckoutRetryCount").setValue("7");

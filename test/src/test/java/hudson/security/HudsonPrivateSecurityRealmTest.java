@@ -281,14 +281,14 @@ class HudsonPrivateSecurityRealmTest {
         assertTrue(spySecurityListener.loggedInUsernames.isEmpty());
 
         createFirstAccount("admin");
-        assertEquals("admin", spySecurityListener.loggedInUsernames.get(0));
+        assertEquals("admin", spySecurityListener.loggedInUsernames.getFirst());
 
         createAccountByAdmin("alice");
         // no new event in such case
         assertTrue(spySecurityListener.loggedInUsernames.isEmpty());
 
         selfRegistration("bob");
-        assertEquals("bob", spySecurityListener.loggedInUsernames.get(0));
+        assertEquals("bob", spySecurityListener.loggedInUsernames.getFirst());
     }
 
     @Issue("JENKINS-55307")
@@ -339,7 +339,7 @@ class HudsonPrivateSecurityRealmTest {
 
         securityRealm.createAccountWithHashedPassword("charlie_hashed", "#jbcrypt:" + BCrypt.hashpw("charliePassword", BCrypt.gensalt()));
 
-        assertEquals("charlie_hashed", spySecurityListener.createdUsers.get(0));
+        assertEquals("charlie_hashed", spySecurityListener.createdUsers.getFirst());
     }
 
     private void createFirstAccount(String login) throws Exception {

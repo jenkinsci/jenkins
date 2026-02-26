@@ -15,7 +15,8 @@
     <j:forEach var="action" items="${it.actions}">
       <dd:item icon="${action.iconFileName}"
                text="${action.displayName}"
-               href="${rootURL}/${it.user.url}/${action.urlName}" />
+               href="${rootURL}/${it.user.url}/${action.urlName}"
+               badge="${action.badge}"/>
     </j:forEach>
 
     <dd:separator />

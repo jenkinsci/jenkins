@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import static hudson.model.WindowsUtil.isWindowsSymlinkSupported;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -323,9 +324,7 @@ class DirectoryBrowserSupportTest {
         j.buildAndAssertSuccess(p);
 
         HtmlPage page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
-        for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-            assertEquals(DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue(header), "Header set: " + header);
-        }
+        assertEquals(DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue("Content-Security-Policy"));
 
         String propName = DirectoryBrowserSupport.class.getName() + ".CSP";
         String initialValue = System.getProperty(propName);
@@ -333,9 +332,7 @@ class DirectoryBrowserSupportTest {
             System.setProperty(propName, "");
             page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
             List<String> headers = page.getWebResponse().getResponseHeaders().stream().map(NameValuePair::getName).collect(Collectors.toList());
-            for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-                assertThat(headers, not(hasItem(header)));
-            }
+            assertThat(headers, not(hasItem("Content-Security-Policy")));
         } finally {
             if (initialValue == null) {
                 System.clearProperty(DirectoryBrowserSupport.class.getName() + ".CSP");
@@ -593,6 +590,8 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_outsideWorkspace_areNotAllowed() throws Exception {
+        assumeTrue(!Functions.isWindows() || isWindowsSymlinkSupported());
+
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
@@ -732,6 +731,8 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_avoidLeakingInformation_aboutIllegalFolder() throws Exception {
+        assumeTrue(!Functions.isWindows() || isWindowsSymlinkSupported());
+
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
@@ -804,7 +805,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void junctionAndSymlink_outsideWorkspace_areNotAllowed_windowsJunction() throws Exception {
-        assumeTrue(Functions.isWindows());
+        assumeTrue(Functions.isWindows() && isWindowsSymlinkSupported());
 
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -1024,6 +1025,8 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue({"SECURITY-904", "SECURITY-1452"})
     void symlink_insideWorkspace_areNotAllowedAnymore() throws Exception {
+        assumeTrue(!Functions.isWindows() || isWindowsSymlinkSupported());
+
         FreeStyleProject p = j.createFreeStyleProject();
 
         // build once to have the workspace set up

@@ -26,14 +26,56 @@
   max-width: 700px;
 }
 
+#api-tokens {
+  width: 100%;
+}
+
+#api-token-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.token-card {
+  flex-direction: row;
+  display: flex;
+  gap: 0.5rem;
+  border-radius: var(--form-input-border-radius);
+  background: var(--card-background);
+  position: relative;
+}
+
+.token-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: var(--card-border-width) solid var(--card-border-color);
+  z-index: 1;
+  pointer-events: none;
+}
+
 .token-card__title,
 .token-stats,
 .token-never-used,
-.token-list .jenkins-card,
+.token-list,
 .token-controls {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+}
+
+.token-stats {
+  justify-content: space-between;
+}
+
+.token-expiration {
+  margin-bottom: var(--section-padding);
+}
+
+.token-expiration .jenkins-select {
+  margin-bottom: var(--section-padding);
 }
 
 .token-name {
@@ -58,6 +100,10 @@
   width: 2.5rem;
 }
 
+.api-token-new-form-row {
+  margin-bottom: var(--section-padding);
+}
+
 .api-token-new-form-row.jenkins-quote {
   color: var(--text-color);
 }
@@ -71,20 +117,32 @@
 }
 
 .token-card-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
   width: 100%;
   padding: 0.5rem 1rem;
 }
 
-.token-creation {
-  font-size: var(--font-size-xs);
-  color: var(--text-color-secondary);
-  width: fit-content;
-}
-
+.token-creation,
 .token-last-used {
   font-size: var(--font-size-xs);
   color: var(--text-color-secondary);
-  margin-left: auto;
+}
+
+.token-creation::before {
+  width: 20px;
+  height: 20px;
+}
+
+.token-creation.warning {
+  padding-left: calc(20px + 0.4rem);
+  color: var(--warning-color);
+}
+
+.token-creation.error {
+  padding-left: calc(20px + 0.4rem);
+  color: var(--error-color);
 }
 
 .legacy-token {

@@ -14,12 +14,12 @@ properties([
 
 def axes = [
   platforms: ['linux', 'windows'],
-  jdks: [17, 21],
+  jdks: [21, 25],
 ]
 
 stage('Record build') {
   retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
-    node('maven-17') {
+    node('maven-21') {
       infra.checkoutSCM()
 
       /*
@@ -34,7 +34,7 @@ stage('Record build') {
         sh "launchable verify && launchable record build --name ${launchableName} --source jenkinsci/jenkins=."
         axes.values().combinations {
           def (platform, jdk) = it
-          if (platform == 'windows' && jdk != 17) {
+          if (platform == 'windows' && jdk != axes.jdks.last()) {
             return // unnecessary use of hardware
           }
           def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
@@ -60,7 +60,7 @@ def builds = [:]
 
 axes.values().combinations {
   def (platform, jdk) = it
-  if (platform == 'windows' && jdk != 17) {
+  if (platform == 'windows' && jdk != axes.jdks.last()) {
     return // unnecessary use of hardware
   }
   builds["${platform}-jdk${jdk}"] = {
@@ -71,7 +71,7 @@ axes.values().combinations {
     }
     int retryCount = 0
     retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
-      if (retryCount == 1 && platform == 'windows' ) {
+      if (retryCount == 1) {
         agentContainerLabel = agentContainerLabel + '-nonspot'
       }
       // Increment before allocating the node in case it fails
@@ -218,7 +218,7 @@ axes.values().combinations {
 
 def athAxes = [
   platforms: ['linux'],
-  jdks: [17],
+  jdks: [21],
   browsers: ['firefox'],
 ]
 athAxes.values().combinations {
