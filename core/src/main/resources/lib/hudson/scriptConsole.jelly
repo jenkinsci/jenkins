@@ -56,14 +56,13 @@ THE SOFTWARE.
             ${%description2}
           </p>
 
+          <script src="${resURL}/jsbundles/codemirror.js" type="text/javascript" defer="true" />
           <form action="script" method="post">
             <textarea id="script" name="script" class="script">${request2.getParameter('script')}</textarea>
             <div align="right">
               <f:submit  value="${%Run}"/>
             </div>
           </form>
-          <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.groovy.groovy"/>
-          <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
           <j:if test="${output!=null}">
             <h2>
               ${%Result}

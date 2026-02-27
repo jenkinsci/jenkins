@@ -32,7 +32,6 @@ module.exports = [
         Behaviour: "readonly",
         breadcrumbs: "readonly",
         buildFormTree: "readonly",
-        CodeMirror: "readonly",
         ComboBox: "readonly",
         COMBOBOX_VERSION: "writeable",
         crumb: "readonly",

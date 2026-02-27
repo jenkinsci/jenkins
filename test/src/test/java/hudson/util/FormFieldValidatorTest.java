@@ -107,9 +107,9 @@ class FormFieldValidatorTest {
         final long javaScriptResult1 = Long.parseLong((String) scriptResult1.getJavaScriptResult());
         assertEquals(System.currentTimeMillis(), javaScriptResult1, 5000); // value is expected to be roughly "now"
 
-        // focus then blur to update
-        page.executeJavaScript("document.querySelector('.CodeMirror textarea').dispatchEvent(new Event(\"focus\"))");
-        page.executeJavaScript("document.querySelector('.CodeMirror textarea').dispatchEvent(new Event(\"blur\"))");
+        // focus then blur to update — CM6 uses .cm-editor with a contenteditable .cm-content div
+        page.executeJavaScript("document.querySelector('.cm-editor .cm-content').dispatchEvent(new Event(\"focus\"))");
+        page.executeJavaScript("document.querySelector('.cm-editor .cm-content').dispatchEvent(new Event(\"blur\"))");
         wc.waitForBackgroundJavaScript(1000); // Unsure whether this is needed
 
         // get updated value

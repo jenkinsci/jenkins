@@ -84,9 +84,9 @@ THE SOFTWARE.
     <st:adjunct includes="lib.form.textarea.textarea"/>
   </j:if>
   <j:if test="${attrs['codemirror-mode']!=null}">
-    <st:adjunct includes="
-        org.kohsuke.stapler.codemirror.mode.${attrs['codemirror-mode']}.${attrs['codemirror-mode']},
-        org.kohsuke.stapler.codemirror.theme.default"/>
+    <st:once>
+      <script src="${resURL}/jsbundles/codemirror.js" type="text/javascript" defer="true" />
+    </st:once>
   </j:if>
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
   <f:possibleReadOnlyField>

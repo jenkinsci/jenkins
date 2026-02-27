@@ -54,6 +54,7 @@ module.exports = (env, argv) => ({
     "pages/project/builds-card": [
       path.join(__dirname, "src/main/js/pages/project/builds-card.js"),
     ],
+    codemirror: [path.join(__dirname, "src/main/js/codemirror.js")],
     "simple-page": [path.join(__dirname, "src/main/scss/simple-page.scss")],
     styles: [path.join(__dirname, "src/main/scss/styles.scss")],
   },
@@ -157,7 +158,21 @@ module.exports = (env, argv) => ({
       chunks: "async",
       cacheGroups: {
         commons: {
-          test: /[\\/]node_modules[\\/]/,
+          test: (module) => {
+            if (!module.resource) {
+              return false;
+            }
+            // Exclude CodeMirror packages from the shared vendors chunk
+            // They are bundled into the separate codemirror entry point
+            if (
+              /[\\/]node_modules[\\/](@codemirror|@lezer|codemirror|crelt|style-mod|w3c-keyname)[\\/]/.test(
+                module.resource,
+              )
+            ) {
+              return false;
+            }
+            return /[\\/]node_modules[\\/]/.test(module.resource);
+          },
           name: "vendors",
           chunks: "all",
         },

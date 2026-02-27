@@ -1169,23 +1169,6 @@ function helpButtonOnClick() {
   return false;
 }
 
-function isCommandKey(event) {
-  return event.key === "Meta";
-}
-function isReturnKeyDown() {
-  return event.type == "keydown" && event.key === "Enter";
-}
-function getParentForm(element) {
-  if (element == null) {
-    throw "not found a parent form";
-  }
-  if (element instanceof HTMLFormElement) {
-    return element;
-  }
-
-  return getParentForm(element.parentNode);
-}
-
 // figure out the corresponding end marker
 function findEnd(e) {
   for (var depth = 0; ; e = e.nextElementSibling) {
@@ -1368,49 +1351,6 @@ function rowvgStartEachRow(recursive, f) {
     e.tabIndex = 9999; // make help link unnavigable from keyboard
   });
 
-  // Script Console : settings and shortcut key
-  Behaviour.specify("TEXTAREA.script", "textarea-script", ++p, function (e) {
-    (function () {
-      var cmdKeyDown = false;
-      var mode = e.getAttribute("script-mode") || "text/x-groovy";
-
-      // eslint-disable-next-line no-unused-vars
-      var w = CodeMirror.fromTextArea(e, {
-        mode: mode,
-        lineNumbers: true,
-        matchBrackets: true,
-        onKeyEvent: function (editor, event) {
-          function saveAndSubmit() {
-            editor.save();
-            getParentForm(e).submit();
-            event.stop();
-          }
-
-          // Mac (Command + Enter)
-          if (navigator.userAgent.indexOf("Mac") > -1) {
-            if (event.type == "keydown" && isCommandKey(event)) {
-              cmdKeyDown = true;
-            }
-            if (event.type == "keyup" && isCommandKey(event)) {
-              cmdKeyDown = false;
-            }
-            if (cmdKeyDown && isReturnKeyDown()) {
-              saveAndSubmit();
-              return true;
-            }
-
-            // Windows, Linux (Ctrl + Enter)
-          } else {
-            if (event.ctrlKey && isReturnKeyDown()) {
-              saveAndSubmit();
-              return true;
-            }
-          }
-        },
-      }).getWrapperElement();
-    })();
-  });
-
   // deferred client-side clickable map.
   // this is useful where the generation of <map> element is time consuming
   Behaviour.specify("IMG[lazymap]", "img-lazymap-", ++p, function (e) {
@@ -1426,45 +1366,6 @@ function rowvgStartEachRow(recursive, f) {
         });
       }
     });
-  });
-
-  // Native browser resizing doesn't work for CodeMirror textboxes so let's create our own
-  Behaviour.specify(".CodeMirror", "codemirror", ++p, function (codemirror) {
-    const MIN_HEIGHT = Math.min(200, codemirror.clientHeight);
-
-    const resizer = document.createElement("div");
-    resizer.className = "jenkins-codemirror-resizer";
-
-    let start_x; // eslint-disable-line no-unused-vars
-    let start_y;
-    let start_h;
-
-    function height_of($el) {
-      return parseInt(window.getComputedStyle($el).height.replace(/px$/, ""));
-    }
-
-    function on_drag(e) {
-      codemirror.CodeMirror.setSize(
-        null,
-        Math.max(MIN_HEIGHT, start_h + e.y - start_y) + "px",
-      );
-    }
-
-    function on_release() {
-      document.body.removeEventListener("mousemove", on_drag);
-      window.removeEventListener("mouseup", on_release);
-    }
-
-    resizer.addEventListener("mousedown", function (e) {
-      start_x = e.x;
-      start_y = e.y;
-      start_h = height_of(codemirror);
-
-      document.body.addEventListener("mousemove", on_drag);
-      window.addEventListener("mouseup", on_release);
-    });
-
-    codemirror.parentNode.insertBefore(resizer, codemirror.nextSibling);
   });
 
   // structured form submission
