@@ -41,7 +41,7 @@ THE SOFTWARE.
         </j:forEach>
 
         <j:if test="${currentView.hasPermission(currentView.CREATE)}">
-          <a href="${rootURL}/${currentView.owner.url}newView" tooltip="${%New View}" class="jenkins-button jenkins-button--tertiary">
+          <a href="${request.contextPath}/${currentView.owner.url}newView" tooltip="${%New View}" class="jenkins-button jenkins-button--tertiary">
             <l:icon src="symbol-add" />
           </a>
         </j:if>
@@ -53,7 +53,7 @@ THE SOFTWARE.
           <l:tab name="${v.displayName}" active="${v==currentView}" href="${rootURL}/${v.url}" />
         </j:forEach>
         <j:if test="${currentView.hasPermission(currentView.CREATE)}">
-          <l:tabNewItem href="${rootURL}/${currentView.owner.url}newView" title="${%New View}" />
+          <l:tabNewItem href="${request.contextPath}/${currentView.owner.url}newView" title="${%New View}" />
         </j:if>
       </l:tabBar>
     </j:otherwise>
