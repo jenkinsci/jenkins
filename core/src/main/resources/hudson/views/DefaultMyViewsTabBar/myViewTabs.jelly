@@ -27,7 +27,7 @@ THE SOFTWARE.
   <!-- view tab bar -->
   <l:tabBar>
     <j:forEach var="v" items="${it.sort(views)}">
-      <l:tab name="${v.displayName}" active="${v==currentView}" href="${rootURL}/${v.url}" />
+      <l:tab name="${v.displayName}" active="${v==currentView}" href="${request.contextPath}/${v.url}" />
     </j:forEach>
     <j:if test="${currentView.hasPermission(currentView.CREATE)}">
       <l:tabNewItem href="${request.contextPath}/${currentView.owner.url}newView" title="${%New View}" />
