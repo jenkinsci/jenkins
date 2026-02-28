@@ -97,5 +97,9 @@
       "datasourceTemplate": "maven"
     }
   ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": false
+  },
   "labels": ["dependencies", "skip-changelog"]
 }
