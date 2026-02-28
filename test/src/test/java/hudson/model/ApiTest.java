@@ -190,6 +190,36 @@ class ApiTest {
     }
 
     @Test
+    @Issue("JENKINS-75747")
+    void lowHeapRejectsApiRequest() throws Exception {
+        // Force the OOM guard to reject by requiring more free memory than available
+        String prop = Api.class.getName() + ".minFreeMemoryBytes";
+        String original = System.getProperty(prop);
+        try {
+            System.setProperty(prop, String.valueOf(Long.MAX_VALUE));
+
+            JenkinsRule.WebClient wc = j.createWebClient();
+            wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+            Page xmlPage = wc.goTo("api/xml", null);
+            WebResponse xmlResponse = xmlPage.getWebResponse();
+            assertEquals(HttpServletResponse.SC_SERVICE_UNAVAILABLE, xmlResponse.getStatusCode());
+            assertThat(xmlResponse.getContentAsString(), containsString("tree parameter"));
+
+            Page jsonPage = wc.goTo("api/json", null);
+            WebResponse jsonResponse = jsonPage.getWebResponse();
+            assertEquals(HttpServletResponse.SC_SERVICE_UNAVAILABLE, jsonResponse.getStatusCode());
+            assertThat(jsonResponse.getContentAsString(), containsString("tree parameter"));
+        } finally {
+            if (original != null) {
+                System.setProperty(prop, original);
+            } else {
+                System.clearProperty(prop);
+            }
+        }
+    }
+
+    @Test
     @Issue("SECURITY-1704")
     void project_notExposedToIFrame() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("p");

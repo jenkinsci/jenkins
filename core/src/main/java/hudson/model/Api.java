@@ -42,6 +42,7 @@ import javax.xml.transform.stream.StreamResult;
 import jenkins.model.Jenkins;
 import jenkins.security.SecureRequester;
 import jenkins.security.stapler.StaplerNotDispatchable;
+import jenkins.util.SystemProperties;
 import jenkins.util.xml.FilteredFunctionContext;
 import org.dom4j.CharacterData;
 import org.dom4j.Document;
@@ -107,6 +108,10 @@ public class Api extends AbstractModelObject {
                       @QueryParameter String tree,
                       @QueryParameter int depth) throws IOException, ServletException {
         setHeaders(rsp);
+
+        if (!checkHeapForApiResponse(rsp)) {
+            return;
+        }
 
         String[] excludes = req.getParameterValues("exclude");
 
@@ -256,6 +261,9 @@ public class Api extends AbstractModelObject {
     private void doJsonImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         if (req.getParameter("jsonp") == null || permit(req)) {
             setHeaders(rsp);
+            if (!checkHeapForApiResponse(rsp)) {
+                return;
+            }
             rsp.serveExposedBean(req, bean, req.getParameter("jsonp") == null ? Flavor.JSON : Flavor.JSONP);
         } else {
             rsp.sendError(HttpURLConnection.HTTP_FORBIDDEN, "jsonp forbidden; implement jenkins.security.SecureRequester");
@@ -292,6 +300,9 @@ public class Api extends AbstractModelObject {
 
     private void doPythonImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         setHeaders(rsp);
+        if (!checkHeapForApiResponse(rsp)) {
+            return;
+        }
         rsp.serveExposedBean(req, bean, Flavor.PYTHON);
     }
 
@@ -301,6 +312,41 @@ public class Api extends AbstractModelObject {
                 return true;
             }
         }
+        return false;
+    }
+
+    /**
+     * Checks if there is sufficient heap memory before processing a potentially large API response.
+     * Large serialization operations (especially without the tree parameter) can cause OutOfMemoryError.
+     *
+     * @param rsp the response to send error to if heap is low
+     * @return true if it is safe to proceed, false if the request was rejected
+     * @see <a href="https://issues.jenkins.io/browse/JENKINS-75747">JENKINS-75747</a>
+     */
+    private boolean checkHeapForApiResponse(StaplerResponse2 rsp) throws IOException {
+        long minFreeBytes = SystemProperties.getLong(Api.class.getName() + ".minFreeMemoryBytes", 50L * 1024 * 1024);
+        if (minFreeBytes <= 0) {
+            return true;
+        }
+
+        Runtime rt = Runtime.getRuntime();
+        long maxMemory = rt.maxMemory();
+        long totalMemory = rt.totalMemory();
+        long freeMemory = rt.freeMemory();
+        long usedMemory = totalMemory - freeMemory;
+        long availableMemory = maxMemory - usedMemory;
+
+        if (availableMemory >= minFreeBytes) {
+            return true;
+        }
+
+        LOGGER.warning(() -> String.format(
+                "Rejecting API request due to low heap: available=%d, required=%d. Suggest using the tree parameter.",
+                availableMemory, minFreeBytes));
+
+        rsp.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+        rsp.setContentType("text/plain;charset=UTF-8");
+        rsp.getWriter().print(Messages.Api_LowMemory());
         return false;
     }
 
