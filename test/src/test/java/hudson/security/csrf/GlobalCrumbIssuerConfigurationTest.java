@@ -2,7 +2,6 @@ package hudson.security.csrf;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
 
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
