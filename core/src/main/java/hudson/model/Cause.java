@@ -214,6 +214,7 @@ public abstract class Cause {
             }
         }
 
+        @Restricted(DoNotUse.class) // used from Jelly
         public Map<Cause, Integer> getCauseCounts() {
             return Collections.unmodifiableMap(causeBag);
         }
