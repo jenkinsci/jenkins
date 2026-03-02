@@ -42,6 +42,7 @@ import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Logger;
+import jenkins.util.SystemProperties;
 import jenkins.util.xstream.CriticalXStreamException;
 import org.jvnet.tiger_types.Types;
 
@@ -109,6 +110,9 @@ public class RobustCollectionConverter extends CollectionConverter {
         }
     }
 
+    private static boolean FAIL_ON_LOAD_ERROR = SystemProperties
+            .getBoolean(RobustCollectionConverter.class.getName() + ".failOnLoadError", false);
+
     @Override
     protected void populateCollection(HierarchicalStreamReader reader, UnmarshallingContext context, Collection collection) {
         while (reader.hasMoreChildren()) {
@@ -137,6 +141,9 @@ public class RobustCollectionConverter extends CollectionConverter {
                                 "See https://www.jenkins.io/redirect/xstream-dos-prevention for more information.");
                 throw new CriticalXStreamException(e);
             } catch (XStreamException | LinkageError e) {
+                if (FAIL_ON_LOAD_ERROR) {
+                    throw new ConversionException(e);
+                }
                 RobustReflectionConverter.addErrorInContext(context, e);
             }
             reader.moveUp();
