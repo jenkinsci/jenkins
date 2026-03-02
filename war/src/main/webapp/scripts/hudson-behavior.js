@@ -2758,3 +2758,65 @@ var layoutUpdateCallback = {
     }
   },
 };
+
+Behaviour.specify(
+  ".jenkins-build-timestamp",
+  "time-formatter",
+  0,
+  function (element) {
+    const timestampVal = element.getAttribute("data-timestamp");
+    const formatPref = element.getAttribute("data-format");
+
+    if (!timestampVal || formatPref === "auto") {
+      return;
+    }
+
+    const date = new Date(parseInt(timestampVal));
+    if (isNaN(date.getTime())) {
+      return;
+    }
+
+    if (formatPref === "iso8601") {
+      try {
+        const isoFormatter = new Intl.DateTimeFormat("sv-SE", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        });
+        element.innerText = isoFormatter.format(date);
+      } catch {
+        const pad = (n) => String(n).padStart(2, "0");
+        element.innerText =
+          date.getFullYear() +
+          "-" +
+          pad(date.getMonth() + 1) +
+          "-" +
+          pad(date.getDate()) +
+          " " +
+          pad(date.getHours()) +
+          ":" +
+          pad(date.getMinutes());
+      }
+      return;
+    }
+
+    let options = {};
+    if (formatPref === "24h") {
+      options = { hour: "numeric", minute: "2-digit", hour12: false };
+    } else if (formatPref === "12h") {
+      options = { hour: "numeric", minute: "2-digit", hour12: true };
+    }
+
+    try {
+      const formatter = new Intl.DateTimeFormat(undefined, options);
+      element.innerText = formatter.format(date);
+    } catch (e) {
+      if (window.console && console.debug) {
+        console.debug("Failed to format Jenkins timestamp", e);
+      }
+    }
+  },
+);
