@@ -29,7 +29,7 @@ THE SOFTWARE.
         <form id="${it.id}" method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
             <f:submit name="yes" value="${%More Info}"/>
             <l:isAdmin>
-                <f:submit value="${%Ignore}" name="no"/>
+                <f:submit value="${%Ignore}" name="no" icon="symbol-close-circle" primary="false"/>
             </l:isAdmin>
         </form>
         <h2 class="h3">${it.displayName}</h2>
