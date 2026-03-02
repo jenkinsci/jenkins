@@ -191,9 +191,13 @@ function createDropdownContent(element, hasModelLink, hasChildrenLink, href) {
 }
 
 /*
- * Generates the contents for the dropdown
+ * Generates the contents for the dropdown.
  */
 function mapChildrenItemsToDropdownItems(items) {
+  // Handle undefined, null, or non-array items
+  if (!items || !Array.isArray(items)) {
+    return [];
+  }
   return items.map((item) => {
     if (item.type === "HEADER") {
       return {
@@ -250,11 +254,12 @@ function mapChildrenItemsToDropdownItems(items) {
           }
         }
       },
-      subMenu: item.subMenu
-        ? () => {
-            return mapChildrenItemsToDropdownItems(item.subMenu.items);
-          }
-        : null,
+      subMenu:
+        item.subMenu && item.subMenu.items
+          ? () => {
+              return mapChildrenItemsToDropdownItems(item.subMenu.items);
+            }
+          : null,
     };
   });
 }
