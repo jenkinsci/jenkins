@@ -1,0 +1,38 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:documentation>
+    Reusable snooze form for Administrative Monitors.
+    Provides a trigger button that opens a modal dialog with duration options.
+  </st:documentation>
+  
+  <st:adjunct includes="lib.hudson.snooze"/>
+
+  <!-- Hidden form template for the dialog -->
+  <div id="snooze-form-template-${it.id}" class="jenkins-hidden">
+    <div>
+      <div class="jenkins-form-label">${%snooze.duration.label}</div>
+      <div class="snooze-expiration jenkins-!-margin-bottom-3">
+        <div class="jenkins-select">
+          <select class="jenkins-select__input" name="durationPreset">
+            <option value="60">${%snooze.duration.1hour}</option>
+            <option value="360">${%snooze.duration.6hours}</option>
+            <option value="1440" selected="true">${%snooze.duration.1day}</option>
+            <option value="4320">${%snooze.duration.3days}</option>
+            <option value="10080">${%snooze.duration.1week}</option>
+            <option value="custom">${%snooze.duration.custom}</option>
+          </select>
+        </div>
+        <input type="date" name="snoozeUntil" class="jenkins-hidden jenkins-input snooze-date-input"/>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" class="jenkins-button snooze-button"
+          data-snooze-url="${rootURL}/${it.url}/snooze"
+          data-template-id="snooze-form-template-${it.id}"
+          data-title="${%snooze.title}"
+          data-button-snooze="${%snooze}"
+          data-button-cancel="${%cancel}">
+      ${%snooze}
+  </button>
+</j:jelly>
