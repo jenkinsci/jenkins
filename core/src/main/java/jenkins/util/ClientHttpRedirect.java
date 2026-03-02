@@ -24,9 +24,11 @@
 
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.util.Locale;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
@@ -36,13 +38,33 @@ import org.kohsuke.stapler.StaplerResponse2;
  * Unlike {@link org.kohsuke.stapler.HttpRedirect}, this implements a client-side redirect (using meta tag and/or JavaScript).
  * This allows the redirect to work even when Content Security Policy is enforced in Chrome
  * (which applies {@code form-action} to redirects after form submission).
+ * <p>
+ * For security reasons, only HTTP/HTTPS URLs and relative paths are allowed.
+ * Attempts to redirect to other schemes (e.g., {@code javascript:}, {@code data:}, {@code file:})
+ * will result in a security warning page instead of performing the redirect.
  * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/form-action">MDN documentation on form-action</a>
  * @see <a href="https://github.com/w3c/webappsec-csp/issues/8">Content Security Policy issue discussing this behavior</a>
  * @since 2.550
  */
 public record ClientHttpRedirect(String redirectUrl) implements HttpResponse {
+
+    private static boolean isSafeToRedirectTo(@NonNull String url) {
+        if (Util.isSafeToRedirectTo(url)) {
+            return true;
+        }
+
+        String urlLower = url.toLowerCase(Locale.ENGLISH);
+        return urlLower.startsWith("http://") || urlLower.startsWith("https://");
+    }
+
     @Override
     public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object o) throws IOException, ServletException {
+        if (!isSafeToRedirectTo(redirectUrl)) {
+            throw hudson.util.HttpResponses.error(403,
+                "Unsafe redirect blocked: Jenkins only allows redirects to HTTP/HTTPS URLs or relative paths. "
+                    + "Blocked URL: " + Util.escape(redirectUrl));
+        }
+
         rsp.setContentType("text/html;charset=UTF-8");
         Util.printRedirect(req.getContextPath(), redirectUrl, redirectUrl, rsp.getWriter());
     }
