@@ -195,7 +195,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      */
     @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
     public void encodeTo(Writer out) throws IOException {
-        out.write(encodeToBytes().toString());
+        out.write(encodeToBytes().toString(StandardCharsets.UTF_8));
     }
 
     private ByteArrayOutputStream encodeToBytes() throws IOException {
@@ -226,7 +226,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      */
     @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
     public String encode() throws IOException {
-        return encodeToBytes().toString();
+        return encodeToBytes().toString(StandardCharsets.UTF_8);
     }
 
     /**
