@@ -27,11 +27,15 @@ THE SOFTWARE.
   <l:settings-subpage managementLink="${it.managementLink}">
     <p class="jenkins-!-margin-top-0">${%blurb.1}</p>
     <p>${%blurb.2}</p>
-    
+
+    <j:set var="allData" value="${it.data}"/>
+    <j:set var="totalCount" value="${allData.size()}"/>
+    <j:set var="maxDisplay" value="${1000}"/>
+
     <!-- First set a flag to check if we'll have any valid data -->
     <j:set var="hasValidData" value="false"/>
     <j:set var="hasExtra" value="false"/>
-    <j:forEach var="item" items="${it.data.entrySet()}">
+    <j:forEach var="item" items="${allData.entrySet()}">
       <j:if test="${item.value!=''}">
         <j:set var="hasValidData" value="true"/>
       </j:if>
@@ -45,6 +49,11 @@ THE SOFTWARE.
         <l:notice title="${%No old data}" icon="symbol-trash-bin"/>
       </j:when>
       <j:otherwise>
+        <j:if test="${totalCount > maxDisplay}">
+          <div class="jenkins-!-warning-color">
+            ${%tooManyEntries(maxDisplay, totalCount)}
+          </div>
+        </j:if>
         <j:if test="${hasValidData}">
           <table class="jenkins-table sortable">
             <thead>
@@ -56,8 +65,9 @@ THE SOFTWARE.
               </tr>
             </thead>
             <tbody>
-              <j:forEach var="item" items="${it.data.entrySet()}">
-                <j:if test="${item.value!=''}">
+              <j:set var="count" value="${0}"/>
+              <j:forEach var="item" items="${allData.entrySet()}">
+                <j:if test="${item.value!='' and count &lt; maxDisplay}">
                   <j:set var="obj" value="${item.key}"/>
                   <tr>
                     <td>${obj.class.name}</td>
@@ -74,6 +84,7 @@ THE SOFTWARE.
                     </td>
                     <td style="white-space:normal">${item.value.extra}</td>
                   </tr>
+                  <j:set var="count" value="${count + 1}"/>
                 </j:if>
               </j:forEach>
             </tbody>
@@ -112,14 +123,16 @@ THE SOFTWARE.
           </tr>
         </thead>
         <tbody>
-          <j:forEach var="item" items="${it.data.entrySet()}">
-            <j:if test="${item.value.extra!=null and item.value==''}">
+          <j:set var="count" value="${0}"/>
+          <j:forEach var="item" items="${allData.entrySet()}">
+            <j:if test="${item.value.extra!=null and item.value=='' and count &lt; maxDisplay}">
               <j:set var="obj" value="${item.key}"/>
               <tr>
                 <td>${obj.class.name}</td>
                 <td>${obj.fullName?:obj.fullDisplayName?:obj.displayName?:obj.name}</td>
                 <td style="white-space:normal">${item.value.extra}</td>
               </tr>
+              <j:set var="count" value="${count + 1}"/>
             </j:if>
           </j:forEach>
         </tbody>
