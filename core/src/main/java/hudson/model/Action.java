@@ -26,6 +26,10 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Functions;
+import jenkins.model.menu.Group;
+import jenkins.model.menu.Semantic;
+import jenkins.model.menu.event.Event;
+import jenkins.model.menu.event.LinkEvent;
 
 /**
  * Object that contributes additional information, behaviors, and UIs to {@link ModelObject}
@@ -139,4 +143,42 @@ public interface Action extends ModelObject {
      * @see Functions#getActionUrl(String, Action)
      */
     @CheckForNull String getUrlName();
+
+    /**
+     * Returns the group that this item belongs to.
+     * The default implementation places the item in the menu group.
+     *
+     * @return the group of this item
+     */
+    default Group getGroup() {
+        return Group.IN_MENU;
+    }
+
+    /**
+     * Returns the event associated with this item.
+     * By default, this creates a link event pointing to the item's URL name.
+     *
+     * @return the event representing this item
+     */
+    default Event getEvent() {
+        return LinkEvent.of(getUrlName());
+    }
+
+    /**
+     * Returns the semantic information for this item.
+     *
+     * @return the semantic associated with this item, or {@code null} if none
+     */
+    default Semantic getSemantic() {
+        return null;
+    }
+
+    /**
+     * Indicates whether this item should be visible in a context menu for an {@link Actionable}.
+     *
+     * @return {@code true} if the item is shown in the context menu, {@code false} otherwise
+     */
+    default boolean isVisibleInContextMenu() {
+        return true;
+    }
 }

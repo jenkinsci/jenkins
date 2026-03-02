@@ -1,5 +1,7 @@
 import { createElementFromHtml } from "@/util/dom";
 import { xmlEscape } from "@/util/security";
+import behaviorShim from "@/util/behavior-shim";
+import Utils from "./utils";
 
 const hideOnPopperBlur = {
   name: "hideOnPopperBlur",
@@ -60,59 +62,234 @@ function dropdown() {
   };
 }
 
-function menuItem(options) {
+function kebabToCamelCase(str) {
+  return str.replace(/-([a-z])/g, function (match, char) {
+    return char.toUpperCase();
+  });
+}
+
+function loadScriptIfNotLoaded(url, item) {
+  // Check if the script element with the given URL already exists
+  const existingScript = document.querySelector(`script[src="${url}"]`);
+
+  if (!existingScript) {
+    const script = document.createElement("script");
+    script.src = url;
+
+    script.addEventListener("load", () => {
+      behaviorShim.applySubtree(item, true);
+    });
+
+    document.body.appendChild(script);
+  }
+}
+
+function optionalVal(key, val) {
+  if (!val) {
+    return "";
+  }
+
+  return `${key}="${xmlEscape(val)}"`;
+}
+
+function optionalVals(keyVals) {
+  return Object.keys(keyVals)
+    .map((key) => optionalVal(key, keyVals[key]))
+    .join(" ");
+}
+
+function icon(opt) {
+  if (!opt.icon) {
+    return "";
+  }
+
+  return `<div class="jenkins-dropdown__item__icon">${
+    opt.iconXml
+      ? opt.iconXml
+      : `<img alt="Icon" aria-hidden="true" src="${opt.icon}" />`
+  }</div>`;
+}
+
+function badge(opt) {
+  if (!opt.badge) {
+    return "";
+  }
+
+  let badgeText = xmlEscape(opt.badge.text);
+  let badgeTooltip = xmlEscape(opt.badge.tooltip);
+  let badgeSeverity = xmlEscape(opt.badge.severity);
+
+  return `<span class="jenkins-dropdown__item__badge jenkins-badge jenkins-!-${badgeSeverity}-color" tooltip="${badgeTooltip}">${badgeText}</span>`;
+}
+
+/**
+ * Generates the contents for the dropdown
+ * @param {DropdownItem}  dropdownItem
+ * @param {'jenkins-dropdown__item' | 'jenkins-button'}  type
+ * @param {string}  context
+ * @return {Element}
+ */
+function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
+  /**
+   * @type {DropdownItem}
+   */
   const itemOptions = Object.assign(
     {
       type: "link",
     },
-    options,
+    dropdownItem,
   );
 
-  const label = xmlEscape(itemOptions.label);
-  let badgeText;
-  let badgeTooltip;
-  let badgeSeverity;
-  if (itemOptions.badge) {
-    badgeText = xmlEscape(itemOptions.badge.text);
-    badgeTooltip = xmlEscape(itemOptions.badge.tooltip);
-    badgeSeverity = xmlEscape(itemOptions.badge.severity);
+  const label = xmlEscape(itemOptions.displayName);
+
+  let clazz =
+    type +
+    " " +
+    itemOptions.clazz +
+    (itemOptions.semantic
+      ? " jenkins-!-" + itemOptions.semantic.toLowerCase() + "-color"
+      : "");
+
+  // If submenu
+  if (itemOptions.event && itemOptions.event.event) {
+    const wrapper = createElementFromHtml(
+      `<div class="jenkins-split-button"></div>`,
+    );
+    wrapper.appendChild(
+      menuItem(
+        Object.assign({}, dropdownItem, { event: dropdownItem.event.event }),
+        "jenkins-button",
+        context,
+      ),
+    );
+
+    const button = createElementFromHtml(
+      `<button class="${clazz}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M112 184l144 144 144-144"/></svg></button>`,
+    );
+    Utils.generateDropdown(
+      button,
+      (instance) => {
+        instance.setContent(
+          Utils.generateDropdownItems(dropdownItem.subMenu.items),
+        );
+        instance.loaded = true;
+      },
+      false,
+      {
+        appendTo: "parent",
+      },
+    );
+    wrapper.appendChild(button);
+
+    return wrapper;
   }
-  const tag = itemOptions.type === "link" ? "a" : "button";
+
+  const tag =
+    itemOptions.event && itemOptions.event.type === "GET" ? "a" : "button";
+  const url = tag === "a" ? context + xmlEscape(itemOptions.event.url) : null;
 
   const item = createElementFromHtml(`
-      <${tag} class="jenkins-dropdown__item ${itemOptions.clazz ? xmlEscape(itemOptions.clazz) : ""}"
-        ${itemOptions.url ? `href="${xmlEscape(itemOptions.url)}"` : ""} ${itemOptions.id ? `id="${xmlEscape(itemOptions.id)}"` : ""}
-        ${itemOptions.tooltip ? `data-html-tooltip="${xmlEscape(itemOptions.tooltip)}"` : ""}>
-          ${
-            itemOptions.icon
-              ? `<div class="jenkins-dropdown__item__icon">${
-                  itemOptions.iconXml
-                    ? itemOptions.iconXml
-                    : `<img alt="${label}" src="${itemOptions.icon}" />`
-                }</div>`
-              : ``
-          }
+      <${tag}
+        ${optionalVals({
+          class: clazz,
+          href: url,
+          id: itemOptions.id,
+          "data-html-tooltip": itemOptions.tooltip,
+        })}>
+          ${icon(itemOptions)}
           ${label}
-                    ${
-                      itemOptions.badge != null
-                        ? `<span class="jenkins-dropdown__item__badge jenkins-badge jenkins-!-${badgeSeverity}-color" tooltip="${badgeTooltip}">${badgeText}</span>`
-                        : ``
-                    }
+          ${badge(itemOptions)}
           ${
-            itemOptions.subMenu != null
+            itemOptions.event &&
+            itemOptions.event.actions &&
+            type === "jenkins-dropdown__item"
               ? `<span class="jenkins-dropdown__item__chevron"></span>`
               : ``
           }
       </${tag}>
     `);
 
-  if (options.onClick) {
-    item.addEventListener("click", (event) => options.onClick(event));
-  }
-  if (options.onKeyPress) {
-    item.onkeypress = options.onKeyPress;
-  }
+  // Handle special cases
+  tryOnClickEvent(item, dropdownItem);
+  tryLoadScripts(item, dropdownItem, context);
+  tryPost(item, dropdownItem, context);
+  tryConfirmationPost(item, dropdownItem, context);
+
   return item;
+}
+
+/**
+ * If the menu item has a custom onClick event, add it to the element
+ */
+function tryOnClickEvent(element, opt) {
+  if (!opt.onClick) {
+    return;
+  }
+
+  element.addEventListener("click", opt.onClick);
+}
+
+/**
+ * If scripts have been provided with the menu item, load them
+ */
+function tryLoadScripts(element, opt, context) {
+  if (!opt.event || !opt.event.attributes || !opt.event.javascriptUrl) {
+    return;
+  }
+
+  for (const key in opt.event.attributes) {
+    element.dataset[kebabToCamelCase(key)] =
+      opt.event.attributes[key].toString();
+  }
+  element.dataset["baseUrl"] = context;
+
+  loadScriptIfNotLoaded(opt.event.javascriptUrl, element);
+}
+
+/**
+ * If the menu item requires a POST, add a confirmation dialog and submit the form
+ */
+function tryConfirmationPost(element, opt, context) {
+  if (!opt.event || !opt.event.postTo) {
+    return;
+  }
+
+  element.addEventListener("click", () => {
+    dialog
+      .confirm(opt.event.title, {
+        message: opt.event.description,
+        type: opt.semantic.toLowerCase() ?? "default",
+      })
+      .then(
+        () => {
+          const form = document.createElement("form");
+          form.setAttribute("method", "POST");
+          form.setAttribute("action", context + xmlEscape(opt.event.postTo));
+          crumb.appendToForm(form);
+          document.body.appendChild(form);
+          form.submit();
+        },
+        () => {},
+      );
+  });
+}
+
+/**
+ * If the menu item requires a POST, do a POST rather than a GET
+ */
+function tryPost(element, opt, context) {
+  if (!opt.event || !opt.event.url || opt.event.type !== "POST") {
+    return;
+  }
+
+  element.addEventListener("click", () => {
+    const form = document.createElement("form");
+    form.setAttribute("method", "POST");
+    form.setAttribute("action", context + xmlEscape(opt.event.url));
+    crumb.appendToForm(form);
+    document.body.appendChild(form);
+    form.submit();
+  });
 }
 
 function heading(label) {

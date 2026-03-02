@@ -172,6 +172,7 @@ import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DetailGroup;
 import jenkins.telemetry.impl.PasswordMasking;
 import jenkins.util.SystemProperties;
+import net.sf.json.JSONObject;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -2658,6 +2659,21 @@ public class Functions {
     @Restricted(NoExternalUse.class)
     public static String generateItemId() {
         return String.valueOf(Math.floor(Math.random() * 3000));
+    }
+
+    /**
+     * Converts the given actions to a JSON object
+     */
+    @Restricted(NoExternalUse.class)
+    public static String convertActionsToJson(String baseUrl, List<Action> actions) {
+        ModelObjectWithContextMenu.ContextMenu contextMenu = new ModelObjectWithContextMenu.ContextMenu();
+        contextMenu.addAll(actions
+                .stream()
+                .filter(action -> action.getIconFileName() != null)
+                .toList());
+        JSONObject jsonObject = JSONObject.fromObject(contextMenu);
+        jsonObject.put("url", Util.ensureEndsWith(baseUrl, "/"));
+        return jsonObject.toString();
     }
 
     /**

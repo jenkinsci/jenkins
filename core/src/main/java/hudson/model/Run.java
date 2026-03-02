@@ -125,6 +125,7 @@ import jenkins.model.details.CauseDetail;
 import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DurationDetail;
+import jenkins.model.details.KeptForeverDetail;
 import jenkins.model.details.TimestampDetail;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
@@ -2684,7 +2685,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         @NonNull @Override public List<? extends Detail> createFor(@NonNull Run target) {
-            return List.of(new CauseDetail(target), new TimestampDetail(target), new DurationDetail(target));
+            return List.of(new CauseDetail(target), new TimestampDetail(target), new DurationDetail(target), new KeptForeverDetail(target));
         }
     }
 

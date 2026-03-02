@@ -100,11 +100,13 @@ function generateDropdowns() {
           .then((json) =>
             instance.setContent(
               Utils.generateDropdownItems(
-                mapChildrenItemsToDropdownItems(json.items),
+                Utils.mapChildrenItemsToDropdownItems(json.items),
+                false,
+                href,
               ),
             ),
           )
-          .catch((error) => console.log(`Jumplist request failed: ${error}`))
+          .catch((error) => console.error(`Jumplist request failed:`, error))
           .finally(() => (instance.loaded = true));
       }),
   );
@@ -182,7 +184,7 @@ function createDropdownContent(element, hasModelLink, hasChildrenLink, href) {
         instance.setContent(container);
       })
       .catch((error) => {
-        console.log(`Dropdown fetch failed: ${error}`);
+        console.log(`Dropdown fetch failed`, error);
       })
       .finally(() => {
         instance.loaded = true;
@@ -211,7 +213,7 @@ function mapChildrenItemsToDropdownItems(items) {
     return {
       icon: item.icon,
       iconXml: item.iconXml,
-      label: item.displayName,
+      displayName: item.displayName,
       url: item.url,
       type: item.post || item.requiresConfirmation ? "button" : "link",
       badge: item.badge,
