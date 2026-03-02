@@ -47,5 +47,7 @@ THE SOFTWARE.
 
     <j:set var="it" value="${it.object}" />
     <st:include page="console-log.jelly" />
+
+    <l:backToTop />
   </l:run-subpage>
 </j:jelly>

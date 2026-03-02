@@ -1,0 +1,9 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:documentation>
+    Adds a "back to top" floating button that appears when the user scrolls down.
+  </st:documentation>
+  <button class="jenkins-back-to-top jenkins-button" aria-label="${%Back to top}">
+    <l:icon src="symbol-chevron-up" />
+  </button>
+</j:jelly>
