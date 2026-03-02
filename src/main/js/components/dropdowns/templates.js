@@ -80,7 +80,7 @@ function menuItem(options) {
   const tag = itemOptions.type === "link" ? "a" : "button";
 
   const item = createElementFromHtml(`
-      <${tag} class="jenkins-dropdown__item ${itemOptions.clazz ? xmlEscape(itemOptions.clazz) : ""}"
+      <${tag} role="menuitem" class="jenkins-dropdown__item ${itemOptions.clazz ? xmlEscape(itemOptions.clazz) : ""}"
         ${itemOptions.url ? `href="${xmlEscape(itemOptions.url)}"` : ""} ${itemOptions.id ? `id="${xmlEscape(itemOptions.id)}"` : ""}
         ${itemOptions.tooltip ? `data-html-tooltip="${xmlEscape(itemOptions.tooltip)}"` : ""}>
           ${
