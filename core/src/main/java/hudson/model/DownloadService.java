@@ -128,6 +128,13 @@ public class DownloadService {
             } else {
                 throw new IOException("Could not find JSON in " + src);
             }
+        } catch (IOException ioe) {
+            // Include basename of exception and original message text
+            // in the new message so that the person reading the
+            // message understands the exception type and the text
+            // provided by the original exception.
+            String ioeMessage = ioe.getClass().getSimpleName() + ": " + ioe.getMessage();
+            throw new IOException("Could not load JSON from " + src + " due to " + ioeMessage);
         }
     }
 
@@ -154,6 +161,13 @@ public class DownloadService {
             } else {
                 throw new IOException("Could not find JSON in " + src);
             }
+        } catch (IOException ioe) {
+            // Include basename of exception and original message text
+            // in the new message so that the person reading the
+            // message understands the exception type and the text
+            // provided by the original exception.
+            String ioeMessage = ioe.getClass().getSimpleName() + ": " + ioe.getMessage();
+            throw new IOException("Could not load JSON as HTML from " + src + " due to " + ioeMessage);
         }
     }
 
