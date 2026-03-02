@@ -33,6 +33,7 @@ import hudson.triggers.TimerTrigger;
 import java.io.IOException;
 import java.util.Set;
 import jenkins.model.Jenkins;
+import jenkins.user.AdministrativeMonitorsProperty;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
@@ -123,9 +124,33 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     }
 
     /**
-     * Mark this monitor as disabled, to prevent this from showing up in the UI.
+     * Mark this monitor as disabled for the user, to prevent this from showing up in the UI.
+     *
+     * <p>
+     * This is a per-user setting if security is enabled. Use {@link #disableGlobally(boolean)}
+     * to disable the monitor for all users.
+     * </p>
      */
     public void disable(boolean value) throws IOException {
+        User user = User.current();
+
+        if (user != null) {
+            AdministrativeMonitorsProperty property = AdministrativeMonitorsProperty.get(user);
+            property.disableMonitor(id, value);
+        } else {
+            disableGlobally(value);
+        }
+    }
+
+    /**
+     * Mark this monitor as disabled globally, to prevent this from showing up in the UI for all users.
+     *
+     * <p>
+     * This is a global setting. A monitor that is disabled globally will not show up in the UI for any user,
+     * regardless of their per-user setting.
+     * </p>
+     */
+    public void disableGlobally(boolean value) throws IOException {
         AbstractCIBase jenkins = Jenkins.get();
         Set<String> set = jenkins.getDisabledAdministrativeMonitors();
         if (value) {
@@ -141,10 +166,31 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * Returns true if this monitor {@link #disable(boolean) isn't disabled} earlier.
      *
      * <p>
-     * This flag implements the ability for the admin to say "no thank you" to the monitor that
+     * This flag implements the ability for the admin to say "no, thank you" to the monitor that
      * he wants to ignore.
+     * </p>
+     * @return true if this monitor is enabled, false if disabled globally or by the user.
      */
     public boolean isEnabled() {
+        User user = User.current();
+        boolean enabledGlobally = isEnabledGlobally();
+        if (user != null) {
+            AdministrativeMonitorsProperty property = AdministrativeMonitorsProperty.get(user);
+            return property.isMonitorEnabled(id) && enabledGlobally;
+        }
+        return enabledGlobally;
+    }
+
+    /**
+     * Returns true if this monitor is enabled globally, regardless of per-user settings.
+     *
+     * <p>
+     *     Monitors that want to avoid execution should use this check.
+     * </p>
+     *
+     * @return true if enabled globally, false otherwise.
+     */
+    public boolean isEnabledGlobally() {
         return !Jenkins.get().getDisabledAdministrativeMonitors().contains(id);
     }
 
@@ -179,7 +225,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      */
     @RequirePOST
     public void doDisable(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        checkRequiredPermission();
         disable(true);
         rsp.sendRedirect2(req.getContextPath() + "/manage");
     }
