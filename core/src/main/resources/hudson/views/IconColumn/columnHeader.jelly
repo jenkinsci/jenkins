@@ -23,18 +23,6 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <td class="jenkins-table__cell--tight jenkins-table__icon" data="${job.iconColor.ordinal()}">
-    <div class="jenkins-table__cell__button-wrapper">
-      <j:choose>
-        <j:when test="${job.iconColor.iconName != null}">
-          <l:icon src="symbol-status-${job.iconColor.iconName}" tooltip="${job.iconColor.description}" />
-        </j:when>
-        <j:otherwise>
-          <!-- empty icon -->
-          <l:icon src="symbol-empty" />
-        </j:otherwise>
-      </j:choose>
-    </div>
-  </td>
+<j:jelly xmlns:j="jelly:core">
+    <th class="jenkins-table__cell--tight" tooltip="${%Icon}">${%I}</th>
 </j:jelly>
