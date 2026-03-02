@@ -418,7 +418,10 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     public boolean contains(Node node) {
-        return getNodes().contains(node);
+        // Use matches(node) so we do not rely on the cached getNodes() set, which can be
+        // stale for label expressions (e.g. x86_64&&medium) when nodes are added or labels
+        // change after the cache was first populated.
+        return node != null && matches(node);
     }
 
     /**
