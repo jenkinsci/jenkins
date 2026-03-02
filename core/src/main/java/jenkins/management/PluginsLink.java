@@ -82,4 +82,9 @@ public class PluginsLink extends ManagementLink {
         final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
         return updateCenter.getBadge();
     }
+
+    @Override
+    public @NonNull String getSearchKeywords() {
+        return "update site update center";
+    }
 }
