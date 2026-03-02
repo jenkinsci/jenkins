@@ -228,7 +228,10 @@ body:has(.app-settings-container) {
   &::before {
     content: "";
     position: absolute;
-    inset: -1000px calc(var(--section-padding) * -1) 0;
+
+    // Only extend upward by section-padding to cover the gap, not beyond
+    // This prevents hiding shutdown banners and system messages above the main panel
+    inset: calc(var(--section-padding) * -1) calc(var(--section-padding) * -1) 0;
     background-color: var(--background);
     border-bottom: var(--jenkins-border-width) solid var(--card-border-color);
     z-index: -1;
