@@ -683,10 +683,10 @@ class ViewTest {
     public void prepareSec1923() {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         MockAuthorizationStrategy mas = new MockAuthorizationStrategy();
-        mas.grant(View.CREATE, View.READ, Jenkins.READ)
+        mas.grant(View.CREATE, View.EXTENDED_READ, Jenkins.READ)
                 .everywhere()
                 .to(CREATE_VIEW);
-        mas.grant(View.CONFIGURE, View.READ, Jenkins.READ)
+        mas.grant(View.CONFIGURE, View.EXTENDED_READ, Jenkins.READ)
                 .everywhere()
                 .to(CONFIGURATOR);
         j.jenkins.setAuthorizationStrategy(mas);
