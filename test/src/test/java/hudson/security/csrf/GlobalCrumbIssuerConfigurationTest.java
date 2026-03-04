@@ -33,8 +33,7 @@ class GlobalCrumbIssuerConfigurationTest {
 
         // With multiple CrumbIssuer descriptors available (from test extensions),
         // the CSRF Protection section should always be shown
-        assertThat("CSRF Protection section should be shown when multiple issuers are available",
-                   pageContent, containsString("CSRF Protection"));
+        assertThat(pageContent, containsString("Crumb Issuer"));
     }
 
     @Test
@@ -47,14 +46,13 @@ class GlobalCrumbIssuerConfigurationTest {
             HtmlPage page = wc.goTo("configureSecurity");
             String pageContent = page.asNormalizedText();
 
-            assertThat("CSRF section should be shown when CSRF protection is disabled",
-                       pageContent, containsString("CSRF Protection"));
+            assertThat(pageContent, containsString("This configuration is unavailable because the System property"));
         } finally {
             GlobalCrumbIssuerConfiguration.DISABLE_CSRF_PROTECTION = original;
         }
     }
 
-    @TestExtension
+    @TestExtension("csrfSectionShownWhenNonDefaultIssuerConfigured")
     public static class DummyCrumbIssuer extends CrumbIssuer {
 
         @Override
