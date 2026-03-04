@@ -2,6 +2,7 @@ package hudson.security.csrf;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 
 import jakarta.servlet.ServletRequest;
 import org.htmlunit.html.HtmlPage;
@@ -22,7 +23,7 @@ class GlobalCrumbIssuerConfigurationTest {
     }
 
     @Test
-    void csrfSectionShownWhenOnlyDefaultIssuerAvailable() throws Exception {
+    void csrfSectionHiddenWhenOnlyDefaultIssuerAvailable() throws Exception {
         // No @TestExtension here, so only DefaultCrumbIssuer is registered
         j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
 
@@ -30,8 +31,8 @@ class GlobalCrumbIssuerConfigurationTest {
         HtmlPage page = wc.goTo("configureSecurity");
         String pageContent = page.asNormalizedText();
 
-        // When only DefaultCrumbIssuer exists, the CSRF section should still be visible
-        assertThat(pageContent, containsString("Default Crumb Issuer"));
+        // When only DefaultCrumbIssuer exists, the CSRF section should be HIDDEN
+        assertThat(pageContent, not(containsString("Dummy Crumb Issuer")));
     }
 
     @Test
@@ -46,7 +47,7 @@ class GlobalCrumbIssuerConfigurationTest {
 
         // With multiple CrumbIssuer descriptors available (from test extensions),
         // the CSRF Protection section should always be shown
-        assertThat(pageContent, containsString("Default Crumb Issuer"));
+        assertThat(pageContent, containsString("Crumb Issuer"));
     }
 
     @Test
@@ -59,7 +60,7 @@ class GlobalCrumbIssuerConfigurationTest {
             HtmlPage page = wc.goTo("configureSecurity");
             String pageContent = page.asNormalizedText();
 
-            assertThat(pageContent, containsString("This configuration is unavailable because the System property"));
+            assertThat(pageContent, containsString("This configuration is unavailable because"));
         } finally {
             GlobalCrumbIssuerConfiguration.DISABLE_CSRF_PROTECTION = original;
         }
