@@ -22,6 +22,19 @@ class GlobalCrumbIssuerConfigurationTest {
     }
 
     @Test
+    void csrfSectionShownWhenOnlyDefaultIssuerAvailable() throws Exception {
+        // No @TestExtension here, so only DefaultCrumbIssuer is registered
+        j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage page = wc.goTo("configureSecurity");
+        String pageContent = page.asNormalizedText();
+
+        // When only DefaultCrumbIssuer exists, the CSRF section should still be visible
+        assertThat(pageContent, containsString("Default Crumb Issuer"));
+    }
+
+    @Test
     void csrfSectionShownWhenNonDefaultIssuerConfigured() throws Exception {
         // DefaultCrumbIssuer is default, but other CrumbIssuer descriptors exist in test environment
         // so the CSRF section should be visible
@@ -33,7 +46,7 @@ class GlobalCrumbIssuerConfigurationTest {
 
         // With multiple CrumbIssuer descriptors available (from test extensions),
         // the CSRF Protection section should always be shown
-        assertThat(pageContent, containsString("Crumb Issuer"));
+        assertThat(pageContent, containsString("Default Crumb Issuer"));
     }
 
     @Test
