@@ -1,5 +1,8 @@
 package jenkins.util;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import org.junit.jupiter.api.Test;
@@ -13,6 +16,11 @@ import org.mockito.Mockito;
  * Tests for {@link ClientHttpRedirect} URL validation.
  */
 class ClientHttpRedirectTest {
+
+    @Test
+    void testNullRedirectUrlBlockedAtConstruction() {
+        assertThrows(NullPointerException.class, () -> new ClientHttpRedirect(null));
+    }
 
     /**
      * Test that HTTP URLs pass validation and generate response.
@@ -39,7 +47,7 @@ class ClientHttpRedirectTest {
 
         writer.flush();
         String output = baos.toString();
-        assert output.length() > 0;
+        assertTrue(output.length() > 0);
     }
 
     /**
@@ -67,7 +75,7 @@ class ClientHttpRedirectTest {
 
         writer.flush();
         String output = baos.toString();
-        assert output.length() > 0;
+        assertTrue(output.length() > 0);
     }
 
     /**
@@ -79,12 +87,8 @@ class ClientHttpRedirectTest {
         StaplerRequest2 req = Mockito.mock(StaplerRequest2.class);
         StaplerResponse2 rsp = Mockito.mock(StaplerResponse2.class);
 
-        try {
-            redirect.generateResponse(req, rsp, null);
-            throw new AssertionError("Should have thrown an exception");
-        } catch (Exception e) {
-            assert e.getMessage().contains("Unsafe redirect blocked");
-        }
+        Exception exception = assertThrows(Exception.class, () -> redirect.generateResponse(req, rsp, null));
+        assertTrue(exception.getMessage().contains("Unsafe redirect blocked"));
     }
 
     /**
@@ -96,12 +100,8 @@ class ClientHttpRedirectTest {
         StaplerRequest2 req = Mockito.mock(StaplerRequest2.class);
         StaplerResponse2 rsp = Mockito.mock(StaplerResponse2.class);
 
-        try {
-            redirect.generateResponse(req, rsp, null);
-            throw new AssertionError("Should have thrown an exception");
-        } catch (Exception e) {
-            assert e.getMessage().contains("Unsafe redirect blocked");
-        }
+        Exception exception = assertThrows(Exception.class, () -> redirect.generateResponse(req, rsp, null));
+        assertTrue(exception.getMessage().contains("Unsafe redirect blocked"));
     }
 
     /**
@@ -113,12 +113,8 @@ class ClientHttpRedirectTest {
         StaplerRequest2 req = Mockito.mock(StaplerRequest2.class);
         StaplerResponse2 rsp = Mockito.mock(StaplerResponse2.class);
 
-        try {
-            redirect.generateResponse(req, rsp, null);
-            throw new AssertionError("Should have thrown an exception");
-        } catch (Exception e) {
-            assert e.getMessage().contains("Unsafe redirect blocked");
-        }
+        Exception exception = assertThrows(Exception.class, () -> redirect.generateResponse(req, rsp, null));
+        assertTrue(exception.getMessage().contains("Unsafe redirect blocked"));
     }
 
     /**
@@ -135,12 +131,8 @@ class ClientHttpRedirectTest {
         StaplerRequest2 req = Mockito.mock(StaplerRequest2.class);
         StaplerResponse2 rsp = Mockito.mock(StaplerResponse2.class);
 
-        try {
-            redirect.generateResponse(req, rsp, null);
-            throw new AssertionError("Should have thrown an exception");
-        } catch (Exception e) {
-            assert e.getMessage().contains("Unsafe redirect blocked");
-        }
+        Exception exception = assertThrows(Exception.class, () -> redirect.generateResponse(req, rsp, null));
+        assertTrue(exception.getMessage().contains("Unsafe redirect blocked"));
     }
 
     /**
@@ -167,6 +159,6 @@ class ClientHttpRedirectTest {
 
         writer.flush();
         String output = baos.toString();
-        assert output.length() > 0;
+        assertTrue(output.length() > 0);
     }
 }

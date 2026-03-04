@@ -29,6 +29,7 @@ import hudson.Util;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Objects;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
@@ -46,7 +47,11 @@ import org.kohsuke.stapler.StaplerResponse2;
  * @see <a href="https://github.com/w3c/webappsec-csp/issues/8">Content Security Policy issue discussing this behavior</a>
  * @since 2.550
  */
-public record ClientHttpRedirect(String redirectUrl) implements HttpResponse {
+public record ClientHttpRedirect(@NonNull String redirectUrl) implements HttpResponse {
+
+    public ClientHttpRedirect {
+        Objects.requireNonNull(redirectUrl);
+    }
 
     private static boolean isSafeToRedirectTo(@NonNull String url) {
         if (Util.isSafeToRedirectTo(url)) {
@@ -66,6 +71,6 @@ public record ClientHttpRedirect(String redirectUrl) implements HttpResponse {
         }
 
         rsp.setContentType("text/html;charset=UTF-8");
-        Util.printRedirect(req.getContextPath(), redirectUrl, redirectUrl, rsp.getWriter());
+        Util.printRedirect(req.getContextPath(), redirectUrl, Util.escape(redirectUrl), rsp.getWriter());
     }
 }
