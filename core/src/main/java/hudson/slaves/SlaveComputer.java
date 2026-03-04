@@ -125,6 +125,18 @@ public class SlaveComputer extends Computer {
     private ComputerLauncher launcher;
 
     /**
+     * Lock used to synchronize the execution of {@link ComputerLauncher#afterDisconnect(SlaveComputer, TaskListener)}.
+     * This ensures the disconnect logic is only executed once per connection cycle, and that
+     * concurrent attempts to disconnect block until the first execution completes.
+     * Blocking is critical to prevent file-lock race conditions during teardown on Windows.
+     */
+    private final Object disconnectLock = new Object();
+    /**
+     * Guard flag protected by {@link #disconnectLock} to track if the launcher's afterDisconnect
+     * has already been called for the current channel lifecycle.
+     */
+    private boolean afterDisconnectCalled = false;
+    /**
      * Perpetually writable log file.
      */
     private final RewindableFileOutputStream log;
@@ -651,7 +663,14 @@ public class SlaveComputer extends Computer {
                 }
                 closeChannel();
                 try {
-                    launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                    // Synchronize to prevent double execution (e.g., JENKINS-35272) while
+                    // forcing concurrent callers to wait for teardown to complete cleanly.
+                    synchronized (disconnectLock) {
+                        if (!afterDisconnectCalled) {
+                            afterDisconnectCalled = true;
+                            launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                        }
+                    }
                 } catch (Throwable t) {
                     LogRecord lr = new LogRecord(Level.SEVERE,
                             "Launcher {0}'s afterDisconnect method propagated an exception when {1}'s connection was closed: {2}");
@@ -742,6 +761,12 @@ public class SlaveComputer extends Computer {
             isUnix = _isUnix;
             numRetryAttempt = 0;
             this.channel = channel;
+
+            // Reset the disconnect guard for the new connection lifecycle
+            synchronized (disconnectLock) {
+                this.afterDisconnectCalled = false;
+            }
+
             this.absoluteRemoteFs = remoteFS;
             defaultCharset = Charset.forName(defaultCharsetName);
 
@@ -823,7 +848,15 @@ public class SlaveComputer extends Computer {
             // (which could be typical) won't block UI thread.
             launcher.beforeDisconnect(SlaveComputer.this, taskListener);
             closeChannel();
-            launcher.afterDisconnect(SlaveComputer.this, taskListener);
+
+            // Synchronize to prevent double execution (e.g., JENKINS-35272) while
+            // forcing concurrent callers to wait for teardown to complete cleanly.
+            synchronized (disconnectLock) {
+                if (!afterDisconnectCalled) {
+                    afterDisconnectCalled = true;
+                    launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                }
+            }
         });
     }
 
