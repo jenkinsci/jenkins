@@ -2,6 +2,16 @@ import { createElementFromHtml } from "@/util/dom";
 import { CLOSE } from "@/util/symbols";
 import behaviorShim from "@/util/behavior-shim";
 import jenkins from "@/util/jenkins";
+function _reapplyBehaviors(container) {
+  behaviorShim.applySubtree(container, true);
+
+  // Dispatch on both document and window since plugins may listen on either.
+  // The Active Choices plugin uses window.addEventListener("DOMContentLoaded")
+  // and manually created events do not bubble, so we must dispatch on window explicitly.
+  var event = new Event("DOMContentLoaded");
+  document.dispatchEvent(event);
+  window.dispatchEvent(event);
+}
 
 let _defaults = {
   title: null,
@@ -54,7 +64,7 @@ Dialog.prototype.init = function () {
       );
       content.appendChild(this.options.content);
       this.dialog.appendChild(content);
-      behaviorShim.applySubtree(content, true);
+      _reapplyBehaviors(content);
     }
     if (this.options.hideCloseButton !== true) {
       const closeButton = createElementFromHtml(`
@@ -86,7 +96,7 @@ Dialog.prototype.init = function () {
       this.form = this.options.form;
       contents.appendChild(this.options.form);
       this.dialog.appendChild(contents);
-      behaviorShim.applySubtree(contents, true);
+      _reapplyBehaviors(contents);
     }
     if (this.dialogType !== "form") {
       const message = createElementFromHtml(
@@ -95,7 +105,7 @@ Dialog.prototype.init = function () {
       if (this.options.content != null && this.dialogType === "alert") {
         message.appendChild(this.options.content);
         this.dialog.appendChild(message);
-        behaviorShim.applySubtree(message, true);
+        _reapplyBehaviors(message);
       } else if (this.options.message != null && this.dialogType !== "prompt") {
         const message = createElementFromHtml(
           `<div class='jenkins-dialog__contents'/>`,
