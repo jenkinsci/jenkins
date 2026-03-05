@@ -189,14 +189,10 @@ public class ApiTokenProperty extends UserProperty {
      */
     private boolean hasPermissionToSeeToken() {
         // Administrators can do whatever they want
-        return canCurrentUserControlObject(true, user);
+        return canCurrentUserControlObject(user);
     }
 
-    private static boolean canCurrentUserControlObject(boolean trustAdmins, User propertyOwner) {
-        if (trustAdmins && Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
-            return true;
-        }
-
+    private static boolean canCurrentUserControlObject(User propertyOwner) {
         User current = User.current();
         if (current == null) { // Anonymous
             return false;
@@ -539,7 +535,7 @@ public class ApiTokenProperty extends UserProperty {
         // for Jelly view
         @Restricted(NoExternalUse.class)
         public boolean hasCurrentUserRightToGenerateNewToken(User propertyOwner) {
-            return canCurrentUserControlObject(true, propertyOwner);
+            return canCurrentUserControlObject(propertyOwner);
         }
 
         /**
