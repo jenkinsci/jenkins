@@ -23,16 +23,12 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
-  <div id="redirect-error" class="jenkins-alert jenkins-alert-danger reverse-proxy__hidden"
-       data-url="${rootURL}/${it.url}/test" data-context="${rootURL}">
-    <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <f:submit name="yes" value="${%More Info}"/>
-      <l:isAdmin>
-        <f:submit name="no" value="${%Dismiss}"/>
-      </l:isAdmin>
-    </form>
-    <div>${%blurb}</div>
-    <div class="js-context-message reverse-proxy__hidden">${%missingContextMessage(rootURL)}</div>
-  </div>
+  <l:adminMonitor severity="danger" dismissable="true" class="reverse-proxy__hidden" id="redirect-error">
+    <div class="buttons">
+      <a href="https://www.jenkins.io/redirect/troubleshooting/broken-reverse-proxy" class="jenkins-button jenkins-button--primary">${%More Info}</a>
+    </div>
+    <div id="redirect-data" data-url="${rootURL}/${it.url}/test" data-context="${rootURL}"/>
+    <div>${%blurb} <span class="js-context-message reverse-proxy__hidden">${%missingContextMessage(rootURL)}</span></div>
+  </l:adminMonitor>
   <st:adjunct includes="hudson.diagnosis.ReverseProxySetupMonitor.resources"/>
 </j:jelly>

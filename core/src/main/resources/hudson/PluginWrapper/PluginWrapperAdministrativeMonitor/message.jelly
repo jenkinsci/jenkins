@@ -1,10 +1,10 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-  <div class="jenkins-alert jenkins-alert-danger" role="alert">
-    <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <f:submit name="correct" value="${%Correct}"/>
-    </form>
-    <p>${%blurbOriginal}</p>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout">
+  <l:adminMonitor severity="danger">
+    <div class="buttons">
+      <a href="${rootURL}/pluginManager" class="jenkins-button jenkins-button--primary">${%Correct}</a>
+    </div>
+    ${%blurbOriginal}
     <p><strong>${%DirectlyDependentPlugins.title}</strong></p>
     <j:forEach items="${it.plugins}" var="plugin">
       <j:if test="${plugin.hasOriginalDependencyErrors()}">
@@ -30,5 +30,5 @@
         </j:forEach>
       </dl>
     </j:if>
-  </div>
+  </l:adminMonitor>
 </j:jelly>

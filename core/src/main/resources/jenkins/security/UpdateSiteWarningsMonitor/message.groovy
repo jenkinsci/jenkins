@@ -64,17 +64,20 @@ def listWarnings(warnings, boolean core) {
 def coreWarnings = my.activeCoreWarnings
 def pluginWarnings = my.activePluginWarningsByPlugin
 
-div(class: "jenkins-alert jenkins-alert-danger", role: "alert") {
+l.adminMonitor(severity: "danger") {
 
-    l.isAdmin() {
-        form(method: "post", action: "${rootURL}/${my.url}/forward") {
-            if (!pluginWarnings.isEmpty()) {
-                f.submit(name: 'fix', value: _("pluginManager.link"))
+    div(class: "buttons") {
+        l.isAdmin() {
+            a(href: "${rootURL}/configureSecurity", style: "margin-left: auto; align-self: flex-start;", class: "jenkins-button jenkins-button--primary") {
+                raw _("configureSecurity.link")
             }
-            f.submit(name: 'configure', value: _("configureSecurity.link"))
+            if (!pluginWarnings.isEmpty()) {
+                a(href: "${rootURL}/pluginManager", style: "align-self: flex-start;", class: "jenkins-button jenkins-button--primary") {
+                    raw _("pluginManager.link")
+                }
+            }
         }
     }
-
     text(_("blurb"))
 
     if (!coreWarnings.isEmpty()) {

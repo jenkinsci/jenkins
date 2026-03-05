@@ -1,3 +1,110 @@
+@use "../abstracts/mixins";
+
+.app-adminmonitor {
+  display: flex;
+  gap: 1rem;
+
+  &-content {
+    width: 100%;
+
+    .buttons {
+      position: relative;
+      float: right;
+      margin: -6px 0 0 !important;
+      display: flex;
+      gap: 0.5rem;
+    }
+  }
+
+  &-dismiss-button {
+    @include mixins.item;
+
+    --item-background: color-mix(in sRGB, currentColor 7.5%, transparent);
+    --item-background--hover: color-mix(in sRGB, currentColor 15%, transparent);
+    --item-background--active: color-mix(
+      in sRGB,
+      currentColor 25%,
+      transparent
+    );
+    --item-box-shadow--focus: color-mix(
+      in sRGB,
+      currentColor 7.5%,
+      transparent
+    );
+
+    margin-left: -18px;
+    top: -10px;
+    right: -10px;
+    display: grid;
+    place-items: center;
+    place-content: center;
+    width: 30px;
+    height: 30px;
+    color: var(--red);
+    padding: 0;
+    transition: var(--standard-transition);
+    font-size: 0.65rem;
+
+    &::before,
+    &::after {
+      inset: 4px;
+      border-radius: 0.5rem;
+    }
+
+    &::before {
+      border: var(--jenkins-border--inherit-subtle);
+    }
+
+    // Center and overlap SVG and text content
+    * {
+      grid-area: container;
+    }
+
+    svg {
+      width: 0.875rem;
+      height: 0.875rem;
+      transition: var(--standard-transition);
+
+      * {
+        stroke-width: 40px;
+      }
+    }
+
+    span {
+      opacity: 0;
+      transition: var(--standard-transition);
+      filter: blur(2px);
+      scale: 0.5;
+      text-wrap: nowrap;
+    }
+
+    &:hover,
+    &:active,
+    &:focus {
+      // This value is set in Jelly - see adminMonitor.jelly
+      width: calc(var(--width) + 20px);
+
+      &::before,
+      &::after {
+        border-radius: 1rem;
+      }
+
+      svg {
+        opacity: 0;
+        filter: blur(2px);
+        scale: 0.6;
+        rotate: -90deg;
+      }
+
+      span {
+        opacity: 1;
+        filter: none;
+        scale: 1;
+      }
+    }
+  }
+}
+
 .manage-messages a:not(.jenkins-button),
 .manage-messages a:visited:not(.jenkins-button) {
   color: inherit !important;

@@ -7,15 +7,18 @@ import org.apache.commons.jelly.tags.fmt.FmtTagLibrary
 
 SlowTriggerAdminMonitor tam = my
 
-dl {
-    div(class: "jenkins-alert jenkins-alert-warning") {
-        form(method: "post", name: "clear", action: rootURL + "/" + tam.url + "/clear") {
-            button(name: "clear", type: "submit", class: "jenkins-button jenkins-submit-button jenkins-button--primary") {
-                raw _("Dismiss")
+l = namespace(lib.LayoutTagLib)
+l.adminMonitor() {
+    dl(style: "width: 100%;") {
+
+        div(style: "display: flex; justify-content: space-between; align-items: center;") {
+            text(_("blurb"))
+            form(method: "post", name: "clear", action: rootURL + "/" + tam.url + "/clear", style: "align-self: flex-start;") {
+                button(name: "clear", type: "submit", class: "jenkins-button jenkins-submit-button jenkins-button--primary") {
+                    raw _("Clear")
+                }
             }
         }
-
-        text(_("blurb"))
 
         table(class: "sortable jenkins-table jenkins-!-margin-top-2", width: "100%") {
             thead {
