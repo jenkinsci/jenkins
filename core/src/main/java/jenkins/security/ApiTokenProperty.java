@@ -60,7 +60,6 @@ import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStats;
 import jenkins.security.apitoken.ApiTokenStore;
 import jenkins.security.apitoken.TokenUuidAndPlainValue;
-import jenkins.util.SystemProperties;
 import net.jcip.annotations.Immutable;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -86,29 +85,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 public class ApiTokenProperty extends UserProperty {
     private static final Logger LOGGER = Logger.getLogger(ApiTokenProperty.class.getName());
-
-    /**
-     * If enabled, the users with {@link Jenkins#ADMINISTER} permissions can view legacy tokens for
-     * other users.<p>
-     * Disabled by default due to the security reasons.<p>
-     * If enabled, it restores the original Jenkins behavior (SECURITY-200).
-     *
-     * @since 1.638
-     */
-    private static /* not final */ boolean SHOW_LEGACY_TOKEN_TO_ADMINS =
-            SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".showTokenToAdmins");
-
-    /**
-     * If enabled, the users with {@link Jenkins#ADMINISTER} permissions can generate new tokens for
-     * other users. Normally a user can only generate tokens for himself.<p>
-     * Take care that only the creator of a token will have the plain value as it's only stored as an hash in the system.<p>
-     * Disabled by default due to the security reasons.
-     * It's the version of {@link #SHOW_LEGACY_TOKEN_TO_ADMINS} for the new API Token system (SECURITY-200).
-     *
-     * @since 2.129
-     */
-    private static /* not final */ boolean ADMIN_CAN_GENERATE_NEW_TOKENS =
-            SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".adminCanGenerateNewTokens");
 
     private volatile Secret apiToken;
     private ApiTokenStore tokenStore;
@@ -152,7 +128,7 @@ public class ApiTokenProperty extends UserProperty {
     /**
      * Gets the API token.
      * The method performs security checks since 1.638. Only the current user and SYSTEM may see it.
-     * Users with {@link Jenkins#ADMINISTER} may be allowed to do it using {@link #SHOW_LEGACY_TOKEN_TO_ADMINS}.
+     * Users with {@link Jenkins#ADMINISTER} permissions may also be allowed to see it.
      *
      * @return API Token. Never null, but may be {@link Messages#ApiTokenProperty_ChangeToken_TokenIsHidden()}
      *         if the user has no appropriate permissions.
@@ -213,7 +189,7 @@ public class ApiTokenProperty extends UserProperty {
      */
     private boolean hasPermissionToSeeToken() {
         // Administrators can do whatever they want
-        return canCurrentUserControlObject(SHOW_LEGACY_TOKEN_TO_ADMINS, user);
+        return canCurrentUserControlObject(true, user);
     }
 
     private static boolean canCurrentUserControlObject(boolean trustAdmins, User propertyOwner) {
@@ -563,7 +539,7 @@ public class ApiTokenProperty extends UserProperty {
         // for Jelly view
         @Restricted(NoExternalUse.class)
         public boolean hasCurrentUserRightToGenerateNewToken(User propertyOwner) {
-            return canCurrentUserControlObject(ADMIN_CAN_GENERATE_NEW_TOKENS, propertyOwner);
+            return canCurrentUserControlObject(true, propertyOwner);
         }
 
         /**
