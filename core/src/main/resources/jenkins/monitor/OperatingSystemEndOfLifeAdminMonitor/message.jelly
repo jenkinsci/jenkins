@@ -27,7 +27,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
     <l:adminMonitor severity="danger">
         <div class="buttons">
-            <a href="https://www.jenkins.io/redirect/operating-system-end-of-life" class="jenkins-button jenkins-button--primary" style="margin-left: auto; align-self: flex-start">${%More Info}</a>
+            <a href="https://www.jenkins.io/redirect/operating-system-end-of-life" class="jenkins-button jenkins-button--primary">${%More Info}</a>
         </div>
         <h2 class="h3">${it.displayName}</h2>
         <j:choose>

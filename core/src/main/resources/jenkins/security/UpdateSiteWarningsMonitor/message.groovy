@@ -68,14 +68,14 @@ l.adminMonitor(severity: "danger") {
 
     div(class: "buttons") {
         l.isAdmin() {
-            a(href: "${rootURL}/configureSecurity", style: "margin-left: auto; align-self: flex-start;", class: "jenkins-button jenkins-button--primary") {
+            a(href: "${rootURL}/configureSecurity", class: "jenkins-button jenkins-button--primary") {
                 raw _("configureSecurity.link")
             }
-            if (!pluginWarnings.isEmpty()) {
-                a(href: "${rootURL}/pluginManager", style: "align-self: flex-start;", class: "jenkins-button jenkins-button--primary") {
+            //if (!pluginWarnings.isEmpty()) {
+                a(href: "${rootURL}/pluginManager", class: "jenkins-button jenkins-button--primary") {
                     raw _("pluginManager.link")
                 }
-            }
+            //}
         }
     }
     text(_("blurb"))

@@ -30,7 +30,7 @@ l = namespace(lib.LayoutTagLib)
 l.adminMonitor(severity: "info") {
     div(class: "buttons") {
         l.isAdmin() {
-            a(href: "${rootURL}/configure", style: "margin-left: auto; align-self: flex-start;", class: "jenkins-button jenkins-button--primary") {
+            a(href: "${rootURL}/configure", class: "jenkins-button jenkins-button--primary") {
                 raw _("Configure resource root URL")
             }
         }
