@@ -193,6 +193,10 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     private static boolean canCurrentUserControlObject(User propertyOwner) {
+        if (Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+            return true;
+        }
+
         User current = User.current();
         if (current == null) { // Anonymous
             return false;
