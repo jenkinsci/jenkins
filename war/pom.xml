@@ -318,7 +318,7 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1396.v095840ed8491</version>
+                  <version>1402.va_87fd3d15dc3</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -366,12 +366,29 @@ THE SOFTWARE.
                 </artifactItem>
 
                 <artifactItem>
-                  <!-- dependency of junit and echarts-api -->
+                  <!-- dependency of echarts-api -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jackson2-api</artifactId>
                   <version>2.20.1-423.v13951f6b_6532</version>
                   <type>hpi</type>
                 </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of junit -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jackson3-api</artifactId>
+                  <version>3.1.0-64.v37e742c35905</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of jackson3-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>snakeyaml-engine-api</artifactId>
+                  <version>3.0.1-5.vd98ea_ff3b_92e</version>
+                  <type>hpi</type>
+                </artifactItem>
+
                 <artifactItem>
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
