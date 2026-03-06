@@ -275,20 +275,21 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
             setHeaders(rsp);
             String text;
             CrumbIssuer ci = (CrumbIssuer) bean;
-            if ("/*/crumbRequestField/text()".equals(xpath)) { // old FullDuplexHttpStream
-                text = ci.getCrumbRequestField();
-            } else if ("/*/crumb/text()".equals(xpath)) { // ditto
-                text = ci.getCrumb();
-            } else if ("concat(//crumbRequestField,\":\",//crumb)".equals(xpath)) { // new FullDuplexHttpStream; Main
-                text = ci.getCrumbRequestField() + ':' + ci.getCrumb();
-            } else if ("concat(//crumbRequestField,'=',//crumb)".equals(xpath)) { // NetBeans
-                if (ci.getCrumbRequestField().startsWith(".") || ci.getCrumbRequestField().contains("-")) {
-                    text = ci.getCrumbRequestField() + '=' + ci.getCrumb();
-                } else {
-                    text = null;
+            switch (xpath) {
+                case "/*/crumbRequestField/text()" ->                   // old FullDuplexHttpStream
+                        text = ci.getCrumbRequestField();
+                case "/*/crumb/text()" ->                               // ditto
+                        text = ci.getCrumb();
+                case "concat(//crumbRequestField,\":\",//crumb)" ->     // new FullDuplexHttpStream; Main
+                        text = ci.getCrumbRequestField() + ':' + ci.getCrumb();
+                case "concat(//crumbRequestField,'=',//crumb)" -> {     // NetBeans
+                    if (ci.getCrumbRequestField().startsWith(".") || ci.getCrumbRequestField().contains("-")) {
+                        text = ci.getCrumbRequestField() + '=' + ci.getCrumb();
+                    } else {
+                        text = null;
+                    }
                 }
-            } else {
-                text = null;
+                case null, default -> text = null;
             }
             if (text != null) {
                 try (OutputStream o = rsp.getOutputStream()) {

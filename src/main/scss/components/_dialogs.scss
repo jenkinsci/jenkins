@@ -2,6 +2,8 @@ $jenkins-dialog-padding: 1.25rem;
 
 .jenkins-dialog {
   --background: var(--dialog-background);
+  --section-padding: #{$jenkins-dialog-padding};
+  --bottom-app-bar-padding: #{$jenkins-dialog-padding};
 
   border-radius: 1rem;
   border: none;
@@ -9,11 +11,12 @@ $jenkins-dialog-padding: 1.25rem;
   box-shadow: var(--dialog-box-shadow);
   animation: jenkins-dialog-animate-in 0.25s cubic-bezier(0, 0.68, 0.5, 1.5);
   overflow: hidden;
-  padding: $jenkins-dialog-padding 0 0 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: $jenkins-dialog-padding;
-  outline: none;
+
+  // Thin highlight for dark themes to differentiate the dialog from its backdrop
+  outline: 1px solid rgb(255 255 255 / 0.05);
 
   &::backdrop {
     background: color-mix(
@@ -26,13 +29,26 @@ $jenkins-dialog-padding: 1.25rem;
   }
 
   &__title {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
     font-size: 1rem;
     font-weight: var(--font-bold-weight);
-    padding: 0 $jenkins-dialog-padding;
+    padding: $jenkins-dialog-padding;
     color: var(--text-color);
     overflow-wrap: anywhere;
     text-box: cap alphabetic;
-    margin-top: 0.5625rem;
+
+    &__button {
+      padding: 0;
+      width: 2rem;
+      min-height: 2rem;
+      border-radius: 100%;
+    }
+
+    &__close-button {
+      margin-left: auto !important;
+    }
   }
 
   &__contents {
@@ -62,7 +78,7 @@ $jenkins-dialog-padding: 1.25rem;
 
   &__buttons {
     display: flex;
-    padding: 0 $jenkins-dialog-padding $jenkins-dialog-padding;
+    padding: $jenkins-dialog-padding;
     justify-content: right;
     flex-direction: row-reverse;
     gap: 1.25rem;
@@ -80,22 +96,18 @@ $jenkins-dialog-padding: 1.25rem;
     margin: 0 0 1rem;
   }
 
-  &__close-button {
-    position: absolute;
-    top: $jenkins-dialog-padding;
-    right: $jenkins-dialog-padding;
-    padding: 0;
-    width: 2rem;
-    min-height: 2rem;
-    border-radius: 100%;
-  }
-
   &[closing] {
     animation: jenkins-dialog-animate-out 0.1s linear;
 
     &::backdrop {
       animation: jenkins-dialog-backdrop-animate-out 0.1s linear;
     }
+  }
+
+  .jenkins-bottom-app-bar__shadow {
+    margin-bottom: calc(
+      (2.375rem + calc(var(--bottom-app-bar-padding) * 2)) * -1
+    );
   }
 }
 

@@ -138,40 +138,45 @@ public class CLI {
 
         while (!args.isEmpty()) {
             String head = args.get(0);
-            if (head.equals("-version")) {
-                System.out.println("Version: " + computeVersion());
-                return 0;
-            }
-            if (head.equals("-http")) {
-                if (mode != null) {
-                    printUsage("-http clashes with previously defined mode " + mode);
+            switch (head) {
+                case "-version" -> {
+                    System.out.println("Version: " + computeVersion());
+                    return 0;
+                }
+                case "-http" -> {
+                    if (mode != null) {
+                        printUsage("-http clashes with previously defined mode " + mode);
+                        return -1;
+                    }
+                    mode = Mode.HTTP;
+                    args = args.subList(1, args.size());
+                    continue;
+                }
+                case "-ssh" -> {
+                    if (mode != null) {
+                        printUsage("-ssh clashes with previously defined mode " + mode);
+                        return -1;
+                    }
+                    mode = Mode.SSH;
+                    args = args.subList(1, args.size());
+                    continue;
+                }
+                case "-webSocket" -> {
+                    if (mode != null) {
+                        printUsage("-webSocket clashes with previously defined mode " + mode);
+                        return -1;
+                    }
+                    mode = Mode.WEB_SOCKET;
+                    args = args.subList(1, args.size());
+                    continue;
+                }
+                case "-remoting" -> {
+                    printUsage("-remoting mode is no longer supported");
                     return -1;
                 }
-                mode = Mode.HTTP;
-                args = args.subList(1, args.size());
-                continue;
-            }
-            if (head.equals("-ssh")) {
-                if (mode != null) {
-                    printUsage("-ssh clashes with previously defined mode " + mode);
-                    return -1;
+                default -> {
+                    // continue
                 }
-                mode = Mode.SSH;
-                args = args.subList(1, args.size());
-                continue;
-            }
-            if (head.equals("-webSocket")) {
-                if (mode != null) {
-                    printUsage("-webSocket clashes with previously defined mode " + mode);
-                    return -1;
-                }
-                mode = Mode.WEB_SOCKET;
-                args = args.subList(1, args.size());
-                continue;
-            }
-            if (head.equals("-remoting")) {
-                printUsage("-remoting mode is no longer supported");
-                return -1;
             }
             if (head.equals("-s") && args.size() >= 2) {
                 url = args.get(1);

@@ -185,7 +185,7 @@ class Security1166Test {
         try (JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false)) {
             HtmlPage page = wc.goTo("login");
             List<HtmlForm> forms = page.getForms();
-            HtmlForm form = forms.get(0);
+            HtmlForm form = forms.getFirst();
 
             assertEquals(1, forms.size()); // It's the only form, which doesn't have a name or an id.
 

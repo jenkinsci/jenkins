@@ -277,30 +277,38 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * */
     protected int handleException(Throwable e, CLIContext context, CmdLineParser p) {
         int exitCode;
-        if (e instanceof CmdLineException) {
-            exitCode = 2;
-            printError(e.getMessage());
-            printUsage(stderr, p);
-        } else if (e instanceof IllegalArgumentException) {
-            exitCode = 3;
-            printError(e.getMessage());
-        } else if (e instanceof IllegalStateException) {
-            exitCode = 4;
-            printError(e.getMessage());
-        } else if (e instanceof AbortException) {
-            exitCode = 5;
-            printError(e.getMessage());
-        } else if (e instanceof AccessDeniedException) {
-            exitCode = 6;
-            printError(e.getMessage());
-        } else if (e instanceof BadCredentialsException) {
-            exitCode = 7;
-            printError(
-                    "Bad Credentials. Search the server log for " + context.getCorrelationId() + " for more details.");
-        } else {
-            exitCode = 1;
-            printError("Unexpected exception occurred while performing " + getName() + " command.");
-            Functions.printStackTrace(e, stderr);
+        switch (e) {
+            case CmdLineException cmdLineException -> {
+                exitCode = 2;
+                printError(e.getMessage());
+                printUsage(stderr, p);
+            }
+            case IllegalArgumentException illegalArgumentException -> {
+                exitCode = 3;
+                printError(e.getMessage());
+            }
+            case IllegalStateException illegalStateException -> {
+                exitCode = 4;
+                printError(e.getMessage());
+            }
+            case AbortException abortException -> {
+                exitCode = 5;
+                printError(e.getMessage());
+            }
+            case AccessDeniedException accessDeniedException -> {
+                exitCode = 6;
+                printError(e.getMessage());
+            }
+            case BadCredentialsException badCredentialsException -> {
+                exitCode = 7;
+                printError(
+                        "Bad Credentials. Search the server log for " + context.getCorrelationId() + " for more details.");
+            }
+            case null, default -> {
+                exitCode = 1;
+                printError("Unexpected exception occurred while performing " + getName() + " command.");
+                Functions.printStackTrace(e, stderr);
+            }
         }
         return exitCode;
     }

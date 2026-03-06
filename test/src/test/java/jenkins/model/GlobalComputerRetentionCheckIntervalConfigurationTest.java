@@ -67,7 +67,7 @@ class GlobalComputerRetentionCheckIntervalConfigurationTest {
         c.load();
         assertEquals(60, c.getComputerRetentionCheckInterval(), "uses default");
         assertEquals(1, logging.getRecords().size(), "prints one fallback message");
-        assertEquals("computerRetentionCheckInterval must be greater than zero, falling back to 60s", logging.getRecords().get(0).getMessage(), "fallback message content");
+        assertEquals("computerRetentionCheckInterval must be greater than zero, falling back to 60s", logging.getRecords().getFirst().getMessage(), "fallback message content");
     }
 
     @Test
@@ -98,7 +98,7 @@ class GlobalComputerRetentionCheckIntervalConfigurationTest {
         c.load();
         assertEquals(60, c.getComputerRetentionCheckInterval(), "uses default");
         assertEquals(1, logging.getRecords().size(), "prints one fallback message");
-        assertEquals("computerRetentionCheckInterval is limited to 60s", logging.getRecords().get(0).getMessage(), "fallback message content");
+        assertEquals("computerRetentionCheckInterval is limited to 60s", logging.getRecords().getFirst().getMessage(), "fallback message content");
     }
 
     @Test

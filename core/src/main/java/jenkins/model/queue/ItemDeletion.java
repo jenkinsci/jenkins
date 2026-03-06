@@ -42,7 +42,6 @@ import hudson.model.queue.SubTask;
 import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -259,18 +258,11 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
                 // ItemDeletion happens-before Queue.cancel so we know that the Queue will stay clear
                 // Queue.cancel happens-before collecting the buildsInProgress list
                 // thus buildsInProgress contains the complete set we need to interrupt and wait for
-                for (Iterator<Map.Entry<Executor, Queue.Executable>> iterator =
-                     buildsInProgress.entrySet().iterator();
-                     iterator.hasNext(); ) {
-                    Map.Entry<Executor, Queue.Executable> entry = iterator.next();
-                    // comparison with executor.getCurrentExecutable() == executable currently should always be
-                    // true as we no longer recycle Executors, but safer to future-proof in case we ever
-                    // revisit recycling.
-                    if (!entry.getKey().isActive()
-                            || entry.getValue() != entry.getKey().getCurrentExecutable()) {
-                        iterator.remove();
-                    }
-                }
+                // comparison with executor.getCurrentExecutable() == executable currently should always be
+                // true as we no longer recycle Executors, but safer to future-proof in case we ever
+                // revisit recycling.
+                buildsInProgress.entrySet().removeIf(entry -> !entry.getKey().isActive()
+                        || entry.getValue() != entry.getKey().getCurrentExecutable());
                 Thread.sleep(50L);
             }
             if (!buildsInProgress.isEmpty()) {
