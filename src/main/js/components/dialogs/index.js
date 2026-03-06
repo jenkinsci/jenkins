@@ -2,16 +2,6 @@ import { createElementFromHtml } from "@/util/dom";
 import { CLOSE } from "@/util/symbols";
 import behaviorShim from "@/util/behavior-shim";
 import jenkins from "@/util/jenkins";
-function _reapplyBehaviors(container) {
-  behaviorShim.applySubtree(container, true);
-
-  // Dispatch on both document and window since plugins may listen on either.
-  // The Active Choices plugin uses window.addEventListener("DOMContentLoaded")
-  // and manually created events do not bubble, so we must dispatch on window explicitly.
-  var event = new Event("DOMContentLoaded");
-  document.dispatchEvent(event);
-  window.dispatchEvent(event);
-}
 
 let _defaults = {
   title: null,
@@ -64,7 +54,7 @@ Dialog.prototype.init = function () {
       );
       content.appendChild(this.options.content);
       this.dialog.appendChild(content);
-      _reapplyBehaviors(content);
+      behaviorShim.applySubtree(content, true);
     }
     if (this.options.hideCloseButton !== true) {
       const closeButton = createElementFromHtml(`
@@ -96,7 +86,7 @@ Dialog.prototype.init = function () {
       this.form = this.options.form;
       contents.appendChild(this.options.form);
       this.dialog.appendChild(contents);
-      _reapplyBehaviors(contents);
+      behaviorShim.applySubtree(contents, true);
     }
     if (this.dialogType !== "form") {
       const message = createElementFromHtml(
@@ -105,7 +95,7 @@ Dialog.prototype.init = function () {
       if (this.options.content != null && this.dialogType === "alert") {
         message.appendChild(this.options.content);
         this.dialog.appendChild(message);
-        _reapplyBehaviors(message);
+        behaviorShim.applySubtree(message, true);
       } else if (this.options.message != null && this.dialogType !== "prompt") {
         const message = createElementFromHtml(
           `<div class='jenkins-dialog__contents'/>`,
@@ -161,14 +151,11 @@ Dialog.prototype.checkInput = function () {
 Dialog.prototype.appendButtons = function () {
   const buttons = createElementFromHtml(`<div
       class="jenkins-buttons-row jenkins-buttons-row--equal-width jenkins-dialog__buttons">
-      <button data-id="ok" type="${
-        this.options.submitButton ? "submit" : "button"
-      }" class="jenkins-button jenkins-button--primary ${
-        _typeClassMap[this.options.type]
-      }">${this.options.okText}</button>
-      <button data-id="cancel" class="jenkins-button">${
-        this.options.cancelText
-      }</button>
+      <button data-id="ok" type="${this.options.submitButton ? "submit" : "button"
+    }" class="jenkins-button jenkins-button--primary ${_typeClassMap[this.options.type]
+    }">${this.options.okText}</button>
+      <button data-id="cancel" class="jenkins-button">${this.options.cancelText
+    }</button>
     </div>`);
 
   if (this.dialogType === "form") {
@@ -294,7 +281,7 @@ function init() {
       dialog
         .show()
         .then()
-        .catch(() => {});
+        .catch(() => { });
     },
 
     alert: function (title, options) {
@@ -307,7 +294,7 @@ function init() {
       dialog
         .show()
         .then()
-        .catch(() => {});
+        .catch(() => { });
     },
 
     confirm: function (title, options) {
