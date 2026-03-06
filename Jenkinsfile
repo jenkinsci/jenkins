@@ -31,6 +31,7 @@ stage('Record build') {
          */
         // Replace URL encoded characters with '-' because Launchable rejects '%2F' in build name
         def launchableName = env.BUILD_TAG.replaceAll('(%[0-9A-Fa-f]{2})+', '-')
+        sh 'python -m pip --no-cache-dir install launchable=="1.121.2"'
         sh "launchable verify && launchable record build --name ${launchableName} --source jenkinsci/jenkins=."
         axes.values().combinations {
           def (platform, jdk) = it
