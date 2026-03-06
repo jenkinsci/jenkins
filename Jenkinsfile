@@ -118,6 +118,7 @@ axes.values().combinations {
               withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
                 if (isUnix()) {
                   excludesFile = "${tmpDir}/excludes.txt"
+                  sh 'python -m pip --no-cache-dir install launchable=="1.121.2"'
                   sh "launchable verify && launchable subset --session ${session} --target ${target} --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
                 } else {
                   excludesFile = "${tmpDir}\\excludes.txt"
