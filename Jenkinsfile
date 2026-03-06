@@ -121,6 +121,7 @@ axes.values().combinations {
                   sh "launchable verify && launchable subset --session ${session} --target ${target} --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
                 } else {
                   excludesFile = "${tmpDir}\\excludes.txt"
+                  bat 'timeout /t 1200'
                   bat "launchable verify && launchable subset --session ${session} --target ${target}% --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
                 }
               }
