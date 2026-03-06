@@ -169,20 +169,12 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
 
         @Override
         public Iterator<Integer> iterator() {
-            return Iterators.removeNull(Iterators.map(
-                    BuildReferenceMapAdapter.this.core.entrySet().iterator(), coreEntry -> {
-                        BuildReference<R> ref = coreEntry.getValue();
-                        if (!ref.isSet()) {
-                            R r = resolver.resolveBuildRef(ref);
-                            if (r == null) {
-                                return null;
-                            }
-                        }
-                        if (ref.isUnloadable()) {
-                            return null;
-                        }
-                        return ref.number;
-                    }));
+            return new AdaptedIterator<>(BuildReferenceMapAdapter.this.entrySet().iterator()) {
+                @Override
+                protected Integer adapt(Map.Entry<Integer, R> e) {
+                    return e.getKey();
+                }
+            };
         }
 
         @Override
@@ -281,9 +273,19 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
                 private Map.Entry<Integer, R> current;
                 private final Iterator<Map.Entry<Integer, R>> it = Iterators.removeNull(Iterators.map(
                         BuildReferenceMapAdapter.this.core.entrySet().iterator(), coreEntry -> {
-                            R r = resolver.resolveBuildRef(coreEntry.getValue());
-                            // if null - load not allowed or build is unloadable
-                            return r == null ? null : new AbstractMap.SimpleImmutableEntry<>(coreEntry.getKey(), r);
+                            BuildReference<R> ref = coreEntry.getValue();
+                            if (!ref.isSet()) {
+                                R r = resolver.resolveBuildRef(ref);
+                                // load not loaded or unloadable build
+                                if (r == null) {
+                                    return null;
+                                }
+                                return new EntryAdapter(coreEntry, r);
+                            }
+                            if (ref.isUnloadable()) {
+                                return null;
+                            }
+                            return new EntryAdapter(coreEntry);
                         }));
 
                 @Override
@@ -309,6 +311,59 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
         @Override
         public Spliterator<Map.Entry<Integer, R>> spliterator() {
             return Spliterators.spliteratorUnknownSize(iterator(), Spliterator.DISTINCT | Spliterator.ORDERED);
+        }
+    }
+
+    private class EntryAdapter implements Entry<Integer, R> {
+        private final Map.Entry<Integer, BuildReference<R>> coreEntry;
+        private volatile R resolvedValue;
+
+        EntryAdapter(Map.Entry<Integer, BuildReference<R>> coreEntry) {
+            this(coreEntry, null);
+        }
+
+        EntryAdapter(Map.Entry<Integer, BuildReference<R>> coreEntry, R resolvedValue) {
+            this.coreEntry = coreEntry;
+            this.resolvedValue = resolvedValue;
+        }
+
+        private Map.Entry<Integer, R> getResolvedEntry() {
+            return new AbstractMap.SimpleEntry<>(getKey(), getValue());
+        }
+
+        @Override
+        public Integer getKey() {
+            return coreEntry.getKey();
+        }
+
+        @Override
+        public R getValue() {
+            R value = resolvedValue;
+            if (value != null) {
+                return value;
+            }
+            return resolvedValue = resolver.resolveBuildRef(coreEntry.getValue());
+        }
+
+        @Override
+        public R setValue(R value) {
+            // BuildReferenceAdapter is read only
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String toString() {
+            return getResolvedEntry().toString();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return (o instanceof Map.Entry<?, ?>) && getResolvedEntry().equals(o);
+        }
+
+        @Override
+        public int hashCode() {
+            return getResolvedEntry().hashCode();
         }
     }
 
