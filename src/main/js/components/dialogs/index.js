@@ -151,11 +151,14 @@ Dialog.prototype.checkInput = function () {
 Dialog.prototype.appendButtons = function () {
   const buttons = createElementFromHtml(`<div
       class="jenkins-buttons-row jenkins-buttons-row--equal-width jenkins-dialog__buttons">
-      <button data-id="ok" type="${this.options.submitButton ? "submit" : "button"
-    }" class="jenkins-button jenkins-button--primary ${_typeClassMap[this.options.type]
-    }">${this.options.okText}</button>
-      <button data-id="cancel" class="jenkins-button">${this.options.cancelText
-    }</button>
+      <button data-id="ok" type="${
+        this.options.submitButton ? "submit" : "button"
+      }" class="jenkins-button jenkins-button--primary ${
+        _typeClassMap[this.options.type]
+      }">${this.options.okText}</button>
+      <button data-id="cancel" class="jenkins-button">${
+        this.options.cancelText
+      }</button>
     </div>`);
 
   if (this.dialogType === "form") {
@@ -281,7 +284,7 @@ function init() {
       dialog
         .show()
         .then()
-        .catch(() => { });
+        .catch(() => {});
     },
 
     alert: function (title, options) {
@@ -294,7 +297,7 @@ function init() {
       dialog
         .show()
         .then()
-        .catch(() => { });
+        .catch(() => {});
     },
 
     confirm: function (title, options) {
