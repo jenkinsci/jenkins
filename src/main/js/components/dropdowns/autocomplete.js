@@ -43,6 +43,9 @@ function init() {
           instance.popper.style.minWidth = e.offsetWidth + "px";
         },
         true,
+        {
+          appendTo: "parent",
+        },
       );
     }
     e.dropdown.setContent(Utils.generateDropdownItems(items, true));
