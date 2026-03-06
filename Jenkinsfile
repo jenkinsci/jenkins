@@ -67,7 +67,7 @@ axes.values().combinations {
     // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
     def agentContainerLabel = 'maven-' + jdk
     if (platform == 'windows') {
-      agentContainerLabel += '-windows'
+      agentContainerLabel = 'infratest-windows'
     }
     int retryCount = 0
     retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
