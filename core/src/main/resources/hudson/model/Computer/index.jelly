@@ -55,7 +55,15 @@ THE SOFTWARE.
         </j:choose>
         <t:help href="https://www.jenkins.io/doc/book/using/using-agents/" />
       </l:app-bar>
+      </l:app-bar>
 
+      <!-- FloatingBox rendering for computer actions -->
+      <div style="float:right">
+        <j:forEach var="a" items="${it.allActions}">
+          <j:set var="action" value="${a}" />
+          <st:include page="floatingBox.jelly" from="${a}" optional="true" />
+        </j:forEach>
+      </div>
       <st:include page="index-top.jelly" it="${it}" />
 
       <j:if test="${it.offlineCause!=null and it.offline and !it.connecting}">
