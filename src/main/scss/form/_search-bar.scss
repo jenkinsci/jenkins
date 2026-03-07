@@ -8,7 +8,7 @@
   --search-bar-height: 2.375rem;
 
   position: relative;
-  user-select:none;
+  user-select: none;
 
   &__input {
     padding: 0 0.25rem 0 calc(var(--search-bar-height) * 0.9);
