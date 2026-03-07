@@ -1165,17 +1165,22 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             scmDisplayName = " " + String.join(", ", scmNames);
         }
 
-        for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
-            int idx = 0;
-            if (r instanceof RunWithSCM) {
-                for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM<?, ?>) r).getChangeSets()) {
-                    for (ChangeLogSet.Entry e : c) {
-                        entries.add(new FeedItem(e, idx++));
-                    }
-                }
+        final int MAX_ENTRIES = 20;
+        int totalFeedItems = 0;
+        for (RunT r = getLastBuild(); r != null && totalFeedItems < MAX_ENTRIES; r = r.getPreviousBuild()) {
+        int idx = 0;
+        if (r instanceof RunWithSCM) {
+        for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM<?, ?>) r).getChangeSets()) {
+            for (ChangeLogSet.Entry e : c) {
+                if (totalFeedItems >= MAX_ENTRIES) break;
+                entries.add(new FeedItem(e, idx++));
+                totalFeedItems++;
             }
+            if (totalFeedItems >= MAX_ENTRIES) break;
         }
-        RSS.forwardToRss(
+    }
+}
+                S.forwardToRss(
                 getDisplayName() + scmDisplayName + " changes",
                 getUrl() + "changes",
                 entries, new FeedAdapter<>() {
