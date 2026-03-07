@@ -10,7 +10,6 @@ import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.model.DownloadService;
 import hudson.model.PageDecorator;
-import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.model.User;
 import hudson.security.AccountCreationFailedException;
@@ -79,7 +78,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
- * A Jenkins instance used during first-run to provide a limited set of services while
+ * A Jenkins instance used during first-run to provide a limited set of services
+ * while
  * initial installation is in progress
  *
  * @since 2.0
@@ -99,36 +99,49 @@ public class SetupWizard extends PageDecorator {
 
     private static final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
 
-    private static final String ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME = SetupWizard.class.getName() + ".adminInitialApiToken";
+    private static final String ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME = SetupWizard.class.getName()
+            + ".adminInitialApiToken";
 
     /**
-     * This property determines the behavior during the SetupWizard install phase concerning the API Token creation
+     * This property determines the behavior during the SetupWizard install phase
+     * concerning the API Token creation
      * for the initial admin account.
      * The behavior depends on the provided value:
      * - true
-     *      A token is generated using random value at startup and the information is put
-     *      in the file "$JENKINS_HOME/secrets/initialAdminApiToken".
-     * - [2-char hash version][32-hex-char of secret], where the hash version is currently only 11.
-     *      E.g. 110123456789abcdef0123456789abcdef.
-     *      A fixed API Token will be created for the user with that plain value as the token.
-     *      It is strongly recommended to use it to generate a new one (random) and then revoke it.
-     *      See {@link ApiTokenProperty#generateNewToken(String)} and {@link ApiTokenProperty#revokeAllTokensExceptOne(String)}
-     *      for scripting methods or using the web API calls:
-     *      /user/[user-login]/descriptorByName/jenkins.security.ApiTokenProperty/generateNewToken and
-     *      /user/[user-login]/descriptorByName/jenkins.security.ApiTokenProperty/revokeAllExcept
-     * - @[file-location] where the file contains plain text value of the token, all stuff explained above is applicable
-     *      The application will not delete the file after read, so the script is responsible to clean up the stuff
+     * A token is generated using random value at startup and the information is put
+     * in the file "$JENKINS_HOME/secrets/initialAdminApiToken".
+     * - [2-char hash version][32-hex-char of secret], where the hash version is
+     * currently only 11.
+     * E.g. 110123456789abcdef0123456789abcdef.
+     * A fixed API Token will be created for the user with that plain value as the
+     * token.
+     * It is strongly recommended to use it to generate a new one (random) and then
+     * revoke it.
+     * See {@link ApiTokenProperty#generateNewToken(String)} and
+     * {@link ApiTokenProperty#revokeAllTokensExceptOne(String)}
+     * for scripting methods or using the web API calls:
+     * /user/[user-login]/descriptorByName/jenkins.security.ApiTokenProperty/generateNewToken
+     * and
+     * /user/[user-login]/descriptorByName/jenkins.security.ApiTokenProperty/revokeAllExcept
+     * - @[file-location] where the file contains plain text value of the token, all
+     * stuff explained above is applicable
+     * The application will not delete the file after read, so the script is
+     * responsible to clean up the stuff
      *
-     * When the API Token is generated using this system property, it's strongly recommended that you are revoking it
-     * during your installation script using the other ways at your disposal so that you have a fresh token
+     * When the API Token is generated using this system property, it's strongly
+     * recommended that you are revoking it
+     * during your installation script using the other ways at your disposal so that
+     * you have a fresh token
      * with less traces for your script.
      *
-     * If you do not provide any value to that system property, the default admin account will not have an API Token.
+     * If you do not provide any value to that system property, the default admin
+     * account will not have an API Token.
      *
      * @since 2.260 (with NoExternalUse)
      */
     @Restricted(NoExternalUse.class)
-    private static /* not final */ String ADMIN_INITIAL_API_TOKEN = SystemProperties.getString(ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME);
+    private static /* not final */ String ADMIN_INITIAL_API_TOKEN = SystemProperties
+            .getString(ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME);
 
     @NonNull
     @Override
@@ -137,15 +150,19 @@ public class SetupWizard extends PageDecorator {
     }
 
     /**
-     * Initialize the setup wizard, this will process any current state initializations
+     * Initialize the setup wizard, this will process any current state
+     * initializations
      */
-    /*package*/ void init(boolean newInstall) throws IOException, InterruptedException {
+    /* package */ void init(boolean newInstall) throws IOException, InterruptedException {
         Jenkins jenkins = Jenkins.get();
 
         if (newInstall) {
             // Create an admin user by default with a difficult password
             FilePath iapf = getInitialAdminPasswordFile();
-            if (jenkins.getSecurityRealm() == null || jenkins.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // this seems very fragile
+            if (jenkins.getSecurityRealm() == null || jenkins.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // this
+                                                                                                                       // seems
+                                                                                                                       // very
+                                                                                                                       // fragile
                 try (BulkChange bc = new BulkChange(jenkins)) {
                     HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
                     jenkins.setSecurityRealm(securityRealm);
@@ -159,12 +176,12 @@ public class SetupWizard extends PageDecorator {
                     }
 
                     // JENKINS-33599 - write to a file in the jenkins home directory
-                    // most native packages of Jenkins creates a machine user account 'jenkins' to run Jenkins,
+                    // most native packages of Jenkins creates a machine user account 'jenkins' to
+                    // run Jenkins,
                     // and use group 'jenkins' for admins. So we allow groups to read this file
                     iapf.touch(System.currentTimeMillis());
                     iapf.chmod(0640);
                     iapf.write(randomUUID + System.lineSeparator(), "UTF-8");
-
 
                     // Lock Jenkins down:
                     FullControlOnceLoggedInAuthorizationStrategy authStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
@@ -172,12 +189,14 @@ public class SetupWizard extends PageDecorator {
                     jenkins.setAuthorizationStrategy(authStrategy);
 
                     // Disable jnlp by default, but honor system properties
-                    jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName() + ".slaveAgentPort", -1));
+                    jenkins.setSlaveAgentPort(
+                            SystemProperties.getInteger(Jenkins.class.getName() + ".slaveAgentPort", -1));
 
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer());
 
-                    jenkins.save(); // TODO could probably be removed since some of the above setters already call save
+                    jenkins.save(); // TODO could probably be removed since some of the above setters already call
+                                    // save
                     bc.commit();
                 }
             }
@@ -204,64 +223,74 @@ public class SetupWizard extends PageDecorator {
         }
 
         try {
-            // Make sure plugin metadata is up to date
-            UpdateCenter.updateDefaultSite();
-        } catch (RuntimeException e) {
-            LOGGER.log(Level.WARNING, e.getMessage(), e);
+            jenkins.getUpdateCenter().updateDefaultSite();
+        } catch (Exception e) {
+            LOGGER.log(Level.INFO, "Jenkins is starting in offline mode. Skipping initial update site refresh.");
+            LOGGER.log(Level.FINE, "Detailed update site refresh failure: ", e);
         }
     }
+
 
     private void createInitialApiToken(User user) throws IOException, InterruptedException {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
 
         String sysProp = ADMIN_INITIAL_API_TOKEN;
         if (sysProp.equals("true")) {
-            TokenUuidAndPlainValue tokenUuidAndPlainValue = apiTokenProperty.generateNewToken("random-generation-during-setup-wizard");
+            TokenUuidAndPlainValue tokenUuidAndPlainValue = apiTokenProperty
+                    .generateNewToken("random-generation-during-setup-wizard");
             FilePath fp = getInitialAdminApiTokenFile();
             // same comment as in the init method
 
             // JENKINS-33599 - write to a file in the jenkins home directory
-            // most native packages of Jenkins creates a machine user account 'jenkins' to run Jenkins,
+            // most native packages of Jenkins creates a machine user account 'jenkins' to
+            // run Jenkins,
             // and use group 'jenkins' for admins. So we allow groups to read this file
             fp.touch(System.currentTimeMillis());
             fp.chmod(0640);
             fp.write(tokenUuidAndPlainValue.plainValue, StandardCharsets.UTF_8.name());
-            LOGGER.log(Level.INFO, "The API Token was randomly generated and the information was put in {0}", fp.getRemote());
+            LOGGER.log(Level.INFO, "The API Token was randomly generated and the information was put in {0}",
+                    fp.getRemote());
         } else {
             String plainText;
             if (sysProp.startsWith("@")) {
-                // no need for path traversal check as it's coming from the instance creator only
+                // no need for path traversal check as it's coming from the instance creator
+                // only
                 String apiTokenStr = sysProp.substring(1);
                 Path apiTokenFile;
                 try {
                     apiTokenFile = Paths.get(apiTokenStr);
                 } catch (InvalidPathException e) {
-                    LOGGER.log(Level.WARNING, "The API Token cannot be retrieved from an invalid path: {0}", apiTokenStr);
+                    LOGGER.log(Level.WARNING, "The API Token cannot be retrieved from an invalid path: {0}",
+                            apiTokenStr);
                     return;
                 }
                 if (!Files.exists(apiTokenFile)) {
-                    LOGGER.log(Level.WARNING, "The API Token cannot be retrieved from a non-existing file: {0}", apiTokenFile);
+                    LOGGER.log(Level.WARNING, "The API Token cannot be retrieved from a non-existing file: {0}",
+                            apiTokenFile);
                     return;
                 }
 
                 try {
                     plainText = Files.readString(apiTokenFile, StandardCharsets.UTF_8);
-                    LOGGER.log(Level.INFO, "API Token generated using contents of file: {0}", apiTokenFile.toAbsolutePath());
+                    LOGGER.log(Level.INFO, "API Token generated using contents of file: {0}",
+                            apiTokenFile.toAbsolutePath());
                 } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, String.format("The API Token cannot be retrieved from the file: %s", apiTokenFile), e);
+                    LOGGER.log(Level.WARNING,
+                            String.format("The API Token cannot be retrieved from the file: %s", apiTokenFile), e);
                     return;
                 }
             } else {
-                LOGGER.log(Level.INFO, "API Token generated using system property: {0}", ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME);
+                LOGGER.log(Level.INFO, "API Token generated using system property: {0}",
+                        ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME);
                 plainText = sysProp;
             }
 
             try {
                 apiTokenProperty.addFixedNewToken("fix-generation-during-setup-wizard", plainText);
-            }
-            catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 String constraintFailureMessage = e.getMessage();
-                LOGGER.log(Level.WARNING, "The API Token cannot be generated using the provided value due to: {0}", constraintFailureMessage);
+                LOGGER.log(Level.WARNING, "The API Token cannot be generated using the provided value due to: {0}",
+                        constraintFailureMessage);
             }
         }
     }
@@ -287,7 +316,8 @@ public class SetupWizard extends PageDecorator {
     }
 
     /**
-     * Indicates a generated password should be used - e.g. this is a new install, no security realm set up
+     * Indicates a generated password should be used - e.g. this is a new install,
+     * no security realm set up
      */
     @SuppressWarnings("unused") // used by jelly
     public boolean isUsingSecurityToken() {
@@ -305,12 +335,13 @@ public class SetupWizard extends PageDecorator {
      * really care about and test for HudsonPrivateSecurityRealm and the user setup.
      * Other settings are irrelevant.
      */
-    /*package*/ boolean isUsingSecurityDefaults() {
+    /* package */ boolean isUsingSecurityDefaults() {
         Jenkins j = Jenkins.get();
         if (j.getSecurityRealm() instanceof HudsonPrivateSecurityRealm securityRealm) {
             try {
                 if (securityRealm.getAllUsers().size() == 1) {
-                    HudsonPrivateSecurityRealm.Details details = securityRealm.load(SetupWizard.initialSetupAdminUserName);
+                    HudsonPrivateSecurityRealm.Details details = securityRealm
+                            .load(SetupWizard.initialSetupAdminUserName);
                     FilePath iapf = getInitialAdminPasswordFile();
                     if (iapf.exists()) {
                         if (details.isPasswordCorrect(iapf.readToString().trim())) {
@@ -352,7 +383,8 @@ public class SetupWizard extends PageDecorator {
                 admin = null;
             }
             if (initialApiTokenProperty != null) {
-                // actually it will remove the current one and replace it with the one from initial admin
+                // actually it will remove the current one and replace it with the one from
+                // initial admin
                 newUser.addProperty(initialApiTokenProperty);
             }
 
@@ -364,7 +396,8 @@ public class SetupWizard extends PageDecorator {
             }
             try {
                 FilePath fp = getInitialAdminApiTokenFile();
-                // no care about TOCTOU as it's done during instance creation process only (i.e. not yet user reachable)
+                // no care about TOCTOU as it's done during instance creation process only (i.e.
+                // not yet user reachable)
                 if (fp.exists()) {
                     fp.delete();
                 }
@@ -375,7 +408,8 @@ public class SetupWizard extends PageDecorator {
             InstallUtil.proceedToNextStateFrom(InstallState.CREATE_ADMIN_USER);
 
             // ... and then login
-            Authentication auth = new UsernamePasswordAuthenticationToken(newUser.getId(), req.getParameter("password1"));
+            Authentication auth = new UsernamePasswordAuthenticationToken(newUser.getId(),
+                    req.getParameter("password1"));
             auth = securityRealm.getSecurityComponents().manager2.authenticate(auth);
             SecurityContextHolder.getContext().setAuthentication(auth);
 
@@ -394,17 +428,21 @@ public class SetupWizard extends PageDecorator {
             CrumbIssuer crumbIssuer = Jenkins.get().getCrumbIssuer();
             JSONObject data = new JSONObject();
             if (crumbIssuer != null) {
-                data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));
+                data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb",
+                        crumbIssuer.getCrumb(req));
             }
             return HttpResponses.okJSON(data);
         } catch (AccountCreationFailedException e) {
             /*
-            Return Unprocessable Entity from WebDAV. While this is not technically in the HTTP/1.1 standard, browsers
-            seem to accept this. 400 Bad Request is technically inappropriate because that implies invalid *syntax*,
-            not incorrect data. The client only cares about it being >200 anyways.
+             * Return Unprocessable Entity from WebDAV. While this is not technically in the
+             * HTTP/1.1 standard, browsers
+             * seem to accept this. 400 Bad Request is technically inappropriate because
+             * that implies invalid *syntax*,
+             * not incorrect data. The client only cares about it being >200 anyways.
              */
             rsp.setStatus(422);
-            return HttpResponses.forwardToView(securityRealm, "/jenkins/install/SetupWizard/setupWizardFirstUser.jelly");
+            return HttpResponses.forwardToView(securityRealm,
+                    "/jenkins/install/SetupWizard/setupWizardFirstUser.jelly");
         } finally {
             if (admin != null) {
                 admin.save(); // recreate this initial user if something failed
@@ -437,7 +475,8 @@ public class SetupWizard extends PageDecorator {
         CrumbIssuer crumbIssuer = Jenkins.get().getCrumbIssuer();
         JSONObject data = new JSONObject();
         if (crumbIssuer != null) {
-            data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));
+            data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb",
+                    crumbIssuer.getCrumb(req));
         }
         return HttpResponses.okJSON(data);
     }
@@ -453,11 +492,11 @@ public class SetupWizard extends PageDecorator {
     }
 
     private void useRootUrl(Map<String, String> errors, @CheckForNull String rootUrl) {
-        LOGGER.log(Level.FINE, "Root URL set during SetupWizard to {0}", new Object[]{ rootUrl });
+        LOGGER.log(Level.FINE, "Root URL set during SetupWizard to {0}", new Object[] { rootUrl });
         JenkinsLocationConfiguration.getOrDie().setUrl(rootUrl);
     }
 
-    /*package*/ void setCurrentLevel(VersionNumber v) throws IOException {
+    /* package */ void setCurrentLevel(VersionNumber v) throws IOException {
         Files.writeString(Util.fileToPath(getUpdateStateFile()), v.toString(), StandardCharsets.UTF_8);
     }
 
@@ -466,13 +505,15 @@ public class SetupWizard extends PageDecorator {
      *
      * This file records the version number that the installation has upgraded to.
      */
-    /*package*/ static File getUpdateStateFile() {
+    /* package */ static File getUpdateStateFile() {
         return new File(Jenkins.get().getRootDir(), "jenkins.install.UpgradeWizard.state");
     }
 
     /**
-     * What is the version the upgrade wizard has run the last time and upgraded to?.
+     * What is the version the upgrade wizard has run the last time and upgraded
+     * to?.
      * If {@link #getUpdateStateFile()} is missing, presumes the baseline is 1.0
+     *
      * @return Current baseline. {@code null} if it cannot be retrieved.
      */
     @Restricted(NoExternalUse.class)
@@ -533,6 +574,7 @@ public class SetupWizard extends PageDecorator {
     /**
      * Provides the list of platform plugin updates from the last time
      * the upgrade was run.
+     *
      * @return {@code null} if the version range cannot be retrieved.
      */
     @CheckForNull
@@ -545,20 +587,25 @@ public class SetupWizard extends PageDecorator {
     }
 
     /**
-     * Gets the suggested plugin list from the update sites, falling back to a local version
+     * Gets the suggested plugin list from the update sites, falling back to a local
+     * version
+     *
      * @return JSON array with the categorized plugin list
      */
     @CheckForNull
-    /*package*/ JSONArray getPlatformPluginList() {
+    /* package */ JSONArray getPlatformPluginList() {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         JSONArray initialPluginList = null;
         updateSiteList: for (UpdateSite updateSite : Jenkins.get().getUpdateCenter().getSiteList()) {
             String suggestedPluginUrl = updateSite.getSuggestedPluginsUrl();
             VersionNumber version = Jenkins.getVersion();
-            if (version != null && (suggestedPluginUrl.startsWith("https://") || suggestedPluginUrl.startsWith("http://"))) {
+            if (version != null
+                    && (suggestedPluginUrl.startsWith("https://") || suggestedPluginUrl.startsWith("http://"))) {
                 // Allow remote update site to distinguish based on the current version
-                // This looks a bit hacky but UpdateCenter#toUpdateCenterCheckUrl does something similar
-                suggestedPluginUrl = suggestedPluginUrl + (suggestedPluginUrl.contains("?") ? "&" : "?") + "version=" + version;
+                // This looks a bit hacky but UpdateCenter#toUpdateCenterCheckUrl does something
+                // similar
+                suggestedPluginUrl = suggestedPluginUrl + (suggestedPluginUrl.contains("?") ? "&" : "?") + "version="
+                        + version;
             }
             try {
                 URLConnection connection = ProxyConfiguration.open(new URI(suggestedPluginUrl).toURL());
@@ -571,24 +618,32 @@ public class SetupWizard extends PageDecorator {
                     if (connection instanceof HttpURLConnection) {
                         int responseCode = ((HttpURLConnection) connection).getResponseCode();
                         if (HttpURLConnection.HTTP_OK != responseCode) {
-                            throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + suggestedPluginUrl, responseCode);
+                            throw new HttpRetryException(
+                                    "Invalid response code (" + responseCode + ") from URL: " + suggestedPluginUrl,
+                                    responseCode);
                         }
 
                         if (DownloadService.signatureCheck) {
-                            /* If the platform-plugins.json file was obtained remotely, assume that it's a JSONObject and perform a signature check on it */
+                            /*
+                             * If the platform-plugins.json file was obtained remotely, assume that it's a
+                             * JSONObject and perform a signature check on it
+                             */
                             initialPluginObject = JSONObject.fromObject(initialPluginJson);
                             final FormValidation result = updateSite.verifySignatureInternal(initialPluginObject);
                             if (result.kind != FormValidation.Kind.OK) {
-                                LOGGER.log(Level.WARNING, "Ignoring remote platform-plugins.json: " + result.getMessage());
+                                LOGGER.log(Level.WARNING,
+                                        "Ignoring remote platform-plugins.json: " + result.getMessage());
                                 throw result;
                             }
                         }
                     }
 
                     /*
-                        The initial version of this code expected platform-plugins.json to be an array.
-                        This structure does not work when we want to add a signature block, so a wrapper object is also supported.
-                        In that case, the original array is expected to be in the 'categories' key.
+                     * The initial version of this code expected platform-plugins.json to be an
+                     * array.
+                     * This structure does not work when we want to add a signature block, so a
+                     * wrapper object is also supported.
+                     * In that case, the original array is expected to be in the 'categories' key.
                      */
                     if (initialPluginObject != null) {
                         initialPluginList = initialPluginObject.getJSONArray("categories");
@@ -616,7 +671,7 @@ public class SetupWizard extends PageDecorator {
                 ClassLoader cl = getClass().getClassLoader();
                 URL localPluginData = cl.getResource("jenkins/install/platform-plugins.json");
                 String initialPluginJson = IOUtils.toString(localPluginData.openStream(), StandardCharsets.UTF_8);
-                initialPluginList =  JSONArray.fromObject(initialPluginJson);
+                initialPluginList = JSONArray.fromObject(initialPluginJson);
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, e.getMessage(), e);
             }
@@ -627,7 +682,7 @@ public class SetupWizard extends PageDecorator {
     /**
      * Get the platform plugins added in the version range
      */
-    /*package*/ JSONArray getPlatformPluginsForUpdate(VersionNumber from, VersionNumber to) {
+    /* package */ JSONArray getPlatformPluginsForUpdate(VersionNumber from, VersionNumber to) {
         Jenkins jenkins = Jenkins.get();
         JSONArray pluginCategories = JSONArray.fromObject(getPlatformPluginList().toString());
         for (Iterator<?> categoryIterator = pluginCategories.iterator(); categoryIterator.hasNext();) {
@@ -687,7 +742,8 @@ public class SetupWizard extends PageDecorator {
     }
 
     /**
-     * Gets the file used to store the initial admin API Token, in case the system property
+     * Gets the file used to store the initial admin API Token, in case the system
+     * property
      * {@link #ADMIN_INITIAL_API_TOKEN} is set to "true" (and only in this case).
      */
     @Restricted(NoExternalUse.class)
@@ -704,7 +760,7 @@ public class SetupWizard extends PageDecorator {
         return HttpResponses.okJSON();
     }
 
-    /*package*/ void completeSetup() throws IOException, ServletException {
+    /* package */ void completeSetup() throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         InstallUtil.saveLastExecVersion();
         setCurrentLevel(Jenkins.getVersion());
@@ -730,6 +786,7 @@ public class SetupWizard extends PageDecorator {
 
     /**
      * Called upon install state update.
+     *
      * @param state the new install state.
      * @since 2.94
      */
@@ -743,6 +800,7 @@ public class SetupWizard extends PageDecorator {
 
     /**
      * Returns whether the setup wizard filter is currently registered.
+     *
      * @since 2.94
      */
     public boolean hasSetupWizardFilter() {
@@ -759,7 +817,8 @@ public class SetupWizard extends PageDecorator {
 
         @Override
         @SuppressFBWarnings(value = "UNVALIDATED_REDIRECT", justification = "TODO needs triage")
-        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+                throws IOException, ServletException {
             // Force root requests to the setup wizard
             if (request instanceof HttpServletRequest req && !Jenkins.get().getInstallState().isSetupComplete()) {
                 String requestURI = req.getRequestURI();
