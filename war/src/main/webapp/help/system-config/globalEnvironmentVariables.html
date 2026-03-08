@@ -1,8 +1,34 @@
 <div>
-  These key-value pairs apply for every build on every node. They can be used in
-  Jenkins' configuration (as
-  <code>$key</code>
-  or
-  <code>${key}</code>
-  ) and will be added to the environment for processes launched from the build.
+    These key-value pairs apply for every build on every node. They can be used in
+    Jenkins' configuration (as
+    <code>$key</code>
+    or
+    <code>${key}</code>
+    ) and will be added to the environment for processes launched from the build.
 </div>
+<p>
+    Jenkins also supports a special syntax,
+    <code>BASE+EXTRA</code>,
+    which allows you to add multiple key-value pairs that will be
+    prepended to an existing environment variable.
+</p>
+
+<p>
+    For example, if a system has
+    <code>PATH=/usr/bin</code>,
+    you could add to the standard path by defining an environment variable
+    with the name
+    <code>PATH+LOCAL_BIN</code>
+    and value
+    <code>/usr/local/bin</code>.
+    <br />
+    This would result in
+    <code>PATH=/usr/local/bin:/usr/bin</code>
+    being exported during builds.
+    <code>PATH+LOCAL_BIN=/usr/local/bin</code>
+    will also be exported.
+    <br />
+    Multiple entries are prepended to the "base" variable according to the
+    alphabetical order of the "extra" part of the name.
+</p>
+yeah i changed it
