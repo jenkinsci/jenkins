@@ -71,7 +71,7 @@ axes.values().combinations {
     }
     int retryCount = 0
     retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
-      if (retryCount == 1 && platform == 'windows' ) {
+      if (retryCount == 1) {
         agentContainerLabel = agentContainerLabel + '-nonspot'
       }
       // Increment before allocating the node in case it fails

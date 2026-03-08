@@ -88,9 +88,9 @@ public class MultipartFormDataParser implements AutoCloseable {
         }
         tmpDir.deleteOnExit();
         JakartaServletFileUpload<DiskFileItem, DiskFileItemFactory> upload = new JakartaServletDiskFileUpload(DiskFileItemFactory.builder().setFile(tmpDir).get());
-        upload.setFileCountMax(maxParts);
-        upload.setFileSizeMax(maxPartSize);
-        upload.setSizeMax(maxSize);
+        upload.setMaxFileCount(maxParts);
+        upload.setMaxFileSize(maxPartSize);
+        upload.setMaxSize(maxSize);
         try {
             for (FileItem fi : upload.parseRequest(request))
                 byName.put(fi.getFieldName(), fi);
@@ -130,9 +130,9 @@ public class MultipartFormDataParser implements AutoCloseable {
         }
         tmpDir.deleteOnExit();
         JakartaServletFileUpload<DiskFileItem, DiskFileItemFactory> upload = new JakartaServletDiskFileUpload(DiskFileItemFactory.builder().setFile(tmpDir).get());
-        upload.setFileCountMax(FILEUPLOAD_MAX_FILES);
-        upload.setFileSizeMax(FILEUPLOAD_MAX_FILE_SIZE);
-        upload.setSizeMax(FILEUPLOAD_MAX_SIZE);
+        upload.setMaxFileCount(FILEUPLOAD_MAX_FILES);
+        upload.setMaxFileSize(FILEUPLOAD_MAX_FILE_SIZE);
+        upload.setMaxSize(FILEUPLOAD_MAX_SIZE);
         try {
             for (FileItem fi : upload.parseRequest(HttpServletRequestWrapper.toJakartaHttpServletRequest(request)))
                 byName.put(fi.getFieldName(), fi);

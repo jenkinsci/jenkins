@@ -77,6 +77,7 @@ module.exports = [
         Utilities: "readonly",
         UTILITIES_VERSION: "writeable",
         YAHOO: "readonly",
+        updateValidationArea: "readonly",
       },
     },
   },
