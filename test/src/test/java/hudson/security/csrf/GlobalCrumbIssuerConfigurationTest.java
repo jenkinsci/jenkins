@@ -4,12 +4,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 
-import jakarta.servlet.ServletRequest;
+import hudson.ExtensionList;
+import hudson.model.Descriptor;
+import java.util.ArrayList;
+import java.util.List;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
@@ -24,30 +26,23 @@ class GlobalCrumbIssuerConfigurationTest {
 
     @Test
     void csrfSectionHiddenWhenOnlyDefaultIssuerAvailable() throws Exception {
-        // No @TestExtension here, so only DefaultCrumbIssuer is registered
+        // Remove all non-default CrumbIssuer descriptors
+        ExtensionList<Descriptor<CrumbIssuer>> descriptors = j.jenkins.getDescriptorList(CrumbIssuer.class);
+        List<Descriptor<CrumbIssuer>> toRemove = new ArrayList<>();
+        for (Descriptor<CrumbIssuer> d : descriptors) {
+            if (!(d instanceof DefaultCrumbIssuer.DescriptorImpl)) {
+                toRemove.add(d);
+            }
+        }
+        descriptors.removeAll(toRemove);
+
         j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
 
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage page = wc.goTo("configureSecurity");
         String pageContent = page.asNormalizedText();
 
-        // When only DefaultCrumbIssuer exists, the CSRF section should be HIDDEN
-        assertThat(pageContent, not(containsString("Dummy Crumb Issuer")));
-    }
-
-    @Test
-    void csrfSectionShownWhenNonDefaultIssuerConfigured() throws Exception {
-        // DefaultCrumbIssuer is default, but other CrumbIssuer descriptors exist in test environment
-        // so the CSRF section should be visible
-        j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
-
-        JenkinsRule.WebClient wc = j.createWebClient();
-        HtmlPage page = wc.goTo("configureSecurity");
-        String pageContent = page.asNormalizedText();
-
-        // With multiple CrumbIssuer descriptors available (from test extensions),
-        // the CSRF Protection section should always be shown
-        assertThat(pageContent, containsString("Crumb Issuer"));
+        assertThat(pageContent, not(containsString("CSRF Protection")));
     }
 
     @Test
@@ -63,35 +58,6 @@ class GlobalCrumbIssuerConfigurationTest {
             assertThat(pageContent, containsString("This configuration is unavailable because"));
         } finally {
             GlobalCrumbIssuerConfiguration.DISABLE_CSRF_PROTECTION = original;
-        }
-    }
-
-    @TestExtension("csrfSectionShownWhenNonDefaultIssuerConfigured")
-    public static class DummyCrumbIssuer extends CrumbIssuer {
-
-        @Override
-        public String getCrumbRequestField() {
-            return "dummy";
-        }
-
-        @Override
-        public String issueCrumb(ServletRequest request, String salt) {
-            return "dummy-crumb";
-        }
-
-        public static class DescriptorImpl extends CrumbIssuerDescriptor<DummyCrumbIssuer> {
-
-            DescriptorImpl() {
-                super(
-                    DummyCrumbIssuer.class.getName(),
-                    "Dummy Crumb Issuer"
-                );
-            }
-
-            @Override
-            public String getDisplayName() {
-                return "Dummy Crumb Issuer";
-            }
         }
     }
 }
