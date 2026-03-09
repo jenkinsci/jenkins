@@ -17,7 +17,7 @@ jobs:
           discourse-author-username: jenkins-release-bot
           discourse-category: 23
       - name: Post on mailing list
-        uses: dawidd6/action-send-mail@62a2d05b79935ad4fb90ce9079928099579c14ac # v9
+        uses: dawidd6/action-send-mail@ba302ba66e88942841281c984a6b31ca6d6289e6 # v11
         with:
           server_address: smtp.gmail.com
           server_port: 465
