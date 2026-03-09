@@ -1140,6 +1140,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * @since 2.60
      */
+        /**
+     * RSS feed for changes in this project.
+     * @since 2.60
+     */
     public void doRssChangelog(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         class FeedItem {
             ChangeLogSet.Entry e;
@@ -1165,62 +1169,71 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             scmDisplayName = " " + String.join(", ", scmNames);
         }
 
-        final int MAX_ENTRIES = 20;
-        int totalFeedItems = 0;
-        for (RunT r = getLastBuild(); r != null && totalFeedItems < MAX_ENTRIES; r = r.getPreviousBuild()) {
-        int idx = 0;
-        if (r instanceof RunWithSCM) {
-        for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM<?, ?>) r).getChangeSets()) {
-            for (ChangeLogSet.Entry e : c) {
-                if (totalFeedItems >= MAX_ENTRIES) break;
-                entries.add(new FeedItem(e, idx++));
-                totalFeedItems++;
-            }
-            if (totalFeedItems >= MAX_ENTRIES) break;
+        int maxEntries = jenkins.util.SystemProperties.getInteger("jenkins.rssChangelog.maxEntries", 20);
+        String maxParam = req.getParameter("max");
+        if (maxParam != null) {
+            try {
+                int requested = Integer.parseInt(maxParam);
+                if (requested > 0 && requested <= 100) { // upper bound
+                    maxEntries = requested;
+                }
+            } catch (NumberFormatException ignored) { }
         }
+
+        int totalFeedItems = 0;
+        for (RunT r = getLastBuild(); r != null && totalFeedItems < maxEntries; r = r.getPreviousBuild()) {
+            int idx = 0;
+            if (r instanceof RunWithSCM) {
+                for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM<?, ?>) r).getChangeSets()) {
+                    for (ChangeLogSet.Entry e : c) {
+                        entries.add(new FeedItem(e, idx++));
+                        totalFeedItems++;
+                        if (totalFeedItems >= maxEntries) break;
+                    }
+                }
+            }
+        }
+
+        RSS.forwardToRss(
+            getDisplayName() + scmDisplayName + " changes",
+            getUrl() + "changes",
+            entries, new FeedAdapter<>() {
+                @Override
+                public String getEntryTitle(FeedItem item) {
+                    return "#" + item.getBuild().number + ' ' + item.e.getMsg() + " (" + item.e.getAuthor() + ")";
+                }
+
+                @Override
+                public String getEntryUrl(FeedItem item) {
+                    return item.getBuild().getUrl() + "changes#detail" + item.idx;
+                }
+
+                @Override
+                public String getEntryID(FeedItem item) {
+                    return getEntryUrl(item);
+                }
+
+                @Override
+                public String getEntryDescription(FeedItem item) {
+                    StringBuilder buf = new StringBuilder();
+                    for (String path : item.e.getAffectedPaths()) {
+                        buf.append(path).append('\n');
+                    }
+                    return buf.toString();
+                }
+
+                @Override
+                public Calendar getEntryTimestamp(FeedItem item) {
+                    return item.getBuild().getTimestamp();
+                }
+
+                @Override
+                public String getEntryAuthor(FeedItem entry) {
+                    return JenkinsLocationConfiguration.get().getAdminAddress();
+                }
+            },
+            req, rsp);
     }
-}
-                S.forwardToRss(
-                getDisplayName() + scmDisplayName + " changes",
-                getUrl() + "changes",
-                entries, new FeedAdapter<>() {
-                    @Override
-                    public String getEntryTitle(FeedItem item) {
-                        return "#" + item.getBuild().number + ' ' + item.e.getMsg() + " (" + item.e.getAuthor() + ")";
-                    }
-
-                    @Override
-                    public String getEntryUrl(FeedItem item) {
-                        return item.getBuild().getUrl() + "changes#detail" + item.idx;
-                    }
-
-                    @Override
-                    public String getEntryID(FeedItem item) {
-                            return getEntryUrl(item);
-                        }
-
-                    @Override
-                    public String getEntryDescription(FeedItem item) {
-                        StringBuilder buf = new StringBuilder();
-                        for (String path : item.e.getAffectedPaths())
-                            buf.append(path).append('\n');
-                        return buf.toString();
-                    }
-
-                    @Override
-                    public Calendar getEntryTimestamp(FeedItem item) {
-                            return item.getBuild().getTimestamp();
-                        }
-
-                    @Override
-                    public String getEntryAuthor(FeedItem entry) {
-                        return JenkinsLocationConfiguration.get().getAdminAddress();
-                    }
-                },
-                req, rsp);
-    }
-
-
     /**
      * @since 2.475
      */
