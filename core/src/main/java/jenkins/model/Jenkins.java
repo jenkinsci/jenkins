@@ -346,6 +346,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.xml.sax.InputSource;
 
+
 /**
  * Root object of the system.
  *
@@ -470,6 +471,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Message displayed in the top page.
      */
     private String systemMessage;
+
+    private String systemMessageSeverity = "INFO";
 
     private MarkupFormatter markupFormatter;
 
@@ -1680,6 +1683,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public String getSystemMessage() {
         return systemMessage;
+    }
+
+    public synchronized String getSystemMessageSeverity() {
+        return systemMessageSeverity != null ? systemMessageSeverity : "INFO";
+    }
+
+    public synchronized void setSystemMessageSeverity(String systemMessageSeverity) throws java.io.IOException {
+        this.systemMessageSeverity = systemMessageSeverity;
+        save();
     }
 
     /**
@@ -4037,6 +4049,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             JSONObject json = req.getSubmittedForm();
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
+            systemMessageSeverity = Util.nullify(req.getParameter("systemMessageSeverity"));
 
             boolean result = true;
             for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())
