@@ -34,6 +34,11 @@ THE SOFTWARE.
         <j:set var="instance" value="${it}"/>
         <j:set var="descriptor" value="${instance.descriptor}"/>
 
+        <!-- Preserve cloud identity across reconfiguration -->
+        <f:invisibleEntry>
+          <input type="hidden" name="uniqueId" value="${it.uniqueId}"/>
+        </f:invisibleEntry>
+
         <!-- main body of the configuration -->
         <st:include it="${instance}" page="config.jelly" optional="true"/>
 
