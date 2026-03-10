@@ -287,6 +287,166 @@ class ApiTest {
         assertThat(response.getResponseHeaderValue("X-Frame-Options"), equalTo("deny"));
     }
 
+    /**
+     * Test that a normal XPath query works fine with small XML content.
+     */
+    @Test
+    @Issue("JENKINS-75747")
+    void xpathWithSmallXmlWorks() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("test-project");
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        Page page = wc.goTo(p.getUrl() + "api/xml?xpath=/*/name", "application/xml");
+        assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+        assertThat(page.getWebResponse().getContentAsString(), containsString("test-project"));
+    }
+
+    /**
+     * Test that large XML content with XPath query returns proper error when exceeding size limit.
+     * This test creates an object with many exported properties to generate large XML.
+     */
+    @Test
+    @Issue("JENKINS-75747")
+    void xpathWithLargeXmlExceedsLimit() throws Exception {
+        String originalValue = System.getProperty("hudson.model.Api.maxXmlSizeForXPath");
+        try {
+            System.setProperty("hudson.model.Api.maxXmlSizeForXPath", "500");
+
+            FreeStyleProject p = j.createFreeStyleProject("large-project");
+            for (int i = 0; i < 20; i++) {
+                j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+            }
+
+            JenkinsRule.WebClient wc = j.createWebClient();
+            wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+            Page page = wc.goTo(p.getUrl() + "api/xml?xpath=/*/name", null);
+            assertEquals(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, page.getWebResponse().getStatusCode());
+            String content = page.getWebResponse().getContentAsString();
+            assertThat(content, containsString("XML content size"));
+            assertThat(content, containsString("exceeds maximum allowed size"));
+            assertThat(content, containsString("tree"));
+        } finally {
+            if (originalValue != null) {
+                System.setProperty("hudson.model.Api.maxXmlSizeForXPath", originalValue);
+            } else {
+                System.clearProperty("hudson.model.Api.maxXmlSizeForXPath");
+            }
+        }
+    }
+
+    /**
+     * Test that the 'tree' parameter can be used as a workaround to reduce XML size.
+     */
+    @Test
+    @Issue("JENKINS-75747")
+    void xpathWithTreeParameterReducesSize() throws Exception {
+        String originalValue = System.getProperty("hudson.model.Api.maxXmlSizeForXPath");
+        try {
+            System.setProperty("hudson.model.Api.maxXmlSizeForXPath", "500");
+
+            FreeStyleProject p = j.createFreeStyleProject("tree-test-project");
+            for (int i = 0; i < 20; i++) {
+                j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+            }
+
+            JenkinsRule.WebClient wc = j.createWebClient();
+
+            Page page = wc.goTo(p.getUrl() + "api/xml?tree=name&xpath=/*/name", "application/xml");
+            assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+            assertThat(page.getWebResponse().getContentAsString(), containsString("tree-test-project"));
+        } finally {
+            if (originalValue != null) {
+                System.setProperty("hudson.model.Api.maxXmlSizeForXPath", originalValue);
+            } else {
+                System.clearProperty("hudson.model.Api.maxXmlSizeForXPath");
+            }
+        }
+    }
+
+    /**
+     * Test that setting the system property to -1 disables the size check.
+     */
+    @Test
+    @Issue("JENKINS-75747")
+    void xpathWithDisabledLimitWorks() throws Exception {
+        String originalValue = System.getProperty("hudson.model.Api.maxXmlSizeForXPath");
+        try {
+            System.setProperty("hudson.model.Api.maxXmlSizeForXPath", "-1");
+
+            FreeStyleProject p = j.createFreeStyleProject("unlimited-project");
+            for (int i = 0; i < 10; i++) {
+                j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+            }
+
+            JenkinsRule.WebClient wc = j.createWebClient();
+
+            Page page = wc.goTo(p.getUrl() + "api/xml?xpath=/*/name", "application/xml");
+            assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+            assertThat(page.getWebResponse().getContentAsString(), containsString("unlimited-project"));
+        } finally {
+            if (originalValue != null) {
+                System.setProperty("hudson.model.Api.maxXmlSizeForXPath", originalValue);
+            } else {
+                System.clearProperty("hudson.model.Api.maxXmlSizeForXPath");
+            }
+        }
+    }
+
+    /**
+     * Test that XML API without XPath parameter is not affected by the size limit.
+     */
+    @Test
+    @Issue("JENKINS-75747")
+    void xmlWithoutXpathNotAffectedByLimit() throws Exception {
+        String originalValue = System.getProperty("hudson.model.Api.maxXmlSizeForXPath");
+        try {
+            System.setProperty("hudson.model.Api.maxXmlSizeForXPath", "100");
+
+            FreeStyleProject p = j.createFreeStyleProject("no-xpath-project");
+            JenkinsRule.WebClient wc = j.createWebClient();
+
+            Page page = wc.goTo(p.getUrl() + "api/xml", "application/xml");
+            assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+        } finally {
+            if (originalValue != null) {
+                System.setProperty("hudson.model.Api.maxXmlSizeForXPath", originalValue);
+            } else {
+                System.clearProperty("hudson.model.Api.maxXmlSizeForXPath");
+            }
+        }
+    }
+
+    /**
+     * Test that exclude parameter also triggers the size check.
+     */
+    @Test
+    @Issue("JENKINS-75747")
+    void excludeParameterAlsoChecksSize() throws Exception {
+        String originalValue = System.getProperty("hudson.model.Api.maxXmlSizeForXPath");
+        try {
+            System.setProperty("hudson.model.Api.maxXmlSizeForXPath", "500");
+
+            FreeStyleProject p = j.createFreeStyleProject("exclude-test");
+            for (int i = 0; i < 20; i++) {
+                j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+            }
+
+            JenkinsRule.WebClient wc = j.createWebClient();
+            wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+            Page page = wc.goTo(p.getUrl() + "api/xml?exclude=/*/build", null);
+            assertEquals(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, page.getWebResponse().getStatusCode());
+            assertThat(page.getWebResponse().getContentAsString(), containsString("exceeds maximum allowed size"));
+        } finally {
+            if (originalValue != null) {
+                System.setProperty("hudson.model.Api.maxXmlSizeForXPath", originalValue);
+            } else {
+                System.clearProperty("hudson.model.Api.maxXmlSizeForXPath");
+            }
+        }
+    }
+
     @TestExtension("custom_notExposedToIFrame")
     public static class CustomObject implements RootAction {
         @Override

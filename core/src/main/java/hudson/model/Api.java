@@ -42,6 +42,7 @@ import javax.xml.transform.stream.StreamResult;
 import jenkins.model.Jenkins;
 import jenkins.security.SecureRequester;
 import jenkins.security.stapler.StaplerNotDispatchable;
+import jenkins.util.SystemProperties;
 import jenkins.util.xml.FilteredFunctionContext;
 import org.dom4j.CharacterData;
 import org.dom4j.Document;
@@ -88,6 +89,20 @@ public class Api extends AbstractModelObject {
         this.bean = bean;
     }
 
+    /**
+     * Gets the maximum allowed size (in bytes) of XML content for XPath processing.
+     * Can be configured via system property "hudson.model.Api.maxXmlSizeForXPath".
+     * Default is 10MB. Set to -1 to disable this check (not recommended).
+     *
+     * @return the maximum XML size in bytes, or -1 if disabled
+     */
+    private static long getMaxXmlSizeForXPath() {
+        return SystemProperties.getLong(
+            Api.class.getName() + ".maxXmlSizeForXPath",
+            10L * 1024 * 1024  // 10MB default
+        );
+    }
+
     @Override
     public String getDisplayName() {
         return "API";
@@ -123,11 +138,29 @@ public class Api extends AbstractModelObject {
         TreePruner pruner = tree != null ? new NamedPathPruner(tree) : new ByDepth(1 - depth);
         p.writeTo(bean, pruner, Flavor.XML.createDataWriter(bean, sw));
 
+        // Check XML size to prevent OutOfMemoryError
+        String xmlContent = sw.toString();
+        long xmlSizeInBytes = xmlContent.getBytes(StandardCharsets.UTF_8).length;
+        long maxXmlSize = getMaxXmlSizeForXPath();
+
+        if (maxXmlSize >= 0 && xmlSizeInBytes > maxXmlSize) {
+            String errorMsg = String.format(
+                "XML content size (%d bytes) exceeds maximum allowed size (%d bytes) for XPath processing. " +
+                "Consider using the 'tree' parameter to reduce the amount of data, or increase the limit via " +
+                "system property '%s.maxXmlSizeForXPath'.",
+                xmlSizeInBytes, maxXmlSize, Api.class.getName()
+            );
+            LOGGER.log(Level.WARNING, errorMsg);
+            rsp.setStatus(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE);
+            rsp.getWriter().print(errorMsg);
+            return;
+        }
+
         // apply XPath
         FilteredFunctionContext functionContext = new FilteredFunctionContext();
         Object result;
         try {
-            Document dom = new SAXReader().read(new StringReader(sw.toString()));
+            Document dom = new SAXReader().read(new StringReader(xmlContent));
             // apply exclusions
             if (excludes != null) {
                 for (String exclude : excludes) {
@@ -184,8 +217,19 @@ public class Api extends AbstractModelObject {
             }
 
         } catch (DocumentException e) {
-            LOGGER.log(Level.FINER, "Failed to do XPath/wrapper handling. XML is as follows:" + sw, e);
+            LOGGER.log(Level.FINER, "Failed to do XPath/wrapper handling. XML is as follows:" + xmlContent, e);
             throw new IOException("Failed to do XPath/wrapper handling. Turn on FINER logging to view XML.", e);
+        } catch (OutOfMemoryError e) {
+            String errorMsg = String.format(
+                "Out of memory while processing XML (size: %d bytes). " +
+                "Consider using the 'tree' parameter to reduce the amount of data, or increase the limit via " +
+                "system property '%s.maxXmlSizeForXPath'.",
+                xmlSizeInBytes, Api.class.getName()
+            );
+            LOGGER.log(Level.SEVERE, errorMsg, e);
+            rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            rsp.getWriter().print(errorMsg);
+            return;
         }
 
 
