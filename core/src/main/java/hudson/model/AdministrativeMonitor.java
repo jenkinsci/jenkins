@@ -31,7 +31,10 @@ import hudson.security.Permission;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -88,6 +91,8 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @see Jenkins#administrativeMonitors
  */
 public abstract class AdministrativeMonitor extends AbstractModelObject implements ExtensionPoint, StaplerProxy {
+    private static final Logger LOGGER = Logger.getLogger(AdministrativeMonitor.class.getName());
+
     /**
      * Human-readable ID of this monitor, which needs to be unique within the system.
      *
@@ -145,7 +150,69 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * he wants to ignore.
      */
     public boolean isEnabled() {
+        if (isSnoozed()) {
+            return false;
+        }
         return !Jenkins.get().getDisabledAdministrativeMonitors().contains(id);
+    }
+
+    /**
+     * Returns true if this monitor is currently snoozed.
+     *
+     * <p>
+     * A snoozed monitor is temporarily hidden from the management page
+     * until the snooze duration expires. Expired snooze entries are
+     * automatically cleaned up when checked.
+     * </p>
+     *
+     * @return true if this monitor is snoozed and the snooze has not yet expired
+     * @since TODO
+     */
+    public boolean isSnoozed() {
+        Map<String, Long> snoozed = Jenkins.get().getSnoozedAdministrativeMonitors();
+        Long expiry = snoozed.get(id);
+        if (expiry == null) {
+            return false;
+        }
+        long now = System.currentTimeMillis();
+        if (now >= expiry) {
+            // Cleanup expired entry to prevent memory leak
+            try {
+                AbstractCIBase jenkins = Jenkins.get();
+                Map<String, Long> map = jenkins.getSnoozedAdministrativeMonitors();
+                if (map.remove(id) != null) {
+                    jenkins.setSnoozedAdministrativeMonitors(map);
+                    jenkins.save();
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to cleanup expired snooze for " + id, e);
+            }
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Snooze this monitor for the specified duration, temporarily hiding it from the management page.
+     *
+     * @param durationMs the snooze duration in milliseconds, must be positive and at most 1 year
+     * @throws IOException if persisting the snooze state fails
+     * @throws IllegalArgumentException if the duration is not positive or exceeds 1 year
+     * @since TODO
+     */
+    public void snooze(long durationMs) throws IOException {
+        if (durationMs <= 0) {
+            throw new IllegalArgumentException("Duration must be positive");
+        }
+        if (durationMs > 365L * 24 * 60 * 60 * 1000) {
+            throw new IllegalArgumentException("Duration exceeds maximum (1 year)");
+        }
+        long expiryTime = System.currentTimeMillis() + durationMs;
+        AbstractCIBase jenkins = Jenkins.get();
+        Map<String, Long> map = jenkins.getSnoozedAdministrativeMonitors();
+        map.put(id, expiryTime);
+        jenkins.setSnoozedAdministrativeMonitors(map);
+        jenkins.save();
     }
 
     /**
@@ -182,6 +249,73 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         disable(true);
         rsp.sendRedirect2(req.getContextPath() + "/manage");
+    }
+
+    /**
+     * URL binding to snooze this monitor for a chosen duration.
+     *
+     * <p>
+     * Accepts a {@code durationPreset} parameter specifying preset minutes, or {@code "custom"}
+     * with a {@code snoozeUntil} date in {@code yyyy-MM-dd} format. Requires {@link Jenkins#ADMINISTER} permission.
+     * </p>
+     *
+     * @param req the request containing snooze duration parameters
+     * @param rsp the response
+     * @throws IOException if persisting the snooze state fails
+     * @since TODO
+     */
+    @RequirePOST
+    public void doSnooze(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        long durationMs;
+
+        try {
+            String preset = req.getParameter("durationPreset");
+            if (preset == null) {
+                throw new IllegalArgumentException("No duration specified");
+            }
+
+            if ("custom".equals(preset)) {
+                String snoozeUntilStr = req.getParameter("snoozeUntil");
+                if (snoozeUntilStr == null || snoozeUntilStr.isEmpty()) {
+                    throw new IllegalArgumentException("Custom date required");
+                }
+                // Parse date in format yyyy-MM-dd
+                java.time.LocalDate snoozeDate = java.time.LocalDate.parse(snoozeUntilStr);
+                java.time.LocalDate today = java.time.LocalDate.now();
+                if (!snoozeDate.isAfter(today)) {
+                    throw new IllegalArgumentException("Snooze date must be in the future");
+                }
+                // Calculate milliseconds until end of that day
+                java.time.ZonedDateTime endOfDay = snoozeDate.atStartOfDay(java.time.ZoneId.systemDefault())
+                        .plusDays(1);
+                durationMs = endOfDay.toInstant().toEpochMilli() - System.currentTimeMillis();
+            } else {
+                long minutes = Long.parseLong(preset);
+                if (minutes <= 0) {
+                    throw new IllegalArgumentException("Invalid preset duration");
+                }
+                durationMs = minutes * 60 * 1000;
+            }
+
+            // Validate max duration (1 year)
+            if (durationMs > 365L * 24 * 60 * 60 * 1000) {
+                throw new IllegalArgumentException("Duration exceeds maximum (1 year)");
+            }
+
+        } catch (IllegalArgumentException | java.time.format.DateTimeParseException e) {
+            rsp.sendError(StaplerResponse2.SC_BAD_REQUEST, e.getMessage());
+            return;
+        }
+
+        snooze(durationMs);
+
+        // AJAX: return 200; otherwise redirect
+        if ("XMLHttpRequest".equals(req.getHeader("X-Requested-With"))) {
+            rsp.setStatus(StaplerResponse2.SC_OK);
+        } else {
+            rsp.sendRedirect2(req.getContextPath() + "/manage");
+        }
     }
 
     /**

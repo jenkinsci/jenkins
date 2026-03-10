@@ -25,11 +25,16 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="jenkins-alert jenkins-alert-warning">
-    <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <f:submit name="agent" value="${%Set up agent}"/>
-      <f:submit name="cloud" value="${%Set up cloud}"/>
-      <f:submit name="no" value="${%Dismiss}"/>
-    </form>
-    ${%ExecutorsWarning}
+    <div>
+      ${%ExecutorsWarning}
+    </div>
+    <div class="snooze-form">
+      <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}" class="snooze-form">
+        <f:submit name="agent" value="${%Set up agent}"/>
+        <f:submit name="cloud" value="${%Set up cloud}"/>
+        <f:submit name="no" value="${%Dismiss}"/>
+      </form>
+      <t:snoozeForm />
+    </div>
   </div>
 </j:jelly>
