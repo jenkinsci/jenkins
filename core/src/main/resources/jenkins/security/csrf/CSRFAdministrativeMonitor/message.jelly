@@ -25,7 +25,14 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <div class="jenkins-alert jenkins-alert-warning">
         <form method="post" action="${rootURL}/${it.url}/disable">
-            <f:submit value="${%Dismiss}"/>
+            <l:isAdmin>
+                <button type="submit"
+                        class="jenkins-button jenkins-button--tertiary"
+                        value="${%Dismiss}"
+                        name="no">
+                <l:icon src="symbol-close"/>
+                </button>
+            </l:isAdmin>
         </form>
         <j:set var="referenceAnchor">
             <a href="https://www.jenkins.io/redirect/csrf-protection" rel="noopener noreferrer" target="_blank">${%referenceUrlContent}</a>
