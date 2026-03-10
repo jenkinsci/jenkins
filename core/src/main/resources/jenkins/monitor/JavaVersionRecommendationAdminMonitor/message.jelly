@@ -28,7 +28,7 @@ THE SOFTWARE.
         <form id="JavaVersionRecommendationAdminMonitor" method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
             <f:submit name="yes" value="${%More Info}"/>
             <l:isAdmin>
-                <f:submit value="${%Ignore}" name="no"/>
+                <f:submit value="${%Ignore}" name="no" icon="symbol-close-circle" primary="false"/>
             </l:isAdmin>
         </form>
         <h2>${%Recommended_Java_Version_Heading(it.javaVersion)}</h2>
