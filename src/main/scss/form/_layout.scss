@@ -32,7 +32,9 @@
   // Workaround for float:right button controls
   // (eg Global Credentials' Verify Configuration button being hidden by the floating submit bar)
   &::after {
-    content: " "; /* Older browser do not support empty content */
+    content: " ";
+
+    /* Older browser do not support empty content */
     visibility: hidden;
     display: block;
     height: 0;
@@ -156,7 +158,7 @@
 .jenkins-select-help a.jenkins-help-button {
   position: absolute;
   top: -3.7rem;
-  right: -2rem;
+  right: -2.5rem;
 }
 
 .jenkins-edited-section-label {
