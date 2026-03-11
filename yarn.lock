@@ -4562,7 +4562,7 @@ __metadata:
     hotkeys-js: "npm:3.12.2"
     jquery: "npm:4.0.0"
     lodash: "npm:4.17.23"
-    mini-css-extract-plugin: "npm:2.10.0"
+    mini-css-extract-plugin: "npm:2.10.1"
     postcss: "npm:8.5.6"
     postcss-loader: "npm:8.2.1"
     postcss-preset-env: "npm:11.2.0"
@@ -4999,15 +4999,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mini-css-extract-plugin@npm:2.10.0":
-  version: 2.10.0
-  resolution: "mini-css-extract-plugin@npm:2.10.0"
+"mini-css-extract-plugin@npm:2.10.1":
+  version: 2.10.1
+  resolution: "mini-css-extract-plugin@npm:2.10.1"
   dependencies:
     schema-utils: "npm:^4.0.0"
     tapable: "npm:^2.2.1"
   peerDependencies:
     webpack: ^5.0.0
-  checksum: 10c0/5fb0654471f4fb695629d96324d327d4d3a05069a95b83770d070e8f48a07d5b5f8da61adabdd56e3119cf6b17eef058c4ba6ab4cd31a7b2af48624621fe0520
+  checksum: 10c0/2e90dacdca5bc35862e601e6b3989673e498217c789c4bb270a35bbd22b4d6e85f091795d0324d5cda5a9e2aa2a8f1f3340b6db5a96d66ec208c627659bebb08
   languageName: node
   linkType: hard
 
