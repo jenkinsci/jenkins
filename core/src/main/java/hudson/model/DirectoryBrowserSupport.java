@@ -525,7 +525,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
 
         public static Path createNotReadableVersionOf(Path that) {
-            return new Path(that.href, that.title, that.isFolder, that.size, false, 0L);
+            return new Path(that.href, that.title, that.isFolder, that.size, false, that.lastModified);
         }
 
     }
