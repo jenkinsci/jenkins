@@ -644,6 +644,13 @@ public class SlaveComputer extends Computer {
         if (this.channel != null)
             throw new IllegalStateException("Already connected");
 
+        // Reset the disconnect guard early for the new connection lifecycle.
+        // This ensures that if the setup fails halfway through, the onClosed listener
+        // will still correctly execute the teardown logic.
+        synchronized (disconnectLock) {
+            this.afterDisconnectCalled = false;
+        }
+
         final TaskListener taskListener = launchLog != null ? new StreamTaskListener(launchLog) : TaskListener.NULL;
         PrintStream log = taskListener.getLogger();
 
@@ -761,12 +768,6 @@ public class SlaveComputer extends Computer {
             isUnix = _isUnix;
             numRetryAttempt = 0;
             this.channel = channel;
-
-            // Reset the disconnect guard for the new connection lifecycle
-            synchronized (disconnectLock) {
-                this.afterDisconnectCalled = false;
-            }
-
             this.absoluteRemoteFs = remoteFS;
             defaultCharset = Charset.forName(defaultCharsetName);
 
