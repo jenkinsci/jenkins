@@ -74,6 +74,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -132,10 +133,11 @@ public class SlaveComputer extends Computer {
      */
     private final Object disconnectLock = new Object();
     /**
-     * Guard flag protected by {@link #disconnectLock} to track if the launcher's afterDisconnect
-     * has already been called for the current channel lifecycle.
+     * Future to track the completion of the afterDisconnect teardown,
+     * ensuring it is only executed once per connection and concurrent
+     * callers wait for it to finish without holding a monitor lock.
      */
-    private boolean afterDisconnectCalled = false;
+    private CompletableFuture<Void> disconnectFuture;
     /**
      * Perpetually writable log file.
      */
@@ -645,10 +647,8 @@ public class SlaveComputer extends Computer {
             throw new IllegalStateException("Already connected");
 
         // Reset the disconnect guard early for the new connection lifecycle.
-        // This ensures that if the setup fails halfway through, the onClosed listener
-        // will still correctly execute the teardown logic.
         synchronized (disconnectLock) {
-            this.afterDisconnectCalled = false;
+            this.disconnectFuture = null;
         }
 
         final TaskListener taskListener = launchLog != null ? new StreamTaskListener(launchLog) : TaskListener.NULL;
@@ -670,14 +670,7 @@ public class SlaveComputer extends Computer {
                 }
                 closeChannel();
                 try {
-                    // Synchronize to prevent double execution (e.g., JENKINS-35272) while
-                    // forcing concurrent callers to wait for teardown to complete cleanly.
-                    synchronized (disconnectLock) {
-                        if (!afterDisconnectCalled) {
-                            afterDisconnectCalled = true;
-                            launcher.afterDisconnect(SlaveComputer.this, taskListener);
-                        }
-                    }
+                    safeAfterDisconnect();
                 } catch (Throwable t) {
                     LogRecord lr = new LogRecord(Level.SEVERE,
                             "Launcher {0}'s afterDisconnect method propagated an exception when {1}'s connection was closed: {2}");
@@ -850,14 +843,7 @@ public class SlaveComputer extends Computer {
             launcher.beforeDisconnect(SlaveComputer.this, taskListener);
             closeChannel();
 
-            // Synchronize to prevent double execution (e.g., JENKINS-35272) while
-            // forcing concurrent callers to wait for teardown to complete cleanly.
-            synchronized (disconnectLock) {
-                if (!afterDisconnectCalled) {
-                    afterDisconnectCalled = true;
-                    launcher.afterDisconnect(SlaveComputer.this, taskListener);
-                }
-            }
+            safeAfterDisconnect();
         });
     }
 
@@ -1223,6 +1209,38 @@ public class SlaveComputer extends Computer {
         @Override
         public List<LogRecord> call() {
             return new ArrayList<>(SLAVE_LOG_HANDLER.getView());
+        }
+    }
+
+    /**
+     * Ensures that {@link Launcher# afterDisconnect(SlaveComputer, TaskListener)} is
+     * invoked at most once per connection, without holding a lock during the plugin call.
+     */
+    private void safeAfterDisconnect() {
+        CompletableFuture<Void> f;
+        boolean isFirst = false;
+
+        synchronized (disconnectLock) {
+            if (disconnectFuture == null) {
+                disconnectFuture = new CompletableFuture<>();
+                isFirst = true;
+            }
+            f = disconnectFuture;
+        }
+
+        if (isFirst) {
+            try {
+                launcher.afterDisconnect(SlaveComputer.this, taskListener);
+            } finally {
+                f.complete(null); // Signal to other threads that teardown is done
+            }
+        } else {
+            // Block and wait for the first thread to finish the teardown
+            try {
+                f.join();
+            } catch (Exception e) {
+                // Ignore interruptions while waiting for teardown
+            }
         }
     }
 
