@@ -57,7 +57,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Extension
 public class ChannelPinger extends ComputerListener {
     static final int PING_TIMEOUT_SECONDS_DEFAULT = 4 * 60;
-    static final int PING_INTERVAL_SECONDS_DEFAULT = 5 * 60;
+    static final int PING_INTERVAL_SECONDS_DEFAULT = 30;
 
     private static final Logger LOGGER = Logger.getLogger(ChannelPinger.class.getName());
     private static final String TIMEOUT_SECONDS_PROPERTY = ChannelPinger.class.getName() + ".pingTimeoutSeconds";
