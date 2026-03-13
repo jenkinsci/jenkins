@@ -1,11 +1,12 @@
 <div>
   Environment variables defined here will be made available to every build
-  executed by this agent, and will override any environment variables that have
+  executed on this node and will override any environment variables that have
   the same
   <i>Name</i>
   as those defined on the
   <i>Configure System</i>
   page.
+
   <p>
     Using the syntax
     <code>$NAME</code>
@@ -14,21 +15,20 @@
     (
     <code>%NAME%</code>
     on Windows), these variables can be used in job configurations, or from
-    process launched by a build.
+    processes launched by a build.
   </p>
 
   <p>
     Jenkins also supports a special syntax,
     <code>BASE+EXTRA</code>
-    , which allows you to add multiple key-value pairs here, which will be
-    prepended to an existing environment variable.
+    , which allows you to prepand values to an existing environment variable.
   </p>
 
   <p>
-    For example, if you have a machine which has
+    For example, if a node has
     <code>PATH=/usr/bin</code>
-    , you could add to the standard path by defining an environment variable
-    here, with the name
+    , you could add to the standard path by defining an environment variable with
+    the name
     <code>PATH+LOCAL_BIN</code>
     and value
     <code>/usr/local/bin</code>
@@ -36,9 +36,7 @@
     <br />
     This would result in
     <code>PATH=/usr/local/bin:/usr/bin</code>
-    being exported during builds executed on this machine.
-    <code>PATH+LOCAL_BIN=/usr/local/bin</code>
-    will also be exported.
+    being exported during builds executed on this node.
     <br />
     Multiple entries are prepended to the "base" variable according to the
     alphabetical order of the "extra" part of the name.
