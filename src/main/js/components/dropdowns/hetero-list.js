@@ -27,12 +27,12 @@ function convertInputsToButtons(e) {
     let btn = document.createElement("button");
     btn.setAttribute("type", "button");
     btn.classList.add("hetero-list-add", "jenkins-button");
-    btn.innerText = oldbtn.getAttribute("value");
+    let plus = createElementFromHtml(Symbols.PLUS);
+    btn.appendChild(plus);
+    btn.appendChild(document.createTextNode(oldbtn.getAttribute("value")));
     if (oldbtn.hasAttribute("suffix")) {
       btn.setAttribute("suffix", oldbtn.getAttribute("suffix"));
     }
-    let chevron = createElementFromHtml(Symbols.CHEVRON_DOWN);
-    btn.appendChild(chevron);
     oldbtn.parentNode.appendChild(btn);
     oldbtn.remove();
   });
