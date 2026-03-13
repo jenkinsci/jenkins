@@ -35,6 +35,7 @@ import hudson.remoting.ObjectInputStreamEx;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -243,9 +244,13 @@ public class AnnotatedLargeText<T> extends LargeText {
     public long writeHtmlTo(long start, Writer w) throws IOException {
         StaplerRequest2 req = Stapler.getCurrentRequest2();
         StaplerResponse2 rsp = Stapler.getCurrentResponse2();
+
+        long adjustedStart = start > 0 ? Math.max(0, start - 4) : start;
+        Writer safeWriter = start > 0 ? new SkipUntilNewlineWriter(w) : w;
+
         ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
-                w, createAnnotator(req), context, charset);
-        long r = super.writeLogTo(start, caw);
+                safeWriter, createAnnotator(req), context, charset);
+        long r = super.writeLogTo(adjustedStart, caw);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Cipher sym = PASSING_ANNOTATOR.encrypt();
@@ -266,4 +271,57 @@ public class AnnotatedLargeText<T> extends LargeText {
      * Used for sending the state of ConsoleAnnotator to the client, because we are deserializing this object later.
      */
     private static final CryptoConfidentialKey PASSING_ANNOTATOR = new CryptoConfidentialKey(AnnotatedLargeText.class, "consoleAnnotator");
+
+    private static class SkipUntilNewlineWriter extends FilterWriter {
+
+        private boolean foundNewline = false;
+        private final StringBuilder buffer = new StringBuilder();
+
+        SkipUntilNewlineWriter(Writer out) {
+            super(out);
+        }
+
+        @Override
+        public void write(char[] cbuf, int off, int len) throws IOException {
+            if (foundNewline) {
+                out.write(cbuf, off, len);
+                return;
+            }
+            for (int i = off; i < off + len; i++) {
+                if (cbuf[i] == '\n') {
+                    foundNewline = true;
+                    // write everything AFTER the \n
+                    out.write(cbuf, i + 1, (off + len) - (i + 1));
+                    return;
+                }
+            }
+            // no \n found yet
+            buffer.append(cbuf, off, len);
+        }
+
+        @Override
+        public void write(String str, int off, int len) throws IOException {
+            write(str.toCharArray(), off, len);
+        }
+
+        @Override
+        public void write(int c) throws IOException {
+            if (foundNewline) { out.write(c); return; }
+            if (c == '\n') {
+                foundNewline = true;
+            } else {
+                buffer.append((char) c);
+            }
+        }
+
+        @Override
+        public void flush() throws IOException {
+            // if stream ended with no \n, dump buffer
+            if (!foundNewline && !buffer.isEmpty()) {
+                out.write(buffer.toString());
+                buffer.setLength(0);
+            }
+            out.flush();
+        }
+    }
 }

@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.matchesRegex;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.MarkupText;
@@ -164,6 +165,33 @@ class AnnotatedLargeTextTest {
         text.writeHtmlTo(0, w);
         assertThat(w.toString(), matchesRegex("Some text[.]\nGo back to .*your home[.]\nMore text[.]\n"));
         assertThat(logging.getMessages(), hasItem(matchesRegex("Failed to resurrect annotation from .+")));
+    }
+
+    @Issue("JENKINS-44972")
+    @Test
+    void truncatedLogMidLineSkipsGarbage() throws Exception {
+        ByteBuffer buf = new ByteBuffer();
+        PrintStream ps = new PrintStream(buf, true, StandardCharsets.UTF_8);
+
+        ps.print("First line " + TestNote.encodeTo("/root", "click here") + ".\n");
+        ps.print("Second line clean.\n");
+        ps.print("Third line clean.\n");
+
+        AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
+
+        StringWriter w = new StringWriter();
+        text.writeHtmlTo(0, w);
+        assertThat(w.toString(), containsString("First line"));
+
+        StringWriter w2 = new StringWriter();
+        text.writeHtmlTo(5, w2);
+
+        assertThat(w2.toString(), not(matchesRegex(".*[A-Za-z0-9+/]{20,}.*")));
+
+        assertThat(w2.toString(), containsString("Second line clean."));
+
+        ByteBuffer singleLine = new ByteBuffer();
+        singleLine.write("no newline at all".getBytes(StandardCharsets.UTF_8));
     }
 
     /** Simplified version of {@link HyperlinkNote}. */
