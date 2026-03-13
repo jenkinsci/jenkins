@@ -1,0 +1,15 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
+  <j:invokeStatic var="jenkins" className="jenkins.model.Jenkins" method="get" />
+
+  <j:forEach var="category" items="${jenkins.categorizedManagementLinks.entrySet()}">
+    <dd:header text="${category.key.label}" />
+    <j:forEach var="item" items="${category.value}">
+      <dd:item icon="${item.iconFileName}"
+               text="${item.displayName}"
+               href="${rootURL}/manage/${item.urlName}"
+               badge="${item.badge}" />
+    </j:forEach>
+    <dd:separator />
+  </j:forEach>
+</j:jelly>
