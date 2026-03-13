@@ -2,7 +2,7 @@ import hotkeys from "hotkeys-js";
 
 window.addEventListener("load", () => {
   const openCommandPaletteButton = document.querySelector(
-    "#button-open-command-palette",
+    "#root-action-SearchAction",
   );
   if (openCommandPaletteButton) {
     hotkeys(translateModifierKeysForUsersPlatform("CMD+K"), () => {
@@ -16,7 +16,7 @@ window.addEventListener("load", () => {
   const pageSearchBar = document.querySelectorAll(
     "#page-body .jenkins-search__input",
   );
-  if (pageSearchBar.length === 1) {
+  if (pageSearchBar.length > 0) {
     hotkeys("/", () => {
       pageSearchBar[0].focus();
 

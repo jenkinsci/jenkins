@@ -2,7 +2,7 @@ import { createElementFromHtml } from "@/util/dom";
 import makeKeyboardNavigable from "@/util/keyboard";
 import { xmlEscape } from "@/util/security";
 
-const SELECTED_CLASS = "jenkins-search__results-item--selected";
+const SELECTED_CLASS = "jenkins-dropdown__item--selected";
 
 function init() {
   const searchBarInputs = document.querySelectorAll(".jenkins-search__input");
@@ -16,7 +16,7 @@ function init() {
       );
       searchWrapper.appendChild(searchResultsContainer);
       const searchResults = createElementFromHtml(
-        `<div class="jenkins-search__results"></div>`,
+        `<div class="jenkins-dropdown"></div>`,
       );
       searchResultsContainer.appendChild(searchResults);
 
@@ -35,9 +35,9 @@ function init() {
           results.forEach((item, index) => {
             container.appendChild(
               createElementFromHtml(
-                `<a class="${index === 0 ? SELECTED_CLASS : ""}" href="${
+                `<a class="jenkins-dropdown__item ${index === 0 ? SELECTED_CLASS : ""}" href="${
                   item.url
-                }"><div>${item.icon}</div>${xmlEscape(item.label)}</a>`,
+                }"><div class="jenkins-dropdown__item__icon">${item.icon}</div>${xmlEscape(item.label)}</a>`,
               ),
             );
           });

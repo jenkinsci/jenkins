@@ -24,13 +24,38 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <!-- view tab bar -->
-  <l:tabBar>
-    <j:forEach var="v" items="${it.sort(views)}">
-      <l:tab name="${v.displayName}" active="${v==currentView}" href="${rootURL}/${v.url}" />
-    </j:forEach>
-    <j:if test="${currentView.hasPermission(currentView.CREATE)}">
-      <l:tabNewItem href="${rootURL}/${currentView.owner.url}newView" title="${%New View}" />
-    </j:if>
-  </l:tabBar>
+  <l:userExperimentalFlag var="newDashboardPage" flagClassName="jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag" />
+
+  <j:choose>
+    <j:when test="${newDashboardPage}">
+      <div class="app-build-tabs">
+        <j:forEach var="tab" items="${it.sort(views)}">
+          <a href="${rootURL}/${tab.url}"
+             class="jenkins-button ${tab == currentView ? '' : 'jenkins-button--tertiary'}">
+            <j:if test="${tab.iconFileName != null}">
+              <l:icon src="${tab.iconFileName}" />
+            </j:if>
+            ${tab.displayName}
+            <l:badge badge="${tab.badge}" />
+          </a>
+        </j:forEach>
+
+        <j:if test="${currentView.hasPermission(currentView.CREATE)}">
+          <a href="${rootURL}/${currentView.owner.url}newView" tooltip="${%New View}" class="jenkins-button jenkins-button--tertiary">
+            <l:icon src="symbol-add" />
+          </a>
+        </j:if>
+      </div>
+    </j:when>
+    <j:otherwise>
+      <l:tabBar>
+        <j:forEach var="v" items="${it.sort(views)}">
+          <l:tab name="${v.displayName}" active="${v==currentView}" href="${rootURL}/${v.url}" />
+        </j:forEach>
+        <j:if test="${currentView.hasPermission(currentView.CREATE)}">
+          <l:tabNewItem href="${rootURL}/${currentView.owner.url}newView" title="${%New View}" />
+        </j:if>
+      </l:tabBar>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>

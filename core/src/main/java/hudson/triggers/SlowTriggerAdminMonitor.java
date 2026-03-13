@@ -36,7 +36,7 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
 
     @NonNull
     public static SlowTriggerAdminMonitor getInstance() {
-        return ExtensionList.lookup(SlowTriggerAdminMonitor.class).get(0);
+        return ExtensionList.lookup(SlowTriggerAdminMonitor.class).getFirst();
     }
 
     public SlowTriggerAdminMonitor() {

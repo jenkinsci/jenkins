@@ -1,25 +1,30 @@
-import $ from "jquery";
+import { getI18n } from "@/util/i18n";
+import { createElementFromHtml } from "@/util/dom";
 
-var getItems = function () {
-  var d = $.Deferred();
-  $.get("itemCategories?depth=3&iconStyle=icon-xlg").done(function (data) {
-    d.resolve(data);
-  });
-  return d.promise();
+const enableHeadings = false;
+const nameInput = document.querySelector(`#createItem input[name="name"]`);
+const copyFromInput = document.querySelector(`#createItem input[name="from"]`);
+const copyRadio = document.querySelector(`#createItem input[value="copy"]`);
+
+const getItems = function () {
+  return fetch("itemCategories?depth=3&iconStyle=icon-xlg").then((response) =>
+    response.json(),
+  );
 };
 
-var jRoot = $("head").attr("data-rooturl");
+const jRoot = document.querySelector("head").getAttribute("data-rooturl");
 
-$.when(getItems()).done(function (data) {
-  $(function () {
+document.addEventListener("DOMContentLoaded", () => {
+  getItems().then((data) => {
     //////////////////////////
     // helper functions...
 
     function parseResponseFromCheckJobName(data) {
-      var html = $.parseHTML(data);
-      var element = html[0];
-      if (element !== undefined) {
-        return $(element).text();
+      var parser = new DOMParser();
+      var html = parser.parseFromString(data, "text/html");
+      var element = html.body.firstChild;
+      if (element) {
+        return element.textContent;
       }
       return undefined;
     }
@@ -38,50 +43,51 @@ $.when(getItems()).done(function (data) {
     }
 
     function getCopyFromValue() {
-      return $('input[type="text"][name="from"]', "#createItem").val();
+      return copyFromInput.value;
     }
 
     function isItemNameEmpty() {
-      var itemName = $('input[name="name"]', "#createItem").val();
-      return itemName === "" ? true : false;
+      var itemName = nameInput.value;
+      return itemName.trim() === "";
     }
 
     function getFieldValidationStatus(fieldId) {
-      return $("#" + fieldId).data("valid");
+      return document.querySelector("#" + fieldId)?.dataset.valid === "true";
     }
 
     function setFieldValidationStatus(fieldId, status) {
-      $("#" + fieldId).data("valid", status);
-    }
-
-    function activateValidationMessage(messageId, context, message) {
-      if (message !== undefined && message !== "") {
-        $(messageId, context).text("» " + message);
+      const element = document.querySelector("#" + fieldId);
+      if (element) {
+        element.dataset.valid = status;
       }
-      cleanValidationMessages(context);
-      $(messageId).removeClass("input-message-disabled");
-      enableSubmit(false);
     }
 
-    function cleanValidationMessages(context) {
-      $(context)
-        .find(".input-validation-message")
-        .addClass("input-message-disabled");
-    }
-
-    function enableSubmit(status) {
-      var btn = $(".bottom-sticker-inner button[type=submit]");
-      if (status === true) {
-        if (btn.hasClass("disabled")) {
-          btn.removeClass("disabled");
-          btn.prop("disabled", false);
-        }
-      } else {
-        if (!btn.hasClass("disabled")) {
-          btn.addClass("disabled");
-          btn.prop("disabled", true);
-        }
+    /**
+     * Shows or clears the validation message for the name input.
+     *
+     * Only updates the UI after the user has interacted with the input, which is
+     * indicated by `nameInput.dataset.dirty` being set.
+     */
+    function activateValidationMessage(message) {
+      if (!nameInput.dataset.dirty) {
+        return;
       }
+
+      updateValidationArea(
+        document.querySelector(".validation-error-area"),
+        message !== undefined && message !== ""
+          ? `<div class="error">${message}</div>`
+          : `<div/>`,
+      );
+
+      refreshSubmitButtonState();
+    }
+
+    function refreshSubmitButtonState() {
+      const submitButton = document.querySelector(
+        ".bottom-sticker-inner button[type=submit]",
+      );
+      submitButton.disabled = !getFormValidationStatus();
     }
 
     function getFormValidationStatus() {
@@ -95,19 +101,17 @@ $.when(getItems()).done(function (data) {
     }
 
     function cleanItemSelection() {
-      $(".categories").find('li[role="radio"]').attr("aria-checked", "false");
-      $("#createItem")
-        .find('input[type="radio"][name="mode"]')
-        .removeAttr("checked");
-      $(".categories").find(".active").removeClass("active");
+      document
+        .querySelector('#createItem input[type="radio"][name="mode"]')
+        .removeAttribute("checked");
       setFieldValidationStatus("items", false);
     }
 
     function cleanCopyFromOption() {
-      $("#createItem")
-        .find('input[type="radio"][value="copy"]')
-        .removeAttr("checked");
-      $('input[type="text"][name="from"]', "#createItem").val("");
+      copyRadio?.removeAttribute("checked");
+      if (copyFromInput) {
+        copyFromInput.value = "";
+      }
       setFieldValidationStatus("from", false);
     }
 
@@ -115,40 +119,37 @@ $.when(getItems()).done(function (data) {
     // Draw functions
 
     function drawCategory(category) {
-      var $category = $("<div/>")
-        .addClass("category")
-        .attr("id", "j-add-item-type-" + cleanClassName(category.id));
-      var $items = $("<ul/>").addClass("j-item-options");
-      var $catHeader = $('<div class="header" />');
-      var title = "<h2>" + category.name + "</h2>";
-      var description = "<p>" + category.description + "</p>";
+      const heading = createElementFromHtml(
+        "<div class='jenkins-choice-list__heading'></div>",
+      );
+      const title = createElementFromHtml("<h2>" + category.name + "</h2>");
+      const description = createElementFromHtml(
+        "<p>" + category.description + "</p>",
+      );
+      heading.appendChild(title);
+      heading.appendChild(description);
+      const response = [];
 
-      // Add items
-      $.each(category.items, function (i, elem) {
-        $items.append(drawItem(elem));
+      if (enableHeadings) {
+        response.push(heading);
+      }
+
+      category.items.forEach((elem) => {
+        response.push(drawItem(elem));
       });
 
-      $catHeader.append(title);
-      $catHeader.append(description);
-      $category.append($catHeader);
-      $category.append($items);
-
-      return $category;
+      return response;
     }
 
     function drawItem(elem) {
-      var item = document.createElement("li");
-      item.tabIndex = 0;
-      item.className = cleanClassName(elem.class);
-      item.setAttribute("role", "radio");
-      item.setAttribute("aria-checked", "false");
+      var item = document.createElement("div");
+      item.className =
+        cleanClassName(elem.class) + " jenkins-choice-list__item";
+
+      var label = item.appendChild(document.createElement("label"));
 
       var iconDiv = drawIcon(elem);
-      item.appendChild(iconDiv);
-      var labelContainer = document.createElement("div");
-      item.appendChild(labelContainer);
-
-      var label = labelContainer.appendChild(document.createElement("label"));
+      label.appendChild(iconDiv);
 
       var radio = label.appendChild(document.createElement("input"));
       radio.type = "radio";
@@ -156,40 +157,24 @@ $.when(getItems()).done(function (data) {
       radio.value = elem.class;
 
       var displayName = label.appendChild(document.createElement("span"));
-      displayName.className = "label";
-
+      displayName.className = "jenkins-choice-list__item__label";
       displayName.appendChild(document.createTextNode(elem.displayName));
 
-      var desc = labelContainer.appendChild(document.createElement("div"));
-      desc.className = "desc";
+      var desc = label.appendChild(document.createElement("div"));
+      desc.className = "jenkins-choice-list__item__description";
       desc.innerHTML = checkForLink(elem.description);
 
-      function select(e) {
-        e.preventDefault();
+      function select() {
         cleanCopyFromOption();
         cleanItemSelection();
-
-        $(this).attr("aria-checked", "true");
-        $(this).find('input[type="radio"][name="mode"]').prop("checked", true);
-        $(this).addClass("active");
-
         setFieldValidationStatus("items", true);
-        if (!getFieldValidationStatus("name")) {
-          $('input[name="name"][type="text"]', "#createItem").focus();
-        } else {
-          if (getFormValidationStatus()) {
-            enableSubmit(true);
-          }
+
+        if (getFieldValidationStatus("name")) {
+          refreshSubmitButtonState();
         }
       }
 
-      item.addEventListener("click", select);
-      item.addEventListener("keydown", function (evt) {
-        if (evt.code === "Space" || evt.code === "Enter") {
-          this.click();
-          evt.stopPropagation();
-        }
-      });
+      radio.addEventListener("change", select);
 
       return item;
     }
@@ -197,10 +182,10 @@ $.when(getItems()).done(function (data) {
     function drawIcon(elem) {
       var iconDiv = document.createElement("div");
       if (elem.iconXml) {
-        iconDiv.className = "icon";
+        iconDiv.className = "jenkins-choice-list__item__icon";
         iconDiv.innerHTML = elem.iconXml;
       } else if (elem.iconClassName && elem.iconQualifiedUrl) {
-        iconDiv.className = "icon";
+        iconDiv.className = "jenkins-choice-list__item__icon";
 
         var img1 = document.createElement("img");
         img1.src = elem.iconQualifiedUrl;
@@ -209,7 +194,7 @@ $.when(getItems()).done(function (data) {
         // Example for Freestyle project
         // <div class="icon"><img class="icon-freestyle-project icon-xlg" src="/jenkins/static/108b2346/images/48x48/freestyleproject.png"></div>
       } else if (elem.iconFilePathPattern) {
-        iconDiv.className = "icon";
+        iconDiv.className = "jenkins-choice-list__item__icon";
 
         var iconFilePath =
           jRoot + "/" + elem.iconFilePathPattern.replace(":size", "48x48");
@@ -221,16 +206,7 @@ $.when(getItems()).done(function (data) {
         // Example for Maven project
         // <div class="icon"><img src="/jenkins/plugin/maven-plugin/images/48x48/mavenmoduleset.png"></div>
       } else {
-        var colors = [
-          "c-49728B",
-          "c-335061",
-          "c-D33833",
-          "c-6D6B6D",
-          "c-6699CC",
-        ];
-        var desc = elem.description || "";
         var name = elem.displayName;
-        var colorClass = colors[desc.length % 4];
         var aName = name.split(" ");
         var a = name.substring(0, 1);
         var b =
@@ -244,7 +220,7 @@ $.when(getItems()).done(function (data) {
         spanFakeImgB.className = "b";
         spanFakeImgB.innerText = b;
         iconDiv.appendChild(spanFakeImgB);
-        iconDiv.className = colorClass + " default-icon";
+        iconDiv.className = "jenkins-choice-list__item__icon";
 
         // Example for MockFolder
         // <div class="default-icon c-49728B"><span class="a">M</span><span class="b">o</span></div>
@@ -253,98 +229,73 @@ $.when(getItems()).done(function (data) {
     }
 
     // The main panel content is hidden by default via an inline style. We're ready to remove that now.
-    $("#add-item-panel").removeAttr("style");
+    document.querySelector("#add-item-panel").removeAttribute("style");
 
     // Render all categories
-    var $categories = $("div.categories");
-    $.each(data.categories, function (i, elem) {
-      drawCategory(elem).appendTo($categories);
+    var $categories = document.querySelector(".categories");
+    data.categories.forEach((elem) => {
+      drawCategory(elem).forEach((e) => $categories.append(e));
     });
 
-    // Focus
-    $("#add-item-panel").find("#name").focus();
-
     // Init NameField
-    $('input[name="name"]', "#createItem").on("blur input", function () {
+    function nameFieldEvent() {
       if (!isItemNameEmpty()) {
-        var itemName = $('input[name="name"]', "#createItem").val();
-        $.get("checkJobName", { value: itemName }).done(function (data) {
-          var message = parseResponseFromCheckJobName(data);
-          if (message !== "") {
-            activateValidationMessage(
-              "#itemname-invalid",
-              ".add-item-name",
-              message,
-            );
-          } else {
-            cleanValidationMessages(".add-item-name");
-            setFieldValidationStatus("name", true);
-            if (getFormValidationStatus()) {
-              enableSubmit(true);
-            }
-          }
-        });
+        var itemName = nameInput.value;
+
+        fetch(`checkJobName?value=${encodeURIComponent(itemName)}`).then(
+          (response) => {
+            response.text().then((data) => {
+              var message = parseResponseFromCheckJobName(data);
+              if (message !== "") {
+                activateValidationMessage(message);
+                setFieldValidationStatus("name", false);
+                refreshSubmitButtonState();
+              } else {
+                activateValidationMessage("");
+                setFieldValidationStatus("name", true);
+                refreshSubmitButtonState();
+              }
+            });
+          },
+        );
       } else {
-        enableSubmit(false);
         setFieldValidationStatus("name", false);
-        cleanValidationMessages(".add-item-name");
-        activateValidationMessage("#itemname-required", ".add-item-name");
+        activateValidationMessage(getI18n("empty-name"));
+        refreshSubmitButtonState();
       }
+    }
+
+    nameInput.addEventListener("blur", nameFieldEvent);
+    nameInput.addEventListener("input", () => {
+      nameInput.dataset.dirty = "true";
+      nameFieldEvent();
     });
 
     // Init CopyFromField
-    $('input[name="from"]', "#createItem").on("blur input", function () {
+    function copyFromFieldEvent() {
       if (getCopyFromValue() === "") {
-        $("#createItem")
-          .find('input[type="radio"][value="copy"]')
-          .removeAttr("checked");
+        copyRadio.removeAttribute("checked");
       } else {
         cleanItemSelection();
-        $("#createItem")
-          .find('input[type="radio"][value="copy"]')
-          .prop("checked", true);
+        copyRadio.setAttribute("checked", true);
         setFieldValidationStatus("from", true);
-        if (!getFieldValidationStatus("name")) {
-          activateValidationMessage("#itemname-required", ".add-item-name");
-          setTimeout(function () {
-            var parentName = $('input[name="from"]', "#createItem").val();
-            $.get("job/" + parentName + "/api/json?tree=name").done(
-              function (data) {
-                if (data.name === parentName) {
-                  //if "name" is invalid, but "from" is a valid job, then switch focus to "name"
-                  $('input[name="name"][type="text"]', "#createItem").focus();
-                }
-              },
-            );
-          }, 400);
-        } else {
-          if (getFormValidationStatus()) {
-            enableSubmit(true);
-          }
-        }
+        refreshSubmitButtonState();
       }
-    });
+    }
 
-    // Client-side validation
-    $("#createItem").submit(function (event) {
-      if (!getFormValidationStatus()) {
-        event.preventDefault();
-        if (!getFieldValidationStatus("name")) {
-          activateValidationMessage("#itemname-required", ".add-item-name");
-          $('input[name="name"][type="text"]', "#createItem").focus();
-        } else {
-          if (
-            !getFieldValidationStatus("items") &&
-            !getFieldValidationStatus("from")
-          ) {
-            activateValidationMessage("#itemtype-required", ".add-item-name");
-            $('input[name="name"][type="text"]', "#createItem").focus();
-          }
-        }
-      }
-    });
+    copyFromInput?.addEventListener("blur", copyFromFieldEvent);
+    copyFromInput?.addEventListener("input", copyFromFieldEvent);
 
-    // Disable the submit button
-    enableSubmit(false);
+    // Focus the Name input on load
+    document.querySelector("#add-item-panel #name").focus();
+
+    // Disable the Submit button on load
+    refreshSubmitButtonState();
   });
+
+  if (copyRadio !== null) {
+    copyRadio.addEventListener("change", () => {
+      copyFromInput.focus();
+    });
+  }
 });

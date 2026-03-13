@@ -200,27 +200,25 @@ public class RobustReflectionConverter implements Converter {
         }
     }
 
+    @SuppressWarnings("deprecation")
     protected void doMarshal(final Object source, final HierarchicalStreamWriter writer, final MarshallingContext context) {
         final Set seenFields = new HashSet();
         final Set seenAsAttributes = new HashSet();
 
         // Attributes might be preferred to child elements ...
-         reflectionProvider.visitSerializableFields(source, new ReflectionProvider.Visitor() {
-            @SuppressWarnings("deprecation") // deliberately calling deprecated methods?
-            @Override
-            public void visit(String fieldName, Class type, Class definedIn, Object value) {
-                SingleValueConverter converter = mapper.getConverterFromItemType(fieldName, type, definedIn);
-                if (converter == null) converter = mapper.getConverterFromItemType(fieldName, type);
-                if (converter == null) converter = mapper.getConverterFromItemType(type);
-                if (converter != null) {
-                    if (value != null) {
-                        final String str = converter.toString(value);
-                        if (str != null) {
-                            writer.addAttribute(mapper.aliasForAttribute(fieldName), str);
-                        }
+        // deliberately calling deprecated methods?
+        reflectionProvider.visitSerializableFields(source, (fieldName, type, definedIn, value) -> {
+            SingleValueConverter converter = mapper.getConverterFromItemType(fieldName, type, definedIn);
+            if (converter == null) converter = mapper.getConverterFromItemType(fieldName, type);
+            if (converter == null) converter = mapper.getConverterFromItemType(type);
+            if (converter != null) {
+                if (value != null) {
+                    final String str = converter.toString(value);
+                    if (str != null) {
+                        writer.addAttribute(mapper.aliasForAttribute(fieldName), str);
                     }
-                    seenAsAttributes.add(fieldName);
                 }
+                seenAsAttributes.add(fieldName);
             }
         });
 
@@ -464,7 +462,14 @@ public class RobustReflectionConverter implements Converter {
         return context.convertAnother(result, type, converter);
     }
 
-    private void writeValueToImplicitCollection(HierarchicalStreamReader reader, UnmarshallingContext context, Object value, Map<String, Collection<Object>> implicitCollections, Map<String, Class<?>> implicitCollectionElementTypes, Object result, String itemFieldName) {
+    private void writeValueToImplicitCollection(
+            HierarchicalStreamReader reader,
+            UnmarshallingContext context,
+            Object value,
+            Map<String, Collection<Object>> implicitCollections,
+            Map<String, Class<?>> implicitCollectionElementTypes,
+            Object result,
+            String itemFieldName) {
         String fieldName = mapper.getFieldNameForItemTypeAndName(context.getRequiredType(), value.getClass(), itemFieldName);
         if (fieldName != null) {
             Collection collection = implicitCollections.get(fieldName);

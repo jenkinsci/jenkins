@@ -38,10 +38,10 @@ THE SOFTWARE.
   <description>The module contains dependencies that are used by a specific Jenkins version</description>
 
   <properties>
-    <commons-fileupload2.version>2.0.0-M2</commons-fileupload2.version>
+    <commons-fileupload2.version>2.0.0-M5</commons-fileupload2.version>
     <groovy.version>2.4.21</groovy.version>
-    <jelly.version>1.1-jenkins-20250108</jelly.version>
-    <stapler.version>1942.v708e07325402</stapler.version>
+    <jelly.version>1.1-jenkins-20250731</jelly.version>
+    <stapler.version>2076.v1b_a_c12445eb_e</stapler.version>
   </properties>
 
   <dependencyManagement>
@@ -56,14 +56,14 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-bom</artifactId>
-        <version>2.0.16</version>
+        <version>2.0.17</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>6.2.1</version>
+        <version>6.2.16</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -71,7 +71,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/reference/6.3/getting-spring-security.html#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>6.4.2</version>
+        <version>6.5.8</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -89,18 +89,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>33.4.0-jre</version>
-      </dependency>
-      <dependency>
-        <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
-        <groupId>com.jcraft</groupId>
-        <artifactId>jzlib</artifactId>
-        <version>1.1.3-kohsuke-1</version>
-      </dependency>
-      <dependency>
-        <groupId>com.sun.solaris</groupId>
-        <artifactId>embedded_su4j</artifactId>
-        <version>1.1</version>
+        <version>33.5.0-jre</version>
       </dependency>
       <dependency>
         <groupId>com.sun.xml.txw2</groupId>
@@ -115,12 +104,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-beanutils</groupId>
         <artifactId>commons-beanutils</artifactId>
-        <version>1.9.4</version>
+        <version>1.11.0</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.17.2</version>
+        <version>1.21.0</version>
       </dependency>
       <dependency>
         <groupId>commons-collections</groupId>
@@ -130,17 +119,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
-        <version>2.18.0</version>
+        <version>2.21.0</version>
       </dependency>
       <dependency>
         <groupId>commons-lang</groupId>
         <artifactId>commons-lang</artifactId>
         <version>2.6</version>
-      </dependency>
-      <dependency>
-        <groupId>io.jenkins.stapler</groupId>
-        <artifactId>jenkins-stapler-support</artifactId>
-        <version>1.1</version>
       </dependency>
       <dependency>
         <groupId>jakarta.servlet</groupId>
@@ -160,7 +144,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.16.0</version>
+        <version>5.18.1</version>
       </dependency>
       <dependency>
         <groupId>net.java.sezpoz</groupId>
@@ -223,11 +207,6 @@ THE SOFTWARE.
         <version>${groovy.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.connectbot</groupId>
-        <artifactId>jbcrypt</artifactId>
-        <version>1.0.2</version>
-      </dependency>
-      <dependency>
         <!-- Groovy shell uses this, but it doesn't declare the dependency -->
         <groupId>org.fusesource.jansi</groupId>
         <artifactId>jansi</artifactId>
@@ -236,7 +215,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>annotation-indexer</artifactId>
-        <version>1.18</version>
+        <version>1.213.v92788b_1f0a_21</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
@@ -261,7 +240,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>crypto-util</artifactId>
-        <version>1.10</version>
+        <version>1.11</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
@@ -271,17 +250,17 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>symbol-annotation</artifactId>
-        <version>1.25</version>
+        <version>1.26</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>task-reactor</artifactId>
-        <version>1.9</version>
+        <version>1.10</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>version-number</artifactId>
-        <version>1.12</version>
+        <version>1.14</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
@@ -304,11 +283,6 @@ THE SOFTWARE.
         <version>1.31</version>
       </dependency>
       <dependency>
-        <groupId>org.jvnet.robust-http-client</groupId>
-        <artifactId>robust-http-client</artifactId>
-        <version>1.2</version>
-      </dependency>
-      <dependency>
         <groupId>org.jvnet.winp</groupId>
         <artifactId>winp</artifactId>
         <version>1.31</version>
@@ -324,11 +298,6 @@ THE SOFTWARE.
         <version>1.2</version>
       </dependency>
       <dependency>
-        <groupId>org.kohsuke.jinterop</groupId>
-        <artifactId>j-interop</artifactId>
-        <version>2.0.8-kohsuke-1</version>
-      </dependency>
-      <dependency>
         <groupId>org.kohsuke.metainf-services</groupId>
         <artifactId>metainf-services</artifactId>
         <version>1.11</version>
@@ -336,7 +305,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>json-lib</artifactId>
-        <version>2.4-jenkins-8</version>
+        <version>2.4-jenkins-15</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
@@ -357,18 +326,13 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
-        <version>9.7.1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.samba.jcifs</groupId>
-        <artifactId>jcifs</artifactId>
-        <version>1.3.18-kohsuke-1</version>
+        <version>9.9.1</version>
       </dependency>
       <dependency>
         <!-- provided by jcl-over-slf4j -->
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
-        <version>1.3.4</version>
+        <version>1.3.5</version>
         <scope>provided</scope>
       </dependency>
     </dependencies>

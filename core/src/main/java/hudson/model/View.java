@@ -62,6 +62,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -88,12 +89,15 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import jenkins.model.Badgeable;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
+import jenkins.search.SearchGroup;
+import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.xml.XMLUtils;
 import jenkins.widgets.HasWidgets;
@@ -141,7 +145,7 @@ import org.xml.sax.SAXException;
  * @see ViewGroup
  */
 @ExportedBean
-public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren, DescriptorByNameOwner, HasWidgets {
+public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren, DescriptorByNameOwner, HasWidgets, Badgeable {
 
     /**
      * Container of this view. Set right after the construction
@@ -365,6 +369,19 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return getViewName();
     }
 
+    /**
+     * Returns the icon file name for this action.
+     * <p>
+     * Only displays if {@link jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag} is enabled.
+     * <p>
+     * This behaves similarly to {@link Action#getIconFileName()}, except that
+     * returning {@code null} here does not hide the associated view; the view
+     * will still be displayed even when this method returns {@code null}.
+     */
+    public String getIconFileName() {
+        return null;
+    }
+
     public String getNewPronoun() {
         return AlternativeUiTextProvider.get(NEW_PRONOUN, this, Messages.AbstractItem_Pronoun());
     }
@@ -565,20 +582,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return "symbol-jobs";
     }
 
+    @Override
+    public SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.ViewSearchGroup.class);
+    }
+
     /**
      * Returns the transient {@link Action}s associated with the top page.
-     *
-     * <p>
-     * If views don't want to show top-level actions, this method
-     * can be overridden to return different objects.
-     *
-     * @see Jenkins#getActions()
      */
     public List<Action> getActions() {
-        List<Action> result = new ArrayList<>();
-        result.addAll(getOwner().getViewActions());
-        result.addAll(TransientViewActionFactory.createAllFor(this));
-        return result;
+        return TransientViewActionFactory.createAllFor(this);
     }
 
     /**
@@ -983,7 +996,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 @Override
                 public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
                     rsp.setContentType("application/xml");
-                    View.this.writeXml(rsp.getOutputStream());
+                    if (hasPermission(CONFIGURE)) {
+                        View.this.writeXml(rsp.getOutputStream());
+                    } else {
+                        var baos = new ByteArrayOutputStream();
+                        View.this.writeXml(baos);
+                        String xml = baos.toString(StandardCharsets.UTF_8);
+
+                        xml = ExtendedReadRedaction.applyAll(xml);
+                        org.apache.commons.io.IOUtils.write(xml, rsp.getOutputStream(), StandardCharsets.UTF_8);
+                    }
                 }
             };
         }
@@ -1226,6 +1248,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
         } catch (StreamException | ConversionException | Error e) { // mostly reflection errors
             throw new IOException("Unable to read", e);
         }
+    }
+
+    // for Jelly
+    @Restricted(DoNotUse.class)
+    public boolean isMyViewsProperty() {
+        return getOwner() instanceof MyViewsProperty;
     }
 
     public static class PropertyList extends DescribableList<ViewProperty, ViewPropertyDescriptor> {

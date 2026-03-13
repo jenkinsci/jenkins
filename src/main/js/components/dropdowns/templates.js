@@ -1,6 +1,26 @@
 import { createElementFromHtml } from "@/util/dom";
 import { xmlEscape } from "@/util/security";
 
+const hideOnPopperBlur = {
+  name: "hideOnPopperBlur",
+  defaultValue: true,
+  fn(instance) {
+    return {
+      onCreate() {
+        instance.popper.addEventListener("focusout", (event) => {
+          if (
+            instance.props.hideOnPopperBlur &&
+            event.relatedTarget &&
+            !instance.popper.contains(event.relatedTarget)
+          ) {
+            instance.hide();
+          }
+        });
+      },
+    };
+  },
+};
+
 function dropdown() {
   return {
     content: "<p class='jenkins-spinner'></p>",
@@ -11,18 +31,31 @@ function dropdown() {
     arrow: false,
     theme: "dropdown",
     appendTo: document.body,
+    plugins: [hideOnPopperBlur],
     offset: [0, 0],
     animation: "dropdown",
+    duration: 250,
     onShow: (instance) => {
+      // Make sure only one instance is visible at all times in case of breadcrumb
+      if (
+        instance.reference.classList.contains("hoverable-model-link") ||
+        instance.reference.classList.contains("hoverable-children-model-link")
+      ) {
+        const dropdowns = document.querySelectorAll("[data-tippy-root]");
+        Array.from(dropdowns).forEach((element) => {
+          // Check if the Tippy.js instance exists
+          if (element && element._tippy) {
+            // To just hide the dropdown
+            element._tippy.hide();
+          }
+        });
+      }
+
       const referenceParent = instance.reference.parentNode;
 
       if (referenceParent.classList.contains("model-link")) {
         referenceParent.classList.add("model-link--open");
       }
-    },
-    onHide: (instance) => {
-      const referenceParent = instance.reference.parentNode;
-      referenceParent.classList.remove("model-link--open");
     },
   };
 }
@@ -47,7 +80,9 @@ function menuItem(options) {
   const tag = itemOptions.type === "link" ? "a" : "button";
 
   const item = createElementFromHtml(`
-      <${tag} class="jenkins-dropdown__item ${itemOptions.clazz ? xmlEscape(itemOptions.clazz) : ""}" ${itemOptions.url ? `href="${xmlEscape(itemOptions.url)}"` : ""} ${itemOptions.id ? `id="${xmlEscape(itemOptions.id)}"` : ""}>
+      <${tag} class="jenkins-dropdown__item ${itemOptions.clazz ? xmlEscape(itemOptions.clazz) : ""}"
+        ${itemOptions.url ? `href="${xmlEscape(itemOptions.url)}"` : ""} ${itemOptions.id ? `id="${xmlEscape(itemOptions.id)}"` : ""}
+        ${itemOptions.tooltip ? `data-html-tooltip="${xmlEscape(itemOptions.tooltip)}"` : ""}>
           ${
             itemOptions.icon
               ? `<div class="jenkins-dropdown__item__icon">${

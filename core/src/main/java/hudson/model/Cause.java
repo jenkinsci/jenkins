@@ -24,6 +24,8 @@
 
 package hudson.model;
 
+import static hudson.Functions.getAvatar;
+
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -198,14 +200,18 @@ public abstract class Cause {
         }
 
         @Override
+        public void onLoad(@NonNull Run<?, ?> build) {
+            onLoad(build.getParent(), build.getNumber());
+        }
+
+        @Override
         public void onLoad(@NonNull Job<?, ?> _job, int _buildNumber) {
             Item i = Jenkins.get().getItemByFullName(this.upstreamProject);
-            if (!(i instanceof Job)) {
+            if (!(i instanceof Job j)) {
                 // cannot initialize upstream causes
                 return;
             }
 
-            Job j = (Job) i;
             for (Cause c : this.upstreamCauses) {
                 c.onLoad(j, upstreamBuild);
             }
@@ -219,9 +225,7 @@ public abstract class Cause {
 
             if (this == rhs) return true;
 
-            if (!(rhs instanceof UpstreamCause)) return false;
-
-            final UpstreamCause o = (UpstreamCause) rhs;
+            if (!(rhs instanceof UpstreamCause o)) return false;
 
             return Objects.equals(upstreamBuild, o.upstreamBuild) &&
                     Objects.equals(upstreamCauses, o.upstreamCauses) &&
@@ -238,10 +242,9 @@ public abstract class Cause {
         }
 
         private @NonNull Cause trim(@NonNull Cause c, int depth, Set<String> traversed) {
-            if (!(c instanceof UpstreamCause)) {
+            if (!(c instanceof UpstreamCause uc)) {
                 return c;
             }
-            UpstreamCause uc = (UpstreamCause) c;
             List<Cause> cs = new ArrayList<>();
             if (traversed.add(uc.upstreamUrl + uc.upstreamBuild)) {
                 for (Cause c2 : uc.upstreamCauses) {
@@ -445,17 +448,28 @@ public abstract class Cause {
             return  userId != null ? userId : User.getUnknown().getId();
         }
 
+        private User getUser() {
+            return userId == null ? null : User.getById(userId, false);
+        }
+
         @Exported(visibility = 3)
         public String getUserName() {
-            final User user = userId == null ? null : User.getById(userId, false);
+            final User user = getUser();
             return user == null ? "anonymous" : user.getDisplayName();
         }
 
         @Restricted(DoNotUse.class) // for Jelly
         @CheckForNull
         public String getUserUrl() {
-            final User user = userId == null ? null : User.getById(userId, false);
+            final User user = getUser();
             return user != null ? user.getUrl() : null;
+        }
+
+        @Restricted(DoNotUse.class) // for Jelly
+        @CheckForNull
+        public String getUserAvatar() {
+            final User user = getUser();
+            return user != null ? getAvatar(user, "48x48") : null;
         }
 
         @Override

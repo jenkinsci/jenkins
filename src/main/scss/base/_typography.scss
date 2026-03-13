@@ -26,7 +26,6 @@ textarea,
 select {
   font-size: var(--font-size-sm);
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media (max-width: breakpoints.$tablet-breakpoint) {
     font-size: var(--font-size-base);
   }

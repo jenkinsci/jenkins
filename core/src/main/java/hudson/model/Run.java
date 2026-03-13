@@ -40,6 +40,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.EnvVars;
+import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
@@ -71,7 +72,6 @@ import hudson.util.XStream2;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -120,6 +120,12 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
+import jenkins.model.Tab;
+import jenkins.model.details.CauseDetail;
+import jenkins.model.details.Detail;
+import jenkins.model.details.DetailFactory;
+import jenkins.model.details.DurationDetail;
+import jenkins.model.details.TimestampDetail;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.security.MasterToSlaveCallable;
@@ -131,6 +137,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -183,23 +190,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * The original Queue task ID from where this Run instance originated.
      */
     private long queueId = Run.QUEUE_ID_UNKNOWN;
-
-    /**
-     * Previous build. Can be null.
-     * TODO JENKINS-22052 this is not actually implemented any more
-     *
-     * External code should use {@link #getPreviousBuild()}
-     */
-    @Restricted(NoExternalUse.class)
-    protected transient volatile RunT previousBuild;
-
-    /**
-     * Next build. Can be null.
-     *
-     * External code should use {@link #getNextBuild()}
-     */
-    @Restricted(NoExternalUse.class)
-    protected transient volatile RunT nextBuild;
 
     /**
      * Pointer to the next younger build in progress. This data structure is lazily updated,
@@ -380,7 +370,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @SuppressWarnings("deprecation")
     protected void onLoad() {
-        for (Action a : getAllActions()) {
+        for (Action a : getActions()) {
             if (a instanceof RunAction2) {
                 try {
                     ((RunAction2) a).onLoad(this);
@@ -794,23 +784,19 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Called by {@link RunMap} to drop bi-directional links in preparation for
-     * deleting a build.
+     * Called by {@link RunMap} in preparation for deleting a build.
      * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#dropLinks
      * @since 1.556
      */
     protected void dropLinks() {
-        if (nextBuild != null)
-            nextBuild.previousBuild = previousBuild;
-        if (previousBuild != null)
-            previousBuild.nextBuild = nextBuild;
     }
 
     /**
      * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#getPreviousBuild
      */
     public @CheckForNull RunT getPreviousBuild() {
-        return previousBuild;
+        // TODO could be implemented for benefit of ExternalRun
+        return null;
     }
 
     /**
@@ -953,7 +939,8 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#getNextBuild
      */
     public @CheckForNull RunT getNextBuild() {
-        return nextBuild;
+        // TODO could be implemented for benefit of ExternalRun
+        return null;
     }
 
 
@@ -1067,6 +1054,11 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
             return new StandardArtifactManager(this);
         }
+    }
+
+    @Restricted(DoNotUse.class) // Jelly
+    public final boolean hasCustomArtifactManager() {
+        return artifactManager != null;
     }
 
     /**
@@ -1198,12 +1190,14 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /** {@link Run.ArtifactList} without the implicit link to {@link Run} */
+    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "TODO needs triage")
     private static final class SerializableArtifactList extends ArrayList<SerializableArtifact> {
         private static final long serialVersionUID = 1L;
         private LinkedHashMap<SerializableArtifact, String> tree = new LinkedHashMap<>();
         private int idSeq = 0;
     }
 
+    @SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "TODO needs triage")
     public final class ArtifactList extends ArrayList<Artifact> {
         private static final long serialVersionUID = 1L;
         /**
@@ -1459,19 +1453,34 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "method signature does not permit plumbing through the return value")
     public void writeLogTo(long offset, @NonNull XMLOutput out) throws IOException {
-        long start = offset;
+        AnnotatedLargeText<?> logText = getLogText();
         if (offset > 0) {
-            try (BufferedInputStream bufferedInputStream = new BufferedInputStream(getLogInputStream())) {
-                if (offset == bufferedInputStream.skip(offset)) {
-                    int r;
-                    do {
-                        r = bufferedInputStream.read();
-                        start = r == -1 ? 0 : start + 1;
-                    } while (r != -1 && r != '\n');
-                }
+            long _offset = offset;
+            try {
+                logText.writeRawLogTo(offset - 1, new OutputStream() {
+                    long pos = _offset;
+                    @Override
+                    public void write(int b) throws IOException {
+                        if (b == '\n') {
+                            throw new Halt(pos);
+                        } else {
+                            pos++;
+                        }
+                    }
+                });
+            } catch (Halt halt) {
+                offset = halt.offset;
             }
         }
-        getLogText().writeHtmlTo(start, out.asWriter());
+        logText.writeHtmlTo(offset, out.asWriter());
+    }
+
+    private static final class Halt extends IOException {
+        final long offset;
+
+        Halt(long offset) {
+            this.offset = offset;
+        }
     }
 
     /**
@@ -1920,10 +1929,9 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         // Project specific log filters
-        if (project instanceof BuildableItemWithBuildWrappers && build instanceof AbstractBuild) {
-            BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
+        if (project instanceof BuildableItemWithBuildWrappers biwbw && build instanceof AbstractBuild abstractBuild) {
             for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
-                logger = bw.decorateLogger((AbstractBuild) build, logger);
+                logger = bw.decorateLogger(abstractBuild, logger);
             }
         }
 
@@ -2511,13 +2519,10 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Sort by date. Newer ones first.
      */
-    public static final Comparator<Run> ORDER_BY_DATE = new Comparator<>() {
-        @Override
-        public int compare(@NonNull Run lhs, @NonNull Run rhs) {
-            long lt = lhs.getTimeInMillis();
-            long rt = rhs.getTimeInMillis();
-            return Long.compare(rt, lt);
-        }
+    public static final Comparator<Run> ORDER_BY_DATE = (lhs, rhs) -> {
+        long lt = lhs.getTimeInMillis();
+        long rt = rhs.getTimeInMillis();
+        return Long.compare(rt, lt);
     };
 
     /**
@@ -2668,5 +2673,26 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             Util.printRedirect(req.getContextPath(), "..", "Not found", out);
             out.flush();
         }
+    }
+
+    @Extension
+    public static final class BasicRunDetailFactory extends DetailFactory<Run> {
+
+        @Override
+        public Class<Run> type() {
+            return Run.class;
+        }
+
+        @NonNull @Override public List<? extends Detail> createFor(@NonNull Run target) {
+            return List.of(new CauseDetail(target), new TimestampDetail(target), new DurationDetail(target));
+        }
+    }
+
+    /**
+     * Retrieves the tabs for a given run
+     */
+    @Restricted(NoExternalUse.class)
+    public List<Tab> getRunTabs() {
+        return getActions(Tab.class).stream().filter(e -> e.getIconFileName() != null).toList();
     }
 }

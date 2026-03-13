@@ -26,8 +26,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-        <j:set var="escapeEntryTitleAndDescription" value="false"/>
-        <f:entry title="${h.escape(it.name)}" description="${it.formattedDescription}">
-		<f:textarea name="value" value="${it.value}" readonly="readonly" />
-	</f:entry>
+    <j:set var="escapeEntryTitleAndDescription" value="false"/>
+    <f:entry title="${h.escape(it.name)}" description="${it.formattedDescription}">
+      <j:set var="readOnlyMode" value="true"/>
+      <f:textarea name="value" value="${it.value}"/>
+    </f:entry>
 </j:jelly>

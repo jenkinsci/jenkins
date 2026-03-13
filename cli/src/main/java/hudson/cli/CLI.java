@@ -138,40 +138,45 @@ public class CLI {
 
         while (!args.isEmpty()) {
             String head = args.get(0);
-            if (head.equals("-version")) {
-                System.out.println("Version: " + computeVersion());
-                return 0;
-            }
-            if (head.equals("-http")) {
-                if (mode != null) {
-                    printUsage("-http clashes with previously defined mode " + mode);
+            switch (head) {
+                case "-version" -> {
+                    System.out.println("Version: " + computeVersion());
+                    return 0;
+                }
+                case "-http" -> {
+                    if (mode != null) {
+                        printUsage("-http clashes with previously defined mode " + mode);
+                        return -1;
+                    }
+                    mode = Mode.HTTP;
+                    args = args.subList(1, args.size());
+                    continue;
+                }
+                case "-ssh" -> {
+                    if (mode != null) {
+                        printUsage("-ssh clashes with previously defined mode " + mode);
+                        return -1;
+                    }
+                    mode = Mode.SSH;
+                    args = args.subList(1, args.size());
+                    continue;
+                }
+                case "-webSocket" -> {
+                    if (mode != null) {
+                        printUsage("-webSocket clashes with previously defined mode " + mode);
+                        return -1;
+                    }
+                    mode = Mode.WEB_SOCKET;
+                    args = args.subList(1, args.size());
+                    continue;
+                }
+                case "-remoting" -> {
+                    printUsage("-remoting mode is no longer supported");
                     return -1;
                 }
-                mode = Mode.HTTP;
-                args = args.subList(1, args.size());
-                continue;
-            }
-            if (head.equals("-ssh")) {
-                if (mode != null) {
-                    printUsage("-ssh clashes with previously defined mode " + mode);
-                    return -1;
+                default -> {
+                    // continue
                 }
-                mode = Mode.SSH;
-                args = args.subList(1, args.size());
-                continue;
-            }
-            if (head.equals("-webSocket")) {
-                if (mode != null) {
-                    printUsage("-webSocket clashes with previously defined mode " + mode);
-                    return -1;
-                }
-                mode = Mode.WEB_SOCKET;
-                args = args.subList(1, args.size());
-                continue;
-            }
-            if (head.equals("-remoting")) {
-                printUsage("-remoting mode is no longer supported");
-                return -1;
             }
             if (head.equals("-s") && args.size() >= 2) {
                 url = args.get(1);
@@ -318,7 +323,7 @@ public class CLI {
         throw new AssertionError();
     }
 
-    @SuppressFBWarnings(value = {"PATH_TRAVERSAL_IN", "URLCONNECTION_SSRF_FD"}, justification = "User provided values for running the program.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "User provided value for running the program.")
     private static String readAuthFromFile(String auth) throws IOException {
         Path path;
         try {
@@ -329,7 +334,7 @@ public class CLI {
         return Files.readString(path, Charset.defaultCharset());
     }
 
-    @SuppressFBWarnings(value = {"PATH_TRAVERSAL_IN", "URLCONNECTION_SSRF_FD"}, justification = "User provided values for running the program.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "User provided value for running the program.")
     private static File getFileFromArguments(List<String> args) {
         return new File(args.get(1));
     }
@@ -343,17 +348,20 @@ public class CLI {
 
         class Authenticator extends ClientEndpointConfig.Configurator {
             HandshakeResponse hr;
+
             @Override
             public void beforeRequest(Map<String, List<String>> headers) {
                 if (factory.authorization != null) {
                     headers.put("Authorization", List.of(factory.authorization));
                 }
             }
+
             @Override
             public void afterResponse(HandshakeResponse hr) {
                 this.hr = hr;
             }
         }
+
         var authenticator = new Authenticator();
 
         ClientManager client = ClientManager.createClient(JdkClientContainer.class.getName()); // ~ ContainerProvider.getWebSocketContainer()

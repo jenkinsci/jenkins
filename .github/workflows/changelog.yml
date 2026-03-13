@@ -18,24 +18,24 @@ jobs:
       pull-requests: write # to add label to PR (release-drafter/release-drafter)
       contents: write # to create a github release (release-drafter/release-drafter)
 
-    if: github.repository_owner == 'jenkinsci'
+    if: ${{ github.repository_owner == 'jenkinsci' }}
     runs-on: ubuntu-latest
     steps:
       # Drafts your next Release notes as Pull Requests are merged into "master"
       - name: Generate GitHub Release Draft
         id: release-drafter
-        uses: release-drafter/release-drafter@v6
+        uses: release-drafter/release-drafter@6db134d15f3909ccc9eefd369f02bd1e9cffdf97 # v6.2.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Generates a YAML changelog file using https://github.com/jenkinsci/jenkins-core-changelog-generator
       # used by Oleg N in open graph generator experiment for now
       - name: Generate YAML changelog draft
         id: jenkins-core-changelog-generator
-        uses: jenkinsci/jenkins-core-changelog-generator@master
+        uses: jenkinsci/core-changelog-generator@feb124ed2262f8586ac4561348436afb965812e1 # v2.2.2
         env:
           GITHUB_AUTH: github-actions:${{ secrets.GITHUB_TOKEN }}
       - name: Upload Changelog YAML
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: changelog.yaml
           path: changelog.yaml
@@ -44,17 +44,15 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'jenkinsci'
     steps:
-      - uses: tibdex/github-app-token@v2
+      - uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
         id: generate-token
         with:
-          app_id: ${{ secrets.JENKINS_CHANGELOG_UPDATER_APP_ID }}
-          installation_retrieval_mode: repository
-          installation_retrieval_payload: jenkins-infra/jenkins.io
-          private_key: ${{ secrets.JENKINS_CHANGELOG_UPDATER_PRIVATE_KEY }}
-          repositories: >-
-            ["jenkins.io"]
+          app-id: ${{ secrets.JENKINS_CHANGELOG_UPDATER_APP_ID }}
+          private-key: ${{ secrets.JENKINS_CHANGELOG_UPDATER_PRIVATE_KEY }}
+          owner: jenkins-infra
+          repositories: jenkins.io
       - name: Check out
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
       - name: Publish jenkins.io changelog draft

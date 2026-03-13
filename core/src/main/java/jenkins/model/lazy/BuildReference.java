@@ -36,12 +36,56 @@ public final class BuildReference<R> {
     private static final Logger LOGGER = Logger.getLogger(BuildReference.class.getName());
 
     final String id;
+    final int number;
     private volatile Holder<R> holder;
 
-    public BuildReference(String id, R referent) {
+    public BuildReference(String id) {
         this.id = id;
-        this.holder = findHolder(referent);
+        int num;
+        try {
+            num = Integer.parseInt(id);
+        } catch (NumberFormatException ignored) {
+            num = Integer.MAX_VALUE;
+        }
+        this.number = num;
     }
+
+    public BuildReference(String id, R referent) {
+        this(id);
+        set(referent);
+    }
+
+    /**
+     * Set referent if loaded
+     */
+    /*package*/ void set(R referent) {
+        holder = findHolder(referent);
+    }
+
+    /**
+     * check if reference marked as unloadable
+     */
+    /*package*/ boolean isUnloadable() {
+        return DefaultHolderFactory.UnloadableHolder.getInstance() == holder;
+    }
+
+    /**
+     * check if reference holder set.
+     * means there was a try to load build object and we have some result of that try
+     *
+     * @return true if there was a try to
+     */
+    /*package*/ boolean isSet() {
+        return holder != null;
+    }
+
+    /**
+     * Set referent as unloadable
+     */
+    /*package*/ void setUnloadable() {
+        holder = DefaultHolderFactory.UnloadableHolder.getInstance();
+    }
+
 
     /**
      * Gets the build if still in memory.
@@ -155,7 +199,7 @@ public final class BuildReference<R> {
             } else if (mode.equals("strong")) {
                 return new StrongHolder<>(referent);
             } else if (mode.equals("none")) {
-                return new NoHolder<>();
+                return NoHolder.getInstance();
             } else {
                 throw new IllegalStateException("unrecognized value of " + MODE_PROPERTY + ": " + mode);
             }
@@ -186,6 +230,32 @@ public final class BuildReference<R> {
         }
 
         private static final class NoHolder<R> implements Holder<R> {
+            static final NoHolder<?> INSTANCE = new NoHolder<>();
+
+            static <R> NoHolder<R> getInstance() {
+                //noinspection unchecked
+                return (NoHolder<R>) INSTANCE;
+            }
+
+            private NoHolder() {
+            }
+
+            @Override public R get() {
+                return null;
+            }
+        }
+
+        private static final class UnloadableHolder<R> implements Holder<R> {
+            static final UnloadableHolder<?> INSTANCE = new UnloadableHolder<>();
+
+            static <R> UnloadableHolder<R> getInstance() {
+                //noinspection unchecked
+                return (UnloadableHolder<R>) INSTANCE;
+            }
+
+            private UnloadableHolder() {
+            }
+
             @Override public R get() {
                 return null;
             }

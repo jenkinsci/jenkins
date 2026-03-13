@@ -25,6 +25,7 @@
 package jenkins.agents;
 
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.AbstractModelObject;
@@ -32,9 +33,11 @@ import hudson.model.AutoCompletionCandidates;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
+import hudson.model.ManagementLink;
 import hudson.model.RootAction;
 import hudson.model.UpdateCenter;
 import hudson.slaves.Cloud;
+import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
@@ -101,6 +104,12 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         return "/cloud/";
     }
 
+    @SuppressWarnings("unused")
+    @Restricted(DoNotUse.class) // used by jelly
+    public ManagementLink getManagementLink() {
+        return ExtensionList.lookupSingleton(CloudsLink.class);
+    }
+
     @SuppressWarnings("unused") // stapler
     @Restricted(DoNotUse.class) // stapler
     public String getCloudUrl(StaplerRequest2 request, Jenkins jenkins, Cloud cloud) {
@@ -141,7 +150,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     @Override
     public ModelObjectWithContextMenu.ContextMenu doChildrenContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
         ModelObjectWithContextMenu.ContextMenu m = new ModelObjectWithContextMenu.ContextMenu();
-        Jenkins.get().clouds.stream().forEach(m::add);
+        Jenkins.get().clouds.forEach(m::add);
         return m;
     }
 
@@ -217,9 +226,8 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
 
             // copy through XStream
             String xml = Jenkins.XSTREAM.toXML(src);
-            // Not great, but cloud name is final
-            xml = xml.replace("<name>" + src.name + "</name>", "<name>" + name + "</name>");
             Cloud result = (Cloud) Jenkins.XSTREAM.fromXML(xml);
+            result.name = name;
             jenkins.clouds.add(result);
             // send the browser to the config page
             rsp.sendRedirect2(Functions.getNearestAncestorUrl(req, jenkins) + "/" + result.getUrl() + "configure");
@@ -267,7 +275,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     }
 
     @POST
-    public void doReorder(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+    public void doReorder(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         var names = req.getParameterValues("name");
         if (names == null) {
@@ -277,7 +285,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         var clouds = new ArrayList<>(Jenkins.get().clouds);
         clouds.sort(Comparator.comparingInt(c -> getIndexOf(namesList, c)));
         Jenkins.get().clouds.replaceBy(clouds);
-        rsp.sendRedirect2(".");
+        FormApply.success(req.getContextPath() + "/manage").generateResponse(req, rsp, null);
     }
 
     private static int getIndexOf(List<String> namesList, Cloud cloud) {

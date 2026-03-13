@@ -90,7 +90,23 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
      */
     @Override
     public Run<?, ?> resolve(Job<?, ?> job) {
-        return ExtensionList.lookupFirst(Cache.class).get(job, getId()).resolve(this, job, getId());
+        return get(job).resolve(this, job, getId());
+    }
+
+    Cache.PermalinkTarget get(Job<?, ?> job) {
+        return ExtensionList.lookupFirst(Cache.class).get(job, getId());
+    }
+
+    int resolveNumber(Job<?, ?> job) {
+        var pt = get(job);
+        if (pt instanceof Cache.Some(int number)) {
+            return number;
+        } else if (pt instanceof Cache.None) {
+            return 0;
+        } else { // Unknown
+            var b = pt.resolve(this, job, getId());
+            return b != null ? b.number : 0;
+        }
     }
 
     /**
@@ -249,7 +265,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
                         for (var entry : cache.entrySet()) {
                             cw.write(entry.getKey());
                             cw.write(' ');
-                            cw.write(Integer.toString(entry.getValue() instanceof Cache.Some some ? some.number : -1));
+                            cw.write(Integer.toString(entry.getValue() instanceof Some(int number) ? number : -1));
                             cw.write('\n');
                         }
                         cw.commit();
@@ -312,7 +328,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         public void onDeleted(Run run) {
             Job<?, ?> j = run.getParent();
             for (PeepholePermalink pp : Util.filter(j.getPermalinks(), PeepholePermalink.class)) {
-                if (pp.resolve(j) == run) {
+                if (pp.resolveNumber(j) == run.number) {
                     Run<?, ?> r = pp.find(run.getPreviousBuild());
                     LOGGER.fine(() -> "Updating " + pp.getId() + " permalink from deleted " + run + " to " + (r == null ? -1 : r.getNumber()));
                     pp.updateCache(j, r);
@@ -328,8 +344,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
             Job<?, ?> j = run.getParent();
             for (PeepholePermalink pp : Util.filter(j.getPermalinks(), PeepholePermalink.class)) {
                 if (pp.apply(run)) {
-                    Run<?, ?> cur = pp.resolve(j);
-                    if (cur == null || cur.getNumber() < run.getNumber()) {
+                    if (pp.resolveNumber(j) < run.getNumber()) {
                         LOGGER.fine(() -> "Updating " + pp.getId() + " permalink to completed " + run);
                         pp.updateCache(j, run);
                     }

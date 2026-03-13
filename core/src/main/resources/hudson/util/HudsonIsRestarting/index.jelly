@@ -32,7 +32,7 @@ THE SOFTWARE.
     <!-- get default/common page variable -->
     ${h.initPageVariables(context)}
     <x:doctype name="html" />
-    <html lang="${request.getLocale().toLanguageTag()}">
+    <html lang="${request2.getLocale().toLanguageTag()}">
         <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
             <title>${%Restarting Jenkins}</title>
             <!-- we do not want bots on this page -->

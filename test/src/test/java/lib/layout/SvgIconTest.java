@@ -29,27 +29,33 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.UnprotectedRootAction;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class SvgIconTest  {
+@WithJenkins
+class SvgIconTest  {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-60920")
-    public void regularUsage() throws Exception {
+    void regularUsage() throws Exception {
         TestRootAction testRootAction = j.jenkins.getExtensionList(UnprotectedRootAction.class).get(TestRootAction.class);
 
         String desiredTooltip = "Hello world!";
@@ -61,7 +67,7 @@ public class SvgIconTest  {
 
     @Test
     @Issue("JENKINS-60920")
-    public void onlyQuotesAreEscaped() throws Exception {
+    void onlyQuotesAreEscaped() throws Exception {
         TestRootAction testRootAction = j.jenkins.getExtensionList(UnprotectedRootAction.class).get(TestRootAction.class);
 
         String pristineTooltip = "Special tooltip with double quotes \", simple quotes ', and html characters <>&.";
@@ -78,7 +84,7 @@ public class SvgIconTest  {
 
     @Test
     @Issue("SECURITY-1955")
-    public void preventXssFromTooltip() throws Exception {
+    void preventXssFromTooltip() throws Exception {
         TestRootAction testRootAction = j.jenkins.getExtensionList(UnprotectedRootAction.class).get(TestRootAction.class);
 
         String desiredTooltip = "Tooltip with <img src=x onerror=alert(123)> payload included";
@@ -112,7 +118,7 @@ public class SvgIconTest  {
         String jsResultString = (String) jsResult;
 
         assertThat("XSS not prevented (content)", jsResultString, not(containsString(dangerousPart)));
-        assertFalse("XSS not prevented (alert)", alertTriggered.get());
+        assertFalse(alertTriggered.get(), "XSS not prevented (alert)");
     }
 
     @TestExtension

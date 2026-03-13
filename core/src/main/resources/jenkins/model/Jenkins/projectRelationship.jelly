@@ -44,25 +44,25 @@ THE SOFTWARE.
       <form action="projectRelationship" method="get">
         <div class="jenkins-form-item">
           <label class="jenkins-form-label" for="lhs">${%upstream project}:</label>
-          <f:combobox id="lhs" fillUrl="fillJobNameItems" name="lhs" value="${request.getParameter('lhs')}"/>
+          <f:combobox id="lhs" fillUrl="fillJobNameItems" name="lhs" value="${request2.getParameter('lhs')}"/>
         </div>
 
         <div class="jenkins-form-item">
           <label class="jenkins-form-label" for="rhs">${%downstream project}:</label>
-          <f:combobox id="rhs" fillUrl="fillJobNameItems" name="rhs" value="${request.getParameter('rhs')}"/>
+          <f:combobox id="rhs" fillUrl="fillJobNameItems" name="rhs" value="${request2.getParameter('rhs')}"/>
         </div>
         <f:submit value="${%Compare}"/>
 
-        <j:if test="${!empty(request.getParameter('lhs')) and !empty(request.getParameter('rhs'))}">
-          <j:set var="jl" value="${app.getItemByFullName(request.getParameter('lhs'))}"/>
-          <j:set var="jr" value="${app.getItemByFullName(request.getParameter('rhs'))}"/>
+        <j:if test="${!empty(request2.getParameter('lhs')) and !empty(request2.getParameter('rhs'))}">
+          <j:set var="jl" value="${app.getItemByFullName(request2.getParameter('lhs'))}"/>
+          <j:set var="jr" value="${app.getItemByFullName(request2.getParameter('rhs'))}"/>
 
           <j:choose>
             <j:when test="${jl==null}">
-              <p class="error">No such project '${request.getParameter('lhs')}'</p>
+              <p class="error">No such project '${request2.getParameter('lhs')}'</p>
             </j:when>
             <j:when test="${jr==null}">
-              <p class="error">No such project '${request.getParameter('rhs')}'</p>
+              <p class="error">No such project '${request2.getParameter('rhs')}'</p>
             </j:when>
             <j:otherwise>
               <table width="100%">

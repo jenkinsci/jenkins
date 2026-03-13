@@ -36,11 +36,11 @@ import hudson.console.ConsoleAnnotatorFactory;
 import hudson.init.InitMilestone;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Actionable;
 import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.DescriptorVisibilityFilter;
-import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
@@ -54,6 +54,7 @@ import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.PasswordParameterDefinition;
+import hudson.model.RootAction;
 import hudson.model.Run;
 import hudson.model.Slave;
 import hudson.model.TimeZoneProperty;
@@ -95,11 +96,9 @@ import hudson.util.jna.GNUCLibrary;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
-import io.jenkins.servlet.ServletExceptionWrapper;
 import io.jenkins.servlet.http.CookieWrapper;
 import io.jenkins.servlet.http.HttpServletRequestWrapper;
 import io.jenkins.servlet.http.HttpServletResponseWrapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -143,6 +142,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -167,6 +167,10 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.SimplePageDecorator;
+import jenkins.model.details.Detail;
+import jenkins.model.details.DetailFactory;
+import jenkins.model.details.DetailGroup;
+import jenkins.telemetry.impl.PasswordMasking;
 import jenkins.util.SystemProperties;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -185,8 +189,6 @@ import org.kohsuke.stapler.RawHtmlArgument;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -202,6 +204,12 @@ import org.springframework.security.access.AccessDeniedException;
 public class Functions {
     private static final AtomicLong iota = new AtomicLong();
     private static Logger LOGGER = Logger.getLogger(Functions.class.getName());
+
+    /**
+     * Escape hatch to use the non-recursive f:password masking.
+     */
+    private static /* non-final */ boolean NON_RECURSIVE_PASSWORD_MASKING_PERMISSION_CHECK = SystemProperties.getBoolean(Functions.class.getName() + ".nonRecursivePasswordMaskingPermissionCheck");
+
 
     public Functions() {
     }
@@ -916,11 +924,11 @@ public class Functions {
         return buf.toString();
     }
 
-    public static void checkPermission(Permission permission) throws IOException, ServletException {
+    public static void checkPermission(Permission permission) {
         checkPermission(Jenkins.get(), permission);
     }
 
-    public static void checkPermission(AccessControlled object, Permission permission) throws IOException, ServletException {
+    public static void checkPermission(AccessControlled object, Permission permission) {
         if (permission != null) {
             object.checkPermission(permission);
         }
@@ -931,7 +939,7 @@ public class Functions {
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
      */
-    public static void checkPermission(Object object, Permission permission) throws IOException, ServletException {
+    public static void checkPermission(Object object, Permission permission) {
         if (permission == null)
             return;
 
@@ -956,7 +964,7 @@ public class Functions {
      * @param permission
      *      If null, returns true. This defaulting is convenient in making the use of this method terse.
      */
-    public static boolean hasPermission(Permission permission) throws IOException, ServletException {
+    public static boolean hasPermission(Permission permission) {
         return hasPermission(Jenkins.get(), permission);
     }
 
@@ -964,7 +972,7 @@ public class Functions {
      * This version is so that the 'hasPermission' can degrade gracefully
      * if "it" is not an {@link AccessControlled} object.
      */
-    public static boolean hasPermission(Object object, Permission permission) throws IOException, ServletException {
+    public static boolean hasPermission(Object object, Permission permission) {
         if (permission == null)
             return true;
         if (object instanceof AccessControlled)
@@ -978,36 +986,6 @@ public class Functions {
                 }
             }
             return Jenkins.get().hasPermission(permission);
-        }
-    }
-
-    /**
-     * @since 2.475
-     */
-    public static void adminCheck(StaplerRequest2 req, StaplerResponse2 rsp, Object required, Permission permission) throws IOException, ServletException {
-        // this is legacy --- all views should be eventually converted to
-        // the permission based model.
-        if (required != null && !Hudson.adminCheck(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp))) {
-            // check failed. commit the FORBIDDEN response, then abort.
-            rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            rsp.getOutputStream().close();
-            throw new ServletException("Unauthorized access");
-        }
-
-        // make sure the user owns the necessary permission to access this page.
-        if (permission != null)
-            checkPermission(permission);
-    }
-
-   /**
-     * @deprecated use {@link #adminCheck(StaplerRequest2, StaplerResponse2, Object, Permission)}
-     */
-    @Deprecated
-    public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required, Permission permission) throws IOException, javax.servlet.ServletException {
-        try {
-            adminCheck(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp), required, permission);
-        } catch (ServletException e) {
-            throw ServletExceptionWrapper.fromJakartaServletException(e);
         }
     }
 
@@ -1293,7 +1271,7 @@ public class Functions {
      *
      * @since 2.238
      */
-    public static boolean hasAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+    public static boolean hasAnyPermission(Object object, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {
             return true;
         }
@@ -1302,11 +1280,7 @@ public class Functions {
             return hasAnyPermission((AccessControlled) object, permissions);
         else {
             AccessControlled ac = Stapler.getCurrentRequest2().findAncestorObject(AccessControlled.class);
-            if (ac != null) {
-                return hasAnyPermission(ac, permissions);
-            }
-
-            return hasAnyPermission(Jenkins.get(), permissions);
+            return hasAnyPermission(Objects.requireNonNullElseGet(ac, Jenkins::get), permissions);
         }
     }
 
@@ -1331,7 +1305,7 @@ public class Functions {
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
      */
-    public static void checkAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+    public static void checkAnyPermission(Object object, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {
             return;
         }
@@ -1806,6 +1780,7 @@ public class Functions {
         return s.toString();
     }
 
+    @SuppressFBWarnings(value = "INFORMATION_EXPOSURE_THROUGH_AN_ERROR_MESSAGE", justification = "Jenkins handles this issue differently or doesn't care about it")
     private static void doPrintStackTrace(@NonNull StringBuilder s, @NonNull Throwable t, @CheckForNull Throwable higher, @NonNull String prefix, @NonNull Set<Throwable> encountered) {
         if (!encountered.add(t)) {
             s.append("<cycle to ").append(t).append(">\n");
@@ -1859,6 +1834,7 @@ public class Functions {
      * @param pw the log
      * @since 2.43
      */
+    @SuppressFBWarnings(value = "XSS_SERVLET", justification = "TODO needs triage")
     public static void printStackTrace(@CheckForNull Throwable t, @NonNull PrintWriter pw) {
         pw.println(printThrowable(t).trim());
     }
@@ -1989,7 +1965,7 @@ public class Functions {
      */
     public static @CheckForNull String getConsoleUrl(WithConsoleUrl withConsoleUrl) {
         String consoleUrl = withConsoleUrl.getConsoleUrl();
-        return consoleUrl != null ? Stapler.getCurrentRequest().getContextPath() + '/' + consoleUrl : null;
+        return consoleUrl != null ? Stapler.getCurrentRequest2().getContextPath() + '/' + consoleUrl : null;
     }
 
     /**
@@ -2018,7 +1994,7 @@ public class Functions {
             else
                 buf.append('_');    // escape
         }
-        return String.valueOf(buf);
+        return buf.toString();
     }
 
     /**
@@ -2089,6 +2065,46 @@ public class Functions {
         if (href.endsWith("/")) href = href.substring(0, href.length() - 1);
 
         return url.endsWith(href);
+    }
+
+    /**
+     * If the given {@code Action} is a {@link RootAction#isPrimaryAction() primary} {@code RootAction}, or a parent of the current page, return {@code true}.
+     * Used in {@code actions.jelly} to decide if the action should shown in the main header or the hamburger.
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean showInPrimaryHeader(Action action) {
+        // regular Actions can be injected into Jenkins via a factory.
+        if (action instanceof RootAction ra) {
+            if (ra.isPrimaryAction()) {
+                return true;
+            }
+        }
+        String path = Stapler.getCurrentRequest2().getPathInfo();
+        if (path == null || path.equals("/")) {
+            // we are in the root page so there is nothing current
+            return false;
+        }
+
+        String actionPath = action.getUrlName();
+        if (actionPath == null) {
+            // we are not a primary action and can not ever be current when we have no URL
+            return false;
+        }
+
+        // RootActions are not expected to start with a `/` but some do and some do, and not all Actions will be RootActions
+        // but path will always start with a "/"
+        if (!actionPath.startsWith("/")) {
+            actionPath = '/' + actionPath;
+        }
+
+        // the action /foo should not match /foobar but should match /foo/bar
+        if (!actionPath.endsWith("/")) {
+            actionPath = actionPath + '/';
+        }
+        if (!path.endsWith("/")) {
+            path = path + '/';
+        }
+        return path.startsWith(actionPath);
     }
 
     /**
@@ -2180,12 +2196,14 @@ public class Functions {
     /**
      * Generate a series of {@code <script>} tags to include {@code script.js}
      * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
+     *
+     * @see hudson.console.ConsoleAnnotatorFactory.RootAction
      */
     public static String generateConsoleAnnotationScriptAndStylesheet() {
         String cp = Stapler.getCurrentRequest2().getContextPath() + Jenkins.RESOURCE_PATH;
         StringBuilder buf = new StringBuilder();
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
-            String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
+            String path = cp + "/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
             if (f.hasScript())
                 buf.append("<script src='").append(path).append("/script.js'></script>");
             if (f.hasStylesheet())
@@ -2238,13 +2256,70 @@ public class Functions {
         StaplerRequest2 req = Stapler.getCurrentRequest2();
         if (o instanceof Secret || Secret.BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE) {
             if (req != null) {
-                Item item = req.findAncestorObject(Item.class);
-                if (item != null && !item.hasPermission(Item.CONFIGURE)) {
-                    return "********";
-                }
-                Computer computer = req.findAncestorObject(Computer.class);
-                if (computer != null && !computer.hasPermission(Computer.CONFIGURE)) {
-                    return "********";
+                if (NON_RECURSIVE_PASSWORD_MASKING_PERMISSION_CHECK) {
+                    List<Ancestor> ancestors = req.getAncestors();
+                    String closestAncestor = ancestors.isEmpty() ? "unknown" :
+                        ancestors.getLast().getObject().getClass().getName();
+
+                    Item item = req.findAncestorObject(Item.class);
+                    if (item != null && !item.hasPermission(Item.CONFIGURE)) {
+                        PasswordMasking.recordMasking(
+                            item.getClass().getName(),
+                            closestAncestor,
+                            getJellyViewsInformationForCurrentRequest()
+                        );
+                        return "********";
+                    }
+                    Computer computer = req.findAncestorObject(Computer.class);
+                    if (computer != null && !computer.hasPermission(Computer.CONFIGURE)) {
+                        PasswordMasking.recordMasking(
+                            computer.getClass().getName(),
+                            closestAncestor,
+                            getJellyViewsInformationForCurrentRequest()
+                        );
+                        return "********";
+                    }
+                } else {
+                    List<Ancestor> ancestors = req.getAncestors();
+                    String closestAncestor = ancestors.isEmpty() ? "unknown" :
+                        ancestors.getLast().getObject().getClass().getName();
+
+                    for (Ancestor ancestor : Iterators.reverse(ancestors)) {
+                        Object type = ancestor.getObject();
+                        if (type instanceof Item item) {
+                            if (!item.hasPermission(Item.CONFIGURE)) {
+                                PasswordMasking.recordMasking(
+                                    item.getClass().getName(),
+                                    closestAncestor,
+                                    getJellyViewsInformationForCurrentRequest()
+                                );
+                                return "********";
+                            }
+                            break;
+                        }
+                        if (type instanceof Computer computer) {
+                            if (!computer.hasPermission(Computer.CONFIGURE)) {
+                                PasswordMasking.recordMasking(
+                                    computer.getClass().getName(),
+                                    closestAncestor,
+                                    getJellyViewsInformationForCurrentRequest()
+                                );
+                                return "********";
+                            }
+                            break;
+                        }
+                        if (type instanceof View view) {
+                            if (!view.hasPermission(View.CONFIGURE)) {
+                                PasswordMasking.recordMasking(
+                                    view.getClass().getName(),
+                                    closestAncestor,
+                                    getJellyViewsInformationForCurrentRequest()
+                                );
+                                return "********";
+                            }
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -2456,7 +2531,6 @@ public class Functions {
      * Advertises the minimum set of HTTP headers that assist programmatic
      * discovery of Jenkins.
      */
-    @SuppressFBWarnings(value = "UC_USELESS_VOID_METHOD", justification = "TODO needs triage")
     public static void advertiseHeaders(HttpServletResponse rsp) {
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j != null) {
@@ -2586,6 +2660,33 @@ public class Functions {
         return String.valueOf(Math.floor(Math.random() * 3000));
     }
 
+    /**
+     * Returns a grouped list of Detail objects for the given Actionable object
+     */
+    @Restricted(NoExternalUse.class)
+    public static Map<DetailGroup, List<Detail>> getDetailsFor(Actionable object) {
+        ExtensionList<DetailGroup> groupsExtensionList = ExtensionList.lookup(DetailGroup.class);
+        List<ExtensionComponent<DetailGroup>> components = groupsExtensionList.getComponents();
+        Map<String, Double> detailGroupOrdinal = components.stream()
+                .collect(Collectors.toMap(
+                        (k) -> k.getInstance().getClass().getName(),
+                        ExtensionComponent::ordinal
+                ));
+
+        Map<DetailGroup, List<Detail>> result = new TreeMap<>(Comparator.comparingDouble(d -> detailGroupOrdinal.get(d.getClass().getName())));
+        for (DetailFactory taf : DetailFactory.factoriesFor(object.getClass())) {
+            List<Detail> details = taf.createFor(object);
+            details.forEach(e -> result.computeIfAbsent(e.getGroup(), k -> new ArrayList<>()).add(e));
+        }
+
+        for (Map.Entry<DetailGroup, List<Detail>> entry : result.entrySet()) {
+            List<Detail> detailList = entry.getValue();
+            detailList.sort(Comparator.comparingInt(Detail::getOrder).reversed());
+        }
+
+        return result;
+    }
+
     @Restricted(NoExternalUse.class)
     public static ExtensionList<SearchFactory> getSearchFactories() {
         return SearchFactory.all();
@@ -2600,11 +2701,13 @@ public class Functions {
         StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
         currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse2());
         String userAgent = currentRequest.getHeader("User-Agent");
-
-        List<String> platformsThatUseCommand = List.of("MAC", "IPHONE", "IPAD");
-        boolean useCmdKey = platformsThatUseCommand.stream().anyMatch(e -> userAgent.toUpperCase().contains(e));
-
-        return keyboardShortcut.replace("CMD", useCmdKey ? "⌘" : "CTRL");
+        if (userAgent != null) {
+          List<String> platformsThatUseCommand = List.of("MAC", "IPHONE", "IPAD");
+          boolean useCmdKey = platformsThatUseCommand.stream().anyMatch(e -> userAgent.toUpperCase().contains(e));
+          return keyboardShortcut.replace("CMD", useCmdKey ? "⌘" : "CTRL");
+        } else {
+          return keyboardShortcut;
+        }
     }
 
     @Restricted(NoExternalUse.class)

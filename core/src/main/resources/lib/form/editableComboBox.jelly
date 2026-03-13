@@ -41,8 +41,8 @@ THE SOFTWARE.
   </st:documentation>
 
   <st:once>
-    <script type="text/javascript" src="${request.contextPath}/scripts/utilities.js"/>
-    <script type="text/javascript" src="${request.contextPath}/scripts/combobox.js"/>
+    <script type="text/javascript" src="${request2.contextPath}/scripts/utilities.js"/>
+    <script type="text/javascript" src="${request2.contextPath}/scripts/combobox.js"/>
   </st:once>
 
   <f:prepareDatabinding/>

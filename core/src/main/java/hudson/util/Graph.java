@@ -27,6 +27,7 @@ package hudson.util;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import jakarta.servlet.ServletOutputStream;
 import java.awt.Color;
@@ -72,6 +73,7 @@ public abstract class Graph {
     private final long timestamp;
     private final int defaultWidth;
     private final int defaultHeight;
+    @SuppressFBWarnings(value = "SS_SHOULD_BE_STATIC", justification = "Reserved for future use")
     private final int defaultScale = 1;
     private volatile JFreeChart graph;
 

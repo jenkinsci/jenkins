@@ -64,24 +64,28 @@ td.no-wrap {
 
 #safe-restart-msg {
   font-weight: bold;
-  color: white;
-  background-color: var(--warning);
+  color: var(--background) !important;
+  background-color: var(--warning-color);
   text-align: center;
   margin-bottom: var(--section-padding);
   padding: 0.5em;
   -moz-border-radius: 0.5em;
   border-radius: var(--form-input-border-radius);
+  position: relative;
+  z-index: 103;
 }
 
 #shutdown-msg {
   font-weight: bold;
-  color: white;
-  background-color: #ef2929;
+  color: var(--background) !important;
+  background-color: var(--destructive-color);
   text-align: center;
   margin-bottom: var(--section-padding);
   padding: 0.5em;
   -moz-border-radius: 0.5em;
   border-radius: var(--form-input-border-radius);
+  position: relative;
+  z-index: 103;
 }
 
 a.lowkey:link {
@@ -148,18 +152,19 @@ td.tab {
 
 pre {
   white-space: pre-wrap;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   margin: 0 0 var(--section-padding);
   padding: 0.8rem 1rem;
-  border-radius: 10px;
-  background-color: var(--pre-background);
+  border-radius: var(--form-input-border-radius);
+  background: var(--card-background);
+  border: var(--card-border-width) solid var(--card-border-color);
   color: var(--pre-color);
   font-family: var(--font-family-mono);
   font-weight: 400;
   line-height: 1.66;
 
   a {
-    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 }
 
@@ -188,7 +193,7 @@ pre.console {
 }
 
 .setting-name {
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
   margin-bottom: 0.5rem;
   white-space: nowrap;
 }
@@ -229,11 +234,6 @@ pre.console {
   margin-top: 0;
 }
 
-.setting-main > .yui-button {
-  clear: both;
-  float: right;
-}
-
 .expanding-input {
   display: flex;
   align-items: center;
@@ -258,7 +258,7 @@ pre.console {
 
 .changeset-message {
   padding: 0.8rem 1rem;
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   background-color: var(--pre-background);
 
   pre {
@@ -270,21 +270,6 @@ pre.console {
 
 .disabledJob {
   color: gray;
-}
-
-.bottom-sticker,
-#bottom-sticker {
-  position: sticky;
-  // This has to be set to -1px so that IntersectionObserver can add the
-  // &--stuck class when the element is stuck to the bottom of the screen
-  // https://css-tricks.com/how-to-detect-when-a-sticky-element-gets-pinned/
-  bottom: -1px;
-  margin-left: calc(var(--section-padding) * -1);
-  width: calc(
-    100% + calc(var(--section-padding) * 2)
-  ); /* it needs to occupy the entire width or else the underlying content will see through */
-
-  z-index: 998; /* behind top-sticker */
 }
 
 .icon16x16 {
@@ -304,26 +289,22 @@ pre.console {
 
 /* ====================== help ===================================== */
 
+.help-area {
+  display: none; /* hidden until loaded */
+}
+
 .help {
   position: relative;
-  display: none; /* hidden until loaded */
   padding: 1rem;
   margin: 1rem 0;
-  word-break: break-word;
-  border-radius: 6px;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  border-radius: var(--form-input-border-radius);
+  background-color: var(--button-background);
+  border: var(--jenkins-border--subtle);
   z-index: 0;
 
   --section-padding: 0.8rem;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--text-color);
-    opacity: 0.05;
-    z-index: -1;
-    border-radius: inherit;
-  }
 
   p:first-of-type {
     margin-top: 0;
@@ -354,7 +335,7 @@ pre.console {
 
 .help .from-plugin {
   text-align: right;
-  color: #666;
+  color: var(--text-color-secondary);
 }
 
 .icon-help,
@@ -402,26 +383,12 @@ img.icon-help {
   display: block;
 }
 
-/* ================ Element overflow calculation helper styles ================ */
-
-.force-wrap,
-.force-wrap a {
-  white-space: normal !important;
-  overflow: visible !important;
-}
-
-.force-nowrap,
-.force-nowrap a {
-  white-space: nowrap !important;
-  overflow: hidden !important;
-}
-
 /* ========================= editable combobox style ========================= */
 .comboBoxList {
   overflow-y: scroll;
   color: var(--text-color);
-  border-radius: 10px;
-  box-shadow: 0 10px 20px rgba(black, 0.15);
+  border-radius: var(--form-input-border-radius);
+  box-shadow: 0 10px 20px rgb(black, 0.15);
   margin-top: 8px;
   margin-left: 3px;
   max-height: 300px;
@@ -434,14 +401,14 @@ img.icon-help {
   position: relative;
   padding: 0.5rem 0.8rem;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: var(--font-bold-weight);
 
   &::before {
     content: "";
     position: absolute;
     inset: 0;
     background: var(--text-color);
-    border-radius: 10px;
+    border-radius: var(--form-input-border-radius);
     opacity: 0;
     transition: var(--standard-transition);
     z-index: -1;
@@ -505,24 +472,24 @@ table.fileList td.fileSize {
 
 /* ========================= test result ========================= */
 .result-passed {
-  color: #3465a4;
+  color: var(--success-color);
 }
 
 .result-skipped {
-  color: #db0;
+  color: var(--skipped-color);
 }
 
 .result-fixed {
-  color: #3465a4;
+  color: var(--success-color);
   font-weight: bold;
 }
 
 .result-failed {
-  color: #ef2929;
+  color: var(--error-color);
 }
 
 .result-regression {
-  color: #ef2929;
+  color: var(--error-color);
   font-weight: bold;
 }
 
@@ -570,7 +537,7 @@ table.fingerprint-in-build td {
     top: 0;
     left: 10px;
     bottom: 0;
-    width: 2px;
+    width: var(--jenkins-border-width);
     background: var(--input-border);
     border-radius: 2px;
     transition: var(--standard-transition);
@@ -717,7 +684,7 @@ table.progress-bar.red td.progress-bar-done {
 /* ========================= logRecords.jelly ================== */
 
 .logrecord-container {
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   overflow: hidden;
   margin-bottom: var(--section-padding);
 
@@ -794,10 +761,6 @@ select.select-ajax-pending {
 }
 
 /* ========================= Button styles ================= */
-#disable-project {
-  margin-top: 6px;
-}
-
 .i18n {
   display: none;
 }

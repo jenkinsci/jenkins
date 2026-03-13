@@ -48,7 +48,7 @@ THE SOFTWARE.
       </div>
       <input value="${attrs.value}"
              id="${attrs.id}"
-             class="jenkins-search__input"
+             class="jenkins-input jenkins-search__input"
              placeholder="${attrs.placeholder ?: '%Search'}"
              type="search"
              autofocus="${attrs.autofocus == 'true' ? 'true' : null}"

@@ -684,7 +684,9 @@ function registerValidator(e) {
 
   var url = e.targetUrl();
   try {
-    FormChecker.delayedCheck(url, method, e.targetElement);
+    if (!e.disabled) {
+      FormChecker.delayedCheck(url, method, e.targetElement);
+    }
     // eslint-disable-next-line no-unused-vars
   } catch (x) {
     // this happens if the checkUrl refers to a non-existing element.
@@ -699,6 +701,9 @@ function registerValidator(e) {
   }
 
   var checker = function () {
+    if (this.disabled) {
+      return;
+    }
     const validationArea = this.targetElement;
     FormChecker.sendRequest(this.targetUrl(), {
       method: method,
@@ -784,6 +789,7 @@ function registerRegexpValidator(e, regexp, message) {
     return set;
   };
   e.onchange.call(e);
+  /* eslint-disable-next-line no-useless-assignment */
   e = null; // avoid memory leak
 }
 
@@ -821,16 +827,16 @@ function registerMinMaxValidator(e) {
     }
 
     if (isInteger(this.value)) {
+      const valueInt = parseInt(this.value);
+
       // Ensure the value is an integer
       if (min !== null && isInteger(min) && max !== null && isInteger(max)) {
         // Both min and max attributes are available
-
-        if (min <= max) {
+        const minInt = parseInt(min);
+        const maxInt = parseInt(max);
+        if (minInt <= maxInt) {
           // Add the validator if min <= max
-          if (
-            parseInt(min) > parseInt(this.value) ||
-            parseInt(this.value) > parseInt(max)
-          ) {
+          if (minInt > valueInt || valueInt > maxInt) {
             // The value is out of range
             updateValidationArea(
               this.targetElement,
@@ -850,7 +856,8 @@ function registerMinMaxValidator(e) {
       ) {
         // There is only 'min' available
 
-        if (parseInt(min) > parseInt(this.value)) {
+        const minInt = parseInt(min);
+        if (minInt > valueInt) {
           updateValidationArea(
             this.targetElement,
             `<div class="error">This value should be larger than ${min}</div>`,
@@ -868,7 +875,8 @@ function registerMinMaxValidator(e) {
       ) {
         // There is only 'max' available
 
-        if (parseInt(max) < parseInt(this.value)) {
+        const maxInt = parseInt(max);
+        if (maxInt < valueInt) {
           updateValidationArea(
             this.targetElement,
             `<div class="error">This value should be less than ${max}</div>`,
@@ -884,6 +892,7 @@ function registerMinMaxValidator(e) {
     return set;
   };
   e.onchange.call(e);
+  /* eslint-disable-next-line no-useless-assignment */
   e = null; // avoid memory leak
 }
 
@@ -1101,17 +1110,25 @@ function labelAttachPreviousOnClick() {
 }
 
 function helpButtonOnClick() {
-  var tr =
-    findFollowingTR(this, "help-area", "help-sibling") ||
-    findFollowingTR(this, "help-area", "setting-help") ||
-    findFollowingTR(this, "help-area");
-  var div = tr.firstElementChild;
+  let helpArea;
+
+  // Custom condition for repeatable chunks
+  if (this.parentNode.classList.contains("repeated-chunk__header")) {
+    helpArea = this.closest(".repeated-chunk").querySelector(".help-area");
+  } else {
+    helpArea =
+      findFollowingTR(this, "help-area", "help-sibling") ||
+      findFollowingTR(this, "help-area", "setting-help") ||
+      findFollowingTR(this, "help-area");
+  }
+
+  var div = helpArea.firstElementChild;
   if (!div.classList.contains("help")) {
     div = div.nextElementSibling.firstElementChild;
   }
 
-  if (div.style.display != "block") {
-    div.style.display = "block";
+  if (helpArea.style.display !== "block") {
+    helpArea.style.display = "block";
     // make it visible
 
     fetch(this.getAttribute("helpURL")).then((rsp) => {
@@ -1145,7 +1162,7 @@ function helpButtonOnClick() {
       });
     });
   } else {
-    div.style.display = "none";
+    helpArea.style.display = "none";
     layoutUpdateCallback.call();
   }
 
@@ -1281,7 +1298,7 @@ function rowvgStartEachRow(recursive, f) {
 
   // validate required form values
   Behaviour.specify("INPUT.required", "input-required", ++p, function (e) {
-    registerRegexpValidator(e, /./, "Field is required");
+    registerRegexpValidator(e, /\S/, "Field is required");
   });
 
   // validate form values to be an integer
@@ -1472,7 +1489,7 @@ function rowvgStartEachRow(recursive, f) {
         return buildFormTree(this);
       };
     }
-
+    /* eslint-disable-next-line no-useless-assignment */
     form = null; // memory leak prevention
   });
 
@@ -1647,6 +1664,7 @@ function rowvgStartEachRow(recursive, f) {
       event.preventDefault();
       return false;
     };
+    /* eslint-disable-next-line no-useless-assignment */
     e = null; // memory leak prevention
   });
 
@@ -1673,21 +1691,25 @@ function rowvgStartEachRow(recursive, f) {
         return;
       }
 
-      var subForms = [];
-      var start = findInFollowingTR(e, "dropdownList-container");
+      function buildSubForms(e) {
+        var subForms = [];
+        var start = findInFollowingTR(e, "dropdownList-container");
 
-      do {
-        start = start.firstElementChild;
-      } while (start && !isTR(start));
+        do {
+          start = start.firstElementChild;
+        } while (start && !isTR(start));
 
-      if (start && !start.classList.contains("dropdownList-start")) {
-        start = findFollowingTR(start, "dropdownList-start");
+        if (start && !start.classList.contains("dropdownList-start")) {
+          start = findFollowingTR(start, "dropdownList-start");
+        }
+        while (start != null) {
+          subForms.push(start);
+          start = findFollowingTR(start, "dropdownList-start");
+        }
+        return subForms;
       }
-      while (start != null) {
-        subForms.push(start);
-        start = findFollowingTR(start, "dropdownList-start");
-      }
 
+      var subForms = buildSubForms(e);
       // control visibility
       function updateDropDownList() {
         for (var i = 0; i < subForms.length; i++) {
@@ -1695,23 +1717,38 @@ function rowvgStartEachRow(recursive, f) {
           var f = subForms[i];
 
           if (show) {
-            renderOnDemand(f.nextElementSibling);
+            const idx = i; // capture the index so that it is not mutated in the loop
+            renderOnDemand(f.nextElementSibling, function () {
+              const current = e.selectedIndex == idx;
+              if (!current) {
+                console.warn(
+                  "renderOnDemandCallback: selection is no longer valid, rebuilding correct DOM",
+                );
+                // our form div has changed (but the index is stable) so go and re-get the new domtree
+                const subForm = buildSubForms(e)[idx];
+                updateDropDownFormRowVisibility(subForm, false);
+              }
+            });
           }
-          f.rowVisibilityGroup.makeInnerVisible(show);
-
-          // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
-          // so far dropdownList doesn't create such a situation.
-          f.rowVisibilityGroup.eachRow(
-            true,
-            show
-              ? function (e) {
-                  e.removeAttribute("field-disabled");
-                }
-              : function (e) {
-                  e.setAttribute("field-disabled", "true");
-                },
-          );
+          updateDropDownFormRowVisibility(f, show);
         }
+      }
+
+      function updateDropDownFormRowVisibility(f, show) {
+        f.rowVisibilityGroup.makeInnerVisible(show);
+
+        // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
+        // so far dropdownList doesn't create such a situation.
+        f.rowVisibilityGroup.eachRow(
+          true,
+          show
+            ? function (e) {
+                e.removeAttribute("field-disabled");
+              }
+            : function (e) {
+                e.setAttribute("field-disabled", "true");
+              },
+        );
       }
 
       e.onchange = updateDropDownList;
@@ -1727,34 +1764,58 @@ function rowvgStartEachRow(recursive, f) {
       layoutUpdateCallback.call();
       return false;
     };
+    /* eslint-disable-next-line no-useless-assignment */
     e = null; // avoid memory leak
   });
 
   Behaviour.specify(
-    "DIV.behavior-loading",
-    "div-behavior-loading",
+    "DIV.jenkins-form-skeleton, DIV.jenkins-side-panel-skeleton",
+    "div-jenkins-form-skeleton",
     ++p,
     function (e) {
+      e.remove();
+    },
+  );
+
+  Behaviour.specify(
+    "DIV.behavior-loading",
+    "div-behavior-loading",
+    // Useless assignment retained for consistency with preceding use in
+    // Behaviour.specify("DIV.jenkins-form-skeleton" and earlier
+    /* eslint-disable-next-line no-useless-assignment */
+    ++p,
+    function (e) {
+      console.warn(
+        ".behavior-loading is deprecated, use <l:skeleton /> instead - since 2.515",
+        e,
+      );
       e.classList.add("behavior-loading--hidden");
     },
   );
 
-  window.addEventListener("load", function () {
-    // Add a class to the bottom bar when it's stuck to the bottom of the screen
-    const el = document.querySelector("#bottom-sticker");
-    if (el) {
+  // Add a class to the bottom bar when it's stuck to the bottom of the screen
+  Behaviour.specify(
+    ".jenkins-bottom-app-bar__shadow",
+    "jenkins-bottom-app-bar__shadow",
+    0,
+    function (el) {
+      const dialog = el.closest("dialog");
+
       const observer = new IntersectionObserver(
         ([e]) =>
           e.target.classList.toggle(
-            "bottom-sticker-inner--stuck",
+            "jenkins-bottom-app-bar__shadow--stuck",
             e.intersectionRatio < 1,
           ),
-        { threshold: [1] },
+        {
+          threshold: [1],
+          root: dialog || null,
+        },
       );
 
       observer.observe(el);
-    }
-  });
+    },
+  );
 
   /**
    * Function that provides compatibility to the checkboxes without title on an f:entry
@@ -1874,12 +1935,10 @@ function xor(a, b) {
 // used by editableDescription.jelly to replace the description field with a form
 // eslint-disable-next-line no-unused-vars
 function replaceDescription(initialDescription, submissionUrl) {
-  var d = document.getElementById("description");
-  let button = d.firstElementChild.nextElementSibling;
-  if (button !== null) {
-    d.firstElementChild.nextElementSibling.innerHTML =
-      "<div class='jenkins-spinner'></div>";
-  }
+  const descriptionContent = document.getElementById("description-content");
+  const descriptionEditForm = document.getElementById("description-edit-form");
+  descriptionEditForm.innerHTML = "<div class='jenkins-spinner'></div>";
+  descriptionContent.classList.add("jenkins-hidden");
   let parameters = {};
   if (initialDescription !== null && initialDescription !== "") {
     parameters["description"] = initialDescription;
@@ -1895,10 +1954,11 @@ function replaceDescription(initialDescription, submissionUrl) {
     body: objectToUrlFormEncoded(parameters),
   }).then((rsp) => {
     rsp.text().then((responseText) => {
-      d.innerHTML = responseText;
+      descriptionEditForm.innerHTML = responseText;
+      descriptionEditForm.classList.remove("jenkins-hidden");
       evalInnerHtmlScripts(responseText, function () {
-        Behaviour.applySubtree(d);
-        d.getElementsByTagName("TEXTAREA")[0].focus();
+        Behaviour.applySubtree(descriptionEditForm);
+        descriptionEditForm.getElementsByTagName("TEXTAREA")[0].focus();
       });
       layoutUpdateCallback.call();
       return false;
@@ -2280,19 +2340,29 @@ function ensureVisible(e) {
 function findFormParent(e, form, isStatic) {
   isStatic = isStatic || false;
 
+  const originalElement = e;
+
   if (form == null) {
     // caller can pass in null to have this method compute the owning form
     form = e.closest("FORM");
   }
 
-  while (e != form) {
+  while (e !== form) {
     // this is used to create a group where no single containing parent node exists,
     // like <optionalBlock>
-    var nameRef = e.getAttribute("nameRef");
+    const nameRef = e.getAttribute("nameRef");
     if (nameRef != null) {
       e = document.getElementById(nameRef);
     } else {
       e = e.parentNode;
+    }
+
+    if (!e) {
+      console.warn(
+        "findFormParent: reached document root without finding form",
+        originalElement,
+      );
+      return null;
     }
 
     if (!isStatic && e.getAttribute("field-disabled") != null) {
@@ -2500,6 +2570,7 @@ function buildFormTree(form) {
 
     return true;
   } catch (e) {
+    console.error("Form not submitted", e);
     alert(e + "\n(form not submitted)");
     return false;
   }
@@ -2614,6 +2685,16 @@ function validateButton(checkUrl, paramList, button) {
       target.innerHTML = `<div class="validation-error-area" />`;
       updateValidationArea(target.children[0], responseText);
       layoutUpdateCallback.call();
+      let json = rsp.headers.get("X-Jenkins-ValidateButton-Callback");
+      if (json != null) {
+        let callInfo = JSON.parse(json);
+        let callback = callInfo["callback"];
+        let args = callInfo["arguments"];
+        if (window[callback] && typeof window[callback] === "function") {
+          window[callback].apply(window, args);
+        }
+      }
+
       var s = rsp.headers.get("script");
       try {
         geval(s);

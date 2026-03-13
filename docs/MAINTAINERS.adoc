@@ -42,7 +42,7 @@ Remoting updates in the core are subject to the process though.
 There are no special preconditions to do so.
 Anyone is welcome to contribute.
 
-**Issues Triage Team Members** review the incoming issues submitted in Jenkins Jira:
+**Issues Triage Team Members** review the incoming issues submitted in GitHub:
 bug reports, requests for enhancement, etc.
 Special permissions are not required to take this role or to contribute.
 Anyone is welcome to start contributing (see the <<issue-triage,triage guidelines below>>).
@@ -143,7 +143,7 @@ and we do not enforce a single code style across the codebase at the moment.
 ==== Building consensus
 
 Not all changes are discussed before they are submitted as pull requests.
-Developer mailing lists, Jira issues and JEPs are used for discussions,
+Developer mailing lists, issues and JEPs are used for discussions,
 but sometimes the changes go straight to the pull requests.
 And we are fine with that, especially for small patches.
 Pull requests often become a venue to discuss feasibility, underlying technical decisions and design.
@@ -322,24 +322,14 @@ Code reviews do NOT pursue the following goals:
 
 == Issue triage
 
-Jenkins core and most of its components use link:https://issues.jenkins.io/[Jenkins Jira] as an issue tracker.
-This issue tracker is open to all Jenkins users.
-They report defects and requests for enhancements,
-and then component maintainers triage issues and provide feedback to users.
-In the case of the Jenkins core, the *Issue Triage Team* and *Core Maintainers* are roles that are expected to process the incoming issues.
+The *Issue Triage Team* and *Core Maintainers* are roles that are expected to process the incoming issues.
 These contributors perform initial triage of incoming issues and periodically scrub the issue tracker.
 
 This section provides some tips and tricks about triaging issues submitted to the Jenkins core.
 
 === Issue tracker structure
 
-Jenkins core uses the link:https://issues.jenkins.io/projects/JENKINS[JENKINS] project for issue tracking.
-This project is shared between the Jenkins core components and plugins,
-and the Jenkins core is scattered across multiple components: `core`, `remoting`, `cli`, `winstone-jetty`, etc.
-In addition to it, there is a default `_unsorted` component which is recommended by default for users
-who do not know what is the root cause of an issue they experience.
-
-Searching for all Jenkins core issues is not trivial, and we provide Jira filters for it.
+Jenkins core issues are scattered across multiple repositories: link:https://github.com/jenkinsci/jenkins/issues[`jenkins`], link:https://github.com/jenkinsci/remoting/issues[`remoting`], link:https://github.com/jenkinsci/winstone/issues[`winstone`], etc.
 
 === How to discover untriaged issues?
 
@@ -347,11 +337,11 @@ Searching for all Jenkins core issues is not trivial, and we provide Jira filter
   and link:https://www.jenkins.io/changelog-stable/[LTS] releases.
   Such ratings allow users to reference issues they experienced with new Jenkins core releases,
   and it helps to discover regressions in the core causing instability or unexpected plugin failures.
-* link:https://issues.jenkins.io/secure/Dashboard.jspa?selectPageId=20742[Jenkins core triage board] -
-  Lists untriaged and recent issues in the Jenkins core and bundled components.
-* link:https://issues.jenkins.io/secure/Dashboard.jspa?selectPageId=20340[Core maintainers board] -
-  Lists unresolved recent regressions, unresolved recent core bugs, and popular new issues.
-  This dashboard can be used to discover issues that **might** be related to the recent changes in the Jenkins core.
+* link:https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20label%3Atriage[Jenkins core triage board] -
+  Lists untriaged issues in the Jenkins core and bundled components.
+* link:https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20type%3ABug%20sort%3Aupdated-desc[Core maintainers board] -
+  Lists unresolved recent bugs.
+  This query can be used to discover issues that **might** be related to the recent changes in the Jenkins core.
 
 === HOWTO: Initial triage
 
@@ -364,36 +354,34 @@ Initial issue triage has the following objectives:
 ** link:https://www.jenkins.io/participate/report-issue/[Guide: How to report an issue in Jenkins]
 ** link:https://github.com/jenkinsci/remoting#reporting-issues[Reporting Jenkins Remoting issues]
 * **Verify the issue component**.
-  It is essential to ensure that the `component` field references the right component (the Jenkins core, a plugin, etc.)
+  It is essential to ensure that the issue is in the right repository
   so that an issue can be discovered and processed by a component maintainer.
-  When moving an issue, assign the issue to the `automatic` assignee so that the maintainer gets a notification.
-  Not all components have a default assignee, and it is perfectly fine to leave the assignee field empty.
+  link:https://docs.github.com/en/issues/tracking-your-work-with-issues/administering-issues/transferring-an-issue-to-another-repository[Transfer] the issue to the correct one. If you don't have access, then request a core maintainer to do so.
 * **Verify the issue type**.
   `Bug` should be used for bug reports.
   All other issue types are considered as requests for enhancements, and there is no practical difference for the Jenkins core.
 * **Verify the issue metadata**: Jenkins version, environment, labels, etc.
   Such metadata is useful for further triage and issue discoverability.
-  There are some labels used in Jenkins Jira dashboard and filters, e.g. `jcasc-compatibility`, `java11-compatibility`, `jep-200`, etc.
+  There are some link:https://github.com/jenkinsci/jenkins/labels[labels] used for filtering, e.g. `jcasc-compatibility`, `ux`, etc.
   Assigning such labels helps users and maintainers to discover issues and act on them.
   There is no list of such "common labels" recommended for use.
   Some labels can be found in similar issues or documentation linked from system log entries in the reports.
 * **Move security issue** to the `SECURITY` project.
   Sometimes the issue reporters do not follow the link:https://www.jenkins.io/security/#reporting-vulnerabilities[vulnerability reporting] process and report security issues in public.
-  If you see such issues, move them to the `SECURITY` project so that the security team takes care of their triage.
-  Note that the required fields are different between projects, so some manual updates might be required when moving them.
+  If you see such issues, request a core maintainer to delete the issue and re-report it to the `SECURITY` project so that the security team takes care of their triage.
 * **Label regressions and CC stakeholders** if an issue is reported as a regression with a clear root cause,
   please set a `regression` label and, if applicable, CC contributors of a change that led to the regression.
 * **Resolve invalid issues and support requests**.
-  Sometimes Jenkins Jira is used as a support portal.
+  Sometimes the issue tracker is used as a support portal.
   We do not want to encourage that.
-  Jenkins Jira is an issue tracker, and we expect reporters to investigate issues on their side to an extent that they can be reviewed by maintainers.
+  We expect reporters to investigate issues on their side to an extent that they can be reviewed by maintainers.
   For support requests, users are expected to use the link:https://community.jenkins.io/c/using-jenkins/support/8[community forum],
   link:https://www.jenkins.io/mailing-lists[mailing lists],
   link:https://www.jenkins.io/chat/[chats] and other resources (e.g. Stackoverflow).
   It is fine to link users to link:https://github.com/jenkinsci/.github/blob/master/SUPPORT.md[this page]. 
 * **Resolve duplicates**.
-  It is often that the same issue is already reported in the Jenkins database.
-  Newly reported duplicates can be just resolved with a `Duplicate` resolution and linked to the original issue.
+  It is often that the same issue is already reported in the Jenkins issue tracker.
+  Newly reported duplicates can be just closed as duplicate and linked to the original issue.
 
 === HOWTO: Triage by maintainers
 
@@ -430,19 +418,18 @@ In addition to the initial triage, it is a good practice to sometimes review pre
   Sometimes issues become obsolete due to other changes in the Jenkins core (e.g. feature removal),
   and such issues can be closed.
   Same for detaching functionality from the Jenkins core and plugins,
-  issues can be reassigned to the new Jira component so that they are removed from the core backlog.
+  issues can be transferred to the new component so that they are removed from the core backlog.
 
 === Triaging requests for enhancement
 
-Requests for enhancement (RFEs) include the `New Feature` and `Improvement` types in Jenkins Jira.
-The process to triage them might be different from bug reports.
+The process to triage enhancements might be different from bug reports.
 because it is not always possible to say whether a request should be implemented in the Jenkins core,
 an existing or a new plugin.
 In the case of doubt, it is fine to just skip an issue or CC subject matter experts who could advise.
 
 For RFEs which are not related to the Jenkins core or plugins,
-it is possible to set the `plugin-proposals` component.
-Note that this component is not regularly scrubbed,
+it is possible to set the `plugin-proposals` label.
+Note that this label is not regularly scrubbed,
 and it can be considered only as a pool of ideas somebody could implement.
 It is a good practice to set expectations in a comment when updating the RFE.
 
@@ -465,15 +452,6 @@ for pings in not actively maintained components.
 * link:https://www.jenkins.io/project/conduct/[Jenkins Code of Conduct] -
 when it gets ugly.
 
-=== Resolving vs. Closing issues
-
-Jira workflow for the `JENKINS` project has two similar states: `Resolved` and `Closed`.
-Historically the issues are rarely being **closed**, and all dashboard and Jenkins processes interpret resolved issues as closed.
-The main difference is that the _Resolved_ issues can be reopened by users while _Closed_ ones can be reopened by admins only.
-
-For triage purposes, it is recommended to use the `Resolved` state if there is a chance that the issue will be reopened by the reporter or other contributor
-(e.g. resolving due to inactivity, disagreement with the resolution, etc.).
-
 == Merge process
 
 === Common merge process
@@ -493,7 +471,7 @@ Merge process can be initiated once a pull request matches the requirements:
   (link:https://github.com/jenkinsci/jenkins/pull/4387[example]).
   This is usually the case when a data migration occurs, a feature has been removed, a significant behavior change is introduced (including when there is a way to opt-out),
   or in general when we expect at least a large minority of admins to benefit from knowing about the change, e.g. to apply a new option.
-* If it would make sense to backport the change to LTS, a Jira issue must exist, be a _Bug_ or _Improvement_, and be labelled as `lts-candidate` to be considered (see link:https://issues.jenkins.io/issues/?filter=12146[this Jira query]).
+* If it would make sense to backport the change to LTS, then either the pull request or issue needs to be labeled as `lts-candidate` to be considered.
 
 ==== Step 2: Is it a good time to merge?
 
@@ -576,11 +554,11 @@ Any Jenkins contributors are welcome to participate in backporting and release c
 * Backporting discussions happen through the developer mailing list.
 * Backports are submitted as pull requests with the link:https://github.com/jenkinsci/jenkins/labels/into-lts[into-lts] label.
 * Release candidate testing is announced on the developer mailing list.
-  Discovered issues should be submitted to Jenkins Jira and then referenced in the release candidate testing thread.
+  Discovered issues should be submitted to the issue tracker and then referenced in the release candidate testing thread.
 
 == Tools
 
-* link:https://issues.jenkins.io/secure/Dashboard.jspa?selectPageId=20340[Core maintainers board] -
+* link:https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20type%3ABug%20sort%3Aupdated-desc[Core maintainers board] -
   Lists unresolved recent regressions, unresolved recent core bugs, and popular new issues.
 * link:https://github.com/jenkinsci/core-pr-tester[Core Pull Request Tester]
 * link:https://github.com/jenkinsci/core-changelog-generator[Core Changelog Generator]

@@ -9,20 +9,26 @@ import static org.mockito.Mockito.spy;
 import hudson.model.DependencyGraph;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.mockito.stubbing.Answer;
 
-public class JenkinsFutureDependencyGraphTest {
+@WithJenkins
+class JenkinsFutureDependencyGraphTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("JENKINS-67237")
     @Test
-    public void testGetFutureDependencyGraphWithoutASingleRebuildBeforeHand() throws InterruptedException, ExecutionException {
+    void testGetFutureDependencyGraphWithoutASingleRebuildBeforeHand() throws InterruptedException, ExecutionException {
         Jenkins jenkins = j.jenkins;
 
         DependencyGraph resultingGraph = jenkins.getFutureDependencyGraph().get();
@@ -32,7 +38,7 @@ public class JenkinsFutureDependencyGraphTest {
 
     @Issue("JENKINS-67237")
     @Test
-    public void testStartRebuildOfDependecyGraphWhileScheduled() throws InterruptedException, ExecutionException {
+    void testStartRebuildOfDependecyGraphWhileScheduled() {
         Jenkins jenkins = j.jenkins;
 
         Future<DependencyGraph> firstFutureDependencyGraph = jenkins.rebuildDependencyGraphAsync();
@@ -44,7 +50,7 @@ public class JenkinsFutureDependencyGraphTest {
 
     @Issue("JENKINS-67237")
     @Test
-    public void testStartRebuildOfDependencyGraphWhileAlreadyRebuilding() throws InterruptedException, ExecutionException {
+    void testStartRebuildOfDependencyGraphWhileAlreadyRebuilding() throws InterruptedException, ExecutionException {
         RebuildDependencyGraphController rebuildDependencyGraphController = new RebuildDependencyGraphController();
         Jenkins jenkins = mockJenkinsWithControllableDependencyGraph(rebuildDependencyGraphController);
 
@@ -68,7 +74,7 @@ public class JenkinsFutureDependencyGraphTest {
 
     @Issue("JENKINS-67237")
     @Test
-    public void testStartRebuildOfDependencyGraphWhileAlreadyRebuildingAndAnotherOneScheduled() throws InterruptedException, ExecutionException {
+    void testStartRebuildOfDependencyGraphWhileAlreadyRebuildingAndAnotherOneScheduled() throws InterruptedException, ExecutionException {
         RebuildDependencyGraphController rebuildDependencyGraphController = new RebuildDependencyGraphController();
         Jenkins jenkins = mockJenkinsWithControllableDependencyGraph(rebuildDependencyGraphController);
 

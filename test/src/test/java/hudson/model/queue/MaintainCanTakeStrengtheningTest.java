@@ -3,7 +3,7 @@ package hudson.model.queue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -13,19 +13,25 @@ import hudson.model.Queue;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
 import java.util.logging.Level;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class MaintainCanTakeStrengtheningTest {
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+@WithJenkins
+class MaintainCanTakeStrengtheningTest {
 
-    @Rule
-    public LoggerRule logging = new LoggerRule().record(Node.class.getName(), Level.ALL).capture(100);
+    private final LogRecorder logging = new LogRecorder().record(Node.class.getName(), Level.ALL).capture(100);
+
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     private QueueTaskFuture<FreeStyleBuild> scheduleBuild(String name, String label) throws Exception {
         FreeStyleProject project = r.createFreeStyleProject(name);
@@ -36,7 +42,7 @@ public class MaintainCanTakeStrengtheningTest {
 
     @Issue("JENKINS-59886")
     @Test
-    public void testExceptionOnNodeProperty() throws Exception {
+    void testExceptionOnNodeProperty() throws Exception {
         // A node throwing the exception because of the canTake method of the attached FaultyNodeProperty
         DumbSlave faultyAgent = r.createOnlineSlave(Label.get("faulty"));
         faultyAgent.getNodeProperties().add(new FaultyNodeProperty());
@@ -51,7 +57,7 @@ public class MaintainCanTakeStrengtheningTest {
 
         // The faulty one is the only one in the queue
         assertThat(r.getInstance().getQueue().getBuildableItems().size(), equalTo(1));
-        assertThat(r.getInstance().getQueue().getBuildableItems().get(0).task.getName(), equalTo("theFaultyOne"));
+        assertThat(r.getInstance().getQueue().getBuildableItems().getFirst().task.getName(), equalTo("theFaultyOne"));
 
         // The new error is shown in the logs
         assertThat(logging.getMessages(), hasItem(String.format("Exception evaluating if the node '%s' can take the task '%s'", faultyAgent.getDisplayName(), "theFaultyOne")));

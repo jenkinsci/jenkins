@@ -2,55 +2,55 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
 import net.sf.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class UpdateCenterTest {
+class UpdateCenterTest {
 
     @Test
-    public void toUpdateCenterCheckUrl_http_noQuery() throws Exception {
+    void toUpdateCenterCheckUrl_http_noQuery() throws Exception {
         assertThat(UpdateCenter.UpdateCenterConfiguration.toUpdateCenterCheckUrl(
                 "http://updates.jenkins-ci.org/update-center.json").toExternalForm(),
                 is("http://updates.jenkins-ci.org/update-center.json?uctest"));
     }
 
     @Test
-    public void toUpdateCenterCheckUrl_https_noQuery() throws Exception {
+    void toUpdateCenterCheckUrl_https_noQuery() throws Exception {
         assertThat(UpdateCenter.UpdateCenterConfiguration.toUpdateCenterCheckUrl(
                 "https://updates.jenkins-ci.org/update-center.json").toExternalForm(),
                 is("https://updates.jenkins-ci.org/update-center.json?uctest"));
     }
 
     @Test
-    public void toUpdateCenterCheckUrl_http_query() throws Exception {
+    void toUpdateCenterCheckUrl_http_query() throws Exception {
         assertThat(UpdateCenter.UpdateCenterConfiguration.toUpdateCenterCheckUrl(
                 "http://updates.jenkins-ci.org/update-center.json?version=2.7").toExternalForm(),
                 is("http://updates.jenkins-ci.org/update-center.json?version=2.7&uctest"));
     }
 
     @Test
-    public void toUpdateCenterCheckUrl_https_query() throws Exception {
+    void toUpdateCenterCheckUrl_https_query() throws Exception {
         assertThat(UpdateCenter.UpdateCenterConfiguration.toUpdateCenterCheckUrl(
                 "https://updates.jenkins-ci.org/update-center.json?version=2.7").toExternalForm(),
                 is("https://updates.jenkins-ci.org/update-center.json?version=2.7&uctest"));
     }
 
     @Test
-    public void toUpdateCenterCheckUrl_file() throws Exception {
+    void toUpdateCenterCheckUrl_file() throws Exception {
         assertThat(UpdateCenter.UpdateCenterConfiguration.toUpdateCenterCheckUrl(
                 "file://./foo.jar!update-center.json").toExternalForm(),
                 is("file://./foo.jar!update-center.json"));
     }
 
     @Test
-    public void noChecksums() {
+    void noChecksums() {
         final IOException ex = assertThrows(IOException.class,
                 () -> UpdateCenter.verifyChecksums(new MockDownloadJob(null, null, null),
                         buildEntryWithExpectedChecksums(null, null, null), new File("example")));
@@ -58,14 +58,14 @@ public class UpdateCenterTest {
     }
 
     @Test
-    public void sha1Match() throws Exception {
+    void sha1Match() throws Exception {
         UpdateCenter.verifyChecksums(
                 new MockDownloadJob(EMPTY_SHA1, null, null),
                 buildEntryWithExpectedChecksums(EMPTY_SHA1, null, null), new File("example"));
     }
 
     @Test
-    public void sha1Mismatch() {
+    void sha1Mismatch() {
         final IOException ex = assertThrows(IOException.class, () -> UpdateCenter.verifyChecksums(
                 new MockDownloadJob(EMPTY_SHA1.replace('k', 'f'), null, null),
                 buildEntryWithExpectedChecksums(EMPTY_SHA1, null, null), new File("example")));
@@ -73,21 +73,21 @@ public class UpdateCenterTest {
     }
 
     @Test
-    public void sha512ProvidedOnly() throws IOException {
+    void sha512ProvidedOnly() throws IOException {
         UpdateCenter.verifyChecksums(
                 new MockDownloadJob(EMPTY_SHA1, EMPTY_SHA256, EMPTY_SHA512),
                 buildEntryWithExpectedChecksums(null, null, EMPTY_SHA512), new File("example"));
     }
 
     @Test
-    public void sha512and256IgnoreCase() throws IOException {
+    void sha512and256IgnoreCase() throws IOException {
         UpdateCenter.verifyChecksums(
                 new MockDownloadJob(EMPTY_SHA1, EMPTY_SHA256.toUpperCase(Locale.US), EMPTY_SHA512.toUpperCase(Locale.US)),
                 buildEntryWithExpectedChecksums(null, EMPTY_SHA256, EMPTY_SHA512), new File("example"));
     }
 
     @Test
-    public void sha1DoesNotIgnoreCase() {
+    void sha1DoesNotIgnoreCase() {
         final Exception ex = assertThrows(Exception.class, () -> UpdateCenter.verifyChecksums(
                 new MockDownloadJob(EMPTY_SHA1, EMPTY_SHA256, EMPTY_SHA512),
                 buildEntryWithExpectedChecksums(EMPTY_SHA1.toUpperCase(Locale.US), null, null), new File("example")));
@@ -95,7 +95,7 @@ public class UpdateCenterTest {
     }
 
     @Test
-    public void noOverlapForComputedAndProvidedChecksums() {
+    void noOverlapForComputedAndProvidedChecksums() {
         final Exception ex = assertThrows(Exception.class, () -> UpdateCenter.verifyChecksums(
                 new MockDownloadJob(EMPTY_SHA1, EMPTY_SHA256, null),
                 buildEntryWithExpectedChecksums(null, null, EMPTY_SHA512), new File("example")));
@@ -103,7 +103,7 @@ public class UpdateCenterTest {
     }
 
     @Test
-    public void noOverlapForComputedAndProvidedChecksumsForSpecIncompliantJVM() {
+    void noOverlapForComputedAndProvidedChecksumsForSpecIncompliantJVM() {
         final Exception ex = assertThrows(Exception.class, () -> UpdateCenter.verifyChecksums(
                 new MockDownloadJob(EMPTY_SHA1, null, null),
                 buildEntryWithExpectedChecksums(null, EMPTY_SHA256, EMPTY_SHA512), new File("example")));

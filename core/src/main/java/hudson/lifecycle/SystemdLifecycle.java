@@ -4,7 +4,6 @@ import com.sun.jna.Library;
 import com.sun.jna.Native;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.Extension;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,7 +16,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Basil Crow
  */
 @Restricted(NoExternalUse.class)
-@Extension(optional = true)
 public class SystemdLifecycle extends ExitLifecycle {
 
     private static final Logger LOGGER = Logger.getLogger(SystemdLifecycle.class.getName());

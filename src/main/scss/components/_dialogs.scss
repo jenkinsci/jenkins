@@ -1,26 +1,54 @@
-$jenkins-dialog-padding: 1.3rem;
+$jenkins-dialog-padding: 1.25rem;
 
 .jenkins-dialog {
-  border-radius: 0.6rem;
+  --background: var(--dialog-background);
+  --section-padding: #{$jenkins-dialog-padding};
+  --bottom-app-bar-padding: #{$jenkins-dialog-padding};
+
+  border-radius: 1rem;
   border: none;
+  background-color: var(--dialog-background);
   box-shadow: var(--dialog-box-shadow);
   animation: jenkins-dialog-animate-in 0.25s cubic-bezier(0, 0.68, 0.5, 1.5);
   overflow: hidden;
-  padding: $jenkins-dialog-padding 0 0 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: $jenkins-dialog-padding;
+
+  // Thin highlight for dark themes to differentiate the dialog from its backdrop
+  outline: 1px solid rgb(255 255 255 / 0.05);
 
   &::backdrop {
-    background: var(--dialog-backdrop-background);
+    background: color-mix(
+      in sRGB,
+      var(--black) 25%,
+      var(--dialog-backdrop-background)
+    );
+    backdrop-filter: var(--dialog-backdrop-backdrop-filter);
     animation: jenkins-dialog-backdrop-animate-in 0.15s;
   }
 
   &__title {
-    font-size: 1.125rem;
-    font-weight: 500;
-    padding: 0 $jenkins-dialog-padding;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    font-size: 1rem;
+    font-weight: var(--font-bold-weight);
+    padding: $jenkins-dialog-padding;
     color: var(--text-color);
+    overflow-wrap: anywhere;
+    text-box: cap alphabetic;
+
+    &__button {
+      padding: 0;
+      width: 2rem;
+      min-height: 2rem;
+      border-radius: 100%;
+    }
+
+    &__close-button {
+      margin-left: auto !important;
+    }
   }
 
   &__contents {
@@ -28,56 +56,58 @@ $jenkins-dialog-padding: 1.3rem;
     overflow-wrap: break-word;
     padding: 0 $jenkins-dialog-padding;
     max-height: 75vh;
-    font-size: 1rem;
     color: var(--text-color-secondary);
 
     &--modal {
       padding-bottom: $jenkins-dialog-padding;
       color: var(--text-color);
     }
+
+    .jenkins-dialog__buttons {
+      padding-inline: 0;
+    }
   }
 
   &__input {
     display: flex;
-    padding: 0 1rem 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0 $jenkins-dialog-padding;
+    color: var(--text-color-secondary);
   }
 
   &__buttons {
-    padding: 0 $jenkins-dialog-padding $jenkins-dialog-padding;
+    display: flex;
+    padding: $jenkins-dialog-padding;
     justify-content: right;
     flex-direction: row-reverse;
+    gap: 1.25rem;
 
     .jenkins-button {
-      font-size: 0.9rem;
-      padding: 0.7rem 0.6rem;
       min-width: 100px;
     }
   }
 
   &__subtitle {
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-bold-weight);
     color: var(--text-color-secondary);
     padding: 0;
     margin: 0 0 1rem;
   }
 
-  &__close-button {
-    position: absolute;
-    top: $jenkins-dialog-padding - 0.5rem;
-    right: $jenkins-dialog-padding - 0.5rem;
-    aspect-ratio: 1;
-    padding: 0;
+  &[closing] {
+    animation: jenkins-dialog-animate-out 0.1s linear;
 
-    &::before,
-    &::after {
-      border-radius: 100%;
-      outline: none;
+    &::backdrop {
+      animation: jenkins-dialog-backdrop-animate-out 0.1s linear;
     }
+  }
 
-    &::after {
-      backdrop-filter: contrast(0.9) blur(5px);
-    }
+  .jenkins-bottom-app-bar__shadow {
+    margin-bottom: calc(
+      (2.375rem + calc(var(--bottom-app-bar-padding) * 2)) * -1
+    );
   }
 }
 
@@ -96,6 +126,13 @@ $jenkins-dialog-padding: 1.3rem;
 @keyframes jenkins-dialog-animate-in {
   from {
     scale: 85%;
+    opacity: 0;
+  }
+}
+
+@keyframes jenkins-dialog-animate-out {
+  to {
+    scale: 95%;
     opacity: 0;
   }
 }

@@ -24,24 +24,18 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout title="${%Updates} - ${%Plugins}" permission="${app.SYSTEM_READ}">
+  <l:settings-subpage permission="${app.SYSTEM_READ}" header="${null}" noDefer="true" includeSidepanel="true">
     <j:set var="list" value="${app.updateCenter.updates}" />
-
-    <st:include page="sidepanel.jelly"/>
-    <!-- no need for additional breadcrumb here as we're on an "index" page already including breadcrumb -->
-
-    <l:header>
       <script src="${resURL}/jsbundles/components/row-selection-controller.js" type="text/javascript" defer="true" />
-    </l:header>
 
-    <l:main-panel>
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
           <l:search-bar clazz="jenkins-search--app-bar"
                         placeholder="${%Search plugin updates}"
                         id="filter-box"
                         autofocus="true"
-                        value="${request.getParameter('filter')}"
+                        hasKeyboardShortcut="false"
+                        value="${request2.getParameter('filter')}"
                         enabled="${!empty(list)}" />
         </div>
         <div class="jenkins-app-bar__controls">
@@ -54,6 +48,7 @@ THE SOFTWARE.
             </j:if>
           </l:isAdmin>
           <st:include page="check.jelly" />
+          <st:include page="overflow.jelly" />
         </div>
       </div>
 
@@ -84,6 +79,14 @@ THE SOFTWARE.
                   <th initialSortDir="down">${%Name}</th>
                   <th>${%Released}</th>
                   <th>${%Installed}</th>
+                  <j:if test="${app.updateCenter.healthScoresAvailable}">
+                    <th>
+                      <j:set var="healthTooltip">${%healthTooltip}</j:set>
+                      <span data-html-tooltip="${healthTooltip}" data-tooltip-interactive="true">
+                        ${%Health}
+                      </span>
+                    </th>
+                  </j:if>
                 </tr>
               </thead>
                   <j:forEach var="p" items="${list}">
@@ -123,7 +126,7 @@ THE SOFTWARE.
                             <j:forEach var="label" items="${p.categories}">
                               <j:if test="${!it.isMetaLabel(label)}">
                                 <a href="?filter=${app.updateCenter.getCategoryDisplayName(label)}"
-                                   class="jenkins-table__link jenkins-table__badge">
+                                   class="jenkins-badge">
                                   ${app.updateCenter.getCategoryDisplayName(label)}
                                 </a>
                               </j:if>
@@ -225,6 +228,20 @@ THE SOFTWARE.
                           </j:otherwise>
                         </j:choose>
                       </td>
+                      <j:if test="${app.updateCenter.healthScoresAvailable}">
+                        <td>
+                          <j:choose>
+                            <j:when test="${p.healthScore != null}">
+                              <a href="${p.wiki}/healthScore" class="jenkins-healthScore--badge jenkins-healthScore--${p.healthScoreClass}" target="_blank" rel="noopener noreferrer">
+                                <st:out value="${p.healthScore}"/>
+                              </a>
+                            </j:when>
+                            <j:otherwise>
+                              <l:icon src="symbol-status-aborted" class="icon-lg" tooltip="${%No health score available}"/>
+                            </j:otherwise>
+                          </j:choose>
+                        </td>
+                      </j:if>
                     </tr>
                   </j:forEach>
             </table>
@@ -235,6 +252,5 @@ THE SOFTWARE.
         </j:choose>
         <d:invokeBody/>
       </form>
-    </l:main-panel>
-  </l:layout>
+  </l:settings-subpage>
 </j:jelly>

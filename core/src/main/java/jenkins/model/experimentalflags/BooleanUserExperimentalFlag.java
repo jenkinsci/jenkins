@@ -25,6 +25,7 @@
 package jenkins.model.experimentalflags;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.util.SystemProperties;
 
 /**
  * @since 2.395
@@ -36,7 +37,7 @@ public abstract class BooleanUserExperimentalFlag extends UserExperimentalFlag<B
 
     @Override
     public @NonNull Boolean getDefaultValue() {
-        return false;
+        return SystemProperties.getBoolean(getFlagKey() + ".defaultValue");
     }
 
     @Override

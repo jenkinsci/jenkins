@@ -41,24 +41,6 @@ public class JavaUtils {
     }
 
     /**
-     * Check whether the current JVM is running with Java 8 or below
-     * @return {@code true} if it is Java 8 or older version
-     */
-    public static boolean isRunningWithJava8OrBelow() {
-        String javaVersion = getCurrentRuntimeJavaVersion();
-        return javaVersion.startsWith("1.");
-    }
-
-    /**
-     * Check whether the current JVM is running with Java 9 or above.
-     * @return {@code true} if it is Java 9 or above
-     */
-    public static boolean isRunningWithPostJava8() {
-        String javaVersion = getCurrentRuntimeJavaVersion();
-        return !javaVersion.startsWith("1.");
-    }
-
-    /**
      * Returns the JVM's current version as a {@link VersionNumber} instance.
      */
     public static JavaSpecificationVersion getCurrentJavaRuntimeVersionNumber() {
@@ -77,6 +59,6 @@ public class JavaUtils {
      */
     public static String getCurrentRuntimeJavaVersion() {
         Runtime.Version runtimeVersion = Runtime.version();
-        return String.valueOf(runtimeVersion.version().get(0));
+        return String.valueOf(runtimeVersion.version().getFirst());
     }
 }

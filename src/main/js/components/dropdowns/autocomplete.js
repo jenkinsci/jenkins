@@ -43,6 +43,9 @@ function init() {
           instance.popper.style.minWidth = e.offsetWidth + "px";
         },
         true,
+        {
+          appendTo: "parent",
+        },
       );
     }
     e.dropdown.setContent(Utils.generateDropdownItems(items, true));
@@ -93,7 +96,6 @@ function init() {
     0,
     function (e) {
       e.setAttribute("autocomplete", "off");
-      e.dataset["hideOnClick"] = "false";
       // form field with auto-completion support
       e.style.position = "relative";
       // otherwise menu won't hide on tab with nothing selected

@@ -77,7 +77,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -351,15 +350,15 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 if (i == 0) {
                     // If absolute path, just remove: /../something
                     // If relative path, not collapsible so leave as-is
-                    tokens.remove(0);
-                    if (!tokens.isEmpty()) token += tokens.remove(0);
+                    tokens.removeFirst();
+                    if (!tokens.isEmpty()) token += tokens.removeFirst();
                     if (!isAbsolute) buf.append(token);
                 } else {
                     // Normalize: remove something/.. plus separator before/after
                     i -= 2;
                     for (int j = 0; j < 3; j++) tokens.remove(i);
                     if (i > 0) tokens.remove(i - 1);
-                    else if (!tokens.isEmpty()) tokens.remove(0);
+                    else if (!tokens.isEmpty()) tokens.removeFirst();
                 }
             } else
                 i += 2;
@@ -719,10 +718,14 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                         int mode = e.getUnixMode();
                         if (mode != 0)    // Ant returns 0 if the archive doesn't record the access mode
                             target.chmod(mode);
-                    } catch (InterruptedException ex) {
+                    } catch (InterruptedException | NoSuchFileException ex) {
                         LOGGER.log(Level.WARNING, "unable to set permissions", ex);
                     }
-                    Files.setLastModifiedTime(Util.fileToPath(f), e.getLastModifiedTime());
+                    try {
+                        Files.setLastModifiedTime(Util.fileToPath(f), e.getLastModifiedTime());
+                    } catch (NoSuchFileException ex) {
+                        LOGGER.log(Level.WARNING, "unable to set last modified time", ex);
+                    }
                 }
             }
         }
@@ -1143,8 +1146,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         if (channel == null) {
             try {
                 file.write(Paths.get(remote));
-            } catch (UncheckedIOException e) {
-                throw e.getCause();
             } catch (IOException e) {
                 throw e;
             } catch (Exception e) {
@@ -1304,7 +1305,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Takes a {@link FilePath}+{@link FileCallable} pair and returns the equivalent {@link Callable}.
-     * When executing the resulting {@link Callable}, it executes {@link FileCallable#act(FileCallable)}
+     * When executing the resulting {@link Callable}, it executes {@link FilePath#act(FileCallable)}
      * on this {@link FilePath}.
      *
      * @since 1.522

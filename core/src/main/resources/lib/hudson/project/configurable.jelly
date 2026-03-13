@@ -25,17 +25,21 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <!-- Displayed by projects (assignable to ParameterizedJobMixIn.ParameterizedJob) which can be configured and built. -->
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
-    <j:if test="${it.buildable}">
+    <l:userExperimentalFlag var="newJobPage" flagClassName="jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag" />
+
+    <j:if test="${!newJobPage}">
+      <j:if test="${it.buildable}">
         <st:adjunct includes="lib.hudson.project.configurable.configurable"/>
         <l:task href="${url}/build?delay=0sec" icon="icon-clock icon-md" permission="${it.BUILD}" post="${!it.parameterized}" data-callback="lib_hudson_project_configurable_build_now_callback" data-build-failure="${%buildFailed}" data-build-success="${%Build scheduled}" data-parameterized="${it.parameterized}" title="${it.buildNowText}"/>
-    </j:if>
-    <j:choose>
+      </j:if>
+      <j:choose>
         <j:when test="${h.hasPermission(it,it.CONFIGURE)}">
-            <l:task href="${url}/configure" icon="symbol-settings" title="${%Configure}"/>
+          <l:task href="${url}/configure" icon="symbol-settings" title="${%Configure}"/>
         </j:when>
         <j:when test="${h.hasPermission(it,it.EXTENDED_READ)}">
-            <l:task href="${url}/configure" icon="symbol-settings" title="${%View Configuration}"/>
+          <l:task href="${url}/configure" icon="symbol-settings" title="${%View Configuration}"/>
         </j:when>
-    </j:choose>
+      </j:choose>
+    </j:if>
     <l:delete message="${%delete.confirm(it.pronoun, it.displayName)}" urlPrefix="${url}" permission="${it.DELETE}" title="${%delete(it.pronoun)}"/>
 </j:jelly>

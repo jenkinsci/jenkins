@@ -61,16 +61,17 @@ public class HistoryPageFilter<T> {
     public final List<HistoryPageEntry<QueueItem>> queueItems = new ArrayList<>();
     public final List<HistoryPageEntry<HistoricalBuild>> runs = new ArrayList<>();
 
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+    @SuppressFBWarnings(value = {"PA_PUBLIC_PRIMITIVE_ATTRIBUTE", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}, justification = "Preserve API compatibility; read by Stapler")
     public boolean hasUpPage = false; // there are newer builds than on this page
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+    @SuppressFBWarnings(value = {"PA_PUBLIC_PRIMITIVE_ATTRIBUTE", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}, justification = "Preserve API compatibility; read by Stapler")
     public boolean hasDownPage = false; // there are older builds than on this page
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+    @SuppressFBWarnings(value = {"PA_PUBLIC_PRIMITIVE_ATTRIBUTE", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}, justification = "Preserve API compatibility; read by Stapler")
     public long nextBuildNumber;
-    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
     public HistoryWidget widget;
 
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public long newestOnPage = Long.MIN_VALUE; // see updateNewestOldest()
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public long oldestOnPage = Long.MAX_VALUE; // see updateNewestOldest()
 
     /**
@@ -229,14 +230,11 @@ public class HistoryPageFilter<T> {
         // Queue items can start building out of order with how they got added to the queue. Sorting them
         // before adding to the page. They'll still get displayed before the building items coz they end
         // up in a different list in HistoryPageFilter.
-        items.sort(new Comparator<Object>() {
-            @Override
-            public int compare(Object o1, Object o2) {
-                long o1QID = HistoryPageEntry.getEntryId(o1);
-                long o2QID = HistoryPageEntry.getEntryId(o2);
+        items.sort((Comparator<Object>) (o1, o2) -> {
+            long o1QID = HistoryPageEntry.getEntryId(o1);
+            long o2QID = HistoryPageEntry.getEntryId(o2);
 
-                return Long.compare(o2QID, o1QID);
-            }
+            return Long.compare(o2QID, o1QID);
         });
     }
 
@@ -260,7 +258,7 @@ public class HistoryPageFilter<T> {
         HistoryPageEntry<HistoricalBuild> entry = new HistoryPageEntry<>(run);
         // Assert that runs have been added in descending order
         if (!runs.isEmpty()) {
-            if (entry.getEntryId() > runs.get(runs.size() - 1).getEntryId()) {
+            if (entry.getEntryId() > runs.getLast().getEntryId()) {
                 throw new IllegalStateException("Cannot add newer " + run + " to descending-order list " +
                     runs.stream().map(HistoryPageEntry::getEntry).collect(Collectors.toList()));
             }
@@ -277,8 +275,7 @@ public class HistoryPageFilter<T> {
     private boolean add(Object entry) {
         // Purposely not calling isFull(). May need to add a greater number of entries
         // to the page initially, newerThan then cutting it back down to size using cutLeading()
-        if (entry instanceof QueueItem) {
-            QueueItem item = (QueueItem) entry;
+        if (entry instanceof QueueItem item) {
             if (searchString != null && !fitsSearchParams(item)) {
                 return false;
             }

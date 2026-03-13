@@ -13,20 +13,20 @@
   user-select: none;
 
   &::backdrop {
-    background: var(--command-palette-backdrop-background);
-    backdrop-filter: contrast(0.7) brightness(0.9) saturate(1.25) blur(3px);
-    animation: jenkins-dialog-backdrop-animate-in 0.1s linear;
+    background: var(--dialog-backdrop-background);
+    backdrop-filter: var(--dialog-backdrop-backdrop-filter);
+    animation: jenkins-dialog-backdrop-animate-in 0.075s linear;
   }
 
   &[open] {
-    animation: command-palette-animate-in 0.1s cubic-bezier(0, 0.68, 0.5, 1.5);
+    animation: command-palette-animate-in 0.075s cubic-bezier(0, 0.68, 0.5, 1.5);
   }
 
   &[closing] {
-    animation: command-palette-animate-out 0.1s linear;
+    animation: command-palette-animate-out 0.05s linear;
 
     &::backdrop {
-      animation: jenkins-dialog-backdrop-animate-out 0.1s linear;
+      animation: jenkins-dialog-backdrop-animate-out 0.05s linear;
     }
   }
 }
@@ -48,7 +48,7 @@
 }
 
 .jenkins-command-palette__wrapper {
-  --inset: 15vh;
+  --inset: 10vh;
 
   width: 100%;
   height: 100%;
@@ -56,7 +56,6 @@
   overflow: scroll;
   padding-top: var(--inset);
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media (max-width: breakpoints.$tablet-breakpoint) {
     --inset: 10vh;
   }
@@ -70,7 +69,6 @@
   pointer-events: auto;
   margin: 0 auto var(--inset);
 
-  /* stylelint-disable-next-line media-query-no-invalid */
   @media (max-width: breakpoints.$tablet-breakpoint) {
     width: calc(100% - (var(--section-padding) * 2));
   }
@@ -78,17 +76,21 @@
   &__search {
     --search-bar-height: 3rem !important;
 
-    background: transparent;
-    box-shadow: var(--command-palette-inset-shadow);
+    background: var(--dialog-background);
+    box-shadow: var(--dialog-box-shadow);
     margin-bottom: var(--section-padding);
     border-radius: 1rem;
     transition: var(--standard-transition);
     z-index: 10;
-    backdrop-filter: var(--command-palette-results-backdrop-filter);
     max-width: unset;
 
     input {
+      padding: 0 0.5rem 0 45px;
       background: transparent !important;
+
+      --input-border: transparent;
+      --input-border-hover: transparent;
+
       border-radius: inherit;
 
       &::before,
@@ -106,11 +108,12 @@
     display: flex;
     flex-direction: column;
     border-radius: 1rem;
-    backdrop-filter: var(--command-palette-results-backdrop-filter);
-    box-shadow: var(--command-palette-inset-shadow);
+    background: var(--dialog-background);
+    box-shadow: var(--dialog-box-shadow);
+
     // If set to 0, Safari won't always show the backdrop-filter
     height: 1px;
-    transition: height var(--standard-transition);
+    transition: height 0.15s ease;
     overflow: hidden;
     will-change: height;
   }
@@ -121,19 +124,18 @@
     padding: 0.5rem;
 
     &__heading {
-      font-weight: 500;
-      font-size: 0.875rem;
+      font-size: var(--font-size-sm);
       margin: 0;
-      padding: 0.75rem 0.75rem 0.625rem;
+      padding: 0.375rem 0.625rem;
       color: var(--text-color-secondary);
 
       &:not(:first-of-type) {
-        padding-top: 2rem;
+        padding-top: 1.375rem;
       }
     }
 
     &__item {
-      @include mixins.item;
+      @include mixins.item($border: false);
 
       --item-background--hover: color-mix(
         in sRGB,
@@ -149,19 +151,14 @@
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      background: transparent;
-      padding: 0.75rem;
+      padding: 0.625rem;
       border-radius: 0.5rem;
-      cursor: pointer;
       color: var(--text-color) !important;
-      transition: var(--standard-transition);
-      box-shadow: 0 0 0 10px transparent;
-      border: none;
-      outline: none;
 
       &--hover {
         &::before {
           background-color: var(--item-background--hover);
+          border: var(--jenkins-border--subtle) !important;
         }
       }
 
@@ -171,7 +168,7 @@
         justify-content: center;
         width: 1.375rem;
         height: 1.375rem;
-        margin-right: 0.75rem;
+        margin-right: 0.625rem;
         overflow: hidden;
         pointer-events: none;
         color: var(--text-color);
@@ -200,10 +197,10 @@
   }
 
   &__info {
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     margin: 0;
-    padding: 0 14px;
-    line-height: 46px;
+    padding: 0 0.625rem;
+    line-height: 42px;
     color: var(--text-color);
 
     span {

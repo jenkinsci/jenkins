@@ -1,0 +1,10 @@
+#description {
+  #description-content,
+  .jenkins-buttons-row {
+    margin-bottom: var(--section-padding);
+
+    &:empty {
+      display: none;
+    }
+  }
+}

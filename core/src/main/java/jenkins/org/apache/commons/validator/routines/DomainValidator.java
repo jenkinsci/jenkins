@@ -2168,41 +2168,19 @@ public class DomainValidator implements Serializable {
      * @since 1.5.1
      */
     public static synchronized String [] getTLDEntries(ArrayType table) {
-        final String[] array;
-        switch (table) {
-            case COUNTRY_CODE_MINUS:
-                array = countryCodeTLDsMinus;
-                break;
-            case COUNTRY_CODE_PLUS:
-                array = countryCodeTLDsPlus;
-                break;
-            case GENERIC_MINUS:
-                array = genericTLDsMinus;
-                break;
-            case GENERIC_PLUS:
-                array = genericTLDsPlus;
-                break;
-            case LOCAL_MINUS:
-                array = localTLDsMinus;
-                break;
-            case LOCAL_PLUS:
-                array = localTLDsPlus;
-                break;
-            case GENERIC_RO:
-                array = GENERIC_TLDS;
-                break;
-            case COUNTRY_CODE_RO:
-                array = COUNTRY_CODE_TLDS;
-                break;
-            case INFRASTRUCTURE_RO:
-                array = INFRASTRUCTURE_TLDS;
-                break;
-            case LOCAL_RO:
-                array = LOCAL_TLDS;
-                break;
-            default:
-                throw new IllegalArgumentException(UNEXPECTED_ENUM_VALUE + table);
-        }
+        final String[] array = switch (table) {
+            case COUNTRY_CODE_MINUS -> countryCodeTLDsMinus;
+            case COUNTRY_CODE_PLUS -> countryCodeTLDsPlus;
+            case GENERIC_MINUS -> genericTLDsMinus;
+            case GENERIC_PLUS -> genericTLDsPlus;
+            case LOCAL_MINUS -> localTLDsMinus;
+            case LOCAL_PLUS -> localTLDsPlus;
+            case GENERIC_RO -> GENERIC_TLDS;
+            case COUNTRY_CODE_RO -> COUNTRY_CODE_TLDS;
+            case INFRASTRUCTURE_RO -> INFRASTRUCTURE_TLDS;
+            case LOCAL_RO -> LOCAL_TLDS;
+            default -> throw new IllegalArgumentException(UNEXPECTED_ENUM_VALUE + table);
+        };
         return Arrays.copyOf(array, array.length); // clone the array
     }
 
@@ -2214,29 +2192,15 @@ public class DomainValidator implements Serializable {
      * @since 1.7
      */
     public String [] getOverrides(ArrayType table) {
-        final String[] array;
-        switch (table) {
-            case COUNTRY_CODE_MINUS:
-                array = mycountryCodeTLDsMinus;
-                break;
-            case COUNTRY_CODE_PLUS:
-                array = mycountryCodeTLDsPlus;
-                break;
-            case GENERIC_MINUS:
-                array = mygenericTLDsMinus;
-                break;
-            case GENERIC_PLUS:
-                array = mygenericTLDsPlus;
-                break;
-            case LOCAL_MINUS:
-                array = mylocalTLDsMinus;
-                break;
-            case LOCAL_PLUS:
-                array = mylocalTLDsPlus;
-                break;
-            default:
-                throw new IllegalArgumentException(UNEXPECTED_ENUM_VALUE + table);
-        }
+        final String[] array = switch (table) {
+            case COUNTRY_CODE_MINUS -> mycountryCodeTLDsMinus;
+            case COUNTRY_CODE_PLUS -> mycountryCodeTLDsPlus;
+            case GENERIC_MINUS -> mygenericTLDsMinus;
+            case GENERIC_PLUS -> mygenericTLDsPlus;
+            case LOCAL_MINUS -> mylocalTLDsMinus;
+            case LOCAL_PLUS -> mylocalTLDsPlus;
+            default -> throw new IllegalArgumentException(UNEXPECTED_ENUM_VALUE + table);
+        };
         return Arrays.copyOf(array, array.length); // clone the array
     }
 
@@ -2270,15 +2234,14 @@ public class DomainValidator implements Serializable {
             //            (ideographic full stop), U+FF0E (fullwidth full stop), U+FF61
             //            (halfwidth ideographic full stop).
             char lastChar = input.charAt(length - 1); // fetch original last char
-            switch (lastChar) {
-                case '\u002E': // "." full stop
-                case '\u3002': // ideographic full stop
-                case '\uFF0E': // fullwidth full stop
-                case '\uFF61': // halfwidth ideographic full stop
-                    return ascii + "."; // restore the missing stop
-                default:
-                    return ascii;
-            }
+            return switch (lastChar) {
+                case '\u002E', // "." full stop
+                     '\u3002', // ideographic full stop
+                     '\uFF0E', // fullwidth full stop
+                     '\uFF61'  // halfwidth ideographic full stop
+                        -> ascii + "."; // restore the missing stop
+                default -> ascii;
+            };
         } catch (IllegalArgumentException e) { // input is not valid
             return input;
         }

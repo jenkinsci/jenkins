@@ -13,7 +13,7 @@ $skip-link-box-shadow: 0 0 50px -15px var(--yellow);
     $skip-link-box-shadow;
   color: var(--text-color) !important;
   padding: $skip-link-block-padding $skip-link-inline-padding;
-  border-radius: 0.66rem;
+  border-radius: var(--form-input-border-radius);
   outline: none;
   text-decoration: none !important;
   transition:

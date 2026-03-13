@@ -35,6 +35,7 @@ import java.lang.ref.Cleaner;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -246,11 +247,11 @@ public class AtomicFileWriter extends Writer {
                 // Both files are on the same filesystem, so this should not happen.
                 LOGGER.log(Level.WARNING, e, () -> "Atomic move " + source + " → " + destination + " not supported. Falling back to non-atomic move.");
                 atomicMoveSupported = false;
+            } catch (AccessDeniedException e) {
+                LOGGER.log(Level.INFO, e, () -> "Move " + source + " → " + destination + " failed, perhaps due to a temporary file lock. Falling back to non-atomic move.");
             }
         }
-        if (!atomicMoveSupported) {
-            Files.move(source, destination, StandardCopyOption.REPLACE_EXISTING);
-        }
+        Files.move(source, destination, StandardCopyOption.REPLACE_EXISTING);
     }
 
     private static final class CleanupChecker implements Runnable {

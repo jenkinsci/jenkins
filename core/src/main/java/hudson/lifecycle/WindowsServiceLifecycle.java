@@ -27,6 +27,7 @@ package hudson.lifecycle;
 import static hudson.util.jna.Kernel32.MOVEFILE_DELAY_UNTIL_REBOOT;
 import static hudson.util.jna.Kernel32.MOVEFILE_REPLACE_EXISTING;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
@@ -50,7 +51,6 @@ import org.apache.commons.io.FileUtils;
  * {@link Lifecycle} for Hudson installed as Windows service.
  *
  * @author Kohsuke Kawaguchi
- * @see WindowsInstallerLink
  */
 public class WindowsServiceLifecycle extends Lifecycle {
     public WindowsServiceLifecycle() {
@@ -120,6 +120,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
     }
 
     @Override
+    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
     public void restart() throws IOException, InterruptedException {
         Jenkins jenkins = Jenkins.getInstanceOrNull();
         try {

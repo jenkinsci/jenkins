@@ -4,11 +4,12 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.Functions;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.attribute.PosixFilePermission;
@@ -24,30 +25,36 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class FileParameterValueSecurity3073Test {
+@WithJenkins
+class FileParameterValueSecurity3073Test {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    @TempDir
+    private File tmp;
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("SECURITY-3073")
-    public void verifyUploadedFileParameterPermission() throws Exception {
+    void verifyUploadedFileParameterPermission() throws Exception {
         assumeFalse(Functions.isWindows());
 
         FreeStyleProject project = j.createFreeStyleProject();
         project.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("filePermission", null)
         )));
-        File dir = tmp.newFolder();
+        File dir = newFolder(tmp, "junit");
         File plugin = new File(dir, "htmlpublisher.jpi");
         // We're using a plugin to have a file above DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD
         FileUtils.copyURLToFile(Objects.requireNonNull(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi")), plugin);
@@ -77,5 +84,14 @@ public class FileParameterValueSecurity3073Test {
                     }
                 });
         assertEquals(EnumSet.of(OWNER_EXECUTE, OWNER_READ, OWNER_WRITE), filesPermission[0]);
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            throw new IOException("Couldn't create folders " + root);
+        }
+        return result;
     }
 }

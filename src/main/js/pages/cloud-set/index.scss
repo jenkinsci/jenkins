@@ -1,3 +1,30 @@
-.dd-handle {
-  cursor: move;
+.app-cloud-item {
+  --tertiary-color: var(--text-color-secondary);
+
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+
+  & > svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-right: 0.75rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-right: 0.4375rem;
+
+    & > .jenkins-button {
+      padding: 0;
+      aspect-ratio: 1;
+      transition: color var(--standard-transition);
+      min-height: 2rem !important;
+    }
+
+    &:empty {
+      display: none;
+    }
+  }
 }

@@ -1,6 +1,6 @@
 @use "../abstracts/mixins";
 
-$min-button-size: 36px;
+$min-button-size: 2.375rem;
 
 .jenkins-icon-size {
   display: flex;
@@ -57,7 +57,7 @@ $min-button-size: 36px;
       justify-content: center;
       aspect-ratio: 1;
       height: $min-button-size;
-      border-radius: 10px;
+      border-radius: var(--form-input-border-radius);
       font-weight: var(--btn-link-font-weight);
       font-size: var(--btn-font-size);
       background: var(--button-background--hover);
@@ -121,7 +121,7 @@ $min-button-size: 36px;
 
     &__label {
       color: var(--link-color);
-      font-weight: 500;
+      font-weight: var(--font-bold-weight);
       margin: 0;
       font-size: 1rem;
     }
@@ -192,5 +192,21 @@ div.listview-jobs {
     border-left: 2px solid color-mix(in sRGB, var(--input-border), transparent);
     margin-left: 10px;
     padding-left: 22px;
+  }
+}
+
+.jenkins-inline-page {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 1rem;
+
+  @media (width <= 800px) {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  &__side-panel {
+    display: flex;
+    flex-direction: column;
   }
 }

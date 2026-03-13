@@ -32,7 +32,6 @@ import java.util.List;
  *
  * @author TB
  */
-@SuppressFBWarnings(value = "MS_OOI_PKGPROTECT", justification = "for backward compatibility")
 @SuppressWarnings("UnusedReturnValue")
 public interface Advapi32  extends StdCallLibrary {
   Advapi32 INSTANCE = (Advapi32) Native.load("Advapi32", Advapi32.class, Options.UNICODE_OPTIONS);

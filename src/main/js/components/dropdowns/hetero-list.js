@@ -27,12 +27,12 @@ function convertInputsToButtons(e) {
     let btn = document.createElement("button");
     btn.setAttribute("type", "button");
     btn.classList.add("hetero-list-add", "jenkins-button");
-    btn.innerText = oldbtn.getAttribute("value");
+    let plus = createElementFromHtml(Symbols.PLUS);
+    btn.appendChild(plus);
+    btn.appendChild(document.createTextNode(oldbtn.getAttribute("value")));
     if (oldbtn.hasAttribute("suffix")) {
       btn.setAttribute("suffix", oldbtn.getAttribute("suffix"));
     }
-    let chevron = createElementFromHtml(Symbols.CHEVRON_DOWN);
-    btn.appendChild(chevron);
     oldbtn.parentNode.appendChild(btn);
     oldbtn.remove();
   });
@@ -151,7 +151,6 @@ function generateButtons() {
             }
             Behaviour.applySubtree(nc, true);
             ensureVisible(nc);
-            nc.classList.remove("fade-in");
             layoutUpdateCallback.call();
           },
           true,
@@ -166,6 +165,23 @@ function generateButtons() {
       }
 
       let oneEach = e.classList.contains("one-each");
+
+      /**
+       * Disable the Add button if there are no more items to add
+       */
+      function toggleButtonState() {
+        const templateCount = templates.length;
+        const selectedCount = Array.from(e.children).filter((e) =>
+          e.classList.contains("repeated-chunk"),
+        ).length;
+
+        btn.disabled = oneEach && selectedCount >= templateCount;
+      }
+      const observer = new MutationObserver(() => {
+        toggleButtonState();
+      });
+      observer.observe(e, { childList: true });
+      toggleButtonState();
 
       generateDropDown(btn, (instance) => {
         let menuItems = [];
@@ -196,7 +212,7 @@ function generateButtons() {
 
 function createFilter(menu) {
   const filterInput = createElementFromHtml(`
-    <input class="jenkins-dropdown__filter-input" placeholder="Filter" spellcheck="false" type="search"/>
+    <input class="jenkins-input jenkins-search__input jenkins-dropdown__filter-input" placeholder="Filter" spellcheck="false" type="search"/>
   `);
 
   filterInput.addEventListener("input", (event) =>

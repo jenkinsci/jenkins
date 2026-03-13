@@ -48,7 +48,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import jenkins.model.Jenkins;
 import jenkins.security.ExtendedReadRedaction;
-import jenkins.security.NotReallyRoleSensitiveCallable;
 import jenkins.util.xml.XMLUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -264,11 +263,7 @@ public abstract class ItemGroupMixIn {
 
         // reload from the new config
         final File rootDir = result.getRootDir();
-        result = Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<T, IOException>() {
-            @Override public T call() throws IOException {
-                return (T) Items.load(parent, rootDir);
-            }
-        });
+        result = Items.callWhileUpdatingByXml(() -> (T) Items.load(parent, rootDir));
         result.onCopiedFrom(src);
 
         add(result);
@@ -294,11 +289,7 @@ public abstract class ItemGroupMixIn {
             XMLUtils.safeTransform(new StreamSource(xml), new StreamResult(configXml));
 
             // load it
-            TopLevelItem result = Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<TopLevelItem, IOException>() {
-                @Override public TopLevelItem call() throws IOException {
-                    return (TopLevelItem) Items.load(parent, dir);
-                }
-            });
+            TopLevelItem result = Items.callWhileUpdatingByXml(() -> (TopLevelItem) Items.load(parent, dir));
 
             boolean hasCreatePermission = acl.getACL().hasCreatePermission2(Jenkins.getAuthentication2(), parent, result.getDescriptor());
             boolean applicableIn = result.getDescriptor().isApplicableIn(parent);

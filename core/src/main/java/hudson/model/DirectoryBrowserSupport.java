@@ -64,6 +64,7 @@ import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.ResourceDomainConfiguration;
 import jenkins.security.ResourceDomainRootAction;
+import jenkins.security.csp.CspHeader;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import org.apache.commons.io.IOUtils;
@@ -203,15 +204,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     }
 
     private void serveFile(StaplerRequest2 req, StaplerResponse2 rsp, VirtualFile root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
-        // handle form submission
-        String pattern = req.getParameter("pattern");
-        if (pattern == null)
-            pattern = req.getParameter("path"); // compatibility with Hudson<1.129
-        if (pattern != null && Util.isSafeToRedirectTo(pattern)) { // avoid open redirect
-            rsp.sendRedirect2(pattern);
-            return;
-        }
-
         String path = getPath(req);
         if (path.replace('\\', '/').contains("/../")) {
             // don't serve anything other than files in the artifacts dir
@@ -407,13 +399,14 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 rsp.sendRedirect(302, ResourceDomainRootAction.get().getRedirectUrl(resourceToken, req.getRestOfPath()));
             } else {
                 if (!ResourceDomainConfiguration.isResourceRequest(req)) {
-                    // if we're serving this from the main domain, set CSP headers
+                    // If we're serving this from the main domain, set CSP headers. These override the default CSP headers.
                     String csp = SystemProperties.getString(CSP_PROPERTY_NAME, DEFAULT_CSP_VALUE);
                     if (!csp.trim().isEmpty()) {
                         // allow users to prevent sending this header by setting empty system property
-                        for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-                            rsp.setHeader(header, csp);
-                        }
+                        rsp.setHeader(CspHeader.ContentSecurityPolicy.getHeaderName(), csp);
+                    } else {
+                        // Clear the header value if configured by the user.
+                        rsp.setHeader(CspHeader.ContentSecurityPolicy.getHeaderName(), null);
                     }
                 }
                 InputStream in;
@@ -807,9 +800,9 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                                     sub.add(vf);
                                 }
                             }
-                            if (sub.size() != 1 || !sub.get(0).isDirectory())
+                            if (sub.size() != 1 || !sub.getFirst().isDirectory())
                                 break;
-                            f = sub.get(0);
+                            f = sub.getFirst();
                             relPath += '/' + Util.rawEncode(f.getName());
                             l.add(new Path(relPath, f.getName(), true, f.length(), f.canRead(), f.lastModified()));
                         }

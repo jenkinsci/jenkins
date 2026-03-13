@@ -155,18 +155,15 @@ public abstract class Proc {
             final TaskListener listener) throws IOException, InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
         try {
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        if (!latch.await(timeout, unit)) {
-                            listener.error("Timeout after " + timeout + " " +
-                                    unit.toString().toLowerCase(Locale.ENGLISH));
-                            kill();
-                        }
-                    } catch (InterruptedException | IOException | RuntimeException x) {
-                        Functions.printStackTrace(x, listener.error("Failed to join a process"));
+            executor.submit(() -> {
+                try {
+                    if (!latch.await(timeout, unit)) {
+                        listener.error("Timeout after " + timeout + " " +
+                                unit.toString().toLowerCase(Locale.ENGLISH));
+                        kill();
                     }
+                } catch (InterruptedException | IOException | RuntimeException x) {
+                    Functions.printStackTrace(x, listener.error("Failed to join a process"));
                 }
             });
             return join();

@@ -34,7 +34,7 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Node;
 import hudson.model.Saveable;
@@ -86,7 +86,7 @@ import org.dom4j.io.SAXReader;
  * @author huybrechts
  * @since 1.286
  */
-public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInstallation> implements Serializable, ExtensionPoint {
+public abstract class ToolInstallation implements Describable<ToolInstallation>, Serializable, ExtensionPoint {
 
     private static final Logger LOGGER = Logger.getLogger(ToolInstallation.class.getName());
 
@@ -182,12 +182,10 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      */
     public ToolInstallation translate(@NonNull Node node, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
         ToolInstallation t = this;
-        if (t instanceof NodeSpecific) {
-            NodeSpecific n = (NodeSpecific) t;
+        if (t instanceof NodeSpecific n) {
             t = (ToolInstallation) n.forNode(node, listener);
         }
-        if (t instanceof EnvironmentSpecific) {
-            EnvironmentSpecific e = (EnvironmentSpecific) t;
+        if (t instanceof EnvironmentSpecific e) {
             t = (ToolInstallation) e.forEnvironment(envs);
         }
         return t;
