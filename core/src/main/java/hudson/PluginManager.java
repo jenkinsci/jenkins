@@ -1987,7 +1987,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                 .element("optional", p.contains("resolution:=optional")));
                     }
                 }
-                // JENKINS-33308 - include implied dependencies for older plugins that may need them (e.g. matrix-auth)
+
                 for (Dependency dep : DetachedPluginsUtil.getImpliedDependencies(baseName, requiredCore)) {
                     boolean already = false;
                     for (Object o : dependencies) {

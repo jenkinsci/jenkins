@@ -647,12 +647,8 @@ class PluginManagerTest {
         });
     }
 
-    /**
-     * JENKINS-33308: Uploaded plugins with old Jenkins-Version get implied dependencies (e.g. matrix-auth)
-     * so that they install correctly when code was detached from core.
-     */
+
     @Test
-    @Issue("JENKINS-33308")
     void uploadPluginAddsImpliedDependencies() throws Throwable {
         session.then(r -> {
             File dir = newFolder(tmp, "junit");
