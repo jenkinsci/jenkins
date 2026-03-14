@@ -74,6 +74,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -124,6 +125,19 @@ public class SlaveComputer extends Computer {
      */
     private ComputerLauncher launcher;
 
+    /**
+     * Lock used to synchronize the execution of {@link ComputerLauncher#afterDisconnect(SlaveComputer, TaskListener)}.
+     * This ensures the disconnect logic is only executed once per connection cycle, and that
+     * concurrent attempts to disconnect block until the first execution completes.
+     * Blocking is critical to prevent file-lock race conditions during teardown on Windows.
+     */
+    private final Object disconnectLock = new Object();
+    /**
+     * Future to track the completion of the afterDisconnect teardown,
+     * ensuring it is only executed once per connection and concurrent
+     * callers wait for it to finish without holding a monitor lock.
+     */
+    private CompletableFuture<Void> disconnectFuture;
     /**
      * Perpetually writable log file.
      */
@@ -632,6 +646,11 @@ public class SlaveComputer extends Computer {
         if (this.channel != null)
             throw new IllegalStateException("Already connected");
 
+        // Reset the disconnect guard early for the new connection lifecycle.
+        synchronized (disconnectLock) {
+            this.disconnectFuture = null;
+        }
+
         final TaskListener taskListener = launchLog != null ? new StreamTaskListener(launchLog) : TaskListener.NULL;
         PrintStream log = taskListener.getLogger();
 
@@ -651,7 +670,7 @@ public class SlaveComputer extends Computer {
                 }
                 closeChannel();
                 try {
-                    launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                    safeAfterDisconnect();
                 } catch (Throwable t) {
                     LogRecord lr = new LogRecord(Level.SEVERE,
                             "Launcher {0}'s afterDisconnect method propagated an exception when {1}'s connection was closed: {2}");
@@ -823,7 +842,8 @@ public class SlaveComputer extends Computer {
             // (which could be typical) won't block UI thread.
             launcher.beforeDisconnect(SlaveComputer.this, taskListener);
             closeChannel();
-            launcher.afterDisconnect(SlaveComputer.this, taskListener);
+
+            safeAfterDisconnect();
         });
     }
 
@@ -1189,6 +1209,37 @@ public class SlaveComputer extends Computer {
         @Override
         public List<LogRecord> call() {
             return new ArrayList<>(SLAVE_LOG_HANDLER.getView());
+        }
+    }
+
+    /**
+     * Ensures that afterDisconnect is invoked at most once per connection,
+     * without holding a lock during the plugin call.
+     */
+    private void safeAfterDisconnect() {
+        CompletableFuture<Void> f;
+        boolean isFirst = false;
+
+        synchronized (disconnectLock) {
+            if (disconnectFuture == null) {
+                disconnectFuture = new CompletableFuture<>();
+                isFirst = true;
+            }
+            f = disconnectFuture;
+        }
+
+        if (isFirst) {
+            try {
+                launcher.afterDisconnect(SlaveComputer.this, taskListener);
+            } finally {
+                f.complete(null); // Signal to other threads that teardown is done
+            }
+        } else {
+            try {
+                f.join();
+            } catch (Exception e) {
+                // Ignore interruptions while waiting for teardown
+            }
         }
     }
 
