@@ -110,6 +110,7 @@ import jenkins.scm.RunWithSCM;
 import jenkins.security.HexStringConfidentialKey;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
+import jenkins.util.SystemProperties;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -1137,10 +1138,42 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * RSS feed for changes in this project.
+     * The feed is limited by default to reduce response size and server load (see
+     * {@code hudson.model.Job.rssChangelogMaxEntries} system property, default 20).
+     * Clients that want a full-length feed can request it explicitly via the {@code max}
+     * query parameter: e.g. {@code ?max=50} for 50 entries, or {@code ?max=all} for the
+     * full feed up to the cap (see {@code hudson.model.Job.rssChangelogMaxEntriesCap}, default 1000).
      *
      * @since 2.60
      */
     public void doRssChangelog(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        int defaultMaxEntries = 20;
+        Integer defaultProp = SystemProperties.getInteger(Job.class.getName() + ".rssChangelogMaxEntries", 20);
+        if (defaultProp != null && defaultProp > 0) {
+            defaultMaxEntries = defaultProp;
+        }
+
+        int maxEntriesCap = 1000;
+        Integer capProp = SystemProperties.getInteger(Job.class.getName() + ".rssChangelogMaxEntriesCap", 1000);
+        if (capProp != null && capProp > 0) {
+            maxEntriesCap = capProp;
+        }
+
+        String maxParam = req.getParameter("max");
+        int maxEntries = defaultMaxEntries;
+        if (maxParam != null && !maxParam.isEmpty()) {
+            if (maxParam.equalsIgnoreCase("all")) {
+                maxEntries = maxEntriesCap;
+            } else {
+                try {
+                    int requested = Integer.parseInt(maxParam);
+                    maxEntries = Math.max(1, Math.min(requested, maxEntriesCap));
+                } catch (NumberFormatException e) {
+                    maxEntries = defaultMaxEntries;
+                }
+            }
+        }
+
         class FeedItem {
             ChangeLogSet.Entry e;
             int idx;
@@ -1165,12 +1198,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             scmDisplayName = " " + String.join(", ", scmNames);
         }
 
+        buildChangelogLoop:
         for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
             int idx = 0;
             if (r instanceof RunWithSCM) {
                 for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM<?, ?>) r).getChangeSets()) {
                     for (ChangeLogSet.Entry e : c) {
                         entries.add(new FeedItem(e, idx++));
+                        if (entries.size() >= maxEntries) {
+                            break buildChangelogLoop;
+                        }
                     }
                 }
             }
