@@ -1962,11 +1962,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             pluginUploaded = true;
 
+            String requiredCore = null;
             JSONArray dependencies = new JSONArray();
             try {
                 Manifest m;
                 try (JarFile jarFile = new JarFile(t)) {
                     m = jarFile.getManifest();
+                }
+                requiredCore = m.getMainAttributes().getValue("Jenkins-Version");
+                if (requiredCore == null) {
+                    requiredCore = m.getMainAttributes().getValue("Hudson-Version");
                 }
                 String deps = m.getMainAttributes().getValue("Plugin-Dependencies");
 
@@ -1982,6 +1987,22 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                 .element("optional", p.contains("resolution:=optional")));
                     }
                 }
+                // JENKINS-33308 - include implied dependencies for older plugins that may need them (e.g. matrix-auth)
+                for (Dependency dep : DetachedPluginsUtil.getImpliedDependencies(baseName, requiredCore)) {
+                    boolean already = false;
+                    for (Object o : dependencies) {
+                        if (dep.shortName.equals(((JSONObject) o).getString("name"))) {
+                            already = true;
+                            break;
+                        }
+                    }
+                    if (!already) {
+                        dependencies.add(new JSONObject()
+                                .element("name", dep.shortName)
+                                .element("version", dep.version)
+                                .element("optional", false));
+                    }
+                }
             } catch (IOException e) {
                 LOGGER.log(WARNING, "Unable to setup dependency list for plugin upload", e);
             }
@@ -1991,7 +2012,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     element("name", baseName).
                     element("version", "0"). // unused but mandatory
                     element("url", t.toURI().toString()).
-                    element("dependencies", dependencies);
+                    element("dependencies", dependencies).
+                    element("requiredCore", requiredCore != null ? requiredCore : "");
             new UpdateSite(UpdateCenter.ID_UPLOAD, null).new Plugin(UpdateCenter.ID_UPLOAD, cfg).deploy(true);
             return new HttpRedirect("updates/");
         } catch (FileUploadException e) {

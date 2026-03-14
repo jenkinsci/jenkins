@@ -46,6 +46,7 @@ import hudson.model.DownloadService;
 import hudson.model.Hudson;
 import hudson.model.RootAction;
 import hudson.model.UpdateCenter;
+import hudson.model.UpdateCenter.InstallationJob;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.model.UpdateSite;
 import hudson.model.User;
@@ -56,6 +57,7 @@ import hudson.util.PersistedList;
 import jakarta.servlet.ServletException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.CookieHandler;
@@ -84,6 +86,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.jar.Attributes;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
 import jenkins.model.Jenkins;
@@ -640,6 +645,60 @@ class PluginManagerTest {
             assertNotNull(r.jenkins.getPluginManager().getPlugin("mandatory-depender"));
             assertNotNull(r.jenkins.getPluginManager().getPlugin("dependee"));
         });
+    }
+
+    /**
+     * JENKINS-33308: Uploaded plugins with old Jenkins-Version get implied dependencies (e.g. matrix-auth)
+     * so that they install correctly when code was detached from core.
+     */
+    @Test
+    @Issue("JENKINS-33308")
+    void uploadPluginAddsImpliedDependencies() throws Throwable {
+        session.then(r -> {
+            File dir = newFolder(tmp, "junit");
+            File plugin = new File(dir, "ownership.jpi");
+            createMinimalPluginJar(plugin, "ownership", "1.500", null);
+
+            HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
+            HtmlForm f = page.getFormByName("uploadPlugin");
+            f.getInputByName("name").setValue(plugin.getAbsolutePath());
+            r.submit(f);
+
+            assertThat(r.jenkins.getUpdateCenter().getJobs(), not(empty()));
+
+            InstallationJob job = r.jenkins.getUpdateCenter().getJobs().stream()
+                    .filter(InstallationJob.class::isInstance)
+                    .map(InstallationJob.class::cast)
+                    .filter(j -> "ownership".equals(j.plugin.name))
+                    .findFirst()
+                    .orElse(null);
+            assertNotNull(job, "Upload should create an InstallationJob for the uploaded plugin");
+            assertTrue(
+                    job.plugin.dependencies.containsKey("matrix-auth"),
+                    "Implied dependency matrix-auth should be in plugin metadata (built for Jenkins 1.500 <= 1.535)"
+            );
+        });
+    }
+
+    /**
+     * Creates a minimal valid JAR with the given manifest entries (no Plugin-Dependencies).
+     */
+    private static void createMinimalPluginJar(File jarFile, String shortName, String jenkinsVersion, String pluginDependencies) throws IOException {
+        Manifest manifest = new Manifest();
+        Attributes attrs = manifest.getMainAttributes();
+        attrs.put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        attrs.putValue("Short-Name", shortName);
+        attrs.putValue("Plugin-Version", "0.5");
+        attrs.putValue("Jenkins-Version", jenkinsVersion);
+        if (pluginDependencies != null) {
+            attrs.putValue("Plugin-Dependencies", pluginDependencies);
+        }
+        try (FileOutputStream fos = new FileOutputStream(jarFile);
+             JarOutputStream jos = new JarOutputStream(fos, manifest)) {
+            jos.putNextEntry(new java.util.zip.ZipEntry("dummy"));
+            jos.write(0);
+            jos.closeEntry();
+        }
     }
 
     @Issue("JENKINS-44898")
