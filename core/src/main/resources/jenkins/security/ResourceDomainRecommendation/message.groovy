@@ -26,16 +26,14 @@ package jenkins.security.ResourceDomainRecommendation
 def f = namespace(lib.FormTagLib)
 def l = namespace(lib.LayoutTagLib)
 
-dl {
-    div(class: "jenkins-alert jenkins-alert-info") {
-        a(name: "resource-root-url")
+l = namespace(lib.LayoutTagLib)
+l.adminMonitor(severity: "info") {
+    div(class: "buttons") {
         l.isAdmin() {
-          form(method: "post", action: "${rootURL}/${my.url}/act") {
-              f.submit(name: 'redirect', value: _("Configure resource root URL"))
-              f.submit(name: 'dismiss', value: _("Dismiss"))
+            a(href: "${rootURL}/configure", class: "jenkins-button jenkins-button--primary") {
+                raw _("Configure resource root URL")
             }
         }
-
-        raw(_("blurb"))
     }
+    raw(_("blurb"))
 }
