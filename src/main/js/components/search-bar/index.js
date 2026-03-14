@@ -35,8 +35,7 @@ function init() {
           results.forEach((item, index) => {
             container.appendChild(
               createElementFromHtml(
-                `<a class="jenkins-dropdown__item ${index === 0 ? SELECTED_CLASS : ""}" href="${
-                  item.url
+                `<a class="jenkins-dropdown__item ${index === 0 ? SELECTED_CLASS : ""}" href="${item.url
                 }"><div class="jenkins-dropdown__item__icon">${item.icon}</div>${xmlEscape(item.label)}</a>`,
               ),
             );
@@ -103,6 +102,11 @@ function init() {
             searchResults.offsetHeight + "px";
           showResultsContainer();
         }
+      });
+      searchBar.addEventListener("click", () => {
+        searchBar.focus();
+        const len = searchBar.value.length;
+        searchBar.setSelectionRange(len, len);
       });
 
       document.addEventListener("click", (event) => {
