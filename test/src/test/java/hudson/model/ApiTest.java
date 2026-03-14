@@ -42,10 +42,12 @@ import org.htmlunit.WebResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.xml.sax.SAXException;
 
@@ -308,31 +310,17 @@ class ApiTest {
     @Test
     @Issue("JENKINS-75747")
     void xpathWithLargeXmlExceedsLimit() throws Exception {
-        String originalValue = System.getProperty("hudson.model.Api.maxXmlSizeForXPath");
-        try {
-            System.setProperty("hudson.model.Api.maxXmlSizeForXPath", "500");
-
-            FreeStyleProject p = j.createFreeStyleProject("large-project");
-            for (int i = 0; i < 20; i++) {
-                j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-            }
-
+        withMaxXmlSizeForXPath("500", () -> {
             JenkinsRule.WebClient wc = j.createWebClient();
             wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
-            Page page = wc.goTo(p.getUrl() + "api/xml?xpath=/*/name", null);
+            Page page = wc.goTo("large-api/api/xml?xpath=/*/name", null);
             assertEquals(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, page.getWebResponse().getStatusCode());
             String content = page.getWebResponse().getContentAsString();
-            assertThat(content, containsString("XML content size"));
+            assertThat(content, containsString("XML content size exceeds maximum allowed size"));
             assertThat(content, containsString("exceeds maximum allowed size"));
             assertThat(content, containsString("tree"));
-        } finally {
-            if (originalValue != null) {
-                System.setProperty("hudson.model.Api.maxXmlSizeForXPath", originalValue);
-            } else {
-                System.clearProperty("hudson.model.Api.maxXmlSizeForXPath");
-            }
-        }
+        });
     }
 
     /**
@@ -341,27 +329,13 @@ class ApiTest {
     @Test
     @Issue("JENKINS-75747")
     void xpathWithTreeParameterReducesSize() throws Exception {
-        String originalValue = System.getProperty("hudson.model.Api.maxXmlSizeForXPath");
-        try {
-            System.setProperty("hudson.model.Api.maxXmlSizeForXPath", "500");
-
-            FreeStyleProject p = j.createFreeStyleProject("tree-test-project");
-            for (int i = 0; i < 20; i++) {
-                j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-            }
-
+        withMaxXmlSizeForXPath("500", () -> {
             JenkinsRule.WebClient wc = j.createWebClient();
 
-            Page page = wc.goTo(p.getUrl() + "api/xml?tree=name&xpath=/*/name", "application/xml");
+            Page page = wc.goTo("large-api/api/xml?tree=name&xpath=/*/name", "application/xml");
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-            assertThat(page.getWebResponse().getContentAsString(), containsString("tree-test-project"));
-        } finally {
-            if (originalValue != null) {
-                System.setProperty("hudson.model.Api.maxXmlSizeForXPath", originalValue);
-            } else {
-                System.clearProperty("hudson.model.Api.maxXmlSizeForXPath");
-            }
-        }
+            assertThat(page.getWebResponse().getContentAsString(), containsString("large-api"));
+        });
     }
 
     /**
@@ -370,27 +344,13 @@ class ApiTest {
     @Test
     @Issue("JENKINS-75747")
     void xpathWithDisabledLimitWorks() throws Exception {
-        String originalValue = System.getProperty("hudson.model.Api.maxXmlSizeForXPath");
-        try {
-            System.setProperty("hudson.model.Api.maxXmlSizeForXPath", "-1");
-
-            FreeStyleProject p = j.createFreeStyleProject("unlimited-project");
-            for (int i = 0; i < 10; i++) {
-                j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-            }
-
+        withMaxXmlSizeForXPath("-1", () -> {
             JenkinsRule.WebClient wc = j.createWebClient();
 
-            Page page = wc.goTo(p.getUrl() + "api/xml?xpath=/*/name", "application/xml");
+            Page page = wc.goTo("large-api/api/xml?xpath=/*/name", "application/xml");
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-            assertThat(page.getWebResponse().getContentAsString(), containsString("unlimited-project"));
-        } finally {
-            if (originalValue != null) {
-                System.setProperty("hudson.model.Api.maxXmlSizeForXPath", originalValue);
-            } else {
-                System.clearProperty("hudson.model.Api.maxXmlSizeForXPath");
-            }
-        }
+            assertThat(page.getWebResponse().getContentAsString(), containsString("large-api"));
+        });
     }
 
     /**
@@ -399,22 +359,13 @@ class ApiTest {
     @Test
     @Issue("JENKINS-75747")
     void xmlWithoutXpathNotAffectedByLimit() throws Exception {
-        String originalValue = System.getProperty("hudson.model.Api.maxXmlSizeForXPath");
-        try {
-            System.setProperty("hudson.model.Api.maxXmlSizeForXPath", "100");
-
-            FreeStyleProject p = j.createFreeStyleProject("no-xpath-project");
+        withMaxXmlSizeForXPath("100", () -> {
             JenkinsRule.WebClient wc = j.createWebClient();
 
-            Page page = wc.goTo(p.getUrl() + "api/xml", "application/xml");
+            Page page = wc.goTo("large-api/api/xml", "application/xml");
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-        } finally {
-            if (originalValue != null) {
-                System.setProperty("hudson.model.Api.maxXmlSizeForXPath", originalValue);
-            } else {
-                System.clearProperty("hudson.model.Api.maxXmlSizeForXPath");
-            }
-        }
+            assertThat(page.getWebResponse().getContentAsString(), containsString("large-api"));
+        });
     }
 
     /**
@@ -423,21 +374,29 @@ class ApiTest {
     @Test
     @Issue("JENKINS-75747")
     void excludeParameterAlsoChecksSize() throws Exception {
-        String originalValue = System.getProperty("hudson.model.Api.maxXmlSizeForXPath");
-        try {
-            System.setProperty("hudson.model.Api.maxXmlSizeForXPath", "500");
-
-            FreeStyleProject p = j.createFreeStyleProject("exclude-test");
-            for (int i = 0; i < 20; i++) {
-                j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-            }
-
+        withMaxXmlSizeForXPath("500", () -> {
             JenkinsRule.WebClient wc = j.createWebClient();
             wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
-            Page page = wc.goTo(p.getUrl() + "api/xml?exclude=/*/build", null);
+            Page page = wc.goTo("large-api/api/xml?exclude=/*/payload", null);
             assertEquals(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, page.getWebResponse().getStatusCode());
             assertThat(page.getWebResponse().getContentAsString(), containsString("exceeds maximum allowed size"));
+        });
+    }
+
+    private void withMaxXmlSizeForXPath(String value, Executable executable) throws Exception {
+        String originalValue = System.getProperty("hudson.model.Api.maxXmlSizeForXPath");
+        try {
+            System.setProperty("hudson.model.Api.maxXmlSizeForXPath", value);
+            try {
+                executable.execute();
+            } catch (Exception e) {
+                throw e;
+            } catch (Error e) {
+                throw e;
+            } catch (Throwable t) {
+                throw new Exception(t);
+            }
         } finally {
             if (originalValue != null) {
                 System.setProperty("hudson.model.Api.maxXmlSizeForXPath", originalValue);
@@ -476,6 +435,49 @@ class ApiTest {
             CustomData(String secret) {
                 this.secret = secret;
             }
+        }
+    }
+
+    @TestExtension
+    public static class LargeApiObject implements RootAction {
+        @Override
+        public @CheckForNull String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public @CheckForNull String getDisplayName() {
+            return null;
+        }
+
+        @Override
+        public @CheckForNull String getUrlName() {
+            return "large-api";
+        }
+
+        public Api getApi() {
+            return new Api(new LargeApiData("large-api", "x".repeat(2048)));
+        }
+    }
+
+    @ExportedBean
+    public static class LargeApiData {
+        private final String name;
+        private final String payload;
+
+        LargeApiData(String name, String payload) {
+            this.name = name;
+            this.payload = payload;
+        }
+
+        @Exported
+        public String getName() {
+            return name;
+        }
+
+        @Exported
+        public String getPayload() {
+            return payload;
         }
     }
 }

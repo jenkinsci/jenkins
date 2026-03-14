@@ -103,6 +103,28 @@ public class Api extends AbstractModelObject {
         );
     }
 
+    private static long countUtf8Bytes(CharSequence text, long maxBytes) {
+        long utf8Bytes = 0;
+        for (int i = 0; i < text.length(); i++) {
+            char character = text.charAt(i);
+            if (character <= 0x7F) {
+                utf8Bytes++;
+            } else if (character <= 0x7FF) {
+                utf8Bytes += 2;
+            } else if (Character.isHighSurrogate(character) && i + 1 < text.length() && Character.isLowSurrogate(text.charAt(i + 1))) {
+                utf8Bytes += 4;
+                i++;
+            } else {
+                utf8Bytes += 3;
+            }
+
+            if (utf8Bytes > maxBytes) {
+                return utf8Bytes;
+            }
+        }
+        return utf8Bytes;
+    }
+
     @Override
     public String getDisplayName() {
         return "API";
@@ -138,23 +160,25 @@ public class Api extends AbstractModelObject {
         TreePruner pruner = tree != null ? new NamedPathPruner(tree) : new ByDepth(1 - depth);
         p.writeTo(bean, pruner, Flavor.XML.createDataWriter(bean, sw));
 
-        // Check XML size to prevent OutOfMemoryError
-        String xmlContent = sw.toString();
-        long xmlSizeInBytes = xmlContent.getBytes(StandardCharsets.UTF_8).length;
         long maxXmlSize = getMaxXmlSizeForXPath();
-
-        if (maxXmlSize >= 0 && xmlSizeInBytes > maxXmlSize) {
-            String errorMsg = String.format(
-                "XML content size (%d bytes) exceeds maximum allowed size (%d bytes) for XPath processing. " +
-                "Consider using the 'tree' parameter to reduce the amount of data, or increase the limit via " +
-                "system property '%s.maxXmlSizeForXPath'.",
-                xmlSizeInBytes, maxXmlSize, Api.class.getName()
-            );
-            LOGGER.log(Level.WARNING, errorMsg);
-            rsp.setStatus(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE);
-            rsp.getWriter().print(errorMsg);
-            return;
+        if (maxXmlSize >= 0) {
+            CharSequence xmlBuffer = sw.getBuffer();
+            long xmlSizeInBytes = xmlBuffer.length() > maxXmlSize ? xmlBuffer.length() : countUtf8Bytes(xmlBuffer, maxXmlSize);
+            if (xmlSizeInBytes > maxXmlSize) {
+                String errorMsg = String.format(
+                    "XML content size exceeds maximum allowed size (%d bytes) for XPath processing. " +
+                    "Consider using the 'tree' parameter to reduce the amount of data, or increase the limit via " +
+                    "system property '%s.maxXmlSizeForXPath'.",
+                    maxXmlSize, Api.class.getName()
+                );
+                LOGGER.log(Level.WARNING, errorMsg);
+                rsp.setStatus(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE);
+                rsp.getWriter().print(errorMsg);
+                return;
+            }
         }
+
+        String xmlContent = sw.toString();
 
         // apply XPath
         FilteredFunctionContext functionContext = new FilteredFunctionContext();
@@ -215,21 +239,11 @@ public class Api extends AbstractModelObject {
                     result = list.getFirst();
                 }
             }
-
         } catch (DocumentException e) {
-            LOGGER.log(Level.FINER, "Failed to do XPath/wrapper handling. XML is as follows:" + xmlContent, e);
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.log(Level.FINER, "Failed to do XPath/wrapper handling. XML is as follows:" + xmlContent, e);
+            }
             throw new IOException("Failed to do XPath/wrapper handling. Turn on FINER logging to view XML.", e);
-        } catch (OutOfMemoryError e) {
-            String errorMsg = String.format(
-                "Out of memory while processing XML (size: %d bytes). " +
-                "Consider using the 'tree' parameter to reduce the amount of data, or increase the limit via " +
-                "system property '%s.maxXmlSizeForXPath'.",
-                xmlSizeInBytes, Api.class.getName()
-            );
-            LOGGER.log(Level.SEVERE, errorMsg, e);
-            rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            rsp.getWriter().print(errorMsg);
-            return;
         }
 
 
