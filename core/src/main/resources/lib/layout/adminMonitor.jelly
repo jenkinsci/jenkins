@@ -24,7 +24,7 @@
   <j:set var="dismissable" value="${attrs.dismissable ?: true}"/>
   <j:set var="dismissValue" value="${attrs.dismissValue ?: '%Dismiss'}"/>
   <st:adjunct includes="lib.layout.admin-monitor"/>
-  <div id="${attrs.id}" class="app-adminmonitor jenkins-alert jenkins-alert-${severity} ${attrs.class}">
+  <div id="${attrs.id}" class="app-adminmonitor jenkins-alert jenkins-alert-${severity} ${attrs.class}" data-monitor-id="${it.id}">
     <div class="app-adminmonitor-content">
       <d:invokeBody/>
     </div>

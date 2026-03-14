@@ -19,6 +19,7 @@ import jenkins.security.csp.CspHeaderDecider;
 import org.hamcrest.Matcher;
 import org.htmlunit.Page;
 import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlCheckBoxInput;
 import org.htmlunit.html.HtmlFormUtil;
 import org.htmlunit.html.HtmlPage;
@@ -198,7 +199,8 @@ public class CspHeaderDeciderTest {
             assertTrue(ExtensionList.lookupSingleton(CspRecommendation.class).isActivated());
 
             final HtmlPage htmlPage = webClient.goTo("manage/");
-            final Page recommendationClick = htmlPage.getElementByName("more").click();
+            HtmlAnchor link = htmlPage.querySelector("div[data-monitor-id=\"jenkins.security.csp.impl.CspRecommendation\"] a");
+            final Page recommendationClick = link.click();
             assertThat(recommendationClick, instanceOf(HtmlPage.class));
             HtmlPage recommendationPage = (HtmlPage) recommendationClick;
             assertThat(

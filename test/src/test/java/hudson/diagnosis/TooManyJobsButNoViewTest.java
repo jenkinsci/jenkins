@@ -5,19 +5,16 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import hudson.model.AdministrativeMonitor;
 import hudson.model.Item;
 import hudson.model.ListView;
 import hudson.model.View;
 import java.io.IOException;
 import java.net.URL;
 import jenkins.model.Jenkins;
-import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.html.DomElement;
-import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +36,6 @@ class TooManyJobsButNoViewTest {
     @BeforeEach
     void setUp(JenkinsRule rule) {
         r = rule;
-        mon = AdministrativeMonitor.all().get(TooManyJobsButNoView.class);
     }
 
     /**
@@ -47,12 +43,9 @@ class TooManyJobsButNoViewTest {
      */
     @Test
     void initialState() throws Exception {
-        verifyNoForm();
-    }
-
-    private void verifyNoForm() throws IOException, SAXException {
-        HtmlPage p = r.createWebClient().goTo("manage");
-        assertThrows(ElementNotFoundException.class, () -> p.getFormByName(mon.id));
+        try (JenkinsRule.WebClient wc = r.createWebClient()) {
+            verifyNoMonitor(wc);
+        }
     }
 
     /**
@@ -63,22 +56,23 @@ class TooManyJobsButNoViewTest {
         for (int i = 0; i <= TooManyJobsButNoView.THRESHOLD; i++)
             r.createFreeStyleProject();
 
-        HtmlPage p = r.createWebClient().goTo("manage");
-        HtmlForm f = p.getFormByName(mon.id);
-        assertNotNull(f);
+        try (JenkinsRule.WebClient wc = r.createWebClient()) {
+            HtmlPage p = wc.goTo("manage");
+            HtmlAnchor link = p.querySelector("div[data-monitor-id=\"hudson.diagnosis.TooManyJobsButNoView\"] a");
+            assertNotNull(link);
 
-        // this should take us to the new view page
-        URL url = r.submit(f, "yes").getUrl();
-        assertTrue(url.toExternalForm().endsWith("/newView"), url.toExternalForm());
+            // this should take us to the new view page
+            URL url = link.click().getUrl();
+            assertTrue(url.toExternalForm().endsWith("/newView"), url.toExternalForm());
 
-        // since we didn't create a view, if we go back, we should see the warning again
-        p = r.createWebClient().goTo("manage");
-        assertNotNull(p.getFormByName(mon.id));
+            // since we didn't create a view, if we go back, we should see the warning again
+            verifyMonitor(wc);
 
-        // once we create a view, the message should disappear
-        r.jenkins.addView(new ListView("test"));
+            // once we create a view, the message should disappear
+            r.jenkins.addView(new ListView("test"));
 
-        verifyNoForm();
+            verifyNoMonitor(wc);
+        }
     }
 
     @Test
@@ -102,7 +96,7 @@ class TooManyJobsButNoViewTest {
 
     private void verifyNoMonitor(JenkinsRule.WebClient wc) throws IOException, SAXException {
         HtmlPage p = wc.goTo("manage");
-        DomElement adminMonitorDiv = p.getElementById("tooManyJobsButNoView");
+        DomElement adminMonitorDiv = p.querySelector("div[data-monitor-id=\"hudson.diagnosis.TooManyJobsButNoView\"]");
         assertThat(adminMonitorDiv, is(nullValue()));
     }
 
@@ -129,9 +123,8 @@ class TooManyJobsButNoViewTest {
 
     private void verifyMonitor(JenkinsRule.WebClient wc) throws IOException, SAXException {
         HtmlPage p = wc.goTo("manage");
-        DomElement adminMonitorDiv = p.getElementById("tooManyJobsButNoView");
+        DomElement adminMonitorDiv = p.querySelector("div[data-monitor-id=\"hudson.diagnosis.TooManyJobsButNoView\"]");
         assertThat(adminMonitorDiv, is(notNullValue()));
         assertThat(adminMonitorDiv.getTextContent(), is(notNullValue()));
     }
-
 }
