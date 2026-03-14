@@ -1213,8 +1213,8 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Ensures that {@link Launcher# afterDisconnect(SlaveComputer, TaskListener)} is
-     * invoked at most once per connection, without holding a lock during the plugin call.
+     * Ensures that afterDisconnect is invoked at most once per connection,
+     * without holding a lock during the plugin call.
      */
     private void safeAfterDisconnect() {
         CompletableFuture<Void> f;
@@ -1235,7 +1235,6 @@ public class SlaveComputer extends Computer {
                 f.complete(null); // Signal to other threads that teardown is done
             }
         } else {
-            // Block and wait for the first thread to finish the teardown
             try {
                 f.join();
             } catch (Exception e) {

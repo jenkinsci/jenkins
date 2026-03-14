@@ -203,34 +203,6 @@ class SlaveComputerTest {
         }
     }
 
-
-    /**
-     * Get remote path through json api
-     * @param node agent node
-     * @param user the user for webClient
-     * @return remote path
-     * @throws IOException in case of communication problem.
-     * @throws SAXException in case of config format problem.
-     */
-    private String getRemoteFS(Node node, String user) throws Exception {
-        JenkinsRule.WebClient wc = j.createWebClient();
-        if (user != null) {
-            wc.login(user);
-        }
-
-        WebResponse response = wc.goTo("computer/" + node.getNodeName() + "/api/json",
-                "application/json").getWebResponse();
-        JSONObject json = JSONObject.fromObject(response.getContentAsString());
-
-        Object pathObj = json.get("absoluteRemotePath");
-        if (pathObj instanceof JSONNull) {
-            return null; // the value is null in here
-        } else {
-            return pathObj.toString();
-        }
-    }
-
-
     @Test
     @Issue("JENKINS-35272")
     void afterDisconnectShouldBeCalledOnlyOnce() throws Exception {
@@ -265,6 +237,32 @@ class SlaveComputerTest {
             if (c instanceof SlaveComputer) {
                 count.incrementAndGet();
             }
+        }
+    }
+
+    /**
+     * Get remote path through json api
+     * @param node agent node
+     * @param user the user for webClient
+     * @return remote path
+     * @throws IOException in case of communication problem.
+     * @throws SAXException in case of config format problem.
+     */
+    private String getRemoteFS(Node node, String user) throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        if (user != null) {
+            wc.login(user);
+        }
+
+        WebResponse response = wc.goTo("computer/" + node.getNodeName() + "/api/json",
+                "application/json").getWebResponse();
+        JSONObject json = JSONObject.fromObject(response.getContentAsString());
+
+        Object pathObj = json.get("absoluteRemotePath");
+        if (pathObj instanceof JSONNull) {
+            return null; // the value is null in here
+        } else {
+            return pathObj.toString();
         }
     }
 }
