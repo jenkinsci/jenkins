@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout">
-  <l:adminMonitor>
-    <div class="buttons">
-      <a href="https://www.jenkins.io/redirect/csrf-protection/" class="jenkins-button jenkins-button--primary">${%Learn more}</a>
-    </div>
+  <j:set var="controls">
+    <a href="https://www.jenkins.io/redirect/csrf-protection/" class="jenkins-button jenkins-button--primary">${%Learn more}</a>
+  </j:set>
+  <l:adminMonitor controls="${controls}">
     ${%blurb}
   </l:adminMonitor>
 </j:jelly>

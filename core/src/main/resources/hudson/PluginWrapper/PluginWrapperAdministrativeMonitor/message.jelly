@@ -1,9 +1,9 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout">
-  <l:adminMonitor severity="danger">
-    <div class="buttons">
-      <a href="${rootURL}/pluginManager" class="jenkins-button jenkins-button--primary">${%Correct}</a>
-    </div>
+  <j:set var="controls">
+    <a href="${rootURL}/pluginManager" class="jenkins-button jenkins-button--primary">${%Correct}</a>
+  </j:set>
+  <l:adminMonitor severity="danger" controls="${controls}">
     ${%blurbOriginal}
     <p><strong>${%DirectlyDependentPlugins.title}</strong></p>
     <j:forEach items="${it.plugins}" var="plugin">

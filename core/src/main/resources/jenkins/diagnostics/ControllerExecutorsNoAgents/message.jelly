@@ -24,11 +24,11 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:adminMonitor>
-    <div class="buttons">
-      <a href="${rootURL}/computer/new" class="jenkins-button jenkins-button--primary">${%Set up agent}</a>
-      <a href="${rootURL}/manage/cloud" class="jenkins-button jenkins-button--primary">${%Set up cloud}</a>
-    </div>
+  <j:set var="controls">
+    <a href="${rootURL}/computer/new" class="jenkins-button jenkins-button--primary">${%Set up agent}</a>
+    <a href="${rootURL}/manage/cloud" class="jenkins-button jenkins-button--primary">${%Set up cloud}</a>
+  </j:set>
+  <l:adminMonitor controls="${controls}">
     ${%ExecutorsWarning}
   </l:adminMonitor>
 </j:jelly>

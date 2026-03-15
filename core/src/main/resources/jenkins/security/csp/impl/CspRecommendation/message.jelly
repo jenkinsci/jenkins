@@ -23,10 +23,10 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout">
-  <l:adminMonitor severity="info">
-    <div class="buttons">
-      <a href="${rootURL}/manage/administrativeMonitor/jenkins.security.csp.impl.CspRecommendation" class="jenkins-button jenkins-button--primary">${%Learn more}</a>
-    </div>
+  <j:set var="controls">
+    <a href="${rootURL}/manage/administrativeMonitor/jenkins.security.csp.impl.CspRecommendation" class="jenkins-button jenkins-button--primary">${%Learn more}</a>
+  </j:set>
+  <l:adminMonitor severity="info" controls="${controls}">
     ${%blurb}
   </l:adminMonitor>
 </j:jelly>

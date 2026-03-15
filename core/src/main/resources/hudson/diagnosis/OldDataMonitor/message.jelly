@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:adminMonitor severity="warning" dismissable="true">
-    <div class="buttons">
-      <a href="${rootURL}/${it.url}/manage" class="jenkins-button jenkins-button--primary" style="margin-left: auto">${%Manage}</a>
-    </div>
+  <j:set var="controls">
+    <a href="${rootURL}/${it.url}/manage" class="jenkins-button jenkins-button--primary">${%Manage}</a>
+  </j:set>
+  <l:adminMonitor controls="${controls}">
     ${%You have data stored in an older format and/or unreadable data.}
   </l:adminMonitor>
 </j:jelly>

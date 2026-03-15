@@ -1,0 +1,86 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:local="local">
+  <d:taglib uri="local">
+    <d:tag name="message">
+      <j:choose>
+        <j:when test="${attrs.core}">
+          <j:out value="${attrs.c}"/>
+        </j:when>
+        <j:otherwise>
+          <j:out value="${attrs.p}"/>
+        </j:otherwise>
+      </j:choose>
+    </d:tag>
+    <d:tag name="listWarnings" >
+      <j:set var="fixables" value="0"/>
+      <j:forEach var="warning" items="${attrs.warnings}">
+        <dd>
+          <a href="${warning.url}" rel="noopener noreferrer" target="_blank">${warning.message}</a>
+          <j:set var="fixable" value="${warning.isFixable()}"/>
+          <j:if test="${fixable != null}">
+            <j:if test="${fixable}">
+              <j:set var="fixables" value="${fixables + 1}"/>
+            </j:if>
+            <j:if test="${!fixable}">
+              ${%unfixable}
+            </j:if>
+          </j:if>
+        </dd>
+      </j:forEach>
+      <j:choose>
+        <j:when test="${fixables eq warnings.size()}">
+          <dd>
+            <j:if test="${fixables == 1}">
+              <local:message core="${attrs.core}" c="${%allFixable1Core(rootURL)}" p="${%allFixable1(rootURL)}"/>
+            </j:if>
+            <j:if test="${fixables != 1}">
+              <local:message core="${attrs.core}" c="${%allFixableCore(rootURL)}" p="${%allFixable(rootURL)}"/>
+            </j:if>
+          </dd>
+        </j:when>
+        <j:when test="${fixables > 0}">
+          <dd>
+            <local:message core="${attrs.core}" c="${%someFixableCore(rootURL)}" p="${%someFixable(rootURL)}"/>
+          </dd>
+        </j:when>
+        <j:otherwise>
+            <dd>
+              <local:message core="${attrs.core}" c="${%noneFixableCore}" p="${%noneFixable}"/>
+            </dd>
+        </j:otherwise>
+      </j:choose>
+    </d:tag>
+  </d:taglib>
+  <j:set var="coreWarnings" value="${it.activeCoreWarnings}"/>
+  <j:set var="pluginWarnings" value="${it.activePluginWarningsByPlugin}"/>
+  <j:set var="controls">
+    <l:isAdmin>
+      <a href="${rootURL}/configureSecurity" class="jenkins-button jenkins-button--primary">${%configureSecurity.link}</a>
+      <j:if test="${pluginWarnings.size() > 0}">
+        <a href="${rootURL}/pluginManager" class="jenkins-button jenkins-button--primary">${%pluginManager.link}</a>
+      </j:if>
+    </l:isAdmin>
+  </j:set>
+  <l:adminMonitor severity="danger" controls="${controls}">
+    <div class="jenkins-!-margin-bottom-1">${%blurb}</div>
+    <j:if test="${coreWarnings.size() > 0}">
+      <dl>
+        <dt>${%coreTitle(app.version)}</dt>
+      </dl>
+      <local:listWarnings core="true" warnings="${coreWarnings}"/>
+    </j:if>
+    <j:if test="${pluginWarnings.size() > 0}">
+      <dl>
+        <j:forEach var="entries" items="${pluginWarnings.entrySet()}">
+          <j:set var="plugin" value="${entries.key}"/>
+          <j:set var="warnings" value="${entries.value}"/>
+          <dt>${%pluginTitle(plugin.displayName, plugin.version)}</dt>
+          <local:listWarnings core="false" warnings="${warnings}"/>
+        </j:forEach>
+      </dl>
+    </j:if>
+    <j:if test="${it.hasApplicableHiddenWarnings()}">
+      ${%more}
+    </j:if>
+  </l:adminMonitor>
+</j:jelly>
