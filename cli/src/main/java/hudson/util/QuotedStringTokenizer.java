@@ -471,11 +471,13 @@ public class QuotedStringTokenizer
                         b.append('\b');
                         break;
                     case 'u':
+                        if (i + 4 >= s.length() - 1)
+                            throw new IllegalArgumentException("Incomplete Unicode escape sequence in " + s);
                         b.append((char) (
-                                (convertHexDigit((byte) s.charAt(i++)) << 24) +
-                                (convertHexDigit((byte) s.charAt(i++)) << 16) +
-                                (convertHexDigit((byte) s.charAt(i++)) << 8) +
-                                convertHexDigit((byte) s.charAt(i++))
+                                (parseHexDigit(s.charAt(++i)) << 12) +
+                                (parseHexDigit(s.charAt(++i)) << 8) +
+                                (parseHexDigit(s.charAt(++i)) << 4) +
+                                parseHexDigit(s.charAt(++i))
                                 )
                         );
                         break;
@@ -540,6 +542,13 @@ public class QuotedStringTokenizer
         if (b >= 'a' && b <= 'f') return (byte) (b - 'a' + 10);
         if (b >= 'A' && b <= 'F') return (byte) (b - 'A' + 10);
         return 0;
+    }
+
+    private static int parseHexDigit(char c) {
+        int digit = Character.digit(c, 16);
+        if (digit < 0)
+            throw new IllegalArgumentException("!hex " + c);
+        return digit;
     }
 
     /**

@@ -25,7 +25,9 @@
 package hudson.util;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
@@ -85,6 +87,30 @@ class QuotedStringTokenizerTest {
         assertFalse(tokenizer.hasMoreTokens());
         tokenizer = new QuotedStringTokenizer("one");
         assertTrue(tokenizer.hasMoreTokens());
+    }
+
+    @Test
+    void testUnquoteUnicodeEscapeAscii() {
+        String src = "\"" + "\\" + "u0041" + "\"";
+        assertEquals("A", QuotedStringTokenizer.unquote(src));
+    }
+
+    @Test
+    void testUnquoteUnicodeEscapeNonAscii() {
+        String src = "\"" + "\\" + "u263A" + "\"";
+        assertEquals(0x263A, QuotedStringTokenizer.unquote(src).charAt(0));
+    }
+
+    @Test
+    void testUnquoteTruncatedUnicodeEscape() {
+        String src = "\"" + "\\" + "u004" + "\"";
+        assertThrows(IllegalArgumentException.class, () -> QuotedStringTokenizer.unquote(src));
+    }
+
+    @Test
+    void testUnquoteInvalidUnicodeEscape() {
+        String src = "\"" + "\\" + "u00Q1" + "\"";
+        assertThrows(IllegalArgumentException.class, () -> QuotedStringTokenizer.unquote(src));
     }
 
     private void check(String src, String... expected) {
