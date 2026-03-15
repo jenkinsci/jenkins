@@ -140,8 +140,7 @@ class ComputerTest {
     void offlineCauseRemainsAfterTemporaryCauseRemoved() throws Exception {
         var agent = j.createSlave();
         var computer = agent.toComputer();
-        await().atMost(Duration.ofSeconds(30)).until(
-                () -> computer.getOfflineCause() != null && !computer.isConnecting());
+        computer.connect(false).get();
         var initialOfflineCause = new OfflineCause.UserCause(User.getOrCreateByIdOrFullName("username"), "Initial cause");
         computer.setOfflineCause(initialOfflineCause);
         assertThat(computer.getOfflineCause(), equalTo(initialOfflineCause));
