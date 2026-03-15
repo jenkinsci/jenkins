@@ -24,16 +24,20 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
+
   <j:set var="delay" value="${request2.getParameter('delay')}" />
   <f:form method="post" action="build${empty(delay)?'':'?delay='+delay}" name="parameters"
           tableClass="parameters" class="jenkins-form">
     <j:forEach var="parameterDefinition" items="${it.parameterDefinitions}">
-      <j:set var="escapeEntryTitleAndDescription" value="true"/> <!-- SECURITY-353 defense unless overridden -->
-      <tbody>
-        <st:include it="${parameterDefinition}"
-                    page="${parameterDefinition.descriptor.valuePage}" />
-      </tbody>
-    </j:forEach>
+      <div class="jenkins-parameters-container"> 
+      <j:forEach var="parameterDefinition" items="${it.parameterDefinitions}">
+    <j:set var="escapeEntryTitleAndDescription" value="true"/>
+    <tbody>
+      <st:include it="${parameterDefinition}"
+                  page="${parameterDefinition.descriptor.valuePage}" />
+    </tbody>
+  </j:forEach>
+</div>
     <f:bottomButtonBar>
       <!--
         When used from the UI, use 303 redirect and send back to the job top page.
