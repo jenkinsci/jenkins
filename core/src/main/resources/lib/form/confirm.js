@@ -117,5 +117,39 @@
   }
 
   window.onbeforeunload = confirmExit;
-  window.addEventListener("load", initConfirm);
+
+  function initWhenFormReady() {
+    const configForm =
+      document.getElementsByName("config")[0] ||
+      document.getElementsByName("viewConfig")[0];
+
+    if (configForm) {
+      initConfirm();
+      return true;
+    }
+    return false;
+  }
+
+  function initWhenReady() {
+    if (initWhenFormReady()) {
+      return;
+    }
+
+    const observer = new MutationObserver(function () {
+      if (initWhenFormReady()) {
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  if (document.readyState === "complete") {
+    initWhenReady();
+  } else {
+    window.addEventListener("load", initWhenReady);
+  }
 })();
