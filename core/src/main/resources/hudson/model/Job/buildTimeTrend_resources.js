@@ -46,6 +46,7 @@ window.buildTimeTrend_displayBuilds = function (data) {
 
     tr.appendChild(td);
     if (showAgent) {
+      /* eslint-disable-next-line no-useless-assignment */
       let buildInfo = null;
       let buildInfoStr = escapeHTML(e.builtOnStr || "");
       if (e.builtOn) {

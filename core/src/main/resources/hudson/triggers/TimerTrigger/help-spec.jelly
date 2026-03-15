@@ -104,11 +104,14 @@ H H 1,15 1-11 *
 <p>
   The supported time zones depend on the Java runtime Jenkins is running on. The list of supported time zone IDs on this instance is:
 </p>
-<j:invokeStatic className="java.util.TimeZone" method="getAvailableIDs" var="timeZones"/>
-<ul>
-  <j:forEach items="${timeZones}" var="timeZone">
-    <li>${timeZone}</li>
-  </j:forEach>
-</ul>
+<details>
+  <summary><strong>Click to view the list of supported time zone IDs</strong></summary>
+  <j:invokeStatic className="java.util.TimeZone" method="getAvailableIDs" var="timeZones"/>
+  <ul>
+    <j:forEach items="${timeZones}" var="timeZone">
+      <li>${timeZone}</li>
+    </j:forEach>
+  </ul>
+</details>
 </div>
 </j:jelly>
