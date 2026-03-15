@@ -39,6 +39,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -358,10 +359,16 @@ public class EnvVars extends TreeMap<String, String> {
     /**
      * Resolves environment variables against each other.
      */
+    @SuppressWarnings("unchecked")
     public static void resolve(Map<String, String> env) {
+        Comparator<? super String> cmp = env instanceof SortedMap<?, ?> sm
+                ? (Comparator<? super String>) sm.comparator() : null;
         for (Map.Entry<String, String> entry : env.entrySet()) {
             final String key = entry.getKey();
-            VariableResolver<String> resolver = name -> key.equals(name) ? null : env.get(name);
+            VariableResolver<String> resolver = name -> {
+                boolean selfRef = cmp != null ? cmp.compare(key, name) == 0 : key.equals(name);
+                return selfRef ? null : env.get(name);
+            };
             entry.setValue(Util.replaceMacro(entry.getValue(), resolver));
         }
     }

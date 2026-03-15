@@ -1540,13 +1540,13 @@ public class QueueTest {
         await().until(computer::isOffline);
         Thread.sleep(1000);
         assertFalse(r.jenkins.getQueue().isEmpty(), "Queue item should be back as the executor got killed before it could be picked up");
+        await().atMost(Duration.ofSeconds(30)).until(() -> disconnectFuture.get() != null);
         Future<?> df = disconnectFuture.get();
-        if (df != null) {
-            try {
-                df.get(30, TimeUnit.SECONDS);
-            } catch (Exception e) {
-                throw new AssertionError("Waiting for disconnect to complete before reconnect", e);
-            }
+        assertNotNull(df, "Disconnect future was not set within timeout");
+        try {
+            df.get(30, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            throw new AssertionError("Waiting for disconnect to complete before reconnect", e);
         }
         // Put the computer back online
         r.waitOnline(onlineSlave);

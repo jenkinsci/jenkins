@@ -110,11 +110,14 @@ class UtilTest {
     }
 
     @Test
-    void replaceMacroSelfReferenceDoesNotGrowUnbounded() {
+    void replaceMacroSelfReferenceExpandsOnlyOnce() {
         Map<String, String> m = new HashMap<>();
         m.put("PATH", "path1:$PATH");
-        String result = Util.replaceMacro("path1:$PATH", m);
-        assertTrue(result.length() < 500);
+        String result = Util.replaceMacro("$PATH", m);
+        assertEquals("path1:$PATH", result, "Single-pass expansion should inline the value once without re-scanning it");
+
+        String result2 = Util.replaceMacro("before:$PATH:after", m);
+        assertEquals("before:path1:$PATH:after", result2);
     }
 
     @Test

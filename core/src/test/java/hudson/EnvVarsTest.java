@@ -173,5 +173,13 @@ class EnvVarsTest {
         String ldPath = env.get("LD_LIBRARY_PATH");
         assertTrue(ldPath.length() < 500);
         assertEquals("/opt/oracle/lib:$LD_LIBRARY_PATH", ldPath);
+
+        EnvVars envDifferentCase = new EnvVars();
+        envDifferentCase.put("ORACLE_HOME", "/opt/oracle");
+        envDifferentCase.put("LD_LIBRARY_PATH", "$ORACLE_HOME/lib:$ld_library_path");
+        EnvVars.resolve(envDifferentCase);
+        String ldPathDifferentCase = envDifferentCase.get("LD_LIBRARY_PATH");
+        assertTrue(ldPathDifferentCase.length() < 500);
+        assertEquals("/opt/oracle/lib:$ld_library_path", ldPathDifferentCase);
     }
 }
