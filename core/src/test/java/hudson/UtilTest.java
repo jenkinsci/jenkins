@@ -110,6 +110,17 @@ class UtilTest {
     }
 
     @Test
+    void replaceMacroSelfReferenceExpandsOnlyOnce() {
+        Map<String, String> m = new HashMap<>();
+        m.put("PATH", "path1:$PATH");
+        String result = Util.replaceMacro("$PATH", m);
+        assertEquals("path1:$PATH", result, "Single-pass expansion should inline the value once without re-scanning it");
+
+        String result2 = Util.replaceMacro("before:$PATH:after", m);
+        assertEquals("before:path1:$PATH:after", result2);
+    }
+
+    @Test
     void testTimeSpanString() {
         // Check that amounts less than 365 days are not rounded up to a whole year.
         // In the previous implementation there were 360 days in a year.

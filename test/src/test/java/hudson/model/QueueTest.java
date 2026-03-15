@@ -109,6 +109,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
@@ -1523,6 +1524,7 @@ public class QueueTest {
         r.waitOnline(onlineSlave);
 
         var computer = onlineSlave.toComputer();
+        var disconnectFuture = new AtomicReference<Future<?>>();
         Timer.get().execute(() -> {
             // Simulate a computer failure just after the executor is created
             while (computer.getExecutors().getFirst().getStartTime() == 0) {
@@ -1532,12 +1534,20 @@ public class QueueTest {
                     // ignore
                 }
             }
-            computer.disconnect(new OfflineCause.ChannelTermination(new IllegalStateException()));
+            disconnectFuture.set(computer.disconnect(new OfflineCause.ChannelTermination(new IllegalStateException())));
         });
         var f = p.scheduleBuild2(0);
         await().until(computer::isOffline);
         Thread.sleep(1000);
         assertFalse(r.jenkins.getQueue().isEmpty(), "Queue item should be back as the executor got killed before it could be picked up");
+        await().atMost(Duration.ofSeconds(30)).until(() -> disconnectFuture.get() != null);
+        Future<?> df = disconnectFuture.get();
+        assertNotNull(df, "Disconnect future was not set within timeout");
+        try {
+            df.get(30, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            throw new AssertionError("Waiting for disconnect to complete before reconnect", e);
+        }
         // Put the computer back online
         r.waitOnline(onlineSlave);
         r.assertBuildStatusSuccess(f);

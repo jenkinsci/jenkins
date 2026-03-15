@@ -163,4 +163,23 @@ class EnvVarsTest {
         env.putAllNonNull(map);
         assertEquals(filteredMap, env);
     }
+
+    @Test
+    void resolveSelfReferenceDoesNotGrowUnbounded() {
+        EnvVars env = new EnvVars();
+        env.put("ORACLE_HOME", "/opt/oracle");
+        env.put("LD_LIBRARY_PATH", "$ORACLE_HOME/lib:$LD_LIBRARY_PATH");
+        EnvVars.resolve(env);
+        String ldPath = env.get("LD_LIBRARY_PATH");
+        assertTrue(ldPath.length() < 500);
+        assertEquals("/opt/oracle/lib:$LD_LIBRARY_PATH", ldPath);
+
+        EnvVars envDifferentCase = new EnvVars();
+        envDifferentCase.put("ORACLE_HOME", "/opt/oracle");
+        envDifferentCase.put("LD_LIBRARY_PATH", "$ORACLE_HOME/lib:$ld_library_path");
+        EnvVars.resolve(envDifferentCase);
+        String ldPathDifferentCase = envDifferentCase.get("LD_LIBRARY_PATH");
+        assertTrue(ldPathDifferentCase.length() < 500);
+        assertEquals("/opt/oracle/lib:$ld_library_path", ldPathDifferentCase);
+    }
 }
