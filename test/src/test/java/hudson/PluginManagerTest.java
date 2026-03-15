@@ -677,7 +677,8 @@ class PluginManagerTest {
     }
 
     /**
-     * Creates a minimal valid JAR with the given manifest entries (no Plugin-Dependencies).
+     * Creates a minimal valid JAR with the given manifest entries.
+     * Adds a {@code Plugin-Dependencies} manifest entry if {@code pluginDependencies} is non-null.
      */
     private static void createMinimalPluginJar(File jarFile, String shortName, String jenkinsVersion, String pluginDependencies) throws IOException {
         Manifest manifest = new Manifest();

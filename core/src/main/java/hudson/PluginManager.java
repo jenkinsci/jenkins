@@ -2008,12 +2008,15 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
 
             // Now create a dummy plugin that we can dynamically load (the InstallationJob will force a restart if one is needed):
-            JSONObject cfg = new JSONObject().
-                    element("name", baseName).
-                    element("version", "0"). // unused but mandatory
-                    element("url", t.toURI().toString()).
-                    element("dependencies", dependencies).
-                    element("requiredCore", requiredCore != null ? requiredCore : "");
+            JSONObject cfg = new JSONObject()
+                    .element("name", baseName)
+                    .element("version", "0") // unused but mandatory
+                    .element("url", t.toURI().toString())
+                    .element("dependencies", dependencies);
+            String normalizedRequiredCore = Util.fixEmptyAndTrim(requiredCore);
+            if (normalizedRequiredCore != null) {
+                cfg.element("requiredCore", normalizedRequiredCore);
+            }
             new UpdateSite(UpdateCenter.ID_UPLOAD, null).new Plugin(UpdateCenter.ID_UPLOAD, cfg).deploy(true);
             return new HttpRedirect("updates/");
         } catch (FileUploadException e) {
