@@ -25,38 +25,64 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
 
-  <j:set var="delay" value="${request2.getParameter('delay')}" />
-  <f:form method="post" action="build${empty(delay)?'':'?delay='+delay}" name="parameters"
-          tableClass="parameters" class="jenkins-form">
+<style>
+.jenkins-parameters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.jenkins-parameters-container .jenkins-form-item {
+  width: 45%;
+}
+
+.jenkins-parameters-container .jenkins-form-label {
+  margin-bottom: 0.2rem;
+  font-weight: 600;
+}
+
+.jenkins-parameters-container .jenkins-description {
+  margin-top: 0.2rem;
+}
+</style>
+
+<j:set var="delay" value="${request2.getParameter('delay')}" />
+
+<f:form method="post"
+        action="build${empty(delay)?'':'?delay='+delay}"
+        name="parameters"
+        tableClass="parameters"
+        class="jenkins-form">
+
+  <div class="jenkins-parameters-container">
+
     <j:forEach var="parameterDefinition" items="${it.parameterDefinitions}">
-      <div class="jenkins-parameters-container"> 
-      <j:forEach var="parameterDefinition" items="${it.parameterDefinitions}">
-    <j:set var="escapeEntryTitleAndDescription" value="true"/>
-    <tbody>
-      <st:include it="${parameterDefinition}"
-                  page="${parameterDefinition.descriptor.valuePage}" />
-    </tbody>
-  </j:forEach>
-</div>
-    <f:bottomButtonBar>
-      <!--
-        When used from the UI, use 303 redirect and send back to the job top page.
-        When neither of those options are given, we'll report "201 Created".
+      <j:set var="escapeEntryTitleAndDescription" value="true"/>
 
-        We can't use XHR for submitting this as there might be file parameters,
-        and submitting to IFRAME won't work either because 201 can't have HTML response.
+      <st:include
+        it="${parameterDefinition}"
+        page="${parameterDefinition.descriptor.valuePage}" />
 
-        So I think all we can do is this somewhat clunky workaround.
-       -->
-      <input type="hidden" name="statusCode" value="303" />
-      <input type="hidden" name="redirectTo" value="." />
-      <button class="jenkins-button jenkins-button--primary jenkins-!-build-color">
-        <l:icon src="symbol-play" />
-        ${it.buildButtonText}
-      </button>
-      <a href="./" class="jenkins-button">
-        ${%Cancel}
-      </a>
-    </f:bottomButtonBar>
-  </f:form>
+    </j:forEach>
+
+  </div>
+
+  <f:bottomButtonBar>
+
+    <input type="hidden" name="statusCode" value="303" />
+    <input type="hidden" name="redirectTo" value="." />
+
+    <button class="jenkins-button jenkins-button--primary jenkins-!-build-color">
+      <l:icon src="symbol-play" />
+      ${it.buildButtonText}
+    </button>
+
+    <a href="./" class="jenkins-button">
+      ${%Cancel}
+    </a>
+
+  </f:bottomButtonBar>
+
+</f:form>
+
 </j:jelly>
