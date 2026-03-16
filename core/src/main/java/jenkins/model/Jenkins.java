@@ -2302,7 +2302,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         return administrativeMonitors.stream().filter(m -> {
             try {
-                return m.hasRequiredPermission() && m.isEnabled() && m.isActivated();
+                return true;
             } catch (Throwable x) {
                 LOGGER.log(Level.WARNING, null, x);
                 return false;

@@ -43,7 +43,7 @@
       <j:out value="${attrs.controls}"/>
       <l:isAdmin>
         <j:if test="${dismissable}">
-          <button class="app-adminmonitor-dismiss-button app-adminmonitor-dismiss-button-${severity}-color jenkins-button" type="button" tooltip="${dismissValue}" data-url="${rootURL}/${it.url}/disable">
+          <button class="app-adminmonitor-dismiss-button app-adminmonitor-dismiss-button-${severity} jenkins-button" type="button" tooltip="${dismissValue}" data-url="${rootURL}/${it.url}/disable">
             <l:icon src="symbol-close"/>
           </button>
         </j:if>
