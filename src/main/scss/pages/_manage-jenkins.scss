@@ -15,8 +15,34 @@
     }
   }
 
+  &-icon {
+    position: relative;
+    float: left;
+    height: 18px;
+    width: 18px;
+    margin-right: 0.5rem;
+    margin-top: 2px;
+  }
+
   &-dismiss-button {
     padding: 2px 10px;
+    --button-background: oklch(from var(--background) l c h / 0.5)!important;
+
+    &-info-color {
+      color: var(--alert-info-text-color);
+    }
+
+    &-warning-color {
+      color: var(--alert-warning-text-color);
+    }
+
+    &-danger-color {
+      color: var(--alert-danger-text-color);
+    }
+
+    &-success-color {
+      color: var(--alert-success-text-color);
+    }
   }
 }
 
@@ -58,6 +84,7 @@
 
 .manage-messages .alert,
 .manage-messages .jenkins-alert {
+  margin-bottom: 0.75rem;
   &:last-of-type {
     margin-bottom: 30px;
   }
