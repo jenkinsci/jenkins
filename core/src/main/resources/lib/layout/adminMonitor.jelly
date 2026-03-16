@@ -1,7 +1,9 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:d="jelly:define">
   <st:documentation> <![CDATA[
-    Displays an administrative monitor alert
+    Displays an administrative monitor alert.
+
+    @since TODO
     ]]>
     <st:attribute name="severity" use="optional" >
       Severity of the alert, one of info, warning, danger or success. Defaults to warning if not specified.
@@ -10,7 +12,7 @@
       If the alert can be dismissed by the user, defaults to true if not specified.
     </st:attribute>
     <st:attribute name="dismissValue" use="optional">
-      The value of the dismiss button.
+      The value of the dismiss tooltip. Defaults to "Dismiss" if not specified.
     </st:attribute>
     <st:attribute name="class" use="optional">
       Additional CSS class to add to the alert div.
@@ -20,6 +22,9 @@
     </st:attribute>
     <st:attribute name="controls" use="optional">
       Shows additional controls in the top right of the alert besides the dismiss button.
+
+      To be able to set controls, You must use a message.jelly. It is not possible
+      to do this in groovy.
     </st:attribute>
 
   </st:documentation>
