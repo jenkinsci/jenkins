@@ -25,6 +25,7 @@
 package hudson.util;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -85,6 +86,16 @@ class QuotedStringTokenizerTest {
         assertFalse(tokenizer.hasMoreTokens());
         tokenizer = new QuotedStringTokenizer("one");
         assertTrue(tokenizer.hasMoreTokens());
+    }
+
+    @Test
+    void testUnquoteUnicodeEscape() {
+        // \u0041 is 'A' — previously decoded to U+0004 due to wrong shifts and off-by-one
+        assertEquals("A", QuotedStringTokenizer.unquote("\"\\u0041\""));
+        // \u00E9 is 'é'
+        assertEquals("\u00E9", QuotedStringTokenizer.unquote("\"\\u00E9\""));
+        // multiple unicode escapes in one string
+        assertEquals("AB", QuotedStringTokenizer.unquote("\"\\u0041\\u0042\""));
     }
 
     private void check(String src, String... expected) {

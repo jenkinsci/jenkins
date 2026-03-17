@@ -472,10 +472,10 @@ public class QuotedStringTokenizer
                         break;
                     case 'u':
                         b.append((char) (
-                                (convertHexDigit((byte) s.charAt(i++)) << 24) +
-                                (convertHexDigit((byte) s.charAt(i++)) << 16) +
-                                (convertHexDigit((byte) s.charAt(i++)) << 8) +
-                                convertHexDigit((byte) s.charAt(i++))
+                                (convertHexDigit((byte) s.charAt(++i)) << 12) +
+                                (convertHexDigit((byte) s.charAt(++i)) << 8) +
+                                (convertHexDigit((byte) s.charAt(++i)) << 4) +
+                                convertHexDigit((byte) s.charAt(++i))
                                 )
                         );
                         break;
