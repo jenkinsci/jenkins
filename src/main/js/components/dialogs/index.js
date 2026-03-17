@@ -379,11 +379,125 @@ function mergeUrlParams(url, params) {
   return base.toString();
 }
 
-function navigateToNextPage(url, params) {
-  const dialog = document.querySelector(
+function updateWizardTitle(titleText) {
+  if (titleText == null) {
+    return;
+  }
+
+  const title = document.querySelector(
+    ".jenkins-dialog .jenkins-dialog__title > span",
+  );
+  if (title != null) {
+    title.textContent = titleText;
+  }
+}
+
+function resolveWizardFormAction(form, baseUrl) {
+  const formAction = form.getAttribute("action");
+  if (
+    formAction &&
+    !formAction.startsWith("/") &&
+    !formAction.startsWith("http")
+  ) {
+    form.action = new URL(formAction, baseUrl).toString();
+  }
+}
+
+function submitWizardForm(form) {
+  fetch(form.action, {
+    method: form.method.toUpperCase(),
+    headers: crumb.wrap({}),
+    body: new FormData(form),
+  }).then((rsp) => {
+    if (rsp.redirected) {
+      window.location.assign(rsp.url);
+      return;
+    }
+
+    rsp.text().then((responseText) => {
+      const replacementForm = renderWizardForm({
+        responseText,
+        requestUrl: rsp.url,
+        titleText: rsp.headers.get("X-Wizard-Title"),
+        replaceExistingForm: form,
+      });
+
+      if (replacementForm == null) {
+        window.location.assign(rsp.url);
+      }
+    });
+  });
+}
+
+function configureWizardForm(form) {
+  if (form.method.toLowerCase() === "get") {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const wizardForm = e.currentTarget;
+      const fd = new FormData(wizardForm);
+      const params = new URLSearchParams();
+
+      fd.forEach(function (value, key) {
+        // FormData can include File objects. Query strings cannot.
+        if (value instanceof File) {
+          return;
+        }
+        params.append(key, String(value));
+      });
+
+      showBackButtonInDialog();
+
+      navigateToNextPage(wizardForm.action, params.toString());
+    });
+    return;
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    submitWizardForm(e.currentTarget);
+  });
+}
+
+function renderWizardForm({
+  responseText,
+  requestUrl,
+  titleText,
+  replaceExistingForm = null,
+  hideExistingForms = false,
+}) {
+  const dialogContents = document.querySelector(
     ".jenkins-dialog .jenkins-dialog__contents",
   );
+  const newDialog = document.createElement("div");
+  newDialog.innerHTML = responseText;
 
+  const form = newDialog.querySelector("form");
+  if (form == null) {
+    return null;
+  }
+
+  if (hideExistingForms) {
+    Array.from(dialogContents.children)
+      .filter((element) => element.tagName === "FORM")
+      .forEach((existingForm) => existingForm.classList.add("jenkins-hidden"));
+  }
+
+  resolveWizardFormAction(form, requestUrl);
+  updateWizardTitle(titleText);
+  configureWizardForm(form);
+
+  if (replaceExistingForm != null) {
+    replaceExistingForm.replaceWith(form);
+  } else {
+    dialogContents.appendChild(form);
+  }
+
+  recreateScripts(form);
+  return form;
+}
+
+function navigateToNextPage(url, params) {
   const finalUrl = mergeUrlParams(url, params);
 
   fetch(finalUrl, {
@@ -392,67 +506,16 @@ function navigateToNextPage(url, params) {
   }).then((rsp) => {
     if (rsp.ok) {
       rsp.text().then((responseText) => {
-        Array.from(dialog.children)
-          .filter((el) => el.tagName === "FORM")
-          .forEach((form) => form.classList.add("jenkins-hidden"));
+        const form = renderWizardForm({
+          responseText,
+          requestUrl: rsp.url,
+          titleText: rsp.headers.get("X-Wizard-Title"),
+          hideExistingForms: true,
+        });
 
-        const newDialog = document.createElement("div");
-        newDialog.innerHTML = responseText;
-
-        const form = newDialog.querySelector("form");
-
-        // Resolve relative form action against the fetch URL, not the current page URL,
-        // since the dialog HTML is inserted into the current page's DOM
-        const formAction = form.getAttribute("action");
-        if (
-          formAction &&
-          !formAction.startsWith("/") &&
-          !formAction.startsWith("http")
-        ) {
-          form.action = new URL(formAction, finalUrl).toString();
+        if (form == null) {
+          window.location.assign(rsp.url);
         }
-
-        const title = document.querySelector(
-          ".jenkins-dialog .jenkins-dialog__title > span",
-        );
-        title.textContent = rsp.headers.get("X-Wizard-Title");
-
-        if (form.method.toLowerCase() === "get") {
-          form.addEventListener("submit", (e) => {
-            e.preventDefault();
-
-            const form = e.target;
-            const fd = new FormData(form);
-            const params = new URLSearchParams();
-
-            fd.forEach(function (value, key) {
-              // FormData can include File objects. Query strings cannot.
-              if (value instanceof File) {
-                // choose one:
-                // params.append(key, value.name); // store filename only
-                return; // or skip files entirely
-              }
-              params.append(key, String(value));
-            });
-
-            const queryString = params.toString(); // "username=alice&password=secret"
-
-            showBackButtonInDialog();
-
-            navigateToNextPage(form.action, queryString);
-          });
-        } else {
-          form.addEventListener("submit", (e) => {
-            e.preventDefault();
-
-            // todo - if theres an error, reload the dialog container
-
-            // todo - otherwise, redirect to whatever
-          });
-        }
-
-        dialog.appendChild(form);
-        recreateScripts(form);
       });
     }
   });
