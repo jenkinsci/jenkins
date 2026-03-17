@@ -547,7 +547,7 @@ public class QuotedStringTokenizer
     private static int parseHexDigit(char c) {
         int digit = Character.digit(c, 16);
         if (digit < 0)
-            throw new IllegalArgumentException("!hex " + c);
+            throw new IllegalArgumentException("Invalid hex digit '" + c + "' in Unicode escape sequence");
         return digit;
     }
 
