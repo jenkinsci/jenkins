@@ -133,9 +133,11 @@ THE SOFTWARE.
   <div class="repeated-container${!empty(header)?' with-drag-drop':''}" enableTopButton="${attrs.enableTopButton}" data-minimum="${minimum}">
     <!-- The first DIV is the master copy. -->
     <div class="repeated-chunk to-be-removed" name="${name}">
-      <div class="repeated-chunk__header">
-        <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}"/>${header}</j:if>
-      </div>
+      <j:if test="${!empty(header)}">
+        <div class="repeated-chunk__header">
+          <div class="${readOnlyMode ? '' : 'dd-handle'}"/>${header}
+        </div>
+      </j:if>
       <div class="jenkins-repeated-chunk__content">
         <j:scope>
           <j:set var="${var}" value="${null}"/>
@@ -153,9 +155,11 @@ THE SOFTWARE.
     <j:forEach var="loop" varStatus="loopStatus" items="${items}">
       <div class="repeated-chunk" name="${name}">
         <j:set var="${var}" value="${loop}" />
-        <div class="repeated-chunk__header">
-          <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}"/>${header}</j:if>
-        </div>
+        <j:if test="${!empty(header)}">
+          <div class="repeated-chunk__header">
+            <div class="${readOnlyMode ? '' : 'dd-handle'}"/>${header}
+          </div>
+        </j:if>
         <div class="jenkins-repeated-chunk__content">
           <d:invokeBody />
         </div>
@@ -167,9 +171,11 @@ THE SOFTWARE.
       <j:forEach begin="${h.size2(items)}" end="${minimum-1}" var="i">
         <j:set var="${var}" value="${null}" />
         <div class="repeated-chunk" name="${name}">
-          <div class="repeated-chunk__header">
-            <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}"/>${header}</j:if>
-          </div>
+          <j:if test="${!empty(header)}">
+            <div class="repeated-chunk__header">
+              <div class="${readOnlyMode ? '' : 'dd-handle'}"/>${header}
+            </div>
+          </j:if>
           <div class="jenkins-repeated-chunk__content">
             <d:invokeBody />
           </div>
