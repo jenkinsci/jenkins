@@ -31,8 +31,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import jenkins.model.Jenkins;
 import jenkins.security.SlaveToMasterCallable;
 import org.dom4j.io.SAXReader;
 
@@ -75,14 +73,14 @@ public abstract class ParserConfigurator implements ExtensionPoint, Serializable
     }
 
     public static void applyConfiguration(SAXReader reader, Object context) throws IOException, InterruptedException {
-        Collection<ParserConfigurator> all = Collections.emptyList();
+        Collection<ParserConfigurator> all;
 
-        if (Jenkins.getInstanceOrNull() == null) {
-            Channel ch = Channel.current();
-            if (ch != null)
-                all = ch.call(new GetParserConfigurators());
-        } else
+        Channel ch = Channel.current();
+        if (ch != null) {
+            all = ch.call(new GetParserConfigurators());
+        } else {
             all = all();
+        }
         for (ParserConfigurator pc : all)
             pc.configure(reader, context);
     }
