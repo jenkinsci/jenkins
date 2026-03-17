@@ -1,54 +1,68 @@
 @use "../abstracts/mixins";
 
 .app-adminmonitor {
-  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 0.5rem;
+  font-weight: 450;
+
+  &-icon {
+    position: relative;
+    float: left;
+    width: 1.375rem;
+    height: 1.375rem;
+    margin: -0.0625rem 0 -0.0625rem -0.0625rem;
+
+    * {
+      stroke-width: 34px;
+    }
+  }
 
   &-controls {
-    position: relative;
-    float: right;
-    margin: -8px -8px 0 4px !important;
+    margin: -8px -8px -8px 4px !important;
     display: flex;
+    align-items: center;
     gap: 0.5rem;
 
     & > form {
       margin: 0 !important;
     }
-  }
 
-  &-icon {
-    position: relative;
-    float: left;
-    height: 18px;
-    width: 18px;
-    margin-right: 0.5rem;
-    margin-top: 2px;
+    .jenkins-button {
+      min-height: 36px;
+      padding: 0 14px;
+    }
   }
 
   &-dismiss-button {
-    --button-background: oklch(from var(--background) l c h / 0.5) !important;
-    --button-background--hover: oklch(
-      from currentColor l c h / 0.05
-    ) !important;
-    --button-background--active: oklch(
-      from currentColor l c h / 0.1
-    ) !important;
+    --button-background: none;
+    --button-background--hover: oklch(from currentColor l c h / 0.1);
+    --button-background--active: oklch(from currentColor l c h / 0.2);
+    --button-box-shadow--focus: oklch(from currentColor l c h / 0.1);
 
-    padding: 2px 10px;
-
-    &-info {
-      color: var(--alert-info-text-color) !important;
+    &:not(.jenkins-button--primary) {
+      &::before {
+        border: var(--jenkins-border-width) solid rgb(from currentColor r g b / 0.1);
+      }
     }
 
-    &-warning {
-      color: var(--alert-warning-text-color) !important;
-    }
+    color: var(--color) !important;
+    min-width: 36px;
+    padding: 0 !important;
+  }
+}
 
-    &-danger {
-      color: var(--alert-danger-text-color) !important;
-    }
+.manage-messages {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--section-padding) / 3);
 
-    &-success {
-      color: var(--alert-success-text-color) !important;
+  & > div {
+    margin-bottom: 0;
+
+    &:last-of-type {
+      margin-bottom: var(--section-padding);
     }
   }
 }
@@ -91,12 +105,6 @@
 
 .manage-messages .alert,
 .manage-messages .jenkins-alert {
-  margin-bottom: 0.75rem;
-
-  &:last-of-type {
-    margin-bottom: 30px;
-  }
-
   a {
     text-decoration: underline;
   }

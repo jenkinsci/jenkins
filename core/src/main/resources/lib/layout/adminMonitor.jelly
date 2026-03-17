@@ -40,20 +40,22 @@
       <j:when test="${severity == 'warning'}">
         <l:icon src="symbol-warning-outline" class="app-adminmonitor-icon"/>
       </j:when>
-       <j:otherwise>
+      <j:otherwise>
         <l:icon src="symbol-information-circle" class="app-adminmonitor-icon"/>
       </j:otherwise>
     </j:choose>
+    <div class="app-admin-monitor-content">
+      <d:invokeBody />
+    </div>
     <div class="app-adminmonitor-controls">
       <j:out value="${attrs.controls}"/>
       <l:isAdmin>
         <j:if test="${dismissable}">
-          <button class="app-adminmonitor-dismiss-button app-adminmonitor-dismiss-button-${severity} jenkins-button" type="button" tooltip="${dismissValue}" data-url="${rootURL}/${it.url}/disable">
-            <l:icon src="symbol-close"/>
+          <button class="app-adminmonitor-dismiss-button jenkins-button" type="button" tooltip="${dismissValue}" data-url="${rootURL}/${it.url}/disable">
+            <l:icon src="symbol-close" />
           </button>
         </j:if>
       </l:isAdmin>
     </div>
-    <d:invokeBody/>
   </div>
 </j:jelly>

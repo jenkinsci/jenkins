@@ -88,11 +88,11 @@ $semantics: (
   --alert-success-text-color: var(--success-color);
   --alert-success-bg-color: color-mix(
     in sRGB,
-    var(--success-color) 10%,
+    var(--success-color) 4%,
     transparent
   );
-  --alert-info-text-color: var(--blue);
-  --alert-info-bg-color: color-mix(in sRGB, var(--blue) 10%, transparent);
+  --alert-info-text-color: var(--accent-color);
+  --alert-info-bg-color: color-mix(in sRGB, var(--accent-color) 4%, transparent);
   --alert-warning-text-color: color-mix(
     in sRGB,
     var(--warning-color) 80%,
@@ -100,13 +100,13 @@ $semantics: (
   );
   --alert-warning-bg-color: color-mix(
     in sRGB,
-    var(--warning-color) 10%,
+    var(--warning-color) 4%,
     transparent
   );
   --alert-danger-text-color: var(--error-color);
   --alert-danger-bg-color: color-mix(
     in sRGB,
-    var(--error-color) 10%,
+    var(--error-color) 4%,
     transparent
   );
 
