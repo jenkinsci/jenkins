@@ -412,11 +412,9 @@ function navigateToNextPage(url, params) {
           form.action = new URL(formAction, finalUrl).toString();
         }
 
-        // Remove the latter selector after baseline is higher than https://github.com/jenkinsci/jenkins/pull/26033
-        const title =
-          document.querySelector(
-            ".jenkins-dialog .jenkins-dialog__title > span",
-          ) || document.querySelector(".jenkins-dialog .jenkins-dialog__title");
+        const title = document.querySelector(
+          ".jenkins-dialog .jenkins-dialog__title > span",
+        );
         title.textContent = rsp.headers.get("X-Wizard-Title");
 
         if (form.method.toLowerCase() === "get") {
@@ -444,11 +442,13 @@ function navigateToNextPage(url, params) {
             navigateToNextPage(form.action, queryString);
           });
         } else {
-          // window.credentials.form = form;
-          // form.addEventListener("submit", (e) => {
-          //   e.preventDefault();
-          //   window.credentials.dialogSubmit();
-          // });
+          form.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            // todo - if theres an error, reload the dialog container
+
+            // todo - otherwise, redirect to whatever
+          });
         }
 
         dialog.appendChild(form);
