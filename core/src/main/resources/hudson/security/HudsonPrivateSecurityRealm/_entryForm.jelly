@@ -81,7 +81,7 @@ THE SOFTWARE.
     </div>
   </j:if>
   <j:if test="${it.mailerPluginPresent}">
-    <f:entry title="${%E-mail address}" class="${data.errors.containsKey('email') ? 'jenkins-!-margin-bottom-2' : ''}">
+    <f:entry title="${%Email}" class="${data.errors.containsKey('email') ? 'jenkins-!-margin-bottom-2' : ''}">
       <input class="jenkins-input" type="text" name="email" value="${data.email}" />
     </f:entry>
     <j:if test="${data.errors.containsKey('email')}">

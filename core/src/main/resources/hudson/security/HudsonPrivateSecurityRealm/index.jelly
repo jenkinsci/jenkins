@@ -44,8 +44,8 @@ THE SOFTWARE.
       <thead>
         <tr>
           <th class="jenkins-table__cell--tight" data-sort-disable="true" />
-          <th initialSortDir="down">${%User ID}</th>
-          <th>${%Name}</th>
+          <th initialSortDir="down">${%Username}</th>
+          <th>${%Full name}</th>
           <th class="jenkins-table__cell--tight" data-sort-disable="true" />
         </tr>
       </thead>
