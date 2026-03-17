@@ -34,7 +34,7 @@ THE SOFTWARE.
     <form action="${rootURL}/securityRealm/createAccountByAdmin" method="post">
       <local:_entryForm action="createAccountByAdmin" captcha="${captcha}" it="${it}" data="${data}" />
       <f:bottomButtonBar>
-        <f:submit value="Submit" />
+        <f:submit value="${%Create}" />
       </f:bottomButtonBar>
     </form>
   </l:ajax>
