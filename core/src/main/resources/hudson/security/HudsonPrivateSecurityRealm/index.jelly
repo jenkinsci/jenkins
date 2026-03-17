@@ -28,14 +28,14 @@ THE SOFTWARE.
     <l:view>
       <l:app-bar title="${%Users}" subtitle="${it.allUsers.size()}">
         <l:isAdmin>
-          <a href="addUser" class="jenkins-button jenkins-button--primary">
+          <button class="jenkins-button jenkins-button--primary"
+                  data-type="dialog-opener"
+                  data-dialog-url="addUserDialog">
             <l:icon src="symbol-add" />
             ${%Create User}
-          </a>
+          </button>
         </l:isAdmin>
       </l:app-bar>
-
-      <p class="jenkins-page-description">${%blurb}</p>
     </l:view>
   </j:set>
 
@@ -59,27 +59,24 @@ THE SOFTWARE.
               </div>
             </td>
             <td>
-              <a href="${user.url}/" class="jenkins-table__link model-link inside">${user.id}</a>
+              <a href="${user.url}/" class="jenkins-table__link">${user.id}</a>
             </td>
             <td>
               ${user.fullName}
             </td>
             <td>
               <div class="jenkins-table__cell__button-wrapper">
-                <a href="${user.url}/" class="jenkins-button jenkins-button--tertiary">
+                <a href="${user.url}/account" class="jenkins-button jenkins-button--tertiary">
                   <l:icon src="symbol-settings" />
                 </a>
               </div>
             </td>
             <td>
-              <j:if test="${user.canDelete()}">
-                <div class="jenkins-table__cell__button-wrapper">
-                  <l:confirmationLink href="${user.url}/doDelete" class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color"
-                                      post="true" message="${%delete.user(user.displayName)}">
-                    <l:icon src="symbol-trash" />
-                  </l:confirmationLink>
-                </div>
-              </j:if>
+              <button type="button"
+                      data-href="${user.url}/"
+                      class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link">
+                <l:icon src="symbol-menu" />
+              </button>
             </td>
           </tr>
         </j:forEach>
