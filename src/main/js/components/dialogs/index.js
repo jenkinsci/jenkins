@@ -1,5 +1,5 @@
 import { createElementFromHtml } from "@/util/dom";
-import { CLOSE } from "@/util/symbols";
+import { BACK_BUTTON, CLOSE } from "@/util/symbols";
 import behaviorShim from "@/util/behavior-shim";
 import jenkins from "@/util/jenkins";
 
@@ -523,15 +523,12 @@ function navigateToNextPage(url, params) {
 
 function showBackButtonInDialog() {
   const dialog = document.querySelector(".jenkins-dialog");
-  // Remove the latter selector after baseline is higher than https://github.com/jenkinsci/jenkins/pull/26033
-  const title =
-    dialog.querySelector(".jenkins-dialog__title > span") ||
-    dialog.querySelector(".jenkins-dialog__title");
+  const title = dialog.querySelector(".jenkins-dialog__title > span");
   const backButton = document.createElement("button");
   backButton.classList.add("jenkins-button");
   backButton.classList.add("jenkins-dialog__back-button");
   backButton.ariaLabel = "Back";
-  backButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M328 112L184 256l144 144"/></svg>`;
+  backButton.innerHTML = BACK_BUTTON;
   title.style.transition = "var(--standard-transition)";
   title.style.marginLeft = "2.75rem";
   dialog.appendChild(backButton);
@@ -544,7 +541,6 @@ function showBackButtonInDialog() {
       .querySelector(".jenkins-dialog__contents form:last-of-type")
       .remove();
     title.style.marginLeft = "0";
-    title.textContent = "Add Credentials";
     backButton.remove();
   });
 }
