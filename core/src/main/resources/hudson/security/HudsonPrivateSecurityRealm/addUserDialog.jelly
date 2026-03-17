@@ -31,10 +31,10 @@ THE SOFTWARE.
   <st:setHeader name="X-Wizard-Title" value="${%Create User}" />
 
   <l:ajax>
-    <form action="${rootURL}/securityRealm/${action}" method="post">
-      <local:_entryForm title="${title}" action="${action}" captcha="${captcha}" it="${host}" data="${data}" />
+    <form action="${rootURL}/securityRealm/createAccountByAdmin" method="post">
+      <local:_entryForm action="createAccountByAdmin" captcha="${captcha}" it="${it}" data="${data}" />
       <f:bottomButtonBar>
-        <f:submit value="${title}" />
+        <f:submit value="Submit" />
       </f:bottomButtonBar>
     </form>
   </l:ajax>
