@@ -47,7 +47,6 @@ THE SOFTWARE.
           <th initialSortDir="down">${%User ID}</th>
           <th>${%Name}</th>
           <th class="jenkins-table__cell--tight" data-sort-disable="true" />
-          <th class="jenkins-table__cell--tight" data-sort-disable="true" />
         </tr>
       </thead>
       <tbody>
@@ -69,14 +68,12 @@ THE SOFTWARE.
                 <a href="${user.url}/account" class="jenkins-button jenkins-button--tertiary">
                   <l:icon src="symbol-settings" />
                 </a>
+                <button type="button"
+                        data-href="${user.url}/"
+                        class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link">
+                  <l:icon src="symbol-menu" />
+                </button>
               </div>
-            </td>
-            <td>
-              <button type="button"
-                      data-href="${user.url}/"
-                      class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link">
-                <l:icon src="symbol-menu" />
-              </button>
             </td>
           </tr>
         </j:forEach>

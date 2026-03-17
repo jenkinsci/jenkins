@@ -26,8 +26,16 @@ THE SOFTWARE.
   Page for admin to create a new user
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm">
-  <div>
-    hello i am a test!
-  </div>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler"
+         xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" xmlns:f="/lib/form">
+  <st:setHeader name="X-Wizard-Title" value="${%Create User}" />
+
+  <l:ajax>
+    <form action="${rootURL}/securityRealm/${action}" method="post">
+      <local:_entryForm title="${title}" action="${action}" captcha="${captcha}" it="${host}" data="${data}" />
+      <f:bottomButtonBar>
+        <f:submit value="${title}" />
+      </f:bottomButtonBar>
+    </form>
+  </l:ajax>
 </j:jelly>

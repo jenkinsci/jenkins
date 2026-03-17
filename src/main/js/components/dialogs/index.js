@@ -444,11 +444,11 @@ function navigateToNextPage(url, params) {
             navigateToNextPage(form.action, queryString);
           });
         } else {
-          window.credentials.form = form;
-          form.addEventListener("submit", (e) => {
-            e.preventDefault();
-            window.credentials.dialogSubmit();
-          });
+          // window.credentials.form = form;
+          // form.addEventListener("submit", (e) => {
+          //   e.preventDefault();
+          //   window.credentials.dialogSubmit();
+          // });
         }
 
         dialog.appendChild(form);
