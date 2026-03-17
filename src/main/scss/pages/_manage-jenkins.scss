@@ -43,7 +43,8 @@
 
     &:not(.jenkins-button--primary) {
       &::before {
-        border: var(--jenkins-border-width) solid rgb(from currentColor r g b / 0.1);
+        border: var(--jenkins-border-width) solid
+          rgb(from currentColor r g b / 0.1);
       }
     }
 

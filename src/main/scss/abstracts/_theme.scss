@@ -92,7 +92,11 @@ $semantics: (
     transparent
   );
   --alert-info-text-color: var(--accent-color);
-  --alert-info-bg-color: color-mix(in sRGB, var(--accent-color) 4%, transparent);
+  --alert-info-bg-color: color-mix(
+    in sRGB,
+    var(--accent-color) 4%,
+    transparent
+  );
   --alert-warning-text-color: color-mix(
     in sRGB,
     var(--warning-color) 80%,
