@@ -146,6 +146,32 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         }
     }
 
+    /**
+     * Atomically add or update a snoozed monitor entry.
+     *
+     * @param monitorId the monitor ID
+     * @param expiry the expiry timestamp in milliseconds
+     * @since TODO
+     */
+    public void putSnoozedAdministrativeMonitor(String monitorId, long expiry) {
+        synchronized (this.snoozedAdministrativeMonitors) {
+            this.snoozedAdministrativeMonitors.put(monitorId, expiry);
+        }
+    }
+
+    /**
+     * Atomically remove a snoozed monitor entry.
+     *
+     * @param monitorId the monitor ID
+     * @return true if the entry was present and removed
+     * @since TODO
+     */
+    public boolean removeSnoozedAdministrativeMonitor(String monitorId) {
+        synchronized (this.snoozedAdministrativeMonitors) {
+            return this.snoozedAdministrativeMonitors.remove(monitorId) != null;
+        }
+    }
+
     /* =================================================================================================================
      * Implementation provided
      * ============================================================================================================== */

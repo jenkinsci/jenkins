@@ -48,7 +48,14 @@
       <j:out value="${attrs.controls}"/>
       <l:isAdmin>
         <j:if test="${dismissable}">
-          <button class="app-adminmonitor-dismiss-button app-adminmonitor-dismiss-button-${severity} jenkins-button" type="button" tooltip="${dismissValue}" data-url="${rootURL}/${it.url}/disable">
+          <button class="app-adminmonitor-dismiss-button app-adminmonitor-dismiss-button-${severity} jenkins-button"
+                  type="button"
+                  tooltip="${dismissValue}"
+                  data-url="${rootURL}/${it.url}/disable"
+                  data-snooze-url="${rootURL}/${it.url}/snooze"
+                  data-dialog-title="${%dismiss.dialog.title}"
+                  data-dialog-ok="${%dismiss.dialog.ok}"
+                  data-dialog-cancel="${%dismiss.dialog.cancel}">
             <l:icon src="symbol-close"/>
           </button>
         </j:if>
@@ -56,4 +63,33 @@
     </div>
     <d:invokeBody/>
   </div>
+
+  <!-- Dismiss/snooze dialog form template (rendered once per page) -->
+  <st:once>
+    <div id="adminmonitor-dismiss-template" class="jenkins-hidden">
+      <div>
+        <div class="jenkins-form-label">${%dismiss.action.label}</div>
+        <div class="jenkins-select jenkins-!-margin-bottom-2">
+          <select class="jenkins-select__input" name="dismissAction">
+            <option value="dismiss-all">${%dismiss.permanently}</option>
+            <option value="snooze-all-60">${%snooze.1hour}</option>
+            <option value="snooze-all-1440" selected="true">${%snooze.1day}</option>
+            <option value="snooze-all-4320">${%snooze.3days}</option>
+            <option value="snooze-all-10080">${%snooze.1week}</option>
+            <option value="snooze-user-1440">${%snooze.user.1day}</option>
+            <option value="snooze-user-10080">${%snooze.user.1week}</option>
+            <option value="custom">${%snooze.custom}</option>
+          </select>
+        </div>
+        <input type="date" name="snoozeUntil" class="jenkins-hidden jenkins-input jenkins-!-margin-bottom-2"/>
+        <div class="jenkins-select jenkins-hidden" data-name="scopeSelect">
+          <div class="jenkins-form-label">${%snooze.scope.label}</div>
+          <select class="jenkins-select__input jenkins-!-margin-bottom-0" name="scope">
+            <option value="all">${%snooze.scope.all}</option>
+            <option value="user">${%snooze.scope.user}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </st:once>
 </j:jelly>

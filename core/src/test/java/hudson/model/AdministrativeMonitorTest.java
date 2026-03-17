@@ -3,6 +3,9 @@ package hudson.model;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
@@ -35,8 +38,17 @@ class AdministrativeMonitorTest {
         snoozedMonitors = new HashMap<>();
         disabledMonitors = new HashSet<>();
 
-        when(jenkins.getSnoozedAdministrativeMonitors()).thenReturn(snoozedMonitors);
+        when(jenkins.getSnoozedAdministrativeMonitors()).thenAnswer(inv -> new HashMap<>(snoozedMonitors));
         when(jenkins.getDisabledAdministrativeMonitors()).thenReturn(disabledMonitors);
+
+        // Wire atomic put/remove to the backing map
+        doAnswer(inv -> {
+            snoozedMonitors.put(inv.getArgument(0), inv.getArgument(1));
+            return null;
+        }).when(jenkins).putSnoozedAdministrativeMonitor(anyString(), anyLong());
+
+        doAnswer(inv -> snoozedMonitors.remove(inv.getArgument(0)) != null)
+                .when(jenkins).removeSnoozedAdministrativeMonitor(anyString());
     }
 
     @AfterEach
@@ -71,13 +83,10 @@ class AdministrativeMonitorTest {
 
     @Test
     void testCleanupRemovesOnlyThisMonitor() throws IOException {
-        TestMonitor monitor1 = new TestMonitor("monitor-1");
-        TestMonitor monitor2 = new TestMonitor("monitor-2");
-
-        // Snooze both, expire monitor1
         snoozedMonitors.put("monitor-1", System.currentTimeMillis() - 1000);
         snoozedMonitors.put("monitor-2", System.currentTimeMillis() + 10000);
 
+        TestMonitor monitor1 = new TestMonitor("monitor-1");
         monitor1.isSnoozed(); // Should trigger cleanup for monitor1
 
         assertFalse(snoozedMonitors.containsKey("monitor-1"), "Expired monitor should be removed");
@@ -90,7 +99,7 @@ class AdministrativeMonitorTest {
         monitor.snooze(10000);
 
         assertTrue(snoozedMonitors.containsKey("persist-monitor"), "Snooze map should contain the monitor ID");
-        verify(jenkins).save(); // Verify persistence was called
+        verify(jenkins).save();
     }
 
     @Test

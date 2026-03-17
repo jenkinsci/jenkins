@@ -147,13 +147,28 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      *
      * <p>
      * This flag implements the ability for the admin to say "no thank you" to the monitor that
-     * he wants to ignore.
+     * he wants to ignore. Also returns false if the monitor is snoozed globally or for the
+     * current user.
      */
     public boolean isEnabled() {
         if (isSnoozed()) {
             return false;
         }
+        if (isSnoozedForCurrentUser()) {
+            return false;
+        }
         return !Jenkins.get().getDisabledAdministrativeMonitors().contains(id);
+    }
+
+    /**
+     * Returns true if this monitor is snoozed for the current user only.
+     *
+     * @return true if the current user has individually snoozed this monitor
+     * @since TODO
+     */
+    public boolean isSnoozedForCurrentUser() {
+        SnoozedMonitorsUserProperty prop = SnoozedMonitorsUserProperty.forCurrentUser();
+        return prop != null && prop.isSnoozed(id);
     }
 
     /**
@@ -174,14 +189,10 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
         if (expiry == null) {
             return false;
         }
-        long now = System.currentTimeMillis();
-        if (now >= expiry) {
-            // Cleanup expired entry to prevent memory leak
+        if (System.currentTimeMillis() >= expiry) {
             try {
                 AbstractCIBase jenkins = Jenkins.get();
-                Map<String, Long> map = jenkins.getSnoozedAdministrativeMonitors();
-                if (map.remove(id) != null) {
-                    jenkins.setSnoozedAdministrativeMonitors(map);
+                if (jenkins.removeSnoozedAdministrativeMonitor(id)) {
                     jenkins.save();
                 }
             } catch (IOException e) {
@@ -209,9 +220,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
         }
         long expiryTime = System.currentTimeMillis() + durationMs;
         AbstractCIBase jenkins = Jenkins.get();
-        Map<String, Long> map = jenkins.getSnoozedAdministrativeMonitors();
-        map.put(id, expiryTime);
-        jenkins.setSnoozedAdministrativeMonitors(map);
+        jenkins.putSnoozedAdministrativeMonitor(id, expiryTime);
         jenkins.save();
     }
 
@@ -256,17 +265,18 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      *
      * <p>
      * Accepts a {@code durationPreset} parameter specifying preset minutes, or {@code "custom"}
-     * with a {@code snoozeUntil} date in {@code yyyy-MM-dd} format. Requires {@link Jenkins#ADMINISTER} permission.
+     * with a {@code snoozeUntil} date in {@code yyyy-MM-dd} format.
+     * The {@code scope} parameter controls whether the snooze applies globally
+     * ({@code "all"}, requires {@link Jenkins#ADMINISTER}) or only for the current user ({@code "user"}).
      * </p>
      *
-     * @param req the request containing snooze duration parameters
+     * @param req the request containing snooze duration and scope parameters
      * @param rsp the response
      * @throws IOException if persisting the snooze state fails
      * @since TODO
      */
     @RequirePOST
     public void doSnooze(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         long durationMs;
 
         try {
@@ -280,13 +290,11 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
                 if (snoozeUntilStr == null || snoozeUntilStr.isEmpty()) {
                     throw new IllegalArgumentException("Custom date required");
                 }
-                // Parse date in format yyyy-MM-dd
                 java.time.LocalDate snoozeDate = java.time.LocalDate.parse(snoozeUntilStr);
                 java.time.LocalDate today = java.time.LocalDate.now();
                 if (!snoozeDate.isAfter(today)) {
                     throw new IllegalArgumentException("Snooze date must be in the future");
                 }
-                // Calculate milliseconds until end of that day
                 java.time.ZonedDateTime endOfDay = snoozeDate.atStartOfDay(java.time.ZoneId.systemDefault())
                         .plusDays(1);
                 durationMs = endOfDay.toInstant().toEpochMilli() - System.currentTimeMillis();
@@ -298,7 +306,6 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
                 durationMs = minutes * 60 * 1000;
             }
 
-            // Validate max duration (1 year)
             if (durationMs > 365L * 24 * 60 * 60 * 1000) {
                 throw new IllegalArgumentException("Duration exceeds maximum (1 year)");
             }
@@ -308,14 +315,25 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
             return;
         }
 
-        snooze(durationMs);
-
-        // AJAX: return 200; otherwise redirect
-        if ("XMLHttpRequest".equals(req.getHeader("X-Requested-With"))) {
-            rsp.setStatus(StaplerResponse2.SC_OK);
+        String scope = req.getParameter("scope");
+        if ("user".equals(scope)) {
+            User currentUser = User.current();
+            if (currentUser == null) {
+                rsp.sendError(StaplerResponse2.SC_FORBIDDEN, "Not authenticated");
+                return;
+            }
+            SnoozedMonitorsUserProperty prop = currentUser.getProperty(SnoozedMonitorsUserProperty.class);
+            if (prop == null) {
+                prop = new SnoozedMonitorsUserProperty();
+                currentUser.addProperty(prop);
+            }
+            prop.snooze(id, durationMs);
         } else {
-            rsp.sendRedirect2(req.getContextPath() + "/manage");
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            snooze(durationMs);
         }
+
+        rsp.setStatus(StaplerResponse2.SC_OK);
     }
 
     /**
