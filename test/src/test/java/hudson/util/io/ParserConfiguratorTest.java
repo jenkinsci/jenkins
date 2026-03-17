@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.dom4j.io.SAXReader;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
@@ -31,33 +31,25 @@ class ParserConfiguratorTest {
      */
     @Issue("JENKINS-26473")
     @Test
-    void controllerPathInvokesRegisteredConfigurators() throws IOException, InterruptedException {
+    void controllerPathInvokesRegisteredConfigurators(JenkinsRule j) throws IOException, InterruptedException {
         // Confirm we are on the controller — no remoting Channel is active.
         assertNull(Channel.current(), "Expected no active Channel on the controller");
 
-        // Reset the flag before the test.
-        TrackingConfigurator.invoked.set(false);
+        AtomicBoolean invoked = new AtomicBoolean(false);
 
-        SAXReader reader = new SAXReader();
-        ParserConfigurator.applyConfiguration(reader, this);
+        // Register a configurator directly into the extension list so the test
+        // does not rely on the annotation processor indexing a @Deprecated extension point.
+        j.jenkins.getExtensionList(ParserConfigurator.class).add(new ParserConfigurator() {
+            @Override
+            public void configure(SAXReader reader, Object context) {
+                invoked.set(true);
+            }
+        });
+
+        ParserConfigurator.applyConfiguration(new SAXReader(), this);
 
         assertTrue(
-                TrackingConfigurator.invoked.get(),
+                invoked.get(),
                 "ParserConfigurator registered as an extension should have been invoked on the controller path");
-    }
-
-    /**
-     * A Jenkins extension that records whether it was called.
-     * Uses {@link TestExtension} so it is scoped to this test class only
-     * and does not pollute other tests.
-     */
-    @TestExtension("controllerPathInvokesRegisteredConfigurators")
-    public static class TrackingConfigurator extends ParserConfigurator {
-        static final AtomicBoolean invoked = new AtomicBoolean(false);
-
-        @Override
-        public void configure(SAXReader reader, Object context) {
-            invoked.set(true);
-        }
     }
 }
