@@ -41,7 +41,7 @@ THE SOFTWARE.
     <commons-fileupload2.version>2.0.0-M5</commons-fileupload2.version>
     <groovy.version>2.4.21</groovy.version>
     <jelly.version>1.1-jenkins-20250731</jelly.version>
-    <stapler.version>2076.v1b_a_c12445eb_e</stapler.version>
+    <stapler.version>2078.v086a_0a_0535dc</stapler.version>
   </properties>
 
   <dependencyManagement>
