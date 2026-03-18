@@ -29,7 +29,7 @@ THE SOFTWARE.
         <a href="https://www.jenkins.io/redirect/operating-system-end-of-life" class="jenkins-button jenkins-button--primary">${%More Info}</a>
     </j:set>
     <l:adminMonitor severity="danger" controls="${controls}">
-        <h2 class="h3">${it.displayName}</h2>
+        <h4 class="jenkins-!-margin-bottom-1">${it.displayName}</h4>
         <j:choose>
             <j:when test="${it.afterEndOfLifeDate}">
                 ${%Past_End_of_Life(it.operatingSystemName, it.endOfLifeDate, it.documentationUrl)}

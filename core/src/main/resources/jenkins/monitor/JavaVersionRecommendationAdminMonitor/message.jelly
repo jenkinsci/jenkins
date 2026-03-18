@@ -28,7 +28,7 @@ THE SOFTWARE.
       <a href="https://jenkins.io/redirect/java-support/" class="jenkins-button jenkins-button--primary">${%More Info}</a>
     </j:set>
     <l:adminMonitor severity="${it.severityAsString}" controls="${controls}">
-      <h2>${%Recommended_Java_Version_Heading(it.javaVersion)}</h2>
+      <h4 class="jenkins-!-margin-bottom-1">${%Recommended_Java_Version_Heading(it.javaVersion)}</h4>
       ${%Recommended_Java_Version(it.javaVersion, it.endOfLifeAsDate)}
     </l:adminMonitor>
 </j:jelly>
