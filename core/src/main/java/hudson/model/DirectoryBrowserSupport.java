@@ -36,7 +36,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
@@ -47,27 +46,19 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import jenkins.agents.ControllerToAgentCallable;
 import jenkins.model.Jenkins;
-import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.ResourceDomainConfiguration;
 import jenkins.security.ResourceDomainRootAction;
 import jenkins.security.csp.CspHeader;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
-import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -421,13 +412,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
     }
 
-    private static final class IsAbsolute extends MasterToSlaveCallable<Boolean, IOException> {
-        private final String fragment;
-
-        IsAbsolute(String fragment) {
-            this.fragment = fragment;
-        }
-
+    private record IsAbsolute(String fragment) implements ControllerToAgentCallable<Boolean, IOException> {
         @Override
         public Boolean call() throws IOException {
             return new File(fragment).isAbsolute();
@@ -439,57 +424,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             return true;
         }
         return FilePath.isIgnoreTmpDirs(openOptions) && TMPDIR_PATTERN.matcher(base).matches();
-    }
-
-    private List<List<Path>> keepReadabilityOnlyOnDescendants(VirtualFile root, boolean patternUsed, List<List<Path>> pathFragmentsList) {
-        Stream<List<Path>> pathFragmentsStream = pathFragmentsList.stream().map((List<Path> pathFragments) -> {
-            List<Path> mappedFragments = new ArrayList<>(pathFragments.size());
-            String relativePath = "";
-            for (int i = 0; i < pathFragments.size(); i++) {
-                Path current = pathFragments.get(i);
-                if (i == 0) {
-                    relativePath = current.title;
-                } else {
-                    relativePath += "/" + current.title;
-                }
-
-                if (!current.isReadable) {
-                    if (patternUsed) {
-                        // we do not want to leak information about existence of folders / files satisfying the pattern inside that folder
-                        return null;
-                    }
-                    mappedFragments.add(current);
-                    return mappedFragments;
-                } else {
-                    if (isDescendant(root, relativePath)) {
-                        mappedFragments.add(current);
-                    } else {
-                        if (patternUsed) {
-                            // we do not want to leak information about existence of folders / files satisfying the pattern inside that folder
-                            return null;
-                        }
-                        mappedFragments.add(Path.createNotReadableVersionOf(current));
-                        return mappedFragments;
-                    }
-                }
-            }
-            return mappedFragments;
-        });
-
-        if (patternUsed) {
-            pathFragmentsStream = pathFragmentsStream.filter(Objects::nonNull);
-        }
-
-        return pathFragmentsStream.collect(Collectors.toList());
-    }
-
-    private boolean isDescendant(VirtualFile root, String relativePath) {
-        try {
-            return ALLOW_SYMLINK_ESCAPE || !root.supportIsDescendant() || root.isDescendant(relativePath);
-        }
-        catch (IOException e) {
-            return false;
-        }
     }
 
     private String getPath(StaplerRequest2 req) {
@@ -521,133 +455,17 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         return "../".repeat(times);
     }
 
-    private static void zip(StaplerResponse2 rsp, VirtualFile root, VirtualFile dir, String glob) throws IOException, InterruptedException {
-        OutputStream outputStream = rsp.getOutputStream();
-        // TODO JENKINS-20663 make encoding overridable via query parameter
-        try (ZipOutputStream zos = new ZipOutputStream(outputStream, Charset.defaultCharset())) {
-            // TODO consider using run(Callable) here
-
-            if (glob.isEmpty()) {
-                if (!root.supportsQuickRecursiveListing()) {
-                    // avoid slow listing when the Glob can do a quicker job
-                    glob = "**";
-                }
-            }
-
-            if (glob.isEmpty()) {
-                Map<String, VirtualFile> nameToVirtualFiles = collectRecursivelyAllLegalChildren(dir);
-                sendZipUsingMap(zos, dir, nameToVirtualFiles);
-            } else {
-                Collection<String> listOfFile = dir.list(glob, null, /* TODO what is the user expectation? */true);
-                sendZipUsingListOfNames(zos, dir, listOfFile);
-            }
-        }
-    }
-
-    private static void sendZipUsingMap(ZipOutputStream zos, VirtualFile dir, Map<String, VirtualFile> nameToVirtualFiles) throws IOException {
-        for (Map.Entry<String, VirtualFile> entry : nameToVirtualFiles.entrySet()) {
-            String n = entry.getKey();
-
-            // JENKINS-19947: traditional behavior is to prepend the directory name
-            String relativePath = dir.getName() + '/' + n;
-
-            VirtualFile f = entry.getValue();
-            sendOneZipEntry(zos, f, relativePath);
-        }
-    }
-
-    private static void sendZipUsingListOfNames(ZipOutputStream zos, VirtualFile dir, Collection<String> listOfFileNames) throws IOException {
-        for (String relativePath : listOfFileNames) {
-            VirtualFile f = dir.child(relativePath);
-            sendOneZipEntry(zos, f, relativePath);
-        }
-    }
-
-    private static void sendOneZipEntry(ZipOutputStream zos, VirtualFile vf, String relativePath) throws IOException {
-        // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
-        // TODO On Linux file names can contain backslashes which should not treated as file separators.
-        //      Unfortunately, only the file separator char of the controller is known (File.separatorChar)
-        //      but not the file separator char of the (maybe remote) "dir".
-        ZipEntry e = new ZipEntry(relativePath.replace('\\', '/'));
-
-        e.setTime(vf.lastModified());
-        zos.putNextEntry(e);
-        try (InputStream in = vf.open()) {
-            IOUtils.copy(in, zos);
-        }
-        finally {
-            zos.closeEntry();
-        }
-    }
-
-    private static Map<String, VirtualFile> collectRecursivelyAllLegalChildren(VirtualFile dir) throws IOException {
-        Map<String, VirtualFile> nameToFiles = new LinkedHashMap<>();
-        collectRecursivelyAllLegalChildren(dir, "", nameToFiles);
-        return nameToFiles;
-    }
-
-    private static void collectRecursivelyAllLegalChildren(VirtualFile currentDir, String currentPrefix, Map<String, VirtualFile> nameToFiles) throws IOException {
-        if (currentDir.isFile()) {
-            if (currentDir.isDescendant("")) {
-                nameToFiles.put(currentPrefix, currentDir);
-            }
-        } else {
-            if (!currentPrefix.isEmpty()) {
-                currentPrefix += "/";
-            }
-            List<VirtualFile> children = currentDir.listOnlyDescendants();
-            for (VirtualFile child : children) {
-                collectRecursivelyAllLegalChildren(child, currentPrefix + child.getName(), nameToFiles);
-            }
-        }
-    }
-
     /**
      * Represents information about one file or folder.
+     * @param href Relative URL to this path from the current page.
+     * @param title Name of this path. Just the file name portion.
+     * @param size File size, or null if this is not a file.
+     * @param isReadable If the current user can read the file.
+     * @param lastModified For a file, the last modified timestamp.
      */
-    public static final class Path implements Serializable {
-        /**
-         * Relative URL to this path from the current page.
-         */
-        private final String href;
-        /**
-         * Name of this path. Just the file name portion.
-         */
-        private final String title;
+    public record Path(String href, String title, boolean isFolder, long size, boolean isReadable, long lastModified) implements Serializable {
 
-        private final boolean isFolder;
-
-        /**
-         * File size, or null if this is not a file.
-         */
-        private final long size;
-
-        /**
-         * If the current user can read the file.
-         */
-        private final boolean isReadable;
-
-       /**
-        * For a file, the last modified timestamp.
-        */
-        private final long lastModified;
-
-        /**
-         * @deprecated Use {@link #Path(String, String, boolean, long, boolean, long)}
-         */
-        @Deprecated
-        public Path(String href, String title, boolean isFolder, long size, boolean isReadable) {
-            this(href, title, isFolder, size, isReadable, 0L);
-        }
-
-        public Path(String href, String title, boolean isFolder, long size, boolean isReadable, long lastModified) {
-            this.href = href;
-            this.title = title;
-            this.isFolder = isFolder;
-            this.size = size;
-            this.isReadable = isReadable;
-            this.lastModified = lastModified;
-        }
+        // JavaBeans-style getters still perhaps used by dir.jelly etc.
 
         public boolean isFolder() {
             return isFolder;
@@ -707,21 +525,12 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
 
         public static Path createNotReadableVersionOf(Path that) {
-            return new Path(that.href, that.title, that.isFolder, that.size, false);
+            return new Path(that.href, that.title, that.isFolder, that.size, false, that.lastModified);
         }
 
-        private static final long serialVersionUID = 1L;
     }
 
-
-
-    private static final class FileComparator implements Comparator<VirtualFile> {
-        private Collator collator;
-
-        FileComparator(Locale locale) {
-            this.collator = Collator.getInstance(locale);
-        }
-
+    private record FileComparator(Collator collator) implements Comparator<VirtualFile> {
         @Override
         public int compare(VirtualFile lhs, VirtualFile rhs) {
             // directories first, files next
@@ -741,30 +550,9 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
     }
 
-    private static final class BuildChildPathsResult implements Serializable { // TODO Java 21+ record
-        private static final long serialVersionUID = 1;
-        private final List<List<Path>> glob;
-        private final boolean containsSymLink;
-        private final boolean containsTmpDir;
+    private record BuildChildPathsResult(List<List<Path>> glob, boolean containsSymLink, boolean containsTmpDir) implements Serializable {}
 
-        BuildChildPathsResult(List<List<Path>> glob, boolean containsSymLink, boolean containsTmpDir) {
-            this.glob = glob;
-            this.containsSymLink = containsSymLink;
-            this.containsTmpDir = containsTmpDir;
-        }
-    }
-
-    private static final class BuildChildPaths extends MasterToSlaveCallable<BuildChildPathsResult, IOException> {
-        private final VirtualFile cur;
-        private final Locale locale;
-        private final OpenOption[] openOptions;
-
-        BuildChildPaths(VirtualFile cur, Locale locale, OpenOption[] openOptions) {
-            this.cur = cur;
-            this.locale = locale;
-            this.openOptions = openOptions;
-        }
-
+    private record BuildChildPaths(VirtualFile cur, Locale locale, OpenOption[] openOptions) implements ControllerToAgentCallable<BuildChildPathsResult, IOException> {
         @Override public BuildChildPathsResult call() throws IOException {
             return new BuildChildPathsResult(buildChildPaths(cur, locale), cur.containsSymLinkChild(openOptions), cur.containsTmpDirChild(openOptions));
         }
@@ -780,7 +568,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             List<List<Path>> r = new ArrayList<>();
 
             VirtualFile[] files = cur.list(getOpenOptions());
-                Arrays.sort(files, new FileComparator(locale));
+                Arrays.sort(files, new FileComparator(Collator.getInstance(locale)));
 
                 for (VirtualFile f : files) {
                     Path p = new Path(Util.rawEncode(f.getName()), f.getName(), f.isDirectory(), f.length(), f.canRead(), f.lastModified());
