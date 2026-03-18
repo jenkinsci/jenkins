@@ -1969,9 +1969,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 try (JarFile jarFile = new JarFile(t)) {
                     m = jarFile.getManifest();
                 }
+                if (m == null) {
+                    throw new Failure("Uploaded file does not contain a plugin manifest (META-INF/MANIFEST.MF) and is not a valid Jenkins plugin.");
+                }
                 requiredCore = m.getMainAttributes().getValue("Jenkins-Version");
                 if (requiredCore == null) {
                     requiredCore = m.getMainAttributes().getValue("Hudson-Version");
+                }
+                requiredCore = Util.fixEmptyAndTrim(requiredCore);
+                if ("null".equalsIgnoreCase(requiredCore)) {
+                    requiredCore = null;
                 }
                 String deps = m.getMainAttributes().getValue("Plugin-Dependencies");
 
@@ -2014,7 +2021,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     .element("url", t.toURI().toString())
                     .element("dependencies", dependencies);
             String normalizedRequiredCore = Util.fixEmptyAndTrim(requiredCore);
-            if (normalizedRequiredCore != null) {
+            if (normalizedRequiredCore != null && !"null".equalsIgnoreCase(normalizedRequiredCore)) {
                 cfg.element("requiredCore", normalizedRequiredCore);
             }
             new UpdateSite(UpdateCenter.ID_UPLOAD, null).new Plugin(UpdateCenter.ID_UPLOAD, cfg).deploy(true);
