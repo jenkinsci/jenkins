@@ -2,14 +2,12 @@
 
 .app-adminmonitor {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   align-items: start;
   gap: 0.5rem;
   font-weight: 450;
 
   &-icon {
-    position: relative;
-    float: left;
     width: 1.375rem;
     height: 1.375rem;
     margin: -0.0625rem 0 -0.0625rem -0.0625rem;
@@ -19,8 +17,13 @@
     }
   }
 
+  &-content {
+    margin-bottom: -8px;
+  }
+
   &-controls {
-    margin: -8px -8px -8px 4px !important;
+    margin: -8px -8px 0 4px !important;
+    float: right;
     display: flex;
     align-items: center;
     gap: 0.5rem;

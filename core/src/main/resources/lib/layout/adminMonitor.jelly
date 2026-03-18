@@ -44,18 +44,18 @@
         <l:icon src="symbol-information-circle" class="app-adminmonitor-icon"/>
       </j:otherwise>
     </j:choose>
-    <div class="app-admin-monitor-content">
+    <div class="app-adminmonitor-content">
+      <div class="app-adminmonitor-controls">
+        <j:out value="${attrs.controls}"/>
+        <l:isAdmin>
+          <j:if test="${dismissable}">
+            <button class="app-adminmonitor-dismiss-button jenkins-button" type="button" tooltip="${dismissValue}" data-url="${rootURL}/${it.url}/disable">
+              <l:icon src="symbol-close" />
+            </button>
+          </j:if>
+        </l:isAdmin>
+      </div>
       <d:invokeBody />
-    </div>
-    <div class="app-adminmonitor-controls">
-      <j:out value="${attrs.controls}"/>
-      <l:isAdmin>
-        <j:if test="${dismissable}">
-          <button class="app-adminmonitor-dismiss-button jenkins-button" type="button" tooltip="${dismissValue}" data-url="${rootURL}/${it.url}/disable">
-            <l:icon src="symbol-close" />
-          </button>
-        </j:if>
-      </l:isAdmin>
     </div>
   </div>
 </j:jelly>
