@@ -10,7 +10,7 @@ jobs:
     if: ${{ github.repository_owner == 'jenkinsci' }}
     steps:
       - name: Post on Discourse
-        uses: roots/discourse-topic-github-release-action@c30dc233349b7c6f24f52fb1c659cc64f13b5474 # v1.0.1
+        uses: roots/discourse-topic-github-release-action@557d74ea05b6cc0c47f555c1d5d28a89d904005b # v1.1.0
         with:
           discourse-api-key: ${{ secrets.DISCOURSE_RELEASES_API_KEY }}
           discourse-base-url: https://community.jenkins.io/
