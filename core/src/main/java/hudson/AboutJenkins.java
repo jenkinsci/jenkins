@@ -8,6 +8,7 @@ import java.net.URL;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
@@ -59,7 +60,8 @@ public class AboutJenkins extends ManagementLink {
      * @return the plugin with the given short name.
      */
     @CheckForNull
-    public Plugin getPlugin(String shortName) {
-        return Jenkins.get().getPlugin(shortName);
+    @Restricted(DoNotUse.class)
+    public PluginWrapper getPlugin(String shortName) {
+        return Jenkins.get().getPlugin(shortName).getWrapper();
     }
 }
