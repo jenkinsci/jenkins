@@ -330,6 +330,12 @@ function init() {
       let dialog = new Dialog("form", options);
       return dialog.show();
     },
+
+    wizard: function (initialUrl, options) {
+      dialog.modal(document.createElement("template"), options);
+
+      navigateToNextPage(initialUrl, "");
+    },
   };
 
   behaviorShim.specify(
@@ -339,7 +345,10 @@ function init() {
     (element) => {
       element.addEventListener("click", () => {
         if (element.dataset.dialogUrl != null) {
-          loadDialogWizard(element.dataset.dialogUrl);
+          window.dialog.wizard(element.dataset.dialogUrl, {
+            minWidth: "min(550px, 100vw)",
+            preventCloseOnOutsideClick: true,
+          });
         } else {
           renderOnDemandDialog(element.dataset.dialogId);
         }
@@ -359,14 +368,6 @@ function init() {
     }
   }
 }
-
-window.dialog2 = {
-  wizard: (initialUrl, options) => {
-    dialog.modal(document.createElement("template"), options);
-
-    navigateToNextPage(initialUrl, "");
-  },
-};
 
 function mergeUrlParams(url, params) {
   const base = new URL(url, window.location.href);
@@ -581,14 +582,6 @@ function recreateScripts(form) {
 
     scripts[i].parentNode.replaceChild(script, scripts[i]);
   }
-}
-
-function loadDialogWizard(url) {
-  window.dialog2.wizard(url, {
-    title: "",
-    minWidth: "min(550px, 100vw)",
-    preventCloseOnOutsideClick: true,
-  });
 }
 
 export default { init };
