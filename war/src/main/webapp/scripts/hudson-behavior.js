@@ -1932,13 +1932,16 @@ function xor(a, b) {
   return !a != !b;
 }
 
-// used by editableDescription.jelly to replace the description field with a form
+// used by editableDescription.jelly to open a dialog for editing the description
 // eslint-disable-next-line no-unused-vars
 function replaceDescription(initialDescription, submissionUrl) {
-  const descriptionContent = document.getElementById("description-content");
-  const descriptionEditForm = document.getElementById("description-edit-form");
-  descriptionEditForm.innerHTML = "<div class='jenkins-spinner'></div>";
-  descriptionContent.classList.add("jenkins-hidden");
+  function restoreLink() {
+    var link = document.getElementById("description-link");
+    if (link) {
+      link.classList.remove("jenkins-hidden");
+    }
+  }
+
   let parameters = {};
   if (initialDescription !== null && initialDescription !== "") {
     parameters["description"] = initialDescription;
@@ -1952,18 +1955,53 @@ function replaceDescription(initialDescription, submissionUrl) {
       "Content-Type": "application/x-www-form-urlencoded",
     }),
     body: objectToUrlFormEncoded(parameters),
-  }).then((rsp) => {
-    rsp.text().then((responseText) => {
-      descriptionEditForm.innerHTML = responseText;
-      descriptionEditForm.classList.remove("jenkins-hidden");
+  })
+    .then((rsp) => rsp.text())
+    .then((responseText) => {
+      const tempContainer = document.createElement("div");
+      tempContainer.innerHTML = responseText;
       evalInnerHtmlScripts(responseText, function () {
-        Behaviour.applySubtree(descriptionEditForm);
-        descriptionEditForm.getElementsByTagName("TEXTAREA")[0].focus();
+        const form = tempContainer.querySelector("form");
+        if (!form) {
+          restoreLink();
+          return;
+        }
+
+        // Extract Save button text (preserves i18n) before removing original buttons
+        const submitBtn = form.querySelector(
+          ".jenkins-buttons-row [type='submit']",
+        );
+        const okText = submitBtn
+          ? (submitBtn.value || submitBtn.textContent).trim()
+          : "Save";
+        const buttonsRow = form.querySelector(".jenkins-buttons-row");
+        if (buttonsRow) {
+          buttonsRow.remove();
+        }
+
+        // Prevent the dialog from intercepting Enter in form fields.
+        // This covers both the plain textarea and CodeMirror editor widgets,
+        // since CodeMirror replaces the textarea with its own DOM elements.
+        form.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.stopPropagation();
+          }
+        });
+
+        const descriptionLink = document.getElementById("description-link");
+        const title = descriptionLink
+          ? descriptionLink.getAttribute("data-title") || "Description"
+          : "Description";
+
+        dialog
+          .form(form, {
+            title: title,
+            okText: okText,
+          })
+          .catch(restoreLink);
       });
-      layoutUpdateCallback.call();
-      return false;
-    });
-  });
+    })
+    .catch(restoreLink);
 }
 
 /**
