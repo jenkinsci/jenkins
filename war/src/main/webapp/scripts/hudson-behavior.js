@@ -1969,6 +1969,7 @@ function replaceDescription(initialDescription, submissionUrl) {
     })
     .then(function (responseText) {
       if (!responseText) {
+        restoreLink();
         return;
       }
       const tempContainer = document.createElement("div");
