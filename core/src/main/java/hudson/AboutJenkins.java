@@ -62,6 +62,7 @@ public class AboutJenkins extends ManagementLink {
     @CheckForNull
     @Restricted(DoNotUse.class)
     public PluginWrapper getPlugin(String shortName) {
-        return Jenkins.get().getPlugin(shortName).getWrapper();
+        Plugin plugin = Jenkins.get().getPlugin(shortName);
+        return plugin != null ? plugin.getWrapper() : null;
     }
 }
