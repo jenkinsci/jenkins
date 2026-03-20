@@ -28,7 +28,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler"
          xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" xmlns:f="/lib/form">
-  <st:setHeader name="X-Wizard-Title" value="${%Create User}" />
+  <st:setHeader name="X-Dialog-Title" value="${%Create User}" />
 
   <l:ajax>
     <form action="${rootURL}/securityRealm/createAccountByAdmin" method="post">
