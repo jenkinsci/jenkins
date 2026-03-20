@@ -316,7 +316,7 @@ class PluginManagerTest {
             assertNull(r.jenkins.getPluginManager().getPlugin("htmlpublisher"));
             List<Future<UpdateCenterJob>> jobs = r.jenkins.getPluginManager().prevalidateConfig(new ByteArrayInputStream("<whatever><htmlpublisher plugin=\"htmlpublisher@0.7\"/></whatever>".getBytes(StandardCharsets.UTF_8)));
             assertEquals(1, jobs.size());
-            UpdateCenterJob job = jobs.get(0).get(); // blocks for completion
+            UpdateCenterJob job = jobs.getFirst().get(); // blocks for completion
             assertEquals("InstallationJob", job.getType());
             UpdateCenter.InstallationJob ijob = (UpdateCenter.InstallationJob) job;
             assertEquals("htmlpublisher", ijob.plugin.name);

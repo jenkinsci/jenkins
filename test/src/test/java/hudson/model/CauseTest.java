@@ -29,12 +29,14 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.XmlFile;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.BuildTrigger;
+import hudson.triggers.SCMTrigger;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -42,6 +44,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
@@ -269,6 +272,18 @@ class CauseTest {
         }
     }
 
+    @Test
+    @LocalData
+    void upstreamCauseOnLoad() throws Exception {
+        final Item item = j.jenkins.getItemByFullName("downstream");
+        assertThat(item, instanceOf(FreeStyleProject.class));
+        FreeStyleProject down = (FreeStyleProject) item;
+        final FreeStyleBuild build = down.getBuildByNumber(1);
+        Cause.UpstreamCause upstreamCause = (Cause.UpstreamCause) build.getCauses().getFirst();
+        SCMTrigger.SCMTriggerCause scmCause = (SCMTrigger.SCMTriggerCause) upstreamCause.getUpstreamCauses().getFirst();
+        assertNotNull(scmCause.getRun());
+    }
+
     public static class SimpleCause extends Cause {
         private final String description;
 
@@ -304,11 +319,7 @@ class CauseTest {
         @NonNull
         @Override
         public String getName() {
-            if (virtualName != null) {
-                return virtualName;
-            } else {
-                return super.getName();
-            }
+            return Objects.requireNonNullElseGet(virtualName, super::getName);
         }
 
         @Override

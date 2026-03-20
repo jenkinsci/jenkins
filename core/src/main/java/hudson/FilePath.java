@@ -213,6 +213,15 @@ import org.kohsuke.stapler.Stapler;
  */
 public final class FilePath implements SerializableOnlyOverRemoting {
 
+    /**
+     * Set to {@code true} to disable validation to ensure that we do not attempt to extract paths that may allow determining the path to the destination directory.
+     */
+    private static /* non-final for script console */ boolean ALLOW_REENTRY_PATH_TRAVERSAL = SystemProperties.getBoolean(FilePath.class.getName() + ".ALLOW_REENTRY_PATH_TRAVERSAL");
+    /**
+     * Set to {@code true} to disable the fix for SECURITY-3657 that prevents path traversal from crafted tar files.
+     */
+    private static /* non-final for script console */ boolean ALLOW_UNTAR_SYMLINK_RESOLUTION = SystemProperties.getBoolean(FilePath.class.getName() + ".ALLOW_UNTAR_SYMLINK_RESOLUTION");
+
     public enum DisplayOption implements OpenOption, CopyOption {
         IGNORE_TMP_DIRS
     }
@@ -350,15 +359,15 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 if (i == 0) {
                     // If absolute path, just remove: /../something
                     // If relative path, not collapsible so leave as-is
-                    tokens.remove(0);
-                    if (!tokens.isEmpty()) token += tokens.remove(0);
+                    tokens.removeFirst();
+                    if (!tokens.isEmpty()) token += tokens.removeFirst();
                     if (!isAbsolute) buf.append(token);
                 } else {
                     // Normalize: remove something/.. plus separator before/after
                     i -= 2;
                     for (int j = 0; j < 3; j++) tokens.remove(i);
                     if (i > 0) tokens.remove(i - 1);
-                    else if (!tokens.isEmpty()) tokens.remove(0);
+                    else if (!tokens.isEmpty()) tokens.removeFirst();
                 }
             } else
                 i += 2;
@@ -3051,26 +3060,54 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Reads from a tar stream and stores obtained files to the base dir.
      * Supports large files &gt; 10 GB since 1.627.
+     * This prohibits any path traversal out of the base dir, as well as writing through any existing symlinks.
      */
     private static void readFromTar(String name, File baseDir, InputStream in, Charset filenamesEncoding) throws IOException {
-
+        final File absoluteBaseDir = baseDir.getAbsoluteFile();
+        final Path normalizedAbsoluteBaseDir = absoluteBaseDir.toPath().normalize();
         try (TarInputStream t = new TarInputStream(in, filenamesEncoding.name())) {
             TarEntry te;
             while ((te = t.getNextEntry()) != null) {
-                File f = new File(baseDir, te.getName());
-                if (!f.toPath().normalize().startsWith(baseDir.toPath())) {
-                    throw new IOException(
-                            "Tar " + name + " contains illegal file name that breaks out of the target directory: " + te.getName());
+                final String entryName = te.getName();
+                if (!ALLOW_REENTRY_PATH_TRAVERSAL) {
+                    if (new File(entryName).toPath().normalize().startsWith(Path.of(".."))) {
+                        // catch relative path that would escape and then enter the destination dir again, like `../../../var/jenkins_home/...`
+                        throw new IOException("Tar " + name + " contains entry that escapes destination directory: " + entryName);
+                    }
                 }
+
+                // We cannot replace 'f' with its canonical path here, otherwise, if it is a symlink, it becomes its link target and attempting to overwrite 'f' will have unintended behavior (JENKINS-67063)
+                File f = new File(baseDir, entryName).getAbsoluteFile();
+                File parent = f.getParentFile();
+                if (!f.toPath().normalize().startsWith(normalizedAbsoluteBaseDir)) {
+                    // This covers both relative path traversal, and potential undefined File(String, String) constructor behavior when it takes a second argument that's absolute.
+                    throw new IOException("Tar " + name + " contains entry that escapes destination directory: " + entryName);
+                }
+
+                if (!ALLOW_UNTAR_SYMLINK_RESOLUTION) {
+                    // getCanonicalFile doesn't follow symlinks on Windows, so do this the hard way: Check each ancestor up to the base dir for whether it's a symlink
+                    File current = parent;
+                    while (current != null && !current.equals(absoluteBaseDir)) {
+                        if (Util.isSymlink(current)) {
+                            throw new IOException("Tar " + name + " attempts to write to file with symlink in path: " + entryName);
+                        }
+                        current = current.getParentFile();
+                    }
+                }
+
                 if (te.isDirectory()) {
                     mkdirs(f);
                 } else {
-                    File parent = f.getParentFile();
                     if (parent != null) mkdirs(parent);
 
                     if (te.isSymbolicLink()) {
                         new FilePath(f).symlinkTo(te.getLinkName(), TaskListener.NULL);
                     } else {
+                        if (!ALLOW_UNTAR_SYMLINK_RESOLUTION) {
+                            if (Util.isSymlink(f)) {
+                                throw new IOException("Tar '" + name + "' entry '" + entryName + "' would write through existing symlink: " + f);
+                            }
+                        }
                         IOUtils.copy(t, f);
 
                         Files.setLastModifiedTime(Util.fileToPath(f), FileTime.from(te.getModTime().toInstant()));

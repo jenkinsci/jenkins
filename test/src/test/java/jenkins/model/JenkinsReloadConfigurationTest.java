@@ -142,7 +142,7 @@ class JenkinsReloadConfigurationTest {
     }
 
     private Mailer.DescriptorImpl mailerDescriptor() {
-        return j.jenkins.getExtensionList(Mailer.DescriptorImpl.class).get(0);
+        return j.jenkins.getExtensionList(Mailer.DescriptorImpl.class).getFirst();
     }
 
     private void replace(String path, String search, String replace) {

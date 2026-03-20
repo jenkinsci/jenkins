@@ -136,7 +136,7 @@ class ACLTest {
         try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
             Exception e = assertThrows(AccessDeniedException.class,
                     () -> jenkins.getACL().checkAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ));
-            assertEquals("manager is missing the Overall/Administer permission", e.getMessage());
+            assertEquals("manager is missing a permission, one of Overall/Manage, Overall/Administer is required", e.getMessage());
         }
     }
 

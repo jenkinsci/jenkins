@@ -61,12 +61,16 @@ public class CspFilter implements Filter {
 
         CspDecorator cspDecorator = ExtensionList.lookupSingleton(CspDecorator.class);
         final String headerName = cspDecorator.getContentSecurityPolicyHeaderName();
-
-        // This is the preliminary value outside Stapler request handling (and providing a context object)
-        final String headerValue = cspDecorator.getContentSecurityPolicyHeaderValue(req);
+        final boolean headerShouldBeSet = headerName != null;
 
         final boolean isResourceRequest = ResourceDomainConfiguration.isResourceRequest(req);
-        if (!isResourceRequest) {
+
+        String headerValue = "";
+
+        if (headerShouldBeSet && !isResourceRequest) {
+            // This is the preliminary value outside Stapler request handling (and providing a context object)
+            headerValue = cspDecorator.getContentSecurityPolicyHeaderValue(req);
+
             // The Filter/Decorator approach needs us to "set" headers rather than "add", so no additional endpoints are supported at the moment.
             final String reportingEndpoints = cspDecorator.getReportingEndpointsHeaderValue(req);
             if (reportingEndpoints != null) {
@@ -78,14 +82,16 @@ public class CspFilter implements Filter {
         try {
             chain.doFilter(req, rsp);
         } finally {
-            try {
-                final String actualHeader = rsp.getHeader(headerName);
-                if (!isResourceRequest && hasUnexpectedDifference(headerValue, actualHeader)) {
-                    LOGGER.log(Level.FINE, "CSP header has unexpected differences: Expected '" + headerValue + "' but got '" + actualHeader + "'");
+            if (headerShouldBeSet && !isResourceRequest) {
+                try {
+                    final String actualHeader = rsp.getHeader(headerName);
+                    if (hasUnexpectedDifference(headerValue, actualHeader)) {
+                        LOGGER.log(Level.FINE, "CSP header has unexpected differences: Expected '" + headerValue + "' but got '" + actualHeader + "'");
+                    }
+                } catch (RuntimeException e) {
+                    // Be defensive just in case
+                    LOGGER.log(Level.FINER, "Error checking CSP header after request processing", e);
                 }
-            } catch (RuntimeException e) {
-                // Be defensive just in case
-                LOGGER.log(Level.FINER, "Error checking CSP header after request processing", e);
             }
         }
     }

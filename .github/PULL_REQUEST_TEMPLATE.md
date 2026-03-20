@@ -1,4 +1,13 @@
 <!-- Comment:
+!!! ⚠️ IMPORTANT ⚠️ !!!
+Do not remove any of the sections below, even if they are not applicable to your change. The sections are used by the
+changelog generator and other tools to extract information about the change. If a section is not applicable,
+leave as is. Carefully read the instructions in each section and provide the necessary information.
+
+Pull requests that do not follow the template might be closed without further review.
+-->
+
+<!-- Comment:
 A great PR typically begins with the line below.
 Replace <issue-number> with the issue number.
 -->
@@ -23,6 +32,16 @@ If automated test coverage does not exist for the lines you are changing, you mu
 For frontend changes, include screenshots of the relevant page(s) before and after the change.
 For refactoring and code cleanup changes, exercise the code before and after the change and verify the behavior remains the same.
 -->
+
+### Screenshots (UI changes only)
+
+<!--
+If your change involves a UI change, please include screenshots showing the before and after states.
+-->
+
+#### Before
+
+#### After
 
 ### Proposed changelog entries
 

@@ -6,6 +6,7 @@
       <st:include page="client-scripts" />
       <form action="${app.instance.securityRealm.authenticationGatewayUrl}" method="POST">
         <input type="hidden" name="from" value="${request2.getParameter('from')}" />
+        <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request2)}"/>
         <div class="plugin-setup-wizard bootstrap-3">
           <div class="modal fade in" style="display: block;">
             <div class="modal-dialog">

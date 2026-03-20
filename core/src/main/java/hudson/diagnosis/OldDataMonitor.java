@@ -61,6 +61,7 @@ import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -105,6 +106,12 @@ public class OldDataMonitor extends AdministrativeMonitor {
     @Override
     public boolean isActivated() {
         return !data.isEmpty();
+    }
+
+    @SuppressWarnings("unused")
+    @Restricted(DoNotUse.class) // used by jelly
+    public ManagementLink getManagementLink() {
+        return ExtensionList.lookupSingleton(ManagementLinkImpl.class);
     }
 
     public Map<Saveable, VersionRange> getData() {

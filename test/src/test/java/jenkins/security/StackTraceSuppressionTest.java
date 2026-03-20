@@ -76,7 +76,7 @@ class StackTraceSuppressionTest {
         HtmlPage page = wc.goTo("manage");
 
         String content = page.getWebResponse().getContentAsString();
-        assertThat(content, containsString(alice.getId() + " is missing the Overall/Administer permission"));
+        assertThat(content, containsString(alice.getId() + " is missing a permission, one of Overall/Manage, Overall/Administer is required"));
         assertThat(content, not(containsString("Caused by")));
     }
 

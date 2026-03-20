@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import static hudson.model.WindowsUtil.isWindowsSymlinkSupported;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -589,6 +590,8 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_outsideWorkspace_areNotAllowed() throws Exception {
+        assumeTrue(!Functions.isWindows() || isWindowsSymlinkSupported());
+
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
@@ -728,6 +731,8 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_avoidLeakingInformation_aboutIllegalFolder() throws Exception {
+        assumeTrue(!Functions.isWindows() || isWindowsSymlinkSupported());
+
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
@@ -800,7 +805,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void junctionAndSymlink_outsideWorkspace_areNotAllowed_windowsJunction() throws Exception {
-        assumeTrue(Functions.isWindows());
+        assumeTrue(Functions.isWindows() && isWindowsSymlinkSupported());
 
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -1020,6 +1025,8 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue({"SECURITY-904", "SECURITY-1452"})
     void symlink_insideWorkspace_areNotAllowedAnymore() throws Exception {
+        assumeTrue(!Functions.isWindows() || isWindowsSymlinkSupported());
+
         FreeStyleProject p = j.createFreeStyleProject();
 
         // build once to have the workspace set up

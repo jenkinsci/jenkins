@@ -23,5 +23,14 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:description>${%blurb(it.headerName)}</f:description>
+    <f:description>
+        <j:choose>
+            <j:when test="${it.headerName != null}">
+                ${%blurb(it.headerName)}
+            </j:when>
+            <j:otherwise>
+                ${%blurbUnset}
+            </j:otherwise>
+        </j:choose>
+    </f:description>
 </j:jelly>

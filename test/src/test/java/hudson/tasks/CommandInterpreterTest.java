@@ -30,7 +30,7 @@ class CommandInterpreterTest {
     @Test
     @LocalData
     void ensurePluginCommandInterpretersCanBeLoaded() {
-        final Builder builder = j.jenkins.getItemByFullName("a", FreeStyleProject.class).getBuildersList().get(0);
+        final Builder builder = j.jenkins.getItemByFullName("a", FreeStyleProject.class).getBuildersList().getFirst();
         assertThat(builder, instanceOf(TestCommandInterpreter.class));
 
         assertDoesNotThrow(() -> {

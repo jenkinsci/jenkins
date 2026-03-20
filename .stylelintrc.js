@@ -17,5 +17,6 @@ module.exports = {
     "number-max-precision": 5,
     "no-duplicate-selectors": null,
     "hue-degree-notation": "number",
+    "scss/operator-no-newline-after": null,
   },
 };

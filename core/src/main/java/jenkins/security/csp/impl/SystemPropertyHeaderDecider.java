@@ -25,7 +25,9 @@
 package jenkins.security.csp.impl;
 
 import hudson.Extension;
+import hudson.Util;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,7 +52,8 @@ public class SystemPropertyHeaderDecider implements CspHeaderDecider {
         final String systemProperty = SystemProperties.getString(SYSTEM_PROPERTY_NAME);
         if (systemProperty != null) {
             LOGGER.log(Level.FINEST, "Using system property: {0}", new Object[]{ systemProperty });
-            return Arrays.stream(CspHeader.values()).filter(h -> h.getHeaderName().equals(systemProperty)).findFirst();
+            final String expected = Util.fixEmptyAndTrim(systemProperty);
+            return Arrays.stream(CspHeader.values()).filter(h -> Objects.equals(expected, h.getHeaderName())).findFirst();
         }
         return Optional.empty();
     }

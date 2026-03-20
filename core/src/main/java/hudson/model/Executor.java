@@ -589,8 +589,7 @@ public class Executor extends Thread implements ModelObject, IExecutor {
             if (executable == null) {
                 return null;
             }
-            if (executable instanceof AbstractBuild) {
-                AbstractBuild ab = (AbstractBuild) executable;
+            if (executable instanceof AbstractBuild ab) {
                 return ab.getWorkspace();
             }
             return null;
