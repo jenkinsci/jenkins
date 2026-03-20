@@ -369,17 +369,6 @@ function init() {
   }
 }
 
-function mergeUrlParams(url, params) {
-  const base = new URL(url, window.location.href);
-  if (params) {
-    const newParams = new URLSearchParams(params);
-    for (const [key, value] of newParams.entries()) {
-      base.searchParams.set(key, value);
-    }
-  }
-  return base.toString();
-}
-
 function updateWizardTitle(titleText) {
   if (titleText == null) {
     return;
@@ -393,6 +382,7 @@ function updateWizardTitle(titleText) {
   }
 }
 
+/** Resolve a relative wizard form action against the current step URL. */
 function resolveWizardFormAction(form, baseUrl) {
   const formAction = form.getAttribute("action");
   if (
@@ -475,10 +465,8 @@ function renderWizardForm({
   return form;
 }
 
-function navigateToNextPage(url, params) {
-  const finalUrl = mergeUrlParams(url, params);
-
-  fetch(finalUrl, {
+function navigateToNextPage(url) {
+  fetch(url, {
     method: "GET",
     headers: crumb.wrap({}),
   }).then((rsp) => {
