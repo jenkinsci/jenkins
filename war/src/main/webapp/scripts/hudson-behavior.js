@@ -1991,7 +1991,7 @@ function replaceDescription(initialDescription, submissionUrl) {
         );
         const okText = submitBtn
           ? (submitBtn.value || submitBtn.textContent).trim()
-          : "Save";
+          : undefined;
         const buttonsRow = form.querySelector(".jenkins-buttons-row");
         if (buttonsRow) {
           buttonsRow.remove();
