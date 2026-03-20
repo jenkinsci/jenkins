@@ -25,8 +25,8 @@ jobs:
       - name: Generate GitHub Release Draft
         id: release-drafter
         uses: release-drafter/release-drafter@139054aeaa9adc52ab36ddf67437541f039b88e2 # v7.1.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       # Generates a YAML changelog file using https://github.com/jenkinsci/jenkins-core-changelog-generator
       # used by Oleg N in open graph generator experiment for now
       - name: Generate YAML changelog draft
