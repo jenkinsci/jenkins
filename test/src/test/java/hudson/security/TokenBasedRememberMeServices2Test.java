@@ -33,6 +33,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.FactorGrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -126,7 +127,8 @@ class TokenBasedRememberMeServices2Test {
         wc.executeOnServer(() -> {
             Authentication a = Jenkins.getAuthentication2();
             assertEquals("bob", a.getName());
-            assertEquals(Arrays.asList("authenticated", "myteam"), a.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
+            assertEquals(Arrays.asList("authenticated", "myteam"),
+                         a.getAuthorities().stream().map(GrantedAuthority::getAuthority).filter(authority -> !authority.equals(FactorGrantedAuthority.PASSWORD_AUTHORITY)).collect(Collectors.toList()));
             return null;
         });
     }
