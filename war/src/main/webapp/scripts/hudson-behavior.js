@@ -1956,14 +1956,31 @@ function replaceDescription(initialDescription, submissionUrl) {
     }),
     body: objectToUrlFormEncoded(parameters),
   })
-    .then((rsp) => rsp.text())
-    .then((responseText) => {
+    .then(function (rsp) {
+      if (!rsp.ok) {
+        restoreLink();
+        var link = document.getElementById("description-link");
+        window.location.href = link
+          ? link.getAttribute("href")
+          : "editDescription";
+        return;
+      }
+      return rsp.text();
+    })
+    .then(function (responseText) {
+      if (!responseText) {
+        return;
+      }
       const tempContainer = document.createElement("div");
       tempContainer.innerHTML = responseText;
       evalInnerHtmlScripts(responseText, function () {
         const form = tempContainer.querySelector("form");
         if (!form) {
           restoreLink();
+          var link = document.getElementById("description-link");
+          window.location.href = link
+            ? link.getAttribute("href")
+            : "editDescription";
           return;
         }
 
@@ -1999,6 +2016,16 @@ function replaceDescription(initialDescription, submissionUrl) {
             okText: okText,
           })
           .catch(restoreLink);
+
+        // Focus the description input after dialog and CodeMirror are initialized
+        setTimeout(function () {
+          var textarea = form.querySelector("textarea[name='description']");
+          if (textarea && textarea.codemirrorObject) {
+            textarea.codemirrorObject.focus();
+          } else if (textarea) {
+            textarea.focus();
+          }
+        }, 0);
       });
     })
     .catch(restoreLink);
