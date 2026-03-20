@@ -1,5 +1,5 @@
 import { createElementFromHtml } from "@/util/dom";
-import { BACK_BUTTON, CLOSE } from "@/util/symbols";
+import { CLOSE } from "@/util/symbols";
 import behaviorShim from "@/util/behavior-shim";
 import jenkins from "@/util/jenkins";
 
@@ -431,29 +431,6 @@ function submitWizardForm(form) {
 }
 
 function configureWizardForm(form) {
-  if (form.method.toLowerCase() === "get") {
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      const wizardForm = e.currentTarget;
-      const fd = new FormData(wizardForm);
-      const params = new URLSearchParams();
-
-      fd.forEach(function (value, key) {
-        // FormData can include File objects. Query strings cannot.
-        if (value instanceof File) {
-          return;
-        }
-        params.append(key, String(value));
-      });
-
-      showBackButtonInDialog();
-
-      navigateToNextPage(wizardForm.action, params.toString());
-    });
-    return;
-  }
-
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     submitWizardForm(e.currentTarget);
@@ -519,30 +496,6 @@ function navigateToNextPage(url, params) {
         }
       });
     }
-  });
-}
-
-function showBackButtonInDialog() {
-  const dialog = document.querySelector(".jenkins-dialog");
-  const title = dialog.querySelector(".jenkins-dialog__title > span");
-  const backButton = document.createElement("button");
-  backButton.classList.add("jenkins-button");
-  backButton.classList.add("jenkins-dialog__back-button");
-  backButton.ariaLabel = "Back";
-  backButton.innerHTML = BACK_BUTTON;
-  title.style.transition = "var(--standard-transition)";
-  title.style.marginLeft = "2.75rem";
-  dialog.appendChild(backButton);
-
-  backButton.addEventListener("click", () => {
-    dialog
-      .querySelector(".jenkins-dialog__contents form:first-of-type")
-      .classList.remove("jenkins-hidden");
-    dialog
-      .querySelector(".jenkins-dialog__contents form:last-of-type")
-      .remove();
-    title.style.marginLeft = "0";
-    backButton.remove();
   });
 }
 
