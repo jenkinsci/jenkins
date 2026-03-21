@@ -4543,7 +4543,7 @@ __metadata:
     stylelint-config-standard-scss: "npm:17.0.0"
     tippy.js: "npm:6.3.7"
     webpack: "npm:5.105.4"
-    webpack-cli: "npm:7.0.1"
+    webpack-cli: "npm:7.0.2"
     webpack-remove-empty-scripts: "npm:1.1.1"
     window-handle: "npm:1.0.1"
   languageName: unknown
@@ -7149,9 +7149,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack-cli@npm:7.0.1":
-  version: 7.0.1
-  resolution: "webpack-cli@npm:7.0.1"
+"webpack-cli@npm:7.0.2":
+  version: 7.0.2
+  resolution: "webpack-cli@npm:7.0.2"
   dependencies:
     "@discoveryjs/json-ext": "npm:^1.0.0"
     commander: "npm:^14.0.3"
@@ -7173,7 +7173,7 @@ __metadata:
       optional: true
   bin:
     webpack-cli: bin/cli.js
-  checksum: 10c0/e13eced1d8af0c0846f459fee01d19f426b7579aad2ed161d308ef18db8ad5a41b4bc980997793bdd7beff4435040ace11f181fedd6bea5bc82aad591a71ef04
+  checksum: 10c0/1c103995bd578ca3b80c0dee1cb92c4a90a68b51c4770a0fb04adbe74b0b34886d394794a2e0d27c5cabac05a40e156d3ecfbc15e9fbb97640675c53e4503260
   languageName: node
   linkType: hard
 
