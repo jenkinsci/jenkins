@@ -5,6 +5,7 @@ import SearchBar from "@/components/search-bar";
 import Tooltips from "@/components/tooltips";
 import StopButtonLink from "@/components/stop-button-link";
 import ConfirmationLink from "@/components/confirmation-link";
+import AjaxDialog from "@/components/ajax-dialog";
 import Dialogs from "@/components/dialogs";
 import Defer from "@/components/defer";
 
@@ -16,4 +17,5 @@ SearchBar.init();
 Tooltips.init();
 StopButtonLink.init();
 ConfirmationLink.init();
+AjaxDialog.init();
 Dialogs.init();
