@@ -74,7 +74,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -132,12 +131,7 @@ public class SlaveComputer extends Computer {
      * Blocking is critical to prevent file-lock race conditions during teardown on Windows.
      */
     private final Object disconnectLock = new Object();
-    /**
-     * Future to track the completion of the afterDisconnect teardown,
-     * ensuring it is only executed once per connection and concurrent
-     * callers wait for it to finish without holding a monitor lock.
-     */
-    private CompletableFuture<Void> disconnectFuture;
+    private transient volatile boolean afterDisconnectCalled = false;
     /**
      * Perpetually writable log file.
      */
@@ -648,7 +642,7 @@ public class SlaveComputer extends Computer {
 
         // Reset the disconnect guard early for the new connection lifecycle.
         synchronized (disconnectLock) {
-            this.disconnectFuture = null;
+            this.afterDisconnectCalled = false;
         }
 
         final TaskListener taskListener = launchLog != null ? new StreamTaskListener(launchLog) : TaskListener.NULL;
@@ -695,6 +689,7 @@ public class SlaveComputer extends Computer {
                             + " system property to true.",
                         RemotingVersionInfo.getMinimumSupportedVersion());
                 disconnect(new OfflineCause.LaunchFailed());
+                safeAfterDisconnect();
                 return;
             } else {
                 taskListener.error(
@@ -1217,29 +1212,16 @@ public class SlaveComputer extends Computer {
      * without holding a lock during the plugin call.
      */
     private void safeAfterDisconnect() {
-        CompletableFuture<Void> f;
-        boolean isFirst = false;
-
+        boolean shouldCall = false;
         synchronized (disconnectLock) {
-            if (disconnectFuture == null) {
-                disconnectFuture = new CompletableFuture<>();
-                isFirst = true;
+            if (!afterDisconnectCalled) {
+                afterDisconnectCalled = true;
+                shouldCall = true;
             }
-            f = disconnectFuture;
         }
 
-        if (isFirst) {
-            try {
-                launcher.afterDisconnect(SlaveComputer.this, taskListener);
-            } finally {
-                f.complete(null); // Signal to other threads that teardown is done
-            }
-        } else {
-            try {
-                f.join();
-            } catch (Exception e) {
-                // Ignore interruptions while waiting for teardown
-            }
+        if (shouldCall) {
+            launcher.afterDisconnect(SlaveComputer.this, taskListener);
         }
     }
 
