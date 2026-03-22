@@ -1,5 +1,6 @@
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import hudson.Util;
@@ -211,6 +212,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * @return the created MenuItem or null if url, icon or text are null
          */
         @Restricted(DoNotUse.class)
+        @CheckForNull
         public MenuItem createMenuItem(String url, String icon, String iconXml, String text) {
             if (text != null && icon != null && url != null) {
                 MenuItem item = new MenuItem(url, icon, text);
