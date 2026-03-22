@@ -55,7 +55,7 @@
   <j:set var="pluginWarnings" value="${it.activePluginWarningsByPlugin}"/>
   <j:set var="controls">
     <l:isAdmin>
-      <a href="${rootURL}/configureSecurity" class="jenkins-button jenkins-button--primary">${%configureSecurity.link}</a>
+      <a href="${rootURL}/configureSecurity/#hidden-security-warnings" class="jenkins-button jenkins-button--primary">${%configureSecurity.link}</a>
       <j:if test="${pluginWarnings.size() > 0}">
         <a href="${rootURL}/pluginManager" class="jenkins-button jenkins-button--primary">${%pluginManager.link}</a>
       </j:if>
@@ -63,22 +63,6 @@
   </j:set>
   <l:adminMonitor severity="danger" controls="${controls}">
     <div class="jenkins-!-margin-bottom-1">${%blurb}</div>
-    <j:if test="${coreWarnings.size() > 0}">
-      <dl>
-        <dt>${%coreTitle(app.version)}</dt>
-      </dl>
-      <local:listWarnings core="true" warnings="${coreWarnings}"/>
-    </j:if>
-    <j:if test="${pluginWarnings.size() > 0}">
-      <dl>
-        <j:forEach var="entries" items="${pluginWarnings.entrySet()}">
-          <j:set var="plugin" value="${entries.key}"/>
-          <j:set var="warnings" value="${entries.value}"/>
-          <dt>${%pluginTitle(plugin.displayName, plugin.version)}</dt>
-          <local:listWarnings core="false" warnings="${warnings}"/>
-        </j:forEach>
-      </dl>
-    </j:if>
     <j:if test="${it.hasApplicableHiddenWarnings()}">
       ${%more}
     </j:if>
