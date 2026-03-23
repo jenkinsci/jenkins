@@ -1427,7 +1427,7 @@ public class QueueTest {
 
         HtmlPage page = wc.goTo("");
 
-        page.executeJavaScript("document.querySelector('#buildQueue a[tooltip]:not([tooltip=\"\"])')._tippy.show()");
+        page.executeJavaScript("document.querySelector('#buildQueue a[data-html-tooltip]:not([data-html-tooltip=\"\"])')._tippy.show()");
         wc.waitForBackgroundJavaScript(1000);
         ScriptResult result = page.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
 
