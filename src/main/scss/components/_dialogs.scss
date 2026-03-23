@@ -66,6 +66,19 @@ $jenkins-dialog-padding: 1.25rem;
     .jenkins-dialog__buttons {
       padding-inline: 0;
     }
+
+    &:has(#bottom-sticker) {
+      padding-bottom: 0;
+    }
+
+    .bottom-sticker-inner {
+      display: flex;
+      justify-content: stretch;
+
+      .jenkins-button {
+        width: 100%;
+      }
+    }
   }
 
   &__input {
