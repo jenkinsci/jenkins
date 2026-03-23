@@ -26,7 +26,13 @@ THE SOFTWARE.
   <div class="jenkins-alert jenkins-alert-warning">
     <l:isAdmin>
       <form method="post" action="${rootURL}/${it.url}/disable">
-        <f:submit value="${%Dismiss}"/>
+        <button type="submit"
+                class="jenkins-button jenkins-button--tertiary"
+                name="no"
+                value="${%Dismiss}"
+                title="${%Dismiss}">
+          <l:icon src="symbol-close"/>
+        </button>
       </form>
     </l:isAdmin>
     <j:set var="actionAnchor">
