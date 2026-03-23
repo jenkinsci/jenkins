@@ -46,7 +46,7 @@ public class AboutJenkins extends ManagementLink {
     @NonNull
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.READ;
+        return Jenkins.RESTRICTED_READ;
     }
 
     @NonNull
