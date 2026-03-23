@@ -80,6 +80,11 @@ public class GroovyCommand extends CLICommand {
         return 0;
     }
 
+    @Override
+    protected void printUsageSummary(PrintStream out) {
+        out.println(Messages.GroovyCommand_PrintUsageSummary());
+    }
+
     /**
      * Loads the script from the argument.
      */
