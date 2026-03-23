@@ -23,12 +23,11 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-  <div class="jenkins-alert jenkins-alert-warning">
-    <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <f:submit name="learn" value="${%Learn more}"/>
-      <f:submit name="dismiss" value="${%Dismiss}"/>
-    </form>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout">
+  <j:set var="controls">
+    <a href="https://www.jenkins.io/redirect/csrf-protection/" class="jenkins-button jenkins-button--primary">${%Learn more}</a>
+  </j:set>
+  <l:adminMonitor controls="${controls}">
     ${%blurb}
-  </div>
+  </l:adminMonitor>
 </j:jelly>
