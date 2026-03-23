@@ -132,6 +132,7 @@ public class SlaveComputer extends Computer {
      */
     private final Object disconnectLock = new Object();
     private transient volatile boolean afterDisconnectCalled = false;
+    private transient volatile boolean channelClosed = false;
     /**
      * Perpetually writable log file.
      */
@@ -753,6 +754,7 @@ public class SlaveComputer extends Computer {
                 channel.close();
                 throw new IllegalStateException("Already connected");
             }
+            this.channelClosed = false;
             isUnix = _isUnix;
             numRetryAttempt = 0;
             this.channel = channel;
@@ -959,6 +961,11 @@ public class SlaveComputer extends Computer {
         // TODO: race condition between this and the setChannel method.
         Channel c;
         synchronized (channelLock) {
+            if (channelClosed) {
+                return;
+            }
+            channelClosed = true;
+
             c = channel;
             channel = null;
             absoluteRemoteFs = null;
