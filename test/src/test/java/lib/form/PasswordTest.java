@@ -283,7 +283,7 @@ class PasswordTest {
     @Test
     void testViewSecrets() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("alice").grant(Jenkins.READ, View.READ).everywhere().to("bob"));
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("alice").grant(Jenkins.READ, View.EXTENDED_READ).everywhere().to("bob"));
 
         final String secretText = "t0ps3cr3td4t4_view";
         final Secret encryptedSecret = Secret.fromString(secretText);
