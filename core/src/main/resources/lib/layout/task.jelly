@@ -280,7 +280,16 @@ THE SOFTWARE.
             <j:set var="iconXml">
               <l:icon src="${icon}" />
             </j:set>
-            ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true', null, confirmationMessage ?: null) : null}
+            <j:if test="${taskTags != null and attrs.contextMenu!='false'}">
+               <j:set var="menuItem" value="${taskTags.createMenuItem(href, iconSrc, iconXml, title)}"/>
+            </j:if>
+
+            <j:if test="${menuItem != null}">
+              ${menuItem.setPost(post == 'true')}
+              ${menuItem.setRequiresConfirmation(requiresConfirmation == 'true')}
+              ${menuItem.setMessage(confirmationMessage ?: null)}
+              ${menuItem.setDestructive(destructive == 'true')}
+            </j:if>
 
             <j:choose>
               <j:when test="${requiresConfirmation and not attrs.onClick}">

@@ -219,7 +219,10 @@ function mapChildrenItemsToDropdownItems(items) {
         if (item.post || item.requiresConfirmation) {
           if (item.requiresConfirmation) {
             dialog
-              .confirm(item.displayName, { message: item.message })
+              .confirm(item.displayName, {
+                message: item.message,
+                type: item.destructive ? "destructive" : "default",
+              })
               .then(() => {
                 const form = document.createElement("form");
                 form.setAttribute("method", item.post ? "POST" : "GET");

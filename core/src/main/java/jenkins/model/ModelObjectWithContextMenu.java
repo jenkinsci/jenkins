@@ -1,5 +1,6 @@
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import hudson.Util;
@@ -205,6 +206,24 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         /**
+         * Creates a MenuItem and returns it for further configuration
+         *
+         * Used only in task.jelly
+         * @return the created MenuItem or null if url, icon or text are null
+         */
+        @Restricted(DoNotUse.class)
+        @CheckForNull
+        public MenuItem createMenuItem(String url, String icon, String iconXml, String text) {
+            if (text != null && icon != null && url != null) {
+                MenuItem item = new MenuItem(url, icon, text);
+                item.iconXml = iconXml;
+                items.add(item);
+                return item;
+            }
+            return null;
+        }
+
+        /**
          * Add a header row (no icon, no URL, rendered in header style).
          *
          * @since 2.231
@@ -399,6 +418,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         private String message;
 
+        private boolean destructive;
+
         /**
          * The type of menu item
          * @since 2.340
@@ -431,6 +452,15 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported
         public String getMessage() {
             return message;
+        }
+
+        public void setDestructive(boolean destructive) {
+            this.destructive = destructive;
+        }
+
+        @Exported
+        public boolean getDestructive() {
+            return destructive;
         }
 
         public MenuItem(String url, String icon, String displayName) {
@@ -507,6 +537,17 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return Stapler.getCurrentRequest2().getContextPath() + Jenkins.RESOURCE_PATH;
         }
 
+        public void setPost(boolean post) {
+            this.post = post;
+        }
+
+        public void setRequiresConfirmation(boolean requiresConfirmation) {
+            this.requiresConfirmation = requiresConfirmation;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
     }
 
     enum MenuItemType {
