@@ -6,6 +6,7 @@ const buildHistoryPage = document.getElementById("buildHistoryPage");
 const pageSearch = buildHistoryPage.querySelector(".jenkins-search");
 const pageSearchInput = buildHistoryPage.querySelector("input");
 const ajaxUrl = buildHistoryPage.getAttribute("page-ajax");
+
 const card = document.querySelector("#jenkins-builds");
 const contents = card.querySelector("#jenkins-build-history");
 const container = card.querySelector(".app-builds-container");
@@ -23,26 +24,27 @@ const updateBuildsRefreshInterval = 5000;
 
 /**
  * Refresh the 'Builds' card
- * @param {QueryParameters}  options
+ * @param {QueryParameters} options
  */
 function load(options = {}) {
-  /** @type {QueryParameters} */
   cancelRefreshTimeout();
+
+  /** @type {QueryParameters} */
   const params = Object.assign({}, options, { search: pageSearchInput.value });
   const paginationOrFirst =
     buildHistoryPage.dataset.pageHasUp === "false" ||
     "older-than" in params ||
     "newer-than" in params;
 
-  // Avoid fetching if the page isn't visible
+  // Avoid fetching if the page isn't visible.
   if (document.hidden) {
     return;
   }
 
   createRefreshTimeout();
 
-  // When we're not on the first page and this is not a load due to pagination
-  // we need to set the correct value for older-than so we fetch the same set of runs
+  // When we're not on the first page and this is not due to pagination,
+  // set the correct `older-than` param to keep the same set of runs.
   if (!paginationOrFirst) {
     params["older-than"] = (
       BigInt(buildHistoryPage.dataset.pageEntryNewest) + 1n
@@ -55,30 +57,33 @@ function load(options = {}) {
         container.classList.remove("app-builds-container--loading");
         pageSearch.classList.remove("jenkins-search--loading");
 
-        // Show the 'No builds' text if there are no builds
+        // Show 'No builds' if response is empty.
         if (responseText.trim() === "") {
           contents.innerHTML = "";
           noBuilds.style.display = "block";
           loadingBuilds.style.display = "none";
+
           updateCardControls({
             pageHasUp: false,
             pageHasDown: false,
             pageEntryNewest: false,
             pageEntryOldest: false,
           });
+
           return;
         }
 
-        // Show the refreshed builds list
+        // Show refreshed builds list.
         contents.innerHTML = responseText;
         noBuilds.style.display = "none";
         loadingBuilds.style.display = "none";
         behaviorShim.applySubtree(contents);
 
-        // Show the card controls
+        // Update card controls from the new HTML.
         const div = document.createElement("div");
         div.innerHTML = responseText;
         const innerChild = div.children[0];
+
         updateCardControls({
           pageHasUp: innerChild.dataset.pageHasUp === "true",
           pageHasDown: innerChild.dataset.pageHasDown === "true",
@@ -93,18 +98,20 @@ function load(options = {}) {
 }
 
 /**
- * Shows/hides the card's pagination controls depending on the passed parameter
- * @param {CardControlsOptions}  parameters
+ * Shows/hides the card's pagination controls depending on the passed parameters.
+ * @param {CardControlsOptions} parameters
  */
 function updateCardControls(parameters) {
   paginationControls.classList.toggle(
     "jenkins-hidden",
     !parameters.pageHasUp && !parameters.pageHasDown,
   );
+
   paginationPrevious.classList.toggle(
     "app-builds-container__button--disabled",
     !parameters.pageHasUp,
   );
+
   paginationNext.classList.toggle(
     "app-builds-container__button--disabled",
     !parameters.pageHasDown,
@@ -115,6 +122,7 @@ function updateCardControls(parameters) {
   buildHistoryPage.dataset.pageHasUp = parameters.pageHasUp;
 }
 
+// Attach pagination event handlers.
 paginationPrevious.addEventListener("click", () => {
   load({ "newer-than": buildHistoryPage.dataset.pageEntryNewest });
 });
@@ -123,14 +131,13 @@ paginationNext.addEventListener("click", () => {
   load({ "older-than": buildHistoryPage.dataset.pageEntryOldest });
 });
 
+// Create periodic refresh timeout.
 function createRefreshTimeout() {
   cancelRefreshTimeout();
-  buildRefreshTimeout = window.setTimeout(
-    () => load(),
-    updateBuildsRefreshInterval,
-  );
+  buildRefreshTimeout = window.setTimeout(() => load(), updateBuildsRefreshInterval);
 }
 
+// Cancel existing refresh timeout if any.
 function cancelRefreshTimeout() {
   if (buildRefreshTimeout) {
     window.clearTimeout(buildRefreshTimeout);
@@ -138,10 +145,12 @@ function cancelRefreshTimeout() {
   }
 }
 
+// Debounced search load.
 const debouncedLoad = debounce(() => {
   load();
 }, 150);
 
+// Initialize once DOM is ready.
 document.addEventListener("DOMContentLoaded", function () {
   pageSearchInput.addEventListener("input", function () {
     container.classList.add("app-builds-container--loading");
@@ -149,9 +158,11 @@ document.addEventListener("DOMContentLoaded", function () {
     debouncedLoad();
   });
 
+  // Absolute initial load: show loading, then fetch.
   container.classList.add("app-builds-container--loading");
   load();
 
+  // Refresh on window focus.
   window.addEventListener("focus", function () {
     load();
   });
