@@ -16,6 +16,11 @@ searchBarInput.suggestions = function () {
         item.querySelector(".task-link-text") ||
         item.querySelector(".task-link")
       ).textContent,
+      searchText: (
+        item.textContent +
+        " " +
+        (item.dataset.searchKeywords || "")
+      ).toLowerCase(),
     }))
     .filter((item) => !item.url.endsWith("#"));
 };
