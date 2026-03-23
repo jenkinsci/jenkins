@@ -38,20 +38,56 @@ function convertInputsToButtons(e) {
   });
 }
 
+function updateTopButton(container) {
+  if (container.getAttribute("enableTopButton") === "true") {
+    let children = Array.from(container.children).filter(function (n) {
+      return (
+        n.classList.contains("repeated-chunk") &&
+        !n.classList.contains("fade-out")
+      );
+    });
+    const topAddButton = container.querySelector(".hetero-list-add-top");
+    if (children.length === 0) {
+      topAddButton.classList.add("jenkins-hidden");
+    } else {
+      topAddButton.classList.remove("jenkins-hidden");
+    }
+  }
+}
+
 function generateButtons() {
+  behaviorShim.specify(
+    "BUTTON.repeatable-delete",
+    "repeatable",
+    2,
+    function (n) {
+      n.addEventListener("click", function () {
+        n = n.closest(".repeated-chunk");
+        if (n.classList.contains("hetero-list-chunk")) {
+          const container = n.closest(".hetero-list-container");
+          updateTopButton(container);
+        }
+      });
+    },
+  );
+
   behaviorShim.specify(
     "DIV.hetero-list-container",
     "hetero-list-new",
     -100,
-    function (e) {
-      if (isInsideRemovable(e)) {
+    function (c) {
+      if (isInsideRemovable(c)) {
         return;
       }
 
-      convertInputsToButtons(e);
-      let btn = Array.from(e.querySelectorAll("BUTTON.hetero-list-add")).pop();
+      convertInputsToButtons(c);
+      const enableTopButton = c.getAttribute("enableTopButton") === "true";
+      let btn = Array.from(c.querySelectorAll("BUTTON.hetero-list-add")).pop();
+      let topButton = enableTopButton
+        ? Array.from(c.querySelectorAll("BUTTON.hetero-list-add-top")).shift()
+        : null;
 
-      let prototypes = e.lastElementChild;
+      let prototypes = c.lastElementChild;
       while (!prototypes.classList.contains("prototypes")) {
         prototypes = prototypes.previousElementSibling;
       }
@@ -73,11 +109,11 @@ function generateButtons() {
         });
       }
       prototypes.remove();
-      let withDragDrop = registerSortableDragDrop(e);
+      let withDragDrop = registerSortableDragDrop(c);
 
-      function insert(instance, template) {
+      function insert(instance, template, addOnTop) {
         let nc = document.createElement("div");
-        nc.className = "repeated-chunk fade-in";
+        nc.className = "repeated-chunk hetero-list-chunk fade-in";
         nc.setAttribute("name", template.name);
         nc.setAttribute("descriptorId", template.descriptorId);
         nc.innerHTML = template.html;
@@ -117,7 +153,7 @@ function generateButtons() {
                 return bestPos;
               }
 
-              let current = Array.from(e.children).filter(function (e) {
+              let current = Array.from(c.children).filter(function (e) {
                 return e.matches("DIV.repeated-chunk");
               });
 
@@ -140,10 +176,19 @@ function generateButtons() {
                 return insertionPoint;
               }
             }
-            let referenceNode = e.classList.contains("honor-order")
+            let honorOrder = c.classList.contains("honor-order");
+            let referenceNode = honorOrder
               ? findInsertionPoint()
               : insertionPoint;
-            referenceNode.parentNode.insertBefore(nc, referenceNode);
+
+            if (addOnTop && !honorOrder && enableTopButton) {
+              let children = Array.from(c.children).filter(function (n) {
+                return n.classList.contains("repeated-chunk");
+              });
+              c.insertBefore(nc, children[0]);
+            } else {
+              referenceNode.parentNode.insertBefore(nc, referenceNode);
+            }
 
             // Initialize drag & drop for this component
             if (withDragDrop) {
@@ -151,6 +196,8 @@ function generateButtons() {
             }
             Behaviour.applySubtree(nc, true);
             ensureVisible(nc);
+            nc.classList.remove("fade-in");
+            updateTopButton(c);
             layoutUpdateCallback.call();
           },
           true,
@@ -159,31 +206,34 @@ function generateButtons() {
 
       function has(id) {
         return (
-          e.querySelector('DIV.repeated-chunk[descriptorId="' + id + '"]') !=
+          c.querySelector('DIV.repeated-chunk[descriptorId="' + id + '"]') !=
           null
         );
       }
 
-      let oneEach = e.classList.contains("one-each");
+      let oneEach = c.classList.contains("one-each");
 
       /**
        * Disable the Add button if there are no more items to add
        */
       function toggleButtonState() {
         const templateCount = templates.length;
-        const selectedCount = Array.from(e.children).filter((e) =>
+        const selectedCount = Array.from(c.children).filter((e) =>
           e.classList.contains("repeated-chunk"),
         ).length;
 
         btn.disabled = oneEach && selectedCount >= templateCount;
+        if (topButton) {
+          topButton.disabled = oneEach && selectedCount >= templateCount;
+        }
       }
       const observer = new MutationObserver(() => {
         toggleButtonState();
       });
-      observer.observe(e, { childList: true });
+      observer.observe(c, { childList: true });
       toggleButtonState();
 
-      generateDropDown(btn, (instance) => {
+      function expand(instance, addOnTop) {
         let menuItems = [];
         for (let i = 0; i < templates.length; i++) {
           let n = templates[i];
@@ -194,7 +244,7 @@ function generateButtons() {
             onClick: (event) => {
               event.preventDefault();
               event.stopPropagation();
-              insert(instance, n);
+              insert(instance, n, addOnTop);
             },
             type: type,
           };
@@ -205,7 +255,16 @@ function generateButtons() {
         menuContainer.appendChild(createFilter(menu));
         menuContainer.appendChild(menu);
         instance.setContent(menuContainer);
+      }
+
+      generateDropDown(btn, (instance) => {
+        expand(instance, false);
       });
+      if (topButton) {
+        generateDropDown(topButton, (instance) => {
+          expand(instance, true);
+        });
+      }
     },
   );
 }
