@@ -1962,11 +1962,23 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             pluginUploaded = true;
 
+            String requiredCore = null;
             JSONArray dependencies = new JSONArray();
             try {
                 Manifest m;
                 try (JarFile jarFile = new JarFile(t)) {
                     m = jarFile.getManifest();
+                }
+                if (m == null) {
+                    throw new Failure("Uploaded file does not contain a plugin manifest (META-INF/MANIFEST.MF) and is not a valid Jenkins plugin.");
+                }
+                requiredCore = m.getMainAttributes().getValue("Jenkins-Version");
+                if (requiredCore == null) {
+                    requiredCore = m.getMainAttributes().getValue("Hudson-Version");
+                }
+                requiredCore = Util.fixEmptyAndTrim(requiredCore);
+                if ("null".equalsIgnoreCase(requiredCore)) {
+                    requiredCore = null;
                 }
                 String deps = m.getMainAttributes().getValue("Plugin-Dependencies");
 
@@ -1982,16 +1994,36 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                 .element("optional", p.contains("resolution:=optional")));
                     }
                 }
+
+                for (Dependency dep : DetachedPluginsUtil.getImpliedDependencies(baseName, requiredCore)) {
+                    boolean already = false;
+                    for (Object o : dependencies) {
+                        if (dep.shortName.equals(((JSONObject) o).getString("name"))) {
+                            already = true;
+                            break;
+                        }
+                    }
+                    if (!already) {
+                        dependencies.add(new JSONObject()
+                                .element("name", dep.shortName)
+                                .element("version", dep.version)
+                                .element("optional", false));
+                    }
+                }
             } catch (IOException e) {
                 LOGGER.log(WARNING, "Unable to setup dependency list for plugin upload", e);
             }
 
             // Now create a dummy plugin that we can dynamically load (the InstallationJob will force a restart if one is needed):
-            JSONObject cfg = new JSONObject().
-                    element("name", baseName).
-                    element("version", "0"). // unused but mandatory
-                    element("url", t.toURI().toString()).
-                    element("dependencies", dependencies);
+            JSONObject cfg = new JSONObject()
+                    .element("name", baseName)
+                    .element("version", "0") // unused but mandatory
+                    .element("url", t.toURI().toString())
+                    .element("dependencies", dependencies);
+            String normalizedRequiredCore = Util.fixEmptyAndTrim(requiredCore);
+            if (normalizedRequiredCore != null && !"null".equalsIgnoreCase(normalizedRequiredCore)) {
+                cfg.element("requiredCore", normalizedRequiredCore);
+            }
             new UpdateSite(UpdateCenter.ID_UPLOAD, null).new Plugin(UpdateCenter.ID_UPLOAD, cfg).deploy(true);
             return new HttpRedirect("updates/");
         } catch (FileUploadException e) {
