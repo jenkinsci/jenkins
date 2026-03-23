@@ -1,3 +1,76 @@
+@use "../abstracts/mixins";
+
+.app-adminmonitor {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 0.5rem;
+  font-weight: 450;
+
+  &-icon {
+    width: 1.375rem;
+    height: 1.375rem;
+    margin: -0.0625rem 0 -0.0625rem -0.0625rem;
+
+    * {
+      stroke-width: 34px;
+    }
+  }
+
+  &-content {
+    margin-bottom: -8px;
+  }
+
+  &-controls {
+    margin: -8px -8px 0 4px !important;
+    float: right;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    & > form {
+      margin: 0 !important;
+    }
+
+    .jenkins-button {
+      min-height: 36px;
+      padding: 0 14px;
+    }
+  }
+
+  &-dismiss-button {
+    --button-background: none;
+    --button-background--hover: oklch(from currentColor l c h / 0.1);
+    --button-background--active: oklch(from currentColor l c h / 0.2);
+    --button-box-shadow--focus: oklch(from currentColor l c h / 0.1);
+
+    &:not(.jenkins-button--primary) {
+      &::before {
+        border: var(--jenkins-border-width) solid
+          rgb(from currentColor r g b / 0.1);
+      }
+    }
+
+    color: var(--color) !important;
+    min-width: 36px;
+    padding: 0 !important;
+  }
+}
+
+.manage-messages {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--section-padding) / 3);
+
+  & > div {
+    margin-bottom: 0;
+
+    &:last-of-type {
+      margin-bottom: var(--section-padding);
+    }
+  }
+}
+
 .manage-messages a:not(.jenkins-button),
 .manage-messages a:visited:not(.jenkins-button) {
   color: inherit !important;
@@ -9,7 +82,7 @@
   text-decoration: underline;
 }
 
-.manage-messages dl:first-child {
+.manage-messages dl:first-of-type {
   margin-top: 0;
 }
 
@@ -36,10 +109,6 @@
 
 .manage-messages .alert,
 .manage-messages .jenkins-alert {
-  &:last-of-type {
-    margin-bottom: 30px;
-  }
-
   a {
     text-decoration: underline;
   }
@@ -47,7 +116,7 @@
   form {
     position: relative;
     float: right;
-    margin: -6px 0 0 !important;
+    margin: -6px 0 0;
     display: flex;
     gap: 0.5rem;
 
