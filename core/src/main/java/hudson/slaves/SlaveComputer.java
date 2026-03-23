@@ -125,6 +125,14 @@ public class SlaveComputer extends Computer {
     private ComputerLauncher launcher;
 
     /**
+     * Lock used to synchronize the execution of {@link ComputerLauncher#afterDisconnect(SlaveComputer, TaskListener)}.
+     * This ensures the disconnect logic is only executed once per connection cycle, and that
+     * concurrent attempts to disconnect block until the first execution completes.
+     * Blocking is critical to prevent file-lock race conditions during teardown on Windows.
+     */
+    private final Object disconnectLock = new Object();
+    private transient volatile boolean afterDisconnectCalled = false;
+    /**
      * Perpetually writable log file.
      */
     private final RewindableFileOutputStream log;
@@ -632,6 +640,11 @@ public class SlaveComputer extends Computer {
         if (this.channel != null)
             throw new IllegalStateException("Already connected");
 
+        // Reset the disconnect guard early for the new connection lifecycle.
+        synchronized (disconnectLock) {
+            this.afterDisconnectCalled = false;
+        }
+
         final TaskListener taskListener = launchLog != null ? new StreamTaskListener(launchLog) : TaskListener.NULL;
         PrintStream log = taskListener.getLogger();
 
@@ -651,7 +664,7 @@ public class SlaveComputer extends Computer {
                 }
                 closeChannel();
                 try {
-                    launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                    safeAfterDisconnect();
                 } catch (Throwable t) {
                     LogRecord lr = new LogRecord(Level.SEVERE,
                             "Launcher {0}'s afterDisconnect method propagated an exception when {1}'s connection was closed: {2}");
@@ -676,6 +689,7 @@ public class SlaveComputer extends Computer {
                             + " system property to true.",
                         RemotingVersionInfo.getMinimumSupportedVersion());
                 disconnect(new OfflineCause.LaunchFailed());
+                safeAfterDisconnect();
                 return;
             } else {
                 taskListener.error(
@@ -823,7 +837,8 @@ public class SlaveComputer extends Computer {
             // (which could be typical) won't block UI thread.
             launcher.beforeDisconnect(SlaveComputer.this, taskListener);
             closeChannel();
-            launcher.afterDisconnect(SlaveComputer.this, taskListener);
+
+            safeAfterDisconnect();
         });
     }
 
@@ -1189,6 +1204,24 @@ public class SlaveComputer extends Computer {
         @Override
         public List<LogRecord> call() {
             return new ArrayList<>(SLAVE_LOG_HANDLER.getView());
+        }
+    }
+
+    /**
+     * Ensures that afterDisconnect is invoked at most once per connection,
+     * without holding a lock during the plugin call.
+     */
+    private void safeAfterDisconnect() {
+        boolean shouldCall = false;
+        synchronized (disconnectLock) {
+            if (!afterDisconnectCalled) {
+                afterDisconnectCalled = true;
+                shouldCall = true;
+            }
+        }
+
+        if (shouldCall) {
+            launcher.afterDisconnect(SlaveComputer.this, taskListener);
         }
     }
 
