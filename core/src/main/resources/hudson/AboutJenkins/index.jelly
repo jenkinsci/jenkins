@@ -124,7 +124,7 @@ THE SOFTWARE.
           <j:forEach var="p" items="${app.pluginManager.plugins}">
             <tr>
               <td>
-                <a class="jenkins-table__link" href="${rootURL}/plugin/${p.shortName}/wrapper/thirdPartyLicenses">
+                <a class="jenkins-table__link" href="plugin/${p.shortName}/thirdPartyLicenses">
                   <j:choose>
                     <j:when test="${p.active}">
                       ${p.displayName}
