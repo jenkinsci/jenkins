@@ -43,7 +43,6 @@ import jenkins.model.Tab;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
 import jenkins.security.stapler.StaplerNotDispatchable;
-import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -148,7 +147,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                         icon = iconSpec.getIconClassName();
                     }
 
-                    return !StringUtils.isBlank(e.getDisplayName()) || !StringUtils.isBlank(icon);
+                    return Util.fixEmptyAndTrim(e.getDisplayName()) != null || Util.fixEmptyAndTrim(icon) != null;
                 })
                 .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
                         .thenComparing(e -> Objects.requireNonNullElse(e.getDisplayName(), "")))
