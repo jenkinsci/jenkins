@@ -191,6 +191,34 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
       pluginTR.classList.remove("has-disabled-dependency");
     }
 
+    /**
+     * Assign a stable sort key for the "Enabled" column on Installed plugins:
+     * 0 = checked and can be disabled,
+     * 1 = checked but blocked by enabled dependents,
+     * 2 = unchecked.
+     */
+    function updateEnabledSortKey(pluginTR) {
+      var jenkinsPluginMetadata = pluginTR.jenkinsPluginMetadata;
+      if (!jenkinsPluginMetadata || !jenkinsPluginMetadata.enableInput) {
+        return;
+      }
+
+      var enabledCell = select("td.enable", pluginTR);
+      if (!enabledCell) {
+        return;
+      }
+
+      if (!jenkinsPluginMetadata.enableInput.checked) {
+        enabledCell.setAttribute("data", "2");
+        return;
+      }
+
+      var blockedByEnabledDependents =
+        pluginTR.classList.contains("has-dependents") &&
+        !pluginTR.classList.contains("all-dependents-disabled");
+      enabledCell.setAttribute("data", blockedByEnabledDependents ? "1" : "0");
+    }
+
     function setEnableWidgetStates() {
       for (var i = 0; i < pluginTRs.length; i++) {
         var pluginMetadata = pluginTRs[i].jenkinsPluginMetadata;
@@ -201,6 +229,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
         }
         markAllDependentsDisabled(pluginTRs[i]);
         markHasDisabledDependencies(pluginTRs[i]);
+        updateEnabledSortKey(pluginTRs[i]);
       }
     }
 
