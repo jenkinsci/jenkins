@@ -54,13 +54,38 @@ THE SOFTWARE.
                 <button class="api-token-property-add jenkins-button jenkins-button--secondary" type="button"
                         data-target-url="${descriptor.descriptorFullUrl}/generateNewToken"
                         data-prompt-message="${%Create new API token}"
-                        data-generate="${%GenerateNewToken}" data-success-title="${%successfully created}"
+                        data-generate="${%GenerateNewToken}"
                         data-cancel="${%Cancel}"
                         data-button-done="${%Done}"
+                        data-not-added="${%TokenNotAdded}"
                         data-message-name="${%Name}">${%AddNewToken}</button>
             </j:if>
         </d:tag>
     </d:taglib>
+    <div id="api-token-add-template" class="jenkins-hidden">
+        <div>
+            <f:entry title="${%Name}">
+                <f:textbox name="tokenName"/>
+            </f:entry>
+            <div class="jenkins-form-label">Expiration</div>
+            <div class="token-expiration jenkins-!-margin-bottom-3">
+                <div class="jenkins-select">
+                    <select class="jenkins-select__input" name="expirationDuration">
+                        <option value="7">7 Days</option>
+                        <option value="30" selected="true">30 Days</option>
+                        <option value="60">60 Days</option>
+                        <option value="90">90 Days</option>
+                        <option value="custom">Custom</option>
+                        <option value="never">No Expiration</option>
+                    </select>
+                </div>
+                <input type="date" name="tokenExpiration" class="jenkins-hidden jenkins-input token-expiration-date"/>
+                <div class="jenkins-hidden warning token-warning">
+                    ${%It is not recommended to create tokens that never expire.}
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="jenkins-hidden" id="api-token-row-template" xmlns:local="local">
         <div class="token-card" id="${token.uuid}">
             <div class="token-card-inner">
@@ -68,7 +93,8 @@ THE SOFTWARE.
                     <span class="token-name">${token.name}</span>
                 </div>
                 <div class="token-stats">
-                    <span class="token-creation" tooltip="${%Just Now}">${%Created just now}</span>
+                    <span class="api-token-new-expiration token-creation" data-never="${%This token does not expire}"
+                          data-expires-on="${%tokenExpiresOn('__DATA__')}"/>
                     <span class="token-last-used">${%TokenNeverUsed}</span>
                 </div>
             </div>
@@ -92,6 +118,10 @@ THE SOFTWARE.
             <div class="api-token-new-form-row jenkins-quote jenkins-quote--monospace">
                 <span class="api-token-new-value"/>
                 <l:copyButton text="" clazz="jenkins-hidden" tooltip="${%CopyToken}" iconOnly="true"/>
+            </div>
+            <div style="height: 23px;">
+                <span class="api-token-new-expiration" data-never="${%This token does not expire}"
+                      data-expires-on="${%tokenExpiresOn('__DATA__')}"/>
             </div>
         </div>
     </div>
@@ -136,7 +166,23 @@ THE SOFTWARE.
                                     <!--TODO convert to "Today", "Tomorrow", "4 days ago", "2 weeks ago", etc. -->
                                 </j:if>
                                 <div class="token-stats">
-                                    <span class="token-creation ${oldClazz}" tooltip="${creationDateFormat}">${token.createdDaysAgo()}</span>
+                                    <j:choose>
+                                        <j:when test="${token.expired}">
+                                            <span class="error token-creation" tooltip="${%tokenCreatedOn(creationDateFormat)}">
+                                                ${%This token has expired}
+                                            </span>
+                                        </j:when>
+                                        <j:when test="${token.expirationDate == 'never'}">
+                                            <span class="warning token-creation" tooltip="${%tokenCreatedOn(creationDateFormat)}">
+                                                ${%This token does not expire}
+                                            </span>
+                                        </j:when>
+                                        <j:otherwise>
+                                            <span class="${token.aboutToExpire ? 'warning' : ''} token-creation" tooltip="${%tokenCreatedOn(creationDateFormat)}">
+                                                ${%tokenExpiresOn(token.expirationDate)}
+                                            </span>
+                                        </j:otherwise>
+                                    </j:choose>
                                     <span class="token-last-used">
                                         <j:choose>
                                             <j:when test="${isStatisticsEnabled}">

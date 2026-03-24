@@ -318,7 +318,7 @@ public class CspBuilderTest {
         builder.add(Directive.DEFAULT_SRC, Directive.SELF);
 
         List<Directive> merged = builder.getMergedDirectives();
-        Directive directive = merged.get(0);
+        Directive directive = merged.getFirst();
 
         assertThrows(UnsupportedOperationException.class, () -> directive.values().add("should-fail"));
     }

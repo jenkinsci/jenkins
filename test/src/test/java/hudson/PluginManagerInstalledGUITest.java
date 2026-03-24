@@ -143,7 +143,7 @@ class PluginManagerInstalledGUITest {
             // able to see what the code is testing.
 
             DomElement pluginsTable = installedPage.getElementById("plugins");
-            HtmlElement tbody = pluginsTable.getElementsByTagName("TBODY").get(0);
+            HtmlElement tbody = pluginsTable.getElementsByTagName("TBODY").getFirst();
 
             installedPlugins = new ArrayList<>();
             for (DomElement htmlTableRow : tbody.getChildElements()) {
@@ -182,7 +182,7 @@ class PluginManagerInstalledGUITest {
         }
 
         private HtmlInput getEnableWidget() {
-            HtmlElement input = pluginRow.getCells().get(hasHealth ? 2 : 1).getElementsByTagName("input").get(0);
+            HtmlElement input = pluginRow.getCells().get(hasHealth ? 2 : 1).getElementsByTagName("input").getFirst();
             return (HtmlInput) input;
         }
 

@@ -195,7 +195,7 @@ class ShellTest {
     @LocalData
     void canLoadUnstableReturnFromDisk() {
         FreeStyleProject p = (FreeStyleProject) rule.jenkins.getItemByFullName("test");
-        Shell shell = (Shell) p.getBuildersList().get(0);
+        Shell shell = (Shell) p.getBuildersList().getFirst();
         assertEquals((Integer) 1, shell.getUnstableReturn(), "unstable return");
     }
 

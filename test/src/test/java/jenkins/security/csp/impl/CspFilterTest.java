@@ -4,10 +4,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.jvnet.hudson.test.LoggerRule.recorded;
 
+import hudson.ExtensionList;
 import hudson.security.csrf.CrumbExclusion;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,8 +18,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.security.csp.Contributor;
+import jenkins.security.csp.CspBuilder;
 import jenkins.util.HttpServletFilter;
 import org.hamcrest.Matcher;
 import org.htmlunit.HttpMethod;
@@ -27,6 +33,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.xml.sax.SAXException;
 
 @WithJenkins
 public class CspFilterTest {
@@ -97,6 +104,44 @@ public class CspFilterTest {
                         "CSP header has unexpected differences: Expected 'base-uri 'none'; default-src 'self'; form-action 'self'; frame-ancestors 'self'; img-src 'self' data:; " +
                                 "script-src 'report-sample' 'self'; style-src 'report-sample' 'self' 'unsafe-inline'; report-to content-security-policy; report-uri http://localhost:"),
                 endsWith(":YW5vbnltb3Vz::L3Rlc3QtZmlsdGVyLXdpdGhvdXQtY3NwL3NvbWUtcGF0aA==' but got 'null'"))));
+    }
+
+    @Test
+    void testCspBuilderNotCalledWithHeaderDisabled(JenkinsRule j) throws IOException, SAXException {
+        try (JenkinsRule.WebClient webClient = j.createWebClient().withJavaScriptEnabled(false)) {
+            final AtomicInteger counter = ExtensionList.lookupSingleton(CountingContributor.class).counter;
+            {
+                int start = counter.get();
+                webClient.goTo("");
+                int end = counter.get();
+
+                final int difference = end - start;
+                assertThat(difference, greaterThanOrEqualTo(1));
+            }
+
+            System.setProperty(SystemPropertyHeaderDecider.SYSTEM_PROPERTY_NAME, "");
+            try {
+                int start = counter.get();
+                webClient.goTo("");
+                int end = counter.get();
+
+                // no calls expected
+                final int difference = end - start;
+                assertThat(difference, is(0));
+            } finally {
+                System.clearProperty(SystemPropertyHeaderDecider.SYSTEM_PROPERTY_NAME);
+            }
+        }
+    }
+
+    @TestExtension("testCspBuilderNotCalledWithHeaderDisabled")
+    public static class CountingContributor implements Contributor {
+        AtomicInteger counter = new AtomicInteger(0);
+
+        @Override
+        public void apply(CspBuilder cspBuilder) {
+            counter.incrementAndGet();
+        }
     }
 
     @TestExtension

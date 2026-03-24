@@ -9,8 +9,8 @@ This page provides information about contributing code to the Jenkins core codeb
 1. Fork the repository on GitHub
 2. Clone the forked repository to your machine
 3. Install the necessary development tools. In order to develop Jenkins, you need the following:
-   - Java Development Kit (JDK) 17 or 21.
-     In the Jenkins project we usually use [Eclipse Temurin](https://adoptium.net/) or [OpenJDK](https://openjdk.java.net/), but you can use other JDKs as well.
+   - Java Development Kit (JDK) 21 or 25.
+     In the Jenkins project we usually use [Eclipse Temurin](https://adoptium.net/) or [OpenJDK](https://openjdk.org/), but you can use other JDKs as well.
    - Apache Maven 3.9.6 or above. You can [download Maven here](https://maven.apache.org/download.cgi).
      In the Jenkins project we usually use the most recent Maven release.
    - Any IDE which supports importing Maven projects.
@@ -82,16 +82,6 @@ Open another terminal and start a [webpack](https://webpack.js.org/) dev server,
 ```sh
 yarn start
 ```
-
-### Gitpod
-
-You can open this project as a [Gitpod workspace](https://www.gitpod.io/) which comes pre-configured with all the tools you will need.
-You can use IntelliJ IDEA (preferred) or VS Code (alternate) in the browser.
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/jenkinsci/jenkins)
-
-If you prefer using IntelliJ IDEA, you can setup Gitpod integration with JetBrains Gateway using the instructions on [gitpod.io](https://www.gitpod.io/docs/ides-and-editors/intellij),
-which will open the workspace in IntelliJ IDEA using JetBrains Gateway.
 
 ### Linting
 

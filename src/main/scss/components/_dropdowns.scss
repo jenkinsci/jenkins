@@ -148,6 +148,22 @@ $dropdown-padding: 0.375rem;
     min-width: 180px;
     user-select: none;
 
+    &:has(.jenkins-dropdown__item__description) {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      row-gap: 0.25rem;
+      text-align: left;
+      overflow: clip;
+      text-wrap: wrap;
+      max-width: 380px;
+
+      .jenkins-dropdown__item__description {
+        color: var(--text-color-secondary);
+        grid-area: 2 / 2;
+        line-height: 1.5;
+      }
+    }
+
     &__icon {
       display: inline-flex;
       align-items: center;

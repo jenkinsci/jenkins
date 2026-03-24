@@ -581,7 +581,7 @@ class PasswordTest {
         j.configRoundtrip(project);
 
         // empty default values after initial form submission
-        PasswordHolderBuildStep buildStep = (PasswordHolderBuildStep) project.getBuildersList().get(0);
+        PasswordHolderBuildStep buildStep = (PasswordHolderBuildStep) project.getBuildersList().getFirst();
         assertNotNull(buildStep);
         assertEquals("", buildStep.secretWithSecretGetterSecretSetter.getPlainText());
         assertEquals("", buildStep.secretWithSecretGetterStringSetter.getPlainText());
@@ -592,7 +592,7 @@ class PasswordTest {
         assertEquals("", buildStep.stringWithStringGetterSecretSetter);
         assertEquals("", buildStep.stringWithStringGetterStringSetter);
 
-        buildStep = (PasswordHolderBuildStep) project.getBuildersList().get(0);
+        buildStep = (PasswordHolderBuildStep) project.getBuildersList().getFirst();
         assertNotNull(buildStep);
 
 
@@ -634,7 +634,7 @@ class PasswordTest {
         assertTrue(i >= 8); // at least 8 password fields expected on that job config form
 
         j.configRoundtrip(project);
-        buildStep = (PasswordHolderBuildStep) project.getBuildersList().get(0);
+        buildStep = (PasswordHolderBuildStep) project.getBuildersList().getFirst();
 
         // confirm round-trip did not change effective values
         assertEquals("secretWithSecretGetterSecretSetter", buildStep.secretWithSecretGetterSecretSetter.getPlainText());
@@ -787,7 +787,7 @@ class PasswordTest {
         j.configRoundtrip(project);
 
         // empty default values after initial form submission
-        StringlyTypedSecretsBuilder buildStep = (StringlyTypedSecretsBuilder) project.getBuildersList().get(0);
+        StringlyTypedSecretsBuilder buildStep = (StringlyTypedSecretsBuilder) project.getBuildersList().getFirst();
         assertNotNull(buildStep);
         assertTrue(buildStep.mySecret.startsWith("{"));
         assertTrue(buildStep.mySecret.endsWith("}"));
@@ -811,7 +811,7 @@ class PasswordTest {
         }
 
         j.configRoundtrip(project);
-        buildStep = (StringlyTypedSecretsBuilder) project.getBuildersList().get(0);
+        buildStep = (StringlyTypedSecretsBuilder) project.getBuildersList().getFirst();
 
         // confirm round-trip did not change effective values
         assertEquals("stringlyTypedSecret", Secret.fromString(buildStep.mySecret).getPlainText());

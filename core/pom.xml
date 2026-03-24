@@ -40,7 +40,7 @@ THE SOFTWARE.
 
   <properties>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
-    <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
   </properties>
@@ -419,7 +419,7 @@ THE SOFTWARE.
       <!-- working around MCOMPILER-97 -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>core-annotation-processors</artifactId>
-      <version>13.v2dcfc22a_a_b_29</version>
+      <version>59.ve181f58722c6</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
@@ -651,7 +651,7 @@ THE SOFTWARE.
         <!-- Version specified in grandparent POM -->
         <configuration>
           <!-- Make sure to keep the directives in test/pom.xml and war/pom.xml in sync with these. -->
-          <argLine>@{jacocoSurefireArgs} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED -javaagent:${org.mockito:mockito-core:jar}</argLine>
+          <argLine>@{jacocoSurefireArgs} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED -javaagent:"${org.mockito:mockito-core:jar}"</argLine>
           <reuseForks>false</reuseForks>
         </configuration>
       </plugin>

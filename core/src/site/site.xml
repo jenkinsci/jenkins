@@ -9,7 +9,7 @@
         </breadcrumbs>
         <head>
             <![CDATA[
-                <script src="https://cdn.jsdelivr.net/npm/lit@3.3.1/polyfill-support.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/lit@3.3.2/polyfill-support.js"></script>
                 <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.8.0/webcomponents-loader.js"></script>
                 <script data="jio" src="https://cdn.jsdelivr.net/npm/@jenkinsci/jenkins-io-components/+esm" type="module"></script>
                 <script data="jio" nomodule="" src="https://cdn.jsdelivr.net/npm/@jenkinsci/jenkins-io-components"></script>

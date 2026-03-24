@@ -175,7 +175,7 @@ class ViewTest {
         WebClient wc = j.createWebClient();
         HtmlForm form = wc.goTo("newView").getFormByName("createItem");
         form.getInputByName("name").setValue("foo");
-        form.getRadioButtonsByName("mode").get(0).setChecked(true);
+        form.getRadioButtonsByName("mode").getFirst().setChecked(true);
         j.submit(form);
         assertNotNull(j.jenkins.getView("foo"));
 
@@ -259,7 +259,7 @@ class ViewTest {
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlForm form = wc.goTo("newView").getFormByName("createItem");
         form.getInputByName("name").setValue("..");
-        form.getRadioButtonsByName("mode").get(0).setChecked(true);
+        form.getRadioButtonsByName("mode").getFirst().setChecked(true);
 
         HtmlPage page = j.submit(form);
         assertEquals(HttpURLConnection.HTTP_BAD_REQUEST,
@@ -274,7 +274,7 @@ class ViewTest {
         HtmlForm form = j.createWebClient().goTo("newView").getFormByName("createItem");
         String name = "I ♥ NY";
         form.getInputByName("name").setValue(name);
-        form.getRadioButtonsByName("mode").get(0).setChecked(true);
+        form.getRadioButtonsByName("mode").getFirst().setChecked(true);
         j.submit(form);
         View view = j.jenkins.getView(name);
         assertNotNull(view);
@@ -844,7 +844,8 @@ class ViewTest {
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object result = page.executeJavaScript("Array.from(document.querySelectorAll('.label')).filter(el => el.innerText.indexOf('" + customizableTLID.customDisplayName + "') !== -1)[0].parentElement.parentElement").getJavaScriptResult();
+        Object result = page.executeJavaScript("Array.from(document.querySelectorAll('.jenkins-choice-list__item__label'))" +
+                ".filter(el => el.innerText.indexOf('" + customizableTLID.customDisplayName + "') !== -1)[0].parentElement.parentElement").getJavaScriptResult();
         assertThat(result, instanceOf(HTMLElement.class));
         HTMLElement resultElement = (HTMLElement) result;
         assertThat(resultElement.getAttribute("onclick"), nullValue());
@@ -861,7 +862,7 @@ class ViewTest {
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object result = page.executeJavaScript("document.querySelector('.xss-dn .label').innerHTML").getJavaScriptResult();
+        Object result = page.executeJavaScript("document.querySelector('.xss-dn .jenkins-choice-list__item__label').innerHTML").getJavaScriptResult();
         assertThat(result, instanceOf(String.class));
         String resultString = (String) result;
         assertThat(resultString, not(containsString("<")));
@@ -877,7 +878,7 @@ class ViewTest {
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object result = page.executeJavaScript("document.querySelector('.html-desc .desc strong')").getJavaScriptResult();
+        Object result = page.executeJavaScript("document.querySelector('.html-desc .jenkins-choice-list__item__description strong')").getJavaScriptResult();
         assertThat(result, instanceOf(HTMLElement.class));
         assertThat(((HTMLElement) result).getTagName(), is("STRONG"));
     }
@@ -894,12 +895,12 @@ class ViewTest {
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object resultIconChildrenCount = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .icon').children.length").getJavaScriptResult();
+        Object resultIconChildrenCount = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .jenkins-choice-list__item__icon').children.length").getJavaScriptResult();
         assertThat(resultIconChildrenCount, instanceOf(Integer.class));
         int resultIconChildrenCountInt = (int) resultIconChildrenCount;
         assertEquals(1, resultIconChildrenCountInt);
 
-        Object resultImgAttributesCount = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .icon img').attributes.length").getJavaScriptResult();
+        Object resultImgAttributesCount = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .jenkins-choice-list__item__icon img').attributes.length").getJavaScriptResult();
         assertThat(resultImgAttributesCount, instanceOf(Integer.class));
         int resultImgAttributesCountInt = (int) resultImgAttributesCount;
         assertEquals(1, resultImgAttributesCountInt);
@@ -929,7 +930,7 @@ class ViewTest {
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object resultSrc = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .icon img').src").getJavaScriptResult();
+        Object resultSrc = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .jenkins-choice-list__item__icon img').src").getJavaScriptResult();
 
         assertThat(resultSrc, instanceOf(String.class));
         String resultSrcString = (String) resultSrc;
@@ -944,7 +945,7 @@ class ViewTest {
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object result = page.executeJavaScript("document.querySelector('.hudson_model_FreeStyleProject .icon svg')").getJavaScriptResult();
+        Object result = page.executeJavaScript("document.querySelector('.hudson_model_FreeStyleProject .jenkins-choice-list__item__icon svg')").getJavaScriptResult();
         assertThat(result, instanceOf(SVGElement.class));
         SVGElement svg = (SVGElement) result;
         assertThat(svg.getClassName_js(), is("icon-xlg"));
@@ -962,7 +963,7 @@ class ViewTest {
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object result = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .default-icon')").getJavaScriptResult();
+        Object result = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .jenkins-choice-list__item__icon')").getJavaScriptResult();
         assertThat(result, instanceOf(HTMLElement.class));
         HTMLElement resultHtml = (HTMLElement) result;
         HTMLElement spanA = (HTMLElement) resultHtml.getFirstElementChild();

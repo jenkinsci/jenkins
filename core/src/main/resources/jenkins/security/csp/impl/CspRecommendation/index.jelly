@@ -38,7 +38,7 @@ THE SOFTWARE.
             <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
                 <div>
                     <f:bottomButtonBar>
-                        <f:submit name="setup" value="${%Set up now}"/>
+                        <f:submit name="setup" value="${%Go to configuration}"/>
                         <f:submit primary="false" name="defer" value="${%Cancel}"/>
                     </f:bottomButtonBar>
                 </div>

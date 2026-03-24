@@ -266,7 +266,7 @@ public class MarkupText extends AbstractMarkupText {
         // <b><i>abc</i></b>, not <b><i>abc</b></i>. Also, we'd like <b>abc</b><i>def</i>,
         // not <b>abc<i></b>def</i>. Do this by inserting them to different places.
         tags.add(new Tag(startPos, startTag));
-        tags.add(0, new Tag(endPos, endTag));
+        tags.addFirst(new Tag(endPos, endTag));
     }
 
     public void addMarkup(int pos, String tag) {

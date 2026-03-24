@@ -87,7 +87,7 @@ class LoadPredictorTest {
 
         Computer c = createMockComputer(1);
 
-        JobOffer o = createMockOffer(c.getExecutors().get(0));
+        JobOffer o = createMockOffer(c.getExecutors().getFirst());
 
         MappingWorksheet mw = new MappingWorksheet(wrap(t), List.of(o));
 

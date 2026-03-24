@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>jenkinsci/renovate-config"],
+  "extends": ["github>jenkinsci/renovate-config", "schedule:daily"],
   "prHourlyLimit": 0,
   "prConcurrentLimit": 0,
   "packageRules": [
@@ -77,13 +77,6 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["/.gitpod/Dockerfile/"],
-      "matchStrings": ["ARG MAVEN_VERSION=(?<currentValue>.*?)\n"],
-      "depNameTemplate": "org.apache.maven:maven-core",
-      "datasourceTemplate": "maven"
-    },
-    {
-      "customType": "regex",
       "managerFilePatterns": ["/core/src/site/site.xml/"],
       "matchStrings": ["lit@(?<currentValue>.*?)/"],
       "depNameTemplate": "lit",
@@ -104,5 +97,9 @@
       "datasourceTemplate": "maven"
     }
   ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": false
+  },
   "labels": ["dependencies", "skip-changelog"]
 }

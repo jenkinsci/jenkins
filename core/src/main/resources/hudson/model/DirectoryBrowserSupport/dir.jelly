@@ -34,7 +34,9 @@ THE SOFTWARE.
       <!-- parent path -->
         <div class="parentPath">
           <form>
-            <a href="${topPath}">${it.owner.name}</a> /
+            <a href="${topPath}">
+              ${it.owner.displayName}
+            </a> /
             <j:forEach var="p" items="${parentPath}">
               <a href="${p.href}">${p.title}</a>
               /

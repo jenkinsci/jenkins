@@ -98,10 +98,9 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
     }
 
     int resolveNumber(Job<?, ?> job) {
-        // TODO Java 21+ use patterns
         var pt = get(job);
-        if (pt instanceof Cache.Some some) {
-            return some.number;
+        if (pt instanceof Cache.Some(int number)) {
+            return number;
         } else if (pt instanceof Cache.None) {
             return 0;
         } else { // Unknown
@@ -266,7 +265,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
                         for (var entry : cache.entrySet()) {
                             cw.write(entry.getKey());
                             cw.write(' ');
-                            cw.write(Integer.toString(entry.getValue() instanceof Cache.Some some ? some.number : -1));
+                            cw.write(Integer.toString(entry.getValue() instanceof Some(int number) ? number : -1));
                             cw.write('\n');
                         }
                         cw.commit();

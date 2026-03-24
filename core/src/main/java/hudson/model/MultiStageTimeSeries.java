@@ -127,12 +127,12 @@ public class MultiStageTimeSeries implements Serializable {
      * Selects a {@link TimeSeries}.
      */
     public TimeSeries pick(TimeScale timeScale) {
-        switch (timeScale) {
-        case HOUR:  return hour;
-        case MIN:   return min;
-        case SEC10: return sec10;
-        default:    throw new AssertionError();
-        }
+        return switch (timeScale) {
+            case HOUR -> hour;
+            case MIN -> min;
+            case SEC10 -> sec10;
+            default -> throw new AssertionError();
+        };
     }
 
     /**
@@ -169,12 +169,12 @@ public class MultiStageTimeSeries implements Serializable {
          * this {@link TimeScale}.
          */
         public DateFormat createDateFormat() {
-            switch (this) {
-            case HOUR:  return new SimpleDateFormat("MMM/dd HH");
-            case MIN:   return new SimpleDateFormat("E HH:mm");
-            case SEC10: return new SimpleDateFormat("HH:mm:ss");
-            default:    throw new AssertionError();
-            }
+            return switch (this) {
+                case HOUR -> new SimpleDateFormat("MMM/dd HH");
+                case MIN -> new SimpleDateFormat("E HH:mm");
+                case SEC10 -> new SimpleDateFormat("HH:mm:ss");
+                default -> throw new AssertionError();
+            };
         }
 
         /**

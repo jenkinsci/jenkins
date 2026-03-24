@@ -426,21 +426,17 @@ public class Queue extends ResourceController implements Saveable {
                     if (o instanceof Task) {
                         // backward compatibility
                         schedule((Task) o, 0);
-                    } else if (o instanceof Item) {
-                        Item item = (Item) o;
+                    } else if (o instanceof Item item) {
 
                         if (item.task == null) {
                             continue;   // botched persistence. throw this one away
                         }
 
-                        if (item instanceof WaitingItem) {
-                            item.enter(this);
-                        } else if (item instanceof BlockedItem) {
-                            item.enter(this);
-                        } else if (item instanceof BuildableItem) {
-                            item.enter(this);
-                        } else {
-                            throw new IllegalStateException("Unknown item type! " + item);
+                        switch (item) {
+                            case WaitingItem waitingItem -> item.enter(this);
+                            case BlockedItem blockedItem -> item.enter(this);
+                            case BuildableItem buildableItem -> item.enter(this);
+                            default -> throw new IllegalStateException("Unknown item type! " + item);
                         }
                     }
                 }
@@ -673,7 +669,7 @@ public class Queue extends ResourceController implements Saveable {
             // whether the new one should affect all existing ones or not is debatable. I for myself
             // thought this would only affect one, so the code was bit of surprise, but I'm keeping the current
             // behaviour.
-            return ScheduleResult.existing(duplicatesInQueue.get(0));
+            return ScheduleResult.existing(duplicatesInQueue.getFirst());
         } finally { updateSnapshot(); } } finally {
             lock.unlock();
         }
@@ -828,8 +824,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private static boolean hasReadPermission(Queue.Task t, boolean valueIfNotAccessControlled) {
-        if (t instanceof AccessControlled) {
-            AccessControlled taskAC = (AccessControlled) t;
+        if (t instanceof AccessControlled taskAC) {
             if (taskAC.hasPermission(hudson.model.Item.READ)
                     || taskAC.hasPermission(Permission.READ)) { // TODO should be unnecessary given the 'implies' relationship
                 return true;
@@ -869,8 +864,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private List<StubItem> filterDiscoverableItemListBasedOnPermissions(List<StubItem> r, Item t) {
-        if (t.task instanceof hudson.model.Item) {
-            hudson.model.Item taskAsItem = (hudson.model.Item) t.task;
+        if (t.task instanceof hudson.model.Item taskAsItem) {
             if (!taskAsItem.hasPermission(hudson.model.Item.READ)
                     && taskAsItem.hasPermission(hudson.model.Item.DISCOVER)) {
                 r.add(new StubItem(new StubTask(t.task)));
@@ -2523,8 +2517,7 @@ public class Queue extends ResourceController implements Saveable {
 
         @Restricted(DoNotUse.class) // only for Stapler export
         public Api getApi() throws AccessDeniedException {
-            if (task instanceof AccessControlled) {
-                AccessControlled ac = (AccessControlled) task;
+            if (task instanceof AccessControlled ac) {
                 if (!ac.hasPermission(hudson.model.Item.DISCOVER)) {
                     return null; // same as getItem(long) returning null (details are printed only in case of -Dstapler.trace=true)
                 } else if (!ac.hasPermission(hudson.model.Item.READ)) {

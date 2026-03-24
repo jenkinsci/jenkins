@@ -24,19 +24,21 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${command.name}" permission="${app.READ}" type="one-column">
-    <l:breadcrumb title="${command.name}" />
-    <l:main-panel>
-      <h1>
-        Command ${command.name}
-      </h1>
+  <l:settings-subpage title="Command ${command.name}" permission="${app.READ}" includeBreadcrumb="true" noDefer="true">
+    <div class="jenkins-page-description">
+      <j:out value="${h.escape(command.longDescription)}"/>
+    </div>
+
+    <f:section title="${%Command}">
       <j:set var="commandArgs" value="${command.name}${command.singleLineSummary}"/>
-      <st:include page="example.jelly"/>
-      <pre class="jenkins-!-margin-top-3">
-        <j:out value="${h.escape(command.longDescription)}"/>
-        <j:set var="usage" value="${command.usage}"/>
-        <j:if test="${!empty usage}"><br/>${command.usage}</j:if>
-      </pre>
-    </l:main-panel>
-  </l:layout>
+      <st:include page="example.jelly" />
+
+      <j:set var="usage" value="${command.usage}"/>
+      <j:if test="${!empty usage}">
+        <pre class="jenkins-!-margin-top-3">
+          ${command.usage}
+        </pre>
+      </j:if>
+    </f:section>
+  </l:settings-subpage>
 </j:jelly>
