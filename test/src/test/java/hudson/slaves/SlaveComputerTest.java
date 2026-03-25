@@ -226,6 +226,7 @@ class SlaveComputerTest {
 
     @TestExtension
     public static class AfterDisconnectListener extends ComputerListener {
+
         static final AtomicInteger count = new AtomicInteger();
 
         static void reset() {

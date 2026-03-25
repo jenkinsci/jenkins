@@ -131,8 +131,12 @@ public class SlaveComputer extends Computer {
      * Blocking is critical to prevent file-lock race conditions during teardown on Windows.
      */
     private final Object disconnectLock = new Object();
-    private transient volatile boolean afterDisconnectCalled = false;
-    private transient volatile boolean channelClosed = false;
+    /**
+     * Guard flag protected by {@link #disconnectLock} to track if the launcher's afterDisconnect
+     * has already been called for the current channel lifecycle.
+     */
+    private boolean afterDisconnectCalled = false;
+
     /**
      * Perpetually writable log file.
      */
@@ -440,8 +444,8 @@ public class SlaveComputer extends Computer {
                            @CheckForNull OutputStream launchLog,
                            @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         ChannelBuilder cb = new ChannelBuilder(nodeName, threadPoolForRemoting)
-            .withMode(Channel.Mode.NEGOTIATE)
-            .withHeaderStream(launchLog);
+                .withMode(Channel.Mode.NEGOTIATE)
+                .withHeaderStream(launchLog);
 
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
             cc.onChannelBuilding(cb, this);
@@ -641,11 +645,6 @@ public class SlaveComputer extends Computer {
         if (this.channel != null)
             throw new IllegalStateException("Already connected");
 
-        // Reset the disconnect guard early for the new connection lifecycle.
-        synchronized (disconnectLock) {
-            this.afterDisconnectCalled = false;
-        }
-
         final TaskListener taskListener = launchLog != null ? new StreamTaskListener(launchLog) : TaskListener.NULL;
         PrintStream log = taskListener.getLogger();
 
@@ -665,7 +664,7 @@ public class SlaveComputer extends Computer {
                 }
                 closeChannel();
                 try {
-                    safeAfterDisconnect();
+                    runAfterDisconnectOnce();
                 } catch (Throwable t) {
                     LogRecord lr = new LogRecord(Level.SEVERE,
                             "Launcher {0}'s afterDisconnect method propagated an exception when {1}'s connection was closed: {2}");
@@ -685,18 +684,17 @@ public class SlaveComputer extends Computer {
             if (!ALLOW_UNSUPPORTED_REMOTING_VERSIONS) {
                 taskListener.fatalError(
                         "Rejecting the connection because the Remoting version is older than the"
-                            + " minimum required version (%s). To allow the connection anyway, set"
-                            + " the hudson.slaves.SlaveComputer.allowUnsupportedRemotingVersions"
-                            + " system property to true.",
+                                + " minimum required version (%s). To allow the connection anyway, set"
+                                + " the hudson.slaves.SlaveComputer.allowUnsupportedRemotingVersions"
+                                + " system property to true.",
                         RemotingVersionInfo.getMinimumSupportedVersion());
                 disconnect(new OfflineCause.LaunchFailed());
-                safeAfterDisconnect();
                 return;
             } else {
                 taskListener.error(
                         "The Remoting version is older than the minimum required version (%s)."
-                            + " The connection will be allowed, but compatibility is NOT"
-                            + " guaranteed.",
+                                + " The connection will be allowed, but compatibility is NOT"
+                                + " guaranteed.",
                         RemotingVersionInfo.getMinimumSupportedVersion());
             }
         }
@@ -754,10 +752,15 @@ public class SlaveComputer extends Computer {
                 channel.close();
                 throw new IllegalStateException("Already connected");
             }
-            this.channelClosed = false;
             isUnix = _isUnix;
             numRetryAttempt = 0;
             this.channel = channel;
+
+            // Reset the disconnect guard for the new connection lifecycle
+            synchronized (disconnectLock) {
+                this.afterDisconnectCalled = false;
+            }
+
             this.absoluteRemoteFs = remoteFS;
             defaultCharset = Charset.forName(defaultCharsetName);
 
@@ -839,9 +842,17 @@ public class SlaveComputer extends Computer {
             // (which could be typical) won't block UI thread.
             launcher.beforeDisconnect(SlaveComputer.this, taskListener);
             closeChannel();
-
-            safeAfterDisconnect();
+            runAfterDisconnectOnce();
         });
+    }
+
+    private void runAfterDisconnectOnce() {
+        synchronized (disconnectLock) {
+            if (!afterDisconnectCalled) {
+                afterDisconnectCalled = true;
+                launcher.afterDisconnect(SlaveComputer.this, taskListener);
+            }
+        }
     }
 
     @RequirePOST
@@ -961,11 +972,6 @@ public class SlaveComputer extends Computer {
         // TODO: race condition between this and the setChannel method.
         Channel c;
         synchronized (channelLock) {
-            if (channelClosed) {
-                return;
-            }
-            channelClosed = true;
-
             c = channel;
             channel = null;
             absoluteRemoteFs = null;
@@ -1211,24 +1217,6 @@ public class SlaveComputer extends Computer {
         @Override
         public List<LogRecord> call() {
             return new ArrayList<>(SLAVE_LOG_HANDLER.getView());
-        }
-    }
-
-    /**
-     * Ensures that afterDisconnect is invoked at most once per connection,
-     * without holding a lock during the plugin call.
-     */
-    private void safeAfterDisconnect() {
-        boolean shouldCall = false;
-        synchronized (disconnectLock) {
-            if (!afterDisconnectCalled) {
-                afterDisconnectCalled = true;
-                shouldCall = true;
-            }
-        }
-
-        if (shouldCall) {
-            launcher.afterDisconnect(SlaveComputer.this, taskListener);
         }
     }
 
