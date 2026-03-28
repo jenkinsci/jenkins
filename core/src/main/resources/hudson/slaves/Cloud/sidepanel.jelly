@@ -33,10 +33,10 @@ THE SOFTWARE.
                     title="${app.hasPermission(app.ADMINISTER) ? '%Configure' : '%View Configuration'}"/>
             <t:actions />
             <l:delete permission="${app.ADMINISTER}" title="${%Delete Cloud}" message="${%delete.cloud(it.displayName)}" urlPrefix="${url}"/>
+            <st:include page="sidepanel2.jelly" optional="true" /><!-- hook for derived class to add more items -->
         </l:tasks>
         <j:forEach var="action" items="${it.allActions}">
             <st:include it="${action}" page="box.jelly" optional="true"/>
         </j:forEach>
-        <st:include page="sidepanel2.jelly" optional="true" /><!-- hook for derived class to add more items -->
     </l:side-panel>
 </j:jelly>
