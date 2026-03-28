@@ -165,7 +165,8 @@
 
   &__link {
     .jenkins-menu-dropdown-chevron {
-      top: 0;
+      top: 50%;
+      transform: translateY(-50%);
     }
   }
 
