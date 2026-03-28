@@ -3,14 +3,60 @@
   document.addEventListener("DOMContentLoaded", function () {
     const descriptionLink = document.querySelector("#description-link");
     const description = document.getElementById("description");
-    if (description != null) {
+    if (description != null && descriptionLink != null) {
       descriptionLink.classList.remove("jenkins-hidden");
       descriptionLink.addEventListener("click", function (e) {
         e.preventDefault();
-        descriptionLink.classList.add("jenkins-hidden");
+
         let url = descriptionLink.getAttribute("data-url");
-        let description = descriptionLink.getAttribute("data-description");
-        return replaceDescription(description, url);
+        let initialDescription =
+          descriptionLink.getAttribute("data-description");
+        let title = descriptionLink.getAttribute("data-title");
+
+        let parameters = {};
+        if (initialDescription !== null && initialDescription !== "") {
+          parameters["description"] = initialDescription;
+        }
+        if (url !== null && url !== "") {
+          parameters["submissionUrl"] = url;
+        }
+
+        fetch("./descriptionForm", {
+          method: "post",
+          headers: crumb.wrap({
+            "Content-Type": "application/x-www-form-urlencoded",
+          }),
+          body: new URLSearchParams(parameters),
+        }).then((rsp) => {
+          rsp.text().then((responseText) => {
+            const template = document.createElement("template");
+            template.innerHTML = responseText;
+            const form = template.content.querySelector("form");
+
+            // Remove the legacy buttons row as the dialog will provide its own
+            const buttonsRow = form.querySelector(".jenkins-buttons-row");
+            if (buttonsRow) {
+              buttonsRow.remove();
+            }
+
+            window.dialog
+              .form(form, {
+                title: title,
+                okText: window.dialog.translations.save,
+              })
+              .then((formData) => {
+                fetch(form.action, {
+                  method: "post",
+                  body: formData,
+                  headers: crumb.wrap({}),
+                }).then((rsp) => {
+                  if (rsp.ok) {
+                    window.location.reload();
+                  }
+                });
+              });
+          });
+        });
       });
     }
   });
