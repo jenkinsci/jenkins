@@ -28,6 +28,13 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
   <j:if test="${!it.logUpdated and !it.keepLog}">
-    <l:task href="${buildUrl.baseUrl}/confirmDelete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%delete.build(it.displayName)}"/>
+    <l:task href="${buildUrl.baseUrl}/doDelete"
+            icon="icon-edit-delete icon-md"
+            permission="${it.DELETE}"
+            title="${%Delete\ this\ build}"
+            requiresConfirmation="true"
+            confirmationMessage="${%delete.build(it.displayName)}?"
+            post="true"
+            destructive="true"/>
   </j:if>
 </j:jelly>
