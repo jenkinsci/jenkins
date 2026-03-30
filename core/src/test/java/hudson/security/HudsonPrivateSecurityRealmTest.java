@@ -160,7 +160,7 @@ class HudsonPrivateSecurityRealmTest {
     @Issue("JENKINS-75533")
     @Test
     void ensureExpectedMessageAscii() {
-        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode(
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode2(
                 "1234567890123456789012345678901234567890123456789012345678901234567890123"));
         assertThat(ex.getMessage(), is(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong_ASCII()));
     }
@@ -168,9 +168,16 @@ class HudsonPrivateSecurityRealmTest {
     @Issue("JENKINS-75533")
     @Test
     void ensureExpectedMessageEmoji() {
-        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode(
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode2(
                 "\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20" +
                         "\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20")); // 🤠
         assertThat(ex.getMessage(), is(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong()));
+    }
+
+    @Test
+    void ensureExpectedMessageFromEncode() {
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode(
+                "1234567890123456789012345678901234567890123456789012345678901234567890123"));
+        assertThat(ex.getMessage(), is("password cannot be more than 72 bytes"));
     }
 }
