@@ -2955,9 +2955,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001759, caniuse-lite@npm:^1.0.30001774":
-  version: 1.0.30001781
-  resolution: "caniuse-lite@npm:1.0.30001781"
-  checksum: 10c0/79e77d8759a55e90f0f5db96ab9e7925c7b2e3021f77852e647e45f64f7dc701954174188438e84b810824afc16d706c64a38f20f9c1ed9ac174b6362d33325f
+  version: 1.0.30001782
+  resolution: "caniuse-lite@npm:1.0.30001782"
+  checksum: 10c0/f11685de4ce1f0bc16d385fc0a07b0877da0b14af8bf510cee6a3cdfe9da1602360e1f11320e92d4f5d63cd6bec8b43539de25ee78ff94bdb7ec0fa3cce5200c
   languageName: node
   linkType: hard
 
@@ -4135,9 +4135,9 @@ __metadata:
   linkType: hard
 
 "hookified@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "hookified@npm:2.1.0"
-  checksum: 10c0/fdb940457ee17e30ad4ae23d05c52ba70cf4cda10d05f1719efa16c5f2e13bdb6c6e497373397ade08f2a1fad19054a8cbdda455ed0b5daf9ff8c21445537c50
+  version: 2.1.1
+  resolution: "hookified@npm:2.1.1"
+  checksum: 10c0/f1d3e6a86a91061d321d44cde4bdb90340ff6083992182e08e3c60ba1210c2a9592c24988c66995d7f3e0b32214c3e5c71b8405e2ffb8022b2bb140b1eb1645f
   languageName: node
   linkType: hard
 
