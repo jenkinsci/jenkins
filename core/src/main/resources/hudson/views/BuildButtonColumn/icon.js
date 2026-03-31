@@ -14,7 +14,7 @@ Behaviour.specify(
         method: "post",
         headers: crumb.wrap({}),
       }).then((rsp) => {
-        if (rsp.status === 201) {
+        if (rsp.ok) {
           notificationBar.show(message, notificationBar.SUCCESS);
         } else {
           notificationBar.show(failure, notificationBar.ERROR);

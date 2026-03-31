@@ -7,6 +7,7 @@ import hudson.security.Permission;
 import java.util.Collection;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
+import jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.event.Event;
 import jenkins.model.menu.event.LinkEvent;
@@ -21,6 +22,13 @@ public class KeepRunAction extends TransientActionFactory<Run> {
 
     @Override
     public Collection<? extends Action> createFor(Run target) {
+        Boolean newBuildPageEnabled = new NewBuildPageUserExperimentalFlag().getFlagValue();
+
+        // This condition can be removed when the flag has been removed
+        if (!newBuildPageEnabled) {
+            return Set.of();
+        }
+
         if (!target.canToggleLogKeep()) {
             return Set.of();
         }
