@@ -377,7 +377,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jackson3-api</artifactId>
-                  <version>3.1.0-64.v37e742c35905</version>
+                  <version>3.1.1-68.v2a_4b_025ea_657</version>
                   <type>hpi</type>
                 </artifactItem>
 
