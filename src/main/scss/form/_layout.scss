@@ -110,6 +110,7 @@
   &--full-width {
     display: grid;
     grid-template-columns: 1fr auto;
+    overflow-wrap: anywhere;
   }
 
   &--monospace {
