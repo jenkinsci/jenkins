@@ -390,6 +390,14 @@ THE SOFTWARE.
                 </artifactItem>
 
                 <artifactItem>
+                  <!-- dependency of jackson2-api and jackson3-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>woodstox-core-api</artifactId>
+                  <version>7.1.1-1.v4d297985f397</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
