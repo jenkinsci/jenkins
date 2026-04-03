@@ -6,7 +6,7 @@ set -o xtrace
 cd "$(dirname "$0")"
 
 # https://github.com/jenkinsci/acceptance-test-harness/releases
-export ATH_VERSION=6528.v0005e222b_5b_c
+export ATH_VERSION=6612.v3a_89b_e635014
 
 if [[ $# -eq 0 ]]; then
 	export JDK=21

@@ -172,10 +172,40 @@ body:has(.app-settings-container) {
   &__inner {
     max-width: 900px;
     margin: auto;
-    overflow-x: clip;
     padding: var(--section-padding);
     display: flex;
     flex-direction: column;
+
+    &:has(.jenkins-app-bar--sticky) {
+      max-width: 1200px;
+    }
+
+    // TODO - this can be moved to app-bar.scss when Manage Jenkins flag is removed
+    .jenkins-app-bar--sticky {
+      padding: var(--section-padding) 0 !important;
+      margin: -1rem 0 0.5rem !important;
+
+      &::before,
+      &::after {
+        inset: 0 !important;
+      }
+
+      &::before {
+        background: color-mix(
+          in sRGB,
+          var(--text-color-secondary) 2%,
+          var(--card-background)
+        ) !important;
+        mask-image: linear-gradient(black 60%, transparent) !important;
+        opacity: 0.75 !important;
+      }
+
+      &::after {
+        left: calc(var(--section-padding) * -1) !important;
+        right: calc(var(--section-padding) * -1) !important;
+        mask-image: linear-gradient(black 65%, transparent) !important;
+      }
+    }
   }
 }
 
