@@ -26,7 +26,9 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -245,6 +247,32 @@ public class DescriptorTest {
         }
 
         @TestExtension("nestedDescribableSharingClass") public static class DescriptorImpl extends Descriptor<Builder> {}
+    }
+
+    @Issue("JENKINS-26573")
+    @Test
+    void recordDescribablePropertyTypes() {
+        Descriptor<?> descriptor = Jenkins.get().getDescriptorOrDie(SampleRecord.class);
+        PropertyType nameType = descriptor.getPropertyType("name");
+        assertNotNull(nameType, "record component 'name' should be discovered as a property");
+        assertEquals(String.class, nameType.clazz);
+        PropertyType countType = descriptor.getPropertyType("count");
+        assertNotNull(countType, "record component 'count' should be discovered as a property");
+        assertEquals(int.class, countType.clazz);
+    }
+
+    @Issue("JENKINS-26573")
+    @Test
+    void recordDescribableGetViewPageDoesNotThrow() {
+        Descriptor<?> descriptor = Jenkins.get().getDescriptorOrDie(SampleRecord.class);
+        assertDoesNotThrow(descriptor::getConfigPage);
+    }
+
+    public record SampleRecord(String name, int count) implements Describable<SampleRecord> {
+        @DataBoundConstructor
+        public SampleRecord {}
+
+        @TestExtension public static class DescriptorImpl extends Descriptor<SampleRecord> {}
     }
 
     @Test

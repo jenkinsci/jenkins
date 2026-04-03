@@ -56,6 +56,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -537,6 +538,12 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
             if (m.getName().startsWith("get"))
                 r.put(Introspector.decapitalize(m.getName().substring(3)), new PropertyType(m));
 
+        if (clazz.isRecord()) {
+            for (RecordComponent component : clazz.getRecordComponents()) {
+                r.put(component.getName(), new PropertyType(component.getAccessor()));
+            }
+        }
+
         return r;
     }
 
@@ -925,10 +932,13 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
 
     private String getViewPage(Class<?> clazz, Collection<String> pageNames, String defaultValue) {
         while (clazz != Object.class && clazz != null) {
-            for (String pageName : pageNames) {
-                String name = clazz.getName().replace('.', '/').replace('$', '/') + "/" + pageName;
-                if (clazz.getClassLoader().getResource(name) != null)
-                    return '/' + name;
+            ClassLoader cl = clazz.getClassLoader();
+            if (cl != null) {
+                for (String pageName : pageNames) {
+                    String name = clazz.getName().replace('.', '/').replace('$', '/') + "/" + pageName;
+                    if (cl.getResource(name) != null)
+                        return '/' + name;
+                }
             }
             clazz = clazz.getSuperclass();
         }
