@@ -462,4 +462,65 @@ class RobustReflectionConverterTest {
             }
         }
     }
+
+    record SimpleRecord(String name, int count) {}
+
+    private XStream2 xstreamWithRecordAliases() {
+        XStream2 xs = new XStream2();
+        xs.alias("simple-record", SimpleRecord.class);
+        xs.alias("nested-record", NestedRecord.class);
+        return xs;
+    }
+
+    @Test
+    @Issue("JENKINS-26077")
+    void recordRoundTrip() {
+        XStream2 xs = xstreamWithRecordAliases();
+        SimpleRecord original = new SimpleRecord("test", 42);
+        String xml = xs.toXML(original);
+        SimpleRecord restored = (SimpleRecord) xs.fromXML(xml);
+        assertEquals(original, restored);
+    }
+
+    @Test
+    @Issue("JENKINS-26077")
+    void recordFromXml() {
+        XStream2 xs = xstreamWithRecordAliases();
+        SimpleRecord result = (SimpleRecord) xs.fromXML(
+                "<simple-record><name>hello</name><count>7</count></simple-record>");
+        assertEquals("hello", result.name());
+        assertEquals(7, result.count());
+    }
+
+    @Test
+    @Issue("JENKINS-26077")
+    void recordIgnoresUnknownFields() {
+        XStream2 xs = xstreamWithRecordAliases();
+        SimpleRecord result = (SimpleRecord) xs.fromXML(
+                "<simple-record><name>hello</name><count>7</count><extra>ignored</extra></simple-record>");
+        assertEquals("hello", result.name());
+        assertEquals(7, result.count());
+    }
+
+    @Test
+    @Issue("JENKINS-26077")
+    void recordMissingFieldsUseDefaults() {
+        XStream2 xs = xstreamWithRecordAliases();
+        SimpleRecord result = (SimpleRecord) xs.fromXML(
+                "<simple-record><name>hello</name></simple-record>");
+        assertEquals("hello", result.name());
+        assertEquals(0, result.count());
+    }
+
+    record NestedRecord(String label, SimpleRecord inner) {}
+
+    @Test
+    @Issue("JENKINS-26077")
+    void nestedRecordRoundTrip() {
+        XStream2 xs = xstreamWithRecordAliases();
+        NestedRecord original = new NestedRecord("outer", new SimpleRecord("inner", 99));
+        String xml = xs.toXML(original);
+        NestedRecord restored = (NestedRecord) xs.fromXML(xml);
+        assertEquals(original, restored);
+    }
 }
