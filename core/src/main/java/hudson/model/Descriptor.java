@@ -540,7 +540,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
 
         if (clazz.isRecord()) {
             for (RecordComponent component : clazz.getRecordComponents()) {
-                r.put(component.getName(), new PropertyType(component.getAccessor()));
+                r.putIfAbsent(component.getName(), new PropertyType(component.getAccessor()));
             }
         }
 

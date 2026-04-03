@@ -249,7 +249,7 @@ public class DescriptorTest {
         @TestExtension("nestedDescribableSharingClass") public static class DescriptorImpl extends Descriptor<Builder> {}
     }
 
-    @Issue("JENKINS-26573")
+    @Issue("#26573")
     @Test
     void recordDescribablePropertyTypes() {
         Descriptor<?> descriptor = Jenkins.get().getDescriptorOrDie(SampleRecord.class);
@@ -261,7 +261,7 @@ public class DescriptorTest {
         assertEquals(int.class, countType.clazz);
     }
 
-    @Issue("JENKINS-26573")
+    @Issue("#26573")
     @Test
     void recordDescribableGetViewPageDoesNotThrow() {
         Descriptor<?> descriptor = Jenkins.get().getDescriptorOrDie(SampleRecord.class);
