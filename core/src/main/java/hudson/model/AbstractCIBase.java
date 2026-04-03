@@ -119,6 +119,59 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         }
     }
 
+    private final Map<String, Long> snoozedAdministrativeMonitors = new HashMap<>();
+
+    /**
+     * Get the snoozed administrative monitors and their expiry times.
+     *
+     * @return a copy of the snoozed administrative monitors map, where keys are monitor IDs and values are expiry timestamps in milliseconds
+     * @since TODO
+     */
+    public Map<String, Long> getSnoozedAdministrativeMonitors() {
+        synchronized (this.snoozedAdministrativeMonitors) {
+            return new HashMap<>(snoozedAdministrativeMonitors);
+        }
+    }
+
+    /**
+     * Set the snoozed administrative monitors and their expiry times.
+     *
+     * @param snoozedAdministrativeMonitors the map of monitor IDs to expiry timestamps in milliseconds
+     * @since TODO
+     */
+    public void setSnoozedAdministrativeMonitors(Map<String, Long> snoozedAdministrativeMonitors) {
+        synchronized (this.snoozedAdministrativeMonitors) {
+            this.snoozedAdministrativeMonitors.clear();
+            this.snoozedAdministrativeMonitors.putAll(snoozedAdministrativeMonitors);
+        }
+    }
+
+    /**
+     * Atomically add or update a snoozed monitor entry.
+     *
+     * @param monitorId the monitor ID
+     * @param expiry the expiry timestamp in milliseconds
+     * @since TODO
+     */
+    public void putSnoozedAdministrativeMonitor(String monitorId, long expiry) {
+        synchronized (this.snoozedAdministrativeMonitors) {
+            this.snoozedAdministrativeMonitors.put(monitorId, expiry);
+        }
+    }
+
+    /**
+     * Atomically remove a snoozed monitor entry.
+     *
+     * @param monitorId the monitor ID
+     * @return true if the entry was present and removed
+     * @since TODO
+     */
+    public boolean removeSnoozedAdministrativeMonitor(String monitorId) {
+        synchronized (this.snoozedAdministrativeMonitors) {
+            return this.snoozedAdministrativeMonitors.remove(monitorId) != null;
+        }
+    }
+
     /* =================================================================================================================
      * Implementation provided
      * ============================================================================================================== */

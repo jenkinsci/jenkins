@@ -23,12 +23,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout">
-  <div class="jenkins-alert jenkins-alert-warning">
-    <l:isAdmin>
-      <form method="post" action="${rootURL}/${it.url}/disable">
-        <f:submit value="${%Dismiss}"/>
-      </form>
-    </l:isAdmin>
+  <l:adminMonitor>
     <j:set var="actionAnchor">
       <a href="${rootURL}/configure">${%actionUrlContent}</a>
     </j:set>
@@ -45,5 +40,5 @@ THE SOFTWARE.
     <l:isAdmin>
       <j:out value="${%actionToTake(actionAnchor)}"/>
     </l:isAdmin>
-  </div>
+  </l:adminMonitor>
 </j:jelly>
