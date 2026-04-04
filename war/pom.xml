@@ -283,7 +283,7 @@ THE SOFTWARE.
                   <!-- detached after 1.493 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>525.v2458b_d8a_1a_71</version>
+                  <version>534.v1b_36f5864073</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -318,7 +318,7 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1402.va_87fd3d15dc3</version>
+                  <version>1403.vd9d1413fd205</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -369,7 +369,7 @@ THE SOFTWARE.
                   <!-- dependency of echarts-api -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jackson2-api</artifactId>
-                  <version>2.21.1-428.vf8dd988fa_d8d</version>
+                  <version>2.21.2-433.v6d50b_92cfe52</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -377,7 +377,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jackson3-api</artifactId>
-                  <version>3.1.0-64.v37e742c35905</version>
+                  <version>3.1.1-68.v2a_4b_025ea_657</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -390,10 +390,18 @@ THE SOFTWARE.
                 </artifactItem>
 
                 <artifactItem>
+                  <!-- dependency of jackson2-api and jackson3-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>woodstox-core-api</artifactId>
+                  <version>7.1.1-1.v4d297985f397</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
-                  <version>6.0.0-1165.vd1283a_3e37d4</version>
+                  <version>6.0.0-1247.vf3e35a_c1813f</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -685,7 +693,7 @@ THE SOFTWARE.
           contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
           result before proceeding with the update here.
         -->
-        <version>12.1.6</version>
+        <version>12.1.8</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)

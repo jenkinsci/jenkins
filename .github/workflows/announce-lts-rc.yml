@@ -10,14 +10,14 @@ jobs:
     if: ${{ github.repository_owner == 'jenkinsci' }}
     steps:
       - name: Post on Discourse
-        uses: roots/discourse-topic-github-release-action@c30dc233349b7c6f24f52fb1c659cc64f13b5474 # v1.0.1
+        uses: roots/discourse-topic-github-release-action@557d74ea05b6cc0c47f555c1d5d28a89d904005b # v1.1.0
         with:
           discourse-api-key: ${{ secrets.DISCOURSE_RELEASES_API_KEY }}
           discourse-base-url: https://community.jenkins.io/
           discourse-author-username: jenkins-release-bot
           discourse-category: 23
       - name: Post on mailing list
-        uses: dawidd6/action-send-mail@ba302ba66e88942841281c984a6b31ca6d6289e6 # v11
+        uses: dawidd6/action-send-mail@d38f3f7cd391cdebfe0d38efc3998b935e951c4f # v16
         with:
           server_address: smtp.gmail.com
           server_port: 465

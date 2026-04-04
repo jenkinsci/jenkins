@@ -192,7 +192,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2555.vfe887ed7e86f</version>
+      <version>2557.v6317fc67b_811</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -238,19 +238,19 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1491.v6d6145e96e1c</version>
+      <version>1499.va_f0e811253a_6</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1402.va_87fd3d15dc3</version>
+      <version>1403.vd9d1413fd205</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>525.v2458b_d8a_1a_71</version>
+      <version>534.v1b_36f5864073</version>
       <scope>test</scope>
     </dependency>
     <dependency>

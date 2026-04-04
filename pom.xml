@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.555</revision>
+    <revision>2.558</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2026-03-10T06:43:54Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-03-31T06:46:04Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -98,8 +98,8 @@ THE SOFTWARE.
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>8.1033.v23d2f156e821</winstone.version>
-    <node.version>24.14.0</node.version>
+    <winstone.version>8.1039.v78300b_1d48a_9</winstone.version>
+    <node.version>24.14.1</node.version>
   </properties>
 
   <!--
@@ -281,7 +281,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>13.3.0</version>
+              <version>13.4.0</version>
             </dependency>
           </dependencies>
           <executions>

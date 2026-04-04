@@ -27,7 +27,7 @@ THE SOFTWARE.
 	<l:layout title="${%JENKINS_HOME is almost full}">
 		<l:main-panel>
       <h1>
-        <l:icon class="icon-warning icon-xlg"/>
+        <l:icon src="symbol-warning" class="icon-xlg jenkins-!-warning-color"/>
         ${%blurb}
       </h1>
 
