@@ -59,11 +59,8 @@ public class InstallerTranslator extends ToolLocationTranslator {
             if (installer.appliesTo(node)) {
                 Semaphore semaphore;
                 synchronized (mutexByNode) {
-                    Map<ToolInstallation, Semaphore> mutexByTool = mutexByNode.computeIfAbsent(node, k -> new WeakHashMap<>());
-                    semaphore = mutexByTool.get(tool);
-                    if (semaphore == null) {
-                        mutexByTool.put(tool, semaphore = new Semaphore(1));
-                    }
+                    Map<ToolInstallation, Semaphore> mutexByTool = mutexByNode.computeIfAbsent(node, unused -> new WeakHashMap<>());
+                    semaphore = mutexByTool.computeIfAbsent(tool, unused -> new Semaphore(1));
                 }
                 semaphore.acquire();
                 try {

@@ -1,0 +1,187 @@
+<!--
+The MIT License
+
+Copyright (c) 2025, Jan Faracik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation>
+    A reusable container for subpages relating under Manage Jenkins.
+    <st:attribute name="managementLink" type="hudson.model.ManagementLink" use="optional">
+      Specifies the object for which page details will be loaded from.
+      Defaults to the "it" object in the current context.
+    </st:attribute>
+    <st:attribute name="permission">
+      If given, this page is only made available to users who have the specified permission.
+      (The permission will be checked against the "it" object.)
+    </st:attribute>
+    <st:attribute name="permissions">
+      If given, this page is made available to users who have one or more of the specified permissions.
+      (The permissions will be checked against the "it" object.)
+    </st:attribute>
+    <st:attribute name="placeholder">
+      Optional placeholder for loading this page, falls back to a generic skeleton if not set.
+    </st:attribute>
+    <st:attribute name="header">
+      Optional header for the page, falls back to a default header if not set.
+    </st:attribute>
+    <st:attribute name="title">
+      <![CDATA[
+      Optional title for the page, falls back to <code>managementLink.displayName</code> if not set.
+      ]]>
+    </st:attribute>
+    <st:attribute name="description">
+      <![CDATA[
+      Optional description for the page, falls back to <code>managementLink.description</code> if not set.
+      ]]>
+    </st:attribute>
+    <st:attribute name="includeBreadcrumb">
+      <![CDATA[
+      Optional breadcrumb, will add a breadcrumb for the current <code>it</code>
+      ]]>
+    </st:attribute>
+    <st:attribute name="noDefer">
+      Optional, disables the deferred loading for the page.
+      This can be useful if you need to access 'request2' or do advanced JavaScript.
+      Defaults to false if not set.
+    </st:attribute>
+    <st:attribute name="includeSidepanel">
+      This is internal only - do not use this.
+      Optional, includes the sidepanel for if the Experimental Manage Jenkins is disabled.
+      Defaults to false if not set.
+    </st:attribute>
+  </st:documentation>
+
+  <j:new className="hudson.model.ManageJenkinsAction" var="manageJenkinsAction" />
+  <l:userExperimentalFlag var="newManageJenkins" flagClassName="jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag" />
+
+  <j:set var="managementLink" value="${attrs.managementLink ?: it}" />
+  <j:set var="pageTitle" value="${attrs.title ?: managementLink.displayName}" />
+  <j:set var="description" value="${attrs.description ?: managementLink.description}" />
+
+  <l:layout title="${pageTitle} - ${manageJenkinsAction.displayName}"
+            permission="${attrs.permission}"
+            permissions="${attrs.permissions}"
+            type="${(newManageJenkins or attrs.includeSidepanel) ? 'two-column' : 'one-column'}">
+
+    <j:if test="${attrs.includeBreadcrumb}">
+      <!-- Hacky - this will be improved in subsequent PRs -->
+      <j:choose>
+        <j:when test="${managementLink.class.name eq 'jenkins.management.ConfigureLink'}">
+          <f:breadcrumb-config-outline title="${pageTitle}" />
+        </j:when>
+        <j:otherwise>
+          <l:breadcrumb title="${pageTitle}" />
+        </j:otherwise>
+      </j:choose>
+    </j:if>
+
+    <j:choose>
+      <j:when test="${newManageJenkins}">
+        <l:side-panel>
+          <l:app-bar title="${manageJenkinsAction.displayName}" />
+
+          <l:tasks>
+            <l:search-bar placeholder="${%Search}" id="settings-search-bar" />
+
+            <script src="${resURL}/jsbundles/pages/manage-jenkins.js" type="text/javascript" />
+
+            <j:invokeStatic var="j" className="jenkins.model.Jenkins" method="get" />
+            <j:forEach var="category" items="${j.categorizedManagementLinks.entrySet()}">
+              <summary class="jenkins-side-nav__heading">
+                ${category.key.label}
+              </summary>
+              <j:forEach var="item" items="${category.value}">
+                <l:task title="${item.displayName}"
+                        href="${rootURL}/manage/${item.urlName}"
+                        icon="${item.iconFileName}"
+                        badge="${item.badge}"
+                        requiresConfirmation="${item.requiresConfirmation}"
+                        post="${item.requiresPOST}"
+                        confirmationMessage="${%sure}" />
+              </j:forEach>
+            </j:forEach>
+          </l:tasks>
+        </l:side-panel>
+        <l:main-panel>
+          <div class="app-settings-container">
+            <div class="app-settings-container__inner">
+              <j:if test="${!attrs.containsKey('header')}">
+                <l:app-bar title="${pageTitle}" />
+                <j:if test="${!empty(description)}">
+                  <div class="jenkins-page-description">
+                    ${description}
+                  </div>
+                </j:if>
+              </j:if>
+
+              <j:out value="${attrs.header}" />
+
+              <j:choose>
+                <j:when test="${!attrs.noDefer}">
+                  <l:defer>
+                    <l:defer.placeholder>
+                      <j:choose>
+                        <j:when test="${attrs.containsKey('placeholder')}">
+                          <j:out value="${attrs.placeholder}" />
+                        </j:when>
+                        <j:otherwise>
+                          <l:skeleton type="form" />
+                        </j:otherwise>
+                      </j:choose>
+                    </l:defer.placeholder>
+                    <l:defer.children>
+                      <d:invokeBody />
+                    </l:defer.children>
+                  </l:defer>
+                </j:when>
+                <j:otherwise>
+                  <d:invokeBody />
+                </j:otherwise>
+              </j:choose>
+            </div>
+          </div>
+        </l:main-panel>
+      </j:when>
+      <j:otherwise>
+        <j:if test="${attrs.includeSidepanel}">
+          <st:include page="sidepanel" />
+        </j:if>
+
+        <l:main-panel>
+          <j:if test="${!attrs.containsKey('header')}">
+            <l:app-bar title="${pageTitle}" />
+            <j:if test="${!empty(description)}">
+              <div class="jenkins-page-description">
+                ${description}
+              </div>
+            </j:if>
+          </j:if>
+
+          <j:out value="${attrs.header}" />
+
+          <d:invokeBody />
+        </l:main-panel>
+      </j:otherwise>
+    </j:choose>
+  </l:layout>
+</j:jelly>

@@ -1,0 +1,27 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <j:invokeStatic var="allViewsTabBar" className="hudson.views.ViewsTabBar" method="all"/>
+  <j:if test="${allViewsTabBar.size() > 1}">
+    <f:dropdownList name="viewsTabBar" title="${%Views Tab Bar}" help="${descriptor.getHelpFile('viewsTabBar')}">
+      <j:set var="current" value="${instance['viewsTabBar']}"/>
+      <f:dropdownListBlock title="${%Inherit from Container}" value="" selected="${current == null}"/>
+      <j:forEach var="descriptor" items="${allViewsTabBar}" varStatus="loop">
+        <f:dropdownListBlock value="${loop.index}" title="${descriptor.displayName}"
+                             selected="${current.descriptor==descriptor}" staplerClass="${descriptor.clazz.name}"
+                             lazy="descriptor,it">
+          <l:ajax>
+            <j:set var="instance" value="${current.descriptor==descriptor ? current : null}" />
+            <j:set var="help" value="${descriptor.helpFile}"/>
+            <j:if test="${help != null}">
+              <div class="help-sibling jenkins-select-help">
+                <f:helpLink url="${help}" featureName="${descriptor.displayName}"/>
+                <f:helpArea/>
+              </div>
+            </j:if>
+            <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
+          </l:ajax>
+        </f:dropdownListBlock>
+      </j:forEach>
+    </f:dropdownList>
+  </j:if>
+</j:jelly>

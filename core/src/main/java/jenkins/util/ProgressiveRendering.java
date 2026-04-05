@@ -26,8 +26,8 @@ package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AbstractItem;
+import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
@@ -39,7 +39,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSON;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.Ancestor;
@@ -103,7 +102,7 @@ public abstract class ProgressiveRendering {
      * For internal use.
      */
     @JavaScriptMethod public final void start() {
-        Ancestor ancestor = Stapler.getCurrentRequest().findAncestor(BoundObjectTable.class);
+        Ancestor ancestor = Stapler.getCurrentRequest2().findAncestor(BoundObjectTable.class);
         if (ancestor == null) {
             throw new IllegalStateException("no BoundObjectTable");
         }
@@ -111,46 +110,31 @@ public abstract class ProgressiveRendering {
         boundId = ancestor.getNextToken(0);
         LOG.log(Level.FINE, "starting rendering {0} at {1}", new Object[] {uri, boundId});
         final ExecutorService executorService = executorService();
-        executorService.submit(new Runnable() {
-            @Override public void run() {
-                lastNewsTime = start = System.currentTimeMillis();
-                setCurrentRequest(request);
-                SecurityContext orig = SecurityContextHolder.getContext();
-                try {
-                    SecurityContextHolder.setContext(securityContext);
-                    compute();
-                    if (status != CANCELED && status != ERROR) {
-                        status = 1;
-                    }
-                } catch (Exception x) {
-                    LOG.log(Level.WARNING, "failed to compute " + uri, x);
-                    status = ERROR;
-                } finally {
-                    SecurityContextHolder.setContext(orig);
-                    setCurrentRequest(null);
-                    LOG.log(Level.FINE, "{0} finished in {1}msec with status {2}", new Object[] {uri, System.currentTimeMillis() - start, status});
+        executorService.submit(() -> {
+            lastNewsTime = start = System.currentTimeMillis();
+            setCurrentRequest(request);
+            SecurityContext orig = SecurityContextHolder.getContext();
+            try {
+                SecurityContextHolder.setContext(securityContext);
+                compute();
+                if (status != CANCELED && status != ERROR) {
+                    status = 1;
                 }
-                if (executorService instanceof ScheduledExecutorService) {
-                    ((ScheduledExecutorService) executorService).schedule(new Runnable() {
-                        @Override public void run() {
-                            LOG.log(Level.FINE, "some time has elapsed since {0} finished, so releasing", boundId);
-                            release();
-                        }
-                    }, timeout() /* add some grace period for browser/network overhead */ * 2, TimeUnit.MILLISECONDS);
-                }
+            } catch (Exception x) {
+                LOG.log(Level.WARNING, "failed to compute " + uri, x);
+                status = ERROR;
+            } finally {
+                SecurityContextHolder.setContext(orig);
+                setCurrentRequest(null);
+                LOG.log(Level.FINE, "{0} finished in {1}msec with status {2}", new Object[] {uri, System.currentTimeMillis() - start, status});
+            }
+            if (executorService instanceof ScheduledExecutorService) {
+                ((ScheduledExecutorService) executorService).schedule(() -> {
+                    LOG.log(Level.FINE, "some time has elapsed since {0} finished, so releasing", boundId);
+                    boundObjectTable.release(boundId);
+                }, timeout() /* add some grace period for browser/network overhead */ * 2, TimeUnit.MILLISECONDS);
             }
         });
-    }
-
-    /** {@link BoundObjectTable#releaseMe} just cannot work the way we need it to. */
-    private void release() {
-        try {
-            Method release = BoundObjectTable.Table.class.getDeclaredMethod("release", String.class);
-            release.setAccessible(true);
-            release.invoke(boundObjectTable, boundId);
-        } catch (Exception x) {
-            LOG.log(Level.WARNING, "failed to unbind " + boundId, x);
-        }
     }
 
     /**
@@ -159,7 +143,7 @@ public abstract class ProgressiveRendering {
      */
     @java.lang.SuppressWarnings({"rawtypes", "unchecked"}) // public RequestImpl ctor requires List<AncestorImpl> yet AncestorImpl is not public! API design flaw
     private static RequestImpl createMockRequest() {
-        RequestImpl currentRequest = (RequestImpl) Stapler.getCurrentRequest();
+        RequestImpl currentRequest = (RequestImpl) Stapler.getCurrentRequest2();
         HttpServletRequest original = (HttpServletRequest) currentRequest.getRequest();
         final Map<String, Object> getters = new HashMap<>();
         for (Method method : HttpServletRequest.class.getMethods()) {
@@ -179,14 +163,12 @@ public abstract class ProgressiveRendering {
         List/*<AncestorImpl>*/ ancestors = currentRequest.ancestors;
         LOG.log(Level.FINER, "mocking ancestors {0} using {1}", new Object[] {ancestors, getters});
         TokenList tokens = currentRequest.tokens;
-        return new RequestImpl(Stapler.getCurrent(), (HttpServletRequest) Proxy.newProxyInstance(ProgressiveRendering.class.getClassLoader(), new Class<?>[] {HttpServletRequest.class}, new InvocationHandler() {
-            @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                String m = method.getName();
-                if (getters.containsKey(m)) {
-                    return getters.get(m);
-                } else { // TODO implement other methods as needed
-                    throw new UnsupportedOperationException(m);
-                }
+        return new RequestImpl(Stapler.getCurrent(), (HttpServletRequest) Proxy.newProxyInstance(ProgressiveRendering.class.getClassLoader(), new Class<?>[] {HttpServletRequest.class}, (proxy, method, args) -> {
+            String m = method.getName();
+            if (getters.containsKey(m)) {
+                return getters.get(m);
+            } else { // TODO implement other methods as needed
+                throw new UnsupportedOperationException(m);
             }
         }), ancestors, tokens);
     }
@@ -205,7 +187,7 @@ public abstract class ProgressiveRendering {
     /**
      * Actually do the work.
      * <p>The security context will be that in effect when the web request was made.
-     * {@link Stapler#getCurrentRequest} will also be similar to that in effect when the web request was made;
+     * {@link Stapler#getCurrentRequest2} will also be similar to that in effect when the web request was made;
      * at least, {@link Ancestor}s and basic request properties (URI, locale, and so on) will be available.
      * @throws Exception whenever you like; the progress bar will indicate that an error occurred but details go to the log only
      */
@@ -281,7 +263,7 @@ public abstract class ProgressiveRendering {
         r.put("status", statusJSON);
         if (statusJSON instanceof String) { // somehow completed
             LOG.log(Level.FINE, "finished in news so releasing {0}", boundId);
-            release();
+            boundObjectTable.release(boundId);
         }
         lastNewsTime = System.currentTimeMillis();
         LOG.log(Level.FINER, "news from {0}", uri);

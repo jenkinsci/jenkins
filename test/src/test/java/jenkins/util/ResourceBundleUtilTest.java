@@ -24,29 +24,36 @@
 
 package jenkins.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
 import net.sf.json.JSONObject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class ResourceBundleUtilTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class ResourceBundleUtilTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Test resource bundle loading for a defined locale.
      */
     @Test
-    public void test_known_locale() {
+    void test_known_locale() {
         JSONObject bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", Locale.GERMAN);
         assertEquals("Initialisiere Log-Rekorder", bundle.getString("LogRecorderManager.init"));
         bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("de"));
@@ -57,7 +64,7 @@ public class ResourceBundleUtilTest {
     }
 
     @Test
-    public void noFallbackLocale() {
+    void noFallbackLocale() {
         try (var ignored = new DefaultLocale(new Locale("fr"))) {
             var bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("en"));
             assertEquals("System Log", bundle.getString("LogRecorderManager.DisplayName"));
@@ -68,7 +75,7 @@ public class ResourceBundleUtilTest {
      * Test that we get the "default" bundle for an unknown locale.
      */
     @Test
-    public void test_unknown_locale() {
+    void test_unknown_locale() {
         JSONObject bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("kok")); // konkani
         assertEquals("Initializing log recorders", bundle.getString("LogRecorderManager.init"));
     }
@@ -77,7 +84,7 @@ public class ResourceBundleUtilTest {
      * Test unknown bundle.
      */
     @Test
-    public void test_unknown_bundle() {
+    void test_unknown_bundle() {
         assertThrows(MissingResourceException.class, () -> ResourceBundleUtil.getBundle("hudson.blah.Whatever"));
     }
 

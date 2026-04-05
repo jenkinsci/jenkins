@@ -40,7 +40,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * {@link Descriptor} for {@link View}.
@@ -88,8 +88,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
     @Restricted(DoNotUse.class)
     public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value, @AncestorInPath ItemGroup<?> container) {
         AutoCompletionCandidates candidates = AutoCompletionCandidates.ofJobNames(TopLevelItem.class, value, container);
-        if (container instanceof DirectlyModifiableTopLevelItemGroup) {
-            DirectlyModifiableTopLevelItemGroup modifiableContainer = (DirectlyModifiableTopLevelItemGroup) container;
+        if (container instanceof DirectlyModifiableTopLevelItemGroup modifiableContainer) {
             Iterator<String> it = candidates.getValues().iterator();
             while (it.hasNext()) {
                 TopLevelItem item = Jenkins.get().getItem(it.next(), container, TopLevelItem.class);
@@ -108,7 +107,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      * Possible {@link ListViewColumnDescriptor}s that can be used with this view.
      */
     public List<Descriptor<ListViewColumn>> getColumnsDescriptors() {
-        StaplerRequest request = Stapler.getCurrentRequest();
+        StaplerRequest2 request = Stapler.getCurrentRequest2();
         if (request != null) {
             View view = request.findAncestorObject(clazz);
             return view == null ? DescriptorVisibilityFilter.applyType(clazz, ListViewColumn.all())
@@ -121,7 +120,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      * Possible {@link ViewJobFilter} types that can be used with this view.
      */
     public List<Descriptor<ViewJobFilter>> getJobFiltersDescriptors() {
-        StaplerRequest request = Stapler.getCurrentRequest();
+        StaplerRequest2 request = Stapler.getCurrentRequest2();
         if (request != null) {
             View view = request.findAncestorObject(clazz);
             return view == null ? DescriptorVisibilityFilter.applyType(clazz, ViewJobFilter.all())

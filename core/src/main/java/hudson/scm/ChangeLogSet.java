@@ -238,7 +238,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
             ChangeLogSet parent = getParent();
             if (null != parent) {
                 String kind = parent.getKind();
-                if (null != kind && kind.trim().length() > 0) scm = kind;
+                if (null != kind && !kind.trim().isEmpty()) scm = kind;
             }
             throw new UnsupportedOperationException("getAffectedFiles() is not implemented by " + scm);
         }

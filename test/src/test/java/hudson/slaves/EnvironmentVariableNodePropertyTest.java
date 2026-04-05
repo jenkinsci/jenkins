@@ -1,6 +1,6 @@
 package hudson.slaves;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -12,14 +12,12 @@ import java.util.Map;
 import java.util.Set;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * This class tests that environment variables from node properties are applied,
@@ -27,22 +25,29 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
  * global (controller) node properties
  * TODO(terminology) confirm that the built-in node has node properties separate from global (controller) node properties
  */
-public class EnvironmentVariableNodePropertyTest {
+@WithJenkins
+class EnvironmentVariableNodePropertyTest {
 
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
     private DumbSlave agent;
     private FreeStyleProject project;
+
+
+    // //////////////////////// setup //////////////////////////////////////////
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Exception {
+        j = rule;
+        agent = j.createSlave();
+        project = j.createFreeStyleProject();
+    }
 
     /**
      * Agent properties are available
      */
     @Test
-    public void testAgentPropertyOnAgent() throws Exception {
+    void testAgentPropertyOnAgent() throws Exception {
         setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("KEY", "agentValue"));
         Map<String, String> envVars = executeBuild(agent);
         assertEquals("agentValue", envVars.get("KEY"));
@@ -52,7 +57,7 @@ public class EnvironmentVariableNodePropertyTest {
      * Built-in node properties are available
      */
     @Test
-    public void testControllerPropertyOnBuiltInNode() throws Exception {
+    void testControllerPropertyOnBuiltInNode() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
                 Set.of(new EnvironmentVariablesNodeProperty(
                         new EnvironmentVariablesNodeProperty.Entry("KEY", "globalValue"))));
@@ -66,7 +71,7 @@ public class EnvironmentVariableNodePropertyTest {
      * Both agent and controller properties are available, but agent properties have priority
      */
     @Test
-    public void testAgentAndControllerPropertyOnAgent() throws Exception {
+    void testAgentAndControllerPropertyOnAgent() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
                 Set.of(new EnvironmentVariablesNodeProperty(
                         new EnvironmentVariablesNodeProperty.Entry("KEY", "globalValue"))));
@@ -81,9 +86,9 @@ public class EnvironmentVariableNodePropertyTest {
      * Agent and controller properties and parameters are available.
      * Priority: parameters > agent > controller
      */
-    @Test
     // TODO(terminology) is this correct? This sets a built-in node property, not a global property
-    public void testAgentAndBuiltInNodePropertyAndParameterOnAgent()
+    @Test
+    void testAgentAndBuiltInNodePropertyAndParameterOnAgent()
             throws Exception {
         ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
                 new StringParameterDefinition("KEY", "parameterValue"));
@@ -98,7 +103,7 @@ public class EnvironmentVariableNodePropertyTest {
     }
 
     @Test
-    public void testVariableResolving() throws Exception {
+    void testVariableResolving() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
                 Set.of(new EnvironmentVariablesNodeProperty(
                         new EnvironmentVariablesNodeProperty.Entry("KEY1", "value"), new EnvironmentVariablesNodeProperty.Entry("KEY2", "$KEY1"))));
@@ -108,7 +113,7 @@ public class EnvironmentVariableNodePropertyTest {
     }
 
     @Test
-    public void testFormRoundTripForController() throws Exception {
+    void testFormRoundTripForController() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
                 Set.of(new EnvironmentVariablesNodeProperty(
                         new EnvironmentVariablesNodeProperty.Entry("KEY", "value"))));
@@ -126,7 +131,7 @@ public class EnvironmentVariableNodePropertyTest {
     }
 
     @Test
-    public void testFormRoundTripForAgent() throws Exception {
+    void testFormRoundTripForAgent() throws Exception {
         setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("KEY", "value"));
 
         WebClient webClient = j.createWebClient();
@@ -139,14 +144,6 @@ public class EnvironmentVariableNodePropertyTest {
         EnvironmentVariablesNodeProperty prop = agent.getNodeProperties().get(EnvironmentVariablesNodeProperty.class);
         assertEquals(1, prop.getEnvVars().size());
         assertEquals("value", prop.getEnvVars().get("KEY"));
-    }
-
-    // //////////////////////// setup //////////////////////////////////////////
-
-    @Before
-    public void setUp() throws Exception {
-        agent = j.createSlave();
-        project = j.createFreeStyleProject();
     }
 
     // ////////////////////// helper methods /////////////////////////////////

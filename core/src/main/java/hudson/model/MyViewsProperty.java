@@ -26,32 +26,39 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
+import hudson.model.userproperty.UserPropertyCategory;
 import hudson.security.ACL;
 import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
+import hudson.views.DefaultViewsTabBar;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerFallback;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerProxy;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.verb.POST;
 
 /**
@@ -59,7 +66,14 @@ import org.kohsuke.stapler.verb.POST;
  *
  * @author Tom Huybrechts
  */
-public class MyViewsProperty extends UserProperty implements ModifiableViewGroup, Action, StaplerFallback {
+public class MyViewsProperty extends UserProperty implements ModifiableViewGroup, Action, StaplerFallback, StaplerProxy {
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* non-final */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(MyViewsProperty.class.getName() + ".skipPermissionCheck");
 
     /**
      * Name of the primary view defined by the user.
@@ -67,6 +81,8 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
      */
     @CheckForNull
     private String primaryViewName;
+
+    private ViewsTabBar viewsTabBar = new DefaultViewsTabBar();
 
     /**
      * Always hold at least one view.
@@ -111,6 +127,9 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
             protected void primaryView(String name) { primaryViewName = name; }
         };
 
+        if (viewsTabBar == null) {
+            viewsTabBar = new DefaultViewsTabBar();
+        }
         return this;
     }
 
@@ -185,7 +204,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     }
 
     @POST
-    public synchronized void doCreateView(StaplerRequest req, StaplerResponse rsp)
+    public synchronized void doCreateView(StaplerRequest2 req, StaplerResponse2 rsp)
             throws IOException, ServletException, ParseException, FormException {
         checkPermission(View.CREATE);
         addView(View.create(req, rsp, this));
@@ -225,12 +244,23 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
 
     @Override
     public String getIconFileName() {
-        return "symbol-browsers";
+        if (SKIP_PERMISSION_CHECK || getACL().hasPermission(Jenkins.ADMINISTER))
+            return "symbol-browsers";
+        else
+            return null;
     }
 
     @Override
     public String getUrlName() {
         return "my-views";
+    }
+
+    @Override
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            checkPermission(Jenkins.ADMINISTER);
+        }
+        return this;
     }
 
     @Extension @Symbol("myView")
@@ -246,17 +276,45 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         public UserProperty newInstance(User user) {
             return new MyViewsProperty();
         }
+
+        @Override
+        public @NonNull UserPropertyCategory getUserPropertyCategory() {
+            return UserPropertyCategory.get(UserPropertyCategory.Preferences.class);
+        }
+
+        @POST
+        public ListBoxModel doFillPrimaryViewNameItems(@AncestorInPath User user) throws IOException {
+            ListBoxModel items = new ListBoxModel();
+            user = user == null ? User.current() : user;
+            if (user != null) {
+                MyViewsProperty property = user.getProperty(MyViewsProperty.class);
+                if (property == null) {
+                    property = new MyViewsProperty();
+                    property.readResolve();
+                    user.addProperty(property);
+                }
+                for (View view : property.views) {
+                    items.add(new ListBoxModel.Option(view.getDisplayName(), view.getViewName(),
+                            view == property.getPrimaryView()));
+                }
+            }
+            return items;
+        }
     }
 
     @Override
-    public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+    public UserProperty reconfigure(StaplerRequest2 req, JSONObject form) throws FormException {
         req.bindJSON(this, form);
         return this;
     }
 
     @Override
     public ViewsTabBar getViewsTabBar() {
-        return Jenkins.get().getViewsTabBar();
+        return viewsTabBar;
+    }
+
+    public void setViewsTabBar(ViewsTabBar viewsTabBar) {
+        this.viewsTabBar = viewsTabBar;
     }
 
     @Override
@@ -274,7 +332,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return Jenkins.get().getMyViewsTabBar();
     }
 
-    @Extension @Symbol("myView")
+    @Symbol("myView")
     public static class GlobalAction implements RootAction {
 
         @Override

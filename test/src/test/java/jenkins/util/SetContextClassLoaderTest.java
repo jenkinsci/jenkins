@@ -1,30 +1,31 @@
 package jenkins.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RealJenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 
-public class SetContextClassLoaderTest {
+class SetContextClassLoaderTest {
 
-    @Rule public RealJenkinsRule rr = new RealJenkinsRule();
+    @RegisterExtension
+    private final RealJenkinsExtension rr = new RealJenkinsExtension();
 
     @Test
-    public void positive() throws Throwable {
+    void positive() throws Throwable {
         rr.then(SetContextClassLoaderTest::_positive);
     }
 
     private static void _positive(JenkinsRule r) throws ClassNotFoundException {
-        try (SetContextClassLoader sccl = new SetContextClassLoader(RealJenkinsRule.Endpoint.class)) {
+        try (SetContextClassLoader sccl = new SetContextClassLoader(r.getPluginManager().uberClassLoader)) {
             assertEquals("hudson.tasks.Mailer$UserProperty", getUserPropertyClass().getName());
         }
     }
 
     @Test
-    public void negative() throws Throwable {
+    void negative() throws Throwable {
         rr.then(SetContextClassLoaderTest::_negative);
     }
 

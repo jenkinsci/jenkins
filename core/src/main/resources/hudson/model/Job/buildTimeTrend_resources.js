@@ -2,30 +2,31 @@
  * Public method to be called by progressiveRendering's callback
  */
 window.buildTimeTrend_displayBuilds = function (data) {
-  var p = document.getElementById("trend");
-  var isDistributedBuildsEnabled =
-    "true" === p.getAttribute("data-is-distributed-build-enabled");
-  var rootURL = document.head.getAttribute("data-rooturl");
+  const p = document.getElementById("trend");
+  p.classList.remove("jenkins-hidden");
 
-  for (var x = 0; data.length > x; x++) {
-    var e = data[x];
-    var tr = document.createElement("tr");
+  const showAgent = "true" === p.dataset.showAgent;
+  const rootURL = document.head.getAttribute("data-rooturl");
+
+  for (let x = 0; data.length > x; x++) {
+    const e = data[x];
+    let tr = document.createElement("tr");
 
     let td = document.createElement("td");
     td.setAttribute("data", e.iconColorOrdinal);
-
-    let link = document.createElement("a");
-    link.classList.add("build-status-link");
-    link.href = e.consoleUrl;
-    td.appendChild(link);
+    td.classList.add("jenkins-table__cell--tight", "jenkins-table__icon");
+    let div = document.createElement("div");
+    div.classList.add("jenkins-table__cell__button-wrapper");
     let svg = generateSVGIcon(e.iconName);
-    link.appendChild(svg);
+    svg.setAttribute("tooltip", e.iconColorDescription);
+    div.appendChild(svg);
+    td.appendChild(div);
     tr.appendChild(td);
 
     td = document.createElement("td");
     td.setAttribute("data", e.number);
 
-    link = document.createElement("a");
+    let link = document.createElement("a");
     link.href = e.number + "/";
     link.classList.add("model-link", "inside");
     link.innerText = escapeHTML(e.displayName);
@@ -34,17 +35,23 @@ window.buildTimeTrend_displayBuilds = function (data) {
     tr.appendChild(td);
 
     td = document.createElement("td");
+    td.setAttribute("data", e.timestampString2);
+    td.textContent = e.timestampString;
+    tr.appendChild(td);
+
+    td = document.createElement("td");
     td.setAttribute("data", e.duration);
 
     td.innerText = escapeHTML(e.durationString);
 
     tr.appendChild(td);
-    if (isDistributedBuildsEnabled) {
-      var buildInfo = null;
-      var buildInfoStr = escapeHTML(e.builtOnStr || "");
+    if (showAgent) {
+      /* eslint-disable-next-line no-useless-assignment */
+      let buildInfo = null;
+      let buildInfoStr = escapeHTML(e.builtOnStr || "");
       if (e.builtOn) {
         buildInfo = document.createElement("a");
-        buildInfo.href = rootURL + "/computer/" + e.builtOn;
+        buildInfo.href = rootURL + "/computer/" + e.builtOn + "/";
         buildInfo.classList.add("model-link", "inside");
         buildInfo.innerText = buildInfoStr;
       } else {
@@ -58,6 +65,19 @@ window.buildTimeTrend_displayBuilds = function (data) {
       }
       tr.appendChild(td);
     }
+
+    let tdConsole = document.createElement("td");
+    tdConsole.classList.add("jenkins-table__cell--tight");
+    let div2 = document.createElement("div");
+    div2.classList.add("jenkins-table__cell__button-wrapper");
+    link = document.createElement("a");
+    link.classList.add("jenkins-button", "jenkins-button--tertiary");
+    link.href = e.consoleUrl;
+    link.appendChild(generateSVGIcon("console"));
+    div2.appendChild(link);
+    tdConsole.appendChild(div2);
+    tr.appendChild(tdConsole);
+
     p.appendChild(tr);
     Behaviour.applySubtree(tr);
   }
@@ -104,12 +124,7 @@ window.displayBuilds = function (data) {
     a1.appendChild(span1);
     td2.appendChild(a1);
     var a2 = document.createElement("a");
-    a2.classList.add(
-      "jenkins-table__link",
-      "jenkins-table__badge",
-      "model-link",
-      "inside",
-    );
+    a2.classList.add("jenkins-badge", "model-link");
     a2.href = rootUrl + "/" + e.url;
     a2.textContent = e.displayName;
     td2.appendChild(a2);
@@ -132,7 +147,7 @@ window.displayBuilds = function (data) {
     var div2 = document.createElement("div");
     div2.classList.add("jenkins-table__cell__button-wrapper");
     var a3 = document.createElement("a");
-    a3.classList.add("jenkins-button");
+    a3.classList.add("jenkins-button", "jenkins-button--tertiary");
     a3.href = e.consoleUrl;
     a3.innerHTML = p.dataset.consoleOutputIcon;
     div2.appendChild(a3);

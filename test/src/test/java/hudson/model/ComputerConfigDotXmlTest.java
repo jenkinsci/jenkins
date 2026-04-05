@@ -33,9 +33,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -43,6 +43,10 @@ import hudson.security.ACL;
 import hudson.security.AccessDeniedException3;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.slaves.DumbSlave;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -50,26 +54,22 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
 import jenkins.model.Jenkins;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.FakeLauncher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.PretendSlave;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.context.SecurityContext;
@@ -78,22 +78,24 @@ import org.springframework.security.core.context.SecurityContextHolder;
 /**
  * @author ogondza
  */
-public class ComputerConfigDotXmlTest {
+@WithJenkins
+class ComputerConfigDotXmlTest {
 
-    @Rule public final JenkinsRule rule = new JenkinsRule();
+    @TempDir
+    private File temporaryFolder;
 
-    @Rule
-    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    @Mock private StaplerRequest req;
-    @Mock private StaplerResponse rsp;
+    @Mock private StaplerRequest2 req;
+    @Mock private StaplerResponse2 rsp;
 
     private Computer computer;
     private SecurityContext oldSecurityContext;
     private AutoCloseable mocks;
 
-    @Before
-    public void setUp() throws Exception {
+    private JenkinsRule rule;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Exception {
+        this.rule = rule;
 
         mocks = MockitoAnnotations.openMocks(this);
         computer = spy(rule.createSlave().toComputer());
@@ -101,14 +103,14 @@ public class ComputerConfigDotXmlTest {
         oldSecurityContext = ACL.impersonate2(User.getOrCreateByIdOrFullName("user").impersonate2());
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         mocks.close();
         SecurityContextHolder.setContext(oldSecurityContext);
     }
 
     @Test
-    public void configXmlGetShouldFailForUnauthorized() {
+    void configXmlGetShouldFailForUnauthorized() {
 
         when(req.getMethod()).thenReturn("GET");
 
@@ -118,7 +120,7 @@ public class ComputerConfigDotXmlTest {
     }
 
     @Test
-    public void configXmlPostShouldFailForUnauthorized() {
+    void configXmlPostShouldFailForUnauthorized() {
 
         when(req.getMethod()).thenReturn("POST");
 
@@ -128,7 +130,7 @@ public class ComputerConfigDotXmlTest {
     }
 
     @Test
-    public void configXmlGetShouldYieldNodeConfiguration() throws Exception {
+    void configXmlGetShouldYieldNodeConfiguration() throws Exception {
 
         when(req.getMethod()).thenReturn("GET");
 
@@ -148,7 +150,7 @@ public class ComputerConfigDotXmlTest {
     }
 
     @Test
-    public void configXmlPostShouldUpdateNodeConfiguration() throws Exception {
+    void configXmlPostShouldUpdateNodeConfiguration() throws Exception {
 
         when(req.getMethod()).thenReturn("POST");
 
@@ -167,7 +169,7 @@ public class ComputerConfigDotXmlTest {
 
     @Test
     @Issue("SECURITY-343")
-    public void emptyNodeMonitorDataWithoutConnect() {
+    void emptyNodeMonitorDataWithoutConnect() {
         rule.jenkins.setAuthorizationStrategy(new GlobalMatrixAuthorizationStrategy());
 
         assertTrue(computer.getMonitorData().isEmpty());
@@ -175,7 +177,7 @@ public class ComputerConfigDotXmlTest {
 
     @Test
     @Issue("SECURITY-343")
-    public void populatedNodeMonitorDataWithConnect() {
+    void populatedNodeMonitorDataWithConnect() {
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         rule.jenkins.setAuthorizationStrategy(auth);
         auth.add(Computer.CONNECT, "user");
@@ -185,7 +187,7 @@ public class ComputerConfigDotXmlTest {
 
     @Issue("SECURITY-1721")
     @Test
-    public void cannotChangeNodeType() throws Exception {
+    void cannotChangeNodeType() throws Exception {
         PretendSlave agent = rule.createPretendSlave(p -> new FakeLauncher.FinishedProc(0));
         String name = agent.getNodeName();
         assertThat(name, is(not(emptyOrNullString())));
@@ -196,7 +198,7 @@ public class ComputerConfigDotXmlTest {
         WebRequest req = new WebRequest(wc.createCrumbedUrl(String.format("%s/config.xml", computer.getUrl())), HttpMethod.POST);
         req.setAdditionalHeader("Content-Type", "application/xml");
         // to ensure maximum compatibility of payload, we'll serialize a real one with the same name
-        DumbSlave mole = new DumbSlave(name, temporaryFolder.newFolder().getPath(), rule.createComputerLauncher(null));
+        DumbSlave mole = new DumbSlave(name, newFolder(temporaryFolder, "junit").getPath(), rule.createComputerLauncher(null));
         req.setRequestBody(Jenkins.XSTREAM.toXML(mole));
         WebResponse response = wc.getPage(req).getWebResponse();
         assertThat(response.getStatusCode(), is(400));
@@ -208,7 +210,7 @@ public class ComputerConfigDotXmlTest {
 
     @Issue("SECURITY-2021")
     @Test
-    public void nodeNameReferencesParentDir() throws Exception {
+    void nodeNameReferencesParentDir() throws Exception {
         Computer computer = rule.createSlave("anything", null).toComputer();
 
         JenkinsRule.WebClient wc = rule.createWebClient();
@@ -225,9 +227,10 @@ public class ComputerConfigDotXmlTest {
     }
 
     private static final String VALID_XML_BAD_NAME_XML =
-            "<slave>\n" +
-                    "  <name>../</name>\n" +
-                    "</slave>";
+            """
+                    <slave>
+                      <name>../</name>
+                    </slave>""";
 
     private OutputStream captureOutput() throws IOException {
 
@@ -296,5 +299,14 @@ public class ComputerConfigDotXmlTest {
         }
 
         return new Stream(Computer.class.getResourceAsStream(name));
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            throw new IOException("Couldn't create folders " + root);
+        }
+        return result;
     }
 }

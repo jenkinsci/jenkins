@@ -7,18 +7,23 @@ import static org.hamcrest.Matchers.is;
 import hudson.ExtensionList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class PeriodicWorkTest {
+@WithJenkins
+class PeriodicWorkTest {
 
-    @Rule
-    public JenkinsRule jr = new JenkinsRule();
+    private JenkinsRule jr;
 
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        jr = rule;
+    }
 
     @Test
-    public void newExtensionsAreScheduled() throws Exception {
+    void newExtensionsAreScheduled() throws Exception {
         TestPeriodicWork tpw = new TestPeriodicWork();
 
         int size = PeriodicWork.all().size();

@@ -24,6 +24,9 @@
 
 package hudson.model;
 
+import hudson.Extension;
+import jenkins.model.Jenkins;
+
 /**
  * Classes that are described by {@link Descriptor}.
  *
@@ -38,6 +41,10 @@ public interface Describable<T extends Describable<T>> {
      * implementation, so if {@code a.getClass() == b.getClass()} then by default
      * {@code a.getDescriptor() == b.getDescriptor()} as well.
      * (In rare cases a single implementation class may be used for instances with distinct descriptors.)
+     * <p>
+     * By default looks for a nested class (conventionally named {@code DescriptorImpl}) implementing {@link Descriptor} and marked with {@link Extension}.
      */
-    Descriptor<T> getDescriptor();
+    default Descriptor<T> getDescriptor() {
+        return Jenkins.get().getDescriptorOrDie(getClass());
+    }
 }

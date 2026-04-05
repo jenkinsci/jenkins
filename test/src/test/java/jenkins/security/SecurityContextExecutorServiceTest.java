@@ -24,8 +24,8 @@
 
 package jenkins.security;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import hudson.model.User;
 import hudson.security.ACL;
@@ -35,51 +35,57 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import org.junit.Rule;
-import org.junit.Test;
+import jenkins.model.Jenkins;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.recipes.PresetData;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * @author Patrick McKeown
  */
-public class SecurityContextExecutorServiceTest {
+@WithJenkins
+class SecurityContextExecutorServiceTest {
 
-    private final int NUM_THREADS = 10;
+    private static final int NUM_THREADS = 10;
     private ExecutorService wrappedService = null;
     private SecurityContext systemContext = null;
     private SecurityContext userContext = null;
     private SecurityContext nullContext = null;
-    private volatile SecurityContext runnableThreadContext;
-    @Rule
-    public JenkinsRule j = new JenkinsRule() {
-        @Override
-        public void before() throws Throwable {
-            setPluginManager(null);
-            super.before();
+    private SecurityContext runnableThreadContext;
 
-            ScheduledThreadPoolExecutor service = new ScheduledThreadPoolExecutor(NUM_THREADS);
-            // Create a system level context with ACL.SYSTEM2
-            systemContext = ACL.impersonate2(ACL.SYSTEM2);
+    private JenkinsRule j;
 
-            User u = User.get("bob");
-            // Create a sample user context
-            userContext = new NonSerializableSecurityContext(u.impersonate2());
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
 
-            // Create a null context
-            SecurityContextHolder.clearContext();
-            nullContext = SecurityContextHolder.getContext();
+        JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
+        j.jenkins.setSecurityRealm(realm);
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().toAuthenticated());
 
-            // Create a wrapped service
-            wrappedService = new SecurityContextExecutorService(service);
-        }
-    };
+        ScheduledThreadPoolExecutor service = new ScheduledThreadPoolExecutor(NUM_THREADS);
+        // Create a system level context with ACL.SYSTEM2
+        systemContext = ACL.impersonate2(ACL.SYSTEM2);
+
+        User u = User.get("bob");
+        // Create a sample user context
+        userContext = new NonSerializableSecurityContext(u.impersonate2());
+
+        // Create a null context
+        SecurityContextHolder.clearContext();
+        nullContext = SecurityContextHolder.getContext();
+
+        // Create a wrapped service
+        wrappedService = new SecurityContextExecutorService(service);
+    }
 
     @Test
-    @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
-    public void testRunnableAgainstAllContexts() throws Exception {
+    void testRunnableAgainstAllContexts() throws Exception {
         Runnable r = () -> runnableThreadContext = SecurityContextHolder.getContext();
         SecurityContextHolder.setContext(systemContext);
         Future systemResult = wrappedService.submit(r);
@@ -104,9 +110,8 @@ public class SecurityContextExecutorServiceTest {
     }
 
     @Test
-    @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
-    public void testCallableAgainstAllContexts() throws Exception {
-        Callable<SecurityContext> c = () -> SecurityContextHolder.getContext();
+    void testCallableAgainstAllContexts() throws Exception {
+        Callable<SecurityContext> c = SecurityContextHolder::getContext;
         SecurityContextHolder.setContext(systemContext);
         Future<SecurityContext> result = wrappedService.submit(c);
         // Assert the context inside the callable thread was set to ACL.SYSTEM2
@@ -124,10 +129,9 @@ public class SecurityContextExecutorServiceTest {
     }
 
     @Test
-    @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
-    public void testCallableCollectionAgainstAllContexts() throws Exception {
+    void testCallableCollectionAgainstAllContexts() throws Exception {
         Collection<Callable<SecurityContext>> callables = new ArrayList<>();
-        Callable<SecurityContext> c = () -> SecurityContextHolder.getContext();
+        Callable<SecurityContext> c = SecurityContextHolder::getContext;
         callables.add(c);
         callables.add(c);
         callables.add(c);
@@ -156,8 +160,7 @@ public class SecurityContextExecutorServiceTest {
     }
 
     @Test
-    @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
-    public void testFailedRunnableResetsContext() {
+    void testFailedRunnableResetsContext() {
         Runnable r = () -> {
             SecurityContextHolder.setContext(nullContext);
             throw new RuntimeException("Simulate a failure");

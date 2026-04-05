@@ -64,7 +64,7 @@ public class CloudRetentionStrategy extends RetentionStrategy<AbstractCloudCompu
                 }
             }
         }
-        return 1;
+        return 0;
     }
 
     /**

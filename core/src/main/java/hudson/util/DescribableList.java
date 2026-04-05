@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import jenkins.model.DependencyDeclarer;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Persisted list of {@link Describable}s with some operations specific
@@ -167,7 +168,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * @param json
      *      Structured form data that includes the data for nested descriptor list.
      */
-    public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors) throws FormException, IOException {
+    public void rebuild(StaplerRequest2 req, JSONObject json, List<? extends Descriptor<T>> descriptors) throws FormException, IOException {
         List<T> newList = new ArrayList<>();
 
         for (Descriptor<T> d : descriptors) {
@@ -194,8 +195,16 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     }
 
     /**
+     * @deprecated use {@link #rebuild(StaplerRequest2, JSONObject, List)}
+     */
+    @Deprecated
+    public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors) throws FormException, IOException {
+        rebuild(StaplerRequest.toStaplerRequest2(req), json, descriptors);
+    }
+
+    /**
      * @deprecated as of 1.271
-     *      Use {@link #rebuild(StaplerRequest, JSONObject, List)} instead.
+     *      Use {@link #rebuild(StaplerRequest2, JSONObject, List)} instead.
      */
     @Deprecated
     public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException, IOException {
@@ -210,8 +219,16 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * is allowed to create multiple instances of the same descriptor. Order is also
      * significant.
      */
-    public void rebuildHetero(StaplerRequest req, JSONObject formData, Collection<? extends Descriptor<T>> descriptors, String key) throws FormException, IOException {
+    public void rebuildHetero(StaplerRequest2 req, JSONObject formData, Collection<? extends Descriptor<T>> descriptors, String key) throws FormException, IOException {
         replaceBy(Descriptor.newInstancesFromHeteroList(req, formData, key, descriptors));
+    }
+
+    /**
+     * @deprecated use {@link #rebuildHetero(StaplerRequest2, JSONObject, Collection, String)}
+     */
+    @Deprecated
+    public void rebuildHetero(StaplerRequest req, JSONObject formData, Collection<? extends Descriptor<T>> descriptors, String key) throws FormException, IOException {
+        rebuildHetero(StaplerRequest.toStaplerRequest2(req), formData, descriptors, key);
     }
 
     /**
@@ -219,8 +236,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      */
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
         for (Object o : this) {
-            if (o instanceof DependencyDeclarer) {
-                DependencyDeclarer dd = (DependencyDeclarer) o;
+            if (o instanceof DependencyDeclarer dd) {
                 try {
                     dd.buildDependencyGraph(owner, graph);
                 } catch (RuntimeException e) {
@@ -299,16 +315,12 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
                 throw x;
             } catch (InvocationTargetException e) {
                 Throwable t = e.getCause();
-                if (t instanceof RuntimeException) {
-                    throw (RuntimeException) t;
-                } else if (t instanceof IOException) {
-                    throw new UncheckedIOException((IOException) t);
-                } else if (t instanceof Exception) {
-                    throw new RuntimeException(t);
-                } else if (t instanceof Error) {
-                    throw (Error) t;
-                } else {
-                    throw new Error(e);
+                switch (t) {
+                    case RuntimeException runtimeException -> throw runtimeException;
+                    case IOException ioException -> throw new UncheckedIOException(ioException);
+                    case Exception exception -> throw new RuntimeException(t);
+                    case Error error -> throw error;
+                    case null, default -> throw new Error(e);
                 }
             }
         }

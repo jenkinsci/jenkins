@@ -22,15 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Link to a range of build. Used by fingerprint/index.jsp
-
-	<%@ attribute name="range" type="java.lang.Object" use="required" %>
-	<%@ attribute name="job" type="hudson.model.Job" use="required" %>
--->
 <!-- it's hudson.model.Fingerprint.RangeSet but Tomcat can't seem to handler inner classes -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<st:documentation>
+		Link to a range of build. Used by fingerprint/index.jelly
+		<st:attribute name="range" type="hudson.model.Fingerprint.RangeSet" use="required">A range set of builds</st:attribute>
+		<st:attribute name="job" type="hudson.model.Job" use="required">The owner of the builds</st:attribute>
+	</st:documentation>
 	<j:forEach var="r" items="${range.ranges}">
 	  <j:choose>
 	    <j:when test="${r.start==r.end-1}">

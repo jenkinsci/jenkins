@@ -194,16 +194,6 @@ var resURL = "not-defined-yet"; // eslint-disable-line no-unused-vars
   }
 })();
 
-(function initializeYUIDebugLogReader() {
-  Behaviour.addLoadEvent(function () {
-    var logReaderElement = document.getElementById("yui-logreader");
-    if (logReaderElement !== null) {
-      var logReader = new YAHOO.widget.LogReader("yui-logreader");
-      logReader.collapse();
-    }
-  });
-})();
-
 // Form check code
 //========================================================
 var FormChecker = {
@@ -546,21 +536,24 @@ function findNext(src, filter) {
 }
 
 function findFormItem(src, name, directionF) {
-  var name2 = "_." + name; // handles <textbox field="..." /> notation silently
+  const name2 = "_." + name; // handles <textbox field="..." /> notation silently
   return directionF(src, function (e) {
-    if (e.tagName == "INPUT" && e.type == "radio" && e.checked == true) {
-      var r = 0;
-      while (e.name.substring(r, r + 8) == "removeme") {
-        //radio buttons have must be unique in repeatable blocks so name is prefixed
-        r = e.name.indexOf("_", r + 8) + 1;
+    if (e.tagName === "INPUT" && e.type === "radio") {
+      if (e.checked === true) {
+        let r = 0;
+        while (e.name.substring(r, r + 8) === "removeme") {
+          //radio buttons have must be unique in repeatable blocks so name is prefixed
+          r = e.name.indexOf("_", r + 8) + 1;
+        }
+        return name === e.name.substring(r);
       }
-      return name == e.name.substring(r);
+      return false;
     }
     return (
-      (e.tagName == "INPUT" ||
-        e.tagName == "TEXTAREA" ||
-        e.tagName == "SELECT") &&
-      (e.name == name || e.name == name2)
+      (e.tagName === "INPUT" ||
+        e.tagName === "TEXTAREA" ||
+        e.tagName === "SELECT") &&
+      (e.name === name || e.name === name2)
     );
   });
 }
@@ -691,7 +684,9 @@ function registerValidator(e) {
 
   var url = e.targetUrl();
   try {
-    FormChecker.delayedCheck(url, method, e.targetElement);
+    if (!e.disabled) {
+      FormChecker.delayedCheck(url, method, e.targetElement);
+    }
     // eslint-disable-next-line no-unused-vars
   } catch (x) {
     // this happens if the checkUrl refers to a non-existing element.
@@ -706,6 +701,9 @@ function registerValidator(e) {
   }
 
   var checker = function () {
+    if (this.disabled) {
+      return;
+    }
     const validationArea = this.targetElement;
     FormChecker.sendRequest(this.targetUrl(), {
       method: method,
@@ -740,7 +738,16 @@ function registerValidator(e) {
           console.warn("Unable to find nearby " + name);
           return;
         }
-        c.addEventListener("change", checker.bind(e));
+
+        if (c.tagName === "INPUT" && c.type === "radio") {
+          document
+            .querySelectorAll(`input[name='${c.name}'][type='radio']`)
+            .forEach((element) => {
+              element.addEventListener("change", checker.bind(e));
+            });
+        } else {
+          c.addEventListener("change", checker.bind(e));
+        }
       }),
     );
   }
@@ -782,6 +789,7 @@ function registerRegexpValidator(e, regexp, message) {
     return set;
   };
   e.onchange.call(e);
+  /* eslint-disable-next-line no-useless-assignment */
   e = null; // avoid memory leak
 }
 
@@ -819,16 +827,16 @@ function registerMinMaxValidator(e) {
     }
 
     if (isInteger(this.value)) {
+      const valueInt = parseInt(this.value);
+
       // Ensure the value is an integer
       if (min !== null && isInteger(min) && max !== null && isInteger(max)) {
         // Both min and max attributes are available
-
-        if (min <= max) {
+        const minInt = parseInt(min);
+        const maxInt = parseInt(max);
+        if (minInt <= maxInt) {
           // Add the validator if min <= max
-          if (
-            parseInt(min) > parseInt(this.value) ||
-            parseInt(this.value) > parseInt(max)
-          ) {
+          if (minInt > valueInt || valueInt > maxInt) {
             // The value is out of range
             updateValidationArea(
               this.targetElement,
@@ -848,7 +856,8 @@ function registerMinMaxValidator(e) {
       ) {
         // There is only 'min' available
 
-        if (parseInt(min) > parseInt(this.value)) {
+        const minInt = parseInt(min);
+        if (minInt > valueInt) {
           updateValidationArea(
             this.targetElement,
             `<div class="error">This value should be larger than ${min}</div>`,
@@ -866,7 +875,8 @@ function registerMinMaxValidator(e) {
       ) {
         // There is only 'max' available
 
-        if (parseInt(max) < parseInt(this.value)) {
+        const maxInt = parseInt(max);
+        if (maxInt < valueInt) {
           updateValidationArea(
             this.targetElement,
             `<div class="error">This value should be less than ${max}</div>`,
@@ -882,6 +892,7 @@ function registerMinMaxValidator(e) {
     return set;
   };
   e.onchange.call(e);
+  /* eslint-disable-next-line no-useless-assignment */
   e = null; // avoid memory leak
 }
 
@@ -895,6 +906,7 @@ function preventInputEe(event) {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 function escapeHTML(html) {
   return html
     .replace(/&/g, "&amp;")
@@ -903,57 +915,79 @@ function escapeHTML(html) {
 }
 
 /**
- * Wraps a <button> into YUI button.
+ * Replaces a <input> with a <button class="jenkins-button">
  *
  * @param e
  *      button element
  * @param onclick
  *      onclick handler
  * @return
- *      YUI Button widget.
+ *      wrapper with some functions (formerly a YUI widget).
+ * @deprecated use <button class="jenkins-button"> and attach event listeners with standard javascript
  */
 function makeButton(e, onclick) {
-  var h = e.onclick;
-  var clsName = e.className;
-  var n = e.name;
+  console.warn(
+    "Deprecated call to makeButton - use <button class='jenkins-button'> instead and standard javascript to attach listeners.",
+  );
+  const h = e.onclick;
+  const n = e.name;
 
-  var attributes = {};
-  // YUI Button class interprets value attribute of <input> as HTML
-  // similar to how the child nodes of a <button> are treated as HTML.
-  // in standard HTML, we wouldn't expect the former case, yet here we are!
-  if (e.tagName === "INPUT") {
-    attributes.label = escapeHTML(e.value);
+  const button = document.createElement("button");
+  if (e.id) {
+    button.id = e.id;
   }
-  var btn = new YAHOO.widget.Button(e, attributes);
   if (onclick != null) {
-    btn.addListener("click", onclick);
+    button.addEventListener("click", onclick);
   }
   if (h != null) {
-    btn.addListener("click", h);
-  }
-  var be = btn.get("element");
-  var classesSeparatedByWhitespace = clsName.split(" ");
-  for (let i = 0; i < classesSeparatedByWhitespace.length; i++) {
-    var singleClass = classesSeparatedByWhitespace[i];
-    if (singleClass) {
-      be.classList.add(singleClass);
-    }
+    button.addEventListener("click", h);
   }
   if (n) {
     // copy the name
-    be.setAttribute("name", n);
+    button.setAttribute("name", n);
   }
-
-  // keep the data-* attributes from the source
-  var length = e.attributes.length;
+  if (e.type === "submit" || e.type === "button") {
+    button.type = e.type;
+  }
+  const length = e.attributes.length;
   for (let i = 0; i < length; i++) {
-    var attribute = e.attributes[i];
-    var attributeName = attribute.name;
+    const attribute = e.attributes[i];
+    const attributeName = attribute.name;
     if (attributeName.startsWith("data-")) {
-      btn._button.setAttribute(attributeName, attribute.value);
+      button.setAttribute(attributeName, attribute.value);
     }
   }
-  return btn;
+  button.innerText = e.value;
+  button.classList.add("jenkins-button");
+  const classNames = e.classList;
+  if (classNames.contains("primary") || classNames.contains("submit-button")) {
+    button.classList.add("jenkins-button--primary");
+  }
+  classNames.remove("primary");
+  classNames.remove("submit-button");
+  classNames.remove("yui-button");
+  for (let i = 0; i < classNames.length; i++) {
+    button.classList.add(classNames.item(i));
+  }
+
+  function Button(button) {
+    this.button = button;
+  }
+  Button.prototype.set = function (attributeName, value) {
+    if (attributeName === "disabled") {
+      if (value) {
+        this.button.disabled = "disabled";
+      } else {
+        this.button.removeAttribute("disabled");
+      }
+    }
+  };
+  Button.prototype.getForm = function () {
+    return this.button.closest("form");
+  };
+  e.parentNode.insertBefore(button, e);
+  e.remove();
+  return new Button(button);
 }
 
 /*
@@ -1076,17 +1110,25 @@ function labelAttachPreviousOnClick() {
 }
 
 function helpButtonOnClick() {
-  var tr =
-    findFollowingTR(this, "help-area", "help-sibling") ||
-    findFollowingTR(this, "help-area", "setting-help") ||
-    findFollowingTR(this, "help-area");
-  var div = tr.firstElementChild;
+  let helpArea;
+
+  // Custom condition for repeatable chunks
+  if (this.parentNode.classList.contains("repeated-chunk__header")) {
+    helpArea = this.closest(".repeated-chunk").querySelector(".help-area");
+  } else {
+    helpArea =
+      findFollowingTR(this, "help-area", "help-sibling") ||
+      findFollowingTR(this, "help-area", "setting-help") ||
+      findFollowingTR(this, "help-area");
+  }
+
+  var div = helpArea.firstElementChild;
   if (!div.classList.contains("help")) {
     div = div.nextElementSibling.firstElementChild;
   }
 
-  if (div.style.display != "block") {
-    div.style.display = "block";
+  if (helpArea.style.display !== "block") {
+    helpArea.style.display = "block";
     // make it visible
 
     fetch(this.getAttribute("helpURL")).then((rsp) => {
@@ -1120,7 +1162,7 @@ function helpButtonOnClick() {
       });
     });
   } else {
-    div.style.display = "none";
+    helpArea.style.display = "none";
     layoutUpdateCallback.call();
   }
 
@@ -1256,7 +1298,7 @@ function rowvgStartEachRow(recursive, f) {
 
   // validate required form values
   Behaviour.specify("INPUT.required", "input-required", ++p, function (e) {
-    registerRegexpValidator(e, /./, "Field is required");
+    registerRegexpValidator(e, /\S/, "Field is required");
   });
 
   // validate form values to be an integer
@@ -1307,49 +1349,6 @@ function rowvgStartEachRow(recursive, f) {
       e.addEventListener("keypress", preventInputEe);
       registerMinMaxValidator(e);
       registerRegexpValidator(e, /^[1-9]\d*$/, "Not a positive integer");
-    },
-  );
-
-  Behaviour.specify(
-    "INPUT.auto-complete",
-    "input-auto-complete",
-    ++p,
-    function (e) {
-      // form field with auto-completion support
-      // insert the auto-completion container
-      var div = document.createElement("DIV");
-      e.parentNode.insertBefore(div, e.nextElementSibling);
-      e.style.position = "relative"; // or else by default it's absolutely positioned, making "width:100%" break
-
-      var ds = new YAHOO.util.XHRDataSource(e.getAttribute("autoCompleteUrl"));
-      ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
-      ds.responseSchema = {
-        resultsList: "suggestions",
-        fields: ["name"],
-      };
-
-      // Instantiate the AutoComplete
-      var ac = new YAHOO.widget.AutoComplete(e, div, ds);
-      ac.generateRequest = function (query) {
-        return "?value=" + query;
-      };
-      ac.autoHighlight = false;
-      ac.prehighlightClassName = "yui-ac-prehighlight";
-      ac.animSpeed = 0;
-      ac.formatResult = ac.formatEscapedResult;
-      ac.useShadow = true;
-      ac.autoSnapContainer = true;
-      ac.delimChar = e.getAttribute("autoCompleteDelimChar");
-      ac.doBeforeExpandContainer = function (textbox, container) {
-        // adjust the width every time we show it
-        container.style.width = textbox.clientWidth + "px";
-        var Dom = YAHOO.util.Dom;
-        Dom.setXY(container, [
-          Dom.getX(textbox),
-          Dom.getY(textbox) + textbox.offsetHeight,
-        ]);
-        return true;
-      };
     },
   );
 
@@ -1490,7 +1489,7 @@ function rowvgStartEachRow(recursive, f) {
         return buildFormTree(this);
       };
     }
-
+    /* eslint-disable-next-line no-useless-assignment */
     form = null; // memory leak prevention
   });
 
@@ -1661,9 +1660,11 @@ function rowvgStartEachRow(recursive, f) {
         }
       }
       changeTo(e, "-hover.png");
-      YAHOO.util.Event.stopEvent(event);
+      event.stopPropagation();
+      event.preventDefault();
       return false;
     };
+    /* eslint-disable-next-line no-useless-assignment */
     e = null; // memory leak prevention
   });
 
@@ -1690,21 +1691,25 @@ function rowvgStartEachRow(recursive, f) {
         return;
       }
 
-      var subForms = [];
-      var start = findInFollowingTR(e, "dropdownList-container");
+      function buildSubForms(e) {
+        var subForms = [];
+        var start = findInFollowingTR(e, "dropdownList-container");
 
-      do {
-        start = start.firstElementChild;
-      } while (start && !isTR(start));
+        do {
+          start = start.firstElementChild;
+        } while (start && !isTR(start));
 
-      if (start && !start.classList.contains("dropdownList-start")) {
-        start = findFollowingTR(start, "dropdownList-start");
+        if (start && !start.classList.contains("dropdownList-start")) {
+          start = findFollowingTR(start, "dropdownList-start");
+        }
+        while (start != null) {
+          subForms.push(start);
+          start = findFollowingTR(start, "dropdownList-start");
+        }
+        return subForms;
       }
-      while (start != null) {
-        subForms.push(start);
-        start = findFollowingTR(start, "dropdownList-start");
-      }
 
+      var subForms = buildSubForms(e);
       // control visibility
       function updateDropDownList() {
         for (var i = 0; i < subForms.length; i++) {
@@ -1712,23 +1717,38 @@ function rowvgStartEachRow(recursive, f) {
           var f = subForms[i];
 
           if (show) {
-            renderOnDemand(f.nextElementSibling);
+            const idx = i; // capture the index so that it is not mutated in the loop
+            renderOnDemand(f.nextElementSibling, function () {
+              const current = e.selectedIndex == idx;
+              if (!current) {
+                console.warn(
+                  "renderOnDemandCallback: selection is no longer valid, rebuilding correct DOM",
+                );
+                // our form div has changed (but the index is stable) so go and re-get the new domtree
+                const subForm = buildSubForms(e)[idx];
+                updateDropDownFormRowVisibility(subForm, false);
+              }
+            });
           }
-          f.rowVisibilityGroup.makeInnerVisible(show);
-
-          // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
-          // so far dropdownList doesn't create such a situation.
-          f.rowVisibilityGroup.eachRow(
-            true,
-            show
-              ? function (e) {
-                  e.removeAttribute("field-disabled");
-                }
-              : function (e) {
-                  e.setAttribute("field-disabled", "true");
-                },
-          );
+          updateDropDownFormRowVisibility(f, show);
         }
+      }
+
+      function updateDropDownFormRowVisibility(f, show) {
+        f.rowVisibilityGroup.makeInnerVisible(show);
+
+        // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
+        // so far dropdownList doesn't create such a situation.
+        f.rowVisibilityGroup.eachRow(
+          true,
+          show
+            ? function (e) {
+                e.removeAttribute("field-disabled");
+              }
+            : function (e) {
+                e.setAttribute("field-disabled", "true");
+              },
+        );
       }
 
       e.onchange = updateDropDownList;
@@ -1744,34 +1764,58 @@ function rowvgStartEachRow(recursive, f) {
       layoutUpdateCallback.call();
       return false;
     };
+    /* eslint-disable-next-line no-useless-assignment */
     e = null; // avoid memory leak
   });
 
   Behaviour.specify(
-    "DIV.behavior-loading",
-    "div-behavior-loading",
+    "DIV.jenkins-form-skeleton, DIV.jenkins-side-panel-skeleton",
+    "div-jenkins-form-skeleton",
     ++p,
     function (e) {
+      e.remove();
+    },
+  );
+
+  Behaviour.specify(
+    "DIV.behavior-loading",
+    "div-behavior-loading",
+    // Useless assignment retained for consistency with preceding use in
+    // Behaviour.specify("DIV.jenkins-form-skeleton" and earlier
+    /* eslint-disable-next-line no-useless-assignment */
+    ++p,
+    function (e) {
+      console.warn(
+        ".behavior-loading is deprecated, use <l:skeleton /> instead - since 2.515",
+        e,
+      );
       e.classList.add("behavior-loading--hidden");
     },
   );
 
-  window.addEventListener("load", function () {
-    // Add a class to the bottom bar when it's stuck to the bottom of the screen
-    const el = document.querySelector("#bottom-sticker");
-    if (el) {
+  // Add a class to the bottom bar when it's stuck to the bottom of the screen
+  Behaviour.specify(
+    ".jenkins-bottom-app-bar__shadow",
+    "jenkins-bottom-app-bar__shadow",
+    0,
+    function (el) {
+      const dialog = el.closest("dialog");
+
       const observer = new IntersectionObserver(
         ([e]) =>
           e.target.classList.toggle(
-            "bottom-sticker-inner--stuck",
+            "jenkins-bottom-app-bar__shadow--stuck",
             e.intersectionRatio < 1,
           ),
-        { threshold: [1] },
+        {
+          threshold: [1],
+          root: dialog || null,
+        },
       );
 
       observer.observe(el);
-    }
-  });
+    },
+  );
 
   /**
    * Function that provides compatibility to the checkboxes without title on an f:entry
@@ -1886,41 +1930,6 @@ function refillOnChange(e, onChange) {
 function xor(a, b) {
   // convert both values to boolean by '!' and then do a!=b
   return !a != !b;
-}
-
-// used by editableDescription.jelly to replace the description field with a form
-// eslint-disable-next-line no-unused-vars
-function replaceDescription(initialDescription, submissionUrl) {
-  var d = document.getElementById("description");
-  let button = d.firstElementChild.nextElementSibling;
-  if (button !== null) {
-    d.firstElementChild.nextElementSibling.innerHTML =
-      "<div class='jenkins-spinner'></div>";
-  }
-  let parameters = {};
-  if (initialDescription !== null && initialDescription !== "") {
-    parameters["description"] = initialDescription;
-  }
-  if (submissionUrl !== null && submissionUrl !== "") {
-    parameters["submissionUrl"] = submissionUrl;
-  }
-  fetch("./descriptionForm", {
-    method: "post",
-    headers: crumb.wrap({
-      "Content-Type": "application/x-www-form-urlencoded",
-    }),
-    body: objectToUrlFormEncoded(parameters),
-  }).then((rsp) => {
-    rsp.text().then((responseText) => {
-      d.innerHTML = responseText;
-      evalInnerHtmlScripts(responseText, function () {
-        Behaviour.applySubtree(d);
-        d.getElementsByTagName("TEXTAREA")[0].focus();
-      });
-      layoutUpdateCallback.call();
-      return false;
-    });
-  });
 }
 
 /**
@@ -2047,10 +2056,14 @@ function AutoScroller(scrollContainer) {
     scrollToBottom: function () {
       var scrollDiv = this.scrollContainer;
       var currentHeight = this.getCurrentHeight();
-      if (document.documentElement) {
-        document.documentElement.scrollTop = currentHeight;
+
+      if (scrollDiv === document.body) {
+        window.scrollTo({
+          top: currentHeight,
+        });
+      } else {
+        scrollDiv.scrollTop = currentHeight;
       }
-      scrollDiv.scrollTop = currentHeight;
     },
   };
 }
@@ -2220,36 +2233,8 @@ function toQueryString(params) {
   return query;
 }
 
-// eslint-disable-next-line no-unused-vars
-function getElementOverflowParams(element) {
-  // First we force it to wrap so we can get those dimension.
-  // Then we force it to "nowrap", so we can get those dimension.
-  // We can then compare the two sets, which will indicate if
-  // wrapping is potentially happening, or not.
-
-  // Force it to wrap.
-  element.classList.add("force-wrap");
-  var wrappedClientWidth = element.clientWidth;
-  var wrappedClientHeight = element.clientHeight;
-  element.classList.remove("force-wrap");
-
-  // Force it to nowrap. Return the comparisons.
-  element.classList.add("force-nowrap");
-  var nowrapClientHeight = element.clientHeight;
-  try {
-    var overflowParams = {
-      element: element,
-      clientWidth: wrappedClientWidth,
-      scrollWidth: element.scrollWidth,
-      isOverflowed: wrappedClientHeight > nowrapClientHeight,
-    };
-    return overflowParams;
-  } finally {
-    element.classList.remove("force-nowrap");
-  }
-}
-
 // get the cascaded computed style value. 'a' is the style name like 'backgroundColor'
+// eslint-disable-next-line no-unused-vars
 function getStyle(e, a) {
   if (document.defaultView && document.defaultView.getComputedStyle) {
     return document.defaultView
@@ -2270,14 +2255,13 @@ function getStyle(e, a) {
  */
 // eslint-disable-next-line no-unused-vars
 function ensureVisible(e) {
-  var viewport = YAHOO.util.Dom.getClientRegion();
-  var pos = YAHOO.util.Dom.getRegion(e);
-
-  var Y = viewport.top;
-  var H = viewport.height;
+  const scrollTop = document.documentElement.scrollTop;
+  let Y = scrollTop;
+  let H = window.innerHeight;
+  let c = 0;
 
   function handleStickers(name, f) {
-    var e = document.getElementById(name);
+    const e = document.getElementById(name);
     if (e) {
       f(e);
     }
@@ -2289,6 +2273,7 @@ function ensureVisible(e) {
     t = t.clientHeight;
     Y += t;
     H -= t;
+    c += t;
   });
 
   handleStickers("bottom-sticker", function (b) {
@@ -2296,73 +2281,16 @@ function ensureVisible(e) {
     H -= b;
   });
 
-  var y = pos.top;
-  var h = pos.height;
+  const box = e.getBoundingClientRect();
+  const y = Math.round(box.top + scrollTop);
+  const h = e.offsetHeight;
+  const d = y + h - (Y + H);
 
-  var d = y + h - (Y + H);
-  if (d > 0) {
-    document.body.scrollTop += d;
-  } else {
-    d = Y - y;
-    if (d > 0) {
-      document.body.scrollTop -= d;
-    }
+  if (h > H) {
+    document.documentElement.scrollTop = y - c;
+  } else if (d > 0) {
+    document.documentElement.scrollTop += d;
   }
-}
-
-// set up logic behind the search box
-// eslint-disable-next-line no-unused-vars
-function createSearchBox(searchURL) {
-  var ds = new YAHOO.util.XHRDataSource(searchURL + "suggest");
-  ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
-  ds.responseSchema = {
-    resultsList: "suggestions",
-    fields: ["name"],
-  };
-  var ac = new YAHOO.widget.AutoComplete(
-    "search-box",
-    "search-box-completion",
-    ds,
-  );
-  ac.typeAhead = false;
-  ac.autoHighlight = false;
-  ac.formatResult = ac.formatEscapedResult;
-  ac.maxResultsDisplayed = 25;
-
-  var box = document.getElementById("search-box");
-  var sizer = document.getElementById("search-box-sizer");
-  var comp = document.getElementById("search-box-completion");
-
-  Behaviour.addLoadEvent(function () {
-    // copy font style of box to sizer
-    var ds = sizer.style;
-    ds.fontFamily = getStyle(box, "fontFamily");
-    ds.fontSize = getStyle(box, "fontSize");
-    ds.fontStyle = getStyle(box, "fontStyle");
-    ds.fontWeight = getStyle(box, "fontWeight");
-  });
-
-  // update positions and sizes of the components relevant to search
-  function updatePos() {
-    sizer.innerHTML = escapeHTML(box.value);
-    var cssWidth,
-      offsetWidth = sizer.offsetWidth;
-    if (offsetWidth > 0) {
-      cssWidth = offsetWidth + "px";
-    } else {
-      // sizer hidden on small screen, make sure resizing looks OK
-      cssWidth = getStyle(sizer, "minWidth");
-    }
-    box.style.width = comp.firstElementChild.style.minWidth =
-      "calc(60px + " + cssWidth + ")";
-
-    var pos = YAHOO.util.Dom.getXY(box);
-    pos[1] += YAHOO.util.Dom.get(box).offsetHeight + 2;
-    YAHOO.util.Dom.setXY(comp, pos);
-  }
-
-  updatePos();
-  box.addEventListener("input", updatePos);
 }
 
 /**
@@ -2378,19 +2306,29 @@ function createSearchBox(searchURL) {
 function findFormParent(e, form, isStatic) {
   isStatic = isStatic || false;
 
+  const originalElement = e;
+
   if (form == null) {
     // caller can pass in null to have this method compute the owning form
     form = e.closest("FORM");
   }
 
-  while (e != form) {
+  while (e !== form) {
     // this is used to create a group where no single containing parent node exists,
     // like <optionalBlock>
-    var nameRef = e.getAttribute("nameRef");
+    const nameRef = e.getAttribute("nameRef");
     if (nameRef != null) {
       e = document.getElementById(nameRef);
     } else {
       e = e.parentNode;
+    }
+
+    if (!e) {
+      console.warn(
+        "findFormParent: reached document root without finding form",
+        originalElement,
+      );
+      return null;
     }
 
     if (!isStatic && e.getAttribute("field-disabled") != null) {
@@ -2582,6 +2520,9 @@ function buildFormTree(form) {
           if (e.classList.contains("complex-password-field")) {
             addProperty(p, "$redact", shortenName(e.name));
           }
+          if (e.classList.contains("secretTextarea-redact")) {
+            addProperty(p, "$redact", shortenName(e.name));
+          }
           break;
       }
     }
@@ -2595,6 +2536,7 @@ function buildFormTree(form) {
 
     return true;
   } catch (e) {
+    console.error("Form not submitted", e);
     alert(e + "\n(form not submitted)");
     return false;
   }
@@ -2709,6 +2651,16 @@ function validateButton(checkUrl, paramList, button) {
       target.innerHTML = `<div class="validation-error-area" />`;
       updateValidationArea(target.children[0], responseText);
       layoutUpdateCallback.call();
+      let json = rsp.headers.get("X-Jenkins-ValidateButton-Callback");
+      if (json != null) {
+        let callInfo = JSON.parse(json);
+        let callback = callInfo["callback"];
+        let args = callInfo["arguments"];
+        if (window[callback] && typeof window[callback] === "function") {
+          window[callback].apply(window, args);
+        }
+      }
+
       var s = rsp.headers.get("script");
       try {
         geval(s);

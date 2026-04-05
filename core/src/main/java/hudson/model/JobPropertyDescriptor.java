@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import hudson.Util;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ import jenkins.model.OptionalJobProperty;
 import net.sf.json.JSONObject;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * {@link Descriptor} for {@link JobProperty}.
@@ -61,6 +63,23 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
      *      null to avoid setting an instance of {@link JobProperty} to the target project (or just use {@link OptionalJobProperty})
      */
     @Override
+    public JobProperty<?> newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
+        if (Util.isOverridden(JobPropertyDescriptor.class, getClass(), "newInstance", StaplerRequest.class, JSONObject.class)) {
+            return newInstance(req != null ? StaplerRequest.fromStaplerRequest2(req) : null, formData);
+        } else {
+            // JobPropertyDescriptors are bit different in that we allow them even without any user-visible configuration parameter,
+            // so replace the lack of form data by an empty one.
+            if (formData.isNullObject()) formData = new JSONObject();
+
+            return super.newInstance(req, formData);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #newInstance(StaplerRequest2, JSONObject)}
+     */
+    @Deprecated
+    @Override
     public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData) throws FormException {
         // JobPropertyDescriptors are bit different in that we allow them even without any user-visible configuration parameter,
         // so replace the lack of form data by an empty one.
@@ -83,8 +102,7 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
      */
     public boolean isApplicable(Class<? extends Job> jobType) {
         Type parameterization = Types.getBaseClass(clazz, JobProperty.class);
-        if (parameterization instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType) parameterization;
+        if (parameterization instanceof ParameterizedType pt) {
             Class applicable = Types.erasure(Types.getTypeArgument(pt, 0));
             return applicable.isAssignableFrom(jobType);
         } else {

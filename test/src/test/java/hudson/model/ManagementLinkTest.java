@@ -24,35 +24,41 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import org.htmlunit.html.DomNodeUtil;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.WithTimeout;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ManagementLinkTest {
+@WithJenkins
+class ManagementLinkTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Makes sure every link works.
      */
     @Test
     @WithTimeout(300)
-    public void links() throws Exception {
+    void links() throws Exception {
         WebClient wc = j.createWebClient();
 
         for (int i = 0; ; i++) {
@@ -65,8 +71,9 @@ public class ManagementLinkTest {
         }
     }
 
-    @Test @Issue("JENKINS-33683")
-    public void invisibleLinks() {
+    @Test
+    @Issue("JENKINS-33683")
+    void invisibleLinks() {
         assertNull(j.jenkins.getDynamic("and_fail_trying"));
     }
 

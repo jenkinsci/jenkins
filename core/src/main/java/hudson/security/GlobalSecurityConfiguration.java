@@ -35,24 +35,21 @@ import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.ManagementLink;
 import hudson.util.FormApply;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import jenkins.util.ServerTcpPort;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.verb.POST;
 
 /**
@@ -92,11 +89,6 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         return Jenkins.get().isSlaveAgentPortEnforced();
     }
 
-    @NonNull
-    public Set<String> getAgentProtocols() {
-        return Jenkins.get().getAgentProtocols();
-    }
-
     public boolean isDisableRememberMe() {
         return Jenkins.get().isDisableRememberMe();
     }
@@ -108,7 +100,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
     }
 
     @POST
-    public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+    public synchronized void doConfigure(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
         JSONObject json = req.getSubmittedForm();
         BulkChange bc = new BulkChange(Jenkins.get());
@@ -125,7 +117,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         }
     }
 
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
         Jenkins j = Jenkins.get();
         j.checkPermission(Jenkins.ADMINISTER);
@@ -149,18 +141,6 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
                 throw new FormException(e, "slaveAgentPortType");
             }
         }
-        Set<String> agentProtocols = new TreeSet<>();
-        if (json.has("agentProtocol")) {
-            Object protocols = json.get("agentProtocol");
-            if (protocols instanceof JSONArray) {
-                for (int i = 0; i < ((JSONArray) protocols).size(); i++) {
-                    agentProtocols.add(((JSONArray) protocols).getString(i));
-                }
-            } else {
-                agentProtocols.add(protocols.toString());
-            }
-        }
-        j.setAgentProtocols(agentProtocols);
 
         // persist all the additional security configs
         boolean result = true;
@@ -171,7 +151,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         return result;
     }
 
-    private boolean configureDescriptor(StaplerRequest req, JSONObject json, Descriptor<?> d) throws FormException {
+    private boolean configureDescriptor(StaplerRequest2 req, JSONObject json, Descriptor<?> d) throws FormException {
         // collapse the structure to remain backward compatible with the JSON structure before 1.
         String name = d.getJsonSafeClassName();
         JSONObject js = json.has(name) ? json.getJSONObject(name) : new JSONObject(); // if it doesn't have the property, the method returns invalid null object.

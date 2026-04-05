@@ -186,7 +186,10 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
     class Authenticator extends AbstractUserDetailsAuthenticationProvider {
         @Override
         protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
-            // authentication is assumed to be done already in the retrieveUser method
+            // Authentication is done in the retrieveUser method. Note that this method being a no-op is only safe
+            // because we use Spring Security's default NullUserCache. If caching was enabled, it would be possible to
+            // log in as any cached user with any password unless we updated this method to check the provided
+            // authentication as recommended in the superclass method's documentation, so be careful reusing this code.
         }
 
         @Override

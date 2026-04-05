@@ -24,30 +24,43 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
+import java.net.URL;
 import java.util.Locale;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.StaplerRequest2;
 
-public class ParametersDefinitionPropertyTest {
+@WithJenkins
+class ParametersDefinitionPropertyTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private final LogRecorder logs = new LogRecorder();
 
-    @Rule
-    public LoggerRule logs = new LoggerRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue("JENKINS-31458")
     @Test
-    public void customNewInstance() throws Exception {
+    void customNewInstance() throws Exception {
         logs.record(Descriptor.class, Level.ALL);
         KrazyParameterDefinition kpd = new KrazyParameterDefinition("kpd", "desc", "KrAzY");
         FreeStyleProject p = r.createFreeStyleProject();
@@ -65,18 +78,19 @@ public class ParametersDefinitionPropertyTest {
         public final String field;
 
         // not @DataBoundConstructor
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public KrazyParameterDefinition(String name, String description, String field) {
             super(name, description);
             this.field = field;
         }
 
         @Override
-        public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
+        public ParameterValue createValue(StaplerRequest2 req, JSONObject jo) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public ParameterValue createValue(StaplerRequest req) {
+        public ParameterValue createValue(StaplerRequest2 req) {
             throw new UnsupportedOperationException();
         }
 
@@ -84,12 +98,35 @@ public class ParametersDefinitionPropertyTest {
         public static class DescriptorImpl extends ParameterDescriptor {
 
             @Override
-            public ParameterDefinition newInstance(StaplerRequest req, JSONObject formData) {
+            public ParameterDefinition newInstance(StaplerRequest2 req, JSONObject formData) {
                 return new KrazyParameterDefinition(formData.getString("name"), formData.getString("description"), formData.getString("field").toLowerCase(Locale.ENGLISH));
             }
 
         }
 
+    }
+
+    @Issue("JENKINS-66105")
+    @Test
+    void statusCodes() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
+        FreeStyleProject p = r.createFreeStyleProject("p");
+        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(new StringParameterDefinition("K"));
+        p.addProperty(pdp);
+        p.setConcurrentBuild(true);
+        p.setAssignedLabel(Label.get("nonexistent")); // force it to stay in queue
+        JenkinsRule.WebClient wc = r.createWebClient();
+        wc.withBasicApiToken("dev");
+        assertThat("initially 201 Created queue item", buildWithParameters(wc, "v1").getStatusCode(), is(201));
+        WebResponse rsp = buildWithParameters(wc, "v1");
+        assertThat("then 303 See Other → 200 OK", rsp.getStatusCode(), is(200));
+        assertThat("offers advice on API", rsp.getContentAsString(), containsString("api/json?tree="));
+        assertThat("201 Created queue item for different key", buildWithParameters(wc, "v2").getStatusCode(), is(201));
+    }
+
+    private WebResponse buildWithParameters(JenkinsRule.WebClient wc, String value) throws Exception {
+        return wc.getPage(new WebRequest(new URL(wc.getContextPath() + "job/p/buildWithParameters?K=" + value), HttpMethod.POST)).getWebResponse();
     }
 
 }

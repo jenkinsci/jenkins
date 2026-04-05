@@ -20,7 +20,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.Exported;
 
 /**
@@ -116,8 +116,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
 
     @Override
     public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
-        if (defaultValue instanceof StringParameterValue) {
-            StringParameterValue value = (StringParameterValue) defaultValue;
+        if (defaultValue instanceof StringParameterValue value) {
             return new ChoiceParameterDefinition(getName(), choices, value.value, getDescription());
         } else {
             return this;
@@ -141,7 +140,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
             if (choices.isEmpty()) {
                 return null;
             }
-            return new StringParameterValue(getName(), choices.get(0), getDescription());
+            return new StringParameterValue(getName(), choices.getFirst(), getDescription());
         }
         return new StringParameterValue(getName(), defaultValue, getDescription());
     }
@@ -152,7 +151,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Override
-    public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
+    public ParameterValue createValue(StaplerRequest2 req, JSONObject jo) {
         StringParameterValue value = req.bindJSON(StringParameterValue.class, jo);
         value.setDescription(getDescription());
         checkValue(value, value.getValue());
@@ -218,7 +217,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         /*
          * We need this for JENKINS-26143 -- reflective creation cannot handle setChoices(Object). See that method for context.
          */
-        public ParameterDefinition newInstance(@Nullable StaplerRequest req, @NonNull JSONObject formData) throws FormException {
+        public ParameterDefinition newInstance(@Nullable StaplerRequest2 req, @NonNull JSONObject formData) throws FormException {
             String name = formData.getString("name");
             String desc = formData.getString("description");
             String choiceText = formData.getString("choices");

@@ -32,6 +32,7 @@ import hudson.cli.client.Messages;
 import jakarta.websocket.ClientEndpointConfig;
 import jakarta.websocket.Endpoint;
 import jakarta.websocket.EndpointConfig;
+import jakarta.websocket.HandshakeResponse;
 import jakarta.websocket.Session;
 import java.io.DataInputStream;
 import java.io.File;
@@ -64,6 +65,7 @@ import javax.net.ssl.TrustManager;
 import org.glassfish.tyrus.client.ClientManager;
 import org.glassfish.tyrus.client.ClientProperties;
 import org.glassfish.tyrus.client.SslEngineConfigurator;
+import org.glassfish.tyrus.client.exception.DeploymentHandshakeException;
 import org.glassfish.tyrus.container.jdk.client.JdkClientContainer;
 
 /**
@@ -136,40 +138,45 @@ public class CLI {
 
         while (!args.isEmpty()) {
             String head = args.get(0);
-            if (head.equals("-version")) {
-                System.out.println("Version: " + computeVersion());
-                return 0;
-            }
-            if (head.equals("-http")) {
-                if (mode != null) {
-                    printUsage("-http clashes with previously defined mode " + mode);
+            switch (head) {
+                case "-version" -> {
+                    System.out.println("Version: " + computeVersion());
+                    return 0;
+                }
+                case "-http" -> {
+                    if (mode != null) {
+                        printUsage("-http clashes with previously defined mode " + mode);
+                        return -1;
+                    }
+                    mode = Mode.HTTP;
+                    args = args.subList(1, args.size());
+                    continue;
+                }
+                case "-ssh" -> {
+                    if (mode != null) {
+                        printUsage("-ssh clashes with previously defined mode " + mode);
+                        return -1;
+                    }
+                    mode = Mode.SSH;
+                    args = args.subList(1, args.size());
+                    continue;
+                }
+                case "-webSocket" -> {
+                    if (mode != null) {
+                        printUsage("-webSocket clashes with previously defined mode " + mode);
+                        return -1;
+                    }
+                    mode = Mode.WEB_SOCKET;
+                    args = args.subList(1, args.size());
+                    continue;
+                }
+                case "-remoting" -> {
+                    printUsage("-remoting mode is no longer supported");
                     return -1;
                 }
-                mode = Mode.HTTP;
-                args = args.subList(1, args.size());
-                continue;
-            }
-            if (head.equals("-ssh")) {
-                if (mode != null) {
-                    printUsage("-ssh clashes with previously defined mode " + mode);
-                    return -1;
+                default -> {
+                    // continue
                 }
-                mode = Mode.SSH;
-                args = args.subList(1, args.size());
-                continue;
-            }
-            if (head.equals("-webSocket")) {
-                if (mode != null) {
-                    printUsage("-webSocket clashes with previously defined mode " + mode);
-                    return -1;
-                }
-                mode = Mode.WEB_SOCKET;
-                args = args.subList(1, args.size());
-                continue;
-            }
-            if (head.equals("-remoting")) {
-                printUsage("-remoting mode is no longer supported");
-                return -1;
             }
             if (head.equals("-s") && args.size() >= 2) {
                 url = args.get(1);
@@ -316,7 +323,7 @@ public class CLI {
         throw new AssertionError();
     }
 
-    @SuppressFBWarnings(value = {"PATH_TRAVERSAL_IN", "URLCONNECTION_SSRF_FD"}, justification = "User provided values for running the program.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "User provided value for running the program.")
     private static String readAuthFromFile(String auth) throws IOException {
         Path path;
         try {
@@ -327,7 +334,7 @@ public class CLI {
         return Files.readString(path, Charset.defaultCharset());
     }
 
-    @SuppressFBWarnings(value = {"PATH_TRAVERSAL_IN", "URLCONNECTION_SSRF_FD"}, justification = "User provided values for running the program.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "User provided value for running the program.")
     private static File getFileFromArguments(List<String> args) {
         return new File(args.get(1));
     }
@@ -340,13 +347,22 @@ public class CLI {
         }
 
         class Authenticator extends ClientEndpointConfig.Configurator {
+            HandshakeResponse hr;
+
             @Override
             public void beforeRequest(Map<String, List<String>> headers) {
                 if (factory.authorization != null) {
                     headers.put("Authorization", List.of(factory.authorization));
                 }
             }
+
+            @Override
+            public void afterResponse(HandshakeResponse hr) {
+                this.hr = hr;
+            }
         }
+
+        var authenticator = new Authenticator();
 
         ClientManager client = ClientManager.createClient(JdkClientContainer.class.getName()); // ~ ContainerProvider.getWebSocketContainer()
         client.getProperties().put(ClientProperties.REDIRECT_ENABLED, true); // https://tyrus-project.github.io/documentation/1.13.1/index/tyrus-proprietary-config.html#d0e1775
@@ -357,7 +373,21 @@ public class CLI {
             sslEngineConfigurator.setHostnameVerifier((s, sslSession) -> true);
             client.getProperties().put(ClientProperties.SSL_ENGINE_CONFIGURATOR, sslEngineConfigurator);
         }
-        Session session = client.connectToServer(new CLIEndpoint(), ClientEndpointConfig.Builder.create().configurator(new Authenticator()).build(), URI.create(url.replaceFirst("^http", "ws") + "cli/ws"));
+        Session session;
+        try {
+            session = client.connectToServer(new CLIEndpoint(), ClientEndpointConfig.Builder.create().configurator(authenticator).build(), URI.create(url.replaceFirst("^http", "ws") + "cli/ws"));
+        } catch (DeploymentHandshakeException x) {
+            System.err.println("CLI handshake failed with status code " + x.getHttpStatusCode());
+            if (authenticator.hr != null) {
+                for (var entry : authenticator.hr.getHeaders().entrySet()) {
+                    // org.glassfish.tyrus.core.Utils.parseHeaderValue improperly splits values like Date at commas, so undo that:
+                    System.err.println(entry.getKey() + ": " + String.join(", ", entry.getValue()));
+                }
+                // UpgradeResponse.getReasonPhrase is useless since Jetty generates it from the code,
+                // and the body is not accessible at all.
+            }
+            return 15; // compare CLICommand.main
+        }
         PlainCLIProtocol.Output out = new PlainCLIProtocol.Output() {
             @Override
             public void send(byte[] data) throws IOException {

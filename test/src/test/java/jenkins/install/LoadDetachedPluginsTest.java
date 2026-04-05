@@ -31,9 +31,9 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.ClassicPluginStrategy;
 import hudson.ExtensionList;
@@ -41,7 +41,6 @@ import hudson.PluginManager;
 import hudson.PluginManagerUtil;
 import hudson.PluginWrapper;
 import hudson.util.VersionNumber;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -49,27 +48,28 @@ import java.util.stream.Collectors;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.plugins.DetachedPluginsUtil.DetachedPlugin;
 import jenkins.security.UpdateSiteWarningsMonitor;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
-import org.jvnet.hudson.test.SmokeTest;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-@Category(SmokeTest.class)
-public class LoadDetachedPluginsTest {
+@Tag("SmokeTest")
+class LoadDetachedPluginsTest {
 
-    @Rule public RestartableJenkinsRule rr = PluginManagerUtil.newRestartableJenkinsRule();
-    @Rule public LoggerRule logging = new LoggerRule();
+    @RegisterExtension
+    private final JenkinsSessionExtension rr = PluginManagerUtil.newJenkinsSessionExtension();
+
+    private final LogRecorder logging = new LogRecorder();
 
     @Issue("JENKINS-48365")
     @Test
     @LocalData
-    public void upgradeFromJenkins1() throws IOException {
+    void upgradeFromJenkins1() throws Throwable {
         VersionNumber since = new VersionNumber("1.490");
         rr.then(r -> {
             List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
@@ -82,9 +82,9 @@ public class LoadDetachedPluginsTest {
     }
 
     @Test
-    @Ignore("Only useful while updating bundled plugins, otherwise new security warnings fail unrelated builds")
+    @Disabled("Only useful while updating bundled plugins, otherwise new security warnings fail unrelated builds")
     @LocalData
-    public void noUpdateSiteWarnings() {
+    void noUpdateSiteWarnings() throws Throwable {
         rr.then(r -> {
             r.jenkins.getUpdateCenter().updateAllSites();
             final UpdateSiteWarningsMonitor monitor = ExtensionList.lookupSingleton(UpdateSiteWarningsMonitor.class);
@@ -95,7 +95,7 @@ public class LoadDetachedPluginsTest {
     @Issue("JENKINS-48365")
     @Test
     @LocalData
-    public void upgradeFromJenkins2() {
+    void upgradeFromJenkins2() throws Throwable {
         VersionNumber since = new VersionNumber("2.0");
         rr.then(r -> {
             List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
@@ -108,7 +108,7 @@ public class LoadDetachedPluginsTest {
     }
 
     @Test
-    public void newInstallation() {
+    void newInstallation() throws Throwable {
         rr.then(r -> {
             List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins();
             assertThat("Detached plugins should exist", detachedPlugins, not(empty()));
@@ -128,7 +128,7 @@ public class LoadDetachedPluginsTest {
     @Issue("JENKINS-55582")
     @LocalData
     @Test
-    public void installDetachedDependencies() {
+    void installDetachedDependencies() throws Throwable {
         logging.record(PluginManager.class, Level.FINE).record(ClassicPluginStrategy.class, Level.FINE);
         rr.then(r -> {
             List<String> activePlugins = r.jenkins.getPluginManager().getPlugins().stream().filter(PluginWrapper::isActive).map(PluginWrapper::getShortName).collect(Collectors.toList());
@@ -145,14 +145,14 @@ public class LoadDetachedPluginsTest {
 
     private void assertLoader(Class<?> c, String expectedPlugin, JenkinsRule r) {
         PluginWrapper pw = r.jenkins.pluginManager.whichPlugin(c);
-        assertNotNull("did not expect to be loading " + c + " from " + c.getClassLoader(), pw);
+        assertNotNull(pw, "did not expect to be loading " + c + " from " + c.getClassLoader());
         assertEquals(expectedPlugin, pw.getShortName());
     }
 
     @Issue("JENKINS-55582")
     @LocalData
     @Test
-    public void nonstandardFilenames() {
+    void nonstandardFilenames() throws Throwable {
         logging.record(PluginManager.class, Level.FINE).record(ClassicPluginStrategy.class, Level.FINE);
         rr.then(r -> {
             assertTrue(r.jenkins.pluginManager.getPlugin("build-token-root").isActive());
@@ -170,7 +170,7 @@ public class LoadDetachedPluginsTest {
             PluginWrapper wrapper = pluginManager.getPlugin(plugin.getShortName());
             if (wrapper != null) {
                 installedPlugins.add(wrapper);
-                assertTrue("Detached plugins should be active if installed", wrapper.isActive());
+                assertTrue(wrapper.isActive(), "Detached plugins should be active if installed");
                 assertThat("Detached plugins should not have dependency errors", wrapper.getDependencyErrors(), empty());
             }
         }

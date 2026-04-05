@@ -36,15 +36,16 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Locale;
 import org.junit.jupiter.api.Test;
-import org.kohsuke.stapler.StaplerRequest;
+import org.jvnet.hudson.test.Issue;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.lang.Klass;
 
-public class GetLocaleStaticHelpUrlTest {
+class GetLocaleStaticHelpUrlTest {
 
     @Test
-    public void getStaticHelpUrlAcceptEnResDefault() {
+    void getStaticHelpUrlAcceptEnResDefault() {
         // Accept-Language: en
-        StaplerRequest req = mockStaplerRequest(
+        StaplerRequest2 req = mockStaplerRequest2(
                 Locale.ENGLISH
         );
 
@@ -57,9 +58,9 @@ public class GetLocaleStaticHelpUrlTest {
     }
 
     @Test
-    public void getStaticHelpUrlAcceptDeResDeNoCountry() {
+    void getStaticHelpUrlAcceptDeResDeNoCountry() {
         // Accept-Language: de-DE,de;q=0.9,en;q=0.8
-        StaplerRequest req = mockStaplerRequest(
+        StaplerRequest2 req = mockStaplerRequest2(
                 Locale.GERMANY,
                 Locale.GERMAN,
                 Locale.ENGLISH
@@ -75,9 +76,9 @@ public class GetLocaleStaticHelpUrlTest {
     }
 
     @Test
-    public void getStaticHelpUrlAcceptDeResDeCountry() {
+    void getStaticHelpUrlAcceptDeResDeCountry() {
         // Accept-Language: de-DE,de;q=0.9,en;q=0.8
-        StaplerRequest req = mockStaplerRequest(
+        StaplerRequest2 req = mockStaplerRequest2(
                 Locale.GERMANY,
                 Locale.GERMAN,
                 Locale.ENGLISH
@@ -93,9 +94,9 @@ public class GetLocaleStaticHelpUrlTest {
     }
 
     @Test
-    public void getStaticHelpUrlAcceptDeResBoth() {
+    void getStaticHelpUrlAcceptDeResBoth() {
         // Accept-Language: de-DE,de;q=0.9,en;q=0.8
-        StaplerRequest req = mockStaplerRequest(
+        StaplerRequest2 req = mockStaplerRequest2(
                 Locale.GERMANY,
                 Locale.GERMAN,
                 Locale.ENGLISH
@@ -112,9 +113,9 @@ public class GetLocaleStaticHelpUrlTest {
     }
 
     @Test
-    public void getStaticHelpUrlAcceptZhResDefault() {
+    void getStaticHelpUrlAcceptZhResDefault() {
         // Accept-Language: zh,zh-CN;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
-        StaplerRequest req = mockStaplerRequest(
+        StaplerRequest2 req = mockStaplerRequest2(
                 Locale.CHINESE,
                 Locale.SIMPLIFIED_CHINESE,
                 Locale.ENGLISH,
@@ -131,9 +132,9 @@ public class GetLocaleStaticHelpUrlTest {
     }
 
     @Test
-    public void getStaticHelpUrlAcceptZhResZhCountry() {
+    void getStaticHelpUrlAcceptZhResZhCountry() {
         // Accept-Language: zh,zh-CN;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
-        StaplerRequest req = mockStaplerRequest(
+        StaplerRequest2 req = mockStaplerRequest2(
                 Locale.CHINESE,
                 Locale.SIMPLIFIED_CHINESE,
                 Locale.ENGLISH,
@@ -151,9 +152,9 @@ public class GetLocaleStaticHelpUrlTest {
     }
 
     @Test
-    public void getStaticHelpUrlAcceptZhResBoth() {
+    void getStaticHelpUrlAcceptZhResBoth() {
         // Accept-Language: zh,zh-CN;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
-        StaplerRequest req = mockStaplerRequest(
+        StaplerRequest2 req = mockStaplerRequest2(
                 Locale.CHINESE,
                 Locale.SIMPLIFIED_CHINESE,
                 Locale.ENGLISH,
@@ -171,9 +172,9 @@ public class GetLocaleStaticHelpUrlTest {
     }
 
     @Test
-    public void getStaticHelpUrlAcceptZhResMore() {
+    void getStaticHelpUrlAcceptZhResMore() {
         // Accept-Language: zh,zh-CN;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
-        StaplerRequest req = mockStaplerRequest(
+        StaplerRequest2 req = mockStaplerRequest2(
                 Locale.CHINESE,
                 Locale.SIMPLIFIED_CHINESE,
                 Locale.ENGLISH,
@@ -191,8 +192,26 @@ public class GetLocaleStaticHelpUrlTest {
         assertThatLocaleResourceIs(id, "help-id_zh_CN.html");
     }
 
-    private StaplerRequest mockStaplerRequest(Locale... localeArr) {
-        StaplerRequest req = mock(StaplerRequest.class);
+    @Issue("JENKINS-73246")
+    @Test
+    void getStaticHelpUrlAcceptEnFirst() {
+        // Accept-Language: en-US,en;q=0.9,de;q=0.8
+        StaplerRequest2 req = mockStaplerRequest2(
+                Locale.US,
+                Locale.ENGLISH,
+                Locale.GERMAN
+        );
+
+        Klass klass = mockKlass(
+                "help-id.html",
+                "help-id_de.html"
+        );
+        URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
+        assertThatLocaleResourceIs(id, "help-id.html");
+    }
+
+    private StaplerRequest2 mockStaplerRequest2(Locale... localeArr) {
+        StaplerRequest2 req = mock(StaplerRequest2.class);
         Enumeration<Locale> locales = Collections.enumeration(Arrays.asList(localeArr));
         when(req.getLocales()).thenReturn(locales);
         return req;

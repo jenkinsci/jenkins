@@ -1,0 +1,218 @@
+@use "../abstracts/mixins";
+
+.jenkins-form {
+  max-width: var(--form-item-max-width);
+}
+
+.jenkins-page-description {
+  color: var(--text-color-secondary);
+  margin: 0 0 var(--section-padding) 0;
+  line-height: 1.66;
+  text-wrap: pretty;
+}
+
+.jenkins-app-bar + .jenkins-page-description {
+  margin-top: -0.5rem;
+}
+
+.jenkins-fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+
+  .jenkins-form-item:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+.jenkins-form-item {
+  max-width: var(--form-item-max-width);
+  margin-bottom: var(--section-padding);
+
+  // Workaround for float:right button controls
+  // (eg Global Credentials' Verify Configuration button being hidden by the floating submit bar)
+  &::after {
+    content: " "; /* Older browser do not support empty content */
+    visibility: hidden;
+    display: block;
+    height: 0;
+    clear: both;
+  }
+
+  &--tight + .jenkins-form-item--tight {
+    margin-top: -0.9rem;
+  }
+
+  &--small {
+    max-width: var(--form-item-max-width--small);
+  }
+
+  &--medium {
+    max-width: var(--form-item-max-width--medium);
+  }
+
+  &:has(> .validation-error-area .warning) {
+    --input-border: var(--warning-color);
+    --input-border-hover: var(--warning-color);
+    --focus-input-border: var(--warning-color);
+    --form-input-glow--focus: 0 0 0 0.25rem
+      color-mix(in sRGB, var(--warning-color) 20%, transparent);
+  }
+
+  &:has(> .validation-error-area .error) {
+    --input-border: var(--error-color);
+    --input-border-hover: var(--error-color);
+    --focus-input-border: var(--error-color);
+    --form-input-glow--focus: 0 0 0 0.25rem
+      color-mix(in sRGB, var(--error-color) 20%, transparent);
+  }
+}
+
+.jenkins-form-label {
+  display: flex;
+  align-items: center;
+  font-weight: var(--form-label-font-weight);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  padding-inline: 0;
+}
+
+.jenkins-form-description {
+  display: block;
+
+  // Tweaked margin so that it appears visually centred when placed next to `.jenkins-form-label`
+  margin: -0.2rem 0 0.5rem;
+  color: var(--text-color-secondary);
+  line-height: 1.66;
+}
+
+.jenkins-quote {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--button-background);
+  border-radius: var(--form-input-border-radius);
+  outline: var(--jenkins-border--subtle);
+  outline-offset: calc(var(--jenkins-border-width) * -1);
+  padding: 0 1rem;
+  gap: 1.5rem;
+
+  .jenkins-button {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    margin-right: -0.75rem;
+    padding: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: calc(var(--form-input-border-radius) - 0.25rem);
+  }
+
+  &--full-width {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+
+  &--monospace {
+    font-family: var(--font-family-mono);
+
+    // Copy buttons' tooltips inherit font-family from the parent element,
+    // so override it
+    span {
+      font-family: var(--font-family-sans);
+    }
+  }
+}
+
+.jenkins-help-button {
+  @include mixins.item;
+
+  --item-background: var(--button-background);
+
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 1ch;
+  border-radius: 100%;
+
+  span {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    background: var(--text-color);
+    color: transparent;
+    mask-image: url("../images/svgs/mask-layout__help-button.svg");
+    mask-size: 45% 45%;
+    mask-position: center;
+    mask-repeat: no-repeat;
+  }
+}
+
+.jenkins-select-help {
+  position: relative;
+}
+
+.jenkins-select-help a.jenkins-help-button {
+  position: absolute;
+  top: -3.7rem;
+  right: -2rem;
+}
+
+.jenkins-edited-section-label {
+  color: var(--text-color-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: 0.4rem;
+  font-size: 0.8rem;
+  cursor: default;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.jenkins-instructions {
+  display: flex;
+  flex-direction: column;
+  list-style-type: none;
+  padding: 0;
+  margin: 0 0 var(--section-padding);
+  gap: var(--section-padding);
+  counter-reset: section;
+
+  li {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 0.5rem;
+    padding-left: 3rem;
+    padding-top: 0.35rem;
+
+    .jenkins-instructions__label {
+      font-weight: var(--font-bold-weight);
+      margin: 0;
+    }
+
+    &::before {
+      counter-increment: section;
+      content: counters(section, "");
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      top: 0;
+      left: 0;
+      background: var(--text-color);
+      width: 2rem;
+      height: 2rem;
+      color: var(--background);
+      border-radius: 100px;
+      text-align: center;
+      font-weight: var(--font-bold-weight);
+    }
+  }
+}

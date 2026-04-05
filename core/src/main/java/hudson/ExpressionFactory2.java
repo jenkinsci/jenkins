@@ -12,7 +12,7 @@ import org.apache.commons.jelly.expression.ExpressionFactory;
 import org.apache.commons.jelly.expression.ExpressionSupport;
 import org.apache.commons.jexl.JexlContext;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -78,7 +78,7 @@ final class ExpressionFactory2 implements ExpressionFactory {
                 // let the security exception pass through
                 throw e;
             } catch (Exception e) {
-                StaplerRequest currentRequest = Stapler.getCurrentRequest();
+                StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
                 LOGGER.log(Level.WARNING, "Caught exception evaluating: " + expression + " in " + (currentRequest != null ? currentRequest.getOriginalRequestURI() : "?") + ". Reason: " + e, e);
                 return null;
             } finally {

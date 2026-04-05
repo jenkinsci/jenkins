@@ -33,6 +33,7 @@ import hudson.PluginWrapper.Dependency;
 import hudson.model.Hudson;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
+import hudson.util.DelegatingClassLoader;
 import hudson.util.IOUtils;
 import hudson.util.MaskingClassLoader;
 import java.io.File;
@@ -252,7 +253,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         for (Dependency d : DetachedPluginsUtil.getImpliedDependencies(pluginName, jenkinsVersion)) {
             LOGGER.fine(() -> "implied dep " + pluginName + " → " + d.shortName);
-            pluginManager.considerDetachedPlugin(d.shortName);
+            pluginManager.considerDetachedPlugin(d.shortName, pluginName);
             optionalDependencies.add(d);
         }
     }
@@ -269,17 +270,17 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     /**
-     * @deprecated since TODO use {@link #createClassLoader(String, List, ClassLoader, Attributes)}
+     * @deprecated since 2.459 use {@link #createClassLoader(String, List, ClassLoader, Attributes)}
      */
-    @Deprecated(since = "TODO")
+    @Deprecated(since = "2.459")
     protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent) throws IOException {
         return createClassLoader(paths, parent, null);
     }
 
     /**
-     * @deprecated since TODO use {@link #createClassLoader(String, List, ClassLoader, Attributes)}
+     * @deprecated since 2.459 use {@link #createClassLoader(String, List, ClassLoader, Attributes)}
      */
-    @Deprecated(since="TODO")
+    @Deprecated(since = "2.459")
     protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
         // generate a legacy id so at least we can track to something
         return createClassLoader("unidentified-" + UUID.randomUUID(), paths, parent, atts);
@@ -287,7 +288,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     /**
      * Creates a  classloader that can load all the specified jar files and delegate to the given parent.
-     * @since TODO
+     * @since 2.459
      */
     protected ClassLoader createClassLoader(String name, List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
         boolean usePluginFirstClassLoader =
@@ -559,7 +560,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /**
      * Used to load classes from dependency plugins.
      */
-    static final class DependencyClassLoader extends ClassLoader {
+    static final class DependencyClassLoader extends DelegatingClassLoader {
         /**
          * This classloader is created for this plugin. Useful during debugging.
          */
@@ -573,10 +574,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
          * Topologically sorted list of transitive dependencies. Lazily initialized via double-checked locking.
          */
         private volatile List<PluginWrapper> transitiveDependencies;
-
-        static {
-            registerAsParallelCapable();
-        }
 
         DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies, PluginManager pluginManager) {
             super("dependency ClassLoader for " + archive.getPath(), parent);

@@ -2,7 +2,6 @@ package org.jenkins.ui.symbol;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import hudson.PluginWrapper;
 import hudson.Util;
@@ -14,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -72,13 +72,13 @@ public final class Symbol {
                 .computeIfAbsent(identifier, key -> new ConcurrentHashMap<>())
                 .computeIfAbsent(name, key -> loadSymbol(identifier, key));
         if ((tooltip != null && !tooltip.isBlank()) && (htmlTooltip == null || htmlTooltip.isBlank())) {
-            symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
+            symbol = symbol.replaceAll("<svg", Matcher.quoteReplacement("<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\""));
         }
         if (htmlTooltip != null && !htmlTooltip.isBlank()) {
-            symbol = symbol.replaceAll("<svg", "<svg data-html-tooltip=\"" + Functions.htmlAttributeEscape(htmlTooltip) + "\"");
+            symbol = symbol.replaceAll("<svg", Matcher.quoteReplacement("<svg data-html-tooltip=\"" + Functions.htmlAttributeEscape(htmlTooltip) + "\""));
         }
         if (id != null && !id.isBlank()) {
-            symbol = symbol.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
+            symbol = symbol.replaceAll("<svg", Matcher.quoteReplacement("<svg id=\"" + Functions.htmlAttributeEscape(id) + "\""));
         }
         if (classes != null && !classes.isBlank()) {
             symbol = symbol.replaceAll("<svg", "<svg class=\"" + Functions.htmlAttributeEscape(classes) + "\"");
@@ -90,7 +90,6 @@ public final class Symbol {
     }
 
 
-    @SuppressFBWarnings(value = {"NP_LOAD_OF_KNOWN_NULL_VALUE", "RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE"}, justification = "Spotbugs doesn't grok try-with-resources")
     private static String loadSymbol(String namespace, String name) {
         String markup = PLACEHOLDER_SVG;
         ClassLoader classLoader = getClassLoader(namespace);

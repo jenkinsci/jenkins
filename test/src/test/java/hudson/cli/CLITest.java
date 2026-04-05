@@ -27,9 +27,9 @@ package hudson.cli;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import hudson.Launcher;
 import hudson.Proc;
@@ -37,6 +37,10 @@ import hudson.model.FreeStyleProject;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
 import hudson.util.StreamTaskListener;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -46,52 +50,49 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.htmlunit.WebResponse;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
-public class CLITest {
+@WithJenkins
+class CLITest {
 
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
-
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
-
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    @TempDir
+    private File tmp;
 
     private File jar;
 
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
+
     private void grabCliJar() throws IOException {
-        jar = tmp.newFile("jenkins-cli.jar");
+        jar = File.createTempFile("jenkins-cli.jar", null, tmp);
         FileUtils.copyURLToFile(r.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
     }
 
     @Issue("JENKINS-41745")
     @Test
-    public void interrupt() throws Exception {
+    void interrupt() throws Exception {
         grabCliJar();
 
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
@@ -119,8 +120,9 @@ public class CLITest {
         r.waitForCompletion(p.getLastBuild());
     }
 
-    @Test @Issue("JENKINS-44361")
-    public void reportNotJenkins() throws Exception {
+    @Test
+    @Issue("JENKINS-44361")
+    void reportNotJenkins() throws Exception {
         grabCliJar();
 
         String url = r.getURL().toExternalForm() + "not-jenkins/";
@@ -150,11 +152,11 @@ public class CLITest {
         }
 
         @Override public Object getTarget() {
-            doDynamic(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
+            doDynamic(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2());
             return this;
         }
 
-        public void doDynamic(StaplerRequest req, StaplerResponse rsp) {
+        public void doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) {
             rsp.setStatus(200);
         }
 
@@ -165,8 +167,9 @@ public class CLITest {
         }
     }
 
-    @Test @Issue("JENKINS-44361")
-    public void redirectToEndpointShouldBeFollowed() throws Exception {
+    @Test
+    @Issue("JENKINS-44361")
+    void redirectToEndpointShouldBeFollowed() throws Exception {
         grabCliJar();
 
         // Sanity check
@@ -175,8 +178,8 @@ public class CLITest {
                 .withThrowExceptionOnFailingStatusCode(false);
 
         WebResponse rsp = wc.goTo("cli-proxy/").getWebResponse();
-        assertEquals(rsp.getContentAsString(), HttpURLConnection.HTTP_MOVED_TEMP, rsp.getStatusCode());
-        assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-Jenkins"));
+        assertEquals(HttpURLConnection.HTTP_MOVED_TEMP, rsp.getStatusCode(), rsp.getContentAsString());
+        assertNull(rsp.getResponseHeaderValue("X-Jenkins"), rsp.getContentAsString());
 
         for (String transport : Arrays.asList("-http", "-webSocket")) {
 
@@ -192,10 +195,10 @@ public class CLITest {
         }
     }
 
-    @Ignore("TODO sometimes fails, in CI & locally")
+    @Disabled("TODO sometimes fails, in CI & locally")
     @Test
     @Issue("JENKINS-54310")
-    public void readInputAtOnce() throws Exception {
+    void readInputAtOnce() throws Exception {
         grabCliJar();
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
@@ -230,15 +233,15 @@ public class CLITest {
         }
 
         @Override public Object getTarget() {
-            throw doDynamic(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
+            throw doDynamic(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2());
         }
 
-        public HttpResponses.HttpResponseException doDynamic(StaplerRequest req, StaplerResponse rsp) {
+        public HttpResponses.HttpResponseException doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) {
             final String url = req.getRequestURIWithQueryString().replaceFirst("/cli-proxy", "");
             // Custom written redirect so no traces of Jenkins are present in headers
             return new HttpResponses.HttpResponseException() {
                 @Override
-                public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException {
+                public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException {
                     rsp.setHeader("Location", url);
                     rsp.setContentType("text/html");
                     rsp.setStatus(HttpURLConnection.HTTP_MOVED_TEMP);

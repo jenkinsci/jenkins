@@ -1,3 +1,10 @@
-img.build-time-graph {
-  float: right;
+#buildTimeTrend {
+  display: flex;
+  gap: 15px;
+}
+
+@media (max-width: 1300px) {
+  #buildTimeTrend {
+    flex-direction: column-reverse;
+  }
 }

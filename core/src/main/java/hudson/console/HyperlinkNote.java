@@ -37,7 +37,7 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Turns a text into a hyperlink by specifying the URL separately.
@@ -62,7 +62,7 @@ public class HyperlinkNote extends ConsoleNote {
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
         String url = this.url;
         if (url.startsWith("/")) {
-            StaplerRequest req = Stapler.getCurrentRequest();
+            StaplerRequest2 req = Stapler.getCurrentRequest2();
             if (req != null) {
                 // if we are serving HTTP request, we want to use app relative URL
                 url = req.getContextPath() + url;

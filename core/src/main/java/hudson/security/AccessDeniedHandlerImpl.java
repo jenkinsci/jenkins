@@ -24,10 +24,10 @@
 
 package hudson.security;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -53,7 +53,7 @@ public class AccessDeniedHandlerImpl implements AccessDeniedHandler {
             ((AccessDeniedException3) cause).reportAsHeaders(rsp);
         }
 
-        WebApp.get(Jenkins.get().servletContext).getSomeStapler()
+        WebApp.get(Jenkins.get().getServletContext()).getSomeStapler()
                 .invoke(req, rsp, Jenkins.get(), "/accessDenied");
     }
 }

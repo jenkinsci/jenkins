@@ -30,15 +30,26 @@ import hudson.Util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.model.Tab;
 import jenkins.model.TransientActionFactory;
+import jenkins.model.menu.Group;
+import jenkins.security.stapler.StaplerNotDispatchable;
+import org.jenkins.ui.icon.IconSpec;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -110,6 +121,39 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         return Collections.unmodifiableList(_actions);
     }
 
+    /**
+     * Collects and returns the list of actions to display in the application bar.
+     * <p>
+     * This method filters out actions that:
+     * <ul>
+     *   <li>are instances of {@link Tab}</li>
+     *   <li>lack a display name or an icon (either from {@link Action#getIconFileName()}
+     *       or, if available, {@link IconSpec#getIconClassName()})</li>
+     * </ul>
+     * <p>
+     * The resulting actions are sorted first by their {@link Group#getOrder()} value,
+     * then alphabetically by display name. The list is returned as an unmodifiable collection.
+     *
+     * @return an unmodifiable list of actions suitable for display in the app bar
+     */
+    @Restricted(NoExternalUse.class)
+    public List<Action> getAppBarActions() {
+        return getAllActions().stream()
+                .filter(e -> !(e instanceof Tab))
+                .filter(e -> {
+                    String icon = e.getIconFileName();
+
+                    if (e instanceof IconSpec iconSpec && iconSpec.getIconClassName() != null) {
+                        icon = iconSpec.getIconClassName();
+                    }
+
+                    return Util.fixEmptyAndTrim(e.getDisplayName()) != null || Util.fixEmptyAndTrim(icon) != null;
+                })
+                .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
+                        .thenComparing(e -> Objects.requireNonNullElse(e.getDisplayName(), "")))
+                .collect(Collectors.toUnmodifiableList());
+    }
+
     private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {
         try {
             Collection<? extends Action> result = taf.createFor(taf.type().cast(this));
@@ -135,10 +179,11 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @NonNull
     public <T extends Action> List<T> getActions(Class<T> type) {
-        List<T> _actions = Util.filter(getActions(), type);
+        List<T> _actions = new ArrayList<>();
         for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), type)) {
             _actions.addAll(Util.filter(createFor(taf), type));
         }
+        _actions.addAll(Util.filter(getActions(), type));
         return Collections.unmodifiableList(_actions);
     }
 
@@ -338,7 +383,26 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         return null;
     }
 
+    /**
+     * @since 2.475
+     */
+    public Object getDynamic(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
+        if (Util.isOverridden(Actionable.class, getClass(), "getDynamic", String.class, StaplerRequest.class, StaplerResponse.class)) {
+            return getDynamic(token, StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+        } else {
+            return getDynamicImpl(token, req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #getDynamic(String, StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+        return getDynamicImpl(token, StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+    }
+
+    private Object getDynamicImpl(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
         for (Action a : getAllActions()) {
             if (a == null)
                 continue;   // be defensive
@@ -351,7 +415,29 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         return null;
     }
 
-    @Override public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    /**
+     * @since 2.475
+     */
+    @Override
+    public ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
+        if (Util.isOverridden(Actionable.class, getClass(), "doContextMenu", StaplerRequest.class, StaplerResponse.class)) {
+            return doContextMenu(StaplerRequest.fromStaplerRequest2(request), StaplerResponse.fromStaplerResponse2(response));
+        } else {
+            return doContextMenuImpl(request, response);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doContextMenu(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    @Override
+    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        return doContextMenuImpl(StaplerRequest.toStaplerRequest2(request), StaplerResponse.toStaplerResponse2(response));
+    }
+
+    private ContextMenu doContextMenuImpl(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
         return new ContextMenu().from(this, request, response);
     }
 

@@ -24,32 +24,39 @@
 
 package jenkins.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.ExtensionList;
 import hudson.model.FreeStyleProject;
 import hudson.model.labels.LabelAtom;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-public class BuiltInNodeMigrationTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class BuiltInNodeMigrationTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void newInstanceHasNewTerminology() throws Exception {
+    void newInstanceHasNewTerminology() throws Exception {
         assertStatus(j, true, false, "built-in", "built-in");
         assertFalse(ExtensionList.lookupSingleton(BuiltInNodeMigration.class).isActivated());
     }
 
     @Test
     @LocalData
-    public void oldDataStartsWithOldTerminology() throws Exception {
+    void oldDataStartsWithOldTerminology() throws Exception {
         assertStatus(j, false, true, "master", "master");
         final BuiltInNodeMigration builtInNodeMigration = ExtensionList.lookupSingleton(BuiltInNodeMigration.class);
         assertTrue(builtInNodeMigration.isActivated());
@@ -62,7 +69,7 @@ public class BuiltInNodeMigrationTest {
 
     @Test
     @LocalData
-    public void migratedInstanceStartsWithNewTerminology() throws Exception {
+    void migratedInstanceStartsWithNewTerminology() throws Exception {
         assertStatus(j, true, false, "built-in", "built-in");
         assertFalse(ExtensionList.lookupSingleton(BuiltInNodeMigration.class).isActivated());
     }

@@ -30,7 +30,7 @@ import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Adds the default view configuration to the system config page.
@@ -40,7 +40,7 @@ import org.kohsuke.stapler.StaplerRequest;
 @Extension(ordinal = 300) @Symbol("defaultView")
 public class GlobalDefaultViewConfiguration extends GlobalConfiguration {
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
         Jenkins j = Jenkins.get();
         if (json.has("primaryView")) {

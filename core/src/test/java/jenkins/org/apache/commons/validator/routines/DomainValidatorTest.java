@@ -17,6 +17,11 @@
 
 package jenkins.org.apache.commons.validator.routines;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
@@ -41,77 +46,82 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jenkins.org.apache.commons.validator.routines.DomainValidator.ArrayType;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the DomainValidator.
  *
  * @version $Revision$
  */
-public class DomainValidatorTest extends TestCase {
+class DomainValidatorTest {
 
     private DomainValidator validator;
 
-    @Override
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         validator = DomainValidator.getInstance();
     }
 
-    public void testValidDomains() {
-        assertTrue("apache.org should validate", validator.isValid("apache.org"));
-        assertTrue("www.google.com should validate", validator.isValid("www.google.com"));
+    @Test
+    void testValidDomains() {
+        assertTrue(validator.isValid("apache.org"), "apache.org should validate");
+        assertTrue(validator.isValid("www.google.com"), "www.google.com should validate");
 
-        assertTrue("test-domain.com should validate", validator.isValid("test-domain.com"));
-        assertTrue("test---domain.com should validate", validator.isValid("test---domain.com"));
-        assertTrue("test-d-o-m-ain.com should validate", validator.isValid("test-d-o-m-ain.com"));
-        assertTrue("two-letter domain label should validate", validator.isValid("as.uk"));
+        assertTrue(validator.isValid("test-domain.com"), "test-domain.com should validate");
+        assertTrue(validator.isValid("test---domain.com"), "test---domain.com should validate");
+        assertTrue(validator.isValid("test-d-o-m-ain.com"), "test-d-o-m-ain.com should validate");
+        assertTrue(validator.isValid("as.uk"), "two-letter domain label should validate");
 
-        assertTrue("case-insensitive ApAchE.Org should validate", validator.isValid("ApAchE.Org"));
+        assertTrue(validator.isValid("ApAchE.Org"), "case-insensitive ApAchE.Org should validate");
 
-        assertTrue("single-character domain label should validate", validator.isValid("z.com"));
+        assertTrue(validator.isValid("z.com"), "single-character domain label should validate");
 
-        assertTrue("i.have.an-example.domain.name should validate", validator.isValid("i.have.an-example.domain.name"));
+        assertTrue(validator.isValid("i.have.an-example.domain.name"), "i.have.an-example.domain.name should validate");
     }
 
-    public void testInvalidDomains() {
-        assertFalse("bare TLD .org shouldn't validate", validator.isValid(".org"));
-        assertFalse("domain name with spaces shouldn't validate", validator.isValid(" apache.org "));
-        assertFalse("domain name containing spaces shouldn't validate", validator.isValid("apa che.org"));
-        assertFalse("domain name starting with dash shouldn't validate", validator.isValid("-testdomain.name"));
-        assertFalse("domain name ending with dash shouldn't validate", validator.isValid("testdomain-.name"));
-        assertFalse("domain name starting with multiple dashes shouldn't validate", validator.isValid("---c.com"));
-        assertFalse("domain name ending with multiple dashes shouldn't validate", validator.isValid("c--.com"));
-        assertFalse("domain name with invalid TLD shouldn't validate", validator.isValid("apache.rog"));
+    @Test
+    void testInvalidDomains() {
+        assertFalse(validator.isValid(".org"), "bare TLD .org shouldn't validate");
+        assertFalse(validator.isValid(" apache.org "), "domain name with spaces shouldn't validate");
+        assertFalse(validator.isValid("apa che.org"), "domain name containing spaces shouldn't validate");
+        assertFalse(validator.isValid("-testdomain.name"), "domain name starting with dash shouldn't validate");
+        assertFalse(validator.isValid("testdomain-.name"), "domain name ending with dash shouldn't validate");
+        assertFalse(validator.isValid("---c.com"), "domain name starting with multiple dashes shouldn't validate");
+        assertFalse(validator.isValid("c--.com"), "domain name ending with multiple dashes shouldn't validate");
+        assertFalse(validator.isValid("apache.rog"), "domain name with invalid TLD shouldn't validate");
 
-        assertFalse("URL shouldn't validate", validator.isValid("http://www.apache.org"));
-        assertFalse("Empty string shouldn't validate as domain name", validator.isValid(" "));
-        assertFalse("Null shouldn't validate as domain name", validator.isValid(null));
+        assertFalse(validator.isValid("http://www.apache.org"), "URL shouldn't validate");
+        assertFalse(validator.isValid(" "), "Empty string shouldn't validate as domain name");
+        assertFalse(validator.isValid(null), "Null shouldn't validate as domain name");
     }
 
-    public void testTopLevelDomains() {
+    @Test
+    void testTopLevelDomains() {
         // infrastructure TLDs
-        assertTrue(".arpa should validate as iTLD", validator.isValidInfrastructureTld(".arpa"));
-        assertFalse(".com shouldn't validate as iTLD", validator.isValidInfrastructureTld(".com"));
+        assertTrue(validator.isValidInfrastructureTld(".arpa"), ".arpa should validate as iTLD");
+        assertFalse(validator.isValidInfrastructureTld(".com"), ".com shouldn't validate as iTLD");
 
         // generic TLDs
-        assertTrue(".name should validate as gTLD", validator.isValidGenericTld(".name"));
-        assertFalse(".us shouldn't validate as gTLD", validator.isValidGenericTld(".us"));
+        assertTrue(validator.isValidGenericTld(".name"), ".name should validate as gTLD");
+        assertFalse(validator.isValidGenericTld(".us"), ".us shouldn't validate as gTLD");
 
         // country code TLDs
-        assertTrue(".uk should validate as ccTLD", validator.isValidCountryCodeTld(".uk"));
-        assertFalse(".org shouldn't validate as ccTLD", validator.isValidCountryCodeTld(".org"));
+        assertTrue(validator.isValidCountryCodeTld(".uk"), ".uk should validate as ccTLD");
+        assertFalse(validator.isValidCountryCodeTld(".org"), ".org shouldn't validate as ccTLD");
 
         // case-insensitive
-        assertTrue(".COM should validate as TLD", validator.isValidTld(".COM"));
-        assertTrue(".BiZ should validate as TLD", validator.isValidTld(".BiZ"));
+        assertTrue(validator.isValidTld(".COM"), ".COM should validate as TLD");
+        assertTrue(validator.isValidTld(".BiZ"), ".BiZ should validate as TLD");
 
         // corner cases
-        assertFalse("invalid TLD shouldn't validate", validator.isValid(".nope")); // TODO this is not guaranteed invalid forever
-        assertFalse("empty string shouldn't validate as TLD", validator.isValid(""));
-        assertFalse("null shouldn't validate as TLD", validator.isValid(null));
+        assertFalse(validator.isValid(".nope"), "invalid TLD shouldn't validate"); // TODO this is not guaranteed invalid forever
+        assertFalse(validator.isValid(""), "empty string shouldn't validate as TLD");
+        assertFalse(validator.isValid(null), "null shouldn't validate as TLD");
     }
 
-    public void testAllowLocal() {
+    @Test
+    void testAllowLocal() {
        DomainValidator noLocal = DomainValidator.getInstance(false);
        DomainValidator allowLocal = DomainValidator.getInstance(true);
 
@@ -119,86 +129,93 @@ public class DomainValidatorTest extends TestCase {
        assertEquals(noLocal, validator);
 
        // Default won't allow local
-       assertFalse("localhost.localdomain should validate", noLocal.isValid("localhost.localdomain"));
-       assertFalse("localhost should validate", noLocal.isValid("localhost"));
+       assertFalse(noLocal.isValid("localhost.localdomain"), "localhost.localdomain should validate");
+       assertFalse(noLocal.isValid("localhost"), "localhost should validate");
 
        // But it may be requested
-       assertTrue("localhost.localdomain should validate", allowLocal.isValid("localhost.localdomain"));
-       assertTrue("localhost should validate", allowLocal.isValid("localhost"));
-       assertTrue("hostname should validate", allowLocal.isValid("hostname"));
-       assertTrue("machinename should validate", allowLocal.isValid("machinename"));
+       assertTrue(allowLocal.isValid("localhost.localdomain"), "localhost.localdomain should validate");
+       assertTrue(allowLocal.isValid("localhost"), "localhost should validate");
+       assertTrue(allowLocal.isValid("hostname"), "hostname should validate");
+       assertTrue(allowLocal.isValid("machinename"), "machinename should validate");
 
        // Check the localhost one with a few others
-       assertTrue("apache.org should validate", allowLocal.isValid("apache.org"));
-       assertFalse("domain name with spaces shouldn't validate", allowLocal.isValid(" apache.org "));
+       assertTrue(allowLocal.isValid("apache.org"), "apache.org should validate");
+       assertFalse(allowLocal.isValid(" apache.org "), "domain name with spaces shouldn't validate");
     }
 
-    public void testIDN() {
-       assertTrue("b\u00fccher.ch in IDN should validate", validator.isValid("www.xn--bcher-kva.ch"));
+    @Test
+    void testIDN() {
+       assertTrue(validator.isValid("www.xn--bcher-kva.ch"), "b\u00fccher.ch in IDN should validate");
     }
 
-    public void testIDNJava6OrLater() {
+    @Test
+    void testIDNJava6OrLater() {
         String version = System.getProperty("java.version");
         if (version.compareTo("1.6") < 0) {
             System.out.println("Cannot run Unicode IDN tests");
             return; // Cannot run the test
         } // xn--d1abbgf6aiiy.xn--p1ai http://президент.рф
-       assertTrue("b\u00fccher.ch should validate", validator.isValid("www.b\u00fccher.ch"));
-       assertTrue("xn--d1abbgf6aiiy.xn--p1ai should validate", validator.isValid("xn--d1abbgf6aiiy.xn--p1ai"));
-       assertTrue("президент.рф should validate", validator.isValid("президент.рф"));
-       assertFalse("www.\uFFFD.ch FFFD should fail", validator.isValid("www.\uFFFD.ch"));
+       assertTrue(validator.isValid("www.b\u00fccher.ch"), "b\u00fccher.ch should validate");
+       assertTrue(validator.isValid("xn--d1abbgf6aiiy.xn--p1ai"), "xn--d1abbgf6aiiy.xn--p1ai should validate");
+       assertTrue(validator.isValid("президент.рф"), "президент.рф should validate");
+       assertFalse(validator.isValid("www.\uFFFD.ch"), "www.\uFFFD.ch FFFD should fail");
     }
 
     // RFC2396: domainlabel   = alphanum | alphanum *( alphanum | "-" ) alphanum
-    public void testRFC2396domainlabel() { // use fixed valid TLD
-        assertTrue("a.ch should validate", validator.isValid("a.ch"));
-        assertTrue("9.ch should validate", validator.isValid("9.ch"));
-        assertTrue("az.ch should validate", validator.isValid("az.ch"));
-        assertTrue("09.ch should validate", validator.isValid("09.ch"));
-        assertTrue("9-1.ch should validate", validator.isValid("9-1.ch"));
-        assertFalse("91-.ch should not validate", validator.isValid("91-.ch"));
-        assertFalse("-.ch should not validate", validator.isValid("-.ch"));
+    @Test
+    void testRFC2396domainlabel() { // use fixed valid TLD
+        assertTrue(validator.isValid("a.ch"), "a.ch should validate");
+        assertTrue(validator.isValid("9.ch"), "9.ch should validate");
+        assertTrue(validator.isValid("az.ch"), "az.ch should validate");
+        assertTrue(validator.isValid("09.ch"), "09.ch should validate");
+        assertTrue(validator.isValid("9-1.ch"), "9-1.ch should validate");
+        assertFalse(validator.isValid("91-.ch"), "91-.ch should not validate");
+        assertFalse(validator.isValid("-.ch"), "-.ch should not validate");
     }
 
     // RFC2396 toplabel = alpha | alpha *( alphanum | "-" ) alphanum
-    public void testRFC2396toplabel() {
+    @Test
+    void testRFC2396toplabel() {
         // These tests use non-existent TLDs so currently need to use a package protected method
-        assertTrue("a.c (alpha) should validate", validator.isValidDomainSyntax("a.c"));
-        assertTrue("a.cc (alpha alpha) should validate", validator.isValidDomainSyntax("a.cc"));
-        assertTrue("a.c9 (alpha alphanum) should validate", validator.isValidDomainSyntax("a.c9"));
-        assertTrue("a.c-9 (alpha - alphanum) should validate", validator.isValidDomainSyntax("a.c-9"));
-        assertTrue("a.c-z (alpha - alpha) should validate", validator.isValidDomainSyntax("a.c-z"));
+        assertTrue(validator.isValidDomainSyntax("a.c"), "a.c (alpha) should validate");
+        assertTrue(validator.isValidDomainSyntax("a.cc"), "a.cc (alpha alpha) should validate");
+        assertTrue(validator.isValidDomainSyntax("a.c9"), "a.c9 (alpha alphanum) should validate");
+        assertTrue(validator.isValidDomainSyntax("a.c-9"), "a.c-9 (alpha - alphanum) should validate");
+        assertTrue(validator.isValidDomainSyntax("a.c-z"), "a.c-z (alpha - alpha) should validate");
 
-        assertFalse("a.9c (alphanum alpha) should fail", validator.isValidDomainSyntax("a.9c"));
-        assertFalse("a.c- (alpha -) should fail", validator.isValidDomainSyntax("a.c-"));
-        assertFalse("a.- (-) should fail", validator.isValidDomainSyntax("a.-"));
-        assertFalse("a.-9 (- alphanum) should fail", validator.isValidDomainSyntax("a.-9"));
+        assertFalse(validator.isValidDomainSyntax("a.9c"), "a.9c (alphanum alpha) should fail");
+        assertFalse(validator.isValidDomainSyntax("a.c-"), "a.c- (alpha -) should fail");
+        assertFalse(validator.isValidDomainSyntax("a.-"), "a.- (-) should fail");
+        assertFalse(validator.isValidDomainSyntax("a.-9"), "a.-9 (- alphanum) should fail");
     }
 
-    public void testDomainNoDots() { // rfc1123
-        assertTrue("a (alpha) should validate", validator.isValidDomainSyntax("a"));
-        assertTrue("9 (alphanum) should validate", validator.isValidDomainSyntax("9"));
-        assertTrue("c-z (alpha - alpha) should validate", validator.isValidDomainSyntax("c-z"));
+    @Test
+    void testDomainNoDots() { // rfc1123
+        assertTrue(validator.isValidDomainSyntax("a"), "a (alpha) should validate");
+        assertTrue(validator.isValidDomainSyntax("9"), "9 (alphanum) should validate");
+        assertTrue(validator.isValidDomainSyntax("c-z"), "c-z (alpha - alpha) should validate");
 
-        assertFalse("c- (alpha -) should fail", validator.isValidDomainSyntax("c-"));
-        assertFalse("-c (- alpha) should fail", validator.isValidDomainSyntax("-c"));
-        assertFalse("- (-) should fail", validator.isValidDomainSyntax("-"));
+        assertFalse(validator.isValidDomainSyntax("c-"), "c- (alpha -) should fail");
+        assertFalse(validator.isValidDomainSyntax("-c"), "-c (- alpha) should fail");
+        assertFalse(validator.isValidDomainSyntax("-"), "- (-) should fail");
     }
 
-    public void testValidator297() {
-        assertTrue("xn--d1abbgf6aiiy.xn--p1ai should validate", validator.isValid("xn--d1abbgf6aiiy.xn--p1ai")); // This uses a valid TLD
+    @Test
+    void testValidator297() {
+        assertTrue(validator.isValid("xn--d1abbgf6aiiy.xn--p1ai"), "xn--d1abbgf6aiiy.xn--p1ai should validate"); // This uses a valid TLD
      }
 
     // labels are a max of 63 chars and domains 253
-    public void testValidator306() {
+    @Test
+    void testValidator306() {
         final String longString = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789A";
         assertEquals(63, longString.length()); // 26 * 2 + 11
 
-        assertTrue("63 chars label should validate", validator.isValidDomainSyntax(longString + ".com"));
-        assertFalse("64 chars label should fail", validator.isValidDomainSyntax(longString + "x.com"));
+        assertTrue(validator.isValidDomainSyntax(longString + ".com"), "63 chars label should validate");
+        assertFalse(validator.isValidDomainSyntax(longString + "x.com"), "64 chars label should fail");
 
-        assertTrue("63 chars TLD should validate", validator.isValidDomainSyntax("test." + longString));
-        assertFalse("64 chars TLD should fail", validator.isValidDomainSyntax("test.x" + longString));
+        assertTrue(validator.isValidDomainSyntax("test." + longString), "63 chars TLD should validate");
+        assertFalse(validator.isValidDomainSyntax("test.x" + longString), "64 chars TLD should fail");
 
         final String longDomain =
                 longString
@@ -207,13 +224,14 @@ public class DomainValidatorTest extends TestCase {
                 + "." + longString.substring(0, 61)
                 ;
         assertEquals(253, longDomain.length());
-        assertTrue("253 chars domain should validate", validator.isValidDomainSyntax(longDomain));
-        assertFalse("254 chars domain should fail", validator.isValidDomainSyntax(longDomain + "x"));
+        assertTrue(validator.isValidDomainSyntax(longDomain), "253 chars domain should validate");
+        assertFalse(validator.isValidDomainSyntax(longDomain + "x"), "254 chars domain should fail");
     }
 
     // Check that IDN.toASCII behaves as it should (when wrapped by DomainValidator.unicodeToASCII)
     // Tests show that method incorrectly trims a trailing "." character
-    public void testUnicodeToASCII() {
+    @Test
+    void testUnicodeToASCII() {
         String[] asciidots = {
                 "",
                 ",",
@@ -247,7 +265,8 @@ public class DomainValidatorTest extends TestCase {
     }
 
     // Check if IDN.toASCII is broken or not
-    public void testIsIDNtoASCIIBroken() {
+    @Test
+    void testIsIDNtoASCIIBroken() {
         System.out.println(">>DomainValidatorTest.testIsIDNtoASCIIBroken()");
         final String input = ".";
         final boolean ok = input.equals(IDN.toASCII(input));
@@ -274,34 +293,40 @@ public class DomainValidatorTest extends TestCase {
     }
 
     // Check array is sorted and is lower-case
-    public void test_INFRASTRUCTURE_TLDS_sortedAndLowerCase() throws Exception {
+    @Test
+    void test_INFRASTRUCTURE_TLDS_sortedAndLowerCase() throws Exception {
         final boolean sorted = isSortedLowerCase("INFRASTRUCTURE_TLDS");
         assertTrue(sorted);
     }
 
     // Check array is sorted and is lower-case
-    public void test_COUNTRY_CODE_TLDS_sortedAndLowerCase() throws Exception {
+    @Test
+    void test_COUNTRY_CODE_TLDS_sortedAndLowerCase() throws Exception {
         final boolean sorted = isSortedLowerCase("COUNTRY_CODE_TLDS");
         assertTrue(sorted);
     }
 
     // Check array is sorted and is lower-case
-    public void test_GENERIC_TLDS_sortedAndLowerCase() throws Exception {
+    @Test
+    void test_GENERIC_TLDS_sortedAndLowerCase() throws Exception {
         final boolean sorted = isSortedLowerCase("GENERIC_TLDS");
         assertTrue(sorted);
     }
 
     // Check array is sorted and is lower-case
-    public void test_LOCAL_TLDS_sortedAndLowerCase() throws Exception {
+    @Test
+    void test_LOCAL_TLDS_sortedAndLowerCase() throws Exception {
         final boolean sorted = isSortedLowerCase("LOCAL_TLDS");
         assertTrue(sorted);
     }
 
-    public void testEnumIsPublic() {
+    @Test
+    void testEnumIsPublic() {
         assertTrue(Modifier.isPublic(DomainValidator.ArrayType.class.getModifiers()));
     }
 
-    public void testGetArray() {
+    @Test
+    void testGetArray() {
         assertNotNull(DomainValidator.getTLDEntries(ArrayType.COUNTRY_CODE_MINUS));
         assertNotNull(DomainValidator.getTLDEntries(ArrayType.COUNTRY_CODE_PLUS));
         assertNotNull(DomainValidator.getTLDEntries(ArrayType.GENERIC_MINUS));

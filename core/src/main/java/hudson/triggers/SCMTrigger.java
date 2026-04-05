@@ -89,8 +89,8 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * {@link Trigger} that checks for SCM updates periodically.
@@ -356,7 +356,7 @@ public class SCMTrigger extends Trigger<Item> {
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
             String t = json.optString("pollingThreadCount", null);
             if (doCheckPollingThreadCount(t).kind != FormValidation.Kind.OK) {
                 setPollingThreadCount(THREADS_DEFAULT);
@@ -466,9 +466,9 @@ public class SCMTrigger extends Trigger<Item> {
         /**
          * Sends out the raw polling log output.
          */
-        public void doPollingLog(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        public void doPollingLog(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
             rsp.setContentType("text/plain;charset=UTF-8");
-            try (OutputStream os = rsp.getCompressedOutputStream(req);
+            try (OutputStream os = rsp.getOutputStream();
                  // Prevent jelly from flushing stream so Content-Length header can be added afterwards
                  FlushProofOutputStream out = new FlushProofOutputStream(os)) {
                 getPollingLogText().writeLogTo(0, out);

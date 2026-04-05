@@ -43,8 +43,7 @@ THE SOFTWARE.
 
       <div>
         <h2>${%Nodes}</h2>
-        <j:forEach var="n" items="${it.sortedNodes}">
-          <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
+        <j:forEach var="c" items="${it.computers}">
           <j:set var="url" value="${rootURL}/${c.url}"/>
           <nobr>
             <a href="${url}" class="jenkins-link--with-icon"><l:icon src="${c.iconClassName}" /></a>

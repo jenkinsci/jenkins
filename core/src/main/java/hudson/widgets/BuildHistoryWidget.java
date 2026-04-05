@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import jenkins.model.HistoricalBuild;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.QueueItem;
 import jenkins.widgets.HistoryPageFilter;
@@ -47,7 +48,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * <p>
  * This widget enhances {@link HistoryWidget} by groking the notion
  * that {@link #owner} can be in the queue toward the next build.
- *
+ * @param <T> typically {@link HistoricalBuild}
  * @author Kohsuke Kawaguchi
  */
 public class BuildHistoryWidget<T> extends HistoryWidget<Task, T> {
@@ -84,7 +85,6 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task, T> {
         final HistoryPageFilter<T> historyPageFilter = newPageFilter();
 
         historyPageFilter.add(baseList, getQueuedItems());
-        historyPageFilter.widget = this;
 
         return updateFirstTransientBuildKey(historyPageFilter);
     }

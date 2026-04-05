@@ -1,0 +1,74 @@
+.jenkins-select {
+  position: relative;
+  width: 100%;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 13px;
+    bottom: 0;
+    width: 0.625rem;
+    background-color: currentColor;
+    mask-image: url("../images/svgs/mask-select.svg");
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    pointer-events: none;
+    transition: translate var(--elastic-transition);
+  }
+
+  &__input {
+    appearance: none;
+    display: block;
+    border: var(--jenkins-border-width) solid var(--input-border);
+    padding: var(--form-input-padding);
+    width: 100% !important; // TODO remove important after https://github.com/jenkinsci/credentials-plugin/pull/255
+    max-width: 100% !important; // TODO remove important after https://github.com/jenkinsci/credentials-plugin/pull/255
+    border-radius: var(--form-input-border-radius);
+    box-shadow: var(--form-input-glow);
+    transition: var(--standard-transition);
+    min-height: 38px;
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--input-border-hover);
+    }
+
+    &:active,
+    &:focus {
+      outline: none;
+      border-color: var(--focus-input-border);
+      box-shadow: var(--form-input-glow--focus);
+    }
+
+    &:disabled {
+      pointer-events: none;
+    }
+  }
+
+  &:hover {
+    &::after {
+      translate: 0 1px;
+    }
+  }
+}
+
+.jenkins-multi-select {
+  position: relative;
+  width: 100%;
+  border: var(--jenkins-border-width) solid var(--input-border);
+  border-radius: var(--form-input-border-radius);
+  box-shadow: var(--form-input-glow);
+  transition: var(--standard-transition);
+  outline: none;
+
+  &:focus {
+    border-color: var(--focus-input-border);
+    box-shadow: var(--form-input-glow--focus);
+  }
+
+  &:disabled {
+    pointer-events: none;
+  }
+}

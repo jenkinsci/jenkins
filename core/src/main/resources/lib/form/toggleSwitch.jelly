@@ -76,19 +76,19 @@ THE SOFTWARE.
            disabled="${readOnlyMode ? 'true' : null}"
            checked="${value ? 'true' : null}"/>
     <label class="jenkins-toggle-switch__label ${id != null ? '' : 'attach-previous'}"
-           for="${id}" data-title="${title}" data-checked-title="${checkedTitle}">
+           for="${attrs.id}" data-title="${attrs.title}" data-checked-title="${attrs.checkedTitle}">
       <j:choose>
-        <j:when test="${checkedTitle == null}">
-          ${title}
+        <j:when test="${attrs.checkedTitle == null}">
+          ${attrs.title}
         </j:when>
         <j:otherwise>
-          <span class="jenkins-toggle-switch__label__unchecked-title">${title}</span>
-          <span class="jenkins-toggle-switch__label__checked-title">${checkedTitle}</span>
+          <span class="jenkins-toggle-switch__label__unchecked-title">${attrs.title}</span>
+          <span class="jenkins-toggle-switch__label__checked-title">${attrs.checkedTitle}</span>
         </j:otherwise>
       </j:choose>
     </label>
-    <j:if test="${description != null and !description.trim().isEmpty()}">
-      <span class="jenkins-toggle-switch__description">${description}</span>
+    <j:if test="${attrs.description != null and !attrs.description.trim().isEmpty()}">
+      <span class="jenkins-toggle-switch__description">${attrs.description}</span>
     </j:if>
   </span>
 </j:jelly>

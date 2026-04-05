@@ -1,6 +1,6 @@
 DIV.expandable-detail {
   display: none;
-  background-color: #d3d7cf;
+  background-color: var(--background);
   margin: 0.5em;
   padding: 0.5em;
 }

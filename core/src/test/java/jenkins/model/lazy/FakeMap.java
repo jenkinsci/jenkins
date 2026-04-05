@@ -48,4 +48,9 @@ public class FakeMap extends AbstractLazyLoadRunMap<Build> {
         //new Exception("loading #" + n).printStackTrace();
         return new Build(Integer.parseInt(n));
     }
+
+    @Override
+    protected Class<Build> getBuildClass() {
+        return Build.class;
+    }
 }
