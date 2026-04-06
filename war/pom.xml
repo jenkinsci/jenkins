@@ -482,7 +482,7 @@ THE SOFTWARE.
                   <!-- detached after 2.86 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>command-launcher</artifactId>
-                  <version>123.v37cfdc92ef67</version>
+                  <version>134.v025a_5fcf9dea_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
