@@ -122,7 +122,7 @@ class FormFieldValidatorTest {
     }
 
     @Test
-    @Issue("26594")
+    @Issue("#26594")
     void delayedCheckCanAbortOutdatedValidationRequests() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
