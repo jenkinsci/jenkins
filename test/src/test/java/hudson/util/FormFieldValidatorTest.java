@@ -121,6 +121,67 @@ class FormFieldValidatorTest {
         assertNotEquals(javaScriptResult1, javaScriptResult2);
     }
 
+    @Test
+    @Issue("26594")
+    void delayedCheckCanAbortOutdatedValidationRequests() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+            wc.getOptions().setThrowExceptionOnScriptError(false);
+            HtmlPage page = wc.getPage(p, "configure");
+            page.executeJavaScript("""
+                            (function () {
+                                var updates = [];
+                                var originalSendRequest = FormChecker.sendRequest;
+                                var originalUpdateValidationArea = window.updateValidationArea;
+
+                                window.updateValidationArea = function (target, content) {
+                                    updates.push(content);
+                                };
+
+                                FormChecker.sendRequest = function (url, params) {
+                                    window.setTimeout(function () {
+                                        params.onComplete({
+                                            text: function () {
+                                                return Promise.resolve(url);
+                                            },
+                                        });
+                                    }, 0);
+                                };
+
+                                var target = document.createElement("div");
+                                var controller = {
+                                    signal: {
+                                        aborted: false,
+                                    },
+                                    abort: function () {
+                                        this.signal.aborted = true;
+                                    },
+                                };
+
+                                FormChecker.delayedCheck("first", "post", target, controller);
+                                FormChecker.delayedCheck("second", "post", target);
+                                controller.abort();
+
+                                window.setTimeout(function () {
+                                    window.__formCheckerUpdates = updates.join(",");
+                                    window.__formCheckerInProgress = FormChecker.inProgress;
+                                    FormChecker.sendRequest = originalSendRequest;
+                                    window.updateValidationArea = originalUpdateValidationArea;
+                                }, 25);
+                            })();
+                            """);
+
+            wc.waitForBackgroundJavaScript(2000);
+
+            ScriptResult updatesResult = page.executeJavaScript("window.__formCheckerUpdates");
+            ScriptResult inProgressResult = page.executeJavaScript("window.__formCheckerInProgress");
+
+            assertEquals("second", updatesResult.getJavaScriptResult());
+            assertEquals(0, ((Number) inProgressResult.getJavaScriptResult()).intValue());
+        }
+    }
+
     public static class CodeMirrorStep extends Builder {
         private String command;
 
