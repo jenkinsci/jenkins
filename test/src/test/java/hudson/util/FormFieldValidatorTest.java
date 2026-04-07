@@ -163,12 +163,27 @@ class FormFieldValidatorTest {
                                 FormChecker.delayedCheck("second", "post", target);
                                 controller.abort();
 
-                                window.setTimeout(function () {
+                                var attempts = 0;
+                                var maxAttempts = 200;
+                                var complete = function () {
                                     window.__formCheckerUpdates = updates.join(",");
                                     window.__formCheckerInProgress = FormChecker.inProgress;
                                     FormChecker.sendRequest = originalSendRequest;
                                     window.updateValidationArea = originalUpdateValidationArea;
-                                }, 25);
+                                };
+                                var waitForQueueDrain = function () {
+                                    if (FormChecker.inProgress === 0 && FormChecker.queue.length === 0) {
+                                        complete();
+                                        return;
+                                    }
+                                    attempts++;
+                                    if (attempts >= maxAttempts) {
+                                        complete();
+                                        return;
+                                    }
+                                    window.setTimeout(waitForQueueDrain, 10);
+                                };
+                                waitForQueueDrain();
                             })();
                             """);
 

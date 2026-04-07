@@ -250,8 +250,12 @@ var FormChecker = {
     const method = params.method.toLowerCase();
     if (method !== "get") {
       var idx = url.indexOf("?");
-      params.parameters = url.substring(idx + 1);
-      url = url.substring(0, idx);
+      if (idx >= 0) {
+        params.parameters = url.substring(idx + 1);
+        url = url.substring(0, idx);
+      } else {
+        params.parameters = "";
+      }
     }
 
     var requestParams = {
@@ -305,31 +309,38 @@ var FormChecker = {
       FormChecker.schedule();
     };
 
-    this.sendRequest(next.url, {
-      method: next.method,
-      signal: next.signal,
-      onComplete: function (x) {
-        x.text()
-          .then((responseText) => {
-            if (!(next.signal && next.signal.aborted)) {
-              updateValidationArea(next.target, responseText);
-              layoutUpdateCallback.call();
-            }
-          })
-          .catch((error) => {
-            if (error && error.name !== "AbortError") {
-              console.warn(error);
-            }
-          })
-          .then(completeRequest);
-      },
-      onError: function (error) {
-        if (error && error.name !== "AbortError") {
-          console.warn(error);
-        }
-        completeRequest();
-      },
-    });
+    try {
+      this.sendRequest(next.url, {
+        method: next.method,
+        signal: next.signal,
+        onComplete: function (x) {
+          x.text()
+            .then((responseText) => {
+              if (!(next.signal && next.signal.aborted)) {
+                updateValidationArea(next.target, responseText);
+                layoutUpdateCallback.call();
+              }
+            })
+            .catch((error) => {
+              if (error && error.name !== "AbortError") {
+                console.warn(error);
+              }
+            })
+            .then(completeRequest);
+        },
+        onError: function (error) {
+          if (error && error.name !== "AbortError") {
+            console.warn(error);
+          }
+          completeRequest();
+        },
+      });
+    } catch (error) {
+      if (error && error.name !== "AbortError") {
+        console.warn(error);
+      }
+      completeRequest();
+    }
   },
 };
 
