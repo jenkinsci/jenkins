@@ -1,9 +1,10 @@
 package jenkins.security.stapler;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -11,7 +12,8 @@ import org.kohsuke.stapler.WebMethod;
 
 @Issue("SECURITY-400")
 @For({StaplerDispatchable.class, StaplerNotDispatchable.class, DoActionFilter.class})
-public class StaplerRoutableActionTest extends StaplerAbstractTest {
+@WithJenkins
+class StaplerRoutableActionTest extends StaplerAbstractTest {
 
     @TestExtension
     public static class TestNewRulesRoutableAction extends AbstractUnprotectedRootAction {
@@ -39,7 +41,7 @@ public class StaplerRoutableActionTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testNewRulesRoutableAction_notDoName() throws Exception {
+    void testNewRulesRoutableAction_notDoName() {
         assertNotReachable("testNewRulesRoutableAction/notDoName/");
         // not even considered as a blocked action because the filter is not even called, they are lacking do* or @WebMethod
         // assertDoActionRequestWasBlockedAndResetFlag();
@@ -48,19 +50,19 @@ public class StaplerRoutableActionTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testNewRulesRoutableAction_webMethod1() throws Exception {
+    void testNewRulesRoutableAction_webMethod1() throws Exception {
         assertReachable("testNewRulesRoutableAction/webMethod1/");
     }
 
     @Test
-    public void testNewRulesRoutableAction_webMethod3Through5() throws Exception {
+    void testNewRulesRoutableAction_webMethod3Through5() throws Exception {
         assertReachable("testNewRulesRoutableAction/webMethod3/");
         assertReachable("testNewRulesRoutableAction/webMethod4/");
         assertReachable("testNewRulesRoutableAction/webMethod5/");
     }
 
     @Test
-    public void testNewRulesRoutableAction_webMethod2() throws Exception {
+    void testNewRulesRoutableAction_webMethod2() {
         assertNotReachable("testNewRulesRoutableAction/webMethod2/");
         assertDoActionRequestWasBlockedAndResetFlag();
     }
@@ -76,13 +78,13 @@ public class StaplerRoutableActionTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void testNewRulesNonroutableAction_webMethod1() throws Exception {
+    void testNewRulesNonroutableAction_webMethod1() {
         assertNotReachable("testNewRulesNonroutableAction/webMethod1/");
         assertDoActionRequestWasBlockedAndResetFlag();
     }
 
     @Test
-    public void testNewRulesNonroutableAction_webMethod2() throws Exception {
+    void testNewRulesNonroutableAction_webMethod2() {
         // priority of negative over positive
         assertNotReachable("testNewRulesNonroutableAction/webMethod2/");
         assertDoActionRequestWasBlockedAndResetFlag();

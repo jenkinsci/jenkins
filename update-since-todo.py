@@ -105,14 +105,17 @@ def analyze_files(commits_and_tags, dry_run=False):
     is_ci = "CI" in os.environ
     if is_ci:
         print("<details><summary>Detailed output</summary>\n\n")
+    processed = 0
     with subprocess.Popen(cmd, stdout=subprocess.PIPE) as proc:
         for line in io.TextIOWrapper(proc.stdout):
             parts = line.rstrip().split(":", 2)
             analyze_file(parts[0], parts[1], commits_and_tags, dry_run=dry_run)
+            processed += 1
         retcode = proc.wait()
-        if retcode:
+        if retcode not in (0, 1):
             raise subprocess.CalledProcessError(retcode, cmd)
-    print()
+        if processed == 0:
+            print("No '@since TODO', '@Deprecated(since = \"TODO\")', or '@RestrictedSince(\"TODO\")' tags found.")
     if is_ci:
         print("</details>\n")
 

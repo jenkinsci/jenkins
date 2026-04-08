@@ -1,0 +1,10 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+    <l:layout title="Security3594Test">
+        <st:include page="sidepanel.jelly" from="${app}" it="${app}" />
+        <l:breadcrumb title="Security3594Test" />
+        <l:main-panel>
+            <h1>Security3594Test</h1>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

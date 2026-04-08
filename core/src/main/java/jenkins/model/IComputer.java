@@ -27,29 +27,25 @@ package jenkins.model;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import hudson.model.Computer;
-import hudson.model.Node;
+import hudson.model.ModelObject;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import java.util.List;
 import java.util.concurrent.Future;
+import jenkins.agents.IOfflineCause;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
+import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
 /**
  * Interface for computer-like objects meant to be passed to {@code t:executors} tag.
  *
- * @since TODO
+ * @since 2.480
  */
 @Restricted(Beta.class)
-public interface IComputer extends AccessControlled {
-    /**
-     * Returns {@link Node#getNodeName() the name of the node}.
-     */
-    @NonNull
-    String getName();
-
+public interface IComputer extends AccessControlled, IconSpec, ModelObject, Named {
     /**
      * Used to render the list of executors.
      * @return a snapshot of the executor display information
@@ -58,15 +54,13 @@ public interface IComputer extends AccessControlled {
     List<? extends IDisplayExecutor> getDisplayExecutors();
 
     /**
-     * @return {@code true} if the node is offline. {@code false} if it is online.
+     * Returns whether the agent is offline for scheduling new tasks.
+     * Even if {@code true}, the agent may still be connected to the controller and executing a task,
+     * but is considered offline for scheduling.
+     * @return {@code true} if the agent is offline; {@code false} if online.
+     * @see #isConnected()
      */
     boolean isOffline();
-
-    /**
-     * @return the node name for UI purposes.
-     */
-    @NonNull
-    String getDisplayName();
 
     /**
      * Returns {@code true} if the computer is accepting tasks. Needed to allow agents programmatic suspension of task
@@ -92,6 +86,12 @@ public interface IComputer extends AccessControlled {
     }
 
     /**
+     * @return the offline cause if the computer is offline.
+     * @since 2.483
+     */
+    IOfflineCause getOfflineCause();
+
+    /**
      * If the computer was offline (either temporarily or not),
      * this method will return the cause as a string (without user info).
      * <p>
@@ -101,7 +101,12 @@ public interface IComputer extends AccessControlled {
      *      empty string if the system was put offline without given a cause.
      */
     @NonNull
-    String getOfflineCauseReason();
+    default String getOfflineCauseReason() {
+        if (getOfflineCause() == null) {
+            return "";
+        }
+        return getOfflineCause().getReason();
+    }
 
     /**
      * @return true if the node is currently connecting to the Jenkins controller.
@@ -115,12 +120,45 @@ public interface IComputer extends AccessControlled {
      *
      * @see #getIconClassName()
      */
-    String getIcon();
+    default String getIcon() {
+        // The computer is not accepting tasks, e.g. because the availability demands it being offline.
+        if (!isAcceptingTasks()) {
+            return "symbol-computer-not-accepting";
+        }
+        var offlineCause = getOfflineCause();
+        if (offlineCause != null) {
+            return offlineCause.getComputerIcon();
+        }
+        // The computer is not connected or it is temporarily offline due to a node monitor
+        if (isOffline()) return "symbol-computer-offline";
+        return "symbol-computer";
+    }
 
     /**
      * Returns the alternative text for the computer icon.
      */
-    String getIconAltText();
+    @SuppressWarnings("unused") // jelly
+    default String getIconAltText() {
+        if (!isAcceptingTasks()) {
+            return "[suspended]";
+        }
+        var offlineCause = getOfflineCause();
+        if (offlineCause != null) {
+            return offlineCause.getComputerIconAltText();
+        }
+        // There is a "technical" reason the computer will not accept new builds
+        if (isOffline()) return "[offline]";
+        return "[online]";
+    }
+
+    default String getTooltip() {
+        var offlineCause = getOfflineCause();
+        if (offlineCause != null) {
+            return offlineCause.toString();
+        } else {
+            return "";
+        }
+    }
 
     /**
      * Returns the class name that will be used to look up the icon.
@@ -139,15 +177,28 @@ public interface IComputer extends AccessControlled {
      * Returns the number of {@link IExecutor}s that are doing some work right now.
      */
     int countBusy();
+
     /**
      * Returns the current size of the executor pool for this computer.
      */
     int countExecutors();
 
     /**
-     * @return true if the computer is online.
+     * Indicates whether the agent can accept a new task when it becomes idle.
+     * {@code false} does not necessarily mean the agent is disconnected.
+     * @return {@code true} if the agent is online.
+     * @see #isConnected()
      */
     boolean isOnline();
+
+    /**
+     * Indicates whether the agent is actually connected to the controller.
+     * @return {@code true} if the agent is connected to the controller.
+     */
+    default boolean isConnected() {
+        return isOnline();
+    }
+
     /**
      * @return the number of {@link IExecutor}s that are idle right now.
      */

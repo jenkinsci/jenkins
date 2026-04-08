@@ -7,16 +7,16 @@ import static org.mockito.Mockito.verify;
 import hudson.model.SCMedItem;
 import hudson.model.TaskListener;
 import jenkins.scm.SCMDecisionHandler;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.MockedStatic;
 
 @SuppressWarnings("deprecation")
-public class SCMTriggerItemTest {
+class SCMTriggerItemTest {
 
     @Test
     @Issue("JENKINS-36232")
-    public void noVetoDelegatesPollingToAnSCMedItem() {
+    void noVetoDelegatesPollingToAnSCMedItem() {
         // given
         SCMedItem scMedItem = mock(SCMedItem.class);
         TaskListener listener = mock(TaskListener.class);

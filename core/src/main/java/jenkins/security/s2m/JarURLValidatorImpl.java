@@ -78,6 +78,7 @@ public class JarURLValidatorImpl extends ChannelConfigurator implements JarURLVa
             LOGGER.log(Level.FINE, () -> "Allowing URL: " + url);
         }
     }
+
     @SuppressFBWarnings(
             value = "DMI_COLLECTION_OF_URLS",
             justification = "All URLs point to local files, so no DNS lookup.")

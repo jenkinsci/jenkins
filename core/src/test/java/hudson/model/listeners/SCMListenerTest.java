@@ -24,7 +24,7 @@
 
 package hudson.model.listeners;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -33,16 +33,17 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 
 @SuppressWarnings("deprecation")
-public class SCMListenerTest {
+class SCMListenerTest {
 
     @Issue("JENKINS-23522")
     @SuppressWarnings("rawtypes")
-    @Test public void onChangeLogParsed() throws Exception {
+    @Test
+    void onChangeLogParsed() throws Exception {
         SCM scm = Mockito.mock(SCM.class);
         BuildListener bl = Mockito.mock(BuildListener.class);
         ChangeLogSet cls = Mockito.mock(ChangeLogSet.class);
@@ -61,13 +62,13 @@ public class SCMListenerTest {
         TaskListener tl = Mockito.mock(TaskListener.class);
         L l = new L1();
         l.onChangeLogParsed(r, scm, tl, cls);
-        assertEquals("cannot handle this", 0, l.cnt);
+        assertEquals(0, l.cnt, "cannot handle this");
         l = new L2();
         l.onChangeLogParsed(r, scm, tl, cls);
-        assertEquals("does handle this", 1, l.cnt);
+        assertEquals(1, l.cnt, "does handle this");
         l = new L3();
         l.onChangeLogParsed(r, scm, tl, cls);
-        assertEquals("cannot handle this", 0, l.cnt);
+        assertEquals(0, l.cnt, "cannot handle this");
     }
 
     private static class L extends SCMListener {

@@ -28,9 +28,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeNoException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.EnvVars;
 import hudson.Launcher;
@@ -48,21 +48,21 @@ import java.net.URLStreamHandler;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsSessionRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
-public class Security637Test {
+class Security637Test {
 
-    @Rule
-    public JenkinsSessionRule sessions = new JenkinsSessionRule();
+    @RegisterExtension
+    private final JenkinsSessionExtension sessions = new JenkinsSessionExtension();
 
     @Test
     @Issue("SECURITY-637")
-    public void urlSafeDeserialization_handler_inSameJVMRemotingContext() throws Throwable {
+    void urlSafeDeserialization_handler_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
                 DumbSlave slave = j.createOnlineSlave(null, new EnvVars("JAVA_TOOL_OPTIONS", "--add-opens=java.base/java.net=ALL-UNNAMED"));
                 String unsafeHandlerClassName = slave.getChannel().call(new URLHandlerCallable(new URL("https://www.google.com/")));
@@ -89,23 +89,22 @@ public class Security637Test {
         }
     }
 
-    @Ignore("TODO these map to different IPs now")
+    @Disabled("TODO these map to different IPs now")
     @Test
     @Issue("SECURITY-637")
-    public void urlDnsEquivalence() throws Throwable {
-        sessions.then(j -> {
+    void urlDnsEquivalence() throws Throwable {
+        sessions.then(j ->
                 // due to the DNS resolution they are equal
                 assertEquals(
                         new URI("https://jenkins.io").toURL(),
                         new URI("https://www.jenkins.io").toURL()
-                );
-        });
+                ));
     }
 
-    @Ignore("TODO these map to different IPs now")
+    @Disabled("TODO these map to different IPs now")
     @Test
     @Issue("SECURITY-637")
-    public void urlSafeDeserialization_urlBuiltInAgent_inSameJVMRemotingContext() throws Throwable {
+    void urlSafeDeserialization_urlBuiltInAgent_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
                 DumbSlave slave = j.createOnlineSlave();
 
@@ -132,10 +131,10 @@ public class Security637Test {
         }
     }
 
-    @Ignore("TODO these map to different IPs now")
+    @Disabled("TODO these map to different IPs now")
     @Test
     @Issue("SECURITY-637")
-    public void urlSafeDeserialization_urlBuiltInMaster_inSameJVMRemotingContext() throws Throwable {
+    void urlSafeDeserialization_urlBuiltInMaster_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
                 DumbSlave slave = j.createOnlineSlave();
 
@@ -171,7 +170,7 @@ public class Security637Test {
 
     @Test
     @Issue("SECURITY-637")
-    public void urlSafeDeserialization_inXStreamContext() throws Throwable {
+    void urlSafeDeserialization_inXStreamContext() throws Throwable {
         sessions.then(j -> {
                 FreeStyleProject project = j.createFreeStyleProject("project-with-url");
                 URLJobProperty URLJobProperty = new URLJobProperty(
@@ -193,7 +192,7 @@ public class Security637Test {
                 try {
                     handlerField.setAccessible(true);
                 } catch (RuntimeException e) {
-                    assumeNoException(e);
+                    assumeTrue(false, e.getMessage());
                 }
 
                 URLJobProperty urlJobProperty = project.getProperty(URLJobProperty.class);
@@ -212,6 +211,7 @@ public class Security637Test {
 
         private Set<URL> urlSet;
 
+        @SuppressWarnings(value = "checkstyle:redundantmodifier")
         public URLJobProperty(URL... urls) {
             this.urlSet = new HashSet<>();
             Collections.addAll(urlSet, urls);

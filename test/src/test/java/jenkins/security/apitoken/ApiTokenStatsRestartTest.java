@@ -29,10 +29,10 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.User;
 import java.io.File;
@@ -50,23 +50,23 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlSpan;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.xml.XmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.jvnet.hudson.test.JenkinsSessionRule;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
 @For(ApiTokenStats.class)
-public class ApiTokenStatsRestartTest {
+class ApiTokenStatsRestartTest {
 
-    @Rule
-    public JenkinsSessionRule sessions = new JenkinsSessionRule();
+    @RegisterExtension
+    private final JenkinsSessionExtension sessions = new JenkinsSessionExtension();
 
     @Test
     @Issue("SECURITY-1072")
-    public void roundtripWithRestart() throws Throwable {
+    void roundtripWithRestart() throws Throwable {
         AtomicReference<String> tokenValue = new AtomicReference<>();
         AtomicReference<String> tokenUuid = new AtomicReference<>();
         String TOKEN_NAME = "New Token Name";
@@ -119,7 +119,7 @@ public class ApiTokenStatsRestartTest {
                    assertThat(useCounterSpan.getTextContent(), containsString("" + NUM_CALL_WITH_TOKEN));
 
                    File apiTokenStatsFile = new File(u.getUserFolder(), "apiTokenStats.xml");
-                   assertTrue("apiTokenStats.xml file should exist", apiTokenStatsFile.exists());
+                   assertTrue(apiTokenStatsFile.exists(), "apiTokenStats.xml file should exist");
            });
 
         sessions.then(j -> {
@@ -159,7 +159,7 @@ public class ApiTokenStatsRestartTest {
         assertThat(xmlPage, hasXPath("//authority", is("authenticated")));
     }
 
-    private static void checkUserIsNotConnected(WebClient wc) throws Exception {
+    private static void checkUserIsNotConnected(WebClient wc) {
         FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goToXml("whoAmI/api/xml"));
         assertEquals(401, e.getStatusCode());
     }

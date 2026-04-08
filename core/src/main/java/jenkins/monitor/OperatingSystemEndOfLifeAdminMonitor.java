@@ -109,10 +109,9 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
             throw new IOException("Empty data set");
         }
         for (Object systemObj : systems) {
-            if (!(systemObj instanceof JSONObject)) {
+            if (!(systemObj instanceof JSONObject system)) {
                 throw new IOException("Wrong object type in data file");
             }
-            JSONObject system = (JSONObject) systemObj;
 
             if (!system.has("pattern")) {
                 throw new IOException("Missing pattern in definition file");
@@ -145,7 +144,7 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
             }
 
             LOGGER.log(Level.FINE, "Matched operating system {0}", name);
-            if (startDate.isBefore(LocalDate.now())) {
+            if (!startDate.isAfter(LocalDate.now())) {
                 this.operatingSystemName = name;
                 this.documentationUrl = buildDocumentationUrl(this.operatingSystemName);
                 this.endOfLifeDate = endOfLife.toString();

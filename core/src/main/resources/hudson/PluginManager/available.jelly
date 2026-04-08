@@ -27,18 +27,15 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:dd="/lib/layout/dropdowns">
-  <l:layout title="${%Available plugins} - ${%Plugins}" permission="${app.SYSTEM_READ}">
-    <st:include page="sidepanel.jelly"/>
-    <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
-
-    <l:main-panel>
+  <l:settings-subpage permission="${app.SYSTEM_READ}" header="${null}" noDefer="true" includeSidepanel="true">
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
           <l:search-bar clazz="jenkins-search--app-bar"
                         placeholder="${%Search available plugins}"
                         id="filter-box"
                         autofocus="true"
-                        value="${request.getParameter('filter')}" />
+                        hasKeyboardShortcut="false"
+                        value="${request2.getParameter('filter')}" />
         </div>
         <div class="jenkins-app-bar__controls">
           <l:isAdmin>
@@ -65,6 +62,7 @@ THE SOFTWARE.
             </div>
           </l:isAdmin>
           <st:include page="check.jelly"/>
+          <st:include page="overflow.jelly" />
         </div>
       </div>
 
@@ -72,7 +70,8 @@ THE SOFTWARE.
 
       <form id="form" method="post" action="install">
         <table id="plugins" class="jenkins-table sortable"
-               data-hasAdmin="${h.hasPermission(app.ADMINISTER)}">
+               data-hasAdmin="${h.hasPermission(app.ADMINISTER)}"
+               data-health="${app.updateCenter.healthScoresAvailable}">
           <thead>
             <tr>
               <l:isAdmin>
@@ -82,12 +81,18 @@ THE SOFTWARE.
               </l:isAdmin>
               <th initialSortDir="down">${%Name}</th>
               <th>${%Released}</th>
+              <j:if test="${app.updateCenter.healthScoresAvailable}">
+                <th>
+                  <j:set var="healthTooltip">${%healthTooltip}</j:set>
+                  <span data-html-tooltip="${healthTooltip}" data-tooltip-interactive="true">
+                    ${%Health}
+                  </span>
+                </th>
+              </j:if>
             </tr>
           </thead>
           <tbody/>
         </table>
       </form>
-    </l:main-panel>
-  </l:layout>
-
+  </l:settings-subpage>
 </j:jelly>

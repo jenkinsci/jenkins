@@ -26,12 +26,11 @@ package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.thoughtworks.xstream.XStream;
@@ -55,28 +54,28 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import jenkins.model.GlobalConfiguration;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class ClassFilterImplTest {
+@WithJenkins
+class ClassFilterImplTest {
 
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
+    private final LogRecorder logging = new LogRecorder().record(ClassFilterImpl.class, Level.FINE);
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
 
-    @Rule
-    public LoggerRule logging = new LoggerRule().record(ClassFilterImpl.class, Level.FINE);
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
-    public void controllerToAgentBypassesWhitelist() throws Exception {
-        assumeThat(ClassFilterImpl.WHITELISTED_CLASSES, not(contains(LinkedListMultimap.class.getName())));
+    void controllerToAgentBypassesWhitelist() throws Exception {
+        assumeTrue(ClassFilterImpl.WHITELISTED_CLASSES.stream().noneMatch(clazz -> clazz.equals(LinkedListMultimap.class.getName())));
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
         p.getBuildersList().add(new M2SBuilder());
@@ -112,8 +111,8 @@ public class ClassFilterImplTest {
     // Note that currently even M2S callables are rejected when using classes blacklisted in ClassFilter.STANDARD, such as JSONObject.
 
     @Test
-    public void agentToControllerRequiresWhitelist() throws Exception {
-        assumeThat(ClassFilterImpl.WHITELISTED_CLASSES, not(contains(LinkedListMultimap.class.getName())));
+    void agentToControllerRequiresWhitelist() throws Exception {
+        assumeTrue(ClassFilterImpl.WHITELISTED_CLASSES.stream().noneMatch(clazz -> clazz.equals(LinkedListMultimap.class.getName())));
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
         p.getBuildersList().add(new S2MBuilder());
@@ -145,8 +144,8 @@ public class ClassFilterImplTest {
     }
 
     @Test
-    public void xstreamRequiresWhitelist() throws Exception {
-        assumeThat(ClassFilterImpl.WHITELISTED_CLASSES, not(contains(LinkedListMultimap.class.getName())));
+    void xstreamRequiresWhitelist() throws Exception {
+        assumeTrue(ClassFilterImpl.WHITELISTED_CLASSES.stream().noneMatch(clazz -> clazz.equals(LinkedListMultimap.class.getName())));
         Config config = GlobalConfiguration.all().get(Config.class);
         config.save();
         config.obj = LinkedListMultimap.create();

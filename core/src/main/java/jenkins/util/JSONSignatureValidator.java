@@ -1,6 +1,8 @@
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Util;
 import hudson.util.FormValidation;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -33,8 +35,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.jvnet.hudson.crypto.CertificateUtil;
 import org.jvnet.hudson.crypto.SignatureOutputStream;
@@ -98,7 +98,7 @@ public class JSONSignatureValidator {
             try {
                 MessageDigest digest = MessageDigest.getInstance("SHA-512");
                 Signature sig = Signature.getInstance("SHA512withRSA");
-                sig.initVerify(certs.get(0));
+                sig.initVerify(certs.getFirst());
                 resultSha512 = checkSpecificSignature(o, signature, digest, "correct_digest512", sig, "correct_signature512", "SHA-512");
                 switch (resultSha512.kind) {
                     case ERROR:
@@ -119,7 +119,7 @@ public class JSONSignatureValidator {
 
             MessageDigest digest = MessageDigest.getInstance("SHA1");
             Signature sig = Signature.getInstance("SHA1withRSA");
-            sig.initVerify(certs.get(0));
+            sig.initVerify(certs.getFirst());
             FormValidation resultSha1 = checkSpecificSignature(o, signature, digest, "correct_digest", sig, "correct_signature", "SHA-1");
 
             switch (resultSha1.kind) {
@@ -139,7 +139,9 @@ public class JSONSignatureValidator {
             if (warning != null)  return warning;
             return FormValidation.ok();
         } catch (GeneralSecurityException e) {
-            return FormValidation.error(e, "Signature verification failed in " + name);
+            // Return a user-friendly error message without the full stack trace
+            String rootCauseMessage = getRootCauseMessage(e);
+            return FormValidation.error("Signature verification failed in " + name + ": " + rootCauseMessage);
         }
     }
 
@@ -221,10 +223,10 @@ public class JSONSignatureValidator {
         // This approach might look unnecessarily clever, but short of having redundant Signature instances,
         // there doesn't seem to be a better approach for this.
         try {
-            if (signature.verify(Hex.decodeHex(providedSignature.toCharArray()))) {
+            if (signature.verify(Util.fromHexString(providedSignature))) {
                 return true;
             }
-        } catch (SignatureException | DecoderException ignore) {
+        } catch (SignatureException | IllegalArgumentException ignore) {
             // ignore
         }
 
@@ -242,11 +244,10 @@ public class JSONSignatureValidator {
      * Utility method supporting both possible digest formats: Base64 and Hex
      */
     private boolean digestMatches(byte[] digest, String providedDigest) {
-        return providedDigest.equalsIgnoreCase(Hex.encodeHexString(digest)) || providedDigest.equalsIgnoreCase(Base64.getEncoder().encodeToString(digest));
+        return providedDigest.equalsIgnoreCase(Util.toHexString(digest)) || providedDigest.equalsIgnoreCase(Base64.getEncoder().encodeToString(digest));
     }
 
 
-    @SuppressFBWarnings(value = {"NP_LOAD_OF_KNOWN_NULL_VALUE", "RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE"}, justification = "https://github.com/spotbugs/spotbugs/issues/756")
     protected Set<TrustAnchor> loadTrustAnchors(CertificateFactory cf) throws IOException {
         // if we trust default root CAs, we end up trusting anyone who has a valid certificate,
         // which isn't useful at all
@@ -260,8 +261,7 @@ public class JSONSignatureValidator {
             try (InputStream in = j.getServletContext().getResourceAsStream(cert)) {
                 if (in == null) continue; // our test for paths ending in / should prevent this from happening
                 certificate = cf.generateCertificate(in);
-                if (certificate instanceof X509Certificate) {
-                    X509Certificate c = (X509Certificate) certificate;
+                if (certificate instanceof X509Certificate c) {
                     LOGGER.log(Level.FINE, "Add CA certificate found in webapp resources:\n\tsubjectDN: {0}\n\tissuer: {1}\n\tnotBefore: {2}\n\tnotAfter: {3}",
                             new Object[] { c.getSubjectDN(), c.getIssuerDN(), c.getNotBefore(), c.getNotAfter() });
                 }
@@ -293,8 +293,7 @@ public class JSONSignatureValidator {
                 Certificate certificate;
                 try (InputStream in = Files.newInputStream(cert.toPath())) {
                     certificate = cf.generateCertificate(in);
-                    if (certificate instanceof X509Certificate) {
-                        X509Certificate c = (X509Certificate) certificate;
+                    if (certificate instanceof X509Certificate c) {
                         LOGGER.log(Level.FINE, "Add CA certificate found in Jenkins home:\n\tsubjectDN: {0}\n\tissuer: {1}\n\tnotBefore: {2}\n\tnotAfter: {3}",
                                 new Object[] { c.getSubjectDN(), c.getIssuerDN(), c.getNotBefore(), c.getNotAfter() });
                     }
@@ -321,6 +320,26 @@ public class JSONSignatureValidator {
             }
         }
         return anchors;
+    }
+
+    /**
+     * Extracts a user-friendly message from an exception chain.
+     *
+     * @param e the exception to extract the message from
+     * @return a concise, readable error message
+     */
+    private String getRootCauseMessage(@NonNull Throwable e) {
+        Throwable cause = e;
+        while (cause.getCause() != null && cause.getCause() != cause) {
+            cause = cause.getCause();
+        }
+
+        String message = cause.getMessage();
+        if (message != null && !message.isEmpty()) {
+            return message;
+        }
+
+        return cause.getClass().getSimpleName();
     }
 
     private static final Logger LOGGER = Logger.getLogger(JSONSignatureValidator.class.getName());

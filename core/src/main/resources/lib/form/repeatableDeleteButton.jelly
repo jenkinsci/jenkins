@@ -32,7 +32,10 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <st:adjunct includes="lib.form.repeatable.repeatable"/>
-  <button tooltip="${attrs.value ?: '%Delete'}" class="repeatable-delete danger" type="button">
+
+  <j:set var="deleteText" value="${attrs.value ?: '%Delete'}" />
+  <button class="repeatable-delete danger" type="button" style="--width: ${deleteText.length()}ch">
     <l:icon src="symbol-close" />
+    <span>${deleteText}</span>
   </button>
 </j:jelly>

@@ -69,9 +69,8 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
      */
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        if (this instanceof SimpleBuildStep) {
+        if (this instanceof SimpleBuildStep step) {
             // delegate to the overloaded version defined in SimpleBuildStep
-            final SimpleBuildStep step = (SimpleBuildStep) this;
             final FilePath workspace = build.getWorkspace();
             if (step.requiresWorkspace() && workspace == null) {
                 throw new AbortException("no workspace for " + build);

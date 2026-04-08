@@ -27,18 +27,28 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-public class UserIdMigratorTest {
+@SuppressWarnings("deprecation")
+@For(UserIdMapper.class)
+@WithJenkins
+class UserIdMigratorTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @LocalData
-    public void migrateSimpleUser() {
+    void migrateSimpleUser() {
         String userId = "fred";
         User fred = User.getById(userId, false);
         assertThat(fred.getFullName(), is("Fred Smith"));
@@ -46,7 +56,7 @@ public class UserIdMigratorTest {
 
     @Test
     @LocalData
-    public void migrateMultipleUsers() {
+    void migrateMultipleUsers() {
         assertThat(User.getAll().size(), is(3));
         User fred = User.getById("fred", false);
         assertThat(fred.getFullName(), is("Fred Smith"));

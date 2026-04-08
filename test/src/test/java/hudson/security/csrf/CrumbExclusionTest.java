@@ -26,7 +26,8 @@ package hudson.security.csrf;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
@@ -41,23 +42,28 @@ import jenkins.model.Jenkins;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.verb.POST;
 
-public class CrumbExclusionTest {
+@WithJenkins
+class CrumbExclusionTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue("SECURITY-1774")
     @Test
-    public void pathInfo() throws Exception {
+    void pathInfo() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
         for (String path : new String[] {/* control */ "scriptText", /* test */ "scriptText/..;/cli"}) {
@@ -79,9 +85,9 @@ public class CrumbExclusionTest {
     }
 
     @Test
-    public void regular() throws Exception {
+    void regular() throws Exception {
         r.createWebClient().getPage(new WebRequest(new URL(r.getURL(), "root/"), HttpMethod.POST));
-        Assert.assertTrue(ExtensionList.lookupSingleton(RootActionImpl.class).posted);
+        assertTrue(ExtensionList.lookupSingleton(RootActionImpl.class).posted);
     }
 
     @TestExtension

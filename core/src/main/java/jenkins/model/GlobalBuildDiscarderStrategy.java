@@ -25,7 +25,7 @@
 package jenkins.model;
 
 import hudson.ExtensionPoint;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Job;
 import hudson.model.Run;
 import java.io.IOException;
@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  * @see GlobalBuildDiscarderConfiguration
  * @see JobGlobalBuildDiscarderStrategy
  */
-public abstract class GlobalBuildDiscarderStrategy extends AbstractDescribableImpl<GlobalBuildDiscarderStrategy> implements ExtensionPoint {
+public abstract class GlobalBuildDiscarderStrategy implements Describable<GlobalBuildDiscarderStrategy>, ExtensionPoint {
     private static final Logger LOGGER = Logger.getLogger(GlobalBuildDiscarderStrategy.class.getName());
 
     /**

@@ -24,12 +24,12 @@
 
 package hudson.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,18 +37,18 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ConsistentHashTest {
+class ConsistentHashTest {
     /**
      * Just some random tests to ensure that we have no silly NPE or that kind of error.
      */
     @Test
-    public void basic() {
+    void basic() {
         ConsistentHash<String> hash = new ConsistentHash<>();
         hash.add("data1");
         hash.add("data2");
@@ -77,7 +77,7 @@ public class ConsistentHashTest {
      * Uneven distribution should result in uneven mapping.
      */
     @Test
-    public void unevenDistribution() {
+    void unevenDistribution() {
         ConsistentHash<String> hash = new ConsistentHash<>();
         hash.add("Even", 10);
         hash.add("Odd", 100);
@@ -102,7 +102,7 @@ public class ConsistentHashTest {
      * Removal shouldn't affect existing nodes
      */
     @Test
-    public void removal() {
+    void removal() {
         ConsistentHash<Integer> hash = new ConsistentHash<>();
         for (int i = 0; i < 10; i++) {
             hash.add(i);
@@ -127,7 +127,7 @@ public class ConsistentHashTest {
     }
 
     @Test
-    public void emptyBehavior() {
+    void emptyBehavior() {
         ConsistentHash<String> hash = new ConsistentHash<>();
         assertEquals(0, hash.countAllPoints());
         assertFalse(hash.list(0).iterator().hasNext());
@@ -136,7 +136,7 @@ public class ConsistentHashTest {
     }
 
     @Test
-    public void countAllPoints() {
+    void countAllPoints() {
         ConsistentHash<String> hash = new ConsistentHash<>();
         assertEquals(0, hash.countAllPoints());
         hash.add("foo", 10);
@@ -148,7 +148,7 @@ public class ConsistentHashTest {
     }
 
     @Test
-    public void defaultReplicationIsOneHundred() {
+    void defaultReplicationIsOneHundred() {
         ConsistentHash<String> hash = new ConsistentHash<>();
         assertEquals(0, hash.countAllPoints());
         hash.add("foo");
@@ -156,7 +156,7 @@ public class ConsistentHashTest {
     }
 
     @Test
-    public void setCustomDefaultReplication() {
+    void setCustomDefaultReplication() {
         ConsistentHash<String> hash = new ConsistentHash<>((ConsistentHash.Hash<String>) ConsistentHash.DEFAULT_HASH, 7);
         assertEquals(0, hash.countAllPoints());
         hash.add("foo");
@@ -164,7 +164,7 @@ public class ConsistentHashTest {
     }
 
     @Test
-    public void usesCustomHash() {
+    void usesCustomHash() {
         final RuntimeException exception = new RuntimeException();
         ConsistentHash.Hash<String> hashFunction = str -> {
             throw exception;
@@ -179,8 +179,8 @@ public class ConsistentHashTest {
      * This test doesn't fail but it's written to measure the performance of the consistent hash function with large data set.
      */
     @Test
-    @Ignore("Helper test for performance, no assertion")
-    public void speed() {
+    @Disabled("Helper test for performance, no assertion")
+    void speed() {
         Map<String, Integer> data = new CopyOnWriteMap.Hash<>();
         for (int i = 0; i < 1000; i++) {
             data.put("node" + i, 100);

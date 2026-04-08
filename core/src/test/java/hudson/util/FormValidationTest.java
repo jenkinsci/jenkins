@@ -28,35 +28,40 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author sogabe
  */
-public class FormValidationTest {
+class FormValidationTest {
 
     @Test
-    public void testValidateRequired_OK() {
+    void testValidateRequired_OK() {
         FormValidation actual = FormValidation.validateRequired("Name");
         assertEquals(FormValidation.ok(), actual);
     }
 
     @Test
-    public void testValidateRequired_Null() {
+    void testValidateRequired_Null() {
         FormValidation actual = FormValidation.validateRequired(null);
         assertNotNull(actual);
         assertEquals(FormValidation.Kind.ERROR, actual.kind);
     }
 
     @Test
-    public void testValidateRequired_Empty() {
+    void testValidateRequired_Empty() {
         FormValidation actual = FormValidation.validateRequired("  ");
         assertNotNull(actual);
         assertEquals(FormValidation.Kind.ERROR, actual.kind);
@@ -64,17 +69,17 @@ public class FormValidationTest {
 
     // @Issue("JENKINS-7438")
     @Test
-    public void testMessage() {
+    void testMessage() {
         assertEquals("test msg", FormValidation.errorWithMarkup("test msg").getMessage());
     }
 
     @Test
-    public void aggregateZeroValidations() {
+    void aggregateZeroValidations() {
         assertEquals(FormValidation.ok(), aggregate());
     }
 
     @Test
-    public void aggregateSingleValidations() {
+    void aggregateSingleValidations() {
         FormValidation ok = FormValidation.ok();
         FormValidation warning = FormValidation.warning("");
         FormValidation error = FormValidation.error("");
@@ -85,7 +90,7 @@ public class FormValidationTest {
     }
 
     @Test
-    public void aggregateSeveralValidations() {
+    void aggregateSeveralValidations() {
         FormValidation ok = FormValidation.ok("ok_message");
         FormValidation warning = FormValidation.warning("warning_message");
         FormValidation error = FormValidation.error("error_message");
@@ -115,28 +120,56 @@ public class FormValidationTest {
     }
 
     @Test
-    public void formValidationException() {
+    void formValidationException() {
         FormValidation fv = FormValidation.error(new Exception("<html"), "Message<html");
         assertThat(fv.renderHtml(), not(containsString("<html")));
     }
 
     @Test
-    public void testUrlCheck() throws IOException {
-        FormValidation.URLCheck urlCheck = new FormValidation.URLCheck() {
-            @Override
-            protected FormValidation check() throws IOException {
-                String uri = "https://www.jenkins.io/";
-                try {
-                    if (findText(open(URI.create(uri)), "Jenkins")) {
-                        return FormValidation.ok();
-                    } else {
-                        return FormValidation.error("This is a valid URI but it does not look like Jenkins");
+    void testUrlCheck() throws IOException {
+        HttpServer server = createAndStartMockServer();
+
+        try {
+            String uri = "http://localhost:" + server.getAddress().getPort() + "/";
+
+            FormValidation.URLCheck urlCheck = new FormValidation.URLCheck() {
+                @Override
+                protected FormValidation check() throws IOException {
+                    try {
+                        if (findText(open(URI.create(uri)), "Jenkins")) {
+                            return FormValidation.ok();
+                        } else {
+                            return FormValidation.error("This is a valid URI but it does not look like Jenkins");
+                        }
+                    } catch (IOException e) {
+                        return handleIOException(uri, e);
                     }
-                } catch (IOException e) {
-                    return handleIOException(uri, e);
                 }
+            };
+            assertThat(urlCheck.check(), is(FormValidation.ok()));
+
+        } finally {
+            server.stop(0);
+        }
+    }
+
+
+    private static HttpServer createAndStartMockServer() throws IOException {
+        HttpServer server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+
+        server.createContext("/", exchange -> {
+            byte[] response = "<html>Jenkins</html>".getBytes(StandardCharsets.UTF_8);
+
+            exchange.sendResponseHeaders(200, response.length);
+
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(response);
+            } finally {
+                exchange.close();
             }
-        };
-        assertThat(urlCheck.check(), is(FormValidation.ok()));
+        });
+
+        server.start();
+        return server;
     }
 }

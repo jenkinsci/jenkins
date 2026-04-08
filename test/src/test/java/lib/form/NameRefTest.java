@@ -24,13 +24,16 @@
 
 package lib.form;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import hudson.model.RootAction;
 import net.sf.json.JSONObject;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -38,17 +41,25 @@ import org.kohsuke.stapler.StaplerRequest2;
 /**
  * Tests the handling of @nameRef in the form tree.
  */
-public class NameRefTest {
+@WithJenkins
+class NameRefTest {
 
-    @Rule public JenkinsRule r = new JenkinsRuleWithJelly();
+    private JenkinsRule r;
 
-    @Test public void test() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
+
+    @Test
+    void test() throws Exception {
         r.jenkins.setCrumbIssuer(null);
         HtmlPage p = r.createWebClient().goTo("self/test1");
         r.submit(p.getFormByName("config"));
     }
 
-    public static class JenkinsRuleWithJelly extends JenkinsRule {
+    @TestExtension
+    public static class RootActionImpl implements RootAction {
 
         public HttpResponse doSubmitTest1(StaplerRequest2 req) throws Exception {
             JSONObject f = req.getSubmittedForm();
@@ -58,6 +69,20 @@ public class NameRefTest {
             return HttpResponses.ok();
         }
 
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @Override
+        public String getUrlName() {
+            return "self";
+        }
     }
 
 }

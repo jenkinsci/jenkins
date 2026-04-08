@@ -25,7 +25,6 @@
 package jenkins.util.io;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import hudson.Util;
 import java.io.IOException;
@@ -135,8 +134,6 @@ public class PathRemover {
             this.waitBetweenRetries = waitBetweenRetries;
         }
 
-        @SuppressFBWarnings(value = "DM_GC", justification = "Garbage collection happens only when "
-                + "GC_AFTER_FAILED_DELETE is true. It's an experimental feature in Jenkins.")
         private void gcIfEnabled() {
             /* If the Jenkins process had the file open earlier, and it has not
              * closed it then Windows won't let us delete it until the Java object

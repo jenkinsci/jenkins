@@ -9,8 +9,8 @@ This page provides information about contributing code to the Jenkins core codeb
 1. Fork the repository on GitHub
 2. Clone the forked repository to your machine
 3. Install the necessary development tools. In order to develop Jenkins, you need the following:
-   - Java Development Kit (JDK) 17 or 21.
-     In the Jenkins project we usually use [Eclipse Temurin](https://adoptium.net/) or [OpenJDK](https://openjdk.java.net/), but you can use other JDKs as well.
+   - Java Development Kit (JDK) 21 or 25.
+     In the Jenkins project we usually use [Eclipse Temurin](https://adoptium.net/) or [OpenJDK](https://openjdk.org/), but you can use other JDKs as well.
    - Apache Maven 3.9.6 or above. You can [download Maven here](https://maven.apache.org/download.cgi).
      In the Jenkins project we usually use the most recent Maven release.
    - Any IDE which supports importing Maven projects.
@@ -18,8 +18,8 @@ This page provides information about contributing code to the Jenkins core codeb
 
 If you want to contribute to Jenkins, or just learn about the project,
 you can start by fixing some easier issues.
-In the Jenkins issue tracker we mark such issues as `newbie-friendly`.
-You can find them by using this query (check the link) for [newbie friendly issues](<https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)>).
+In the Jenkins issue tracker we mark such issues as `good first issue`.
+You can find them by using this query (check the link) for [good first issues](https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20label%3A%22good%20first%20issue%22).
 
 ## Building and Debugging
 
@@ -82,16 +82,6 @@ Open another terminal and start a [webpack](https://webpack.js.org/) dev server,
 ```sh
 yarn start
 ```
-
-### Gitpod
-
-You can open this project as a [Gitpod workspace](https://www.gitpod.io/) which comes pre-configured with all the tools you will need.
-You can use IntelliJ IDEA (preferred) or VS Code (alternate) in the browser.
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/jenkinsci/jenkins)
-
-If you prefer using IntelliJ IDEA, you can setup Gitpod integration with JetBrains Gateway using the instructions on [gitpod.io](https://www.gitpod.io/docs/ides-and-editors/intellij),
-which will open the workspace in IntelliJ IDEA using JetBrains Gateway.
 
 ### Linting
 
@@ -261,4 +251,4 @@ just submit a pull request.
 - [Jenkins Contribution Landing Page](https://www.jenkins.io/participate/)
 - [Jenkins Chat Channels](https://www.jenkins.io/chat/)
 - [Beginners Guide To Contributing](https://www.jenkins.io/participate/)
-- [List of newbie-friendly issues in the core](<https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)>)
+- [List of good first issues in core](https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20label%3A%22good%20first%20issue%22)

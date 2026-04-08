@@ -49,12 +49,13 @@ import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTextArea;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -63,17 +64,21 @@ import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.verb.POST;
 
 @Restricted(NoExternalUse.class)
-public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
+@WithJenkins
+class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private final LogRecorder logging = new LogRecorder();
 
-    @Rule
-    public LoggerRule logging = new LoggerRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("SECURITY-765")
-    public void passwordsAreRedacted_andOtherStayTheSame() throws Exception {
+    void passwordsAreRedacted_andOtherStayTheSame() throws Exception {
         j.jenkins.setCrumbIssuer(null);
         TestPassword testPassword = j.jenkins.getExtensionList(RootAction.class).get(TestPassword.class);
 
@@ -150,7 +155,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
 
     @Test
     @Issue("SECURITY-765")
-    public void checkSanitizationIsApplied_inDescriptor() throws Exception {
+    void checkSanitizationIsApplied_inDescriptor() throws Exception {
         logging.record("", Level.WARNING).capture(100);
 
         j.jenkins.setCrumbIssuer(null);
@@ -193,7 +198,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
 
     @Test
     @Issue("SECURITY-765")
-    public void checkSanitizationIsApplied_inStapler() throws Exception {
+    void checkSanitizationIsApplied_inStapler() throws Exception {
         logging.record("", Level.WARNING).capture(100);
 
         j.jenkins.setCrumbIssuer(null);
@@ -230,7 +235,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
 
     @Test
     @Issue("SECURITY-3451")
-    public void secretTextAreaSubmissionRedaction() throws Exception {
+    void secretTextAreaSubmissionRedaction() throws Exception {
         final TestSecretTextarea action = ExtensionList.lookupSingleton(TestSecretTextarea.class);
 
         logging.record("", Level.WARNING).capture(100);
@@ -272,6 +277,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
     }
 
     public static class SecretTextareaDescribable {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public SecretTextareaDescribable(Secret secret) {
             throw new IllegalArgumentException("there is something wrong with the secret");
@@ -305,6 +311,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
 
     public static class TestDescribable implements Describable<TestDescribable> {
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public TestDescribable(Secret password) {
             throw new IllegalArgumentException("Try to steal my password");

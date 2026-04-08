@@ -27,8 +27,8 @@ package jenkins.model;
 import static jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import static jenkins.model.ModelObjectWithContextMenu.ContextMenuVisibility;
 import static jenkins.model.ModelObjectWithContextMenu.MenuItem;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -39,32 +39,40 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.Stapler;
 
 @For(ContextMenu.class)
-public class ContextMenuTest {
+@WithJenkins
+class ContextMenuTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("JENKINS-19173")
-    @Test public void contextMenuVisibility() throws Exception {
+    @Test
+    void contextMenuVisibility() throws Exception {
         final FreeStyleProject p = j.createFreeStyleProject("p");
         Callable<ContextMenu> doContextMenu = () -> p.doContextMenu(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2());
         ActionFactory f = j.jenkins.getExtensionList(TransientProjectActionFactory.class).get(ActionFactory.class);
         f.visible = true;
         ContextMenu menu = j.executeOnServer(doContextMenu);
         Map<String, String> parsed = parse(menu);
-        assertEquals(parsed.toString(), "Hello", parsed.get("testing"));
+        assertEquals("Hello", parsed.get("testing"), parsed.toString());
         f.visible = false;
         menu = j.executeOnServer(doContextMenu);
         parsed = parse(menu);
-        assertNull(parsed.toString(), parsed.get("testing"));
+        assertNull(parsed.get("testing"), parsed.toString());
     }
 
     @TestExtension public static class ActionFactory extends TransientProjectActionFactory {

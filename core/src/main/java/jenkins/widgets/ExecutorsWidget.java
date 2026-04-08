@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import jenkins.model.IComputer;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -23,9 +24,9 @@ import org.jenkinsci.Symbol;
  */
 public class ExecutorsWidget extends Widget {
     private final String ownerUrl;
-    private final List<Computer> computers;
+    private final List<IComputer> computers;
 
-    public ExecutorsWidget(@NonNull String ownerUrl, @NonNull List<Computer> computers) {
+    public ExecutorsWidget(@NonNull String ownerUrl, @NonNull List<? extends IComputer> computers) {
         this.ownerUrl = ownerUrl;
         this.computers = new ArrayList<>(computers);
     }
@@ -35,7 +36,7 @@ public class ExecutorsWidget extends Widget {
         return ownerUrl;
     }
 
-    public List<Computer> getComputers() {
+    public List<? extends IComputer> getComputers() {
         return Collections.unmodifiableList(computers);
     }
 
@@ -92,7 +93,7 @@ public class ExecutorsWidget extends Widget {
         @NonNull
         @Override
         public Collection<ExecutorsWidget> createFor(@NonNull ComputerSet target) {
-            return List.of(new ExecutorsWidget("computer/", List.of(target.get_all())));
+            return List.of(new ExecutorsWidget("computer/", new ArrayList<>(target.getComputers())));
         }
     }
 }

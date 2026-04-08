@@ -1,11 +1,10 @@
 package lib.form;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.ExtensionList;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.InvisibleAction;
@@ -20,10 +19,11 @@ import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlOption;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlSelect;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest2;
 
@@ -43,15 +43,21 @@ import org.kohsuke.stapler.StaplerRequest2;
  *
  * @author Kohsuke Kawaguchi
  */
-public class RowVisibilityGroupTest {
+@WithJenkins
+class RowVisibilityGroupTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Nested optional blocks
      */
     @Test
-    public void test1() throws Exception {
+    void test1() throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/test1");
 
         HtmlElement outer = DomNodeUtil.selectSingleNode(p, "//INPUT[@name='outer']");
@@ -77,7 +83,7 @@ public class RowVisibilityGroupTest {
      * optional block inside the dropdownDescriptorSelector
      */
     @Test
-    public void test2() throws Exception {
+    void test2() throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/test2");
 
         HtmlSelect s = DomNodeUtil.selectSingleNode(p, "//SELECT");
@@ -99,17 +105,17 @@ public class RowVisibilityGroupTest {
         // reveal the text box
         List<HtmlInput> checkboxes = DomNodeUtil.selectNodes(p, "//INPUT[@name='inner']");
         assertEquals(2, checkboxes.size());
-        checkboxes.get(0).click();
-        assertTrue(textboxes.get(0).isDisplayed());
-        textboxes.get(0).type("Budweiser");
+        checkboxes.getFirst().click();
+        assertTrue(textboxes.getFirst().isDisplayed());
+        textboxes.getFirst().type("Budweiser");
 
         // toggle the selection again
         s.setSelectedAttribute(opts.get(1), true);
         s.setSelectedAttribute(opts.get(0), true);
 
         // make sure it's still displayed this time
-        assertTrue(checkboxes.get(0).isChecked());
-        assertTrue(textboxes.get(0).isDisplayed());
+        assertTrue(checkboxes.getFirst().isChecked());
+        assertTrue(textboxes.getFirst().isDisplayed());
 
         // make sure we get what we expect
         j.submit(p.getFormByName("config"));
@@ -120,13 +126,14 @@ public class RowVisibilityGroupTest {
     public static class Nested {
         public String textbox2;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public Nested(String textbox2) {
             this.textbox2 = textbox2;
         }
     }
 
-    public abstract static class Drink extends AbstractDescribableImpl<Drink> {
+    public abstract static class Drink implements Describable<Drink> {
         public String textbox1;
         public Nested inner;
 
@@ -137,6 +144,7 @@ public class RowVisibilityGroupTest {
     }
 
     public static class Beer extends Drink {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public Beer(String textbox1, Nested inner) {
             super(textbox1, inner);
@@ -147,6 +155,7 @@ public class RowVisibilityGroupTest {
     }
 
     public static class Coke extends Drink {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public Coke(String textbox1, Nested inner) {
             super(textbox1, inner);

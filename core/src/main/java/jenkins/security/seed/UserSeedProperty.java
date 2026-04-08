@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
@@ -39,7 +40,6 @@ import java.util.Objects;
 import jenkins.model.Jenkins;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.util.SystemProperties;
-import org.apache.commons.codec.binary.Hex;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -103,7 +103,7 @@ public class UserSeedProperty extends UserProperty {
         byte[] bytes = new byte[SEED_NUM_BYTES];
         while (Objects.equals(newSeed, currentSeed)) {
             RANDOM.nextBytes(bytes);
-            newSeed = new String(Hex.encodeHex(bytes));
+            newSeed = Util.toHexString(bytes);
         }
         this.seed = newSeed;
     }

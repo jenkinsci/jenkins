@@ -27,13 +27,9 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:s="/lib/form">
-  <l:layout title="${%Installed plugins} - ${%Plugins}" permission="${app.SYSTEM_READ}">
+  <l:settings-subpage permission="${app.SYSTEM_READ}" header="${null}" noDefer="true" includeSidepanel="true">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
-    <st:include page="sidepanel.jelly"/>
-    <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
-
-    <l:main-panel>
       <j:set var="noPlugins"
              value="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}" />
 
@@ -43,8 +39,12 @@ THE SOFTWARE.
                         placeholder="${%Search installed plugins}"
                         id="filter-box"
                         autofocus="true"
-                        value="${request.getParameter('filter')}"
+                        hasKeyboardShortcut="false"
+                        value="${request2.getParameter('filter')}"
                         enabled="${!noPlugins}" />
+        </div>
+        <div class="jenkins-app-bar__controls">
+          <st:include page="overflow.jelly" />
         </div>
       </div>
 
@@ -78,6 +78,14 @@ THE SOFTWARE.
             <thead>
             <tr>
               <th initialSortDir="down">${%Name}</th>
+              <j:if test="${app.updateCenter.healthScoresAvailable}">
+                <th>
+                  <j:set var="healthTooltip">${%healthTooltip}</j:set>
+                  <span data-html-tooltip="${healthTooltip}" data-tooltip-interactive="true">
+                    ${%Health}
+                  </span>
+                </th>
+              </j:if>
               <th class="jenkins-table__cell--tight">${%Enabled}</th>
               <l:isAdmin>
                 <th data-sort-disable="true"/>
@@ -161,6 +169,22 @@ THE SOFTWARE.
                       </div>
                     </j:if>
                   </td>
+                  <j:if test="${app.updateCenter.healthScoresAvailable}">
+                    <td class="jenkins-table__cell">
+                      <span>
+                        <j:choose>
+                          <j:when test="${p.healthScore != null}">
+                            <a href="${p.url}/healthScore" class="jenkins-healthScore--badge jenkins-healthScore--${p.healthScoreClass}" target="_blank" rel="noopener noreferrer">
+                              <st:out value="${p.healthScore}"/>
+                            </a>
+                          </j:when>
+                          <j:otherwise>
+                            <l:icon src="symbol-status-aborted" class="icon-lg" tooltip="${%No health score available}"/>
+                          </j:otherwise>
+                        </j:choose>
+                      </span>
+                    </td>
+                  </j:if>
                   <j:set var="state" value="${p.enabled?'true':null}"/>
                   <td class="jenkins-table__cell--tight enable" data="${state}">
                     <div class="jenkins-table__cell__button-wrapper">
@@ -286,6 +310,5 @@ THE SOFTWARE.
       </div>
 
       <st:adjunct includes="hudson.PluginManager._installed"/>
-    </l:main-panel>
-  </l:layout>
+  </l:settings-subpage>
 </j:jelly>

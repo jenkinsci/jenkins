@@ -80,7 +80,7 @@
     "category": "User Management and Security",
     "plugins": [
       { "name": "matrix-auth", "suggested": true },
-      { "name": "pam-auth", "suggested": true },
+      { "name": "pam-auth" },
       { "name": "ldap", "suggested": true },
       { "name": "role-strategy" },
       { "name": "active-directory" }

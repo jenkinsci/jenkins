@@ -138,16 +138,6 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
     }
 
     @Override
-    public boolean isOptIn() {
-        return false;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return Messages.JnlpSlaveAgentProtocol4_displayName();
-    }
-
-    @Override
     public String getName() {
         return "JNLP4-connect"; // matches JnlpProtocol4Handler.getName
     }

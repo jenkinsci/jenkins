@@ -37,7 +37,10 @@ THE SOFTWARE.
                 <j:set var="title" value="${%Schedule_a_task_with_parameters(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
               </j:when>
               <j:otherwise>
-                <span class="build-button-column-icon-reference-holder" data-id="${id}" data-url="${href}" data-notification="${%Task_scheduled(it.taskNoun(job))}"/>
+                <span class="build-button-column-icon-reference-holder" data-id="${id}" data-url="${href}"
+                      data-notification="${%Task_scheduled(it.taskNoun(job))}"
+                      data-failure="${%Task_schedule_failed(h.getRelativeDisplayNameFrom(job, itemGroup))}"
+                />
                 <j:set var="title" value="${%Schedule_a_task(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
               </j:otherwise>
             </j:choose>

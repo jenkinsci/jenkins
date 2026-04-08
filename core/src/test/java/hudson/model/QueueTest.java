@@ -7,33 +7,36 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(MockitoJUnitRunner.class)
-public class QueueTest {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class QueueTest {
 
     @Mock
-    StaplerResponse2 resp;
+    private StaplerResponse2 resp;
     @Mock
-    Queue.Task task;
+    private Queue.Task task;
     @Mock
-    PrintWriter writer;
+    private PrintWriter writer;
 
-    @Before
-    public void setup() throws IOException {
+    @BeforeEach
+    void setup() throws IOException {
         when(resp.getWriter()).thenReturn(writer);
     }
 
     @Issue("JENKINS-21311")
     @Test
-    public void cancelItemOnaValidItemShouldReturnA204() throws IOException, ServletException {
+    void cancelItemOnaValidItemShouldReturnA204() throws IOException, ServletException {
         when(task.hasAbortPermission()).thenReturn(true);
         Queue queue = new Queue(LoadBalancer.CONSISTENT_HASH);
         long id = queue.schedule(task, 6000).getId();
@@ -46,7 +49,7 @@ public class QueueTest {
 
     @Issue("JENKINS-21311")
     @Test
-    public void cancelItemOnANonExistingItemShouldReturnA404()  throws IOException, ServletException {
+    void cancelItemOnANonExistingItemShouldReturnA404()  throws IOException, ServletException {
         Queue queue = new Queue(LoadBalancer.CONSISTENT_HASH);
         long id = queue.schedule(task, 6000).getId();
 
@@ -58,7 +61,7 @@ public class QueueTest {
 
     @Issue("JENKINS-21311")
     @Test
-    public void cancelItemOnANonCancellableItemShouldReturnA422()  throws IOException, ServletException {
+    void cancelItemOnANonCancellableItemShouldReturnA422()  throws IOException, ServletException {
         when(task.hasAbortPermission()).thenReturn(false);
         Queue queue = new Queue(LoadBalancer.CONSISTENT_HASH);
         long id = queue.schedule(task, 6000).getId();

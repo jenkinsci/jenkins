@@ -31,9 +31,9 @@ import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
-import jenkins.security.NotReallyRoleSensitiveCallable;
+import jenkins.util.ThrowingCallable;
+import jenkins.util.ThrowingRunnable;
 
 /**
  * Controls mutual exclusion of {@link ResourceList}.
@@ -82,32 +82,25 @@ public class ResourceController {
      */
     public void execute(@NonNull Runnable task, final ResourceActivity activity) throws InterruptedException {
         final ResourceList resources = activity.getResourceList();
-        _withLock(new NotReallyRoleSensitiveCallable<Void, InterruptedException>() {
-            @Override
-            public Void call() throws InterruptedException {
-                while (inUse.isCollidingWith(resources)) {
-                    // TODO revalidate the resource list after re-acquiring lock, for now we just let the build fail
-                    _await();
-                }
-
-                // we have a go
-                inProgress.add(activity);
-                inUse = ResourceList.union(inUse, resources);
-                return null;
+        _runWithLock(() -> {
+            while (inUse.isCollidingWith(resources)) {
+                // TODO revalidate the resource list after re-acquiring lock, for now we just let the build fail
+                _await();
             }
+
+            // we have a go
+            inProgress.add(activity);
+            inUse = ResourceList.union(inUse, resources);
         });
 
         try {
             task.run();
         } finally {
            // TODO if AsynchronousExecution, do that later
-            _withLock(new Runnable() {
-                @Override
-                public void run() {
-                    inProgress.remove(activity);
-                    inUse = ResourceList.union(resourceView);
-                    _signalAll();
-                }
+            _runWithLock(() -> {
+                inProgress.remove(activity);
+                inUse = ResourceList.union(resourceView);
+                _signalAll();
             });
         }
     }
@@ -122,16 +115,7 @@ public class ResourceController {
      * gets to call {@link #execute(Runnable, ResourceActivity)}.
      */
     public boolean canRun(final ResourceList resources) {
-        try {
-            return _withLock(new Callable<>() {
-                @Override
-                public Boolean call() {
-                    return !inUse.isCollidingWith(resources);
-                }
-            });
-        } catch (Exception e) {
-            throw new IllegalStateException("Inner callable does not throw exception", e);
-        }
+        return _callWithLock(() -> !inUse.isCollidingWith(resources));
     }
 
     /**
@@ -143,16 +127,7 @@ public class ResourceController {
      * This method is used for reporting what's causing the blockage.
      */
     public Resource getMissingResource(final ResourceList resources) {
-        try {
-            return _withLock(new Callable<>() {
-                @Override
-                public Resource call() {
-                    return resources.getConflict(inUse);
-                }
-            });
-        } catch (Exception e) {
-            throw new IllegalStateException("Inner callable does not throw exception", e);
-        }
+        return _callWithLock(() -> resources.getConflict(inUse));
     }
 
     /**
@@ -177,9 +152,21 @@ public class ResourceController {
         notifyAll();
     }
 
+    protected <T extends Throwable> void _runWithLock(ThrowingRunnable<T> runnable) throws T {
+        synchronized (this) {
+            runnable.run();
+        }
+    }
+
     protected void _withLock(Runnable runnable) {
         synchronized (this) {
             runnable.run();
+        }
+    }
+
+    protected <V, T extends Throwable> V _callWithLock(ThrowingCallable<V, T> callable) throws T {
+        synchronized (this) {
+            return callable.call();
         }
     }
 

@@ -66,6 +66,7 @@ import hudson.util.ClassLoaderSanityThreadFactory;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
+import hudson.util.FormApply;
 import hudson.util.Futures;
 import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
@@ -73,6 +74,7 @@ import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.RunList;
 import jakarta.servlet.ServletException;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,10 +84,12 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -109,6 +113,8 @@ import jenkins.model.DisplayExecutor;
 import jenkins.model.IComputer;
 import jenkins.model.IDisplayExecutor;
 import jenkins.model.Jenkins;
+import jenkins.search.SearchGroup;
+import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.ImpersonatingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.stapler.StaplerDispatchable;
@@ -178,11 +184,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected volatile OfflineCause offlineCause;
 
     private long connectTime = 0;
-
-    /**
-     * True if Jenkins shouldn't start new builds on this node.
-     */
-    private boolean temporarilyOffline;
 
     /**
      * {@link Node} object may be created and deleted independently
@@ -359,7 +360,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      null if the system was put offline without given a cause.
      */
     @Exported
+    @Override
     public OfflineCause getOfflineCause() {
+        var node = getNode();
+        if (node != null) {
+            var temporaryOfflineCause = node.getTemporaryOfflineCause();
+            if (temporaryOfflineCause != null) {
+                return temporaryOfflineCause;
+            }
+        }
         return offlineCause;
     }
 
@@ -371,18 +380,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     @Override
     public String getOfflineCauseReason() {
-        if (offlineCause == null) {
-            return "";
-        }
-        // fetch the localized string for "Disconnected By"
-        String gsub_base = hudson.slaves.Messages.SlaveComputer_DisconnectedBy("", "");
-        // regex to remove commented reason base string
-        String gsub1 = "^" + gsub_base + "[\\w\\W]* \\: ";
-        // regex to remove non-commented reason base string
-        String gsub2 = "^" + gsub_base + "[\\w\\W]*";
-
-        String newString = offlineCause.toString().replaceAll(gsub1, "");
-        return newString.replaceAll(gsub2, "");
+        return IComputer.super.getOfflineCauseReason();
     }
 
     /**
@@ -549,7 +547,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Deprecated
     public void cliOffline(String cause) throws ExecutionException, InterruptedException {
         checkPermission(DISCONNECT);
-        setTemporarilyOffline(true, new ByCLI(cause));
+        setTemporaryOfflineCause(new ByCLI(cause));
     }
 
     /**
@@ -558,7 +556,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Deprecated
     public void cliOnline() throws ExecutionException, InterruptedException {
         checkPermission(CONNECT);
-        setTemporarilyOffline(false, null);
+        setTemporaryOfflineCause(null);
     }
 
     /**
@@ -620,11 +618,24 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     @Override
     public boolean isOffline() {
-        return temporarilyOffline || getChannel() == null;
+        return isTemporarilyOffline() || getChannel() == null;
     }
 
     public final boolean isOnline() {
         return !isOffline();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Uses {@link #getChannel()} to check the connection.
+     * A connected agent may still be offline for scheduling if marked temporarily offline.
+     * @return {@code true} if the agent is connected, {@code false} otherwise.
+     * @see #isOffline()
+     */
+    @Override
+    public boolean isConnected() {
+        return getChannel() != null;
     }
 
     /**
@@ -669,75 +680,89 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     @Deprecated
     public boolean isTemporarilyOffline() {
-        return temporarilyOffline;
+        var node = getNode();
+        return node != null && node.isTemporarilyOffline();
+    }
+
+    /**
+     * Allows a caller to define an {@link OfflineCause} for a computer that has never been online.
+     * @since 2.483
+     */
+    public void setOfflineCause(OfflineCause cause) {
+        this.offlineCause = cause;
     }
 
     /**
      * @deprecated as of 1.320.
-     *      Use {@link #setTemporarilyOffline(boolean, OfflineCause)}
+     *      Use {@link #setTemporaryOfflineCause(OfflineCause)}
      */
     @Deprecated
     public void setTemporarilyOffline(boolean temporarilyOffline) {
-        setTemporarilyOffline(temporarilyOffline, null);
+        setTemporaryOfflineCause(temporarilyOffline ? new OfflineCause.LegacyOfflineCause() : null);
+    }
+
+    /**
+     * @deprecated
+     *      Use {@link #setTemporaryOfflineCause(OfflineCause)} instead.
+     */
+    @Deprecated(since = "2.482")
+    public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
+        if (cause == null) {
+            setTemporarilyOffline(temporarilyOffline);
+        } else {
+            setTemporaryOfflineCause(temporarilyOffline ? cause : null);
+        }
     }
 
     /**
      * Marks the computer as temporarily offline. This retains the underlying
      * {@link Channel} connection, but prevent builds from executing.
      *
-     * @param cause
-     *      If the first argument is true, specify the reason why the node is being put
-     *      offline.
+     * @param temporaryOfflineCause The reason why the node is being put offline.
+     *                                If null, this cancels the status
+     * @since 2.482
      */
-    public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
-        offlineCause = temporarilyOffline ? cause : null;
-        this.temporarilyOffline = temporarilyOffline;
-        Node node = getNode();
-        if (node != null) {
-            node.setTemporaryOfflineCause(offlineCause);
+    public void setTemporaryOfflineCause(@CheckForNull OfflineCause temporaryOfflineCause) {
+        var node = getNode();
+        if (node == null) {
+            throw new IllegalStateException("Can't set a temporary offline cause if the node has been removed");
         }
-        synchronized (statusChangeLock) {
-            statusChangeLock.notifyAll();
+        node.setTemporaryOfflineCause(temporaryOfflineCause);
+    }
+
+    /**
+     * @since 2.482
+     * @return If the node is temporarily offline, the reason why.
+     */
+    @SuppressWarnings("unused") // used by setOfflineCause.jelly
+    public String getTemporaryOfflineCauseReason() {
+        var node = getNode();
+        if (node == null) {
+            // Node was deleted; computer still exists
+            return null;
         }
-        if (temporarilyOffline) {
-            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOffline(this, cause));
-        } else {
-            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOnline(this));
+        var cause = node.getTemporaryOfflineCause();
+        if (cause instanceof OfflineCause.UserCause userCause) {
+            return userCause.getMessage();
         }
+        return cause != null ? cause.toString() : "";
     }
 
     @Exported
     @Override
     public String getIcon() {
-        // The machine was taken offline by someone
-        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "symbol-computer-disconnected";
-        // The computer is not accepting tasks, e.g. because the availability demands it being offline.
-        if (!isAcceptingTasks()) {
-            return "symbol-computer-not-accepting";
-        }
-        // The computer is not connected or it is temporarily offline due to a node monitor
-        if (isOffline()) return "symbol-computer-offline";
-        return "symbol-computer";
+        return IComputer.super.getIcon();
     }
 
     /**
      * {@inheritDoc}
      *
-     * <p>
-     * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}.
+     * @see #getIcon()
      */
     @Exported
     @Override
     public String getIconClassName() {
         return IComputer.super.getIconClassName();
-    }
-
-    public String getIconAltText() {
-        // The machine was taken offline by someone
-        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "[temporarily offline by user]";
-        // There is a "technical" reason the computer will not accept new builds
-        if (isOffline() || !isAcceptingTasks()) return "[offline]";
-        return "[online]";
     }
 
     @Exported
@@ -770,7 +795,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public RunList getBuilds() {
-        return RunList.fromJobs((Iterable) Jenkins.get().allItems(Job.class)).node(getNode());
+        return RunList.fromJobs((Iterable) Jenkins.get().allItems(AbstractProject.class)).node(getNode());
     }
 
     /**
@@ -785,20 +810,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             this.nodeName = null;
 
         setNumExecutors(node.getNumExecutors());
-        if (this.temporarilyOffline) {
-            // When we get a new node, push our current temp offline
-            // status to it (as the status is not carried across
-            // configuration changes that recreate the node).
-            // Since this is also called the very first time this
-            // Computer is created, avoid pushing an empty status
-            // as that could overwrite any status that the Node
-            // brought along from its persisted config data.
-            node.setTemporaryOfflineCause(this.offlineCause);
-        }
     }
 
     /**
-     * Called by {@link Jenkins#updateComputerList()} to notify {@link Computer} that it will be discarded.
+     * Called by {@link Jenkins#updateComputerList(boolean, Collection)} to notify {@link Computer} that it will be discarded.
      *
      * <p>
      * Note that at this point {@link #getNode()} returns null.
@@ -809,23 +824,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         // On most code paths, this should already be zero, and thus this next call becomes a no-op... and more
         // importantly it will not acquire a lock on the Queue... not that the lock is bad, more that the lock
         // may delay unnecessarily
-        setNumExecutors(0);
-    }
-
-    /**
-     * Called by {@link Jenkins#updateComputerList()} to notify {@link Computer} that it will be discarded.
-     *
-     * <p>
-     * Note that at this point {@link #getNode()} returns null.
-     *
-     * <p>
-     * Note that the Queue lock is already held when this method is called.
-     *
-     * @see #onRemoved()
-     */
-    @Restricted(NoExternalUse.class)
-    @GuardedBy("hudson.model.Queue.lock")
-    /*package*/ void inflictMortalWound() {
         setNumExecutors(0);
     }
 
@@ -850,7 +848,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Calling path, *means protected by Queue.withLock
      *
      * Computer.doConfigSubmit -> Computer.replaceBy ->Jenkins.setNodes* ->Computer.setNode
-     * AbstractCIBase.updateComputerList->Computer.inflictMortalWound*
+     * AbstractCIBase.updateComputerList->Computer.setNumExecutors*
      * AbstractCIBase.updateComputerList->AbstractCIBase.updateComputer* ->Computer.setNode
      * AbstractCIBase.updateComputerList->AbstractCIBase.killComputer->Computer.kill
      * Computer.constructor->Computer.setNode
@@ -858,8 +856,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @param n number of executors
      */
+    @Restricted(NoExternalUse.class)
     @GuardedBy("hudson.model.Queue.lock")
-    private void setNumExecutors(int n) {
+    public void setNumExecutors(int n) {
         this.numExecutors = n;
         final int diff = executors.size() - n;
 
@@ -1110,6 +1109,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Override
     public String getSearchUrl() {
         return getUrl();
+    }
+
+    @Override
+    public SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.ComputerSearchGroup.class);
     }
 
     /**
@@ -1396,24 +1400,23 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     @RequirePOST
     public HttpResponse doToggleOffline(@QueryParameter String offlineMessage) throws IOException, ServletException {
-        if (!temporarilyOffline) {
-            checkPermission(DISCONNECT);
-            offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
-            setTemporarilyOffline(!temporarilyOffline,
-                    new OfflineCause.UserCause(User.current(), offlineMessage));
-        } else {
-            checkPermission(CONNECT);
-            setTemporarilyOffline(!temporarilyOffline, null);
+        var node = getNode();
+        if (node == null) {
+            return HttpResponses.notFound();
         }
-        return HttpResponses.redirectToDot();
+        if (node.isTemporarilyOffline()) {
+            checkPermission(CONNECT);
+            setTemporaryOfflineCause(null);
+            return HttpResponses.redirectToDot();
+        } else {
+            return doChangeOfflineCause(offlineMessage);
+        }
     }
 
     @RequirePOST
     public HttpResponse doChangeOfflineCause(@QueryParameter String offlineMessage) throws IOException, ServletException {
         checkPermission(DISCONNECT);
-        offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
-        setTemporarilyOffline(true,
-                new OfflineCause.UserCause(User.current(), offlineMessage));
+        setTemporaryOfflineCause(new OfflineCause.UserCause(User.current(), Util.fixEmptyAndTrim(offlineMessage)));
         return HttpResponses.redirectToDot();
     }
 
@@ -1500,7 +1503,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             throw new FormException(Messages.Slave_InvalidConfig_Executors(nodeName), "numExecutors");
         }
 
+        OfflineCause offlineCause = node.getTemporaryOfflineCause();
         Node result = node.reconfigure(req, req.getSubmittedForm());
+        result.setTemporaryOfflineCause(offlineCause);
         Jenkins.get().getNodesObject().replaceNode(this.getNode(), result);
 
         if (result.getNodeProperty(DiskSpaceMonitorNodeProperty.class) != null) {
@@ -1512,7 +1517,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         // take the user back to the agent top page.
-        rsp.sendRedirect2("../" + result.getNodeName() + '/');
+        FormApply.success("../" + result.getNodeName() + '/').generateResponse(req, rsp, null);
     }
 
     /**
@@ -1530,7 +1535,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             if (node == null) {
                 throw HttpResponses.notFound();
             }
-            Jenkins.XSTREAM2.toXMLUTF8(node, rsp.getOutputStream());
+            if (hasPermission(CONFIGURE)) {
+                Jenkins.XSTREAM2.toXMLUTF8(node, rsp.getOutputStream());
+            } else {
+                var baos = new ByteArrayOutputStream();
+                Jenkins.XSTREAM2.toXMLUTF8(node, baos);
+                String xml = baos.toString(StandardCharsets.UTF_8);
+
+                xml = ExtendedReadRedaction.applyAll(xml);
+                org.apache.commons.io.IOUtils.write(xml, rsp.getOutputStream(), StandardCharsets.UTF_8);
+            }
             return;
         }
         if (req.getMethod().equals("POST")) {
@@ -1668,6 +1682,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         relocateOldLogs(Jenkins.get().getRootDir());
     }
 
+    @SuppressFBWarnings(value = "REDOS", justification = "TODO needs triage")
     /*package*/ static void relocateOldLogs(File dir) {
         final Pattern logfile = Pattern.compile("slave-(.*)\\.log(\\.[0-9]+)?");
         File[] logfiles = dir.listFiles((dir1, name) -> logfile.matcher(name).matches());

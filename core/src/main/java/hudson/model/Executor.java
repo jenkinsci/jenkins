@@ -30,6 +30,7 @@ import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 
+import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
@@ -50,9 +51,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Vector;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -284,7 +285,14 @@ public class Executor extends Thread implements ModelObject, IExecutor {
             lock.writeLock().unlock();
         }
 
-        build.addAction(new InterruptedBuildAction(r));
+        InterruptedBuildAction action = build.getAction(InterruptedBuildAction.class);
+        if (action != null) {
+            Collection<CauseOfInterruption> combinedCauses = new LinkedHashSet<>(action.getCauses());
+            combinedCauses.addAll(r);
+            build.replaceAction(new InterruptedBuildAction(combinedCauses));
+        } else {
+            build.addAction(new InterruptedBuildAction(r));
+        }
         for (CauseOfInterruption c : r)
             c.print(listener);
     }
@@ -322,6 +330,11 @@ public class Executor extends Thread implements ModelObject, IExecutor {
         }
     }
 
+    @VisibleForTesting
+    long getStartTime() {
+        return startTime;
+    }
+
     @Override
     public void run() {
         if (!(owner instanceof Jenkins.MasterComputer)) {
@@ -351,40 +364,37 @@ public class Executor extends Thread implements ModelObject, IExecutor {
             SubTask task;
             // transition from idle to building.
             // perform this state change as an atomic operation wrt other queue operations
-            task = Queue.withLock(new Callable<>() {
-                @Override
-                public SubTask call() throws Exception {
-                    if (!(owner instanceof Jenkins.MasterComputer)) {
-                        if (!owner.isOnline()) {
-                            resetWorkUnit("went off-line before the task's worker thread was ready to execute");
-                            return null;
-                        }
-                        if (owner.getNode() == null) {
-                            resetWorkUnit("was removed before the task's worker thread was ready to execute");
-                            return null;
-                        }
+            task = Queue.callWithLock(() -> {
+                if (!(owner instanceof Jenkins.MasterComputer)) {
+                    if (!owner.isOnline()) {
+                        resetWorkUnit("went off-line before the task's worker thread was ready to execute");
+                        return null;
                     }
-                    // after this point we cannot unwind the assignment of the work unit, if the owner
-                    // is removed or goes off-line then the build will just have to fail.
-                    workUnit.setExecutor(Executor.this);
-                    queue.onStartExecuting(Executor.this);
-                    if (LOGGER.isLoggable(FINE))
-                        LOGGER.log(FINE, getName() + " grabbed " + workUnit + " from queue");
-                    SubTask task = workUnit.work;
-                    Executable executable = task.createExecutable();
-                    if (executable == null) {
-                        String displayName = task instanceof Queue.Task ? ((Queue.Task) task).getFullDisplayName() : task.getDisplayName();
-                        LOGGER.log(WARNING, "{0} cannot be run (for example because it is disabled)", displayName);
+                    if (owner.getNode() == null) {
+                        resetWorkUnit("was removed before the task's worker thread was ready to execute");
+                        return null;
                     }
-                    lock.writeLock().lock();
-                    try {
-                        Executor.this.executable = executable;
-                    } finally {
-                        lock.writeLock().unlock();
-                    }
-                    workUnit.setExecutable(executable);
-                    return task;
                 }
+                // after this point we cannot unwind the assignment of the work unit, if the owner
+                // is removed or goes off-line then the build will just have to fail.
+                workUnit.setExecutor(Executor.this);
+                queue.onStartExecuting(Executor.this);
+                if (LOGGER.isLoggable(FINE))
+                    LOGGER.log(FINE, getName() + " grabbed " + workUnit + " from queue");
+                SubTask _task = workUnit.work;
+                Executable _executable = _task.createExecutable();
+                if (_executable == null) {
+                    String displayName = _task instanceof Queue.Task qt ? qt.getFullDisplayName() : _task.getDisplayName();
+                    LOGGER.log(WARNING, "{0} cannot be run (for example because it is disabled)", displayName);
+                }
+                lock.writeLock().lock();
+                try {
+                    executable = _executable;
+                } finally {
+                    lock.writeLock().unlock();
+                }
+                workUnit.setExecutable(_executable);
+                return _task;
             });
             Executable executable;
             lock.readLock().lock();
@@ -579,8 +589,7 @@ public class Executor extends Thread implements ModelObject, IExecutor {
             if (executable == null) {
                 return null;
             }
-            if (executable instanceof AbstractBuild) {
-                AbstractBuild ab = (AbstractBuild) executable;
+            if (executable instanceof AbstractBuild ab) {
                 return ab.getWorkspace();
             }
             return null;

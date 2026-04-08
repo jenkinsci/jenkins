@@ -40,17 +40,32 @@ THE SOFTWARE.
         <st:attribute name="clazz">
             Optional class for the menu item
         </st:attribute>
+        <st:attribute name="badge">
+            Optional jenkins.management.Badge to also show in the item
+        </st:attribute>
     </st:documentation>
 
     <j:set var="icon">
         <l:icon src="${attrs.icon}" />
     </j:set>
 
-    <template data-dropdown-type="ITEM"
-              data-dropdown-id="${attrs.id}"
-              data-dropdown-icon="${icon}"
-              data-dropdown-text="${attrs.text}"
-              data-dropdown-href="${attrs.href}"
-              data-dropdown-clazz="${attrs.clazz}"
-    />
+    <j:if test="${action.badge == null}">
+        <template data-dropdown-type="ITEM"
+                  data-dropdown-id="${attrs.id}"
+                  data-dropdown-icon="${icon}"
+                  data-dropdown-text="${attrs.text}"
+                  data-dropdown-href="${attrs.href}"
+                  data-dropdown-clazz="${attrs.clazz}"/>
+    </j:if>
+    <j:if test="${action.badge != null}">
+        <template data-dropdown-type="ITEM"
+                  data-dropdown-id="${attrs.id}"
+                  data-dropdown-icon="${icon}"
+                  data-dropdown-text="${attrs.text}"
+                  data-dropdown-href="${attrs.href}"
+                  data-dropdown-clazz="${attrs.clazz}"
+                  data-dropdown-badge-text="${attrs.badge.text}"
+                  data-dropdown-badge-tooltip="${attrs.badge.tooltip}"
+                  data-dropdown-badge-severity="${attrs.badge.severity}"/>
+    </j:if>
 </j:jelly>

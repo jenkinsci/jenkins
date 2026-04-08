@@ -1,0 +1,85 @@
+@use "../abstracts/mixins";
+
+$icon-size: 1.125rem;
+
+.jenkins-details {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem 1.25rem;
+  flex-wrap: wrap;
+
+  button.jenkins-details__item,
+  a.jenkins-details__item {
+    @include mixins.item($border: false);
+
+    transition: color var(--standard-transition);
+
+    &::before,
+    &::after {
+      inset: 0 -0.5rem;
+      pointer-events: all;
+    }
+
+    &:hover {
+      color: var(--text-color) !important;
+    }
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: normal;
+    color: var(--text-color-secondary) !important;
+    padding: 0;
+    min-height: 2rem;
+
+    &__icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      align-self: start;
+      width: $icon-size;
+      height: 2rem;
+
+      svg,
+      img {
+        width: $icon-size;
+        height: $icon-size;
+
+        * {
+          stroke-width: 36px;
+        }
+      }
+    }
+  }
+
+  &__separator {
+    color: var(--text-color-secondary);
+    opacity: 0.5;
+    margin-inline: -0.5rem;
+  }
+
+  &__button {
+    --button-background: transparent !important;
+
+    min-width: 3.25rem;
+    min-height: 2rem;
+    padding-block: 0;
+    color: var(--text-color-secondary) !important;
+
+    &:not(:hover, :active, :focus-visible) {
+      --jenkins-border--subtle: var(--jenkins-border);
+    }
+
+    svg {
+      width: $icon-size;
+      height: $icon-size;
+
+      * {
+        stroke-width: 36px;
+      }
+    }
+  }
+}

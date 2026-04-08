@@ -112,8 +112,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
         // TODO could also be good to add checkbox that lets users configure a workspace to never be auto-cleaned.
 
         // TODO check instead for SCMTriggerItem:
-        if (item instanceof AbstractProject<?, ?>) {
-            AbstractProject<?, ?> p = (AbstractProject<?, ?>) item;
+        if (item instanceof AbstractProject<?, ?> p) {
             Node lb = p.getLastBuiltOn();
             LOGGER.log(Level.FINER, "Directory {0} is last built on {1}", new Object[] {dir, lb});
             if (lb != null && lb.equals(n)) {
@@ -129,8 +128,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
         }
 
         // TODO this may only check the last build in fact:
-        if (item instanceof Job<?, ?>) {
-            Job<?, ?> j = (Job<?, ?>) item;
+        if (item instanceof Job<?, ?> j) {
             if (j.isBuilding()) {
                 LOGGER.log(Level.FINE, "Job {0} is building, so not deleting", item.getFullDisplayName());
                 return false;
