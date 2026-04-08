@@ -25,17 +25,22 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <st:documentation>
-    Generates a strip of controls based on the given actions parameter.
+    Generates a strip of actions based on the given Actionable.
 
-    <st:attribute name="actions">
-      The actions to show.
+    <st:attribute name="it" use="required" type="hudson.model.Actionable">
+      The object to display actions for.
     </st:attribute>
   </st:documentation>
 
+  <j:set var="url" value="${h.getNearestAncestorUrl(request2, it)}/" />
+  <j:set var="actions" value="${attrs.it.appBarActions}" />
+
   <j:if test="${actions != null}">
-    <button id="auto-overflow"
-            class="jenkins-button"
+    <button data-type="auto-overflow"
+            class="jenkins-button jenkins-jumplist-link"
             tooltip="${%More actions}"
+            data-href="${url}"
+            data-jumplist-type="menu"
             data-testid="app-bar-overflow-button"
             type="button">
       <div class="jenkins-overflow-button__ellipsis">
@@ -44,9 +49,9 @@ THE SOFTWARE.
         <span />
       </div>
     </button>
-    <j:set var="url" value="${h.getNearestAncestorUrl(request2,it.object)}"/>
+
     <template>
-      ${h.convertActionsToJson(url, actions)}
+      ${h.convertActionsToJson(url, attrs.it.appBarActions)}
     </template>
   </j:if>
 </j:jelly>

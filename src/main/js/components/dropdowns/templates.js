@@ -142,13 +142,15 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
 
   const label = xmlEscape(itemOptions.displayName);
 
-  let clazz =
-    type +
-    " " +
-    itemOptions.clazz +
-    (itemOptions.semantic
+  const clazz = [
+    type,
+    itemOptions.clazz,
+    itemOptions.semantic
       ? " jenkins-!-" + itemOptions.semantic.toLowerCase() + "-color"
-      : "");
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   // If submenu
   if (itemOptions.event && itemOptions.event.event) {
@@ -186,6 +188,17 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
 
   const tag =
     itemOptions.event && itemOptions.event.type === "GET" ? "a" : "button";
+
+  // Do not prepend the context path for root-relative or absolute URLs
+  if (tag === "a") {
+    if (
+      itemOptions.event.url.startsWith("/") ||
+      itemOptions.event.url.startsWith("http")
+    ) {
+      context = "";
+    }
+  }
+
   const url = tag === "a" ? context + xmlEscape(itemOptions.event.url) : null;
 
   const item = createElementFromHtml(`
@@ -258,7 +271,7 @@ function tryConfirmationPost(element, opt, context) {
     dialog
       .confirm(opt.event.title, {
         message: opt.event.description,
-        type: opt.semantic.toLowerCase() ?? "default",
+        type: opt.semantic?.toLowerCase() ?? "default",
       })
       .then(
         () => {
@@ -282,13 +295,17 @@ function tryPost(element, opt, context) {
     return;
   }
 
+  // Do not prepend the context path for root-relative URLs
+  if (opt.event.url.startsWith("/")) {
+    context = "";
+  }
+
   element.addEventListener("click", () => {
-    const form = document.createElement("form");
-    form.setAttribute("method", "POST");
-    form.setAttribute("action", context + xmlEscape(opt.event.url));
-    crumb.appendToForm(form);
-    document.body.appendChild(form);
-    form.submit();
+    fetch(context + xmlEscape(opt.event.url), {
+      method: "post",
+      headers: crumb.wrap({}),
+    });
+    window.location.href = ".";
   });
 }
 

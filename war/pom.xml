@@ -283,7 +283,7 @@ THE SOFTWARE.
                   <!-- detached after 1.493 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>525.v2458b_d8a_1a_71</version>
+                  <version>534.v1b_36f5864073</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -325,7 +325,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1398.v67030756d3fb_</version>
+                  <version>1413.v2ff1a_5e720fa_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -369,7 +369,7 @@ THE SOFTWARE.
                   <!-- dependency of echarts-api -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jackson2-api</artifactId>
-                  <version>2.21.1-428.vf8dd988fa_d8d</version>
+                  <version>2.21.2-433.v6d50b_92cfe52</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -377,7 +377,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jackson3-api</artifactId>
-                  <version>3.1.0-64.v37e742c35905</version>
+                  <version>3.1.1-68.v2a_4b_025ea_657</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -386,6 +386,14 @@ THE SOFTWARE.
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>snakeyaml-engine-api</artifactId>
                   <version>3.0.1-5.vd98ea_ff3b_92e</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of jackson2-api and jackson3-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>woodstox-core-api</artifactId>
+                  <version>7.1.1-1.v4d297985f397</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -446,7 +454,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, junit, plugin-util-api, workflow-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-step-api</artifactId>
-                  <version>710.v3e456cc85233</version>
+                  <version>724.v538c2362b_dfb_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -474,7 +482,7 @@ THE SOFTWARE.
                   <!-- detached after 2.86 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>command-launcher</artifactId>
-                  <version>123.v37cfdc92ef67</version>
+                  <version>134.v025a_5fcf9dea_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -685,7 +693,7 @@ THE SOFTWARE.
           contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
           result before proceeding with the update here.
         -->
-        <version>12.1.7</version>
+        <version>12.1.8</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
