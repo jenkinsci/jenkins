@@ -423,7 +423,7 @@ class AbstractLazyLoadRunMapTest {
         assertEquals(List.of(5, 3, 1), fromStream);
 
         // should lazily load first two builds
-        var firstTwo = a.loadedBuilds().limit(2).map(b -> ((Build) b).n).toList();
+        var firstTwo = a.loadedBuilds().limit(2).map(b -> b.n).toList();
         assertEquals(List.of(5, 3), firstTwo);
     }
 
