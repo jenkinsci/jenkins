@@ -43,6 +43,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -50,6 +51,7 @@ import java.util.function.IntPredicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import jenkins.util.MemoryReductionUtil;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -249,30 +251,28 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
      * Returns a read-only view of records that has already been loaded.
      */
     public SortedMap<Integer, R> getLoadedBuilds() {
-        return getLoadedBuilds(Integer.MAX_VALUE);
-    }
-
-    /**
-     * Returns a read-only view of records that has already been loaded,
-     * capping at most {@code maxBuilds} entries.
-     * {@code core} is sorted by build number decreasing, so this always returns
-     * up to {@code maxBuilds} most recent builds
-     * @param maxBuilds the maximum number of builds to load into the map
-     * @since TODO
-     */
-    public SortedMap<Integer, R> getLoadedBuilds(int maxBuilds) {
         TreeMap<Integer, BuildReference<R>> res = new TreeMap<>(Comparator.reverseOrder());
         for (var entry : this.core.entrySet()) {
-            if (res.size() >= maxBuilds) {
-                break;
-            }
-
             BuildReference<R> buildRef = entry.getValue();
             if (buildRef.isSet() && !buildRef.isUnloadable()) {
                 res.put(entry.getKey(), buildRef);
             }
         }
         return new BuildReferenceMapAdapter<>(res, buildResolver);
+    }
+
+    /**
+     * Returns a lazy stream of build objects, sorted by newest first, skipping GC builds
+     * Unlike {@link #getLoadedBuilds()}, this doesn't require copying the entire map
+     *
+     * @since TODO
+     */
+    public Stream<R> loadedBuilds() {
+        return core.entrySet().stream()
+                .map(Map.Entry::getValue)
+                .filter(ref -> ref.isSet() && !ref.isUnloadable())
+                .map(BuildReference::get)
+                .filter(Objects::nonNull);
     }
 
     /**

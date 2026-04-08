@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -412,14 +413,18 @@ class AbstractLazyLoadRunMapTest {
     }
 
     @Test
-    void getLoadedBuildsCapped() {
+    void loadedBuildsStream() {
         a.getByNumber(1);
         a.getByNumber(3);
         a.getByNumber(5);
-        assertEquals("[5, 3, 1]", a.getLoadedBuilds().keySet().toString());
 
-        // should load only 2 most recent builds
-        assertEquals("[5, 3]", a.getLoadedBuilds(2).keySet().toString());
+        // loadedBuilds() should return the same builds as getLoadedBuilds() in the same order
+        var fromStream = a.loadedBuilds().map(b -> ((Build) b).n).toList();
+        assertEquals(List.of(5, 3, 1), fromStream);
+
+        // should lazily load first two builds
+        var firstTwo = a.loadedBuilds().limit(2).map(b -> ((Build) b).n).toList();
+        assertEquals(List.of(5, 3), firstTwo);
     }
 
     @Issue("JENKINS-22767")
