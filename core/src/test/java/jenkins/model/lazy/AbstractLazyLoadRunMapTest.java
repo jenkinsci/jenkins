@@ -419,7 +419,7 @@ class AbstractLazyLoadRunMapTest {
         a.getByNumber(5);
 
         // loadedBuilds() should return the same builds as getLoadedBuilds() in the same order
-        var fromStream = a.loadedBuilds().map(b -> ((Build) b).n).toList();
+        var fromStream = a.loadedBuilds().map(b -> b.n).toList();
         assertEquals(List.of(5, 3, 1), fromStream);
 
         // should lazily load first two builds
