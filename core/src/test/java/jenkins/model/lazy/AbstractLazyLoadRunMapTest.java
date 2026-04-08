@@ -411,6 +411,17 @@ class AbstractLazyLoadRunMapTest {
         // TODO check behavior of subMap
     }
 
+    @Test
+    void getLoadedBuildsCapped() {
+        a.getByNumber(1);
+        a.getByNumber(3);
+        a.getByNumber(5);
+        assertEquals("[5, 3, 1]", a.getLoadedBuilds().keySet().toString());
+
+        // should load only 2 most recent builds
+        assertEquals("[5, 3]", a.getLoadedBuilds(2).keySet().toString());
+    }
+
     @Issue("JENKINS-22767")
     @Test
     void slowRetrieve() throws Exception {

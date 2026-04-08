@@ -273,7 +273,9 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
      * @since 2.407
      */
     public List<RunT> getEstimatedDurationCandidates() {
-        var loadedBuilds = builds.getLoadedBuilds().values(); // reverse chronological order
+        // somewhat arbitrary but load the most recent 100 builds to try and find 3 completed builds
+        // this avoids recreating the entire TreeMap for large build histories
+        var loadedBuilds = builds.getLoadedBuilds(100).values(); // reverse chronological order
         List<RunT> candidates = new ArrayList<>(3);
         for (Result threshold : List.of(Result.UNSTABLE, Result.FAILURE)) {
             for (RunT build : loadedBuilds) {

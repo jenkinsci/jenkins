@@ -249,8 +249,24 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
      * Returns a read-only view of records that has already been loaded.
      */
     public SortedMap<Integer, R> getLoadedBuilds() {
+        return getLoadedBuilds(Integer.MAX_VALUE);
+    }
+
+    /**
+     * Returns a read-only view of records that has already been loaded,
+     * capping at most {@code maxBuilds} entries.
+     * {@code core} is sorted by build number decreasing, so this always returns
+     * up to {@code maxBuilds} most recent builds
+     * @param maxBuilds the maximum number of builds to load into the map
+     * @since TODO
+     */
+    public SortedMap<Integer, R> getLoadedBuilds(int maxBuilds) {
         TreeMap<Integer, BuildReference<R>> res = new TreeMap<>(Comparator.reverseOrder());
         for (var entry : this.core.entrySet()) {
+            if (res.size() >= maxBuilds) {
+                break;
+            }
+
             BuildReference<R> buildRef = entry.getValue();
             if (buildRef.isSet() && !buildRef.isUnloadable()) {
                 res.put(entry.getKey(), buildRef);
