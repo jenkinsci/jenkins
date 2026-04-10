@@ -222,13 +222,16 @@ var FormChecker = {
    *      HTTP method. GET or POST. I haven't confirmed specifics, but some browsers seem to cache GET requests.
    * @param target
    *      HTML element whose innerHTML will be overwritten when the check is completed.
+   * @param signal
+   *      Optional AbortSignal. If provided, the queued check (and any in-flight fetch) will be
+   *      cancelled when the signal is aborted — useful when a new action makes an earlier check stale.
    */
-  delayedCheck: function (url, method, target) {
+  delayedCheck: function (url, method, target, signal) {
     if (url == null || method == null || target == null) {
       // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
       return;
     }
-    this.queue.push({ url: url, method: method, target: target });
+    this.queue.push({ url: url, method: method, target: target, signal: signal || null });
     this.schedule();
   },
 
@@ -236,19 +239,36 @@ var FormChecker = {
     const method = params.method.toLowerCase();
     if (method !== "get") {
       var idx = url.indexOf("?");
-      params.parameters = url.substring(idx + 1);
-      url = url.substring(0, idx);
+      if (idx >= 0) {
+        params.parameters = url.substring(idx + 1);
+        url = url.substring(0, idx);
+      } else {
+        params.parameters = "";
+      }
     }
 
-    fetch(url, {
+    var fetchOptions = {
       method: params.method,
       headers: crumb.wrap({
         "Content-Type": "application/x-www-form-urlencoded",
       }),
       body: method !== "get" ? params.parameters : null,
-    }).then((response) => {
-      params.onComplete(response);
-    });
+    };
+    if (params.signal != null) {
+      fetchOptions.signal = params.signal;
+    }
+    fetch(url, fetchOptions)
+      .then((response) => {
+        params.onComplete(response);
+      })
+      .catch((error) => {
+        if (error && error.name !== "AbortError") {
+          console.warn(error);
+        }
+        if (params.onError != null) {
+          params.onError(error);
+        }
+      });
   },
 
   schedule: function () {
@@ -259,19 +279,50 @@ var FormChecker = {
       return;
     }
 
-    var next = this.queue.shift();
+    // skip any queue entries whose signal was already aborted before we got to them
+    var next = null;
+    while (this.queue.length > 0) {
+      var queued = this.queue.shift();
+      if (!(queued.signal && queued.signal.aborted)) {
+        next = queued;
+        break;
+      }
+    }
+    if (next == null) {
+      return;
+    }
+
+    this.inProgress++;
     this.sendRequest(next.url, {
       method: next.method,
+      signal: next.signal,
       onComplete: function (x) {
-        x.text().then((responseText) => {
-          updateValidationArea(next.target, responseText);
-          FormChecker.inProgress--;
-          FormChecker.schedule();
-          layoutUpdateCallback.call();
-        });
+        x.text()
+          .then((responseText) => {
+            // don't update the DOM if the signal was aborted while the request was in flight
+            if (!(next.signal && next.signal.aborted)) {
+              updateValidationArea(next.target, responseText);
+              layoutUpdateCallback.call();
+            }
+          })
+          .catch((error) => {
+            if (error && error.name !== "AbortError") {
+              console.warn(error);
+            }
+          })
+          .then(() => {
+            FormChecker.inProgress--;
+            FormChecker.schedule();
+          });
+      },
+      onError: function (error) {
+        if (error && error.name !== "AbortError") {
+          console.warn(error);
+        }
+        FormChecker.inProgress--;
+        FormChecker.schedule();
       },
     });
-    this.inProgress++;
   },
 };
 
