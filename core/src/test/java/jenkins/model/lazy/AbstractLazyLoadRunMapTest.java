@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -335,11 +336,18 @@ class AbstractLazyLoadRunMapTest {
     void entrySetIterator() {
         Iterator<Map.Entry<Integer, Build>> itr = a.entrySet().iterator();
 
+        // iterator, when created fresh, shouldn't force loading everything
+        // this involves binary searching, so it can load several.
+        assertTrue(a.getLoadedBuilds().size() < 3);
+
         // check if the first entry is legit
         assertTrue(itr.hasNext());
         Map.Entry<Integer, Build> e = itr.next();
         assertEquals((Integer) 5, e.getKey());
         e.getValue().asserts(5);
+
+        // now that the first entry is returned, we expect there to be two loaded
+        assertTrue(a.getLoadedBuilds().size() < 3);
 
         // check if the second entry is legit
         assertTrue(itr.hasNext());
@@ -365,6 +373,7 @@ class AbstractLazyLoadRunMapTest {
     void entrySetEmpty() {
         // entrySet().isEmpty() shouldn't cause full data load
         assertFalse(a.entrySet().isEmpty());
+        assertTrue(a.getLoadedBuilds().size() < 3);
     }
 
     @Issue("JENKINS-18065")
@@ -401,6 +410,19 @@ class AbstractLazyLoadRunMapTest {
         assertThat(c.toArray(), arrayWithSize(3));
         assertThat(c.toArray(Object[]::new), arrayWithSize(3));
         // TODO check behavior of subMap
+    }
+
+    @Test
+    void streamLoadedBuilds() {
+        a.getByNumber(1);
+        a.getByNumber(3);
+        a.getByNumber(5);
+
+        var fromStream = a.streamLoadedBuilds().map(b -> b.n).toList();
+        assertEquals(List.of(5, 3, 1), fromStream);
+
+        var firstTwo = a.streamLoadedBuilds().limit(2).map(b -> b.n).toList();
+        assertEquals(List.of(5, 3), firstTwo);
     }
 
     @Issue("JENKINS-22767")

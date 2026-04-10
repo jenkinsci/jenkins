@@ -116,7 +116,7 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
         if (!ref.isSet()) {
             resolver.resolveBuildRef(ref);
         }
-        return ref.isSet() && !ref.isUnloadable();
+        return !ref.isUnloadable();
     }
 
     @Override

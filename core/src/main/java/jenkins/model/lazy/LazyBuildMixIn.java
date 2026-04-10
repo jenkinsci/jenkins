@@ -273,10 +273,9 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
      * @since 2.407
      */
     public List<RunT> getEstimatedDurationCandidates() {
-        var loadedBuilds = builds.getLoadedBuilds().values(); // reverse chronological order
         List<RunT> candidates = new ArrayList<>(3);
         for (Result threshold : List.of(Result.UNSTABLE, Result.FAILURE)) {
-            for (RunT build : loadedBuilds) {
+            for (RunT build : (Iterable<RunT>) builds.streamLoadedBuilds()::iterator) {
                 if (candidates.contains(build)) {
                     continue;
                 }
