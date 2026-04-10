@@ -687,12 +687,14 @@ table.progress-bar.red td.progress-bar-done {
   border-radius: var(--form-input-border-radius);
   overflow: hidden;
   margin-bottom: var(--section-padding);
+  border: var(--jenkins-border);
 
   pre {
     padding-top: 0;
     padding-bottom: 0.1rem;
     margin-bottom: 0;
     border-radius: 0;
+    border: none;
 
     &:first-of-type {
       padding-top: 0.8rem;
@@ -701,6 +703,10 @@ table.progress-bar.red td.progress-bar-done {
     &:last-of-type {
       padding-bottom: 0.8rem;
     }
+  }
+
+  &:empty {
+    display: none;
   }
 }
 
