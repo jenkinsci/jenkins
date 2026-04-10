@@ -54,6 +54,7 @@ Dialog.prototype.init = function () {
       );
       content.appendChild(this.options.content);
       this.dialog.appendChild(content);
+      behaviorShim.applySubtree(content, true);
     }
     if (this.options.hideCloseButton !== true) {
       const closeButton = createElementFromHtml(`
@@ -94,6 +95,7 @@ Dialog.prototype.init = function () {
       if (this.options.content != null && this.dialogType === "alert") {
         message.appendChild(this.options.content);
         this.dialog.appendChild(message);
+        behaviorShim.applySubtree(message, true);
       } else if (this.options.message != null && this.dialogType !== "prompt") {
         const message = createElementFromHtml(
           `<div class='jenkins-dialog__contents'/>`,
@@ -257,7 +259,6 @@ function renderOnDemandDialog(dialogId) {
       window.location.hash = hash;
     }
 
-    behaviorShim.applySubtree(content, false);
     dialog.modal(content, {
       maxWidth: "550px",
       title: title,
