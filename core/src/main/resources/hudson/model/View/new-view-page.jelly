@@ -91,6 +91,8 @@ THE SOFTWARE.
             </div>
           </l:dialog>
 
+          <t:editDescriptionButton permission="${it.CONFIGURE}"/>
+
           <l:overflowButton>
             <dd:custom>
               <div class="app-build-overflow">
