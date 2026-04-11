@@ -170,6 +170,9 @@ THE SOFTWARE.
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
+            <environmentVariables>
+              <DISABLE_SYMLINK_TESTS>${disable.symlink.tests}</DISABLE_SYMLINK_TESTS>
+            </environmentVariables>
           </configuration>
         </plugin>
         <plugin>
@@ -573,6 +576,20 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>disable-symlink-tests</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+        <property>
+          <name>!env.CI</name>
+        </property>
+      </activation>
+      <properties>
+        <disable.symlink.tests>true</disable.symlink.tests>
+      </properties>
     </profile>
   </profiles>
 </project>

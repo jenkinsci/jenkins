@@ -589,7 +589,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_outsideWorkspace_areNotAllowed() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") == null, "Skip symlink tests on Windows developer machines");
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
 
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -730,7 +730,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_avoidLeakingInformation_aboutIllegalFolder() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") == null, "Skip symlink tests on Windows developer machines");
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
 
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -804,7 +804,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void junctionAndSymlink_outsideWorkspace_areNotAllowed_windowsJunction() throws Exception {
-        assumeTrue(Functions.isWindows() && System.getenv("CI") != null, "Only test on Windows CI. Skip symlink tests on Windows developer machines");
+        assumeTrue(Functions.isWindows() && !"true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
 
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -1024,7 +1024,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue({"SECURITY-904", "SECURITY-1452"})
     void symlink_insideWorkspace_areNotAllowedAnymore() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") == null, "Skip symlink tests on Windows developer machines");
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
 
         FreeStyleProject p = j.createFreeStyleProject();
 
