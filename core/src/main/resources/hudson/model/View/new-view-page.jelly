@@ -111,6 +111,7 @@ THE SOFTWARE.
             <l:hasPermission permission="${it.CONFIGURE}">
               <dd:custom>
                 <button class="jenkins-dropdown__item"
+                        type="button"
                         id="description-link"
                         data-title="${descriptionLabel}"
                         data-url="submitDescription"

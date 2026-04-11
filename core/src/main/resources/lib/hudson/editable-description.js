@@ -54,6 +54,7 @@
                   if (description !== null && description !== "") {
                     label = button.dataset.editLabel;
                   }
+                  button.dataset.title = label;
                   if (button.dataset.compact === "true") {
                     button.setAttribute("tooltip", label);
                     Behaviour.applySubtree(button, true);
