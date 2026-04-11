@@ -86,14 +86,19 @@
       });
   }
 
-  Behaviour.specify("#description-link", "editable-description", 0, function (element) {
-    const description = document.getElementById("description");
-    if (description != null) {
-      element.classList.remove("jenkins-hidden");
-      element.addEventListener("click", function (e) {
-        e.preventDefault();
-        editDescription(element);
-      });
-    }
-  });
+  Behaviour.specify(
+    "#description-link",
+    "editable-description",
+    0,
+    function (element) {
+      const description = document.getElementById("description");
+      if (description != null) {
+        element.classList.remove("jenkins-hidden");
+        element.addEventListener("click", function (e) {
+          e.preventDefault();
+          editDescription(element);
+        });
+      }
+    },
+  );
 })();
