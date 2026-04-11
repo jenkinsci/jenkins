@@ -47,13 +47,13 @@ Dialog.prototype.init = function () {
   this.dialog.appendChild(title);
   title.querySelector("span").innerText = this.options.title;
 
+  const content = createElementFromHtml(
+    `<div class='jenkins-dialog__contents'/>`,
+  );
+
   if (this.dialogType === "modal") {
     if (this.options.content != null) {
-      const content = createElementFromHtml(
-        `<div class='jenkins-dialog__contents jenkins-dialog__contents--modal'/>`,
-      );
       content.appendChild(this.options.content);
-      this.dialog.appendChild(content);
     }
     if (this.options.hideCloseButton !== true) {
       const closeButton = createElementFromHtml(`
@@ -76,40 +76,37 @@ Dialog.prototype.init = function () {
       });
     }
     this.ok = null;
+
+    // Add content to the dialog
+    this.dialog.appendChild(content);
   } else {
     this.form = null;
     if (this.options.form != null && this.dialogType === "form") {
-      const contents = createElementFromHtml(
-        `<div class='jenkins-dialog__contents'/>`,
-      );
       this.form = this.options.form;
-      contents.appendChild(this.options.form);
-      this.dialog.appendChild(contents);
-      behaviorShim.applySubtree(contents, true);
+      content.appendChild(this.options.form);
+      behaviorShim.applySubtree(content, true);
     }
     if (this.dialogType !== "form") {
-      const message = createElementFromHtml(
-        `<div class='jenkins-dialog__contents'/>`,
-      );
       if (this.options.content != null && this.dialogType === "alert") {
-        message.appendChild(this.options.content);
-        this.dialog.appendChild(message);
+        content.appendChild(this.options.content);
       } else if (this.options.message != null && this.dialogType !== "prompt") {
-        const message = createElementFromHtml(
-          `<div class='jenkins-dialog__contents'/>`,
+        const messageContents = createElementFromHtml(
+          `<div class="jenkins-form-item jenkins-!-text-color-secondary" style="line-height: 1.66" />`,
         );
-        this.dialog.appendChild(message);
-        message.innerText = this.options.message;
+        content.appendChild(messageContents);
+        messageContents.innerText = this.options.message;
       }
     }
 
     if (this.dialogType === "prompt") {
-      let inputDiv = createElementFromHtml(`<div class="jenkins-dialog__input">
-          <input data-id="input" type="text" class='jenkins-input'></div>`);
-      this.dialog.appendChild(inputDiv);
+      let inputDiv = createElementFromHtml(`
+          <div class="jenkins-form-item"><input data-id="input" type="text" class='jenkins-input'></div>`);
+      content.appendChild(inputDiv);
       this.input = inputDiv.querySelector("[data-id=input]");
       if (this.options.message != null) {
-        const message = document.createElement("div");
+        const message = createElementFromHtml(
+          `<div class="jenkins-form-label" />`,
+        );
         inputDiv.insertBefore(message, this.input);
         message.innerText = this.options.message;
       }
@@ -120,6 +117,9 @@ Dialog.prototype.init = function () {
         this.input.addEventListener("input", () => this.checkInput());
       }
     }
+
+    // Add content to the dialog
+    this.dialog.appendChild(content);
 
     this.appendButtons();
 
@@ -147,23 +147,24 @@ Dialog.prototype.checkInput = function () {
 };
 
 Dialog.prototype.appendButtons = function () {
-  const buttons = createElementFromHtml(`<div
-      class="jenkins-buttons-row jenkins-buttons-row--equal-width jenkins-dialog__buttons">
+  const shadow = createElementFromHtml(`
+    <div class="jenkins-bottom-app-bar__shadow jenkins-bottom-app-bar__shadow--borderless"></div>`);
+  const buttons = createElementFromHtml(`
+<div id="bottom-sticker">
+    <div class="bottom-sticker-inner jenkins-buttons-row">
+      <button data-id="cancel" class="jenkins-button">${
+        this.options.cancelText
+      }</button>
       <button data-id="ok" type="${
         this.options.submitButton ? "submit" : "button"
       }" class="jenkins-button jenkins-button--primary ${
         _typeClassMap[this.options.type]
       }">${this.options.okText}</button>
-      <button data-id="cancel" class="jenkins-button">${
-        this.options.cancelText
-      }</button>
-    </div>`);
+    </div></div>`);
 
-  if (this.dialogType === "form") {
-    this.form.appendChild(buttons);
-  } else {
-    this.dialog.appendChild(buttons);
-  }
+  // Append both
+  this.dialog.querySelector(".jenkins-dialog__contents").appendChild(shadow);
+  this.dialog.querySelector(".jenkins-dialog__contents").appendChild(buttons);
 
   this.ok = buttons.querySelector("[data-id=ok]");
   this.cancel = buttons.querySelector("[data-id=cancel]");

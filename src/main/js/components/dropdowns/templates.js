@@ -277,7 +277,11 @@ function tryConfirmationPost(element, opt, context) {
         () => {
           const form = document.createElement("form");
           form.setAttribute("method", "POST");
-          form.setAttribute("action", context + xmlEscape(opt.event.postTo));
+          if (opt.event.postTo.startsWith("/")) {
+            form.setAttribute("action", xmlEscape(opt.event.postTo));
+          } else {
+            form.setAttribute("action", context + xmlEscape(opt.event.postTo));
+          }
           crumb.appendToForm(form);
           document.body.appendChild(form);
           form.submit();

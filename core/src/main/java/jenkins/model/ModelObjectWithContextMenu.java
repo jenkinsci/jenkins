@@ -214,7 +214,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             Computer c = n.toComputer();
             return add(new MenuItem()
                     .withDisplayName(n.getDisplayName())
-                    .withStockIcon(c == null ? "computer.svg" : c.getIcon())
+                    .withIconClass(c == null ? "symbol-computer" : c.getIcon())
                     .withContextRelativeUrl(n.getSearchUrl()));
         }
 
@@ -462,6 +462,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public MenuItem withContextRelativeUrl(String url) {
             if (!url.startsWith("/"))   url = '/' + url;
             this.url = Stapler.getCurrentRequest2().getContextPath() + url;
+            this.event = LinkEvent.of(this.url);
             return this;
         }
 
