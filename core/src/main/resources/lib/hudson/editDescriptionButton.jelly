@@ -16,6 +16,10 @@
         <st:attribute name="compact">
             If set, the button becomes compact and the button label hides.
         </st:attribute>
+        <st:attribute name="hideButton">
+            If set, only renders the template and adjuncts without the button.
+            Use this when the button is provided separately (e.g. inside an overflow menu).
+        </st:attribute>
     </st:documentation>
 
     <j:set var="actualDescription" value="${description}" defaultValue="${it.description}" />
@@ -59,19 +63,21 @@
             </f:form>
         </template>
         <st:adjunct includes="lib.hudson.editable-description" />
-        <a class="jenkins-button jenkins-hidden ${attrs.compact ? 'jenkins-details__button' : ''}"
-             id="description-link"
-             href="editDescription"
-             data-title="${label}"
-             data-url="${submissionUrl}"
-             data-add-label="${%add description}"
-             data-edit-label="${%edit description}"
-             data-compact="${attrs.compact}"
-             tooltip="${attrs.compact ? label : null}">
-            <l:icon src="symbol-description" />
-            <j:if test="${!attrs.compact}">
-                <span>${label}</span>
-            </j:if>
-        </a>
+        <j:if test="${!attrs.hideButton}">
+            <a class="jenkins-button jenkins-hidden ${attrs.compact ? 'jenkins-details__button' : ''}"
+                 id="description-link"
+                 href="editDescription"
+                 data-title="${label}"
+                 data-url="${submissionUrl}"
+                 data-add-label="${%add description}"
+                 data-edit-label="${%edit description}"
+                 data-compact="${attrs.compact}"
+                 tooltip="${attrs.compact ? label : null}">
+                <l:icon src="symbol-description" />
+                <j:if test="${!attrs.compact}">
+                    <span>${label}</span>
+                </j:if>
+            </a>
+        </j:if>
     </l:hasPermission>
 </j:jelly>

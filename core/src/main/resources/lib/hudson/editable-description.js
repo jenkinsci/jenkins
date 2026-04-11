@@ -58,7 +58,18 @@
                     button.setAttribute("tooltip", label);
                     Behaviour.applySubtree(button, true);
                   } else {
-                    button.querySelector("span").textContent = label;
+                    const spanEl = button.querySelector("span");
+                    if (spanEl) {
+                      spanEl.textContent = label;
+                    } else {
+                      // Dropdown button without span wrapper
+                      const iconDiv = button.querySelector(
+                        ".jenkins-dropdown__item__icon",
+                      );
+                      if (iconDiv && iconDiv.nextSibling) {
+                        iconDiv.nextSibling.textContent = " " + label;
+                      }
+                    }
                   }
                 } else {
                   window.location.reload();
@@ -75,14 +86,13 @@
       });
   }
 
-  document.addEventListener("DOMContentLoaded", function () {
-    const descriptionLink = document.querySelector("#description-link");
+  Behaviour.specify("#description-link", "editable-description", 0, function (element) {
     const description = document.getElementById("description");
     if (description != null) {
-      descriptionLink.classList.remove("jenkins-hidden");
-      descriptionLink.addEventListener("click", function (e) {
+      element.classList.remove("jenkins-hidden");
+      element.addEventListener("click", function (e) {
         e.preventDefault();
-        editDescription(descriptionLink);
+        editDescription(element);
       });
     }
   });
