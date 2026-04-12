@@ -99,7 +99,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>plugin-util-api</artifactId>
-        <version>6.1192.v30fe6e2837ff</version>
+        <version>7.1320.v684dd26fca_19</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
