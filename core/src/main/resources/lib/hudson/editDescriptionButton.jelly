@@ -53,9 +53,6 @@
             <j:set var="submissionUrl" value="submitDescription"/>
         </j:if>
 
-        <!-- Infrastructure (adjuncts + hidden template) belongs in the live DOM. Skip it for 'overflow'
-             mode because that button is rendered inside an inert <template> wrapper by <dd:custom>;
-             callers using 'overflow' must pair it with a separate 'template-only' invocation. -->
         <j:if test="${effectiveMode != 'overflow'}">
             <st:adjunct includes="lib.form.textarea.textarea"/>
             <j:if test="${app.markupFormatter.codeMirrorMode != null}">

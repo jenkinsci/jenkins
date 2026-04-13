@@ -82,8 +82,6 @@
     0,
     function (element) {
       const description = document.getElementById("description");
-      // Default and compact variants render hidden until the description area is present.
-      // Overflow variant lives inside a menu and is always visible/clickable.
       if (description != null) {
         element.classList.remove("jenkins-hidden");
       }
