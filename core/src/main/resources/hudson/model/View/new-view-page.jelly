@@ -91,8 +91,9 @@ THE SOFTWARE.
             </div>
           </l:dialog>
 
-          <!-- Render description editing infrastructure (template, adjuncts) on the page -->
-          <t:editDescriptionButton permission="${it.CONFIGURE}" hideButton="true"/>
+          <!-- Description editing adjuncts and hidden template must live outside the overflow menu,
+               because <dd:custom> wraps its contents in an inert <template> wrapper. -->
+          <t:editDescriptionButton permission="${it.CONFIGURE}" mode="template-only"/>
 
           <l:overflowButton>
             <dd:custom>
@@ -102,28 +103,9 @@ THE SOFTWARE.
               </div>
             </dd:custom>
             <dd:separator />
-            <j:set var="descriptionLabel">
-              <j:choose>
-                <j:when test="${empty(it.description)}">${%Add description}</j:when>
-                <j:otherwise>${%Edit description}</j:otherwise>
-              </j:choose>
-            </j:set>
-            <l:hasPermission permission="${it.CONFIGURE}">
-              <dd:custom>
-                <button class="jenkins-dropdown__item"
-                        type="button"
-                        id="description-link"
-                        data-title="${descriptionLabel}"
-                        data-url="submitDescription"
-                        data-add-label="${%Add description}"
-                        data-edit-label="${%Edit description}">
-                  <div class="jenkins-dropdown__item__icon">
-                    <l:icon src="symbol-description" />
-                  </div>
-                  ${descriptionLabel}
-                </button>
-              </dd:custom>
-            </l:hasPermission>
+            <dd:custom>
+              <t:editDescriptionButton permission="${it.CONFIGURE}" mode="overflow"/>
+            </dd:custom>
             <dd:submenu icon="symbol-rss" text="${%Atom feed}">
               <dd:item icon="symbol-rss" text="${%All}" href="rssAll" />
               <dd:item icon="symbol-rss" text="${%Failures}" href="rssFailed" />

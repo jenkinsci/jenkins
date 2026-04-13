@@ -55,22 +55,11 @@
                     label = button.dataset.editLabel;
                   }
                   button.dataset.title = label;
-                  if (button.dataset.compact === "true") {
+                  if (button.dataset.mode === "compact") {
                     button.setAttribute("tooltip", label);
                     Behaviour.applySubtree(button, true);
                   } else {
-                    const spanEl = button.querySelector("span");
-                    if (spanEl) {
-                      spanEl.textContent = label;
-                    } else {
-                      // Dropdown button without span wrapper
-                      const iconDiv = button.querySelector(
-                        ".jenkins-dropdown__item__icon",
-                      );
-                      if (iconDiv && iconDiv.nextSibling) {
-                        iconDiv.nextSibling.textContent = " " + label;
-                      }
-                    }
+                    button.querySelector("span").textContent = label;
                   }
                 } else {
                   window.location.reload();
@@ -93,13 +82,15 @@
     0,
     function (element) {
       const description = document.getElementById("description");
+      // Default and compact variants render hidden until the description area is present.
+      // Overflow variant lives inside a menu and is always visible/clickable.
       if (description != null) {
         element.classList.remove("jenkins-hidden");
-        element.addEventListener("click", function (e) {
-          e.preventDefault();
-          editDescription(element);
-        });
       }
+      element.addEventListener("click", function (e) {
+        e.preventDefault();
+        editDescription(element);
+      });
     },
   );
 })();
