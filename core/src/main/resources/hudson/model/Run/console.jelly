@@ -28,13 +28,24 @@ THE SOFTWARE.
   Displays the console output
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <j:new className="jenkins.run.ConsoleTab" var="it">
     <j:arg value="${it}"/>
   </j:new>
 
   <l:run-subpage>
     <l:app-bar title="${%Console}">
+      <j:if test="${it.object.building}">
+        <div class="build-caption-progress-container">
+          ${%Progress}:
+          <t:buildProgressBar build="${it.object}" animate="true"/>
+          <j:if test="${it.object.parent.hasAbortPermission()}">
+            <l:stopButton href="${rootURL}/${it.object.url}stop"
+                          confirm="${%confirm(it.object.fullDisplayName)}"
+                          alt="${%cancel}"/>
+          </j:if>
+        </div>
+      </j:if>
       <a class="jenkins-button" href="consoleText" download="${it.object.displayName}.txt">
         <l:icon src="symbol-download" />
         ${%Download}
