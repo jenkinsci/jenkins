@@ -33,9 +33,11 @@ THE SOFTWARE.
     <j:arg value="${it}"/>
   </j:new>
 
+  <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
+
   <l:run-subpage>
     <l:app-bar title="${%Console}">
-      <j:if test="${it.object.building}">
+      <j:if test="${!newBuildPage and it.object.building}">
         <div class="build-caption-progress-container">
           ${%Progress}:
           <t:buildProgressBar build="${it.object}" animate="true"/>
