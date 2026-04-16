@@ -259,7 +259,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     /**
      * Returns a lazy stream of build objects, sorted by newest first, skipping GC builds
      * Unlike {@link #getLoadedBuilds()}, this doesn't require copying the entire map
-     * @since TODO
+     * @since 2.559
      */
     public Stream<R> streamLoadedBuilds() {
         return core.values().stream()
