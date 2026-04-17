@@ -4464,7 +4464,7 @@ __metadata:
     sass-loader: "npm:16.0.7"
     sortablejs: "npm:1.15.7"
     style-loader: "npm:4.0.0"
-    stylelint: "npm:17.7.0"
+    stylelint: "npm:17.8.0"
     stylelint-checkstyle-reporter: "npm:1.1.1"
     stylelint-config-standard-scss: "npm:17.0.0"
     tippy.js: "npm:6.3.7"
@@ -6088,7 +6088,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:8.5.10, postcss@npm:^8.4.40, postcss@npm:^8.5.8":
+"postcss@npm:8.5.10, postcss@npm:^8.4.40, postcss@npm:^8.5.9":
   version: 8.5.10
   resolution: "postcss@npm:8.5.10"
   dependencies:
@@ -6681,9 +6681,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint@npm:17.7.0":
-  version: 17.7.0
-  resolution: "stylelint@npm:17.7.0"
+"stylelint@npm:17.8.0":
+  version: 17.8.0
+  resolution: "stylelint@npm:17.8.0"
   dependencies:
     "@csstools/css-calc": "npm:^3.1.1"
     "@csstools/css-parser-algorithms": "npm:^4.0.0"
@@ -6712,7 +6712,7 @@ __metadata:
     micromatch: "npm:^4.0.8"
     normalize-path: "npm:^3.0.0"
     picocolors: "npm:^1.1.1"
-    postcss: "npm:^8.5.8"
+    postcss: "npm:^8.5.9"
     postcss-safe-parser: "npm:^7.0.1"
     postcss-selector-parser: "npm:^7.1.1"
     postcss-value-parser: "npm:^4.2.0"
@@ -6723,7 +6723,7 @@ __metadata:
     write-file-atomic: "npm:^7.0.1"
   bin:
     stylelint: bin/stylelint.mjs
-  checksum: 10c0/6af0ddf4462e071f1ab00036b2ae81aa29d33df3ae11ab0109c33844884fad56c8aa2ee6372f947f4d0dbe386e747138e1f014f1d508748335a3ecc7c0bf9a10
+  checksum: 10c0/de822c902944ed094afabb48802e5659ef479e7707cc0a789e11e833fff5d54fb7a82b83052df83882f77de00190c109dbacd0b2d87157857c3ed626eb0fb4d5
   languageName: node
   linkType: hard
 
