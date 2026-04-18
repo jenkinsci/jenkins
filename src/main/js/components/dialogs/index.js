@@ -3,10 +3,10 @@ import { CLOSE } from "@/util/symbols";
 import behaviorShim from "@/util/behavior-shim";
 import jenkins from "@/util/jenkins";
 
-let restrictWidth = (width) =>
-  typeof width == "string" && width.match(/^\d+\w+$/)
-    ? `min(${width}, 100%)`
-    : width;
+let restrictWidth = (width) => {
+  const restricted = `min(${width}, 100%)`;
+  return CSS.supports("max-width", restricted) ? restricted : width;
+};
 
 let _defaults = {
   title: null,
