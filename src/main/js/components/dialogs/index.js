@@ -4,7 +4,7 @@ import behaviorShim from "@/util/behavior-shim";
 import jenkins from "@/util/jenkins";
 
 let restrictWidth = (width) =>
-  typeof width == "string" && width.match(/^\w+$/)
+  typeof width == "string" && width.match(/^\d+\w+$/)
     ? `min(${width}, 100%)`
     : width;
 
