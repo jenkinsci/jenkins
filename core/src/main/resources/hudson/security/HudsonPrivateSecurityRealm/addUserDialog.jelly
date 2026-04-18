@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc.
+Copyright (c) 2026, Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  This is used to create the first user.
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm">
-  <local:_entryFormPage host="${it}" title="${%Create First Admin User}" action="createFirstAccount" data="${data}"/>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler"
+         xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" xmlns:f="/lib/form">
+  <st:setHeader name="X-Dialog-Title" value="${%Create User}" />
+
+  <l:ajax>
+    <form action="${rootURL}/securityRealm/createAccountByAdmin" method="post">
+      <local:_entryForm action="createAccountByAdmin" it="${it}" data="${data}" />
+      <f:bottomButtonBar>
+        <f:submit value="${%Create}" />
+      </f:bottomButtonBar>
+    </form>
+  </l:ajax>
 </j:jelly>
