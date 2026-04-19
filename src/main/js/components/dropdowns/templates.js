@@ -202,14 +202,18 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
   const url = tag === "a" ? context + xmlEscape(itemOptions.event.url) : null;
 
   const item = createElementFromHtml(`
-      <${tag}
-        ${optionalVals({
-          class: clazz,
-          href: url,
-          id: itemOptions.id,
-          "data-html-tooltip": itemOptions.tooltip,
-        })}>
-          ${icon(itemOptions)}
+      <${tag} role="menuitem" class="jenkins-dropdown__item ${itemOptions.clazz ? xmlEscape(itemOptions.clazz) : ""}"
+        ${itemOptions.url ? `href="${xmlEscape(itemOptions.url)}"` : ""} ${itemOptions.id ? `id="${xmlEscape(itemOptions.id)}"` : ""}
+        ${itemOptions.tooltip ? `data-html-tooltip="${xmlEscape(itemOptions.tooltip)}"` : ""}>
+          ${
+            itemOptions.icon
+              ? `<div class="jenkins-dropdown__item__icon">${
+                  itemOptions.iconXml
+                    ? itemOptions.iconXml
+                    : `<img alt="${label}" src="${itemOptions.icon}" />`
+                }</div>`
+              : ``
+          }
           ${label}
           ${badge(itemOptions)}
           ${
