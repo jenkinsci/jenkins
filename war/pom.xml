@@ -332,7 +332,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, echarts-api, font-awesome-api, and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>plugin-util-api</artifactId>
-                  <version>7.1320.v684dd26fca_19</version>
+                  <version>7.1330.v47b_46ee2047a_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -369,7 +369,7 @@ THE SOFTWARE.
                   <!-- dependency of echarts-api -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jackson2-api</artifactId>
-                  <version>2.21.2-433.v6d50b_92cfe52</version>
+                  <version>2.21.2-436.v29efdb_7418ff</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -377,7 +377,23 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jackson3-api</artifactId>
-                  <version>3.1.2-71.v0a_23916945fe</version>
+                  <version>3.1.2-73.v3e5485d8b_148</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of jackson2-api and jackson3-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jackson-annotations2-api</artifactId>
+                  <version>2.21-7.v4777a_f3a_a_d47</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of jackson2-api and jackson3-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jackson-annotations2-api</artifactId>
+                  <version>2.21-7.v4777a_f3a_a_d47</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -401,7 +417,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
-                  <version>6.0.0-1273.v36fc9fe89332</version>
+                  <version>6.0.0-1281.vd3d21a_1ca_cb_4</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -475,7 +491,7 @@ THE SOFTWARE.
                   <!-- detached after 2.16 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>bouncycastle-api</artifactId>
-                  <version>2.30.1.83-289.v8426fcd19371</version>
+                  <version>2.30.1.84-291.v9f17b_21896e2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -566,7 +582,7 @@ THE SOFTWARE.
                   <!-- dependency of trilead-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>gson-api</artifactId>
-                  <version>2.13.2-173.va_a_092315913c</version>
+                  <version>2.13.2-198.v45e4a_55d9b_a_a_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

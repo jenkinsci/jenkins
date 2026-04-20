@@ -166,7 +166,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
     );
 
     const button = createElementFromHtml(
-      `<button class="${clazz}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M112 184l144 144 144-144"/></svg></button>`,
+      `<button type="button" class="${clazz}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M112 184l144 144 144-144"/></svg></button>`,
     );
     Utils.generateDropdown(
       button,
@@ -208,6 +208,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
           href: url,
           id: itemOptions.id,
           "data-html-tooltip": itemOptions.tooltip,
+          type: tag === "button" ? "button" : null,
         })}>
           ${icon(itemOptions)}
           ${label}
