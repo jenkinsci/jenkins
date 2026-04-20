@@ -28,7 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.MyViewsProperty;
 import hudson.model.View;
@@ -41,7 +41,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Extension point for adding a MyViewsTabBar header to Projects {@link MyViewsProperty}.
@@ -58,8 +58,10 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Winston Prakash
  * @since 1.378
  * @see MyViewsTabBarDescriptor
+ * @deprecated Implement {@link ViewsTabBar}
  */
-public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBar> implements ExtensionPoint {
+@Deprecated
+public abstract class MyViewsTabBar implements Describable<MyViewsTabBar>, ExtensionPoint {
     /**
      * Returns all the registered {@link ListViewColumn} descriptors.
      */
@@ -69,7 +71,7 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
 
     @Override
     public MyViewsTabBarDescriptor getDescriptor() {
-        return (MyViewsTabBarDescriptor) super.getDescriptor();
+        return (MyViewsTabBarDescriptor) Describable.super.getDescriptor();
     }
 
     /**
@@ -100,7 +102,7 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
             // for compatibility reasons, the actual value is stored in Jenkins
             Jenkins j = Jenkins.get();
 

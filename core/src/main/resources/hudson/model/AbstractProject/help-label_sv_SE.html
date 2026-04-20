@@ -1,0 +1,192 @@
+<div>
+  Definierar ett logiskt uttryck som bestämmer vilka agenter som får köra byggen
+  i detta projekt. Detta uttryck, när det testas mot namnet och etiketterna för
+  varje tillgänglig agent, kommer att vara antingen
+  <i>true</i>
+  eller
+  <i>false</i>
+  . Om uttrycket utvärderas som
+  <i>true</i>
+  kommer denna agent tillåtas att köra byggen av detta projekt.
+  <p>
+    Om detta projekt alltid ska byggas på en specifik agent eller på den
+    inbyggda \ noden behöver du bara ange agentens namn respektive
+    <code>built-in</code>
+    .
+  </p>
+
+  <p>
+    Du bör dock generellt undvika att använda
+    <i>namnet</i>
+    på en agent här och hellre använda agentens
+    <i>etiketter</i>
+    . Enligt dokumentationen på konfigurationssidan för varje agent och sidan
+    <i>Konfigurera system</i>
+    för huvudnoden kan etiketter användas för att representera vilket
+    operativsystem agenten körs på, dess processorarkitektur eller någon annan
+    egenskap.
+    <br />
+    Med hjälp av etiketter försvinner behovet att omkonfigurera etikettuttrycket
+    som anges här varje gång du lägger till, tar bort eller byter namn på
+    agenter.
+  </p>
+
+  <p>
+    Ett etikettuttryck kan vara så enkelt som att ange en
+    <b>etikett</b>
+    eller ett
+    <b>agentnamn</b>
+    , t.ex.
+    <code>android-builder</code>
+    eller
+    <code>linux-machine-42</code>
+    .
+    <br />
+    Du kan också använda olika
+    <i>operatörer</i>
+    för att skapa mer komplexa uttryck.
+  </p>
+
+  <h3>Operatörer som stöds</h3>
+  Följande operatorer stöds, i fallande prioritetsordning:
+  <dl>
+    <dt><code>(uttryck)</code></dt>
+    <dd>
+      parenteser — används för att uttryckligen definiera ett uttrycks
+      associativitet
+    </dd>
+
+    <dt><code>!uttryck</code></dt>
+    <dd>
+      NOT — negation; resultatet av att
+      <code>uttryck</code>
+      får
+      <b>inte</b>
+      vara sant
+    </dd>
+
+    <dt><code>a &amp;&amp; b</code></dt>
+    <dd>
+      AND —
+      <b>båda</b>
+      uttrycken
+      <code>a</code>
+      och
+      <code>b</code>
+      måste vara sanna
+    </dd>
+
+    <dt><code>a || b</code></dt>
+    <dd>
+      OR —
+      <b>antingen</b>
+      uttrycket
+      <code>a</code>
+      eller
+      <code>b</code>
+      får vara sant
+    </dd>
+
+    <dt><code>a -> b</code></dt>
+    <dd>
+      "implicerande" operatör — motsvarar
+      <code>!a || b</code>
+      .
+      <br />
+      Till exempel kan
+      <code>windows -> x64</code>
+      ses som "om en Windows-agent används
+      <i>måste</i>
+      agenten vara 64-bitar" samtidigt som projektet tillåts köras på alla
+      agenter som
+      <i>inte</i>
+      har etiketten
+      <code>windows</code>
+      oavsett om de också har etiketten
+      <code>x64</code>
+    </dd>
+
+    <dt><code>a &lt;-> b</code></dt>
+    <dd>
+      operatören "om och endast om" — motsvarar
+      <code>a &amp;&amp; b || !a &amp;&amp; !b</code>
+      <br />
+      Till exempel kan
+      <code>windows &lt;-> dc2</code>
+      ses som "om en Windows-agent används, så
+      <i>måste</i>
+      agenten finnas i datacenter 2, men om en agent utan Windows används
+      <i>får den inte</i>
+      finnas i datacenter 2"
+    </dd>
+  </dl>
+
+  <h3>Anteckningar</h3>
+  <ul>
+    <li>
+      Alla operatörer är vänsterassociativa, d.v.s.
+      <code>a -> b -> c</code>
+      motsvarar
+      <code>(a -> b) -> c</code>
+      .
+    </li>
+    <li>
+      Etiketter eller agentnamn kan omges med citattecken om de innehåller
+      tecken som skulle hamna i konflikt med operatörsyntaxen.
+      <br />
+      T.ex.
+      <code>"osx (10.11)" || "Windows Server"</code>
+      .
+    </li>
+    <li>
+      Uttryck kan skrivas utan blanksteg, men rekommenderas att användas för
+      läsbarhetens skull; Jenkins ignorerar blanksteg när uttryck utvärderas.
+    </li>
+    <li>
+      Matchande etiketter eller agentnamn med jokertecken eller reguljära
+      uttryck stöds inte.
+    </li>
+    <li>
+      Ett tomt uttryck kommer alltid att utvärderas till
+      <i>true</i>
+      och matcha alla agenter.
+    </li>
+  </ul>
+
+  <h3>Exempel</h3>
+  <dl>
+    <dt><code>built-in</code></dt>
+    <dd>Byggen av detta projekt får endast köras på den inbyggda noden</dd>
+    <dd></dd>
+
+    <dt><code>linux-machine-42</code></dt>
+    <dd>
+      Byggen av detta projekt får endast köras på agenten med namnet
+      <code>linux-machine-42</code>
+      (eller på vilken dator som helst som råkar ha etiketten
+      <code>linux-machine-42</code>
+      )
+    </dd>
+
+    <dt><code>windows &amp;&amp; jdk9</code></dt>
+    <dd>
+      Byggen av detta projekt får endast köras på en Windows-agent som har
+      version 9 av Java Development Kit installerat (förutsatt att agenter med
+      JDK 9 har fått etiketten
+      <code>jdk9</code>
+      )
+    </dd>
+
+    <dt><code>postgres &amp;&amp; !vm &amp;&amp; (linux || freebsd)</code></dt>
+    <dd>
+      Byggen av det här projektet får endast köras på en Linux- eller
+      FreeBSD-agent så länge den
+      <i>inte</i>
+      är en virtuell dator och att den har PostgreSQL installerat (förutsatt att
+      varje agent har lämpliga etiketter – i synnerhet varje agent som körs i en
+      virtuell dator måste ha etiketten
+      <code>vm</code>
+      för att detta exempel ska fungera som förväntat)
+    </dd>
+  </dl>
+</div>

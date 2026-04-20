@@ -26,6 +26,7 @@ package hudson.model;
 
 import hudson.util.ChartUtil;
 import hudson.util.NoOverlapCategoryAxis;
+import jakarta.servlet.ServletException;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -39,7 +40,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.ServletException;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -53,7 +53,9 @@ import org.jfree.ui.RectangleInsets;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -125,12 +127,12 @@ public class MultiStageTimeSeries implements Serializable {
      * Selects a {@link TimeSeries}.
      */
     public TimeSeries pick(TimeScale timeScale) {
-        switch (timeScale) {
-        case HOUR:  return hour;
-        case MIN:   return min;
-        case SEC10: return sec10;
-        default:    throw new AssertionError();
-        }
+        return switch (timeScale) {
+            case HOUR -> hour;
+            case MIN -> min;
+            case SEC10 -> sec10;
+            default -> throw new AssertionError();
+        };
     }
 
     /**
@@ -167,12 +169,12 @@ public class MultiStageTimeSeries implements Serializable {
          * this {@link TimeScale}.
          */
         public DateFormat createDateFormat() {
-            switch (this) {
-            case HOUR:  return new SimpleDateFormat("MMM/dd HH");
-            case MIN:   return new SimpleDateFormat("E HH:mm");
-            case SEC10: return new SimpleDateFormat("HH:mm:ss");
-            default:    throw new AssertionError();
-            }
+            return switch (this) {
+                case HOUR -> new SimpleDateFormat("MMM/dd HH");
+                case MIN -> new SimpleDateFormat("E HH:mm");
+                case SEC10 -> new SimpleDateFormat("HH:mm:ss");
+                default -> throw new AssertionError();
+            };
         }
 
         /**
@@ -298,8 +300,8 @@ public class MultiStageTimeSeries implements Serializable {
          * Renders this object as an image.
          */
         @Override
-        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
-            ChartUtil.generateGraph(req, rsp, createChart(), 500, 400);
+        public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
+            ChartUtil.generateGraph(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp), createChart(), 500, 400);
         }
     }
 

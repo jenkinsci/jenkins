@@ -420,7 +420,7 @@ public class UrlValidator implements Serializable {
                 }
             }
             String port = authorityMatcher.group(PARSE_AUTHORITY_PORT);
-            if (port != null && port.length() > 0) {
+            if (port != null && !port.isEmpty()) {
                 try {
                     int iPort = Integer.parseInt(port);
                     if (iPort < 0 || iPort > MAX_UNSIGNED_16_BIT_INT) {
@@ -433,7 +433,7 @@ public class UrlValidator implements Serializable {
         }
 
         String extra = authorityMatcher.group(PARSE_AUTHORITY_EXTRA);
-        if (extra != null && extra.trim().length() > 0) {
+        if (extra != null && !extra.trim().isEmpty()) {
             return false;
         }
 

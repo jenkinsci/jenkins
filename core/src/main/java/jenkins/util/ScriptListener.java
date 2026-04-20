@@ -26,7 +26,6 @@ package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.Binding;
 import hudson.ExtensionPoint;
 import hudson.model.User;
@@ -36,7 +35,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * A listener to track in-process script use.
@@ -44,12 +43,12 @@ import org.kohsuke.stapler.StaplerRequest;
  * <p>Note that (unsandboxed) script execution can easily result in logging configuration being changed, so if you rely
  * on complete logging of scripting actions, make sure to set up logging to remote systems.</p>
  *
- * @see jenkins.model.Jenkins#_doScript(StaplerRequest, org.kohsuke.stapler.StaplerResponse, javax.servlet.RequestDispatcher, hudson.remoting.VirtualChannel, hudson.security.ACL)
+ * @see jenkins.model.Jenkins#_doScript(StaplerRequest2, org.kohsuke.stapler.StaplerResponse2, jakarta.servlet.RequestDispatcher, hudson.remoting.VirtualChannel, hudson.security.ACL)
  * @see hudson.cli.GroovyCommand
  * @see hudson.cli.GroovyshCommand
  * @see jenkins.util.groovy.GroovyHookScript
  *
- * @since TODO
+ * @since 2.427
  */
 public interface ScriptListener extends ExtensionPoint {
 
@@ -141,7 +140,6 @@ public interface ScriptListener extends ExtensionPoint {
         private final String correlationId;
         private final User user;
 
-        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public ListenerWriter(Writer writer, Object feature, Object context, String correlationId, User user) {
             this.writer = writer;
             this.feature = feature;
@@ -182,7 +180,6 @@ public interface ScriptListener extends ExtensionPoint {
         private final String correlationId;
         private final User user;
 
-        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public ListenerOutputStream(OutputStream os, Charset charset, Object feature, Object context, String correlationId, User user) {
             this.os = os;
             this.charset = charset;

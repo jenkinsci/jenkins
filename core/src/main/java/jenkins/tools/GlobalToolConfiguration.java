@@ -32,17 +32,17 @@ import hudson.model.Descriptor;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
 import hudson.util.FormApply;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.verb.POST;
 
 @Extension(ordinal = Integer.MAX_VALUE - 220)
@@ -81,13 +81,13 @@ public class GlobalToolConfiguration extends ManagementLink {
     }
 
     @POST
-    public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
+    public synchronized void doConfigure(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, Descriptor.FormException {
         boolean result = configure(req, req.getSubmittedForm());
         LOGGER.log(Level.FINE, "tools saved: " + result);
         FormApply.success(req.getContextPath() + "/manage").generateResponse(req, rsp, null);
     }
 
-    private boolean configure(StaplerRequest req, JSONObject json) throws Descriptor.FormException, IOException {
+    private boolean configure(StaplerRequest2 req, JSONObject json) throws Descriptor.FormException, IOException {
         Jenkins j = Jenkins.get();
         j.checkPermission(Jenkins.ADMINISTER);
 
@@ -100,7 +100,7 @@ public class GlobalToolConfiguration extends ManagementLink {
         return result;
     }
 
-    private boolean configureDescriptor(StaplerRequest req, JSONObject json, Descriptor<?> d) throws Descriptor.FormException {
+    private boolean configureDescriptor(StaplerRequest2 req, JSONObject json, Descriptor<?> d) throws Descriptor.FormException {
         String name = d.getJsonSafeClassName();
         JSONObject js = json.has(name) ? json.getJSONObject(name) : new JSONObject(); // if it doesn't have the property, the method returns invalid null object.
         json.putAll(js);

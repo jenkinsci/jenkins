@@ -37,6 +37,7 @@ import hudson.tasks.Publisher;
 import hudson.util.DescriptorList;
 import java.util.List;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -60,6 +61,9 @@ import org.kohsuke.stapler.export.ExportedBean;
  * <h2>Persistence</h2>
  * <p>
  * {@link NodeMonitor}s are persisted via XStream.
+ *
+ * <h2>CasC</h2>
+ * To be able to configure {@link NodeMonitor}s via JCasC, they should have a {@link org.kohsuke.stapler.DataBoundConstructor}
  *
  * @author Kohsuke Kawaguchi
  * @since 1.123
@@ -130,6 +134,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
         return ignored;
     }
 
+    @DataBoundSetter
     public void setIgnored(boolean ignored) {
         this.ignored = ignored;
     }

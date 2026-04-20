@@ -14,12 +14,12 @@ properties([
 
 def axes = [
   platforms: ['linux', 'windows'],
-  jdks: [11, 17, 21],
+  jdks: [21, 25],
 ]
 
 stage('Record build') {
   retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
-    node('maven-11') {
+    node('maven-21') {
       infra.checkoutSCM()
 
       /*
@@ -29,14 +29,16 @@ stage('Record build') {
         /*
          * TODO Add the commits of the transitive closure of the Jenkins WAR under test to this build.
          */
-        sh 'launchable verify && launchable record build --name ${BUILD_TAG} --source jenkinsci/jenkins=.'
+        // Replace URL encoded characters with '-' because Launchable rejects '%2F' in build name
+        def launchableName = env.BUILD_TAG.replaceAll('(%[0-9A-Fa-f]{2})+', '-')
+        sh "launchable verify && launchable record build --name ${launchableName} --source jenkinsci/jenkins=."
         axes.values().combinations {
           def (platform, jdk) = it
-          if (platform == 'windows' && jdk != 17) {
+          if (platform == 'windows' && jdk != axes.jdks.last()) {
             return // unnecessary use of hardware
           }
           def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
-          sh "launchable record session --build ${env.BUILD_TAG} --flavor platform=${platform} --flavor jdk=${jdk} >${sessionFile}"
+          sh "launchable record session --build ${launchableName} --flavor platform=${platform} --flavor jdk=${jdk} >${sessionFile}"
           stash name: sessionFile, includes: sessionFile
         }
       }
@@ -58,7 +60,7 @@ def builds = [:]
 
 axes.values().combinations {
   def (platform, jdk) = it
-  if (platform == 'windows' && jdk != 17) {
+  if (platform == 'windows' && jdk != axes.jdks.last()) {
     return // unnecessary use of hardware
   }
   builds["${platform}-jdk${jdk}"] = {
@@ -67,7 +69,13 @@ axes.values().combinations {
     if (platform == 'windows') {
       agentContainerLabel += '-windows'
     }
+    int retryCount = 0
     retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
+      if (retryCount == 1) {
+        agentContainerLabel = agentContainerLabel + '-nonspot'
+      }
+      // Increment before allocating the node in case it fails
+      retryCount++
       node(agentContainerLabel) {
         // First stage is actually checking out the source. Since we're using Multibranch
         // currently, we can use "checkout scm".
@@ -118,10 +126,12 @@ axes.values().combinations {
               }
               mavenOptions.add(0, "-Dsurefire.excludesFile=${excludesFile}")
             }
-            realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
-              infra.runMaven(mavenOptions, jdk)
-              if (isUnix()) {
-                sh 'git add . && git diff --exit-code HEAD'
+            withChecks(name: 'Tests', includeStage: true) {
+              realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
+                infra.runMaven(mavenOptions, jdk)
+                if (isUnix()) {
+                  sh 'git add . && git diff --exit-code HEAD'
+                }
               }
             }
           }
@@ -208,7 +218,7 @@ axes.values().combinations {
 
 def athAxes = [
   platforms: ['linux'],
-  jdks: [17],
+  jdks: [21],
   browsers: ['firefox'],
 ]
 athAxes.values().combinations {
@@ -219,10 +229,13 @@ athAxes.values().combinations {
         // Just to be safe
         deleteDir()
         checkout scm
-        infra.withArtifactCachingProxy {
-          sh "bash ath.sh ${jdk} ${browser}"
+
+        withChecks(name: 'Tests', includeStage: true) {
+          infra.withArtifactCachingProxy {
+            sh "bash ath.sh ${jdk} ${browser}"
+          }
+          junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
         }
-        junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
         /*
          * Currently disabled, as the fact that this is a manually created subset will confuse Launchable,
          * which expects this to be a full build. When we implement subsetting, this can be re-enabled using

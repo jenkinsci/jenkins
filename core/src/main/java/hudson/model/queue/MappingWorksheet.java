@@ -27,6 +27,7 @@ package hudson.model.queue;
 import static java.lang.Math.max;
 
 import com.google.common.collect.Iterables;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Label;
@@ -39,6 +40,8 @@ import hudson.model.Queue.JobOffer;
 import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAssignmentAction;
 import hudson.security.ACL;
+import hudson.slaves.DumbSlave;
+import java.time.Duration;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,6 +50,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+import jenkins.model.Named;
 
 /**
  * Defines a mapping problem for answering "where do we execute this task?"
@@ -85,6 +90,9 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 public class MappingWorksheet {
+
+    private static final Logger LOGGER = Logger.getLogger(MappingWorksheet.class.getName());
+
     public final List<ExecutorChunk> executors;
     public final List<WorkChunk> works;
     /**
@@ -110,7 +118,7 @@ public class MappingWorksheet {
         }
     }
 
-    public final class ExecutorChunk extends ReadOnlyList<ExecutorSlot> {
+    public final class ExecutorChunk extends ReadOnlyList<ExecutorSlot> implements Named {
         public final int index;
         public final Computer computer;
         public final Node node;
@@ -120,7 +128,7 @@ public class MappingWorksheet {
             super(base);
             this.index = index;
             assert !base.isEmpty();
-            computer = base.get(0).getExecutor().getOwner();
+            computer = base.getFirst().getExecutor().getOwner();
             node = computer.getNode();
             nodeAcl = node.getACL();
         }
@@ -135,8 +143,10 @@ public class MappingWorksheet {
             if (c.assignedLabel != null && !c.assignedLabel.contains(node))
                 return false;   // label mismatch
 
-            if (!(Node.SKIP_BUILD_CHECK_ON_FLYWEIGHTS && item.task instanceof Queue.FlyweightTask) && !nodeAcl.hasPermission2(item.authenticate2(), Computer.BUILD))
-                return false;   // tasks don't have a permission to run on this node
+            if (!(Node.SKIP_BUILD_CHECK_ON_FLYWEIGHTS && item.task instanceof Queue.FlyweightTask) && !nodeAcl.hasPermission2(item.authenticate2(), Computer.BUILD)) {
+                LOGGER.fine(() -> "Agent/Build permission denied to " + item.authenticate2().getName() + " on " + node.getNodeName());
+                return false;
+            }
 
             return true;
         }
@@ -144,6 +154,8 @@ public class MappingWorksheet {
         /**
          * Node name.
          */
+        @NonNull
+        @Override
         public String getName() {
             return node.getNodeName();
         }
@@ -184,7 +196,9 @@ public class MappingWorksheet {
          * If the previous execution of this task run on a certain node
          * and this task prefers to run on the same node, return that.
          * Otherwise null.
+         * @deprecated Unused.
          */
+        @Deprecated
         public final ExecutorChunk lastBuiltOn;
 
 
@@ -192,9 +206,10 @@ public class MappingWorksheet {
             super(base);
             assert !base.isEmpty();
             this.index = index;
-            this.assignedLabel = getAssignedLabel(base.get(0));
+            this.assignedLabel = getAssignedLabel(base.getFirst());
 
-            Node lbo = base.get(0).getLastBuiltOn();
+            @SuppressWarnings("deprecation")
+            Node lbo = base.getFirst().getLastBuiltOn();
             for (ExecutorChunk ec : executors) {
                 if (ec.node == lbo) {
                     lastBuiltOn = ec;
@@ -317,15 +332,27 @@ public class MappingWorksheet {
         this.item = item;
 
         // group executors by their computers
+        boolean someNonCloud = false;
         Map<Computer, List<ExecutorSlot>> j = new HashMap<>();
         for (ExecutorSlot o : offers) {
             Computer c = o.getExecutor().getOwner();
+            if (!someNonCloud) {
+                Node n = c.getNode();
+                if (n == null || n instanceof DumbSlave) {
+                    someNonCloud = true;
+                }
+            }
             List<ExecutorSlot> l = j.computeIfAbsent(c, k -> new ArrayList<>());
             l.add(o);
         }
 
-        { // take load prediction into account and reduce the available executor pool size accordingly
+        if (j.isEmpty()) {
+            LOGGER.fine(() -> "nothing to consider for " + item);
+        } else if (!someNonCloud) {
+            LOGGER.fine(() -> "only cloud agents to consider for " + item + ": " + offers);
+        } else { // take load prediction into account and reduce the available executor pool size accordingly
             long duration = item.task.getEstimatedDuration();
+            LOGGER.fine(() -> "for " + item + " taking " + Duration.ofMillis(duration) + " considering " + offers);
             if (duration > 0) {
                 long now = System.currentTimeMillis();
                 for (Map.Entry<Computer, List<ExecutorSlot>> e : j.entrySet()) {

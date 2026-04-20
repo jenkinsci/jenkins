@@ -50,8 +50,7 @@ public class UserAgentURLConnectionDecorator extends URLConnectionDecorator {
 
     @Override
     public void decorate(URLConnection con) throws IOException {
-        if (!DISABLED && con instanceof HttpURLConnection) {
-            HttpURLConnection httpConnection = (HttpURLConnection) con;
+        if (!DISABLED && con instanceof HttpURLConnection httpConnection) {
             httpConnection.setRequestProperty("User-Agent", getUserAgent());
         }
     }

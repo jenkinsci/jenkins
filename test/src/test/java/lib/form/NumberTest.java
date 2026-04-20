@@ -2,7 +2,7 @@ package lib.form;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
@@ -11,22 +11,28 @@ import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.host.event.Event;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.xml.sax.SAXException;
 
 /**
  * Tests for lib/number.jelly.
  */
-public class NumberTest {
+@WithJenkins
+class NumberTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void minValidation() throws IOException, SAXException {
+    void minValidation() throws IOException, SAXException {
 
         HtmlPage page = j.createWebClient().goTo("minValidation");
         HtmlForm form = page.getFormByName("number");
@@ -38,7 +44,7 @@ public class NumberTest {
         input = form.getInputByName("min-5");
 
         errorMessage = typeValueAndGetErrorMessage(input, "2");
-        assertEquals(errorMessage, "This value should be larger than 5");
+        assertEquals("This value should be larger than 5", errorMessage);
 
         errorMessage = typeValueAndGetErrorMessage(input, "5");
         assertThat(errorMessage, emptyString());
@@ -58,7 +64,7 @@ public class NumberTest {
     }
 
     @Test
-    public void maxValidation() throws IOException, SAXException {
+    void maxValidation() throws IOException, SAXException {
         HtmlPage page = j.createWebClient().goTo("maxValidation");
         HtmlForm form = page.getFormByName("number");
 
@@ -75,7 +81,7 @@ public class NumberTest {
         assertThat(errorMessage, emptyString());
 
         errorMessage = typeValueAndGetErrorMessage(input, "87");
-        assertEquals(errorMessage, "This value should be less than 70");
+        assertEquals("This value should be less than 70", errorMessage);
 
 
         // <input type="number" max="wow">
@@ -90,7 +96,7 @@ public class NumberTest {
 
 
     @Test
-    public void minAndMaxValidation() throws IOException, SAXException {
+    void minAndMaxValidation() throws IOException, SAXException {
         HtmlPage page = j.createWebClient().goTo("minAndMaxValidation");
         HtmlForm form = page.getFormByName("number");
 
@@ -101,7 +107,7 @@ public class NumberTest {
         input = form.getInputByName("min-5-max-70");
 
         errorMessage = typeValueAndGetErrorMessage(input, "2");
-        assertEquals(errorMessage, "This value should be between 5 and 70");
+        assertEquals("This value should be between 5 and 70", errorMessage);
 
         errorMessage = typeValueAndGetErrorMessage(input, "5");
         assertThat(errorMessage, emptyString());
@@ -113,7 +119,7 @@ public class NumberTest {
         assertThat(errorMessage, emptyString());
 
         errorMessage = typeValueAndGetErrorMessage(input, "96");
-        assertEquals(errorMessage, "This value should be between 5 and 70");
+        assertEquals("This value should be between 5 and 70", errorMessage);
 
 
         // <input type="number" min="70" max="5">
@@ -133,7 +139,7 @@ public class NumberTest {
         input = form.getInputByName("min-5-max-wow");
 
         errorMessage = typeValueAndGetErrorMessage(input, "2");
-        assertEquals(errorMessage, "This value should be larger than 5");
+        assertEquals("This value should be larger than 5", errorMessage);
 
         errorMessage = typeValueAndGetErrorMessage(input, "5");
         assertThat(errorMessage, emptyString());
@@ -152,7 +158,7 @@ public class NumberTest {
         assertThat(errorMessage, emptyString());
 
         errorMessage = typeValueAndGetErrorMessage(input, "95");
-        assertEquals(errorMessage, "This value should be less than 70");
+        assertEquals("This value should be less than 70", errorMessage);
 
 
         // <input type="number" min="wow" max="jen">

@@ -6,7 +6,7 @@ import java.io.IOException;
 /**
  * Object whose state can be loaded from disk. In general, also implements {@link Saveable}.
  *
- * @since TODO
+ * @since 2.428
  */
 public interface Loadable {
 

@@ -73,7 +73,6 @@ import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsMonitor;
 import jenkins.util.URLClassLoader2;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -81,8 +80,8 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -223,6 +222,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     private static Set<String> CORE_ONLY_DEPENDANT = Set.of("jenkins-core");
 
+    private Integer healthScore;
+
     /**
      * Set the list of components that depend on this plugin.
      * @param dependents The list of components that depend on this plugin.
@@ -252,7 +253,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     @Deprecated
     public void setOptionalDependants(@NonNull Set<String> optionalDependents) {
-        setOptionalDependents(dependents);
+        setOptionalDependents(optionalDependents);
     }
 
     /**
@@ -424,6 +425,32 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     }
 
+    @Restricted(NoExternalUse.class) // Jelly use only
+    public Integer getHealthScore() {
+        if (this.healthScore == null) {
+            this.healthScore = getInfoFromAllSites().stream()
+                    .filter(Objects::nonNull)
+                    .filter(p -> p.healthScore != null)
+                    .findFirst()
+                    .map(plugin -> plugin.healthScore)
+                    .orElse(null);
+        }
+        return this.healthScore;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static String getHealthScoreClassForScore(int score) {
+        if (score > 80) return "top";
+        if (score > 60) return "middle";
+        return "bottom";
+    }
+
+    @Restricted(NoExternalUse.class) // Jelly use only
+    public String getHealthScoreClass() {
+        if (this.healthScore == null) return null;
+        return getHealthScoreClassForScore(this.healthScore);
+    }
+
     @ExportedBean
     public static final class Dependency {
         @Exported
@@ -497,7 +524,12 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     @Override
     public String getDisplayName() {
-        return StringUtils.removeStart(getLongName(), "Jenkins ");
+        String displayName = getLongName();
+        String removePrefix = "Jenkins ";
+        if (displayName != null && displayName.startsWith(removePrefix)) {
+            return displayName.substring(removePrefix.length());
+        }
+        return displayName;
     }
 
     public Api getApi() {
@@ -601,7 +633,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         List<UpdateSite.Plugin> siteMetadataList = getInfoFromAllSites();
         String firstSiteUrl = null;
         if (!siteMetadataList.isEmpty()) {
-            firstSiteUrl = siteMetadataList.get(0).wiki;
+            firstSiteUrl = siteMetadataList.getFirst().wiki;
             if (allUrlsMatch(firstSiteUrl, siteMetadataList)) {
                 return firstSiteUrl;
             }
@@ -846,18 +878,16 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     private Set<String> dependentsToCheck(PluginDisableStrategy strategy) {
-        Set<String> dependentsToCheck;
-        switch (strategy) {
-            case ALL:
+        Set<String> dependentsToCheck = switch (strategy) {
+            case ALL ->
                 // getDependents returns all the dependent plugins, mandatory or optional.
-                dependentsToCheck = this.getDependents();
-                break;
-            default:
+                this.getDependents();
+            default ->
                 // It includes MANDATORY, NONE:
                 // with NONE, the process only fail if mandatory dependent plugins exists
                 // As of getDependents has all the dependents, we get the difference between them and only the optionals
-                dependentsToCheck = Sets.difference(this.getDependents(), this.getOptionalDependents());
-        }
+                Sets.difference(this.getDependents(), this.getOptionalDependents());
+        };
         return dependentsToCheck;
     }
 
@@ -1208,7 +1238,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         /**
          * Depending on whether the user said "dismiss" or "correct", send him to the right place.
          */
-        public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        public void doAct(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
             if (req.hasParameter("correct")) {
                 rsp.sendRedirect(req.getContextPath() + "/pluginManager");
 
@@ -1355,7 +1385,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         // Redo who depends on who.
         jenkins.getPluginManager().resolveDependentPlugins();
 
-        return HttpResponses.redirectViaContextPath("/pluginManager/installed");   // send back to plugin manager
+        return HttpResponses.redirectViaContextPath("/manage/pluginManager/installed");   // send back to plugin manager
     }
 
     @Restricted(DoNotUse.class) // Jelly

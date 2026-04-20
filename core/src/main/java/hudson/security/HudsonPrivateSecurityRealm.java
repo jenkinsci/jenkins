@@ -24,28 +24,34 @@
 
 package hudson.security;
 
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
-import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.model.ManagementLink;
 import hudson.model.ModelObject;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
+import hudson.model.userproperty.UserPropertyCategory;
 import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.security.captcha.CaptchaSupport;
 import hudson.util.FormValidation;
 import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
-import hudson.util.Scrambler;
-import hudson.util.XStream2;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
@@ -58,6 +64,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
@@ -66,15 +73,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import jenkins.model.Jenkins;
 import jenkins.security.FIPS140;
 import jenkins.security.SecurityListener;
@@ -84,16 +82,16 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.CompatibleFilter;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -102,6 +100,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
@@ -114,6 +113,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * @author Kohsuke Kawaguchi
  */
 public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRealm implements ModelObject, AccessControlled {
+    private static final int FIPS_PASSWORD_LENGTH = 14;
     private static /* not final */ String ID_REGEX = System.getProperty(HudsonPrivateSecurityRealm.class.getName() + ".ID_REGEX");
 
     /**
@@ -234,10 +234,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     @Override
     public HttpResponse commenceSignup(final FederatedIdentity identity) {
         // store the identity in the session so that we can use this later
-        Stapler.getCurrentRequest().getSession().setAttribute(FEDERATED_IDENTITY_SESSION_KEY, identity);
+        Stapler.getCurrentRequest2().getSession().setAttribute(FEDERATED_IDENTITY_SESSION_KEY, identity);
         return new ForwardToView(this, "signupWithFederatedIdentity.jelly") {
             @Override
-            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
                 SignupInfo si = new SignupInfo(identity);
                 si.errorMessage = Messages.HudsonPrivateSecurityRealm_WouldYouLikeToSignUp(identity.getPronoun(), identity.getIdentifier());
                 req.setAttribute("data", si);
@@ -251,7 +251,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * with {@link #commenceSignup}.
      */
     @RequirePOST
-    public User doCreateAccountWithFederatedIdentity(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public User doCreateAccountWithFederatedIdentity(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         User u = _doCreateAccount(req, rsp, "signupWithFederatedIdentity.jelly");
         if (u != null)
             ((FederatedIdentity) req.getSession().getAttribute(FEDERATED_IDENTITY_SESSION_KEY)).addTo(u);
@@ -264,11 +264,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Creates an user account. Used for self-registration.
      */
     @RequirePOST
-    public User doCreateAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public User doCreateAccount(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         return _doCreateAccount(req, rsp, "signup.jelly");
     }
 
-    private User _doCreateAccount(StaplerRequest req, StaplerResponse rsp, String formView) throws ServletException, IOException {
+    private User _doCreateAccount(StaplerRequest2 req, StaplerResponse2 rsp, String formView) throws ServletException, IOException {
         if (!allowsSignup())
             throw HttpResponses.errorWithoutStack(SC_UNAUTHORIZED, "User sign up is prohibited");
 
@@ -285,7 +285,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * Lets the current user silently login as the given user and report back accordingly.
      */
-    private void loginAndTakeBack(StaplerRequest req, StaplerResponse rsp, User u) throws ServletException, IOException {
+    private void loginAndTakeBack(StaplerRequest2 req, StaplerResponse2 rsp, User u) throws ServletException, IOException {
         HttpSession session = req.getSession(false);
         if (session != null) {
             // avoid session fixation
@@ -307,19 +307,19 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * Creates a user account. Used by admins.
      *
-     * This version behaves differently from {@link #doCreateAccount(StaplerRequest, StaplerResponse)} in that
+     * This version behaves differently from {@link #doCreateAccount(StaplerRequest2, StaplerResponse2)} in that
      * this is someone creating another user.
      */
     @RequirePOST
-    public void doCreateAccountByAdmin(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        createAccountByAdmin(req, rsp, "addUser.jelly", "."); // send the user back to the listing page on success
+    public void doCreateAccountByAdmin(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        createAccountByAdmin(req, rsp, "addUserDialog.jelly", "."); // send the user back to the listing page on success
     }
 
     /**
      * Creates a user account. Requires {@link Jenkins#ADMINISTER}
      */
     @Restricted(NoExternalUse.class)
-    public User createAccountByAdmin(StaplerRequest req, StaplerResponse rsp, String addUserView, String successView) throws IOException, ServletException {
+    public User createAccountByAdmin(StaplerRequest2 req, StaplerResponse2 rsp, String addUserView, String successView) throws IOException, ServletException {
         checkPermission(Jenkins.ADMINISTER);
         User u = createAccount(req, rsp, false, addUserView);
         if (u != null && successView != null) {
@@ -338,7 +338,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * @throws AccountCreationFailedException if account creation failed due to invalid form input
      */
     @Restricted(NoExternalUse.class)
-    public User createAccountFromSetupWizard(StaplerRequest req) throws IOException, AccountCreationFailedException {
+    public User createAccountFromSetupWizard(StaplerRequest2 req) throws IOException, AccountCreationFailedException {
         checkPermission(Jenkins.ADMINISTER);
         SignupInfo si = validateAccountCreationForm(req, false);
         if (!si.errors.isEmpty()) {
@@ -364,11 +364,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This can be run by anyone, but only to create the very first user account.
      */
     @RequirePOST
-    public void doCreateFirstAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized void doCreateFirstAccount(StaplerRequest2 req, StaplerResponse2 rsp)
+            throws IOException, ServletException {
+
         if (hasSomeUser()) {
             rsp.sendError(SC_UNAUTHORIZED, "First user was already created");
             return;
         }
+
         User u = createAccount(req, rsp, false, "firstUser.jelly");
         if (u != null) {
             tryToMakeAdmin(u);
@@ -398,7 +401,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      *      null if failed. The browser is already redirected to retry by the time this method returns.
      *      a valid {@link User} object if the user creation was successful.
      */
-    private User createAccount(StaplerRequest req, StaplerResponse rsp, boolean validateCaptcha, String formView) throws ServletException, IOException {
+    private User createAccount(StaplerRequest2 req, StaplerResponse2 rsp, boolean validateCaptcha, String formView) throws ServletException, IOException {
         SignupInfo si = validateAccountCreationForm(req, validateCaptcha);
 
         if (!si.errors.isEmpty()) {
@@ -414,11 +417,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * @param req              the request to process
      * @param validateCaptcha  whether to attempt to validate a captcha in the request
      *
-     * @return a {@link SignupInfo#SignupInfo(StaplerRequest) SignupInfo from given request}, with {@link
+     * @return a {@link SignupInfo#SignupInfo(StaplerRequest2) SignupInfo from given request}, with {@link
      * SignupInfo#errors} containing errors (keyed by field name), if any of the supported fields are invalid
      */
     @SuppressFBWarnings(value = "UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD", justification = "written to by Stapler")
-    private SignupInfo validateAccountCreationForm(StaplerRequest req, boolean validateCaptcha) {
+    private SignupInfo validateAccountCreationForm(StaplerRequest2 req, boolean validateCaptcha) {
         // form field validation
         // this pattern needs to be generalized and moved to stapler
         SignupInfo si = new SignupInfo(req);
@@ -448,8 +451,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             si.errors.put("password1", Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordNotMatch());
         }
 
-        if (!(si.password1 != null && si.password1.length() != 0)) {
+        if (!(si.password1 != null && !si.password1.isEmpty())) {
             si.errors.put("password1", Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequired());
+        }
+
+        try {
+            PASSWORD_HASH_ENCODER.encode2(si.password1);
+        }  catch (RuntimeException ex) {
+            si.errors.put("password1", ex.getMessage());
         }
 
         if (si.fullname == null || si.fullname.isEmpty()) {
@@ -502,11 +511,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     private boolean containsOnlyAcceptableCharacters(@NonNull String value) {
-        if (ID_REGEX == null) {
-            return value.matches(DEFAULT_ID_REGEX);
-        } else {
-            return value.matches(ID_REGEX);
-        }
+        return value.matches(Objects.requireNonNullElse(ID_REGEX, DEFAULT_ID_REGEX));
     }
 
     @Restricted(NoExternalUse.class) // _entryForm.jelly and signup.jelly
@@ -625,7 +630,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         public SignupInfo() {
         }
 
-        public SignupInfo(StaplerRequest req) {
+        public SignupInfo(StaplerRequest2 req) {
             req.bindParameters(this);
         }
 
@@ -700,7 +705,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         public String getProtectedPassword() {
             // put session Id in it to prevent a replay attack.
-            return Protector.protect(Stapler.getCurrentRequest().getSession().getId() + ':' + getPassword());
+            return Protector.protect(Stapler.getCurrentRequest2().getSession().getId() + ':' + getPassword());
         }
 
         public String getUsername() {
@@ -795,19 +800,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             public int hashCode() {
                 return getUsername().hashCode();
             }
-
-        }
-
-        public static class ConverterImpl extends XStream2.PassthruConverter<Details> {
-            public ConverterImpl(XStream2 xstream) { super(xstream); }
-
-            @Override protected void callback(Details d, UnmarshallingContext context) {
-                // Convert to hashed password and report to monitor if we load old data
-                if (d.password != null && d.passwordHash == null) {
-                    d.passwordHash = PASSWORD_ENCODER.encode(Scrambler.descramble(d.password));
-                    OldDataMonitor.report(context, "1.283");
-                }
-            }
         }
 
         @Extension @Symbol("password")
@@ -819,7 +811,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             }
 
             @Override
-            public Details newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            public Details newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
                 if (req == null) {
                     // Should never happen, see newInstance() Javadoc
                     throw new FormException("Stapler request is missing in the call", "staplerRequest");
@@ -852,10 +844,18 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 }
 
                 if (data != null) {
-                    String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';
+                    String prefix = Stapler.getCurrentRequest2().getSession().getId() + ':';
                     if (data.startsWith(prefix)) {
+                        // The password is not being changed
                         return Details.fromHashedPassword(data.substring(prefix.length()));
                     }
+                }
+
+                // The password is being changed
+                try {
+                    PASSWORD_HASH_ENCODER.encode2(pwd);
+                } catch (RuntimeException ex) {
+                    throw new FormException(ex.getMessage(), "user.password");
                 }
 
                 User user = Util.getNearestAncestorOfTypeOrThrow(req, User.class);
@@ -877,6 +877,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             @Override
             public UserProperty newInstance(User user) {
                 return null;
+            }
+
+            @Override
+            public @NonNull UserPropertyCategory getUserPropertyCategory() {
+                return UserPropertyCategory.get(UserPropertyCategory.Security.class);
             }
         }
     }
@@ -917,27 +922,30 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     }
 
-    // TODO can we instead use BCryptPasswordEncoder from Spring Security, which has its own copy of BCrypt so we could drop the special library?
     /**
      * {@link PasswordHashEncoder} that uses jBCrypt.
      */
-    static class JBCryptEncoder implements PasswordHashEncoder {
+    static class JBCryptEncoder extends BCryptPasswordEncoder implements PasswordHashEncoder {
         // in jBCrypt the maximum is 30, which takes ~22h with laptop late-2017
         // and for 18, it's "only" 20s
-        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
         @Restricted(NoExternalUse.class)
         private static int MAXIMUM_BCRYPT_LOG_ROUND = SystemProperties.getInteger(HudsonPrivateSecurityRealm.class.getName() + ".maximumBCryptLogRound", 18);
 
         private static final Pattern BCRYPT_PATTERN = Pattern.compile("^\\$2a\\$([0-9]{2})\\$.{53}$");
 
         @Override
-        public String encode(CharSequence rawPassword) {
-            return BCrypt.hashpw(rawPassword.toString(), BCrypt.gensalt());
-        }
-
-        @Override
-        public boolean matches(CharSequence rawPassword, String encodedPassword) {
-            return BCrypt.checkpw(rawPassword.toString(), encodedPassword);
+        public String encode2(CharSequence rawPassword) {
+            try {
+                return encode(rawPassword);
+            } catch (IllegalArgumentException ex) {
+                if (ex.getMessage().equals("password cannot be more than 72 bytes")) {
+                    if (rawPassword.toString().matches("\\A\\p{ASCII}+\\z")) {
+                        throw new IllegalArgumentException(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong_ASCII());
+                    }
+                    throw new IllegalArgumentException(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong());
+                }
+                throw ex;
+            }
         }
 
         /**
@@ -979,6 +987,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public String encode(CharSequence rawPassword) {
+            if (rawPassword.length() < FIPS_PASSWORD_LENGTH) {
+                throw new IllegalArgumentException(Messages.HudsonPrivateSecurityRealm_CreateAccount_FIPS_PasswordLengthInvalid());
+            }
             try {
                 return generatePasswordHashWithPBKDF2(rawPassword);
             } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
@@ -1119,7 +1130,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     private static final String ENCODED_INVALID_USER_PASSWORD = PASSWORD_ENCODER.encode(generatePassword());
 
-    @SuppressFBWarnings(value = {"DMI_RANDOM_USED_ONLY_ONCE", "PREDICTABLE_RANDOM"}, justification = "https://github.com/spotbugs/spotbugs/issues/1539 and doesn't need to be secure, we're just not hardcoding a 'wrong' password")
+    @SuppressFBWarnings(value = "PREDICTABLE_RANDOM", justification = "Doesn't need to be secure, we're just not hardcoding a 'wrong' password")
     private static String generatePassword() {
         String password = new Random().ints(20, 33, 127).mapToObj(i -> (char) i)
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
@@ -1142,7 +1153,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     }
 
-    private static final Filter CREATE_FIRST_USER_FILTER = new Filter() {
+    private static final Filter CREATE_FIRST_USER_FILTER = new CompatibleFilter() {
         @Override
         public void init(FilterConfig config) throws ServletException {
         }

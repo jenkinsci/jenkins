@@ -33,25 +33,29 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Base class of Hudson plugin.
@@ -92,11 +96,11 @@ public abstract class Plugin implements Loadable, Saveable, StaplerProxy {
     /**
      * You do not need to create custom subtypes:
      * <ul>
-     * <li>{@code config.jelly}, {@link #configure(StaplerRequest, JSONObject)}, {@link #load}, and {@link #save}
+     * <li>{@code config.jelly}, {@link #configure(StaplerRequest2, JSONObject)}, {@link #load}, and {@link #save}
      *      can be replaced by {@link GlobalConfiguration}
      * <li>{@link #start} and {@link #postInitialize} can be replaced by {@link Initializer} (or {@link ItemListener#onLoaded})
      * <li>{@link #stop} can be replaced by {@link Terminator}
-     * <li>{@link #setServletContext} can be replaced by {@link Jenkins#servletContext}
+     * <li>{@link #setServletContext} can be replaced by {@link Jenkins#getServletContext}
      * </ul>
      * Note that every plugin gets a {@link DummyImpl} by default,
      * which will still route the URL space, serve {@link #getWrapper}, and so on.
@@ -189,10 +193,10 @@ public abstract class Plugin implements Loadable, Saveable, StaplerProxy {
 
     /**
      * @since 1.233
-     * @deprecated as of 1.305 override {@link #configure(StaplerRequest,JSONObject)} instead
+     * @deprecated as of 1.305 override {@link #configure(StaplerRequest2,JSONObject)} instead
      */
     @Deprecated
-    public void configure(JSONObject formData) throws IOException, ServletException, FormException {
+    public void configure(JSONObject formData) throws IOException, javax.servlet.ServletException, FormException {
     }
 
     /**
@@ -220,16 +224,60 @@ public abstract class Plugin implements Loadable, Saveable, StaplerProxy {
      * <p>
      * If you are using this method, you'll likely be interested in
      * using {@link #save()} and {@link #load()}.
+     * @since 2.475
+     */
+    public void configure(StaplerRequest2 req, JSONObject formData) throws IOException, ServletException, FormException {
+        try {
+            if (Util.isOverridden(Plugin.class, getClass(), "configure", StaplerRequest.class, JSONObject.class)) {
+                configure(StaplerRequest.fromStaplerRequest2(req), formData);
+            } else {
+                configure(formData);
+            }
+        } catch (javax.servlet.ServletException e) {
+            throw ServletExceptionWrapper.toJakartaServletException(e);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #configure(StaplerRequest2, JSONObject)}
      * @since 1.305
      */
-    public void configure(StaplerRequest req, JSONObject formData) throws IOException, ServletException, FormException {
+    @Deprecated
+    public void configure(StaplerRequest req, JSONObject formData) throws IOException, javax.servlet.ServletException, FormException {
         configure(formData);
     }
 
     /**
      * This method serves static resources in the plugin under {@code hudson/plugin/SHORTNAME}.
+     *
+     * @since 2.475
      */
-    public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        if (Util.isOverridden(Plugin.class, getClass(), "doDynamic", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                doDynamic(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        } else {
+            doDynamicImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doDynamic(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            doDynamicImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    private void doDynamicImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();
 
         String pathUC = path.toUpperCase(Locale.ENGLISH);

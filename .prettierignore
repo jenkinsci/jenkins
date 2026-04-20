@@ -1,0 +1,25 @@
+# generated / build files
+.pnp.cjs
+.pnp.loader.mjs
+target/
+work/
+node/
+
+.git
+
+# libraries / external deps / generated files
+src/main/js/plugin-setup-wizard/bootstrap-detached.js
+war/src/main/webapp/jsbundles/
+src/main/scss/_bootstrap.scss
+
+# test files that we don't need formatted
+test/src/test/resources
+test/jmh-report.json
+
+# doesn't work, see https://github.com/prettier/prettier/issues/5340
+*.hbs
+
+.yarn
+
+# Incorrectly flagging forwarding slashes in regex
+.github/renovate.json

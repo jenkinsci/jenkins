@@ -1,50 +1,65 @@
 package jenkins.bugs;
 
 import hudson.model.FreeStyleProject;
+import java.util.ArrayList;
+import java.util.List;
 import org.htmlunit.cssparser.parser.CSSErrorHandler;
 import org.htmlunit.cssparser.parser.CSSException;
 import org.htmlunit.cssparser.parser.CSSParseException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ErrorCollector;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.opentest4j.MultipleFailuresError;
 
-public class Jenkins14749Test {
+@WithJenkins
+class Jenkins14749Test {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Rule
-    public ErrorCollector errors = new ErrorCollector();
+    private final List<Throwable> errors = new ArrayList<>();
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (!errors.isEmpty()) {
+            throw new MultipleFailuresError(null, errors);
+        }
+    }
 
     @Test
-    public void dashboard() throws Exception {
+    void dashboard() throws Exception {
         JenkinsRule.WebClient webClient = createErrorReportingWebClient();
         webClient.goTo("");
     }
 
     @Test
-    public void project() throws Exception {
+    void project() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         JenkinsRule.WebClient webClient = createErrorReportingWebClient();
         webClient.getPage(p);
     }
 
     @Test
-    public void configureProject() throws Exception {
+    void configureProject() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         JenkinsRule.WebClient webClient = createErrorReportingWebClient();
         webClient.getPage(p, "configure");
     }
 
     @Test
-    public void manage() throws Exception {
+    void manage() throws Exception {
         JenkinsRule.WebClient webClient = createErrorReportingWebClient();
         webClient.goTo("manage");
     }
 
     @Test
-    public void system() throws Exception {
+    void system() throws Exception {
         JenkinsRule.WebClient webClient = createErrorReportingWebClient();
         webClient.goTo("manage/configure");
     }
@@ -54,28 +69,17 @@ public class Jenkins14749Test {
         webClient.setCssErrorHandler(new CSSErrorHandler() {
             @Override
             public void warning(final CSSParseException exception) throws CSSException {
-                if (!ignore(exception)) {
-                    errors.addError(exception);
-                }
+                errors.add(exception);
             }
 
             @Override
             public void error(final CSSParseException exception) throws CSSException {
-                if (!ignore(exception)) {
-                    errors.addError(exception);
-                }
+                errors.add(exception);
             }
 
             @Override
             public void fatalError(final CSSParseException exception) throws CSSException {
-                if (!ignore(exception)) {
-                    errors.addError(exception);
-                }
-            }
-
-            private boolean ignore(final CSSParseException exception) {
-                // Keep in sync with HudsonTestCase/JenkinsRule
-                return exception.getURI().contains("/yui/");
+                errors.add(exception);
             }
         });
         return webClient;

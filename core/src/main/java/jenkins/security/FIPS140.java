@@ -32,7 +32,7 @@ import jenkins.util.SystemProperties;
  * The environment (host, JVM and servlet container), must be suitably configured which is outside the scope of the Jenkins project.
  * @see <a href="https://csrc.nist.gov/pubs/fips/140-2/upd2/final">FIPS-140-2</a>
  * @see <a href="https://github.com/jenkinsci/jep/tree/master/jep/237#readme">JEP-237</a>
- * @since TODO
+ * @since 2.426
  */
 public class FIPS140 {
 

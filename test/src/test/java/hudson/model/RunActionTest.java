@@ -27,23 +27,23 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.XmlFile;
 import java.io.File;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsSessionRule;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
-public class RunActionTest {
+class RunActionTest {
 
-    @Rule
-    public JenkinsSessionRule sessions = new JenkinsSessionRule();
+    @RegisterExtension
+    private final JenkinsSessionExtension sessions = new JenkinsSessionExtension();
 
     @Issue("JENKINS-45892")
     @Test
-    public void badSerialization() throws Throwable {
+    void badSerialization() throws Throwable {
         sessions.then(j -> {
                 FreeStyleProject p = j.createFreeStyleProject("p");
                 FreeStyleBuild b1 = j.buildAndAssertSuccess(p);

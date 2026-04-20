@@ -24,12 +24,12 @@
 
 package hudson.tasks;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.EnvVars;
 import hudson.model.Cause.LegacyCodeCause;
@@ -60,25 +60,33 @@ import jenkins.mvn.GlobalMavenConfig;
 import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.ToolInstallations;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.jelly.JellyFacet;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class MavenTest {
+@WithJenkins
+class MavenTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Tests the round-tripping of the configuration.
      */
-    @Test public void configRoundtrip() throws Exception {
+    @Test
+    void configRoundtrip() throws Exception {
         j.jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(); // reset
 
         FreeStyleProject p = j.createFreeStyleProject();
@@ -93,14 +101,15 @@ public class MavenTest {
         Maven m = p.getBuildersList().get(Maven.class);
         assertNotNull(m);
         assertEquals("a", m.targets);
-        assertNull("found " + m.mavenName, m.mavenName);
+        assertNull(m.mavenName, "found " + m.mavenName);
         assertEquals("b.pom", m.pom);
         assertEquals("c=d", m.properties);
         assertEquals("-e", m.jvmOptions);
         assertTrue(m.usesPrivateRepository());
     }
 
-    @Test public void withNodeProperty() throws Exception {
+    @Test
+    void withNodeProperty() throws Exception {
         MavenInstallation maven = ToolInstallations.configureDefaultMaven();
         String mavenHome = maven.getHome();
         String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
@@ -126,7 +135,8 @@ public class MavenTest {
         j.buildAndAssertSuccess(project);
     }
 
-    @Test public void withParameter() throws Exception {
+    @Test
+    void withParameter() throws Exception {
         MavenInstallation maven = ToolInstallations.configureDefaultMaven();
         String mavenHome = maven.getHome();
         String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
@@ -160,7 +170,8 @@ public class MavenTest {
     /**
      * Simulates the addition of the new Maven via UI and makes sure it works.
      */
-    @Test public void globalConfigAjax() throws Exception {
+    @Test
+    void globalConfigAjax() throws Exception {
         HtmlPage p = j.createWebClient().goTo("configureTools");
         HtmlForm f = p.getFormByName("config");
         HtmlButton b = j.getButtonByCaption(f, "Add Maven");
@@ -190,7 +201,8 @@ public class MavenTest {
         assertNotNull(isp.installers.get(MavenInstaller.class));
     }
 
-    @Test public void sensitiveParameters() throws Exception {
+    @Test
+    void sensitiveParameters() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
                 new StringParameterDefinition("string", "defaultValue", "string description"),
@@ -206,7 +218,7 @@ public class MavenTest {
     }
 
     @Test
-    public void parametersReferencedFromPropertiesShouldRetainBackslashes() throws Exception {
+    void parametersReferencedFromPropertiesShouldRetainBackslashes() throws Exception {
         final String properties = "global.path=$GLOBAL_PATH\nmy.path=$PATH\\\\Dir";
         final StringParameterDefinition parameter = new StringParameterDefinition("PATH", "C:\\Windows");
         final EnvironmentVariablesNodeProperty.Entry envVar = new EnvironmentVariablesNodeProperty.Entry("GLOBAL_PATH", "D:\\Jenkins");
@@ -225,7 +237,8 @@ public class MavenTest {
         j.assertLogContains("-Dglobal.path=D:\\Jenkins", build);
     }
 
-    @Test public void defaultSettingsProvider() throws Exception {
+    @Test
+    void defaultSettingsProvider() throws Exception {
         {
             FreeStyleProject p = j.createFreeStyleProject();
             p.getBuildersList().add(new Maven("a", null, "a.pom", "c=d", "-e", true));
@@ -238,7 +251,7 @@ public class MavenTest {
 
         {
             GlobalMavenConfig globalMavenConfig = GlobalMavenConfig.get();
-            assertNotNull("No global Maven Config available", globalMavenConfig);
+            assertNotNull(globalMavenConfig, "No global Maven Config available");
             globalMavenConfig.setSettingsProvider(new FilePathSettingsProvider("/tmp/settings.xml"));
             globalMavenConfig.setGlobalSettingsProvider(new FilePathGlobalSettingsProvider("/tmp/global-settings.xml"));
 
@@ -253,14 +266,16 @@ public class MavenTest {
     }
 
     @Issue("JENKINS-18898")
-    @Test public void testNullHome() {
+    @Test
+    void testNullHome() {
         EnvVars env = new EnvVars();
         new MavenInstallation("_", "", Collections.emptyList()).buildEnvVars(env);
         assertTrue(env.isEmpty());
     }
 
     @Issue("JENKINS-26684")
-    @Test public void specialCharsInBuildVariablesPassedAsProperties() throws Exception {
+    @Test
+    void specialCharsInBuildVariablesPassedAsProperties() throws Exception {
         MavenInstallation maven = ToolInstallations.configureMaven3();
 
         FreeStyleProject p = j.createFreeStyleProject();
@@ -297,13 +312,14 @@ public class MavenTest {
         FreeStyleBuild build = j.buildAndAssertSuccess(p);
     }
 
-    @Test public void doPassBuildVariablesOptionally() throws Exception {
+    @Test
+    void doPassBuildVariablesOptionally() throws Exception {
         MavenInstallation maven = ToolInstallations.configureMaven3();
 
         FreeStyleProject p = j.createFreeStyleProject();
         p.updateByXml((Source) new StreamSource(getClass().getResourceAsStream("MavenTest/doPassBuildVariablesOptionally.xml")));
         FreeStyleBuild build = j.buildAndAssertSuccess(p);
-        assertTrue("Build variables injection should be enabled by default when loading from XML", p.getBuildersList().get(Maven.class).isInjectBuildVariables());
+        assertTrue(p.getBuildersList().get(Maven.class).isInjectBuildVariables(), "Build variables injection should be enabled by default when loading from XML");
         j.assertLogContains("-DNAME=VALUE", build);
 
         p.getBuildersList().clear();
@@ -318,10 +334,11 @@ public class MavenTest {
         build = j.buildAndAssertSuccess(p);
         j.assertLogContains("-DNAME=VALUE", build);
 
-        assertFalse("Build variables injection should be disabled by default", new Maven("", "").isInjectBuildVariables());
+        assertFalse(new Maven("", "").isInjectBuildVariables(), "Build variables injection should be disabled by default");
     }
 
-    @Test public void doAlwaysPassProperties() throws Exception {
+    @Test
+    void doAlwaysPassProperties() throws Exception {
         MavenInstallation maven = ToolInstallations.configureMaven3();
 
         FreeStyleProject p = j.createFreeStyleProject();
@@ -342,7 +359,8 @@ public class MavenTest {
     }
 
     @Issue("JENKINS-34138")
-    @Test public void checkMavenInstallationEquals() throws Exception {
+    @Test
+    void checkMavenInstallationEquals() throws Exception {
         MavenInstallation maven = ToolInstallations.configureMaven3();
         MavenInstallation maven2 = ToolInstallations.configureMaven3();
         assertEquals(maven.hashCode(), maven2.hashCode());
@@ -350,7 +368,8 @@ public class MavenTest {
     }
 
     @Issue("JENKINS-34138")
-    @Test public void checkMavenInstallationNotEquals() throws Exception {
+    @Test
+    void checkMavenInstallationNotEquals() throws Exception {
         MavenInstallation maven3 = ToolInstallations.configureMaven3();
         MavenInstallation maven2 = ToolInstallations.configureDefaultMaven();
         assertNotEquals(maven3.hashCode(), maven2.hashCode());
@@ -359,7 +378,7 @@ public class MavenTest {
 
     @Test
     @Issue("JENKINS-65288")
-    public void submitPossibleWithoutJellyTrace() throws Exception {
+    void submitPossibleWithoutJellyTrace() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage htmlPage = wc.goTo("configureTools");
         HtmlForm configForm = htmlPage.getFormByName("config");
@@ -371,7 +390,7 @@ public class MavenTest {
      */
     @Test
     @Issue("JENKINS-65288")
-    public void submitPossibleWithJellyTrace() throws Exception {
+    void submitPossibleWithJellyTrace() throws Exception {
         boolean currentValue = JellyFacet.TRACE;
         try {
             JellyFacet.TRACE = true;

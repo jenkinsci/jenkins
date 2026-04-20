@@ -31,7 +31,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <l:icon alt="${job.iconColor.description}" class="${job.buildStatusIconClassName} icon-sm"/>
+  <l:icon alt="${job.iconColor.description}" src="symbol-status-${job.iconColor.iconName}" class="icon-sm"/>
   <a href="${h.getRelativeLinkTo(job)}" class="model-link jenkins-icon-adjacent">
     <l:breakable value="${job.fullDisplayName}"/>
   </a>

@@ -30,9 +30,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
@@ -52,26 +52,26 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-public class ApiTokenStatsTest {
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+class ApiTokenStatsTest {
 
-    @Before
-    public void prepareConfig() {
+    @TempDir
+    private File tmp;
+
+    @BeforeEach
+    void prepareConfig() {
         // to separate completely the class under test from its environment
         ApiTokenPropertyConfiguration mockConfig = Mockito.mock(ApiTokenPropertyConfiguration.class);
 
     }
 
     @Test
-    public void regularUsage() throws Exception {
+    void regularUsage() throws Exception {
         final String ID_1 = UUID.randomUUID().toString();
         final String ID_2 = "other-uuid";
 
@@ -81,7 +81,7 @@ public class ApiTokenStatsTest {
             Mockito.when(mockConfig.isUsageStatisticsEnabled()).thenReturn(true);
 
             { // empty stats can be saved
-                ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
+                ApiTokenStats tokenStats = createFromFile(tmp);
 
                 // can remove an id that does not exist
                 tokenStats.removeId(ID_1);
@@ -90,7 +90,7 @@ public class ApiTokenStatsTest {
             }
 
             { // and then loaded, empty stats is empty
-                ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
+                ApiTokenStats tokenStats = createFromFile(tmp);
                 assertNotNull(tokenStats);
 
                 ApiTokenStats.SingleTokenStats stats = tokenStats.findTokenStatsById(ID_1);
@@ -101,7 +101,7 @@ public class ApiTokenStatsTest {
 
             Date lastUsage;
             { // then re-notify the same token
-                ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
+                ApiTokenStats tokenStats = createFromFile(tmp);
 
                 ApiTokenStats.SingleTokenStats stats = tokenStats.updateUsageForId(ID_1);
                 assertEquals(1, stats.getUseCounter());
@@ -117,7 +117,7 @@ public class ApiTokenStatsTest {
             Thread.sleep(10);
 
             { // then re-notify the same token
-                ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
+                ApiTokenStats tokenStats = createFromFile(tmp);
 
                 ApiTokenStats.SingleTokenStats stats = tokenStats.updateUsageForId(ID_1);
                 assertEquals(2, stats.getUseCounter());
@@ -128,7 +128,7 @@ public class ApiTokenStatsTest {
             }
 
             { // check all tokens have separate stats, try with another ID
-                ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
+                ApiTokenStats tokenStats = createFromFile(tmp);
 
                 {
                     ApiTokenStats.SingleTokenStats stats = tokenStats.findTokenStatsById(ID_2);
@@ -145,7 +145,7 @@ public class ApiTokenStatsTest {
             }
 
             { // reload the stats, check the counter are correct
-                ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
+                ApiTokenStats tokenStats = createFromFile(tmp);
 
                 ApiTokenStats.SingleTokenStats stats_1 = tokenStats.findTokenStatsById(ID_1);
                 assertEquals(2, stats_1.getUseCounter());
@@ -156,7 +156,7 @@ public class ApiTokenStatsTest {
             }
 
             { // after a removal, the existing must keep its value
-                ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
+                ApiTokenStats tokenStats = createFromFile(tmp);
 
                 ApiTokenStats.SingleTokenStats stats_1 = tokenStats.findTokenStatsById(ID_1);
                 assertEquals(0, stats_1.getUseCounter());
@@ -167,18 +167,18 @@ public class ApiTokenStatsTest {
     }
 
     @Test
-    public void testResilientIfFileDoesNotExist() {
+    void testResilientIfFileDoesNotExist() {
         ApiTokenPropertyConfiguration mockConfig = mock(ApiTokenPropertyConfiguration.class);
         try (MockedStatic<ApiTokenPropertyConfiguration> mocked = mockStatic(ApiTokenPropertyConfiguration.class)) {
             mocked.when(ApiTokenPropertyConfiguration::get).thenReturn(mockConfig);
             Mockito.when(mockConfig.isUsageStatisticsEnabled()).thenReturn(true);
-            ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
+            ApiTokenStats tokenStats = createFromFile(tmp);
             assertNotNull(tokenStats);
         }
     }
 
     @Test
-    public void resistantToDuplicatedUuid() throws Exception {
+    void resistantToDuplicatedUuid() throws Exception {
         final String ID_1 = UUID.randomUUID().toString();
         final String ID_2 = UUID.randomUUID().toString();
         final String ID_3 = UUID.randomUUID().toString();
@@ -189,7 +189,7 @@ public class ApiTokenStatsTest {
             Mockito.when(mockConfig.isUsageStatisticsEnabled()).thenReturn(true);
 
             { // put counter to 4 for ID_1 and to 2 for ID_2 and 1 for ID_3
-                ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
+                ApiTokenStats tokenStats = createFromFile(tmp);
 
                 tokenStats.updateUsageForId(ID_1);
                 tokenStats.updateUsageForId(ID_1);
@@ -202,7 +202,7 @@ public class ApiTokenStatsTest {
             }
 
             { // replace the ID_1 with ID_2 in the file
-                XmlFile statsFile = ApiTokenStats.getConfigFile(tmp.getRoot());
+                XmlFile statsFile = ApiTokenStats.getConfigFile(tmp);
                 String content = Files.readString(statsFile.getFile().toPath(), Charset.defaultCharset());
                 // now there are multiple times the same id in the file with different stats
                 String newContentWithDuplicatedId = content.replace(ID_1, ID_2).replace(ID_3, ID_2);
@@ -210,7 +210,7 @@ public class ApiTokenStatsTest {
             }
 
             {
-                ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
+                ApiTokenStats tokenStats = createFromFile(tmp);
                 assertNotNull(tokenStats);
 
                 ApiTokenStats.SingleTokenStats stats_1 = tokenStats.findTokenStatsById(ID_1);
@@ -227,7 +227,7 @@ public class ApiTokenStatsTest {
     }
 
     @Test
-    public void resistantToDuplicatedUuid_withNull() throws Exception {
+    void resistantToDuplicatedUuid_withNull() throws Exception {
         final String ID = "ID";
 
         ApiTokenPropertyConfiguration mockConfig = mock(ApiTokenPropertyConfiguration.class);
@@ -243,7 +243,7 @@ public class ApiTokenStatsTest {
                         /* D */ createSingleTokenStatsByReflection(ID, "2018-05-01 09:10:59.235", 1)
                 );
 
-                ApiTokenStats stats = createFromFile(tmp.getRoot());
+                ApiTokenStats stats = createFromFile(tmp);
                 Field field = ApiTokenStats.class.getDeclaredField("tokenStats");
                 field.setAccessible(true);
                 field.set(stats, tokenStatsList);
@@ -251,7 +251,7 @@ public class ApiTokenStatsTest {
                 stats.save();
             }
             { // reload to see the effect
-                ApiTokenStats stats = createFromFile(tmp.getRoot());
+                ApiTokenStats stats = createFromFile(tmp);
                 ApiTokenStats.SingleTokenStats tokenStats = stats.findTokenStatsById(ID);
                 // must be D (as it was the last updated one)
                 assertThat(tokenStats.getUseCounter(), equalTo(1));
@@ -261,7 +261,7 @@ public class ApiTokenStatsTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testInternalComparator() throws Exception {
+    void testInternalComparator() throws Exception {
         List<ApiTokenStats.SingleTokenStats> tokenStatsList = Arrays.asList(
                 createSingleTokenStatsByReflection("A", null, 0),
                 createSingleTokenStatsByReflection("B", "2018-05-01 09:10:59.234", 2),
@@ -312,13 +312,13 @@ public class ApiTokenStatsTest {
     }
 
     @Test
-    public void testDayDifference() throws Exception {
+    void testDayDifference() throws Exception {
         final String ID = UUID.randomUUID().toString();
         ApiTokenPropertyConfiguration mockConfig = mock(ApiTokenPropertyConfiguration.class);
         try (MockedStatic<ApiTokenPropertyConfiguration> mocked = mockStatic(ApiTokenPropertyConfiguration.class)) {
             mocked.when(ApiTokenPropertyConfiguration::get).thenReturn(mockConfig);
             Mockito.when(mockConfig.isUsageStatisticsEnabled()).thenReturn(true);
-            ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
+            ApiTokenStats tokenStats = createFromFile(tmp);
             ApiTokenStats.SingleTokenStats stats = tokenStats.updateUsageForId(ID);
             assertThat(stats.getNumDaysUse(), lessThan(1L));
 

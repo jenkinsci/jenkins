@@ -26,10 +26,10 @@ package jenkins.security.stapler;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.UnprotectedRootAction;
@@ -42,20 +42,18 @@ import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
-import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.jupiter.api.BeforeEach;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.WebMethod;
 
-public abstract class StaplerAbstractTest {
-    @ClassRule
-    public static JenkinsRule rule = new JenkinsRule();
-    protected JenkinsRule j;
+@WithJenkins
+abstract class StaplerAbstractTest {
 
-    protected JenkinsRule.WebClient wc;
+    protected JenkinsRule j;
 
     protected WebApp webApp;
 
@@ -63,13 +61,12 @@ public abstract class StaplerAbstractTest {
     protected static boolean filteredDoActionTriggered = false;
     protected static boolean filteredFieldTriggered = false;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
         j = rule;
         j.jenkins.setCrumbIssuer(null);
-        wc = j.createWebClient();
 
-        this.webApp = (WebApp) j.jenkins.servletContext.getAttribute(WebApp.class.getName());
+        this.webApp = (WebApp) j.jenkins.getServletContext().getAttribute(WebApp.class.getName());
 
         webApp.setFilteredGetterTriggerListener((f, req, rst, node, expression) -> {
             filteredGetMethodTriggered = true;
@@ -137,7 +134,7 @@ public abstract class StaplerAbstractTest {
     //================================= utility methods =================================
 
     protected static void replyOk() {
-        StaplerResponse resp = Stapler.getCurrentResponse();
+        StaplerResponse2 resp = Stapler.getCurrentResponse2();
         try {
             resp.getWriter().write("ok");
             resp.flushBuffer();
@@ -149,34 +146,34 @@ public abstract class StaplerAbstractTest {
     //================================= testing methods =================================
 
     protected void assertGetMethodRequestWasBlockedAndResetFlag() {
-        assertTrue("No get method request was blocked", filteredGetMethodTriggered);
+        assertTrue(filteredGetMethodTriggered, "No get method request was blocked");
         filteredGetMethodTriggered = false;
     }
 
     protected void assertDoActionRequestWasBlockedAndResetFlag() {
-        assertTrue("No do action request was blocked", filteredDoActionTriggered);
+        assertTrue(filteredDoActionTriggered, "No do action request was blocked");
         filteredDoActionTriggered = false;
     }
 
     protected void assertFieldRequestWasBlockedAndResetFlag() {
-        assertTrue("No field request was blocked", filteredFieldTriggered);
+        assertTrue(filteredFieldTriggered, "No field request was blocked");
         filteredFieldTriggered = false;
     }
 
     protected void assertGetMethodActionRequestWasNotBlocked() {
-        assertFalse("There was at least one get method request that was blocked", filteredGetMethodTriggered);
+        assertFalse(filteredGetMethodTriggered, "There was at least one get method request that was blocked");
     }
 
     protected void assertDoActionRequestWasNotBlocked() {
-        assertFalse("There was at least one do action request that was blocked", filteredDoActionTriggered);
+        assertFalse(filteredDoActionTriggered, "There was at least one do action request that was blocked");
     }
 
     protected void assertFieldRequestWasNotBlocked() {
-        assertFalse("There was at least one field request that was blocked", filteredFieldTriggered);
+        assertFalse(filteredFieldTriggered, "There was at least one field request that was blocked");
     }
 
     protected void assertReachable(String url, HttpMethod method) throws IOException {
-        try {
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
             Page page = wc.getPage(new WebRequest(new URL(j.getURL(), url), method));
             assertEquals(200, page.getWebResponse().getStatusCode());
             assertThat(page.getWebResponse().getContentAsString(), startsWith("ok"));
@@ -194,14 +191,16 @@ public abstract class StaplerAbstractTest {
     }
 
     protected void assertReachableWithSettings(WebRequest request) throws IOException {
-        Page page = wc.getPage(request);
-        assertEquals(200, page.getWebResponse().getStatusCode());
-        assertEquals("ok", page.getWebResponse().getContentAsString());
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            Page page = wc.getPage(request);
+            assertEquals(200, page.getWebResponse().getStatusCode());
+            assertEquals("ok", page.getWebResponse().getContentAsString());
+        }
         assertDoActionRequestWasNotBlocked();
     }
 
     protected void assertReachableWithoutOk(String url) throws IOException {
-        try {
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
             Page page = wc.getPage(new URL(j.getURL(), url));
             assertEquals(200, page.getWebResponse().getStatusCode());
         } catch (FailingHttpStatusCodeException e) {
@@ -209,8 +208,10 @@ public abstract class StaplerAbstractTest {
         }
     }
 
-    protected void assertNotReachable(String url) throws IOException {
-        FailingHttpStatusCodeException e = assertThrows("Url " + url + " is reachable but should not be, a not-found error is expected", FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(j.getURL(), url)));
-        assertEquals("Url " + url + " returns an error different from 404", 404, e.getResponse().getStatusCode());
+    protected void assertNotReachable(String url) {
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(j.getURL(), url)), "Url " + url + " is reachable but should not be, a not-found error is expected");
+            assertEquals(404, e.getResponse().getStatusCode(), "Url " + url + " returns an error different from 404");
+        }
     }
 }

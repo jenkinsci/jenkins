@@ -208,6 +208,7 @@ public class Connection {
         return new Connection(i, o);
     }
 
+    @SuppressFBWarnings(value = "STATIC_IV", justification = "TODO needs triage")
     private IvParameterSpec createIv(SecretKey sessionKey) {
         return new IvParameterSpec(sessionKey.getEncoded());
     }

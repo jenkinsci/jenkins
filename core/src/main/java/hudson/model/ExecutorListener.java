@@ -30,7 +30,7 @@ import hudson.slaves.SlaveComputer;
 /**
  * A listener for task related events from executors.
  * A {@link Computer#getRetentionStrategy} or {@link SlaveComputer#getLauncher} may implement this interface.
- * Or you may create an implementation as an extension (since TODO).
+ * Or you may create an implementation as an extension (since 2.318).
 * @author Stephen Connolly
 * @since 1.312
 */

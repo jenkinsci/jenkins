@@ -24,14 +24,16 @@
 
 package hudson.model;
 
-import hudson.Util;
 import hudson.util.RunList;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
-import java.util.Date;
+import java.util.ArrayList;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.koshuke.stapler.simile.timeline.Event;
-import org.koshuke.stapler.simile.timeline.TimelineEventList;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * UI widget for showing the SIMILE timeline control.
@@ -41,7 +43,9 @@ import org.koshuke.stapler.simile.timeline.TimelineEventList;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.372
+ * @deprecated since 2.431
  */
+@Deprecated(since = "2.431")
 public class BuildTimelineWidget {
     protected final RunList<?> builds;
 
@@ -59,22 +63,16 @@ public class BuildTimelineWidget {
         return builds.getLastBuild();
     }
 
-    public TimelineEventList doData(StaplerRequest req, @QueryParameter long min, @QueryParameter long max) throws IOException {
-        TimelineEventList result = new TimelineEventList();
-        for (Run<?, ?> r : builds.byTimestamp(min, max)) {
-            Event e = new Event();
-            e.start = new Date(r.getStartTimeInMillis());
-            e.end   = new Date(r.getStartTimeInMillis() + r.getDuration());
-            // due to SimileAjax.HTML.deEntify (in simile-ajax-bundle.js), "&lt;" are transformed back to "<", but not the "&#60";
-            // to protect against XSS
-            e.title = Util.escape(r.getFullDisplayName()).replace("&lt;", "&#60;");
-            e.link = req.getContextPath() + '/' + r.getUrl();
-            BallColor c = r.getIconColor();
-            e.color = String.format("#%06X", c.getBaseColor().darker().getRGB() & 0xFFFFFF);
-            e.classname = "event-" + c.noAnime().toString() + " " + (c.isAnimated() ? "animated" : "");
-            result.add(e);
-        }
-        return result;
+    public HttpResponse doData(StaplerRequest2 req, @QueryParameter long min, @QueryParameter long max) {
+        return new HttpResponse() {
+            @Override
+            public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
+                JSONObject o = new JSONObject();
+                o.put("events", JSONArray.fromObject(new ArrayList<>()));
+                rsp.setContentType("text/javascript;charset=UTF-8");
+                o.write(rsp.getWriter());
+            }
+        };
     }
 
 }

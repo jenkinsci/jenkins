@@ -126,10 +126,10 @@ public class Main {
         }
 
         // get a crumb to pass the csrf check
-        String crumbField = null, crumbValue = null;
+        String crumbField = null, crumbValue = null, sessionCookies = null;
         try {
             HttpURLConnection con = open(new URL(home +
-                    "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)'"));
+                    "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)"));
             if (auth != null) con.setRequestProperty("Authorization", auth);
             String line = IOUtils.readFirstLine(con.getInputStream(), "UTF-8");
             String[] components = line.split(":");
@@ -137,6 +137,7 @@ public class Main {
                 crumbField = components[0];
                 crumbValue = components[1];
             }
+            sessionCookies = con.getHeaderField("Set-Cookie");
         } catch (IOException e) {
             // presumably this Hudson doesn't use CSRF protection
         }
@@ -173,10 +174,12 @@ public class Main {
                     if (auth != null) con.setRequestProperty("Authorization", auth);
                     if (crumbField != null && crumbValue != null) {
                         con.setRequestProperty(crumbField, crumbValue);
+                        con.setRequestProperty("Cookie", sessionCookies);
                     }
                     con.setDoOutput(true);
                     // this tells HttpURLConnection not to buffer the whole thing
                     con.setFixedLengthStreamingMode((int) tmpFile.length());
+                    con.setRequestProperty("Content-Type", "application/xml");
                     con.connect();
                     // send the data
                     try (InputStream in = Files.newInputStream(tmpFile.toPath())) {

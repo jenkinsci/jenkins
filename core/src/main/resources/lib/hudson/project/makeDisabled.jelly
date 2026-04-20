@@ -41,14 +41,5 @@ THE SOFTWARE.
         </form>
       </div>
     </j:when>
-    <j:otherwise>
-      <div align="right">
-        <form method="post" id="disable-project" action="disable">
-          <l:hasPermission permission="${it.CONFIGURE}">
-            <f:submit value="${%Disable Project}" primary="false" />
-          </l:hasPermission>
-        </form>
-      </div>
-    </j:otherwise>
   </j:choose>
 </j:jelly>

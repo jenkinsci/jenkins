@@ -53,8 +53,8 @@ THE SOFTWARE.
     <s:attribute name="clazz" />
   </s:documentation>
 
-  <button id="${attrs.id}" name="${attrs.name ?: 'Submit'}" formNoValidate="formNoValidate"
-          class="jenkins-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}">
+  <button id="${attrs.id}" name="${attrs.name ?: 'Submit'}" value="${attrs.value ?: '%Submit'}" formNoValidate="formNoValidate"
+          class="jenkins-button jenkins-submit-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}">
     <j:if test="${attrs.icon != null}">
       <l:icon src="${attrs.icon}" />
     </j:if>

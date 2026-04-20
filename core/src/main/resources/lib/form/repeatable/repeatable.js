@@ -40,11 +40,8 @@ var repeatableSupport = {
       addOnTop = false;
     }
 
-    // importNode isn't supported in IE.
-    // nc = document.importNode(node,true);
     var nc = document.createElement("div");
-    nc.className = "repeated-chunk";
-    nc.style.opacity = 0;
+    nc.className = "repeated-chunk fade-in";
     nc.setAttribute("name", this.name);
     nc.innerHTML = this.blockHTML;
     if (!addOnTop) {
@@ -59,15 +56,6 @@ var repeatableSupport = {
     if (this.withDragDrop) {
       registerSortableDragDrop(nc);
     }
-
-    new YAHOO.util.Anim(
-      nc,
-      {
-        opacity: { to: 1 },
-      },
-      0.2,
-      YAHOO.util.Easing.easeIn,
-    ).animate();
 
     Behaviour.applySubtree(nc, true);
     this.update();
@@ -110,13 +98,13 @@ var repeatableSupport = {
           parentOfButton.insertBefore(addTopButton, parentOfButton.firstChild);
           Behaviour.applySubtree(addTopButton, true);
         }
-        children[0].className = "repeated-chunk first last only";
+        children[0].className = "repeated-chunk fade-in first last only";
       } else {
-        children[0].className = "repeated-chunk first";
+        children[0].className = "repeated-chunk first fade-in";
         for (var i = 1; i < children.length - 1; i++) {
-          children[i].className = "repeated-chunk middle";
+          children[i].className = "repeated-chunk middle fade-in";
         }
-        children[children.length - 1].className = "repeated-chunk last";
+        children[children.length - 1].className = "repeated-chunk last fade-in";
       }
     }
   },
@@ -126,34 +114,38 @@ var repeatableSupport = {
   // called when 'delete' button is clicked
   onDelete: function (n) {
     n = n.closest(".repeated-chunk");
-    var a = new YAHOO.util.Anim(
-      n,
-      {
-        opacity: { to: 0 },
-        height: { to: 0 },
-      },
-      0.2,
-      YAHOO.util.Easing.easeIn,
-    );
-    a.onComplete.subscribe(function () {
+    n.ontransitionend = function (evt) {
+      if (evt.pseudoElement || !n.parentNode) {
+        return;
+      }
       var p = n.parentNode;
       p.removeChild(n);
       if (p.tag) {
         p.tag.update();
       }
+
       layoutUpdateCallback.call();
-    });
-    a.animate();
+    };
+    if (isRunAsTest) {
+      // transition end not triggered in tests
+      n.ontransitionend.call(n, {});
+    }
+
+    n.style.maxHeight = n.offsetHeight + "px";
+    n.classList.add("fade-out");
+    setTimeout(() => {
+      n.style.maxHeight = "0";
+    }, 0);
   },
 
   // called when 'add' button is clicked
   onAdd: function (n) {
     var addOnTop = false;
+    if (n.classList.contains("repeatable-add-top")) {
+      addOnTop = true;
+    }
     while (n.tag == null) {
       n = n.parentNode;
-      if (n.classList.contains("repeatable-add-top")) {
-        addOnTop = true;
-      }
     }
     n.tag.expand(addOnTop);
     // Hack to hide tool home when a new tool has some installers.
@@ -169,7 +161,7 @@ var repeatableSupport = {
 };
 
 // do the ones that extract innerHTML so that they can get their original HTML before
-// other behavior rules change them (like YUI buttons.)
+// other behavior rules change them.
 Behaviour.specify("DIV.repeated-container", "repeatable", -100, function (e) {
   if (isInsideRemovable(e)) {
     return;
@@ -193,6 +185,7 @@ Behaviour.specify(
     button.addEventListener("click", ({ currentTarget: button }) => {
       repeatableSupport.onAdd(button);
     });
+    /* eslint-disable-next-line no-useless-assignment */
     button = null; // avoid memory leak
   },
 );
@@ -231,6 +224,12 @@ Behaviour.specify(
   "repeatable",
   1,
   function (e) {
+    if (e.nodeName === "BUTTON") {
+      const container = e.closest("div.repeated-container");
+      if (container !== null && parseInt(container.dataset.minimum)) {
+        e.classList.add("show-if-not-only");
+      }
+    }
     e.addEventListener("click", function () {
       repeatableSupport.onDelete(e);
     });

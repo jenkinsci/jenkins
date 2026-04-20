@@ -28,7 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.matchesRegex;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.MarkupText;
 import java.io.ByteArrayOutputStream;
@@ -37,26 +37,30 @@ import java.io.PrintStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 
 @For({AnnotatedLargeText.class, ConsoleNote.class, ConsoleAnnotationOutputStream.class, PlainTextConsoleOutputStream.class})
-public class AnnotatedLargeTextTest {
+@WithJenkins
+class AnnotatedLargeTextTest {
 
-    @ClassRule
-    public static JenkinsRule r = new JenkinsRule();
+    private final LogRecorder logging = new LogRecorder().record(ConsoleAnnotationOutputStream.class, Level.FINE).record(PlainTextConsoleOutputStream.class, Level.FINE).capture(100);
 
-    @Rule
-    public LoggerRule logging = new LoggerRule().record(ConsoleAnnotationOutputStream.class, Level.FINE).record(PlainTextConsoleOutputStream.class, Level.FINE).capture(100);
+    private static JenkinsRule r;
+
+    @BeforeAll
+    static void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
-    public void smokes() throws Exception {
+    void smokes() throws Exception {
         ByteBuffer buf = new ByteBuffer();
         PrintStream ps = new PrintStream(buf, true, StandardCharsets.UTF_8);
         ps.print("Some text.\n");
@@ -73,7 +77,7 @@ public class AnnotatedLargeTextTest {
 
     @Issue("SECURITY-382")
     @Test
-    public void oldDeserialization() throws Exception {
+    void oldDeserialization() throws Exception {
         ByteBuffer buf = new ByteBuffer();
         buf.write(("hello"
                         + ConsoleNote.PREAMBLE_STR
@@ -111,7 +115,7 @@ public class AnnotatedLargeTextTest {
 
     @Issue("SECURITY-382")
     @Test
-    public void badMac() throws Exception {
+    void badMac() throws Exception {
         ByteBuffer buf = new ByteBuffer();
         buf.write(("Go back to "
                         + ConsoleNote.PREAMBLE_STR
@@ -141,7 +145,7 @@ public class AnnotatedLargeTextTest {
 
     @Issue("JENKINS-61452")
     @Test
-    public void corruptedNote() throws Exception {
+    void corruptedNote() throws Exception {
         ByteBuffer buf = new ByteBuffer();
         PrintStream ps = new PrintStream(buf, true, StandardCharsets.UTF_8);
         ps.print("Some text.\n");

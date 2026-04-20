@@ -27,11 +27,8 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${%Builds}" />
     <l:main-panel>
-      <h1>
-        ${%title(it)}
-      </h1>
+      <l:app-bar title="${%Builds}" />
 
-      <!-- TODO consider adding a BuildTimelineWidget (cf. Job, View, Computer) -->
       <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>
   </l:layout>

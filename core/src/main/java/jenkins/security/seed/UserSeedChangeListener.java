@@ -35,7 +35,7 @@ import jenkins.util.Listeners;
 
 /**
  * Listener notified when a user was requested to changed their seed
- * @since 2.160 and 2.150.2, but restricted (unavailable to plugins) before TODO
+ * @since 2.160 and 2.150.2, but restricted (unavailable to plugins) before 2.406
  */
 public abstract class UserSeedChangeListener implements ExtensionPoint {
     private static final Logger LOGGER = Logger.getLogger(SecurityListener.class.getName());

@@ -371,6 +371,11 @@ public final class CronTab {
      * (e.g. Jun 31) date, or at least a date too rare to be useful. This addresses JENKINS-41864 and was added in 2.49
      */
     public Calendar ceil(Calendar cal) {
+        if (cal.get(Calendar.SECOND) > 0 || cal.get(Calendar.MILLISECOND) > 0) {
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            cal.add(Calendar.MINUTE, 1);
+        }
         Calendar twoYearsFuture = (Calendar) cal.clone();
         twoYearsFuture.add(Calendar.YEAR, 2);
         OUTER:
@@ -440,6 +445,8 @@ public final class CronTab {
      * (e.g. Jun 31) date, or at least a date too rare to be useful. This addresses JENKINS-41864 and was added in 2.49
      */
     public Calendar floor(Calendar cal) {
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
         Calendar twoYearsAgo = (Calendar) cal.clone();
         twoYearsAgo.add(Calendar.YEAR, -2);
 

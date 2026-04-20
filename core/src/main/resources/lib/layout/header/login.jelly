@@ -1,0 +1,8 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <j:if test="${app.useSecurity}">
+    <j:if test="${h.isAnonymous()}">
+      <st:include it="${app.securityRealm}" page="loginLink.jelly" />
+    </j:if>
+  </j:if>
+</j:jelly>

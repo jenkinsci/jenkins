@@ -27,21 +27,21 @@ package jenkins.slaves;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link RemotingVersionInfo}.
  */
-public class RemotingVersionInfoTest {
+class RemotingVersionInfoTest {
 
     @Test
-    public void shouldLoadEmbeddedVersionByDefault() {
+    void shouldLoadEmbeddedVersionByDefault() {
         assertThat("Remoting Embedded version is not defined",
                 RemotingVersionInfo.getEmbeddedVersion(), notNullValue());
     }
 
     @Test
-    public void shouldLoadMinimumSupportedVersionByDefault() {
+    void shouldLoadMinimumSupportedVersionByDefault() {
         assertThat("Remoting Minimum supported version is not defined",
                 RemotingVersionInfo.getMinimumSupportedVersion(), notNullValue());
     }

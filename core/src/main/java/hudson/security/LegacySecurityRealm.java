@@ -28,10 +28,10 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Descriptor;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterConfig;
 import java.util.ArrayList;
 import java.util.List;
-import javax.servlet.Filter;
-import javax.servlet.FilterConfig;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -89,7 +89,7 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
         // when using container-authentication we can't hit /login directly.
         // we first have to hit protected /loginEntry, then let the container
         // trap that into /login.
-        return new ChainedServletFilter(filters);
+        return new ChainedServletFilter2(filters);
     }
 
     /**

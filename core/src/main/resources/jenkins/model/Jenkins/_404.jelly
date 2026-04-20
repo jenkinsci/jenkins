@@ -28,9 +28,9 @@ THE SOFTWARE.
       This is the page designated by web.xml to handle 404 errors. Show a nice error message and suggest logging in if applicable.
       Generally kept very similar to 'oops.jelly'.
     -->
-    <st:statusCode value="${response.getStatus()}" />
-    ${request.session.setAttribute('from', request.getAttribute('javax.servlet.error.request_uri'))}
-    <l:layout title="${%title(javax.servlet.error.message?:'Not Found')}" type="one-column">
+    <st:statusCode value="${response2.getStatus()}" />
+    ${request2.session.setAttribute('from', request2.getAttribute('jakarta.servlet.error.request_uri'))}
+    <l:layout title="${%title(jakarta.servlet.error.message?:'Not Found')}" type="one-column">
         <l:header />
         <l:main-panel>
             <h1 style="text-align: center">
@@ -38,12 +38,15 @@ THE SOFTWARE.
                 <span style="font-size:50px"><st:nbsp/>${%Oops!}</span>
             </h1>
             <div id="error-description" style="text-align: center">
-                <h2>${%title(javax.servlet.error.message?:'Not Found')}</h2>
-                <j:if test="${!request.getAttribute('jenkins.security.ResourceDomainRootAction.error')}">
+                <h2>${%title(jakarta.servlet.error.message?:'Not Found')}</h2>
+                <j:if test="${!request2.getAttribute('jenkins.security.ResourceDomainRootAction.error')}">
 	                <p>
 	                    <j:choose>
 	                        <j:when test="${app.useSecurity}">
                                 ${%noAccess}
+                                <j:if test="${h.isAnonymous()}">
+                                    ${%tryLoggingIn}
+                                </j:if>
 		                    </j:when>
 		                    <j:otherwise>
 		                        ${%notFound}

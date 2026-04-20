@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-256 -256 512 512">
+  <ellipse opacity="0.4" cx="0" cy="0" rx="210" ry="210" fill="none" stroke="var(--blue)" stroke-linecap="round" stroke-miterlimit="10" stroke-width="36" />
+  <path d="M0 -210C-115.98 -210 -210 -115.98 -210 0" fill="transparent" stroke="var(--blue)" stroke-width="36" stroke-miterlimit="10" stroke-linecap="round" data-symbol-animation="spin"/>
+  <circle cx="0" cy="0" r="30" fill="var(--blue)" />
+  <circle cx="96" cy="0" r="30" fill="var(--blue)" />
+  <circle cx="-96" cy="0" r="30" fill="var(--blue)" />
+</svg>

@@ -45,7 +45,7 @@ THE SOFTWARE.
 <blockquote><pre>
 Sample response:
 
-Content-Type: application/javascript; charset=UTF-8
+Content-Type: text/javascript; charset=UTF-8
 
 [
   { name: "findbugs",   version: "1.5", mode:"missing" },

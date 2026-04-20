@@ -2,33 +2,39 @@ package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.slaves.DumbSlave;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.logging.Level;
 import org.codehaus.groovy.runtime.MethodClosure;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.InboundAgentRule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.InboundAgentExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 @Issue("SECURITY-218")
-public class Security218Test implements Serializable {
-    @Rule
-    public transient JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class Security218Test {
 
-    @Rule
-    public transient InboundAgentRule inboundAgents = new InboundAgentRule();
+    @RegisterExtension
+    private final InboundAgentExtension inboundAgents = new InboundAgentExtension();
 
-    @Rule
-    public LoggerRule logging = new LoggerRule().record(ClassFilterImpl.class, Level.FINE);
+    private final LogRecorder logging = new LogRecorder().record(ClassFilterImpl.class, Level.FINE);
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Makes sure SECURITY-218 fix also applies to agents.
@@ -36,7 +42,7 @@ public class Security218Test implements Serializable {
      * This test is for regular static agent
      */
     @Test
-    public void dumbSlave() throws Exception {
+    void dumbSlave() throws Exception {
         check(j.createOnlineSlave());
     }
 
@@ -46,8 +52,8 @@ public class Security218Test implements Serializable {
      * This test is for JNLP agent
      */
     @Test
-    public void jnlpSlave() throws Exception {
-        DumbSlave a = (DumbSlave) inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().secret().build());
+    void jnlpSlave() throws Exception {
+        DumbSlave a = (DumbSlave) inboundAgents.createAgent(j, InboundAgentExtension.Options.newBuilder().build());
         try {
             j.createWebClient().goTo("computer/" + a.getNodeName() + "/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
             check(a);
@@ -63,9 +69,9 @@ public class Security218Test implements Serializable {
     @SuppressWarnings("ConstantConditions")
     private void check(DumbSlave s) {
         IOException e = assertThrows(
-                "Expected the connection to die",
                 IOException.class,
-                () -> s.getComputer().getChannel().call(new EvilReturnValue()));
+                () -> s.getComputer().getChannel().call(new EvilReturnValue()),
+                "Expected the connection to die");
         assertThat(e.getMessage(), containsString(MethodClosure.class.getName()));
     }
 

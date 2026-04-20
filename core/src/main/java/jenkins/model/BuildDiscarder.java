@@ -8,8 +8,8 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.AbstractProject;
+import hudson.model.Describable;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.tasks.LogRotator;
@@ -26,7 +26,7 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  * @since 1.503
  */
-public abstract class BuildDiscarder extends AbstractDescribableImpl<BuildDiscarder> implements ExtensionPoint {
+public abstract class BuildDiscarder implements Describable<BuildDiscarder>, ExtensionPoint {
     /**
      * Called to perform "garbage collection" on the job to discard old build records.
      *
@@ -41,7 +41,7 @@ public abstract class BuildDiscarder extends AbstractDescribableImpl<BuildDiscar
 
     @Override
     public BuildDiscarderDescriptor getDescriptor() {
-        return (BuildDiscarderDescriptor) super.getDescriptor();
+        return (BuildDiscarderDescriptor) Describable.super.getDescriptor();
     }
 
     /**

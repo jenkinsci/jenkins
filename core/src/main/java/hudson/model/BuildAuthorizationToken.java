@@ -25,14 +25,27 @@
 package hudson.model;
 
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
+import hudson.Extension;
 import hudson.Util;
+import hudson.diagnosis.OldDataMonitor;
+import hudson.model.listeners.ItemListener;
 import hudson.security.ACL;
+import hudson.util.Secret;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import javax.servlet.http.HttpServletResponse;
-import jenkins.security.ApiTokenProperty;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import jenkins.model.ParameterizedJobMixIn;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -46,13 +59,31 @@ import org.springframework.security.access.AccessDeniedException;
  */
 @Deprecated
 public final class BuildAuthorizationToken {
-    private final String token;
+    private final Secret token;
 
+    private transient boolean fromPlaintext;
+
+    /**
+     * @deprecated since TODO
+     */
+    @Deprecated
     public BuildAuthorizationToken(String token) {
-        this.token = token;
+        this.token = Secret.fromString(token);
+        this.fromPlaintext = true;
     }
 
-    public static BuildAuthorizationToken create(StaplerRequest req) {
+    /**
+     * @since 2.541
+     */
+    public BuildAuthorizationToken(Secret token) {
+        this.token = token;
+        this.fromPlaintext = false;
+    }
+
+    /**
+     * @since 2.475
+     */
+    public static BuildAuthorizationToken create(StaplerRequest2 req) {
         if (req.getParameter("pseudoRemoteTrigger") != null) {
             String token = Util.fixEmpty(req.getParameter("authToken"));
             if (token != null)
@@ -62,15 +93,26 @@ public final class BuildAuthorizationToken {
         return null;
     }
 
-    @Deprecated public static void checkPermission(AbstractProject<?, ?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
-        checkPermission((Job<?, ?>) project, token, req, rsp);
+    /**
+     * @deprecated use {@link #create(StaplerRequest2)}
+     */
+    @Deprecated
+    public static BuildAuthorizationToken create(StaplerRequest req) {
+        return create(StaplerRequest.toStaplerRequest2(req));
     }
 
-    public static void checkPermission(Job<?, ?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
+    @Deprecated public static void checkPermission(AbstractProject<?, ?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
+        checkPermission((Job<?, ?>) project, token, StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+    }
+
+    /**
+     * @since 2.475
+     */
+    public static void checkPermission(Job<?, ?> project, BuildAuthorizationToken token, StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (token != null && token.token != null) {
             //check the provided token
             String providedToken = req.getParameter("token");
-            if (providedToken != null && providedToken.equals(token.token))
+            if (providedToken != null && MessageDigest.isEqual(providedToken.getBytes(StandardCharsets.UTF_8), token.getToken().getBytes(StandardCharsets.UTF_8)))
                 return;
             if (providedToken != null)
                 throw new AccessDeniedException(Messages.BuildAuthorizationToken_InvalidTokenProvided());
@@ -82,16 +124,28 @@ public final class BuildAuthorizationToken {
             return;
         }
 
-        if (req.getAttribute(ApiTokenProperty.class.getName()) instanceof User) {
-            return;
-        }
-
         rsp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         rsp.addHeader("Allow", "POST");
         throw HttpResponses.forwardToView(project, "requirePOST.jelly");
     }
 
+    /**
+     * @deprecated use {@link #checkPermission(Job, BuildAuthorizationToken, StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    public static void checkPermission(Job<?, ?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
+        checkPermission(project, token, StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+    }
+
+    @Deprecated
     public String getToken() {
+        return token.getPlainText();
+    }
+
+    /**
+     * @since 2.541
+     */
+    public Secret getEncryptedToken() {
         return token;
     }
 
@@ -103,12 +157,44 @@ public final class BuildAuthorizationToken {
 
         @Override
         public Object fromString(String str) {
-            return new BuildAuthorizationToken(str);
+            if (Secret.decrypt(str) == null) {
+                return new BuildAuthorizationToken(str);
+            }
+            return new BuildAuthorizationToken(Secret.fromString(str));
         }
 
         @Override
         public String toString(Object obj) {
-            return ((BuildAuthorizationToken) obj).token;
+            final BuildAuthorizationToken bat = (BuildAuthorizationToken) obj;
+            // We assume this only gets called when re-saving to its usual destination, so let's clear the in-memory state:
+            bat.fromPlaintext = false;
+            return bat.token.getEncryptedValue();
+        }
+    }
+
+    @Extension
+    @Restricted(NoExternalUse.class)
+    public static class ItemListenerImpl extends ItemListener {
+        private static final Logger LOGGER = Logger.getLogger(ItemListenerImpl.class.getName());
+
+        @Override
+        public void onUpdated(Item item) {
+            if (item instanceof ParameterizedJobMixIn.ParameterizedJob job) {
+                BuildAuthorizationToken bat = job.getAuthToken();
+                if (bat != null) {
+                    if (bat.fromPlaintext) {
+                        OldDataMonitor.report(item, "2.528.3 / 2.541");
+                        LOGGER.log(Level.FINE, "Reporting " + item.getFullName());
+                    } else {
+                        LOGGER.log(Level.FINE, "Skipping reporting of " + item.getFullName());
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void onLoaded() {
+            Jenkins.get().getAllItems(ParameterizedJobMixIn.ParameterizedJob.class).forEach(this::onUpdated);
         }
     }
 }

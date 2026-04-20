@@ -36,8 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.util.SourceCodeEscapers;
 import org.apache.commons.io.output.ProxyWriter;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
 /**
@@ -57,7 +57,7 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
     /**
      * Reused buffer that stores char representation of a single line.
      */
-    private final LineBuffer line = new LineBuffer(256);
+    private final LineBuffer line = new LineBuffer(4096);
     /**
      * {@link OutputStream} that writes to {@link #line}.
      */
@@ -122,7 +122,7 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
                     }
                 } catch (IOException | ClassNotFoundException e) {
                     // if we failed to resurrect an annotation, ignore it.
-                    LOGGER.log(Level.FINE, "Failed to resurrect annotation from \"" + StringEscapeUtils.escapeJava(new String(in, next, rest, Charset.defaultCharset())) + "\"", e);
+                    LOGGER.log(Level.FINE, "Failed to resurrect annotation from \"" + SourceCodeEscapers.javaCharEscaper().escape(new String(in, next, rest, Charset.defaultCharset())) + "\"", e);
                 }
 
                 int bytesUsed = rest - b.available(); // bytes consumed by annotations
@@ -173,8 +173,8 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
 
         private void reset() {
             StringBuffer buf = getStringBuffer();
-            if (buf.length() > 4096)
-                out = new StringWriter(256);
+            if (buf.length() > 64 * 1024)
+                out = new StringWriter(4096);
             else
                 buf.setLength(0);
         }

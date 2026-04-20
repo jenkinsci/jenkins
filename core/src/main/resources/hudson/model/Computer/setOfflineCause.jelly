@@ -34,7 +34,7 @@ THE SOFTWARE.
           ${%blurb}
         </p>
         <form method="post" action="changeOfflineCause">
-          <f:textarea name="offlineMessage" value="${it.getOfflineCauseReason()}"/>
+          <f:textarea name="offlineMessage" value="${it.temporaryOfflineCauseReason}"/>
           <p>
             <f:submit value="${%submit}"  />
           </p>

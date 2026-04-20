@@ -13,7 +13,7 @@
                             id="user-seed-property-reset-seed"
                             data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
                             data-confirm="${%resetSeed.confirmation}"
-                            data-redirect-url="${request.contextPath}/"
+                            data-redirect-url="${request2.contextPath}/"
                             data-confirm-title="${%resetSeed.confirmationTitle}">
                         ${%resetSeed.button}
                     </button>

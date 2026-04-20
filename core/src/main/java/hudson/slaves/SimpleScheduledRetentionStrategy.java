@@ -170,6 +170,11 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
     }
 
     @Override
+    public boolean isAcceptingTasks(SlaveComputer c) {
+        return isOnlineScheduled();
+    }
+
+    @Override
     @GuardedBy("hudson.model.Queue.lock")
     public synchronized long check(final SlaveComputer c) {
         boolean shouldBeOnline = isOnlineScheduled();
@@ -179,74 +184,83 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
             LOGGER.log(INFO, "Trying to launch computer {0} as schedule says it should be on-line at "
                     + "this point in time", new Object[]{c.getName()});
             if (c.isLaunchSupported()) {
-                Computer.threadPoolForRemoting.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            c.connect(true).get();
-                            if (c.isOnline()) {
-                                LOGGER.log(INFO, "Launched computer {0} per schedule", new Object[]{c.getName()});
-                            }
-                            if (keepUpWhenActive && c.isOnline() && !c.isAcceptingTasks()) {
-                                LOGGER.log(INFO,
-                                        "Enabling new jobs for computer {0} as it has started its scheduled uptime",
-                                        new Object[]{c.getName()});
-                                c.setAcceptingTasks(true);
-                            }
-                        } catch (InterruptedException | ExecutionException e) {
+                Computer.threadPoolForRemoting.submit(() -> {
+                    try {
+                        c.connect(true).get();
+                        if (c.isOnline()) {
+                            LOGGER.log(INFO, "Launched computer {0} per schedule", new Object[]{c.getName()});
                         }
+                        if (keepUpWhenActive && c.isOnline() && !c.isAcceptingTasks()) {
+                            LOGGER.log(INFO,
+                                    "Enabling new jobs for computer {0} as it has started its scheduled uptime",
+                                    new Object[]{c.getName()});
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
                     }
                 });
             }
         } else if (!shouldBeOnline && c.isOnline()) {
-            if (keepUpWhenActive) {
-                if (!c.isIdle() && c.isAcceptingTasks()) {
-                    c.setAcceptingTasks(false);
-                    LOGGER.log(INFO,
-                            "Disabling new jobs for computer {0} as it has finished its scheduled uptime",
-                            new Object[]{c.getName()});
-                    return 1;
-                } else if (c.isIdle() && c.isAcceptingTasks()) {
-                    Queue.withLock(new Runnable() {
-                        @Override
-                        public void run() {
+            if (c.isLaunchSupported()) {
+                if (keepUpWhenActive) {
+                    if (!c.isIdle() && c.isAcceptingTasks()) {
+                        LOGGER.log(INFO,
+                                "Disabling new jobs for computer {0} as it has finished its scheduled uptime",
+                                new Object[]{c.getName()});
+                        return 0;
+                    } else if (c.isIdle() && c.isAcceptingTasks()) {
+                        Queue.runWithLock(() -> {
                             if (c.isIdle()) {
                                 LOGGER.log(INFO, "Disconnecting computer {0} as it has finished its scheduled uptime",
                                         new Object[]{c.getName()});
                                 c.disconnect(OfflineCause
                                         .create(Messages._SimpleScheduledRetentionStrategy_FinishedUpTime()));
-                            } else {
-                                c.setAcceptingTasks(false);
                             }
-                        }
-                    });
-                } else if (c.isIdle() && !c.isAcceptingTasks()) {
-                    Queue.withLock(new Runnable() {
-                        @Override
-                        public void run() {
+                        });
+                    } else if (c.isIdle() && !c.isAcceptingTasks()) {
+                        Queue.runWithLock(() -> {
                             if (c.isIdle()) {
                                 LOGGER.log(INFO, "Disconnecting computer {0} as it has finished all jobs running when "
                                         + "it completed its scheduled uptime", new Object[]{c.getName()});
                                 c.disconnect(OfflineCause
                                         .create(Messages._SimpleScheduledRetentionStrategy_FinishedUpTime()));
                             }
-                        }
-                    });
+                        });
+                    }
+                } else {
+                    // no need to get the queue lock as the user has selected the break builds option!
+                    LOGGER.log(INFO, "Disconnecting computer {0} as it has finished its scheduled uptime",
+                            new Object[]{c.getName()});
+                    c.disconnect(OfflineCause.create(Messages._SimpleScheduledRetentionStrategy_FinishedUpTime()));
                 }
-            } else {
-                // no need to get the queue lock as the user has selected the break builds option!
-                LOGGER.log(INFO, "Disconnecting computer {0} as it has finished its scheduled uptime",
-                        new Object[]{c.getName()});
-                c.disconnect(OfflineCause.create(Messages._SimpleScheduledRetentionStrategy_FinishedUpTime()));
             }
+        } else {
+            c.setOfflineCause(new ScheduledOfflineCause());
         }
-        return 1;
+        return 0;
     }
 
     private synchronized boolean isOnlineScheduled() {
         updateStartStopWindow();
         long now = System.currentTimeMillis();
         return (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);
+    }
+
+    public static class ScheduledOfflineCause extends OfflineCause.SimpleOfflineCause {
+        public ScheduledOfflineCause() {
+            super(Messages._SimpleScheduledRetentionStrategy_ScheduledOfflineCause_displayName());
+        }
+
+        @NonNull
+        @Override
+        public String getComputerIcon() {
+            return "symbol-computer-not-accepting";
+        }
+
+        @NonNull
+        @Override
+        public String getIcon() {
+            return "symbol-trigger";
+        }
     }
 
     @Extension @Symbol("schedule")

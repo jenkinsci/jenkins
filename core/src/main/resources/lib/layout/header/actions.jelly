@@ -1,0 +1,76 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:x="jelly:xml">
+  <div class="jenkins-header__actions">
+    <st:include page="suffix" optional="true" />
+
+    <j:set var="allActions" value="${it.actions}"/>
+
+    <!--  first render all primary actions (except the user login )-->
+    <j:forEach var="action" items="${allActions}">
+      <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(action.urlName)}" />
+      <j:set var="isPrimary" value="${h.showInPrimaryHeader(action)}"/>
+
+      <j:if test="${isCurrent or isPrimary}">
+        <!-- do not show the user avatar -->
+        <j:if test="${action.class.name != 'jenkins.model.navigation.UserAction'}">
+          <h:primaryAction action="${action}" isCurrent="${isCurrent}"/>
+        </j:if>
+      </j:if>
+    </j:forEach>
+
+    <!--  we only want the hamburger menu if there is something to display -->
+    <!--  render all non primary non current actions -->
+    <j:set var="hamburgerHasBadgeWithSeverityError" value="false" />
+    <j:set var="hamburgerHasBadgeWithSeverityWarning" value="false" />
+    <j:set var="hamburgerHasBadgeWithSeverityInfo" value="false" />
+    <j:set var="hamburgerEntries">
+      <j:forEach var="action" items="${allActions}">
+        <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(action.urlName)}" />
+        <j:set var="isPrimary" value="${h.showInPrimaryHeader(action)}"/>
+        <j:if test="${!isCurrent and !isPrimary}">
+          <h:secondaryAction action="${action}"/>
+          <j:set var="currentBadge" value="${action.badge}"/>
+          <j:if test="${currentBadge != null}">
+            <j:choose>
+              <j:when test="${currentBadge.severity == 'danger'}">
+                <j:set var="hamburgerHasBadgeWithSeverityError" value="true" />
+              </j:when>
+              <j:when test="${currentBadge.severity == 'warning'}">
+                <j:set var="hamburgerHasBadgeWithSeverityWarning" value="true" />
+              </j:when>
+              <j:otherwise>
+                <j:set var="hamburgerHasBadgeWithSeverityInfo" value="true" />
+              </j:otherwise>
+            </j:choose>
+          </j:if>
+        </j:if>
+      </j:forEach>
+    </j:set>
+    <j:if test="${hamburgerEntries.length() gt 0}">
+      <j:set var="hamburgerBadge">
+        <j:choose>
+          <j:when test="${hamburgerHasBadgeWithSeverityError}">
+            <span class="jenkins-badge jenkins-!-danger-color" />
+          </j:when>
+          <j:when test="${hamburgerHasBadgeWithSeverityWarning}">
+            <span class="jenkins-badge jenkins-!-warning-color" />
+          </j:when>
+          <j:when test="${hamburgerHasBadgeWithSeverityInfo}">
+            <span class="jenkins-badge jenkins-!-info-color" />
+          </j:when>
+        </j:choose>
+      </j:set>
+      <l:overflowButton icon="symbol-menu-hamburger" id="header-more-actions" html="${hamburgerBadge}" clazz="jenkins-button--tertiary">
+        <j:out value="${hamburgerEntries}" />
+      </l:overflowButton>
+    </j:if>
+
+    <!--  finally the user avatar or login button (if required) -->
+    <j:forEach var="action" items="${allActions}">
+      <j:if test="${action.class.name == 'jenkins.model.navigation.UserAction'}">
+        <h:primaryAction action="${action}" isCurrent="${h.hyperlinkMatchesCurrentPage(action.urlName)}"/>
+      </j:if>
+    </j:forEach>
+    <h:login/>
+  </div>
+</j:jelly>

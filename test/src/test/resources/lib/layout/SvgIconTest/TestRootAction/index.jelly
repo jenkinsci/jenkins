@@ -26,7 +26,7 @@ THE SOFTWARE.
     <l:layout title="Usage of svgIcon">
         <l:main-panel>
             <div id="test-panel">
-                <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" tooltip="${it.tooltipContent}" />
+                <l:svgIcon href="${resURL}/images/svgs/go-up.svg#arrow" tooltip="${it.tooltipContent}" />
             </div>
         </l:main-panel>
     </l:layout>

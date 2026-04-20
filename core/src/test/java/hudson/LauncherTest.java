@@ -24,39 +24,85 @@
 
 package hudson;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.model.StreamBuildListener;
 import hudson.model.TaskListener;
+import hudson.remoting.Channel;
+import hudson.remoting.ChannelBuilder;
+import hudson.remoting.FastPipedInputStream;
+import hudson.remoting.FastPipedOutputStream;
 import hudson.util.ProcessTree;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import jenkins.security.MasterToSlaveCallable;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 
-public class LauncherTest {
+class LauncherTest {
 
-    @Rule public ChannelRule channels = new ChannelRule();
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @TempDir
+    private File temp;
+
+    /**
+     * Two channels that are connected to each other, but shares the same classloader.
+     */
+    private Channel french;
+    private Channel british;
+    private ExecutorService executors;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        executors = Executors.newCachedThreadPool();
+        final FastPipedInputStream p1i = new FastPipedInputStream();
+        final FastPipedInputStream p2i = new FastPipedInputStream();
+        final FastPipedOutputStream p1o = new FastPipedOutputStream(p1i);
+        final FastPipedOutputStream p2o = new FastPipedOutputStream(p2i);
+
+        Future<Channel> f1 = executors.submit(() -> new ChannelBuilder("This side of the channel", executors).withMode(Channel.Mode.BINARY).build(p1i, p2o));
+        Future<Channel> f2 = executors.submit(() -> new ChannelBuilder("The other side of the channel", executors).withMode(Channel.Mode.BINARY).build(p2i, p1o));
+        french = f1.get();
+        british = f2.get();
+    }
+
+    @AfterEach
+    void tearDown() {
+        try {
+            french.close(); // this will automatically initiate the close on the other channel, too.
+            french.join();
+            british.join();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } catch (InterruptedException x) {
+            throw new AssertionError(x);
+        }
+        executors.shutdownNow();
+    }
 
     @Issue("JENKINS-4611")
-    @Test public void remoteKill() throws Exception {
+    @Test
+    void remoteKill() throws Exception {
         assumeFalse(Functions.isWindows());
 
-        File tmp = temp.newFile();
+        File tmp = File.createTempFile("junit", null, temp);
 
-            FilePath f = new FilePath(channels.french, tmp.getPath());
+            FilePath f = new FilePath(french, tmp.getPath());
             Launcher l = f.createLauncher(StreamTaskListener.fromStderr());
             Proc p = l.launch().cmds("sh", "-c", "echo $$$$ > " + tmp + "; sleep 30").stdout(System.out).stderr(System.err).start();
             while (!tmp.exists())
@@ -66,10 +112,10 @@ public class LauncherTest {
             assertNotEquals(0, p.join());
             long end = System.currentTimeMillis();
             long terminationTime = end - start;
-            assertTrue("Join did not finish promptly. The completion time (" + terminationTime + "ms) is longer than expected 15s", terminationTime < 15000);
-            channels.french.call(new NoopCallable()); // this only returns after the other side of the channel has finished executing cancellation
+            assertTrue(terminationTime < 15000, "Join did not finish promptly. The completion time (" + terminationTime + "ms) is longer than expected 15s");
+            french.call(new NoopCallable()); // this only returns after the other side of the channel has finished executing cancellation
             Thread.sleep(2000); // more delay to make sure it's gone
-            assertNull("process should be gone", ProcessTree.get().get(Integer.parseInt(Files.readString(tmp.toPath(), Charset.defaultCharset()).trim())));
+            assertNull(ProcessTree.get().get(Integer.parseInt(Files.readString(tmp.toPath(), Charset.defaultCharset()).trim())), "process should be gone");
 
             // Manual version of test: set up instance w/ one agent. Now in script console
             // new hudson.FilePath(new java.io.File("/tmp")).createLauncher(new hudson.util.StreamTaskListener(System.err)).
@@ -88,7 +134,8 @@ public class LauncherTest {
     }
 
     @Issue("JENKINS-15733")
-    @Test public void decorateByEnv() throws Exception {
+    @Test
+    void decorateByEnv() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         TaskListener l = new StreamBuildListener(baos, Charset.defaultCharset());
         Launcher base = new Launcher.LocalLauncher(l);
@@ -96,12 +143,13 @@ public class LauncherTest {
         Launcher decorated = base.decorateByEnv(env);
         int res = decorated.launch().envs("key2=val2").cmds(Functions.isWindows() ? new String[] {"cmd", "/q", "/c", "echo %key1% %key2%"} : new String[] {"sh", "-c", "echo $key1 $key2"}).stdout(l).join();
         String log = baos.toString(Charset.defaultCharset());
-        assertEquals(log, 0, res);
-        assertTrue(log, log.contains("val1 val2"));
+        assertEquals(0, res, log);
+        assertTrue(log.contains("val1 val2"), log);
     }
 
     @Issue("JENKINS-18368")
-    @Test public void decoratedByEnvMaintainsIsUnix() {
+    @Test
+    void decoratedByEnvMaintainsIsUnix() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         TaskListener listener = new StreamBuildListener(output, Charset.defaultCharset());
         Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);
@@ -113,7 +161,8 @@ public class LauncherTest {
     }
 
     @Issue("JENKINS-18368")
-    @Test public void decoratedByPrefixMaintainsIsUnix() {
+    @Test
+    void decoratedByPrefixMaintainsIsUnix() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         TaskListener listener = new StreamBuildListener(output, Charset.defaultCharset());
         Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);

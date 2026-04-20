@@ -34,8 +34,7 @@ import org.jenkinsci.Symbol;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(optional = true) @Symbol("hsErrPid")
-// TODO why would an extension using a built-in extension point need to be marked optional?
+@Extension @Symbol("hsErrPid")
 public class HsErrPidList extends AdministrativeMonitor {
     /**
      * hs_err_pid files that we think belong to us.

@@ -38,7 +38,7 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.Exported;
 
 public class RunParameterDefinition extends SimpleParameterDefinition {
@@ -96,8 +96,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
 
     @Override
     public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
-        if (defaultValue instanceof RunParameterValue) {
-            RunParameterValue value = (RunParameterValue) defaultValue;
+        if (defaultValue instanceof RunParameterValue value) {
             return new RunParameterDefinition(getName(), getProjectName(), value.getRunId(), getDescription(), getFilter());
         } else {
             return this;
@@ -129,16 +128,12 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
      */
     public RunList getBuilds() {
         // use getFilter() method so we dont have to worry about null filter value.
-        switch (getFilter()) {
-            case COMPLETED:
-                return getProject().getBuilds().overThresholdOnly(Result.ABORTED).completedOnly();
-            case SUCCESSFUL:
-                return getProject().getBuilds().overThresholdOnly(Result.UNSTABLE).completedOnly();
-            case STABLE:
-                return getProject().getBuilds().overThresholdOnly(Result.SUCCESS).completedOnly();
-            default:
-                return getProject().getBuilds();
-        }
+        return switch (getFilter()) {
+            case COMPLETED -> getProject().getBuilds().overThresholdOnly(Result.ABORTED).completedOnly();
+            case SUCCESSFUL -> getProject().getBuilds().overThresholdOnly(Result.UNSTABLE).completedOnly();
+            case STABLE -> getProject().getBuilds().overThresholdOnly(Result.SUCCESS).completedOnly();
+            default -> getProject().getBuilds();
+        };
     }
 
     @Extension @Symbol({"run", "runParam"})
@@ -155,7 +150,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         }
 
         @Override
-        public ParameterDefinition newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public ParameterDefinition newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
             return req.bindJSON(RunParameterDefinition.class, formData);
         }
 
@@ -179,20 +174,12 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         }
 
         // use getFilter() so we dont have to worry about null filter value.
-        switch (getFilter()) {
-        case COMPLETED:
-            lastBuild = project.getLastCompletedBuild();
-            break;
-        case SUCCESSFUL:
-            lastBuild = project.getLastSuccessfulBuild();
-            break;
-        case STABLE:
-            lastBuild = project.getLastStableBuild();
-            break;
-        default:
-            lastBuild = project.getLastBuild();
-            break;
-        }
+        lastBuild = switch (getFilter()) {
+            case COMPLETED -> project.getLastCompletedBuild();
+            case SUCCESSFUL -> project.getLastSuccessfulBuild();
+            case STABLE -> project.getLastStableBuild();
+            default -> project.getLastBuild();
+        };
 
         if (lastBuild != null) {
             return createValue(lastBuild.getExternalizableId());
@@ -202,7 +189,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
     }
 
     @Override
-    public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
+    public ParameterValue createValue(StaplerRequest2 req, JSONObject jo) {
         RunParameterValue value = req.bindJSON(RunParameterValue.class, jo);
         value.setDescription(getDescription());
         return value;

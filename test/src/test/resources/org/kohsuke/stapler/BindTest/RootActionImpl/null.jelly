@@ -1,0 +1,10 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
+    <l:layout title="The Root">
+        <l:main-panel>
+            <h1>Root Action with null</h1>
+            <st:bind var="varname" value="${null}"/>
+            <st:adjunct includes="org.kohsuke.stapler.BindTest.RootActionImpl.adjunct"/>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

@@ -24,12 +24,18 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.Descriptor.FormException;
+import hudson.model.userproperty.UserPropertyCategory;
+import java.util.ArrayList;
+import java.util.List;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
@@ -58,6 +64,10 @@ public abstract class UserProperty implements ReconfigurableDescribable<UserProp
      */
     protected transient User user;
 
+    /**
+     * This method is used to inform the property about its owner.
+     * It could be called multiple times, even without change, thus it should be idempotent.
+     */
     protected void setUser(User u) {
         this.user = u;
     }
@@ -75,8 +85,40 @@ public abstract class UserProperty implements ReconfigurableDescribable<UserProp
         return Jenkins.get().getDescriptorList(UserProperty.class);
     }
 
+    /**
+     * Returns all the registered {@link UserPropertyCategory} descriptors for a given category.
+     *
+     * @since 2.468
+     */
+    public static List<UserPropertyDescriptor> allByCategoryClass(@NonNull Class<? extends UserPropertyCategory> categoryClass) {
+        DescriptorExtensionList<UserProperty, UserPropertyDescriptor> all = all();
+
+        List<UserPropertyDescriptor> onlyForTheCategory = new ArrayList<>(all.size());
+        for (UserPropertyDescriptor descriptor : all) {
+            if (descriptor.getUserPropertyCategory().getClass().equals(categoryClass)) {
+                onlyForTheCategory.add(descriptor);
+            }
+        }
+
+        return onlyForTheCategory;
+    }
+
+    @Override
+    public UserProperty reconfigure(StaplerRequest2 req, JSONObject form) throws FormException {
+        if (Util.isOverridden(UserProperty.class, getClass(), "reconfigure", StaplerRequest.class, JSONObject.class)) {
+            return reconfigure(StaplerRequest.fromStaplerRequest2(req), form);
+        } else {
+            return reconfigureImpl(req, form);
+        }
+    }
+
+    @Deprecated
     @Override
     public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+        return reconfigureImpl(StaplerRequest.toStaplerRequest2(req), form);
+    }
+
+    private UserProperty reconfigureImpl(StaplerRequest2 req, JSONObject form) throws FormException {
         return form == null ? null : getDescriptor().newInstance(req, form);
     }
 }

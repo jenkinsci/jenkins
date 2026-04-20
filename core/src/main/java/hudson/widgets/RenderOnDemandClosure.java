@@ -27,6 +27,7 @@ package hudson.widgets;
 import hudson.Util;
 import hudson.model.Descriptor;
 import hudson.util.PackedMap;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,13 +36,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.framework.adjunct.AdjunctsInPage;
 import org.kohsuke.stapler.jelly.DefaultScriptInvoker;
@@ -72,8 +72,12 @@ public class RenderOnDemandClosure {
         assert !bodyStack.isEmpty();    // there must be at least one, which is the direct child of <l:renderOnDemand>
 
         Map<String, Object> variables = new HashMap<>();
-        for (String v : Util.fixNull(attributesToCapture).split(","))
-            variables.put(v.intern(), context.getVariable(v));
+        String _attributesToCapture = Util.fixEmpty(attributesToCapture);
+        if (_attributesToCapture != null) {
+            for (String v : _attributesToCapture.split(",")) {
+                variables.put(v.intern(), context.getVariable(v));
+            }
+        }
 
         // capture the current base of context for descriptors
         currentDescriptorByNameUrl = Descriptor.getCurrentDescriptorByNameUrl();
@@ -86,6 +90,7 @@ public class RenderOnDemandClosure {
         for (String adjunct : _adjuncts) {
             this.adjuncts[i++] = adjunct.intern();
         }
+        LOGGER.fine(() -> "captured " + variables);
     }
 
     /**
@@ -95,12 +100,13 @@ public class RenderOnDemandClosure {
     public HttpResponse render() {
         return new HttpResponse() {
             @Override
-            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
+                LOGGER.fine(() -> "rendering " + req.getPathInfo());
                 req.getWebApp().getDispatchValidator().allowDispatch(req, rsp);
                 try {
                     new DefaultScriptInvoker() {
                         @Override
-                        protected JellyContext createContext(StaplerRequest req, StaplerResponse rsp, Script script, Object it) {
+                        protected JellyContext createContext(StaplerRequest2 req, StaplerResponse2 rsp, Script script, Object it) {
                             JellyContext context = super.createContext(req, rsp, script, it);
                             for (int i = bodyStack.length - 1; i > 0; i--) { // exclude bodyStack[0]
                                 context = new JellyContext(context);
@@ -115,7 +121,7 @@ public class RenderOnDemandClosure {
                         }
 
                         @Override
-                        protected void exportVariables(StaplerRequest req, StaplerResponse rsp, Script script, Object it, JellyContext context) {
+                        protected void exportVariables(StaplerRequest2 req, StaplerResponse2 rsp, Script script, Object it, JellyContext context) {
                             super.exportVariables(req, rsp, script, it, context);
                             context.setVariables(variables);
                             req.setAttribute("currentDescriptorByNameUrl", currentDescriptorByNameUrl);

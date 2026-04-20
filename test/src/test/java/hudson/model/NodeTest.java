@@ -27,16 +27,19 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
+import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
@@ -58,56 +61,79 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Map;
 import jenkins.model.Jenkins;
+import jenkins.model.NodeListener;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  *
  * @author Lucie Votypkova
  */
-public class NodeTest {
+@WithJenkins
+class NodeTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
-    public static boolean addDynamicLabel = false;
-    public static boolean notTake = false;
+    private static boolean addDynamicLabel = false;
+    private static boolean notTake = false;
 
-    @Before
-    public void before() {
-       addDynamicLabel = false;
-       notTake = false;
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+        addDynamicLabel = false;
+        notTake = false;
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
     }
 
+    @TestExtension("testSetTemporaryOfflineCause")
+    public static class NodeListenerImpl extends NodeListener {
+        private int count;
+
+        public static int getCount() {
+            return ExtensionList.lookupSingleton(NodeListenerImpl.class).count;
+        }
+
+        @Override
+        protected void onUpdated(@NonNull Node oldOne, @NonNull Node newOne) {
+            count++;
+        }
+    }
+
     @Test
-    public void testSetTemporaryOfflineCause() throws Exception {
+    void testSetTemporaryOfflineCause() throws Exception {
         Node node = j.createOnlineSlave();
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedLabel(j.jenkins.getLabel(node.getDisplayName()));
         OfflineCause cause = new OfflineCause.ByCLI("message");
         node.setTemporaryOfflineCause(cause);
+        assertThat(NodeListenerImpl.getCount(), is(1));
         for (ComputerListener l : ComputerListener.all()) {
             l.onOnline(node.toComputer(), TaskListener.NULL);
         }
-        assertEquals("Node should have offline cause which was set.", cause, node.toComputer().getOfflineCause());
+        assertEquals(cause, node.toComputer().getOfflineCause(), "Node should have offline cause which was set.");
         OfflineCause cause2 = new OfflineCause.ByCLI("another message");
         node.setTemporaryOfflineCause(cause2);
-        assertEquals("Node should have original offline cause after setting another.", cause, node.toComputer().getOfflineCause());
+        assertThat(NodeListenerImpl.getCount(), is(2));
+        assertEquals(cause2, node.toComputer().getOfflineCause(), "Node should have the new offline cause.");
+        // Exists in some plugins
+        node.toComputer().setTemporarilyOffline(false, new OfflineCause.ByCLI("A third message"));
+        assertThat(node.getTemporaryOfflineCause(), nullValue());
+        assertThat(NodeListenerImpl.getCount(), is(3));
     }
 
     @Test
-    public void testOfflineCause() throws Exception {
+    void testOfflineCause() throws Exception {
         Node node = j.createOnlineSlave();
         Computer computer = node.toComputer();
         OfflineCause.UserCause cause;
@@ -116,14 +142,17 @@ public class NodeTest {
         try (ACLContext ignored = ACL.as2(someone.impersonate2())) {
             computer.doToggleOffline("original message");
             cause = (OfflineCause.UserCause) computer.getOfflineCause();
-            assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
+            assertThat(computer.getOfflineCauseReason(), is("original message"));
+            assertThat(computer.getTemporaryOfflineCauseReason(), is("original message"));
+            assertTrue(cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"), cause.toString());
             assertEquals(someone, cause.getUser());
         }
         final User root = User.getOrCreateByIdOrFullName("root@localhost");
         try (ACLContext ignored = ACL.as2(root.impersonate2())) {
             computer.doChangeOfflineCause("new message");
             cause = (OfflineCause.UserCause) computer.getOfflineCause();
-            assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
+            assertThat(computer.getTemporaryOfflineCauseReason(), is("new message"));
+            assertTrue(cause.toString().matches("^.*?Disconnected by root@localhost : new message"), cause.toString());
             assertEquals(root, cause.getUser());
 
             computer.doToggleOffline(null);
@@ -132,7 +161,7 @@ public class NodeTest {
     }
 
     @Test
-    public void testOfflineCauseAsAnonymous() throws Exception {
+    void testOfflineCauseAsAnonymous() throws Exception {
         Node node = j.createOnlineSlave();
         final Computer computer = node.toComputer();
         OfflineCause.UserCause cause;
@@ -158,7 +187,7 @@ public class NodeTest {
     }
 
     @Test
-    public void testGetLabelCloud() throws Exception {
+    void testGetLabelCloud() throws Exception {
         Node node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
         FreeStyleProject project = j.createFreeStyleProject();
@@ -168,29 +197,29 @@ public class NodeTest {
         TagCloud<LabelAtom> cloud = node.getLabelCloud();
         for (TagCloud.Entry e : cloud) {
             if (e.item.equals(label)) {
-                assertEquals("Label label1 should have one tied project.", 1, e.weight, 0);
+                assertEquals(1, e.weight, 0, "Label label1 should have one tied project.");
             } else {
-                assertEquals("Label " + e.item + " should not have any tied project.", 0, e.weight, 0);
+                assertEquals(0, e.weight, 0, "Label " + e.item + " should not have any tied project.");
             }
         }
 
     }
 
     @Test
-    public void testGetAssignedLabels() throws Exception {
+    void testGetAssignedLabels() throws Exception {
         Node node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
         LabelAtom notContained = j.jenkins.getLabelAtom("notContained");
         addDynamicLabel = true;
-        assertTrue("Node should have label1.", node.getAssignedLabels().contains(j.jenkins.getLabelAtom("label1")));
-        assertTrue("Node should have label2.", node.getAssignedLabels().contains(j.jenkins.getLabelAtom("label2")));
-        assertTrue("Node should have dynamically added dynamicLabel.", node.getAssignedLabels().contains(j.jenkins.getLabelAtom("dynamicLabel")));
-        assertFalse("Node should not have label notContained.", node.getAssignedLabels().contains(notContained));
-        assertTrue("Node should have self label.", node.getAssignedLabels().contains(node.getSelfLabel()));
+        assertTrue(node.getAssignedLabels().contains(j.jenkins.getLabelAtom("label1")), "Node should have label1.");
+        assertTrue(node.getAssignedLabels().contains(j.jenkins.getLabelAtom("label2")), "Node should have label2.");
+        assertTrue(node.getAssignedLabels().contains(j.jenkins.getLabelAtom("dynamicLabel")), "Node should have dynamically added dynamicLabel.");
+        assertFalse(node.getAssignedLabels().contains(notContained), "Node should not have label notContained.");
+        assertTrue(node.getAssignedLabels().contains(node.getSelfLabel()), "Node should have self label.");
     }
 
     @Test
-    public void testCanTake() throws Exception {
+    void testCanTake() throws Exception {
         Slave node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
         FreeStyleProject project = j.createFreeStyleProject();
@@ -201,18 +230,18 @@ public class NodeTest {
         Queue.BuildableItem item = new Queue.BuildableItem(new WaitingItem(new GregorianCalendar(), project, new ArrayList<>()));
         Queue.BuildableItem item2 = new Queue.BuildableItem(new WaitingItem(new GregorianCalendar(), project2, new ArrayList<>()));
         Queue.BuildableItem item3 = new Queue.BuildableItem(new WaitingItem(new GregorianCalendar(), project3, new ArrayList<>()));
-        assertNull("Node should take project which is assigned to its label.", node.canTake(item));
-        assertNull("Node should take project which is assigned to its label.", node.canTake(item2));
-        assertNotNull("Node should not take project which is not assigned to its label.", node.canTake(item3));
+        assertNull(node.canTake(item), "Node should take project which is assigned to its label.");
+        assertNull(node.canTake(item2), "Node should take project which is assigned to its label.");
+        assertNotNull(node.canTake(item3), "Node should not take project which is not assigned to its label.");
         String message = Messages._Node_LabelMissing(node.getNodeName(), j.jenkins.getLabel("notContained")).toString();
-        assertEquals("Cause of blockage should be missing label.", message, node.canTake(item3).getShortDescription());
+        assertEquals(message, node.canTake(item3).getShortDescription(), "Cause of blockage should be missing label.");
         node.setMode(Node.Mode.EXCLUSIVE);
-        assertNotNull("Node should not take project which has null label because it is in exclusive mode.", node.canTake(item2));
+        assertNotNull(node.canTake(item2), "Node should not take project which has null label because it is in exclusive mode.");
         message = Messages._Node_BecauseNodeIsReserved(node.getNodeName()).toString();
-        assertEquals("Cause of blockage should be reserved label.", message, node.canTake(item2).getShortDescription());
+        assertEquals(message, node.canTake(item2).getShortDescription(), "Cause of blockage should be reserved label.");
         node.getNodeProperties().add(new NodePropertyImpl());
         notTake = true;
-        assertNotNull("Node should not take project because node property does not allow it.", node.canTake(item));
+        assertNotNull(node.canTake(item), "Node should not take project because node property does not allow it.");
         assertThat("Cause of blockage should be busy label.", node.canTake(item), instanceOf(CauseOfBlockage.BecauseLabelIsBusy.class));
         User user = User.get("John");
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
@@ -222,27 +251,27 @@ public class NodeTest {
         j.jenkins.setSecurityRealm(realm);
         realm.createAccount("John", "");
         notTake = false;
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Map.of(project.getFullName(), user.impersonate())));
-        assertNotNull("Node should not take project because user does not have build permission.", node.canTake(item));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator().authenticate(project.getFullName(), user.impersonate2()));
+        assertNotNull(node.canTake(item), "Node should not take project because user does not have build permission.");
         message = Messages._Node_LackingBuildPermission(item.authenticate2().getName(), node.getNodeName()).toString();
-        assertEquals("Cause of blockage should be build permission label.", message, node.canTake(item).getShortDescription());
+        assertEquals(message, node.canTake(item).getShortDescription(), "Cause of blockage should be build permission label.");
     }
 
     @Test
-    public void testCreatePath() throws Exception {
+    void testCreatePath() throws Exception {
         Slave node = j.createOnlineSlave();
         Node node2 = j.createSlave();
         String absolutePath = node.remoteFS;
         FilePath path = node.createPath(absolutePath);
-        assertNotNull("Path should be created.", path);
-        assertNotNull("Channel should be set.", path.getChannel());
-        assertEquals("Channel should be equals to channel of node.", node.getChannel(), path.getChannel());
+        assertNotNull(path, "Path should be created.");
+        assertNotNull(path.getChannel(), "Channel should be set.");
+        assertEquals(node.getChannel(), path.getChannel(), "Channel should be equals to channel of node.");
         path = node2.createPath(absolutePath);
-        assertNull("Path should be null if agent have channel null.", path);
+        assertNull(path, "Path should be null if agent have channel null.");
     }
 
     @Test
-    public void testHasPermission() throws Exception {
+    void testHasPermission() throws Exception {
         Node node = j.createOnlineSlave();
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
@@ -251,37 +280,38 @@ public class NodeTest {
         j.jenkins.setSecurityRealm(realm);
         User user = realm.createAccount("John Smith", "abcdef");
         SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
-        assertFalse("Current user should not have permission read.", node.hasPermission(Permission.READ));
+        assertFalse(node.hasPermission(Permission.READ), "Current user should not have permission read.");
         auth.add(Computer.CONFIGURE, user.getId());
-        assertTrue("Current user should have permission CONFIGURE.", user.hasPermission(Permission.CONFIGURE));
+        assertTrue(user.hasPermission(Permission.CONFIGURE), "Current user should have permission CONFIGURE.");
         auth.add(Jenkins.ADMINISTER, user.getId());
-        assertTrue("Current user should have permission read, because he has permission administer.", user.hasPermission(Permission.READ));
+        assertTrue(user.hasPermission(Permission.READ), "Current user should have permission read, because he has permission administer.");
         SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS2);
 
         user = User.getOrCreateByIdOrFullName("anonymous");
-        assertFalse("Current user should not have permission read, because does not have global permission read and authentication is anonymous.", user.hasPermission(Permission.READ));
+        assertFalse(user.hasPermission(Permission.READ), "Current user should not have permission read, because does not have global permission read and authentication is anonymous.");
     }
 
     @Test
-    public void testGetChannel() throws Exception {
+    void testGetChannel() throws Exception {
         Slave agent = j.createOnlineSlave();
         Node nodeOffline = j.createSlave();
         Node node = new DumbSlave("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
-        assertNull("Channel of node should be null because node has not assigned computer.", node.getChannel());
-        assertNull("Channel of node should be null because assigned computer is offline.", nodeOffline.getChannel());
-        assertNotNull("Channel of node should not be null.", agent.getChannel());
+        assertNull(node.getChannel(), "Channel of node should be null because node has not assigned computer.");
+        assertNull(nodeOffline.getChannel(), "Channel of node should be null because assigned computer is offline.");
+        assertNotNull(agent.getChannel(), "Channel of node should not be null.");
     }
 
     @Test
-    public void testToComputer() throws Exception {
+    void testToComputer() throws Exception {
         Slave agent = j.createOnlineSlave();
         Node node = new DumbSlave("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
-        assertNull("Agent which is not added into Jenkins list nodes should not have assigned computer.", node.toComputer());
-        assertNotNull("Agent which is added into Jenkins list nodes should have assigned computer.", agent.toComputer());
+        assertNull(node.toComputer(), "Agent which is not added into Jenkins list nodes should not have assigned computer.");
+        assertNotNull(agent.toComputer(), "Agent which is added into Jenkins list nodes should have assigned computer.");
     }
 
     @Issue("JENKINS-27188")
-    @Test public void envPropertiesImmutable() throws Exception {
+    @Test
+    void envPropertiesImmutable() throws Exception {
         Slave agent = j.createSlave();
 
         String propertyKey = "JENKINS-27188";
@@ -298,7 +328,7 @@ public class NodeTest {
      */
     @Issue("JENKINS-26391")
     @Test
-    public void testGetAssignedLabelWithLabelOrExpression() throws Exception {
+    void testGetAssignedLabelWithLabelOrExpression() throws Exception {
         Node node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
 
@@ -312,7 +342,7 @@ public class NodeTest {
 
     @Issue("JENKINS-26391")
     @Test
-    public void testGetAssignedLabelWithLabelAndExpression() throws Exception {
+    void testGetAssignedLabelWithLabelAndExpression() throws Exception {
         Node node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
 
@@ -326,7 +356,7 @@ public class NodeTest {
 
     @Issue("JENKINS-26391")
     @Test
-    public void testGetAssignedLabelWithBothAndOrExpression() throws Exception {
+    void testGetAssignedLabelWithBothAndOrExpression() throws Exception {
         Node n1 = j.createOnlineSlave();
         Node n2 = j.createOnlineSlave();
         Node n3 = j.createOnlineSlave();
@@ -362,7 +392,7 @@ public class NodeTest {
 
     @Issue("JENKINS-26391")
     @Test
-    public void testGetAssignedLabelWithSpaceOnly() throws Exception {
+    void testGetAssignedLabelWithSpaceOnly() throws Exception {
         Node n = j.createOnlineSlave();
         n.setLabelString("label1 label2");
 
@@ -375,7 +405,7 @@ public class NodeTest {
 
     @Issue("SECURITY-281")
     @Test
-    public void builtInComputerConfigDotXml() throws Exception {
+    void builtInComputerConfigDotXml() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.assertFails("computer/(built-in)/config.xml", HttpURLConnection.HTTP_BAD_REQUEST);
         WebRequest settings = new WebRequest(wc.createCrumbedUrl("computer/(built-in)/config.xml"));
@@ -410,7 +440,7 @@ public class NodeTest {
         }
 
         // If a label should be part of the cloud label then fail.
-        assertFalse(containsFailureMessage + "]", contains);
+        assertFalse(contains, containsFailureMessage + "]");
     }
 
     /**

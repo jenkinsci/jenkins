@@ -7,19 +7,23 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import hudson.Util;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
@@ -27,33 +31,29 @@ import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONObject;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
-public class TelemetryTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class TelemetryTest {
 
-    @Rule
-    public LoggerRule logger = new LoggerRule().record(Telemetry.class, Level.ALL).capture(100);
+    private final LogRecorder logger = new LogRecorder().record(Telemetry.class, Level.ALL).capture(100);
 
     private static int counter = 0;
 
-    @Before
-    public void prepare() throws Exception {
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Exception {
+        j = rule;
         correlators.clear();
         types.clear();
         counter = 0;
@@ -62,9 +62,9 @@ public class TelemetryTest {
     }
 
     @Test
-    public void testSubmission() throws Exception {
+    void testSubmission() throws Exception {
         j.jenkins.setNoUsageStatistics(false); // tests usually don't submit this, but we need this
-        assertEquals("no requests received", 0, counter);
+        assertEquals(0, counter, "no requests received");
         ExtensionList.lookupSingleton(Telemetry.TelemetryReporter.class).doRun();
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
@@ -86,11 +86,11 @@ public class TelemetryTest {
         assertThat(correlators.size(), is(counter));
         assertTrue(Pattern.compile("[0-9a-f]+").matcher(correlators.first()).matches());
         assertThat(types, not(hasItem("empty")));
-        assertTrue("at least one request received", counter > 0); // TestTelemetry plus whatever real impls exist
+        assertTrue(counter > 0, "at least one request received"); // TestTelemetry plus whatever real impls exist
     }
 
     @Test
-    public void testPerTrialCorrelator() throws Exception {
+    void testPerTrialCorrelator() {
         Correlator correlator = ExtensionList.lookupSingleton(Correlator.class);
         String correlationId = "00000000-0000-0000-0000-000000000000";
         correlator.setCorrelationId(correlationId);
@@ -100,12 +100,12 @@ public class TelemetryTest {
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> types, hasItem("test-data"));
         //90ecf3ce1cd5ba1e5ad3cde7ad08a941e884f2e4d9bd463361715abab8efedc5
-        assertThat(correlators, hasItem(DigestUtils.sha256Hex(correlationId + "test-data")));
+        assertThat(correlators, hasItem(Util.getHexOfSHA256DigestOf(correlationId + "test-data")));
     }
 
     @Test
-    public void testNonSubmissionOnError() throws Exception {
-        assertEquals("no requests received", 0, counter);
+    void testNonSubmissionOnError() {
+        assertEquals(0, counter, "no requests received");
         ExtensionList.lookupSingleton(Telemetry.TelemetryReporter.class).doRun();
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
@@ -203,7 +203,7 @@ public class TelemetryTest {
         @NonNull
         @Override
         public LocalDate getStart() {
-            return LocalDate.now().plus(1, ChronoUnit.DAYS);
+            return LocalDate.now().plusDays(1);
         }
 
         @NonNull
@@ -243,7 +243,7 @@ public class TelemetryTest {
         @NonNull
         @Override
         public LocalDate getEnd() {
-            return LocalDate.now().minus(1, ChronoUnit.DAYS);
+            return LocalDate.now().minusDays(1);
         }
 
         @NonNull
@@ -305,7 +305,7 @@ public class TelemetryTest {
 
     @TestExtension
     public static class TelemetryReceiver implements UnprotectedRootAction {
-        public void doEvents(StaplerRequest request, StaplerResponse response) throws IOException {
+        public void doEvents(StaplerRequest2 request, StaplerResponse2 response) throws IOException {
             StringWriter sw = new StringWriter();
             IOUtils.copy(request.getInputStream(), sw, StandardCharsets.UTF_8);
             JSONObject json = JSONObject.fromObject(sw.toString());

@@ -55,11 +55,7 @@ THE SOFTWARE.
 
         <f:descriptorList title="${%Node Properties}" descriptors="${h.getNodePropertyDescriptors(descriptor.clazz)}" field="nodeProperties" />
 
-        <l:hasPermission permission="${it.CONFIGURE}">
-          <f:bottomButtonBar>
-            <f:submit value="${%Save}"/>
-          </f:bottomButtonBar>
-        </l:hasPermission>
+        <f:saveApplyBar/>
       </f:form>
     </l:main-panel>
   </l:layout>

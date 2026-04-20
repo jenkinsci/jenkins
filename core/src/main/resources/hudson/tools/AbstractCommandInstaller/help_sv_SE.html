@@ -1,0 +1,31 @@
+<p>
+  Kör ett valfritt skalkommando för att installera verktyget. För Ubuntu,
+  förutsatt att Jenkins-användaren är i
+  <code>/etc/sudoers</code>
+  :
+</p>
+<pre>sudo apt-get --yes install openjdk-6-jdk</pre>
+<p>
+  (Ange i det här fallet t.ex.
+  <code>/usr/lib/jvm/java-6-openjdk-i386</code>
+  som hemkatalog.)
+</p>
+<p>
+  Ett annat exempel för att installera en äldre version av Sun JDK 6 för Linux
+  (x86) kan du använda den föråldrade
+  <a href="http://jdk-distros.java.net/">DLJ</a>
+  :
+</p>
+<pre>
+bin=jdk-6u13-dlj-linux-i586.bin
+if [ \! -f $bin ]
+then
+    wget --no-verbose http://download.java.net/dlj/binaries/$bin
+    sh $bin --unpack --accept-license
+fi</pre
+>
+<p>
+  (Ange i det här fallet
+  <code>jdk1.6.0_13</code>
+  som hemkatalog.)
+</p>

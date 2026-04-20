@@ -3,29 +3,30 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.listeners.RunListener;
 import hudson.model.queue.QueueTaskFuture;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class JobQueueTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class JobQueueTest {
 
     private static volatile boolean fireCompletedFlag = false;
     private static volatile boolean fireFinalizeFlag = false;
 
-    @Before
-    public void setUp() {
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         RunListener<Run> listener = new RunListener<>() {
             @Override public  void onCompleted(Run r, TaskListener listener) {
                 JobQueueTest.fireCompletedFlag = true;
@@ -47,7 +48,7 @@ public class JobQueueTest {
     }
 
     @Test
-    public void buildPendingWhenBuildRunning() throws Exception {
+    void buildPendingWhenBuildRunning() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("project");
         project.getBuildersList().add(new SleepBuilder(2000));
 
@@ -67,7 +68,7 @@ public class JobQueueTest {
     }
 
     @Test
-    public void buildPendingWhenBuildInPostProduction() throws Exception {
+    void buildPendingWhenBuildInPostProduction() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("project");
         project.getBuildersList().add(new SleepBuilder(1000));
 
