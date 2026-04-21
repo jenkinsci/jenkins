@@ -41,10 +41,13 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -383,6 +386,15 @@ public class ApiTokenStore {
 
         private HashValue value;
 
+        /**
+         * Permission IDs (e.g. {@code "hudson.model.Item.Read"}) that this token is allowed to use.
+         * <p>
+         * {@code null} means the token is unscoped and inherits all permissions from the owning user
+         * (legacy behavior, applied to every token created before scoped-token support existed).
+         * A non-null value means the token is scoped and should be gated at permission-check time.
+         */
+        private Set<String> scopes;
+
         private HashedToken() {
             this.init();
         }
@@ -399,12 +411,19 @@ public class ApiTokenStore {
         }
 
         public static @NonNull HashedToken buildNew(@NonNull String name, @NonNull HashValue value, LocalDate expirationDate) {
+            return buildNew(name, value, expirationDate, null);
+        }
+
+        public static @NonNull HashedToken buildNew(@NonNull String name, @NonNull HashValue value, LocalDate expirationDate, @CheckForNull Set<String> scopes) {
             HashedToken result = new HashedToken();
             result.name = name;
             result.creationDate = new Date();
 
             result.value = value;
             result.expirationDate = expirationDate;
+            if (scopes != null) {
+                result.scopes = Collections.unmodifiableSet(new LinkedHashSet<>(scopes));
+            }
 
             return result;
         }
@@ -494,6 +513,24 @@ public class ApiTokenStore {
 
         public void setName(String name) {
             this.name = name;
+        }
+
+        /**
+         * @return an unmodifiable view of the permission IDs this token is scoped to, or
+         * {@code null} if the token is unscoped and should inherit the full permissions of
+         * the owning user (legacy behavior).
+         */
+        public @CheckForNull Set<String> getScopes() {
+            return scopes;
+        }
+
+        /**
+         * @return {@code true} if this token has an explicit scope set and should therefore be
+         * gated at permission-check time; {@code false} for legacy tokens that inherit all
+         * user permissions.
+         */
+        public boolean isScoped() {
+            return scopes != null;
         }
     }
 }
