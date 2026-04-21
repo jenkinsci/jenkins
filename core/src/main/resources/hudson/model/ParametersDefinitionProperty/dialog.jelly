@@ -27,6 +27,7 @@ THE SOFTWARE.
   <st:setHeader name="X-Dialog-Title" value="${it.job.buildNowText}" />
 
   <l:ajax>
+    <j:set var="delay" value="0sec" />
     <st:include page="contents.jelly" />
   </l:ajax>
 </j:jelly>
