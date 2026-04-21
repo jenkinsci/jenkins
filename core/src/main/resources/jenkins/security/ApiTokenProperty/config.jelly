@@ -193,6 +193,22 @@ THE SOFTWARE.
                                             <l:icon src="symbol-warning"/>
                                         </j:if>
                                         <span class="token-name">${token.name}</span>
+                                        <j:choose>
+                                            <j:when test="${token.scoped}">
+                                                <span class="token-scope-chip token-scope-chip--scoped"
+                                                      tooltip="${token.scopes.toString()}">
+                                                    ${%ScopedChip(token.scopes.size())}
+                                                </span>
+                                            </j:when>
+                                            <j:otherwise>
+                                                <j:if test="${!token.isLegacy}">
+                                                    <span class="token-scope-chip token-scope-chip--unscoped"
+                                                          tooltip="${%UnscopedChipTooltip}">
+                                                        ${%UnscopedChip}
+                                                    </span>
+                                                </j:if>
+                                            </j:otherwise>
+                                        </j:choose>
                                 </div>
                                 <j:set var="creationDateFormat" value="${%NoCreationDate}" />
                                 <j:if test="${token.creationDate != null}">
