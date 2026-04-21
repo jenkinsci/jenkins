@@ -190,17 +190,8 @@ public class ApiTokenStore {
     }
 
     /**
-     * Create a new scoped token and return its id and secret value. Result meant to be sent /
-     * displayed and then discarded.
-     *
-     * @param scopes permission IDs (as returned by {@link Permission#getId()}) the token is
-     *               allowed to use. {@code null} creates an unscoped legacy-style token that
-     *               inherits the full permissions of the owning user; a non-empty set creates
-     *               a scoped token gated at permission-check time. An empty non-null set is
-     *               rejected because it would produce an unusable token.
-     * @throws IllegalArgumentException if {@code scopes} is non-null and empty, or contains an
-     *                                  ID that does not resolve to a registered
-     *                                  {@link Permission}.
+     * Same as {@link #generateNewToken(String, LocalDate)} but creates a token scoped to the
+     * given permission IDs. {@code null} scopes produces a legacy-style unscoped token.
      */
     public synchronized @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate, @CheckForNull Set<String> scopes) {
         Set<String> normalizedScopes = validateScopes(scopes);
@@ -426,13 +417,7 @@ public class ApiTokenStore {
 
         private HashValue value;
 
-        /**
-         * Permission IDs (e.g. {@code "hudson.model.Item.Read"}) that this token is allowed to use.
-         * <p>
-         * {@code null} means the token is unscoped and inherits all permissions from the owning user
-         * (legacy behavior, applied to every token created before scoped-token support existed).
-         * A non-null value means the token is scoped and should be gated at permission-check time.
-         */
+        // null = unscoped (inherits user permissions, legacy); non-null = gated at permission-check time
         private Set<String> scopes;
 
         private HashedToken() {
@@ -555,20 +540,10 @@ public class ApiTokenStore {
             this.name = name;
         }
 
-        /**
-         * @return an unmodifiable view of the permission IDs this token is scoped to, or
-         * {@code null} if the token is unscoped and should inherit the full permissions of
-         * the owning user (legacy behavior).
-         */
         public @CheckForNull Set<String> getScopes() {
             return scopes;
         }
 
-        /**
-         * @return {@code true} if this token has an explicit scope set and should therefore be
-         * gated at permission-check time; {@code false} for legacy tokens that inherit all
-         * user permissions.
-         */
         public boolean isScoped() {
             return scopes != null;
         }

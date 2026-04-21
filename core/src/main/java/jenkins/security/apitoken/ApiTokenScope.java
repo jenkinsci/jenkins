@@ -32,31 +32,15 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.core.Authentication;
 
 /**
- * Shared scope-check helper used by the permission-enforcement path in
- * {@link hudson.security.ACL}.
- * <p>
- * Unscoped authentications (i.e. anything that is not a
- * {@link ScopedApiTokenAuthentication}) always pass the scope gate and are evaluated
- * solely by the regular authorization strategy. For scoped authentications, the
- * requested permission is permitted only if itself or any permission in its
- * {@link Permission#impliedBy} chain is in the token's allowed-scope set, mirroring the
- * way user permission checks already walk the implication chain.
- *
- * @since TODO
+ * Scope-gate used by {@link hudson.security.ACL}. For scoped tokens, walks
+ * {@link Permission#impliedBy} the same way user permission checks do; for any other
+ * authentication this is a no-op.
  */
 @Restricted(NoExternalUse.class)
 public final class ApiTokenScope {
 
-    private ApiTokenScope() {
-        // utility class
-    }
+    private ApiTokenScope() {}
 
-    /**
-     * @return {@code true} if the given authentication is allowed to exercise the given
-     * permission under its scope. Returns {@code true} unconditionally for non-scoped
-     * authentications, so callers can use this as an additive gate without special-casing
-     * unscoped callers.
-     */
     public static boolean permits(@NonNull Authentication authentication, @NonNull Permission permission) {
         if (!(authentication instanceof ScopedApiTokenAuthentication scoped)) {
             return true;

@@ -36,17 +36,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
 /**
- * Authentication decorator that marks a request as originating from a scoped API token and
- * carries the set of permission IDs that token is allowed to use.
- * <p>
- * The wrapped delegate is the {@link Authentication} produced by normal user impersonation,
- * so all identity and authority information is preserved: scope enforcement is performed
- * separately at permission-check time rather than by filtering {@link GrantedAuthority}s
- * (filtering authorities would break matrix-based authorization strategies, which grant
- * permissions through authority names like {@code "authenticated"}).
- *
- * @see ApiTokenScope
- * @since TODO
+ * {@link Authentication} decorator that marks a request as originating from a scoped API
+ * token. Scope enforcement happens in {@link ApiTokenScope}; the wrapped delegate retains
+ * all authorities so matrix-based authorization strategies keep working unchanged.
  */
 @Restricted(NoExternalUse.class)
 public final class ScopedApiTokenAuthentication implements Authentication {
@@ -61,18 +53,10 @@ public final class ScopedApiTokenAuthentication implements Authentication {
         this.allowedScopes = Collections.unmodifiableSet(new LinkedHashSet<>(Objects.requireNonNull(allowedScopes, "allowedScopes")));
     }
 
-    /**
-     * @return an unmodifiable view of the permission IDs this token is scoped to.
-     */
     public @NonNull Set<String> getAllowedScopes() {
         return allowedScopes;
     }
 
-    /**
-     * @return the underlying user authentication this scoped token wraps. Useful when a
-     * caller needs to apply the user's regular authorities without the scope gate
-     * (e.g. for display or auditing).
-     */
     public @NonNull Authentication getDelegate() {
         return delegate;
     }
