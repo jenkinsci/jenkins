@@ -1924,14 +1924,29 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             File tmpDir = Files.createTempDirectory("uploadDir").toFile();
             JakartaServletFileUpload<DiskFileItem, DiskFileItemFactory> upload = new JakartaServletDiskFileUpload(DiskFileItemFactory.builder().setFile(tmpDir).get());
             List<DiskFileItem> items = upload.parseRequest(req);
-            String string = items.get(1).getString();
+            // Locate parts by field name rather than by positional index.
+            // Relying on index was fragile: servlet filters (e.g. CSRF protection)
+            // may consume or reorder the multipart stream before this point, causing
+            // an IndexOutOfBoundsException when the expected part is absent.
+            // See: https://issues.jenkins.io/browse/JENKINS-68443
+            DiskFileItem pluginUrlItem = items.stream()
+                    .filter(item -> "pluginUrl".equals(item.getFieldName()))
+                    .findFirst()
+                    .orElse(null);
+            String string = pluginUrlItem != null ? pluginUrlItem.getString() : null;
             if (string != null && !string.isBlank()) {
                 // this is a URL deployment
                 fileName = string;
                 copier = new UrlPluginCopier(fileName);
             } else {
                 // this is a file upload
-                FileItem fileItem = items.getFirst();
+                FileItem fileItem = items.stream()
+                        .filter(item -> "name".equals(item.getFieldName()))
+                        .findFirst()
+                        .orElse(null);
+                if (fileItem == null) {
+                    return new HttpRedirect("advanced");
+                }
                 fileName = Util.getFileName(fileItem.getName());
                 copier = new FileUploadPluginCopier(fileItem);
             }
