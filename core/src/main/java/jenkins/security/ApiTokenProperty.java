@@ -194,18 +194,23 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     public boolean matchesPassword(String token) {
+        return findMatchingToken(token) != null;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public ApiTokenStore.HashedToken findMatchingToken(String token) {
         if (token == null || token.isBlank()) {
-            return false;
+            return null;
         }
 
         ApiTokenStore.HashedToken matchingToken = tokenStore.findMatchingToken(token);
         if (matchingToken == null) {
-            return false;
+            return null;
         }
 
         tokenStats.updateUsageForId(matchingToken.getUuid());
 
-        return true;
+        return matchingToken;
     }
 
     /**
