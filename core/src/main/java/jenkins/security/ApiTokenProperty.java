@@ -36,6 +36,8 @@ import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import hudson.model.userproperty.UserPropertyCategory;
 import hudson.security.ACL;
+import hudson.security.Permission;
+import hudson.security.PermissionGroup;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import java.io.IOException;
@@ -46,11 +48,17 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -469,7 +477,12 @@ public class ApiTokenProperty extends UserProperty {
     // essentially meant for scripting
     @Restricted(Beta.class)
     public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate) throws IOException {
-        TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name, expirationDate);
+        return generateNewToken(name, expirationDate, null);
+    }
+
+    @Restricted(Beta.class)
+    public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate, @CheckForNull Set<String> scopes) throws IOException {
+        TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name, expirationDate, scopes);
         user.save();
         return tokenUuidAndPlainValue;
     }
@@ -605,7 +618,8 @@ public class ApiTokenProperty extends UserProperty {
 
         @RequirePOST
         public HttpResponse doGenerateNewToken(@AncestorInPath User u, @QueryParameter String newTokenName,
-                                               @QueryParameter String tokenExpiration, @QueryParameter String expirationDuration) throws IOException {
+                                               @QueryParameter String tokenExpiration, @QueryParameter String expirationDuration,
+                                               @QueryParameter String scopes) throws IOException {
             if (!hasCurrentUserRightToGenerateNewToken(u)) {
                 return HttpResponses.forbidden();
             }
@@ -618,6 +632,13 @@ public class ApiTokenProperty extends UserProperty {
             }
 
             LocalDate expirationDate = getExpirationDate(tokenExpiration, expirationDuration);
+
+            Set<String> parsedScopes;
+            try {
+                parsedScopes = parseAndCheckScopes(scopes, u);
+            } catch (IllegalArgumentException e) {
+                return HttpResponses.errorJSON(e.getMessage());
+            }
 
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
@@ -636,7 +657,12 @@ public class ApiTokenProperty extends UserProperty {
                 return HttpResponses.errorJSON(Messages.ApiTokenProperty_expirationInPast());
             }
 
-            TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName, expirationDate);
+            TokenUuidAndPlainValue tokenUuidAndPlainValue;
+            try {
+                tokenUuidAndPlainValue = p.generateNewToken(tokenName, expirationDate, parsedScopes);
+            } catch (IllegalArgumentException e) {
+                return HttpResponses.errorJSON(e.getMessage());
+            }
 
             data.put("tokenUuid", tokenUuidAndPlainValue.tokenUuid);
             data.put("tokenName", tokenName);
@@ -644,6 +670,58 @@ public class ApiTokenProperty extends UserProperty {
             data.put("expirationDate", expirationDateString);
             data.put("aboutToExpire", tokenUuidAndPlainValue.aboutToExpire);
             return HttpResponses.okJSON(data);
+        }
+
+        private static @CheckForNull Set<String> parseAndCheckScopes(@CheckForNull String scopes, @NonNull User tokenUser) {
+            if (scopes == null || scopes.isBlank()) {
+                return null;
+            }
+            Set<String> ids = Arrays.stream(scopes.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            if (ids.isEmpty()) {
+                return null;
+            }
+            // A token cannot be granted permissions the owning user does not hold.
+            for (String id : ids) {
+                Permission p = Permission.fromId(id);
+                if (p == null) {
+                    throw new IllegalArgumentException("Unknown permission: " + id);
+                }
+                if (!tokenUser.hasPermission(p)) {
+                    throw new IllegalArgumentException("User does not hold permission: " + id);
+                }
+            }
+            return ids;
+        }
+
+        /**
+         * Enumerates permissions grouped by {@link PermissionGroup} that the given user holds
+         * and can therefore be used as scopes for a new token. Used by the token generation UI.
+         */
+        @Restricted(NoExternalUse.class)
+        public @NonNull Map<PermissionGroup, List<Permission>> getAvailableScopesFor(@NonNull User u) {
+            Map<PermissionGroup, List<Permission>> grouped = new LinkedHashMap<>();
+            for (PermissionGroup group : PermissionGroup.getAll()) {
+                List<Permission> held = new ArrayList<>();
+                for (Permission permission : group.getPermissions()) {
+                    if (!permission.getEnabled()) {
+                        continue;
+                    }
+                    if (permission.equals(Permission.HUDSON_ADMINISTER)) {
+                        // deprecated alias; Jenkins.ADMINISTER covers the same ground
+                        continue;
+                    }
+                    if (u.hasPermission(permission)) {
+                        held.add(permission);
+                    }
+                }
+                if (!held.isEmpty()) {
+                    grouped.put(group, held);
+                }
+            }
+            return grouped;
         }
 
         private LocalDate getExpirationDate(String tokenExpiration, String expirationDuration) {

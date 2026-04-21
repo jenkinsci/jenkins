@@ -162,6 +162,33 @@ function addFormChangesHandling(form) {
   });
 }
 
+function addScopePickerHandling(form) {
+  const picker = form.querySelector(".token-scope-picker");
+  if (!picker) {
+    return;
+  }
+  const modeInputs = form.querySelectorAll('input[name="tokenScopeMode"]');
+  const sync = () => {
+    const scoped = form.querySelector(
+      'input[name="tokenScopeMode"][value="scoped"]',
+    ).checked;
+    picker.classList.toggle("jenkins-hidden", !scoped);
+  };
+  modeInputs.forEach((input) => input.addEventListener("change", sync));
+  sync();
+}
+
+function collectScopes(form) {
+  const mode = form.querySelector('input[name="tokenScopeMode"]:checked');
+  if (!mode || mode.value !== "scoped") {
+    return "";
+  }
+  const boxes = form.querySelectorAll(".token-scope-checkbox:checked");
+  return Array.from(boxes)
+    .map((b) => b.value)
+    .join(",");
+}
+
 function addToken(button) {
   const targetUrl = button.dataset.targetUrl;
   const promptMessage = button.dataset.promptMessage;
@@ -180,6 +207,7 @@ function addToken(button) {
   dateInput.value = presetDate.toISOString().split("T")[0];
   form.appendChild(formTemplate);
   addFormChangesHandling(form);
+  addScopePickerHandling(form);
   dialog
     .form(form, {
       title: promptMessage,
@@ -196,6 +224,7 @@ function addToken(button) {
             newTokenName: formData.get("tokenName"),
             tokenExpiration: formData.get("tokenExpiration"),
             expirationDuration: formData.get("expirationDuration"),
+            scopes: collectScopes(form),
           }),
           method: "post",
           headers: crumb.wrap({

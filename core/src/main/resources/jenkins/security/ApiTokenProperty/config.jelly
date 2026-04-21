@@ -84,6 +84,40 @@ THE SOFTWARE.
                     ${%It is not recommended to create tokens that never expire.}
                 </div>
             </div>
+            <div class="jenkins-form-label">${%Scope}</div>
+            <div class="token-scope-mode jenkins-!-margin-bottom-2">
+                <label class="jenkins-radio">
+                    <input type="radio" name="tokenScopeMode" value="scoped" checked="checked"/>
+                    <span class="jenkins-radio__label">${%ScopeMode.Scoped}</span>
+                </label>
+                <label class="jenkins-radio">
+                    <input type="radio" name="tokenScopeMode" value="inherit"/>
+                    <span class="jenkins-radio__label">${%ScopeMode.Inherit}</span>
+                </label>
+            </div>
+            <div class="token-scope-picker jenkins-!-margin-bottom-3">
+                <j:set var="availableScopes" value="${descriptor.getAvailableScopesFor(it)}"/>
+                <j:choose>
+                    <j:when test="${availableScopes.isEmpty()}">
+                        <div class="jenkins-alert jenkins-alert-info">${%ScopePicker.NoPermissions}</div>
+                    </j:when>
+                    <j:otherwise>
+                        <j:forEach var="entry" items="${availableScopes.entrySet()}">
+                            <details class="token-scope-group" open="open">
+                                <summary class="token-scope-group__title">${entry.key.title}</summary>
+                                <div class="token-scope-group__items">
+                                    <j:forEach var="permission" items="${entry.value}">
+                                        <label class="jenkins-checkbox">
+                                            <input type="checkbox" class="token-scope-checkbox" value="${permission.id}"/>
+                                            <span class="jenkins-checkbox__label">${permission.name}</span>
+                                        </label>
+                                    </j:forEach>
+                                </div>
+                            </details>
+                        </j:forEach>
+                    </j:otherwise>
+                </j:choose>
+            </div>
         </div>
     </div>
     <div class="jenkins-hidden" id="api-token-row-template" xmlns:local="local">
