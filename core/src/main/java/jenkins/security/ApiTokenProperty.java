@@ -275,6 +275,8 @@ public class ApiTokenProperty extends UserProperty {
         public final String expirationDate;
         public final boolean expired;
         public final boolean aboutToExpire;
+        public final boolean scoped;
+        public final Set<String> scopes;
 
         public TokenInfoAndStats(@NonNull ApiTokenStore.HashedToken token, @NonNull ApiTokenStats.SingleTokenStats stats) {
             this.uuid = token.getUuid();
@@ -284,6 +286,8 @@ public class ApiTokenProperty extends UserProperty {
             this.isLegacy = token.isLegacy();
             this.expired = token.isExpired();
             this.aboutToExpire = token.isAboutToExpire();
+            this.scoped = token.isScoped();
+            this.scopes = token.getScopes() == null ? Collections.emptySet() : token.getScopes();
 
             LocalDate expirationDate = token.getExpirationDate();
             if (expirationDate == null) {
@@ -482,6 +486,19 @@ public class ApiTokenProperty extends UserProperty {
 
     @Restricted(Beta.class)
     public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate, @CheckForNull Set<String> scopes) throws IOException {
+        if (scopes != null) {
+            try (hudson.security.ACLContext ignored = ACL.as2(user.impersonate2())) {
+                for (String id : scopes) {
+                    Permission p = Permission.fromId(id);
+                    if (p == null) {
+                        throw new IllegalArgumentException("Unknown permission: " + id);
+                    }
+                    if (!Jenkins.get().hasPermission(p)) {
+                        throw new IllegalArgumentException("User does not hold permission: " + id);
+                    }
+                }
+            }
+        }
         TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name, expirationDate, scopes);
         user.save();
         return tokenUuidAndPlainValue;
