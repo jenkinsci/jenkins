@@ -7,6 +7,7 @@ import hudson.model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Set;
 import java.util.logging.Logger;
 import jenkins.security.apitoken.ApiTokenStore;
 import jenkins.security.apitoken.ScopedApiTokenAuthentication;
@@ -48,8 +49,11 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
             }
 
             ApiTokenStore.HashedToken token = match.token();
-            if (token != null && token.isScoped()) {
-                auth = new ScopedApiTokenAuthentication(auth, token.getScopes());
+            if (token != null) {
+                Set<String> scopes = token.getScopes();
+                if (scopes != null) {
+                    auth = new ScopedApiTokenAuthentication(auth, scopes);
+                }
             }
 
             req.setAttribute(BasicHeaderApiTokenAuthenticator.class.getName(), true);
