@@ -1,22 +1,29 @@
 <div>
-  A scoped token can only exercise the permissions you select here, even if
-  the owning user later gains broader access. Use this to apply the principle
-  of least privilege to automation credentials.
+  A scoped token can only exercise the permissions you select here, even if the
+  owning user later gains broader access. Use this to apply the principle of
+  least privilege to automation credentials.
   <br />
   <br />
-  <strong>Scoped (recommended):</strong> the token is restricted to the
-  permissions you tick below. Requests that require any other permission
-  will be rejected at the authorization layer.
+  <strong>Scoped (recommended):</strong>
+  the token is restricted to the permissions you tick below. Requests that
+  require any other permission will be rejected at the authorization layer.
   <br />
-  <strong>Inherit all my permissions:</strong> the token behaves like a
-  traditional API token and can do anything the owning user can. Choose this
-  only when you need it for a legacy integration.
+  <strong>Inherit all my permissions:</strong>
+  the token behaves like a traditional API token and can do anything the owning
+  user can. Choose this only when you need it for a legacy integration.
   <br />
   <br />
-  <strong>Note on sibling permissions:</strong> Jenkins permissions are not
-  all transitively related. For example, <code>Item.Configure</code> does
-  <em>not</em> imply <code>Item.Read</code>, so a token intended to edit jobs
-  should usually include both. Broader permissions like
-  <code>Jenkins.Administer</code> do imply everything through the
-  <code>impliedBy</code> chain.
+  <strong>Note on sibling permissions:</strong>
+  Jenkins permissions are not all transitively related. For example,
+  <code>Item.Configure</code>
+  does
+  <em>not</em>
+  imply
+  <code>Item.Read</code>
+  , so a token intended to edit jobs should usually include both. Broader
+  permissions like
+  <code>Jenkins.Administer</code>
+  do imply everything through the
+  <code>impliedBy</code>
+  chain.
 </div>
