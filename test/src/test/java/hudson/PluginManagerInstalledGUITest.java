@@ -83,12 +83,14 @@ class PluginManagerInstalledGUITest {
             // because no other plugins depend on it.
             mandatoryDependerPlugin.assertEnabled();
             mandatoryDependerPlugin.assertEnabledStateChangeable();
+            mandatoryDependerPlugin.assertEnabledSortValue("0");
             mandatoryDependerPlugin.assertUninstallable();
 
             // This plugin should be enabled, but it should not be possible to disable or uninstall it
             // because another plugin depends on it.
             dependeePlugin.assertEnabled();
             dependeePlugin.assertEnabledStateNotChangeable();
+            dependeePlugin.assertEnabledSortValue("1");
             dependeePlugin.assertNotUninstallable();
 
             // Disable one plugin
@@ -98,6 +100,7 @@ class PluginManagerInstalledGUITest {
             // and it should still be uninstallable.
             mandatoryDependerPlugin.assertNotEnabled(); // this is different to earlier
             mandatoryDependerPlugin.assertEnabledStateChangeable();
+            mandatoryDependerPlugin.assertEnabledSortValue("2");
             mandatoryDependerPlugin.assertUninstallable();
 
             // The dependee plugin should still be enabled, but it should now be possible to disable it because
@@ -105,6 +108,7 @@ class PluginManagerInstalledGUITest {
             // Note that the depender plugin does not block its disablement.
             dependeePlugin.assertEnabled();
             dependeePlugin.assertEnabledStateChangeable(); // this is different to earlier
+            dependeePlugin.assertEnabledSortValue("0");
             dependeePlugin.assertNotUninstallable();
             dependerPlugin.assertEnabled();
 
@@ -115,16 +119,19 @@ class PluginManagerInstalledGUITest {
             // of the plugins it depends on is not enabled.
             mandatoryDependerPlugin.assertNotEnabled();
             mandatoryDependerPlugin.assertEnabledStateNotChangeable();  // this is different to earlier
+            mandatoryDependerPlugin.assertEnabledSortValue("2");
             mandatoryDependerPlugin.assertUninstallable();
             dependerPlugin.assertEnabled();
 
             // You can disable a detached plugin if there is no explicit dependency on it.
             matrixAuthPlugin.assertEnabled();
             matrixAuthPlugin.assertEnabledStateChangeable();
+            matrixAuthPlugin.assertEnabledSortValue("0");
             matrixAuthPlugin.assertUninstallable();
             matrixAuthPlugin.clickEnabledWidget();
             matrixAuthPlugin.assertNotEnabled();
             matrixAuthPlugin.assertEnabledStateChangeable();
+            matrixAuthPlugin.assertEnabledSortValue("2");
             matrixAuthPlugin.assertUninstallable();
         });
     }
@@ -186,6 +193,10 @@ class PluginManagerInstalledGUITest {
             return (HtmlInput) input;
         }
 
+        private String getEnableSortValue() {
+            return pluginRow.getCells().get(hasHealth ? 2 : 1).getAttribute("data");
+        }
+
         public void assertEnabled() {
             HtmlInput enableWidget = getEnableWidget();
             assertTrue(enableWidget.isChecked(), "Plugin '" + getId() + "' is expected to be enabled.");
@@ -199,6 +210,13 @@ class PluginManagerInstalledGUITest {
         public void clickEnabledWidget() throws IOException {
             HtmlInput enableWidget = getEnableWidget();
             HtmlElementUtil.click(enableWidget);
+        }
+
+        public void assertEnabledSortValue(String expectedSortValue) {
+            String actualSortValue = getEnableSortValue();
+            assertTrue(
+                    expectedSortValue.equals(actualSortValue),
+                    "Plugin '" + getId() + "' has unexpected enabled sort value. Expected: " + expectedSortValue + ", actual: " + actualSortValue);
         }
 
         public void assertEnabledStateChangeable() {

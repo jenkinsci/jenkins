@@ -191,6 +191,22 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
       pluginTR.classList.remove("has-disabled-dependency");
     }
 
+    function updateEnabledStateSortValue(pluginTR) {
+      var pluginMetadata = pluginTR.jenkinsPluginMetadata;
+      var enableTD = pluginMetadata.enableTD;
+      var sortValue = "2";
+
+      if (pluginMetadata.enableInput.checked) {
+        sortValue =
+          pluginTR.classList.contains("has-dependents") &&
+          !pluginTR.classList.contains("all-dependents-disabled")
+            ? "1"
+            : "0";
+      }
+
+      enableTD.setAttribute("data", sortValue);
+    }
+
     function setEnableWidgetStates() {
       for (var i = 0; i < pluginTRs.length; i++) {
         var pluginMetadata = pluginTRs[i].jenkinsPluginMetadata;
@@ -201,6 +217,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
         }
         markAllDependentsDisabled(pluginTRs[i]);
         markHasDisabledDependencies(pluginTRs[i]);
+        updateEnabledStateSortValue(pluginTRs[i]);
       }
     }
 
@@ -367,6 +384,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
         enableInput: enableInput,
         dependenciesDiv: dependenciesDiv,
         dependentsDiv: dependentsDiv,
+        enableTD: enableTD,
       };
 
       if (dependenciesDiv) {
