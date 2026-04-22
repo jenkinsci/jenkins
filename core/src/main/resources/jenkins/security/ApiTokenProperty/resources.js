@@ -115,6 +115,16 @@ function appendTokenToTable(data) {
 
   apiTokenRow.id = data.tokenUuid;
   apiTokenRow.querySelector(".token-name").innerText = data.tokenName;
+  const chip = apiTokenRow.querySelector(".token-scope-chip");
+  if (chip && data.scopeCount > 0) {
+    chip.innerText = chip.dataset.scopedChipText.replace(
+      "__COUNT__",
+      data.scopeCount,
+    );
+    chip.title = data.scopeLabels || "";
+    chip.classList.add("token-scope-chip--scoped");
+    chip.classList.remove("jenkins-hidden");
+  }
   tokenShowButton.dataset.tokenValue = data.tokenValue;
   tokenShowButton.dataset.title = data.tokenName;
   tokenShowButton.dataset.expirationDate = data.expirationDate;

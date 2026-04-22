@@ -41,6 +41,8 @@ import hudson.security.PermissionGroup;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.Period;
@@ -331,6 +333,33 @@ public class ApiTokenProperty extends UserProperty {
                 return Messages.ApiTokenProperty_createdYesterday();
             }
             return Messages.ApiTokenProperty_createdDaysAgo(period.getDays());
+        }
+
+        // getter added for reliable Jelly EL resolution; JEXL's property lookup on a
+        // plain boolean field can fall through ambiguously otherwise.
+        public boolean isScoped() {
+            return scoped;
+        }
+
+        /**
+         * Human-readable names for the token's scope permissions, formatted as
+         * {@code "Group/Permission"} (e.g. {@code "Job/Read"}). Falls back to the raw
+         * ID if the permission can no longer be resolved (plugin uninstalled, etc.).
+         */
+        public @NonNull List<String> getScopeLabels() {
+            if (!scoped || scopes.isEmpty()) {
+                return Collections.emptyList();
+            }
+            List<String> labels = new ArrayList<>(scopes.size());
+            for (String id : scopes) {
+                Permission p = Permission.fromId(id);
+                if (p == null) {
+                    labels.add(id);
+                } else {
+                    labels.add(p.group.title + "/" + p.name);
+                }
+            }
+            return labels;
         }
 
         public String lastUsedDaysAgo() {
@@ -674,6 +703,15 @@ public class ApiTokenProperty extends UserProperty {
             data.put("tokenValue", tokenUuidAndPlainValue.plainValue);
             data.put("expirationDate", expirationDateString);
             data.put("aboutToExpire", tokenUuidAndPlainValue.aboutToExpire);
+            data.put("scopeCount", parsedScopes == null ? 0 : parsedScopes.size());
+            if (parsedScopes != null && !parsedScopes.isEmpty()) {
+                List<String> labels = new ArrayList<>(parsedScopes.size());
+                for (String id : parsedScopes) {
+                    Permission resolved = Permission.fromId(id);
+                    labels.add(resolved == null ? id : resolved.group.title + "/" + resolved.name);
+                }
+                data.put("scopeLabels", String.join(", ", labels));
+            }
             return HttpResponses.okJSON(data);
         }
 
@@ -701,13 +739,17 @@ public class ApiTokenProperty extends UserProperty {
         public @NonNull Map<PermissionGroup, List<Permission>> getAvailableScopes() {
             Map<PermissionGroup, List<Permission>> grouped = new LinkedHashMap<>();
             for (PermissionGroup group : PermissionGroup.getAll()) {
+                // Skip Permission.GROUP: its members are generic root permissions used only
+                // as impliedBy targets (GenericRead, FullControl, etc.), not user-facing.
+                if (group.owner == Permission.class) {
+                    continue;
+                }
                 List<Permission> permissions = new ArrayList<>();
                 for (Permission permission : group.getPermissions()) {
                     if (!permission.getEnabled()) {
                         continue;
                     }
-                    if (permission.equals(Permission.HUDSON_ADMINISTER)) {
-                        // deprecated alias; Jenkins.ADMINISTER covers the same ground
+                    if (isDeprecatedPermission(permission)) {
                         continue;
                     }
                     permissions.add(permission);
@@ -717,6 +759,38 @@ public class ApiTokenProperty extends UserProperty {
                 }
             }
             return grouped;
+        }
+
+        // Core-deprecated permissions whose @Deprecated static fields are not declared on
+        // their PermissionGroup owner class (so reflection on the owner can't find them).
+        // Sourced from Jenkins 2.222+ deprecations. Update if more are deprecated later.
+        private static final Set<String> DEPRECATED_CORE_PERMISSION_IDS = Set.of(
+                Jenkins.RUN_SCRIPTS.getId(),
+                hudson.PluginManager.UPLOAD_PLUGINS.getId(),
+                hudson.PluginManager.CONFIGURE_UPDATECENTER.getId());
+
+        private static boolean isDeprecatedPermission(@NonNull Permission permission) {
+            if (DEPRECATED_CORE_PERMISSION_IDS.contains(permission.getId())) {
+                return true;
+            }
+            // Fallback: detect @Deprecated plugin permissions where the static field IS on
+            // the owner class.
+            for (Field f : permission.owner.getDeclaredFields()) {
+                if (!Modifier.isStatic(f.getModifiers()) || !Modifier.isPublic(f.getModifiers())) {
+                    continue;
+                }
+                if (!Permission.class.isAssignableFrom(f.getType())) {
+                    continue;
+                }
+                try {
+                    if (f.get(null) == permission && f.isAnnotationPresent(Deprecated.class)) {
+                        return true;
+                    }
+                } catch (IllegalAccessException ignore) {
+                    // skip
+                }
+            }
+            return false;
         }
 
         private LocalDate getExpirationDate(String tokenExpiration, String expirationDuration) {

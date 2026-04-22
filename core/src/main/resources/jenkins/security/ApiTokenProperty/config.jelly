@@ -86,14 +86,16 @@ THE SOFTWARE.
             </div>
             <div class="jenkins-form-label">${%Scope}</div>
             <div class="token-scope-mode jenkins-!-margin-bottom-2">
-                <label class="jenkins-radio">
-                    <input type="radio" name="tokenScopeMode" value="scoped" checked="checked"/>
-                    <span class="jenkins-radio__label">${%ScopeMode.Scoped}</span>
-                </label>
-                <label class="jenkins-radio">
-                    <input type="radio" name="tokenScopeMode" value="inherit"/>
-                    <span class="jenkins-radio__label">${%ScopeMode.Inherit}</span>
-                </label>
+                <div class="jenkins-radio">
+                    <input class="jenkins-radio__input" type="radio" name="tokenScopeMode"
+                           id="tokenScopeMode-scoped" value="scoped" checked="true"/>
+                    <label class="jenkins-radio__label" for="tokenScopeMode-scoped">${%ScopeMode.Scoped}</label>
+                </div>
+                <div class="jenkins-radio">
+                    <input class="jenkins-radio__input" type="radio" name="tokenScopeMode"
+                           id="tokenScopeMode-inherit" value="inherit"/>
+                    <label class="jenkins-radio__label" for="tokenScopeMode-inherit">${%ScopeMode.Inherit}</label>
+                </div>
             </div>
             <div class="token-scope-picker jenkins-!-margin-bottom-3">
                 <j:set var="availableScopes" value="${descriptor.availableScopes}"/>
@@ -107,10 +109,12 @@ THE SOFTWARE.
                                 <summary class="token-scope-group__title">${entry.key.title}</summary>
                                 <div class="token-scope-group__items">
                                     <j:forEach var="permission" items="${entry.value}">
-                                        <label class="jenkins-checkbox">
-                                            <input type="checkbox" class="token-scope-checkbox" value="${permission.id}"/>
-                                            <span class="jenkins-checkbox__label">${permission.name}</span>
-                                        </label>
+                                        <span class="jenkins-checkbox">
+                                            <input type="checkbox" class="token-scope-checkbox"
+                                                   id="scope-${permission.id}" value="${permission.id}"/>
+                                            <label class="attach-previous" for="scope-${permission.id}"
+                                                   title="${permission.description}">${permission.name}</label>
+                                        </span>
                                     </j:forEach>
                                 </div>
                             </details>
@@ -125,6 +129,7 @@ THE SOFTWARE.
             <div class="token-card-inner">
                 <div class="token-card__title">
                     <span class="token-name">${token.name}</span>
+                    <span class="token-scope-chip jenkins-hidden" data-scoped-chip-text="${%ScopedChip('__COUNT__')}"/>
                 </div>
                 <div class="token-stats">
                     <span class="api-token-new-expiration token-creation" data-never="${%This token does not expire}"
@@ -194,9 +199,9 @@ THE SOFTWARE.
                                         </j:if>
                                         <span class="token-name">${token.name}</span>
                                         <j:choose>
-                                            <j:when test="${token.scoped}">
+                                            <j:when test="${token.isScoped()}">
                                                 <span class="token-scope-chip token-scope-chip--scoped"
-                                                      tooltip="${token.scopes.toString()}">
+                                                      tooltip="${token.scopeLabels.toString()}">
                                                     ${%ScopedChip(token.scopes.size())}
                                                 </span>
                                             </j:when>
