@@ -486,19 +486,7 @@ public class ApiTokenProperty extends UserProperty {
 
     @Restricted(Beta.class)
     public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate, @CheckForNull Set<String> scopes) throws IOException {
-        if (scopes != null) {
-            try (hudson.security.ACLContext ignored = ACL.as2(user.impersonate2())) {
-                for (String id : scopes) {
-                    Permission p = Permission.fromId(id);
-                    if (p == null) {
-                        throw new IllegalArgumentException("Unknown permission: " + id);
-                    }
-                    if (!Jenkins.get().hasPermission(p)) {
-                        throw new IllegalArgumentException("User does not hold permission: " + id);
-                    }
-                }
-            }
-        }
+        // Pre-checking user.hasPermission(p) is wrong for per-object permissions; the ACL gate enforces it at request time.
         TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name, expirationDate, scopes);
         user.save();
         return tokenUuidAndPlainValue;
@@ -652,7 +640,7 @@ public class ApiTokenProperty extends UserProperty {
 
             Set<String> parsedScopes;
             try {
-                parsedScopes = parseAndCheckScopes(scopes, u);
+                parsedScopes = parseAndCheckScopes(scopes);
             } catch (IllegalArgumentException e) {
                 return HttpResponses.errorJSON(e.getMessage());
             }
@@ -689,7 +677,7 @@ public class ApiTokenProperty extends UserProperty {
             return HttpResponses.okJSON(data);
         }
 
-        private static @CheckForNull Set<String> parseAndCheckScopes(@CheckForNull String scopes, @NonNull User tokenUser) {
+        private static @CheckForNull Set<String> parseAndCheckScopes(@CheckForNull String scopes) {
             if (scopes == null || scopes.isBlank()) {
                 return null;
             }
@@ -700,28 +688,20 @@ public class ApiTokenProperty extends UserProperty {
             if (ids.isEmpty()) {
                 return null;
             }
-            // A token cannot be granted permissions the owning user does not hold.
+            // Existence check only. User-holds-permission is enforced at request time.
             for (String id : ids) {
-                Permission p = Permission.fromId(id);
-                if (p == null) {
+                if (Permission.fromId(id) == null) {
                     throw new IllegalArgumentException("Unknown permission: " + id);
-                }
-                if (!tokenUser.hasPermission(p)) {
-                    throw new IllegalArgumentException("User does not hold permission: " + id);
                 }
             }
             return ids;
         }
 
-        /**
-         * Enumerates permissions grouped by {@link PermissionGroup} that the given user holds
-         * and can therefore be used as scopes for a new token. Used by the token generation UI.
-         */
         @Restricted(NoExternalUse.class)
-        public @NonNull Map<PermissionGroup, List<Permission>> getAvailableScopesFor(@NonNull User u) {
+        public @NonNull Map<PermissionGroup, List<Permission>> getAvailableScopes() {
             Map<PermissionGroup, List<Permission>> grouped = new LinkedHashMap<>();
             for (PermissionGroup group : PermissionGroup.getAll()) {
-                List<Permission> held = new ArrayList<>();
+                List<Permission> permissions = new ArrayList<>();
                 for (Permission permission : group.getPermissions()) {
                     if (!permission.getEnabled()) {
                         continue;
@@ -730,12 +710,10 @@ public class ApiTokenProperty extends UserProperty {
                         // deprecated alias; Jenkins.ADMINISTER covers the same ground
                         continue;
                     }
-                    if (u.hasPermission(permission)) {
-                        held.add(permission);
-                    }
+                    permissions.add(permission);
                 }
-                if (!held.isEmpty()) {
-                    grouped.put(group, held);
+                if (!permissions.isEmpty()) {
+                    grouped.put(group, permissions);
                 }
             }
             return grouped;

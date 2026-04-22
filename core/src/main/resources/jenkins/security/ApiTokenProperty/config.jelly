@@ -96,7 +96,7 @@ THE SOFTWARE.
                 </label>
             </div>
             <div class="token-scope-picker jenkins-!-margin-bottom-3">
-                <j:set var="availableScopes" value="${descriptor.getAvailableScopesFor(it)}"/>
+                <j:set var="availableScopes" value="${descriptor.availableScopes}"/>
                 <j:choose>
                     <j:when test="${availableScopes.isEmpty()}">
                         <div class="jenkins-alert jenkins-alert-info">${%ScopePicker.NoPermissions}</div>

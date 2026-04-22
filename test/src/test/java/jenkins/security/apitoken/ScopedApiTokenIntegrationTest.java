@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2026, CloudBees, Inc.
+ * Copyright (c) 2026
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -101,16 +101,20 @@ class ScopedApiTokenIntegrationTest {
     }
 
     @Test
-    void scopeCannotExceedUserPermissions() throws Exception {
-        // user "reader" only has Jenkins.READ + Item.READ, not Item.BUILD
+    void scopedTokenRejectsPermissionsTheUserNoLongerHolds() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.READ, Item.READ).everywhere().to("reader"));
+                .grant(Jenkins.ADMINISTER).everywhere().to("user1"));
+        User user1 = User.getById("user1", true);
+        String token = generateScopedToken(user1, Set.of(Jenkins.READ.getId(), Item.READ.getId(), Item.BUILD.getId()));
+        FreeStyleProject project = j.createFreeStyleProject("j1");
 
-        User reader = User.getById("reader", true);
-        // Attempt to mint a scoped token with Item.BUILD -> must be rejected because the user doesn't hold it
-        assertThrows(IllegalArgumentException.class, () ->
-                reader.getProperty(ApiTokenProperty.class).generateNewToken("bad", null, Set.of(Item.BUILD.getId())));
+        assertEquals(HttpURLConnection.HTTP_CREATED, postRequest("user1", token, "/job/" + project.getName() + "/build"));
+
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ, Item.READ).everywhere().to("user1"));
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, postRequest("user1", token, "/job/" + project.getName() + "/build"));
+        assertEquals(HttpURLConnection.HTTP_OK, request("user1", token, "/job/" + project.getName() + "/api/xml"));
     }
 
     @Test
