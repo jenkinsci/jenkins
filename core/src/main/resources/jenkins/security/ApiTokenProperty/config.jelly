@@ -112,7 +112,7 @@ THE SOFTWARE.
                                         <span class="jenkins-checkbox">
                                             <input type="checkbox" class="token-scope-checkbox"
                                                    id="scope-${permission.id}" value="${permission.id}"/>
-                                            <label class="attach-previous" for="scope-${permission.id}"
+                                            <label for="scope-${permission.id}"
                                                    title="${permission.description}">${permission.name}</label>
                                         </span>
                                     </j:forEach>
