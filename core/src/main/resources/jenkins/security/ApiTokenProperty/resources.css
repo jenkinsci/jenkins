@@ -172,6 +172,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  max-height: 40vh;
+  overflow-y: auto;
   padding: 0.5rem;
   border: var(--card-border-width) solid var(--card-border-color);
   border-radius: var(--form-input-border-radius);

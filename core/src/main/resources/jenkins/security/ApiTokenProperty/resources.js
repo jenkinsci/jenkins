@@ -177,14 +177,21 @@ function addScopePickerHandling(form) {
   if (!picker) {
     return;
   }
-  const modeInputs = form.querySelectorAll('input[name="tokenScopeMode"]');
   const sync = () => {
-    const scoped = form.querySelector(
+    const scopedRadio = form.querySelector(
       'input[name="tokenScopeMode"][value="scoped"]',
-    ).checked;
-    picker.classList.toggle("jenkins-hidden", !scoped);
+    );
+    picker.classList.toggle(
+      "jenkins-hidden",
+      !scopedRadio || !scopedRadio.checked,
+    );
   };
-  modeInputs.forEach((input) => input.addEventListener("change", sync));
+  // Event delegation on the form survives any DOM reparenting the dialog library does.
+  form.addEventListener("change", (e) => {
+    if (e.target && e.target.name === "tokenScopeMode") {
+      sync();
+    }
+  });
   sync();
 }
 
