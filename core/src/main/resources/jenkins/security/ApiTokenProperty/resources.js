@@ -172,28 +172,27 @@ function addFormChangesHandling(form) {
   });
 }
 
-function addScopePickerHandling(form) {
+function syncTokenScopePicker(form) {
   const picker = form.querySelector(".token-scope-picker");
-  if (!picker) {
-    return;
-  }
-  const sync = () => {
-    const scopedRadio = form.querySelector(
-      'input[name="tokenScopeMode"][value="scoped"]',
-    );
-    picker.classList.toggle(
-      "jenkins-hidden",
-      !scopedRadio || !scopedRadio.checked,
-    );
-  };
-  // Event delegation on the form survives any DOM reparenting the dialog library does.
-  form.addEventListener("change", (e) => {
-    if (e.target && e.target.name === "tokenScopeMode") {
-      sync();
-    }
-  });
-  sync();
+  if (!picker) return;
+  const scoped = form.querySelector(
+    'input[name="tokenScopeMode"][value="scoped"]',
+  );
+  picker.classList.toggle("jenkins-hidden", !scoped || !scoped.checked);
 }
+
+// Jenkins' Behaviour framework reliably attaches handlers after dialog reparenting.
+Behaviour.specify(
+  'input[name="tokenScopeMode"]',
+  "token-scope-mode-radio",
+  0,
+  (input) => {
+    input.addEventListener("change", () => {
+      const form = input.closest("form");
+      if (form) syncTokenScopePicker(form);
+    });
+  },
+);
 
 function collectScopes(form) {
   const mode = form.querySelector('input[name="tokenScopeMode"]:checked');
@@ -212,6 +211,15 @@ function addToken(button) {
   const formTemplate = document
     .getElementById("api-token-add-template")
     .firstElementChild.cloneNode(true);
+  // Suffix IDs so label for= targets the clone, not the hidden template copy.
+  const suffix = "-u" + Date.now();
+  formTemplate.querySelectorAll("[id]").forEach((el) => {
+    const oldId = el.id;
+    formTemplate
+      .querySelectorAll(`[for="${oldId}"]`)
+      .forEach((l) => l.setAttribute("for", oldId + suffix));
+    el.id = oldId + suffix;
+  });
   const form = document.createElement("form");
   const dateInput = formTemplate.querySelector('input[name="tokenExpiration"]');
   const now = new Date();
@@ -224,7 +232,7 @@ function addToken(button) {
   dateInput.value = presetDate.toISOString().split("T")[0];
   form.appendChild(formTemplate);
   addFormChangesHandling(form);
-  addScopePickerHandling(form);
+  syncTokenScopePicker(form);
   dialog
     .form(form, {
       title: promptMessage,
