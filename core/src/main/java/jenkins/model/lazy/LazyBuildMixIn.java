@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -130,11 +131,11 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
             TreeMap<Integer, RunT> stillBuildingBuilds = new TreeMap<>();
             for (RunT r : currentBuilds.getLoadedBuilds().values()) {
                 if (r.isBuilding()) {
-                    // Do not use RunMap.put(Run):
                     stillBuildingBuilds.put(r.getNumber(), r);
                     LOGGER.log(Level.FINE, "keeping reloaded {0}", r);
                 }
             }
+            // Do not use RunMap.put(Run) here, as it may trigger resolution of the replacing BuildReference.
             _builds.putAll(stillBuildingBuilds);
         }
         this.builds = _builds;
@@ -273,23 +274,27 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
      * @since 2.407
      */
     public List<RunT> getEstimatedDurationCandidates() {
-        List<RunT> candidates = new ArrayList<>(3);
-        for (Result threshold : List.of(Result.UNSTABLE, Result.FAILURE)) {
-            for (RunT build : (Iterable<RunT>) builds.streamLoadedBuilds()::iterator) {
-                if (candidates.contains(build)) {
-                    continue;
-                }
-                if (!build.isBuilding()) {
-                    Result result = build.getResult();
-                    if (result != null && result.isBetterOrEqualTo(threshold)) {
+        final int desiredCandidatesSize = 3;
+        List<RunT> candidates = new ArrayList<>(desiredCandidatesSize);
+        List<RunT> failureCandidates = new ArrayList<>(desiredCandidatesSize);
+        Iterator<RunT> it = builds.streamLoadedBuilds().iterator();
+        while (it.hasNext() && candidates.size() < desiredCandidatesSize) {
+            RunT build = it.next();
+            if (!build.isBuilding()) {
+                Result result = build.getResult();
+                if (result != null) {
+                    if (result.isBetterOrEqualTo(Result.UNSTABLE)) {
                         candidates.add(build);
-                        if (candidates.size() == 3) {
-                            LOGGER.fine(() -> "Candidates: " + candidates);
-                            return candidates;
-                        }
+                    } else if (result.isBetterOrEqualTo(Result.FAILURE)
+                            && failureCandidates.size() < desiredCandidatesSize) {
+                        failureCandidates.add(build);
                     }
                 }
             }
+        }
+        it = failureCandidates.iterator();
+        while (candidates.size() < desiredCandidatesSize && it.hasNext()) {
+            candidates.add(it.next());
         }
         LOGGER.fine(() -> "Candidates: " + candidates);
         return candidates;

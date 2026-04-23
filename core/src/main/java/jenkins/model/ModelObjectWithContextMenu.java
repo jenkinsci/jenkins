@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import jenkins.management.Badge;
+import jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag;
+import jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
 import jenkins.model.menu.event.ConfirmationEvent;
@@ -296,8 +298,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest2 request, StaplerResponse2 response, String view) throws JellyException, IOException {
-            // Only Runs support getAppBarActions currently
-            if (self instanceof Run) {
+            // Use App Bar actions if the model supports them instead of pulling from sidepanel.jelly
+            if (shouldUseAppBarActions(self)) {
                 boolean menuOnly = Boolean.parseBoolean(request.getParameter("menu-only"));
 
                 List<Action> actions = ((Actionable) self).getAppBarActions().stream()
@@ -337,6 +339,22 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             }
 
             return this;
+        }
+
+        private static boolean shouldUseAppBarActions(ModelObjectWithContextMenu self) {
+            if (!(self instanceof Actionable)) {
+                return false;
+            }
+
+            if (self instanceof Job<?, ?>) {
+                return new NewJobPageUserExperimentalFlag().getFlagValue();
+            }
+
+            if (self instanceof Run) {
+                return new NewBuildPageUserExperimentalFlag().getFlagValue();
+            }
+
+            return false;
         }
     }
 

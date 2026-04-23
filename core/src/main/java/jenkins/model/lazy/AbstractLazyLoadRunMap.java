@@ -24,10 +24,6 @@
 
 package jenkins.model.lazy;
 
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.EXACT;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Job;
 import hudson.model.Run;
@@ -40,6 +36,7 @@ import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NoSuchElementException;
@@ -92,10 +89,14 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @since 1.485
  */
 public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> implements SortedMap<Integer, R> {
-    private final CopyOnWriteMap.Tree<Integer, BuildReference<R>> core = new CopyOnWriteMap.Tree<>(
-            Collections.reverseOrder());
-    private final BuildReferenceMapAdapter.Resolver<R> buildResolver = new BuildReferenceMapAdapterResolver();
-    private final BuildReferenceMapAdapter<R> adapter = new BuildReferenceMapAdapter<>(core, buildResolver) {
+    private final BuildTypeDescriptor buildTypeDescriptor = new BuildTypeDescriptor();
+    private final BuildReferenceMapAdapter.BuildReferenceResolver<R> loadedOnlyBuildRefResolver =
+            new LoadedOnlyBuildReferenceResolver<>();
+    private final BuildReferenceMapAdapter.BuildReferenceResolver<R> defaultBuildRefResolver =
+            new DefaultBuildReferenceResolver();
+    private final CopyOnWriteMap.Tree<Integer, BuildReference<R>> core = new CopyOnWriteMap.Tree<>(comparator());
+    private final BuildReferenceMapAdapter<R> adapter = new BuildReferenceMapAdapter<>(core, defaultBuildRefResolver,
+            buildTypeDescriptor) {
         @Override
         protected boolean removeValue(R value) {
             return AbstractLazyLoadRunMap.this.removeValue(value);
@@ -139,7 +140,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     }
 
     /**
-     * @return true if {@link AbstractLazyLoadRunMap#AbstractLazyLoadRunMap} was called with a non-null param, or {@link RunMap#load(Job, RunMap.Constructor)} was called
+     * @return true if {@link AbstractLazyLoadRunMap#AbstractLazyLoadRunMap} was called with a non-null param,
+     * or {@link RunMap#load(Job, RunMap.Constructor)} was called
      */
     @Restricted(NoExternalUse.class)
     public final boolean baseDirInitialized() {
@@ -175,7 +177,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
             // the job may have just been created
             kids = MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
-        TreeMap<Integer, BuildReference<R>> newBuildRefsMap = new TreeMap<>();
+        TreeMap<Integer, BuildReference<R>> newBuildRefsMap = new TreeMap<>(core.comparator());
         var allower = createLoadAllower();
         for (String s : kids) {
             if (!BUILD_NUMBER.matcher(s).matches()) {
@@ -229,7 +231,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
 
     @Override
     public Comparator<? super Integer> comparator() {
-        return core.comparator();
+        return Collections.reverseOrder();
     }
 
     @Override
@@ -249,17 +251,18 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
 
     /**
      * Returns a read-only view of records that has already been loaded.
+     * <p>
+     * <b>Note:</b> Consider using {@link #streamLoadedBuilds()} instead of this method,
+     * as (like {@code size()}) method of the returned map is implemented
+     * inefficiently and may cause performance issues.
      */
     public SortedMap<Integer, R> getLoadedBuilds() {
-        TreeMap<Integer, R> res = new TreeMap<>(Comparator.reverseOrder());
-        streamLoadedBuilds().forEach(r -> res.put(getNumberOf(r), r));
-        return res;
+        return new ConsistentSizeBuildReferenceMapAdapter<>(core, loadedOnlyBuildRefResolver, buildTypeDescriptor);
     }
 
     /**
      * Returns a lazy stream of build objects, sorted by newest first, skipping GC builds
-     * Unlike {@link #getLoadedBuilds()}, this doesn't require copying the entire map
-     * @since TODO
+     * @since 2.559
      */
     public Stream<R> streamLoadedBuilds() {
         return core.values().stream()
@@ -299,11 +302,13 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     }
 
     public R newestBuild() {
-        return search(Integer.MAX_VALUE, DESC);
+        Map.Entry<Integer, R> entry = adapter.firstEntry();
+        return entry == null ? null : entry.getValue();
     }
 
     public R oldestBuild() {
-        return search(Integer.MIN_VALUE, ASC);
+        Map.Entry<Integer, R> entry = adapter.lastEntry();
+        return entry == null ? null : entry.getValue();
     }
 
     @Override
@@ -339,15 +344,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
      *      If DESC, finds the closest #M that satisfies M ≤ N.
      */
     public @CheckForNull R search(final int n, final Direction d) {
-        if (d == EXACT) {
+        if (d == Direction.EXACT) {
             return this.adapter.get(n);
         }
-        // prepare sub map, where we need to find first resolvable entry
-        NavigableMap<Integer, BuildReference<R>> subCore = (d == ASC)
-                ? core.headMap(n, true).descendingMap()
-                : core.tailMap(n, true);
-        // wrap with BuildReferenceMapAdapter to skip unresolvable entries
-        return new BuildReferenceMapAdapter<>(subCore, buildResolver).values().stream().findFirst().orElse(null);
+        Map.Entry<Integer, R> entry = (d == Direction.ASC ? adapter.reversed() : adapter).tailMap(n).firstEntry();
+        return entry == null ? null : entry.getValue();
     }
 
     public R getById(String id) {
@@ -430,7 +431,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
 
     @Override
     public synchronized void putAll(Map<? extends Integer, ? extends R> newData) {
-        TreeMap<Integer, BuildReference<R>> newWrapperData = new TreeMap<>();
+        TreeMap<Integer, BuildReference<R>> newWrapperData = new TreeMap<>(core.comparator());
         for (Map.Entry<? extends Integer, ? extends R> entry : newData.entrySet()) {
             newWrapperData.put(entry.getKey(), createReference(entry.getValue()));
         }
@@ -508,7 +509,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
      * Replaces all the current loaded Rs with the given ones.
      */
     public synchronized void reset(Map<Integer, R> builds) {
-        TreeMap<Integer, BuildReference<R>> copy = new TreeMap<>();
+        TreeMap<Integer, BuildReference<R>> copy = new TreeMap<>(core.comparator());
         for (R r : builds.values()) {
             copy.put(getNumberOf(r), createReference(r));
         }
@@ -530,12 +531,38 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         ASC, DESC, EXACT
     }
 
-    private class BuildReferenceMapAdapterResolver implements BuildReferenceMapAdapter.Resolver<R> {
+    /**
+     * Default implementation of {@link BuildReferenceMapAdapter.BuildReferenceResolver} that handles
+     * reference resolution for {@link AbstractLazyLoadRunMap}.
+     */
+    private final class DefaultBuildReferenceResolver implements BuildReferenceMapAdapter.BuildReferenceResolver<R> {
+        /**
+         * Returns the build already loaded into memory if it exists;
+         * otherwise, loads it from the disk.
+         *
+         * @param buildRef the build reference to resolve
+         * @return the resolved build instance, or {@code null} if it cannot be found
+         */
         @Override
         public R resolveBuildRef(BuildReference<R> buildRef) {
             return AbstractLazyLoadRunMap.this.resolveBuildRef(buildRef);
         }
 
+        /**
+         * Checks if the reference can be resolved. If the reference was already resolved,
+         * returns the cached status. Otherwise, attempts to resolve it and returns the result.
+         *
+         * @param buildRef the reference to check
+         * @return {@code true} if the reference points to a valid build
+         */
+        @Override
+        public boolean isBuildRefResolvable(BuildReference<R> buildRef) {
+            return buildRef != null &&
+                    (buildRef.isSet() ? !buildRef.isUnloadable() : this.resolveBuildRef(buildRef) != null);
+        }
+    }
+
+    private final class BuildTypeDescriptor implements BuildReferenceMapAdapter.BuildTypeDescriptor<R> {
         @Override
         public Integer getNumberOf(R build) {
             return AbstractLazyLoadRunMap.this.getNumberOf(build);
@@ -544,6 +571,57 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         @Override
         public Class<R> getBuildClass() {
             return AbstractLazyLoadRunMap.this.getBuildClass();
+        }
+    }
+
+    /**
+     * An implementation of {@link BuildReferenceMapAdapter.BuildReferenceResolver} that does not
+     * perform disk loading and only uses values already loaded into memory.
+     */
+    private static final class LoadedOnlyBuildReferenceResolver<R>
+            implements BuildReferenceMapAdapter.BuildReferenceResolver<R> {
+        @Override
+        public R resolveBuildRef(BuildReference<R> buildRef) {
+            return buildRef == null ? null : buildRef.get();
+        }
+
+        @Override
+        public boolean isBuildRefResolvable(BuildReference<R> buildRef) {
+            return resolveBuildRef(buildRef) != null;
+        }
+    }
+
+    /**
+     * An implementation of {@link BuildReferenceMapAdapter} that provides a precise
+     * {@link #size()} implementation by iterating over all entries.
+     * <p>
+     * Unlike {@link BuildReferenceMapAdapter}, this version ensures that only valid,
+     * resolvable entries are counted.
+     */
+    private static class ConsistentSizeBuildReferenceMapAdapter<R> extends BuildReferenceMapAdapter<R> {
+        ConsistentSizeBuildReferenceMapAdapter(NavigableMap<Integer, BuildReference<R>> core,
+                                               BuildReferenceResolver<R> resolver,
+                                               BuildTypeDescriptor<R> typeDescriptor) {
+            super(core, resolver, typeDescriptor);
+        }
+
+        @Override
+        protected ConsistentSizeBuildReferenceMapAdapter<R> createInstance(
+                NavigableMap<Integer, BuildReference<R>> core) {
+            return new ConsistentSizeBuildReferenceMapAdapter<>(core, resolver, typeDescriptor);
+        }
+
+        /**
+         * Avoid using this method as it performs a full collection scan and can be very slow for large maps.
+         * Suitable for tests only.
+         */
+        @Override
+        public int size() {
+            int count = 0;
+            for (Iterator<?> iter = super.entrySet().iterator(); iter.hasNext(); iter.next()) {
+                count++;
+            }
+            return count;
         }
     }
 

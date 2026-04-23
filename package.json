@@ -31,24 +31,24 @@
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "7.1.4",
     "css-minimizer-webpack-plugin": "8.0.0",
-    "eslint": "10.2.0",
+    "eslint": "10.2.1",
     "eslint-config-prettier": "10.1.8",
     "eslint-formatter-checkstyle": "9.0.1",
     "globals": "17.5.0",
     "handlebars-loader": "1.7.3",
     "mini-css-extract-plugin": "2.10.2",
-    "postcss": "8.5.9",
+    "postcss": "8.5.10",
     "postcss-loader": "8.2.1",
     "postcss-preset-env": "11.2.1",
     "postcss-scss": "4.0.9",
-    "prettier": "3.8.2",
+    "prettier": "3.8.3",
     "sass": "1.99.0",
     "sass-loader": "16.0.7",
     "style-loader": "4.0.0",
-    "stylelint": "17.7.0",
+    "stylelint": "17.8.0",
     "stylelint-checkstyle-reporter": "1.1.1",
     "stylelint-config-standard-scss": "17.0.0",
-    "webpack": "5.106.1",
+    "webpack": "5.106.2",
     "webpack-cli": "7.0.2",
     "webpack-remove-empty-scripts": "1.1.1"
   },
@@ -68,5 +68,5 @@
   "engines": {
     "node": ">=24.0.0"
   },
-  "packageManager": "yarn@4.13.0"
+  "packageManager": "yarn@4.14.1"
 }
