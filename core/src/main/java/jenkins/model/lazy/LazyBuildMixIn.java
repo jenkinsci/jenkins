@@ -65,7 +65,11 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
     private static final Logger LOGGER = Logger.getLogger(LazyBuildMixIn.class.getName());
 
     // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
-    private @NonNull RunMap<RunT> builds = new RunMap<>(asJob());
+    //
+    // Volatile because onLoad() swaps this to a new RunMap, and readers like
+    // getBuildByNumber(), getLastBuild(), _getRuns() read it without synchronizing.
+    // Without volatile they could see the old (discarded) RunMap indefinitely.
+    private volatile @NonNull RunMap<RunT> builds = new RunMap<>(asJob());
 
     /**
      * Initializes this mixin.
@@ -103,7 +107,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
      * Something to be called from {@link Job#onLoad}.
      */
     @SuppressWarnings("unchecked")
-    public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
+    public synchronized void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         RunMap<RunT> _builds = createBuildRunMap();
         int max = _builds.maxNumberOnDisk();
         int next = asJob().getNextBuildNumber();
