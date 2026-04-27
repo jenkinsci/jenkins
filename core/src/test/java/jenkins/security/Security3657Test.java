@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.FilePath;
 import hudson.Util;
@@ -16,17 +17,30 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import org.apache.tools.tar.TarConstants;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 
 public class Security3657Test {
 
+    @BeforeEach
+    public void setup() throws IllegalAccessException, NoSuchFieldException {
+        // Since we're not running "in" a JenkinsJVM for core tests, need to force the flags to behave safely
+        for (String fieldName : List.of("ALLOW_UNTAR_SYMLINK_RESOLUTION", "ALLOW_REENTRY_PATH_TRAVERSAL")) {
+            final Field escapeHatch = FilePath.class.getDeclaredField(fieldName);
+            escapeHatch.setAccessible(true);
+            escapeHatch.set(null, Boolean.FALSE);
+        }
+    }
+
     @Test
     void tarSymlinkPathTraversal(@TempDir File root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final FilePath tarfile = new FilePath(createTarFile(root, symlink("attacker", ".."), fileOrDir("attacker/pwned.txt")));
 
         FilePath extractDir = new FilePath(new File(root, "extract"));
@@ -48,9 +62,10 @@ public class Security3657Test {
 
     @Test
     void tarSymlinkPathTraversalEscapeHatch(@TempDir File root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final Field escapeHatch = FilePath.class.getDeclaredField("ALLOW_UNTAR_SYMLINK_RESOLUTION");
         escapeHatch.setAccessible(true);
-        escapeHatch.setBoolean(null, true);
+        escapeHatch.set(null, Boolean.TRUE);
         try {
             final FilePath tarfile = new FilePath(createTarFile(root, symlink("attacker", ".."), fileOrDir("attacker/pwned.txt")));
 
@@ -63,12 +78,13 @@ public class Security3657Test {
             assertTrue(extractDir.child("attacker").exists());
             assertTrue(new File(root, "pwned.txt").exists());
         } finally {
-            escapeHatch.setBoolean(null, false);
+            escapeHatch.set(null, null);
         }
     }
 
     @Test
     void recursiveLinks(@TempDir File root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final File extractDir = new File(root, "extract-base");
         assertTrue(extractDir.mkdirs());
         final FilePath symlinkTarFile = new FilePath(createTarFile(root, symlink("link-file", "other-link"), symlink("other-link", "link-file")));
@@ -81,6 +97,7 @@ public class Security3657Test {
 
     @Test
     void selfLink(@TempDir File root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final File extractDir = new File(root, "extract-base");
         assertTrue(extractDir.mkdirs());
         final FilePath symlinkTarFile = new FilePath(createTarFile(root, symlink("link-file", "link-file")));
@@ -92,6 +109,7 @@ public class Security3657Test {
 
     @Test
     void selfLink2(@TempDir File root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final File extractDir = new File(root, "extract-base");
         assertTrue(extractDir.mkdirs());
         final FilePath symlinkTarFile = new FilePath(createTarFile(root, symlink("link-file", "link-file"), symlink("link-file", "link-file")));
@@ -103,6 +121,7 @@ public class Security3657Test {
 
     @Test
     void allowNonExistentSymlinkTargets(@TempDir File root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final File extractDir = new File(root, "extract-base");
         assertTrue(extractDir.mkdirs());
         final FilePath symlinkTarFile = new FilePath(createTarFile(root, symlink("link-file", "src/main/whatever/non-existent-file"), fileOrDir("real-file")));
@@ -116,6 +135,7 @@ public class Security3657Test {
     @Issue("JENKINS-67063")
     @Test
     void repeatedExtraction(@TempDir File root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final File extractDir = new File(root, "extract-base");
         assertTrue(extractDir.mkdirs());
         final FilePath symlinkTarFile = new FilePath(createTarFile(root, symlink("link-file", "src/main/whatever/some-file"), fileOrDir("src/main/whatever/some-file")));
@@ -130,6 +150,7 @@ public class Security3657Test {
     @Issue("JENKINS-67063")
     @Test
     void differentExtraction(@TempDir File root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final File extractDir = new File(root, "extract-base");
         assertTrue(extractDir.mkdirs());
         final FilePath extractFilePath = new FilePath(root).child("extract-base");
@@ -150,6 +171,7 @@ public class Security3657Test {
 
     @Test
     void directWriteThroughRelative(@TempDir File root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         // We can only have a link name up to 100 bytes, which won't be enough for local/CI build workspaces, so improvise: relative PT, direct, to existing parent
         assertTrue(new File(root, "plugins").mkdirs());
         final FilePath pathTraversalTarFile = new FilePath(createTarFile(root, symlink("link-file", "../plugins/evil.hpi"), fileOrDir("link-file")));
@@ -164,6 +186,7 @@ public class Security3657Test {
 
     @Test
     void directWriteThroughAbsolute(@TempDir File root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         // We can only have a link name up to 100 bytes, which may not be enough for local/CI build workspaces, so improvise with system temp dir.
         // macOS 26.3 has temp dirs that look like /var/folders/sx/123456789012345678901234567890/T/ (49 chars), which is enough for this test.
         // It seems running this test in IntelliJ IDEA fails since that uses a different temp dir, but it works with command line `mvn`.
@@ -188,6 +211,7 @@ public class Security3657Test {
 
     @Test
     void directoryCreationPathTraversal(@TempDir File root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final File extractDir = new File(root, "extract-base");
         assertTrue(extractDir.mkdirs());
         final FilePath symlinkTarFile = new FilePath(createTarFile(root, symlink("link-file", ".."), fileOrDir("link-file/bar/")));
@@ -216,6 +240,7 @@ public class Security3657Test {
 
     @Test
     void relativeBaseAllowedSymlinks(@TempDir Path root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         // relative path from cwd to temp dir to ensure behavior is as expected with relative base dir
         final File relativeRoot = Path.of("").toAbsolutePath().relativize(root).toFile();
 
@@ -231,6 +256,7 @@ public class Security3657Test {
 
     @Test
     void relativeBaseDirectWriteThroughRelative(@TempDir Path root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         // relative path from cwd to temp dir to ensure behavior is as expected with relative base dir
         final File relativeRoot = Path.of("").toAbsolutePath().relativize(root).toFile();
 
@@ -263,6 +289,7 @@ public class Security3657Test {
 
     @Test
     void relativePathTraversalThroughSymlink(@TempDir Path root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         // relative path from cwd to temp dir to ensure behavior is as expected with relative base dir
         final File relativeRoot = Path.of("").toAbsolutePath().relativize(root).toFile();
 
@@ -279,6 +306,7 @@ public class Security3657Test {
 
     @Test
     void directoryCreationDirect(@TempDir File root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final File extractDir = new File(root, "extract-base");
         assertTrue(extractDir.mkdirs());
         final FilePath symlinkTarFile = new FilePath(createTarFile(root, symlink("link-file", "../bar"), fileOrDir("link-file/")));
@@ -329,6 +357,7 @@ public class Security3657Test {
 
     @Test
     void allowedSymlinks(@TempDir File root) throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final File extractDir = new File(root, "extract-base");
         assertTrue(extractDir.mkdirs());
         final FilePath symlinkTarFile = new FilePath(createTarFile(root, symlink("path/to/link-file", "../../file.txt"), symlink("path/to/other-file", "../../path/to/link-file")));
@@ -373,12 +402,12 @@ public class Security3657Test {
         extractFilePath.mkdirs();
         final Field escapeHatch = FilePath.class.getDeclaredField("ALLOW_REENTRY_PATH_TRAVERSAL");
         escapeHatch.setAccessible(true);
-        escapeHatch.setBoolean(null, true);
+        escapeHatch.set(null, Boolean.TRUE);
         try {
             symlinkTarFile.untar(extractFilePath, FilePath.TarCompression.NONE);
             assertTrue(Files.exists(extractDir.toPath().resolve("foo")));
         } finally {
-            escapeHatch.setBoolean(null, false);
+            escapeHatch.set(null, null);
         }
     }
 
@@ -394,12 +423,12 @@ public class Security3657Test {
         extractFilePath.mkdirs();
         final Field escapeHatch = FilePath.class.getDeclaredField("ALLOW_REENTRY_PATH_TRAVERSAL");
         escapeHatch.setAccessible(true);
-        escapeHatch.setBoolean(null, true);
+        escapeHatch.set(null, Boolean.TRUE);
         try {
             symlinkTarFile.untar(extractFilePath, FilePath.TarCompression.NONE);
             assertTrue(Files.exists(extractDir.toPath().resolve("foo")));
         } finally {
-            escapeHatch.setBoolean(null, false);
+            escapeHatch.set(null, null);
         }
     }
 

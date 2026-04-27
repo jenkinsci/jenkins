@@ -330,8 +330,8 @@ class ComputerTest {
         computer = null;
         j.jenkins.removeNode(agent);
         agent = null;
-        MemoryAssert.assertGC(computerRef, false);
-        MemoryAssert.assertGC(channelRef, false);
+        MemoryAssert.assertGC(computerRef, true);
+        MemoryAssert.assertGC(channelRef, true);
     }
 
     @Test

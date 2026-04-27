@@ -40,7 +40,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * <p>The display name is adjusted depending on whether the user has {@link Job#CONFIGURE}
  * or only {@link Job#EXTENDED_READ}.
  *
- * @since TODO
+ * @since 2.560
  */
 @Restricted(Beta.class)
 public final class ConfigureJobAction implements Action {

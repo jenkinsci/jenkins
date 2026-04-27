@@ -37,7 +37,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * App bar action that links to the workspace browser for an {@link AbstractProject}.
  *
- * @since TODO
+ * @since 2.560
  */
 @Restricted(Beta.class)
 public final class WorkspaceAction implements Action {
