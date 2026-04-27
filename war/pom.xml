@@ -762,35 +762,4 @@ THE SOFTWARE.
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <!-- sign war -->
-      <id>sign</id>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-jarsigner-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>signWar</id>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-                <phase>pre-integration-test</phase>
-                <configuration>
-                  <archive>${project.build.directory}/${project.build.finalName}.war</archive>
-                  <arguments>
-                    <argument>-tsa</argument>
-                    <argument>http://timestamp.digicert.com</argument>
-                  </arguments>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-  </profiles>
 </project>
