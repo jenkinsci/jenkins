@@ -344,12 +344,10 @@ public class OldDataMonitor extends AdministrativeMonitor {
         for (var entry : data.entrySet()) {
             if (matchingPredicate.test(entry)) {
                 var s = entry.getKey();
-                if (s != null) {
-                    try {
-                        s.save();
-                    } catch (Exception x) {
-                        LOGGER.log(Level.WARNING, "failed to save " + s, x);
-                    }
+                try {
+                    s.save();
+                } catch (Exception x) {
+                    LOGGER.log(Level.WARNING, "failed to save " + s, x);
                 }
                 removed.add(entry.getKey());
             }
