@@ -46,7 +46,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
@@ -65,7 +64,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
     private static final Logger LOGGER = Logger.getLogger(LazyBuildMixIn.class.getName());
 
     // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
-    private @NonNull RunMap<RunT> builds = new RunMap<>(asJob());
+    private final @NonNull RunMap<RunT> builds = createBuildRunMap();
 
     /**
      * Initializes this mixin.
@@ -78,7 +77,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
     /**
      * Gets the raw model.
      * Normally should not be called as such.
-     * Note that the initial value is replaced during {@link #onCreatedFromScratch} or {@link #onLoad}.
+     * Note that the final initialization is performing during {@link #onCreatedFromScratch} or {@link #onLoad}.
      */
     public final @NonNull RunMap<RunT> getRunMap() {
         return builds;
@@ -96,7 +95,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
      * Something to be called from {@link Job#onCreatedFromScratch}.
      */
     public final void onCreatedFromScratch() {
-        builds = createBuildRunMap();
+        builds.reload(null);
     }
 
     /**
@@ -104,13 +103,6 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
      */
     @SuppressWarnings("unchecked")
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
-        RunMap<RunT> _builds = createBuildRunMap();
-        int max = _builds.maxNumberOnDisk();
-        int next = asJob().getNextBuildNumber();
-        if (next <= max) {
-            LOGGER.log(Level.FINE, "nextBuildNumber {0} detected in {1} with highest build number {2}; adjusting", new Object[] {next, asJob(), max});
-            asJob().fastUpdateNextBuildNumber(max + 1);
-        }
         RunMap<RunT> currentBuilds = this.builds;
         if (parent != null) {
             // are we overwriting what currently exist?
@@ -126,23 +118,17 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
                 currentBuilds = (RunMap<RunT>) ((LazyLoadingJob) current).getLazyBuildMixIn().builds;
             }
         }
-        if (currentBuilds != null) {
-            // if we are reloading, keep all those that are still building intact
-            TreeMap<Integer, RunT> stillBuildingBuilds = new TreeMap<>();
-            for (RunT r : currentBuilds.getLoadedBuilds().values()) {
-                if (r.isBuilding()) {
-                    stillBuildingBuilds.put(r.getNumber(), r);
-                    LOGGER.log(Level.FINE, "keeping reloaded {0}", r);
-                }
-            }
-            // Do not use RunMap.put(Run) here, as it may trigger resolution of the replacing BuildReference.
-            _builds.putAll(stillBuildingBuilds);
+        this.builds.reload(currentBuilds);
+        int max = this.builds.maxNumberOnDisk();
+        int next = asJob().getNextBuildNumber();
+        if (next <= max) {
+            LOGGER.log(Level.FINE, "nextBuildNumber {0} detected in {1} with highest build number {2}; adjusting", new Object[] {next, asJob(), max});
+            asJob().fastUpdateNextBuildNumber(max + 1);
         }
-        this.builds = _builds;
     }
 
     private RunMap<RunT> createBuildRunMap() {
-        RunMap<RunT> r = new RunMap<>(asJob(), new RunMap.Constructor<RunT>() {
+        return new RunMap<>(asJob(), new RunMap.Constructor<RunT>() {
             @Override
             public RunT create(File dir) throws IOException {
                 return loadBuild(dir);
@@ -152,8 +138,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
             public Class<RunT> getBuildClass() {
                 return LazyBuildMixIn.this.getBuildClass();
             }
-        });
-        return r;
+        }, true);
     }
 
     /**

@@ -36,6 +36,8 @@ import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -44,12 +46,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 import java.util.function.IntPredicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import jenkins.util.MemoryReductionUtil;
+import org.jspecify.annotations.Nullable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -102,6 +106,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
             return AbstractLazyLoadRunMap.this.removeValue(value);
         }
     };
+    private final Set<Map<Integer, BuildReference<R>>> transientBuffers = Collections.newSetFromMap(
+            new IdentityHashMap<>());
 
     @Override
     public Set<Integer> keySet() {
@@ -125,7 +131,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
      * because the compatibility requires that we make it settable
      * in the first call after the constructor.
      */
-    protected File dir;
+    protected volatile File dir;
 
     @Restricted(NoExternalUse.class) // subclassing other than by RunMap does not guarantee compatibility
     protected AbstractLazyLoadRunMap() {
@@ -135,8 +141,9 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     protected void initBaseDir(File dir) {
         assert this.dir == null;
         this.dir = dir;
-        if (dir != null)
-            loadNumberOnDisk();
+        if (dir != null) {
+            reload(null);
+        }
     }
 
     /**
@@ -165,13 +172,18 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
      * Primarily for debugging and testing lazy loading behaviour.
      * @since 1.507
      */
-    public synchronized void purgeCache() {
-        loadNumberOnDisk();
+    public void purgeCache() {
+        reload(null);
     }
 
     private static final Pattern BUILD_NUMBER = Pattern.compile("[0-9]+");
 
-    private void loadNumberOnDisk() {
+    /**
+     * Scans the base directory for build subdirectories and returns a map
+     * of build numbers to unresolved {@link BuildReference}s.
+     * Does not modify internal state.
+     */
+    private TreeMap<Integer, BuildReference<R>> loadBuildRefsFromDisk() {
         String[] kids = dir.list();
         if (kids == null) {
             // the job may have just been created
@@ -195,7 +207,70 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
                 // matched BUILD_NUMBER but not an int?
             }
         }
-        core.replaceBy(newBuildRefsMap);
+        return newBuildRefsMap;
+    }
+
+    /**
+     * Populates the buffer with currently building runs from the core map.
+     */
+    private void initTransientBuffer(Map<Integer, BuildReference<R>> buffer) {
+        this.core.values().stream()
+                .filter(ref -> isRunBuilding(ref.get()))
+                .forEach(ref -> buffer.put(ref.number, ref));
+    }
+
+    /**
+     * Reads build references from disk, merges them with in-flight builds and passes the
+     * resulting map to the given consumer while holding the lock preventing from modification.
+     * <p>
+     * In-flight builds include both builds that were in progress (building) at the time
+     * this method was called, and builds that were added or removed via {@link #put}/{@link #removeValue}
+     * while the disk scan was in progress.
+     *
+     * @param consumer receives a complete map of build number to {@link BuildReference},
+     *                 combining disk state and in-flight builds;
+     *                 invoked under {@code synchronized(this)}, guaranteeing no concurrent
+     *                 modifications to the map during execution
+     */
+    private void loadBuildRefs(Consumer<Map<Integer, BuildReference<R>>> consumer) {
+        Map<Integer, BuildReference<R>> buffer = new HashMap<>();
+        synchronized (this) {
+            initTransientBuffer(buffer);
+            this.transientBuffers.add(buffer);
+        }
+
+        TreeMap<Integer, BuildReference<R>> newBuildRefsMap = loadBuildRefsFromDisk();
+
+        synchronized (this) {
+            this.transientBuffers.remove(buffer);
+            newBuildRefsMap.putAll(buffer);
+            consumer.accept(newBuildRefsMap);
+        }
+    }
+
+    /**
+     * Reloads this map from disk.
+     * <p>
+     * If {@code activeMap} is non-null, currently building runs from {@code activeMap}
+     * are preserved, and any builds added to or removed from {@code activeMap}
+     * during the disk scan are captured and merged into the final result, ensuring no
+     * mutations are lost. This is used during full Jenkins reload when a new Job object
+     * replaces the old one but the old object may still receive build updates.
+     * <p>
+     * If {@code activeMap} is null, simply rescans the disk without preserving running
+     * builds or tracking in-flight mutations.
+     *
+     * @param activeMap the map currently visible to other threads (typically from the old Job instance),
+     *                  or null if no concurrent mutations are expected
+     */
+    @Restricted(NoExternalUse.class)
+    protected void reload(@Nullable AbstractLazyLoadRunMap<R> activeMap) {
+        if (activeMap == null) {
+            coreReplaceBy(loadBuildRefsFromDisk());
+            return;
+        }
+
+        activeMap.loadBuildRefs(this::coreReplaceBy);
     }
 
     @Restricted(NoExternalUse.class)
@@ -220,7 +295,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
                 if (this.core.containsKey(buildNumber)) {
                     LOGGER.fine(() -> "already knew about " + buildNumber + " in " + dir);
                 } else {
-                    core.put(buildNumber, new BuildReference<>(String.valueOf(buildNumber)));
+                    corePut(new BuildReference<>(String.valueOf(buildNumber)));
                     LOGGER.fine(() -> "recognizing " + buildNumber + " in " + dir);
                 }
             }
@@ -371,7 +446,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
             return v; // already in memory
         }
         // otherwise fall through to load
-        synchronized (this) {
+        synchronized (ref) {
             if ((v = ref.get()) != null) {
                 return v; // already in memory
             }
@@ -423,19 +498,18 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     }
 
     @Override
-    public synchronized R put(Integer key, R r) {
-        int n = getNumberOf(r);
-        BuildReference<R> old = core.put(n, createReference(r));
-        return resolveBuildRef(old);
+    public  R put(Integer key, R r) {
+        assert getNumberOf(r) == key;
+        return resolveBuildRef(corePut(createReference(r)));
     }
 
     @Override
-    public synchronized void putAll(Map<? extends Integer, ? extends R> newData) {
+    public void putAll(Map<? extends Integer, ? extends R> newData) {
         TreeMap<Integer, BuildReference<R>> newWrapperData = new TreeMap<>(core.comparator());
         for (Map.Entry<? extends Integer, ? extends R> entry : newData.entrySet()) {
             newWrapperData.put(entry.getKey(), createReference(entry.getValue()));
         }
-        core.putAll(newWrapperData);
+        corePutAll(newWrapperData);
     }
 
     @Override
@@ -449,13 +523,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
      * @return null if the data failed to load.
      */
     private R load(int n) {
-        assert Thread.holdsLock(this);
         assert dir != null;
         return load(new File(dir, String.valueOf(n)));
     }
 
     private R load(File dataDir) {
-        assert Thread.holdsLock(this);
         try {
             R r = retrieve(dataDir);
             if (r == null) {
@@ -473,6 +545,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
      * Subtype to provide {@link Run#getNumber()} so that this class doesn't have to depend on it.
      */
     protected abstract int getNumberOf(R r);
+
+    protected abstract boolean isRunBuilding(R r);
 
     /**
      * Subtype to provide {@link Run#getId()} so that this class doesn't have to depend on it.
@@ -502,7 +576,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
     protected abstract Class<R> getBuildClass();
 
     public synchronized boolean removeValue(R run) {
-        return core.remove(getNumberOf(run)) != null;
+        return coreRemove(getNumberOf(run)) != null;
     }
 
     /**
@@ -514,7 +588,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
             copy.put(getNumberOf(r), createReference(r));
         }
 
-        this.core.replaceBy(copy);
+        coreReplaceBy(copy);
     }
 
     @Override
@@ -560,6 +634,37 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
             return buildRef != null &&
                     (buildRef.isSet() ? !buildRef.isUnloadable() : this.resolveBuildRef(buildRef) != null);
         }
+    }
+
+    private synchronized BuildReference<R> corePut(BuildReference<R> buildRef) {
+        BuildReference<R> oldRef = this.core.put(buildRef.number, buildRef);
+        for (Map<Integer, BuildReference<R>>  buffer : transientBuffers) {
+            buffer.put(buildRef.number, buildRef);
+        }
+        return oldRef;
+    }
+
+    private synchronized void corePutAll(Map<Integer, BuildReference<R>> map) {
+        this.core.putAll(map);
+        for (Map<Integer, BuildReference<R>> buffer : transientBuffers) {
+            buffer.putAll(map);
+        }
+    }
+
+    private synchronized void coreReplaceBy(Map<Integer, BuildReference<R>> map) {
+        this.core.replaceBy(map);
+        for (Map<Integer, BuildReference<R>> buffer : transientBuffers) {
+            buffer.clear();
+            initTransientBuffer(buffer);
+        }
+    }
+
+    private synchronized BuildReference<R> coreRemove(Integer key) {
+        BuildReference<R> res = this.core.remove(key);
+        for (Map<Integer, BuildReference<R>> buffer : transientBuffers) {
+            buffer.remove(key);
+        }
+        return res;
     }
 
     private final class BuildTypeDescriptor implements BuildReferenceMapAdapter.BuildTypeDescriptor<R> {
