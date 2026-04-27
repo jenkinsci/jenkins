@@ -73,7 +73,7 @@ class OldDataMonitorTest {
     /**
      * Note that this doesn't actually run slowly, it just ensures that
      * the {@link OldDataMonitor#changeListener}'s {@code onChange()} can complete
-     * while {@link OldDataMonitor#doDiscard(org.kohsuke.stapler.StaplerRequest2, org.kohsuke.stapler.StaplerResponse2)}
+     * while {@link OldDataMonitor#doDiscard}
      * is still running.
      *
      */
