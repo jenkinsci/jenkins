@@ -40,7 +40,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import jenkins.model.lazy.BuildReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -50,11 +49,6 @@ import org.jvnet.hudson.test.recipes.LocalData;
 
 @WithJenkins
 class OldDataMonitorTest {
-
-    static {
-        // To make memory run faster:
-        System.setProperty(BuildReference.DefaultHolderFactory.MODE_PROPERTY, "weak");
-    }
 
     private JenkinsRule r;
 
