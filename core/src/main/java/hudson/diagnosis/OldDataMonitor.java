@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +80,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @Extension @Symbol("oldData")
 public class OldDataMonitor extends AdministrativeMonitor {
     private static final Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
+    private static final int MAX_DISPLAY_ENTRIES = 1000;
 
     private ConcurrentMap<SaveableReference, VersionRange> data = new ConcurrentHashMap<>();
 
@@ -123,6 +125,34 @@ public class OldDataMonitor extends AdministrativeMonitor {
             }
         }
         return r;
+    }
+
+    /**
+     * Like {@link #getData} but stops resolving after {@link #MAX_DISPLAY_ENTRIES} entries.
+     */
+    @Restricted(DoNotUse.class)
+    public Map<Saveable, VersionRange> getDisplayData() {
+        Map<Saveable, VersionRange> r = new LinkedHashMap<>();
+        for (Map.Entry<SaveableReference, VersionRange> entry : this.data.entrySet()) {
+            if (r.size() >= MAX_DISPLAY_ENTRIES) {
+                break;
+            }
+            Saveable s = entry.getKey().get();
+            if (s != null) {
+                r.put(s, entry.getValue());
+            }
+        }
+        return r;
+    }
+
+    @Restricted(DoNotUse.class)
+    public boolean isDataTruncated() {
+        return data.size() > MAX_DISPLAY_ENTRIES;
+    }
+
+    @Restricted(DoNotUse.class)
+    public int getDataCount() {
+        return data.size();
     }
 
     private static void remove(Saveable obj, boolean isDelete) {

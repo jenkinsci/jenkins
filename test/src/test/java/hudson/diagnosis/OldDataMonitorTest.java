@@ -25,6 +25,7 @@
 package hudson.diagnosis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import hudson.XmlFile;
@@ -154,6 +155,20 @@ class OldDataMonitorTest {
         odm.doDiscard(null, null);
         assertEquals(Collections.emptySet(), odm.getData().keySet());
 
+    }
+
+    @Issue("JENKINS-76278")
+    @Test
+    void managePageRendering() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("testProject");
+        FreeStyleBuild b = r.buildAndAssertSuccess(p);
+        OldDataMonitor.report(b, "1.0");
+
+        OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
+        assertFalse(odm.getData().isEmpty());
+
+        // verify the manage page loads without error
+        r.createWebClient().goTo("administrativeMonitor/OldData/manage");
     }
 
     public static final class BadAction extends InvisibleAction {
