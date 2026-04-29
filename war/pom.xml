@@ -290,7 +290,7 @@ THE SOFTWARE.
                   <!-- detached after 1.535 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-auth</artifactId>
-                  <version>3.2.9</version>
+                  <version>3.2.10</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -311,7 +311,7 @@ THE SOFTWARE.
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1399.ve6a_66547f6e1</version>
+                  <version>1402.v94c9ce464861</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
