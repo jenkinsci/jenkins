@@ -312,7 +312,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     @RequirePOST
     public void doCreateAccountByAdmin(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        createAccountByAdmin(req, rsp, "addUser.jelly", "."); // send the user back to the listing page on success
+        createAccountByAdmin(req, rsp, "addUserDialog.jelly", "."); // send the user back to the listing page on success
     }
 
     /**

@@ -24,7 +24,7 @@ jobs:
       # Drafts your next Release notes as Pull Requests are merged into "master"
       - name: Generate GitHub Release Draft
         id: release-drafter
-        uses: release-drafter/release-drafter@139054aeaa9adc52ab36ddf67437541f039b88e2 # v7.1.1
+        uses: release-drafter/release-drafter@5de93583980a40bd78603b6dfdcda5b4df377b32 # v7.2.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       # Generates a YAML changelog file using https://github.com/jenkinsci/jenkins-core-changelog-generator
@@ -35,7 +35,7 @@ jobs:
         with:
           token: github-actions:${{ secrets.GITHUB_TOKEN }}
       - name: Upload Changelog YAML
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: changelog.yaml
           path: changelog.yaml
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'jenkinsci'
     steps:
-      - uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+      - uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         id: generate-token
         with:
           app-id: ${{ secrets.JENKINS_CHANGELOG_UPDATER_APP_ID }}

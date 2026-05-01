@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2019 CloudBees, Inc.
+ * Copyright (c) 2026, Jan Faracik
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,21 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security.ResourceDomainRecommendation
 
-def f = namespace(lib.FormTagLib)
-def l = namespace(lib.LayoutTagLib)
+package jenkins.model.menu.event;
 
-dl {
-    div(class: "jenkins-alert jenkins-alert-info") {
-        a(name: "resource-root-url")
-        l.isAdmin() {
-          form(method: "post", action: "${rootURL}/${my.url}/act") {
-              f.submit(name: 'redirect', value: _("Configure resource root URL"))
-              f.submit(name: 'dismiss', value: _("Dismiss"))
-            }
-        }
+import java.util.Map;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.stapler.export.ExportedBean;
 
-        raw(_("blurb"))
+/**
+ * Displays a dialog, contents are lazily loaded when needed.
+ */
+@ExportedBean
+@Restricted(Beta.class)
+public final class DialogEvent {
+
+    /**
+     * Create a DialogEvent.
+     * @param url the url of the dialog to load.
+     * @return the event
+     */
+    public static JavaScriptEvent of(String url) {
+        return JavaScriptEvent.of(Map.of("type", "dialog-opener", "dialog-url", url), "");
     }
 }
