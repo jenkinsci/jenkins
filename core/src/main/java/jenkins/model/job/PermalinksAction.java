@@ -76,7 +76,7 @@ public final class PermalinksAction implements Action {
 
     @Override
     public String getUrlName() {
-        return "";
+        return null;
     }
 
     @Override
