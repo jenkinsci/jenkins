@@ -252,7 +252,7 @@ pre.console {
 }
 
 .jenkins-not-applicable {
-  color: darkgrey;
+  color: var(--text-color-secondary);
   font-style: italic;
 }
 
