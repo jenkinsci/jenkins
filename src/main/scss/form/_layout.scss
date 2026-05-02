@@ -96,6 +96,7 @@
   outline-offset: calc(var(--jenkins-border-width) * -1);
   padding: 0 1rem;
   gap: 1.5rem;
+  overflow-wrap: anywhere;
 
   .jenkins-button {
     margin-top: 0.25rem;
@@ -110,7 +111,6 @@
   &--full-width {
     display: grid;
     grid-template-columns: 1fr auto;
-    overflow-wrap: anywhere;
   }
 
   &--monospace {
