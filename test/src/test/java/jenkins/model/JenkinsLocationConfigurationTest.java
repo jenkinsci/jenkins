@@ -189,6 +189,27 @@ class JenkinsLocationConfigurationTest {
         });
     }
 
+    @Test
+    @Issue("JENKINS-51291")
+    void newViewLinkUsesCurrentContextPathInsteadOfConfiguredRootUrl() throws Throwable {
+        session.then(j -> {
+            JenkinsRule.WebClient wc = j.createWebClient();
+            j.createFreeStyleProject();
+
+            settingRootURL(j, "https://jenkins-server.example.com/jenkins/");
+
+            HtmlPage page = wc.goTo("");
+
+            HtmlAnchor newViewLink = page.getDocumentElement().getElementsByTagName("a").stream()
+                    .filter(HtmlAnchor.class::isInstance).map(HtmlAnchor.class::cast)
+                    .filter(a -> a.getHrefAttribute().endsWith("newView"))
+                    .findFirst().orElseThrow(AssertionError::new);
+
+            String href = newViewLink.getHrefAttribute();
+            assertThat(href, not(containsString("jenkins-server.example.com")));
+        });
+    }
+
     private void settingRootURL(JenkinsRule j, String desiredRootUrl) throws Exception {
         HtmlPage configurePage = j.createWebClient().goTo("configure");
         HtmlForm configForm = configurePage.getFormByName("config");
