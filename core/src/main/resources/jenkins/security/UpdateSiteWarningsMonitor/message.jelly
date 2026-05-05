@@ -63,6 +63,24 @@
   </j:set>
   <l:adminMonitor severity="danger" controls="${controls}">
     <div class="jenkins-!-margin-bottom-1">${%blurb}</div>
+    <j:if test="${coreWarnings.size() > 0}">
+      <dl>
+        <dt>${%coreTitle(app.version)}</dt>
+        <local:listWarnings core="true" warnings="${coreWarnings}"/>
+      </dl>
+    </j:if>
+    <j:if test="${pluginWarnings.size() > 0}">
+      <dl>
+        <j:forEach var="entries" items="${pluginWarnings.entrySet()}">
+          <j:set var="plugin" value="${entries.key}"/>
+          <j:set var="warnings" value="${entries.value}"/>
+          <dt>
+            <a href="${plugin.url}" target="_blank" rel="noopener noreferrer">${%pluginTitle(plugin.displayName, plugin.version)}</a>
+          </dt>
+          <local:listWarnings core="false" warnings="${warnings}"/>
+        </j:forEach>
+      </dl>
+    </j:if>
     <j:if test="${it.hasApplicableHiddenWarnings()}">
       ${%more}
     </j:if>

@@ -23,10 +23,9 @@ function init() {
           item.icon = null;
           item.iconXml = null;
         }
-        element.parentNode.insertBefore(
-          Templates.menuItem(item, "jenkins-button", template.url),
-          element,
-        );
+        const button = Templates.menuItem(item, "jenkins-button", template.url);
+        element.parentNode.insertBefore(button, element);
+        behaviorShim.applySubtree(button, true);
       });
     },
   );
