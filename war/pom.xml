@@ -339,7 +339,7 @@ THE SOFTWARE.
                   <!-- dependency of echarts-api and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.8-1024.v127320880c60</version>
+                  <version>5.3.8-1038.vee76a_fe825ff</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
