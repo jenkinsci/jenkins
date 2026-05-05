@@ -74,7 +74,7 @@ function loadScriptIfNotLoaded(url, item) {
 
   if (!existingScript) {
     const script = document.createElement("script");
-    script.src = url;
+    script.src = document.head.getAttribute("data-resurl") + "/" + url;
 
     script.addEventListener("load", () => {
       behaviorShim.applySubtree(item, true);
@@ -154,36 +154,41 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
 
   // If submenu
   if (itemOptions.event && itemOptions.event.event) {
-    const wrapper = createElementFromHtml(
-      `<div class="jenkins-split-button"></div>`,
-    );
-    wrapper.appendChild(
-      menuItem(
-        Object.assign({}, dropdownItem, { event: dropdownItem.event.event }),
-        "jenkins-button",
-        context,
-      ),
-    );
+    if (type === "jenkins-button") {
+      const wrapper = createElementFromHtml(
+        `<div class="jenkins-split-button"></div>`,
+      );
+      wrapper.appendChild(
+        menuItem(
+          Object.assign({}, dropdownItem, { event: dropdownItem.event.event }),
+          type,
+          context,
+        ),
+      );
 
-    const button = createElementFromHtml(
-      `<button type="button" class="${clazz}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M112 184l144 144 144-144"/></svg></button>`,
-    );
-    Utils.generateDropdown(
-      button,
-      (instance) => {
-        instance.setContent(
-          Utils.generateDropdownItems(dropdownItem.subMenu.items),
-        );
-        instance.loaded = true;
-      },
-      false,
-      {
-        appendTo: "parent",
-      },
-    );
-    wrapper.appendChild(button);
+      const button = createElementFromHtml(
+        `<button type="button" class="${clazz}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M112 184l144 144 144-144"/></svg></button>`,
+      );
+      Utils.generateDropdown(
+        button,
+        (instance) => {
+          instance.setContent(
+            Utils.generateDropdownItems(dropdownItem.subMenu.items),
+          );
+          instance.loaded = true;
+        },
+        false,
+        {
+          appendTo: "parent",
+        },
+      );
+      wrapper.appendChild(button);
 
-    return wrapper;
+      return wrapper;
+    } else {
+      // Split buttons are fiddly in dropdown menus, so just show the top level button
+      dropdownItem.event = dropdownItem.event.event;
+    }
   }
 
   const tag =
@@ -191,10 +196,9 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
 
   // Do not prepend the context path for root-relative or absolute URLs
   if (tag === "a") {
-    if (
-      itemOptions.event.url.startsWith("/") ||
-      itemOptions.event.url.startsWith("http")
-    ) {
+    if (itemOptions.event.url.startsWith("/")) {
+      context = document.head.dataset.rooturl;
+    } else if (itemOptions.event.url.startsWith("http")) {
       context = "";
     }
   }
@@ -214,8 +218,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
           ${label}
           ${badge(itemOptions)}
           ${
-            itemOptions.event &&
-            itemOptions.event.actions &&
+            Utils.isDropdownMenu(itemOptions.event) &&
             type === "jenkins-dropdown__item"
               ? `<span class="jenkins-dropdown__item__chevron"></span>`
               : ``

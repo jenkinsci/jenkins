@@ -30,9 +30,13 @@ THE SOFTWARE.
     <st:attribute name="it" use="required" type="hudson.model.Actionable">
       The object to display actions for.
     </st:attribute>
+    <st:attribute name="url">
+      Optional base URL used to resolve relative URLs for the generated actions.
+      Defaults to the nearest ancestor URL for the supplied `it`.
+    </st:attribute>
   </st:documentation>
 
-  <j:set var="url" value="${h.getNearestAncestorUrl(request2, it)}/" />
+  <j:set var="url" value="${attrs.url ?: h.getNearestAncestorUrl(request2, it) + '/'}" />
   <j:set var="actions" value="${attrs.it.appBarActions}" />
 
   <j:if test="${actions != null}">

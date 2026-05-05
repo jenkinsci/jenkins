@@ -69,68 +69,7 @@ THE SOFTWARE.
         </div>
 
         <div class="app-build-bar__controls">
-          <j:if test="${it.hasPermission(it.CREATE)}">
-            <a class="jenkins-button"
-               href="${rootURL}/${it.viewUrl}newJob">
-              <l:icon src="symbol-add" />
-              New Item
-            </a>
-          </j:if>
-
-          <j:if test="${it.isEditable() and it.hasPermission(it.CONFIGURE)}">
-            <!-- /configure URL on Jenkins object is overloaded with Jenkins's system config, so always use the explicit name. -->
-            <a class="jenkins-button"
-               href="${rootURL}/${it.viewUrl}configure">
-              ${%Edit View}
-            </a>
-          </j:if>
-
-          <l:dialog title="${%Legend}" hash="legend">
-            <div>
-              <st:include page="_legend.jelly" it="${app}" />
-            </div>
-          </l:dialog>
-
-          <l:overflowButton>
-            <dd:custom>
-              <div class="app-build-overflow">
-                <j:set var="mode" value="side-panel" />
-                <st:include page="sidepanel.jelly" it="${it.object}" />
-              </div>
-            </dd:custom>
-            <dd:separator />
-            <dd:submenu icon="symbol-rss" text="${%Atom feed}">
-              <dd:item icon="symbol-rss" text="${%All}" href="rssAll" />
-              <dd:item icon="symbol-rss" text="${%Failures}" href="rssFailed" />
-              <dd:item icon="symbol-rss" text="${%LatestBuilds}" href="rssLatest" />
-            </dd:submenu>
-            <dd:custom>
-              <button class="jenkins-dropdown__item"
-                      data-type="dialog-opener"
-                      data-dialog-id="${dialogId}">
-                <div class="jenkins-dropdown__item__icon">
-                  <l:icon src="symbol-information-circle" />
-                </div>
-                ${%Legend}
-              </button>
-            </dd:custom>
-            <j:if test="${it.owner.canDelete(it) and it.hasPermission(it.DELETE)}">
-              <dd:separator />
-              <dd:custom>
-                <l:confirmationLink class="jenkins-dropdown__item jenkins-!-destructive-color"
-                                    href="doDelete"
-                                    title="todo"
-                                    message="${%delete.logrecorder(it.displayName)}"
-                                    destructive="true"
-                                    post="true">
-                  <div class="jenkins-dropdown__item__icon">
-                    <l:icon src="symbol-trash" />
-                  </div>
-                  ${%Delete View}
-                </l:confirmationLink>
-              </dd:custom>
-            </j:if>
-          </l:overflowButton>
+          <l:actions it="${view}" url="${rootURL}/${it.viewUrl}" />
         </div>
       </div>
 

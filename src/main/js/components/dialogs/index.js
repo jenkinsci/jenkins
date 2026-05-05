@@ -376,7 +376,7 @@ function updateWizardTitle(titleText) {
   }
 
   const title = document.querySelector(
-    ".jenkins-dialog .jenkins-dialog__title > span",
+    "body > .jenkins-dialog .jenkins-dialog__title > span",
   );
   if (title != null) {
     title.textContent = titleText;
@@ -457,7 +457,7 @@ function renderWizardForm({
   hideExistingForms = false,
 }) {
   const dialogContents = document.querySelector(
-    ".jenkins-dialog .jenkins-dialog__contents",
+    "body > .jenkins-dialog .jenkins-dialog__contents",
   );
   const newDialog = document.createElement("div");
   newDialog.innerHTML = responseText;

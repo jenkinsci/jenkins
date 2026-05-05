@@ -112,11 +112,11 @@ function generateDropdownItems(items, compact = false, context = "") {
         context,
       );
 
-      if (item.event && item.event.actions != null) {
+      if (isDropdownMenu(item.event)) {
         tippy(
           menuItem,
           Object.assign({}, Templates.dropdown(), {
-            content: generateDropdownItems(item.event.actions),
+            content: generateDropdownItems(item.subMenu.items),
             trigger: "mouseenter",
             placement: "right-start",
             offset: [-8, 0],
@@ -195,6 +195,16 @@ function generateDropdownItems(items, compact = false, context = "") {
   behaviorShim.applySubtree(menuItems);
 
   return menuItems;
+}
+
+/**
+ * Returns true if the event is a dropdown event, and not a split button event
+ */
+function isDropdownMenu(event) {
+  return (
+    event?._class !== "jenkins.model.menu.event.SplitButtonEvent" &&
+    event?.actions
+  );
 }
 
 function validateDropdown(e) {
@@ -315,7 +325,10 @@ function convertHtmlToItems(children) {
           icon: attributes.dropdownIcon,
           iconXml: attributes.dropdownIcon,
           event: {
-            actions: convertHtmlToItems(child.content.children),
+            actions: {},
+          },
+          subMenu: {
+            items: convertHtmlToItems(child.content.children),
           },
         };
       case "SEPARATOR":
@@ -336,4 +349,5 @@ export default {
   debounce,
   mapChildrenItemsToDropdownItems,
   convertHtmlToItems,
+  isDropdownMenu,
 };
