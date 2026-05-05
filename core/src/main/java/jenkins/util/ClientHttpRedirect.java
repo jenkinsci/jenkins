@@ -24,9 +24,12 @@
 
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.util.Locale;
+import java.util.Objects;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
@@ -36,14 +39,52 @@ import org.kohsuke.stapler.StaplerResponse2;
  * Unlike {@link org.kohsuke.stapler.HttpRedirect}, this implements a client-side redirect (using meta tag and/or JavaScript).
  * This allows the redirect to work even when Content Security Policy is enforced in Chrome
  * (which applies {@code form-action} to redirects after form submission).
+ * <p>
+ * For security reasons, only HTTP/HTTPS URLs and relative paths are allowed.
+ * Attempts to redirect to other schemes (e.g., {@code javascript:}, {@code data:}, {@code file:})
+ * will result in a 403 (Forbidden) error response instead of performing the redirect.
  * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/form-action">MDN documentation on form-action</a>
  * @see <a href="https://github.com/w3c/webappsec-csp/issues/8">Content Security Policy issue discussing this behavior</a>
  * @since 2.550
  */
-public record ClientHttpRedirect(String redirectUrl) implements HttpResponse {
+public record ClientHttpRedirect(@NonNull String redirectUrl) implements HttpResponse {
+
+    public ClientHttpRedirect {
+        Objects.requireNonNull(redirectUrl);
+    }
+
+    private static boolean isHttpOrHttpsOrRelative(@NonNull String url) {
+        if (Util.isSafeToRedirectTo(url)) {
+            return true;
+        }
+
+        String urlLower = url.toLowerCase(Locale.ENGLISH);
+        return urlLower.startsWith("http://") || urlLower.startsWith("https://");
+    }
+
+    private static @NonNull String sanitizeForError(@NonNull String url) {
+        StringBuilder sb = new StringBuilder(url.length());
+        for (int i = 0; i < url.length(); i++) {
+            char c = url.charAt(i);
+            // Keep printable characters and common whitespace, replace other control chars.
+            if (c >= 0x20 || c == '\r' || c == '\n' || c == '\t') {
+                sb.append(c);
+            } else {
+                sb.append('?');
+            }
+        }
+        return sb.toString();
+    }
+
     @Override
     public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object o) throws IOException, ServletException {
+        if (!isHttpOrHttpsOrRelative(redirectUrl)) {
+            throw hudson.util.HttpResponses.errorWithoutStack(403,
+                "Unsafe redirect blocked: Jenkins only allows redirects to HTTP/HTTPS URLs or relative paths. "
+                    + "Blocked URL: " + sanitizeForError(redirectUrl));
+        }
+
         rsp.setContentType("text/html;charset=UTF-8");
-        Util.printRedirect(req.getContextPath(), redirectUrl, redirectUrl, rsp.getWriter());
+        Util.printRedirect(req.getContextPath(), redirectUrl, Util.escape(redirectUrl), rsp.getWriter());
     }
 }
