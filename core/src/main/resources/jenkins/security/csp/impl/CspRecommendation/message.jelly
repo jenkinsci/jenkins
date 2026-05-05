@@ -22,12 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <div class="jenkins-alert jenkins-alert-info">
-        <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-            <f:submit name="more" value="${%Learn more}"/>
-            <f:submit name="dismiss" primary="false" value="${%Dismiss}"/>
-        </form>
-        ${%blurb}
-    </div>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout">
+  <j:set var="controls">
+    <a href="${rootURL}/manage/administrativeMonitor/jenkins.security.csp.impl.CspRecommendation" class="jenkins-button jenkins-button--primary">${%Learn more}</a>
+  </j:set>
+  <l:adminMonitor severity="info" controls="${controls}">
+    ${%blurb}
+  </l:adminMonitor>
 </j:jelly>

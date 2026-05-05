@@ -27,7 +27,7 @@ THE SOFTWARE.
   <l:run-subpage>
     <l:app-bar title="${it.displayName}" headingLevel="h2">
       <l:details-bar it="${it.object}">
-        <t:editDescriptionButton permission="${it.object.UPDATE}"
+        <t:editDescriptionButton permission="${it.UPDATE}"
                                  compact="true" />
       </l:details-bar>
     </l:app-bar>

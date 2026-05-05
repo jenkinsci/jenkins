@@ -54,8 +54,10 @@ THE SOFTWARE.
           <dd:custom>
             <l:confirmationLink class="jenkins-dropdown__item jenkins-!-destructive-color"
                                 href="doDelete"
-                                message="${%delete.logrecorder(it.displayName)}"
-                                post="true">
+                                title="${%delete.logrecorder(it.displayName)}"
+                                post="true"
+                                destructive="true"
+                                okText="${%Delete}">
               <div class="jenkins-dropdown__item__icon">
                 <l:icon src="symbol-trash" />
               </div>
