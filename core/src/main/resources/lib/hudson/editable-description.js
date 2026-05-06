@@ -8,12 +8,32 @@
     if (actualDescription == null) {
       actualDescription = "";
     }
-    textarea.value = actualDescription;
     form.addEventListener("keydown", function (e) {
       if (e.key === "Enter") {
         e.stopPropagation();
       }
     });
+
+    // Initialize behaviors (CodeMirror, etc.) before showing dialog
+    Behaviour.applySubtree(form, true);
+    
+    // Set the textarea value after behaviors are applied
+    // For CodeMirror, use a macrotask to ensure proper initialization
+    const setTextareaValue = () => {
+      if (textarea.codemirrorObject) {
+        textarea.codemirrorObject.setValue(actualDescription);
+      } else {
+        textarea.value = actualDescription;
+      }
+    };
+    
+    // Use setTimeout to ensure CodeMirror has fully initialized
+    if (textarea.codemirrorObject) {
+      setTimeout(setTextareaValue, 0);
+    } else {
+      // For plain textarea, set immediately
+      setTextareaValue();
+    }
 
     dialog
       .form(form, {

@@ -177,9 +177,9 @@ function generateButtons() {
 
         const shouldBeDisabled = oneEach && selectedCount >= templateCount;
         btn.disabled = shouldBeDisabled;
-        // Ensure the button is visually updated by triggering a reflow
-        // This ensures disabled state is immediately reflected in UI
-        btn.offsetHeight;
+        // Force a reflow by accessing offsetHeight to ensure disabled state is visually reflected
+        // This is necessary for immediate UI update when the disabled state changes
+        void btn.offsetHeight;
       }
       const observer = new MutationObserver(() => {
         toggleButtonState();
