@@ -175,7 +175,11 @@ function generateButtons() {
           e.classList.contains("repeated-chunk"),
         ).length;
 
-        btn.disabled = oneEach && selectedCount >= templateCount;
+        const shouldBeDisabled = oneEach && selectedCount >= templateCount;
+        btn.disabled = shouldBeDisabled;
+        // Ensure the button is visually updated by triggering a reflow
+        // This ensures disabled state is immediately reflected in UI
+        btn.offsetHeight;
       }
       const observer = new MutationObserver(() => {
         toggleButtonState();
@@ -266,6 +270,9 @@ function generateDropDown(button, callback) {
         });
       },
       onShow(instance) {
+        if (button.disabled) {
+          return false; // Prevent showing dropdown if button is disabled
+        }
         callback(instance);
         button.dataset.expanded = "true";
       },
