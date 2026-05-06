@@ -24,9 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <st:setHeader name="X-Dialog-Title" value="${it.owner.buildNowText}" />
+  <st:setHeader name="X-Dialog-Title" value="${it.job.buildNowText}" />
 
   <l:ajax>
+    <j:set var="delay" value="0sec" />
     <st:include page="contents.jelly" />
   </l:ajax>
 </j:jelly>

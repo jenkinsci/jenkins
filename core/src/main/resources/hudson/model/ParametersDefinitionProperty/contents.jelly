@@ -24,8 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
-  <j:set var="delay" value="${request2.getParameter('delay')}" />
-  <f:form method="post" action="${rootURL}/${it.owner.url}build${empty(delay)?'':'?delay='+delay}" name="parameters" class="jenkins-form">
+  <j:if test="${delay == null}">
+    <j:set var="delay" value="${request2.getParameter('delay')}" />
+  </j:if>
+  <f:form method="post" action="${rootURL}/${it.job.url}build${empty(delay)?'':'?delay='+delay}" name="parameters" class="jenkins-form">
     <j:forEach var="parameterDefinition" items="${it.parameterDefinitions}">
       <j:set var="escapeEntryTitleAndDescription" value="true"/> <!-- SECURITY-353 defense unless overridden -->
       <tbody>

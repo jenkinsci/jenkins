@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.560</revision>
+    <revision>2.564</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2026-04-14T06:46:11Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-05-05T06:48:32Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -170,21 +170,9 @@ THE SOFTWARE.
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
-          </configuration>
-        </plugin>
-        <plugin>
-          <artifactId>maven-jarsigner-plugin</artifactId>
-          <version>3.1.0</version>
-          <configuration>
-            <!--
-              during the development, debug profile will cause
-              the jars to be signed by a self-certified dummy public key.
-
-              For release, you should define the real values in ~/.m2/settings.xml
-            -->
-            <alias>${hudson.sign.alias}</alias>
-            <storepass>${hudson.sign.storepass}</storepass>
-            <keystore>${hudson.sign.keystore}</keystore>
+            <environmentVariables>
+              <DISABLE_SYMLINK_TESTS>${disable.symlink.tests}</DISABLE_SYMLINK_TESTS>
+            </environmentVariables>
           </configuration>
         </plugin>
         <plugin>
@@ -281,7 +269,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>13.4.0</version>
+              <version>13.4.2</version>
             </dependency>
           </dependencies>
           <executions>
@@ -389,11 +377,6 @@ THE SOFTWARE.
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
-      <properties>
-        <hudson.sign.alias>jenkins</hudson.sign.alias>
-        <hudson.sign.keystore>../dummy.keystore</hudson.sign.keystore>
-        <hudson.sign.storepass>jenkins</hudson.sign.storepass>
-      </properties>
     </profile>
     <profile>
       <id>release</id>
@@ -573,6 +556,20 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>disable-symlink-tests</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+        <property>
+          <name>!env.CI</name>
+        </property>
+      </activation>
+      <properties>
+        <disable.symlink.tests>true</disable.symlink.tests>
+      </properties>
     </profile>
   </profiles>
 </project>
