@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+@Library('pipeline-library@pull/1012/head') _
 
 /*
  * This Jenkinsfile is intended to run on https://ci.jenkins.io and may fail anywhere else.
