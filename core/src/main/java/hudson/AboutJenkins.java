@@ -1,5 +1,6 @@
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
@@ -7,6 +8,7 @@ import java.net.URL;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
@@ -51,5 +53,16 @@ public class AboutJenkins extends ManagementLink {
     @Override
     public Category getCategory() {
         return Category.STATUS;
+    }
+
+    /**
+     * Used to display subpages for plugin information.
+     * @return the plugin with the given short name.
+     */
+    @CheckForNull
+    @Restricted(DoNotUse.class)
+    public PluginWrapper getPlugin(String shortName) {
+        Plugin plugin = Jenkins.get().getPlugin(shortName);
+        return plugin != null ? plugin.getWrapper() : null;
     }
 }
