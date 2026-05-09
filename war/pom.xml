@@ -332,14 +332,14 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, echarts-api, font-awesome-api, and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>plugin-util-api</artifactId>
-                  <version>7.1330.v47b_46ee2047a_</version>
+                  <version>7.1341.v039f146993d9</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of echarts-api and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.8-1024.v127320880c60</version>
+                  <version>5.3.8-1038.vee76a_fe825ff</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -353,7 +353,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>prism-api</artifactId>
-                  <version>1.30.0-723.v97277866cece</version>
+                  <version>1.30.0-727.vc475481f034d</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -377,7 +377,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jackson3-api</artifactId>
-                  <version>3.1.2-73.v3e5485d8b_148</version>
+                  <version>3.1.3-76.vd9b_7cd2e80b_8</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -417,7 +417,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
-                  <version>6.0.0-1281.vd3d21a_1ca_cb_4</version>
+                  <version>6.0.0-1287.vfd24c22a_3d00</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -454,7 +454,7 @@ THE SOFTWARE.
                   <!-- dependency of echarts-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jquery3-api</artifactId>
-                  <version>3.7.1-682.vfa_cdce169929</version>
+                  <version>3.7.1-687.v68d468e40b_30</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -462,7 +462,7 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api and echarts-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>font-awesome-api</artifactId>
-                  <version>7.2.0-983.v3f63c34eddb_9</version>
+                  <version>7.2.0-990.vf220b_2a_496f9</version>
                   <type>hpi</type>
                 </artifactItem>
 
