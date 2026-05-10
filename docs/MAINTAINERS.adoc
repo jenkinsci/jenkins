@@ -5,7 +5,7 @@
 
 toc::[]
 
-Jenkins core is a central component of the project which serves millions of users, and it is critical to maintain it in a good shape.
+Jenkins core is a central component of the project which serves millions of users worldwide, and it is critical to maintain it in a good shape.
 We want to ensure quality of the integrated changes and continuity of the project,
 and hence the Jenkins core pull request review and merge process is more sophisticated than for the majority of plugins.
 
@@ -27,7 +27,7 @@ Remoting updates in the core are subject to the process though.
 
 * Mailing list: link:https://groups.google.com/d/forum/jenkinsci-dev[Jenkins Developer Mailing List]
 * Chat for runtime Jenkins release coordination takes place in link:https://matrix.to/#/#jenkins-release:matrix.org[#jenkins-release:matrix.org].
-** All async communications should go to the developer mailing list
+** All async communications should go to the developer mailing list.
 
 === Roles
 
