@@ -520,8 +520,7 @@ Multiple commits are useful in many cases.
 When do we merge pull requests as is?
 
 * There is only one commit with a reasonable commit message
-* There are multiple atomic commits. Each commit has a reasonable message and can be compiled on its own
-** Example:
+* There are multiple atomic commits. Each commit has a reasonable message and can be built independently.
 *** **Commit 1**: `[JENKINS-1234] - Reproduce the issue in tests`
 *** **Commit 2**: `[JENKINS-1234] - Fix the issue by updating Foo` 
 * There are multiple commit authors who expressed the desire to keep commit history as is.
