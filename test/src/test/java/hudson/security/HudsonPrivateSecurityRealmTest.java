@@ -798,4 +798,112 @@ class HudsonPrivateSecurityRealmTest {
         XmlPage page = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
         assertThat(page, hasXPath("//name", not(is(notExpectedUsername))));
     }
+
+    @Test
+    void passwordComplexityDefaultAllowsAnyPassword() {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        assertTrue(securityRealm.validatePasswordComplexity("a").isEmpty());
+        assertTrue(securityRealm.validatePasswordComplexity("123").isEmpty());
+    }
+
+    @Test
+    void passwordComplexityMinimumLength() {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setMinimumPasswordLength(8);
+        assertFalse(securityRealm.validatePasswordComplexity("short").isEmpty());
+        assertTrue(securityRealm.validatePasswordComplexity("longenough").isEmpty());
+    }
+
+    @Test
+    void passwordComplexityRequireUppercase() {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setRequireUppercase(true);
+        assertFalse(securityRealm.validatePasswordComplexity("alllowercase").isEmpty());
+        assertTrue(securityRealm.validatePasswordComplexity("hasUppercase").isEmpty());
+    }
+
+    @Test
+    void passwordComplexityRequireLowercase() {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setRequireLowercase(true);
+        assertFalse(securityRealm.validatePasswordComplexity("ALLUPPERCASE").isEmpty());
+        assertTrue(securityRealm.validatePasswordComplexity("HASLOWERcase").isEmpty());
+    }
+
+    @Test
+    void passwordComplexityRequireDigit() {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setRequireDigit(true);
+        assertFalse(securityRealm.validatePasswordComplexity("nodigits").isEmpty());
+        assertTrue(securityRealm.validatePasswordComplexity("has1digit").isEmpty());
+    }
+
+    @Test
+    void passwordComplexityRequireSpecialCharacter() {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setRequireSpecialCharacter(true);
+        assertFalse(securityRealm.validatePasswordComplexity("NoSpecial123").isEmpty());
+        assertTrue(securityRealm.validatePasswordComplexity("Has@Special1").isEmpty());
+    }
+
+    @Test
+    void passwordComplexityMultipleRules() {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setMinimumPasswordLength(8);
+        securityRealm.setRequireUppercase(true);
+        securityRealm.setRequireLowercase(true);
+        securityRealm.setRequireDigit(true);
+        securityRealm.setRequireSpecialCharacter(true);
+
+        List<String> errors = securityRealm.validatePasswordComplexity("bad");
+        assertEquals(4, errors.size());
+
+        assertTrue(securityRealm.validatePasswordComplexity("GoodPass1!").isEmpty());
+    }
+
+    @Test
+    void passwordComplexityNullOrEmptyReturnsNoErrors() {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setMinimumPasswordLength(8);
+        securityRealm.setRequireUppercase(true);
+        assertTrue(securityRealm.validatePasswordComplexity(null).isEmpty());
+        assertTrue(securityRealm.validatePasswordComplexity("").isEmpty());
+    }
+
+    @Test
+    void signupRejectsWeakPasswordWhenPolicyConfigured() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        securityRealm.setMinimumPasswordLength(8);
+        securityRealm.setRequireUppercase(true);
+        securityRealm.setRequireDigit(true);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("testuser");
+        signup.enterPassword("weak");
+        signup.enterFullName("Test User");
+        signup.enterEmail("test@example.com");
+        signup = new SignupPage(signup.submit(j));
+        signup.assertErrorContains("Password must be at least 8 characters long");
+        assertNull(User.get("testuser", false, Collections.emptyMap()));
+    }
+
+    @Test
+    void signupAcceptsStrongPasswordWhenPolicyConfigured() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        securityRealm.setMinimumPasswordLength(8);
+        securityRealm.setRequireUppercase(true);
+        securityRealm.setRequireDigit(true);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("testuser2");
+        signup.enterPassword("StrongPass1");
+        signup.enterFullName("Test User");
+        signup.enterEmail("test@example.com");
+        HtmlPage success = signup.submit(j);
+        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
+    }
 }

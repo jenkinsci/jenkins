@@ -27,6 +27,23 @@ THE SOFTWARE.
   <f:entry field="allowsSignup">
     <f:checkbox default="false" title="${%Allow users to sign up}" />
   </f:entry>
+  <f:advanced title="${%Password Policy}">
+    <f:entry title="${%Minimum password length}" field="minimumPasswordLength">
+      <f:number default="0" min="0" step="1"/>
+    </f:entry>
+    <f:entry field="requireUppercase">
+      <f:checkbox default="false" title="${%Require at least one uppercase letter (A-Z)}" />
+    </f:entry>
+    <f:entry field="requireLowercase">
+      <f:checkbox default="false" title="${%Require at least one lowercase letter (a-z)}" />
+    </f:entry>
+    <f:entry field="requireDigit">
+      <f:checkbox default="false" title="${%Require at least one digit (0-9)}" />
+    </f:entry>
+    <f:entry field="requireSpecialCharacter">
+      <f:checkbox default="false" title="${%Require at least one special character}" />
+    </f:entry>
+  </f:advanced>
   <j:if test="${size(h.captchaSupportDescriptors) gt 0}">
     <f:entry>
       <f:checkbox name="privateRealm.enableCaptcha" checked="${h.defaultToTrue(instance.isEnableCaptcha())}"

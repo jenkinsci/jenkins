@@ -26,6 +26,7 @@ package hudson.security;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
@@ -84,6 +85,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.CompatibleFilter;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -135,6 +137,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     private final boolean enableCaptcha;
 
+    private int minimumPasswordLength;
+    private boolean requireUppercase;
+    private boolean requireLowercase;
+    private boolean requireDigit;
+    private boolean requireSpecialCharacter;
+
     @Deprecated
     public HudsonPrivateSecurityRealm(boolean allowsSignup) {
         this(allowsSignup, false, (CaptchaSupport) null);
@@ -173,6 +181,61 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     public boolean isEnableCaptcha() {
         return enableCaptcha;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public int getMinimumPasswordLength() {
+        return minimumPasswordLength;
+    }
+
+    @DataBoundSetter
+    @Restricted(NoExternalUse.class)
+    public void setMinimumPasswordLength(int minimumPasswordLength) {
+        this.minimumPasswordLength = Math.max(0, minimumPasswordLength);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public boolean isRequireUppercase() {
+        return requireUppercase;
+    }
+
+    @DataBoundSetter
+    @Restricted(NoExternalUse.class)
+    public void setRequireUppercase(boolean requireUppercase) {
+        this.requireUppercase = requireUppercase;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public boolean isRequireLowercase() {
+        return requireLowercase;
+    }
+
+    @DataBoundSetter
+    @Restricted(NoExternalUse.class)
+    public void setRequireLowercase(boolean requireLowercase) {
+        this.requireLowercase = requireLowercase;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public boolean isRequireDigit() {
+        return requireDigit;
+    }
+
+    @DataBoundSetter
+    @Restricted(NoExternalUse.class)
+    public void setRequireDigit(boolean requireDigit) {
+        this.requireDigit = requireDigit;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public boolean isRequireSpecialCharacter() {
+        return requireSpecialCharacter;
+    }
+
+    @DataBoundSetter
+    @Restricted(NoExternalUse.class)
+    public void setRequireSpecialCharacter(boolean requireSpecialCharacter) {
+        this.requireSpecialCharacter = requireSpecialCharacter;
     }
 
     /**
@@ -461,6 +524,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             si.errors.put("password1", ex.getMessage());
         }
 
+        List<String> complexityErrors = validatePasswordComplexity(si.password1);
+        if (!complexityErrors.isEmpty()) {
+            si.errors.put("password1", String.join(" ", complexityErrors));
+        }
+
         if (si.fullname == null || si.fullname.isEmpty()) {
             si.fullname = si.username;
         }
@@ -512,6 +580,30 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     private boolean containsOnlyAcceptableCharacters(@NonNull String value) {
         return value.matches(Objects.requireNonNullElse(ID_REGEX, DEFAULT_ID_REGEX));
+    }
+
+    @Restricted(NoExternalUse.class)
+    List<String> validatePasswordComplexity(@CheckForNull String password) {
+        List<String> errors = new ArrayList<>();
+        if (password == null || password.isEmpty()) {
+            return errors;
+        }
+        if (minimumPasswordLength > 0 && password.length() < minimumPasswordLength) {
+            errors.add(Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordTooShort(minimumPasswordLength));
+        }
+        if (requireUppercase && !password.matches(".*[A-Z].*")) {
+            errors.add(Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequiresUppercase());
+        }
+        if (requireLowercase && !password.matches(".*[a-z].*")) {
+            errors.add(Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequiresLowercase());
+        }
+        if (requireDigit && !password.matches(".*[0-9].*")) {
+            errors.add(Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequiresDigit());
+        }
+        if (requireSpecialCharacter && !password.matches(".*[^a-zA-Z0-9].*")) {
+            errors.add(Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequiresSpecialCharacter());
+        }
+        return errors;
     }
 
     @Restricted(NoExternalUse.class) // _entryForm.jelly and signup.jelly
@@ -856,6 +948,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                     PASSWORD_HASH_ENCODER.encode2(pwd);
                 } catch (RuntimeException ex) {
                     throw new FormException(ex.getMessage(), "user.password");
+                }
+
+                SecurityRealm realm = Jenkins.get().getSecurityRealm();
+                if (realm instanceof HudsonPrivateSecurityRealm hpsr) {
+                    List<String> complexityErrors = hpsr.validatePasswordComplexity(pwd);
+                    if (!complexityErrors.isEmpty()) {
+                        throw new FormException(String.join(" ", complexityErrors), "user.password");
+                    }
                 }
 
                 User user = Util.getNearestAncestorOfTypeOrThrow(req, User.class);
