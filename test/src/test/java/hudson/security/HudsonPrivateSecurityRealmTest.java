@@ -873,4 +873,51 @@ class HudsonPrivateSecurityRealmTest {
         HtmlPage success = signup.submit(j);
         assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
     }
+
+    @Test
+    void passwordChangeRejectsWeakPasswordWhenComplexityRuleConfigured() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setPasswordComplexityRule(new DefaultPasswordComplexityRule(8, true, false, true, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User alice = securityRealm.createAccount("alice", "AlicePass1");
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.login("alice", "AlicePass1");
+
+        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/security/");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+
+        password1.setText("weak");
+        password2.setText("weak");
+
+        HtmlForm form = configurePage.getFormByName("config");
+        assertThrows(FailingHttpStatusCodeException.class, () -> j.submit(form));
+    }
+
+    @Test
+    void passwordChangeAcceptsStrongPasswordWhenComplexityRuleConfigured() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setPasswordComplexityRule(new DefaultPasswordComplexityRule(8, true, false, true, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User alice = securityRealm.createAccount("alice", "AlicePass1");
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.login("alice", "AlicePass1");
+
+        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/security/");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+
+        password1.setText("NewStrong1");
+        password2.setText("NewStrong1");
+
+        HtmlForm form = configurePage.getFormByName("config");
+        j.submit(form);
+
+        wc.login("alice", "NewStrong1");
+        assertUserConnected(wc, "alice");
+    }
 }
