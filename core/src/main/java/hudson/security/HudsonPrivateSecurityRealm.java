@@ -483,7 +483,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         if (passwordComplexityRule != null && si.password1 != null && !si.password1.isEmpty()) {
             List<String> complexityErrors = passwordComplexityRule.validate(si.password1);
-            if (!complexityErrors.isEmpty()) {
+            if (!complexityErrors.isEmpty() && !si.errors.containsKey("password1")) {
                 si.errors.put("password1", String.join(" ", complexityErrors));
             }
         }
