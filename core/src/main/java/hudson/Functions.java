@@ -69,7 +69,6 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.GlobalSecurityConfiguration;
-import hudson.security.PasswordComplexityRule;
 import hudson.security.Permission;
 import hudson.security.SecurityRealm;
 import hudson.security.captcha.CaptchaSupport;
@@ -1095,13 +1094,6 @@ public class Functions {
 
     public static List<Descriptor<CaptchaSupport>> getCaptchaSupportDescriptors() {
         return CaptchaSupport.all();
-    }
-
-    /**
-     * @since TODO
-     */
-    public static List<Descriptor<PasswordComplexityRule>> getPasswordComplexityRuleDescriptors() {
-        return PasswordComplexityRule.all();
     }
 
     public static List<Descriptor<ViewsTabBar>> getViewsTabBarDescriptors() {

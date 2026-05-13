@@ -26,6 +26,7 @@ package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.model.Descriptor;
 import java.util.ArrayList;
 import java.util.List;
 import org.jenkinsci.Symbol;
@@ -79,9 +80,8 @@ public class DefaultPasswordComplexityRule extends PasswordComplexityRule {
         return requireSpecialCharacter;
     }
 
-    @NonNull
     @Override
-    public List<String> validate(@NonNull String password) {
+    public void validate(@NonNull String password) throws PasswordComplexityException {
         List<String> errors = new ArrayList<>();
         if (minimumLength > 0 && password.length() < minimumLength) {
             errors.add(Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordTooShort(minimumLength));
@@ -98,11 +98,13 @@ public class DefaultPasswordComplexityRule extends PasswordComplexityRule {
         if (requireSpecialCharacter && !password.matches(".*[^a-zA-Z0-9].*")) {
             errors.add(Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequiresSpecialCharacter());
         }
-        return errors;
+        if (!errors.isEmpty()) {
+            throw new PasswordComplexityException(String.join(" ", errors));
+        }
     }
 
     @Extension @Symbol("defaultPasswordComplexity")
-    public static final class DescriptorImpl extends PasswordComplexityRuleDescriptor {
+    public static final class DescriptorImpl extends Descriptor<PasswordComplexityRule> {
         @NonNull
         @Override
         public String getDisplayName() {

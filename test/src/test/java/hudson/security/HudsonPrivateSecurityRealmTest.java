@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -803,27 +804,25 @@ class HudsonPrivateSecurityRealmTest {
     void defaultPasswordComplexityRuleValidation() {
         DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(8, true, true, true, true);
 
-        List<String> errors = rule.validate("bad");
-        assertEquals(4, errors.size());
-
-        assertTrue(rule.validate("GoodPass1!").isEmpty());
+        assertThrows(PasswordComplexityException.class, () -> rule.validate("bad"));
+        assertDoesNotThrow(() -> rule.validate("GoodPass1!"));
     }
 
     @Test
     void defaultPasswordComplexityRuleMinimumLength() {
         DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(8, false, false, false, false);
-        assertFalse(rule.validate("short").isEmpty());
-        assertTrue(rule.validate("longenough").isEmpty());
+        assertThrows(PasswordComplexityException.class, () -> rule.validate("short"));
+        assertDoesNotThrow(() -> rule.validate("longenough"));
     }
 
     @Test
     void defaultPasswordComplexityRuleCharacterTypes() {
         DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(0, true, true, true, true);
-        assertFalse(rule.validate("alllowercase").isEmpty());
-        assertFalse(rule.validate("ALLUPPERCASE").isEmpty());
-        assertFalse(rule.validate("NoDigitsHere!").isEmpty());
-        assertFalse(rule.validate("NoSpecial123Aa").isEmpty());
-        assertTrue(rule.validate("Good1!aA").isEmpty());
+        assertThrows(PasswordComplexityException.class, () -> rule.validate("alllowercase"));
+        assertThrows(PasswordComplexityException.class, () -> rule.validate("ALLUPPERCASE"));
+        assertThrows(PasswordComplexityException.class, () -> rule.validate("NoDigitsHere!"));
+        assertThrows(PasswordComplexityException.class, () -> rule.validate("NoSpecial123Aa"));
+        assertDoesNotThrow(() -> rule.validate("Good1!aA"));
     }
 
     @Test

@@ -24,12 +24,34 @@
 
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
 import hudson.model.Descriptor;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
- * {@link Descriptor} for {@link PasswordComplexityRule}.
+ * A {@link PasswordComplexityRule} that accepts any password.
  *
  * @since TODO
  */
-public abstract class PasswordComplexityRuleDescriptor extends Descriptor<PasswordComplexityRule> {
+public class NonePasswordComplexityRule extends PasswordComplexityRule {
+
+    @DataBoundConstructor
+    public NonePasswordComplexityRule() {
+    }
+
+    @Override
+    public void validate(@NonNull String password) {
+        // No validation — any password is accepted
+    }
+
+    @Extension @Symbol("nonePasswordComplexity")
+    public static final class DescriptorImpl extends Descriptor<PasswordComplexityRule> {
+        @NonNull
+        @Override
+        public String getDisplayName() {
+            return Messages.NonePasswordComplexityRule_DisplayName();
+        }
+    }
 }

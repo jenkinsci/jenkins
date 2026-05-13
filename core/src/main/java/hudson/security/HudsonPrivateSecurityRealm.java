@@ -136,7 +136,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     private final boolean enableCaptcha;
 
-    private PasswordComplexityRule passwordComplexityRule;
+    private PasswordComplexityRule passwordComplexityRule = new NonePasswordComplexityRule();
 
     @Deprecated
     public HudsonPrivateSecurityRealm(boolean allowsSignup) {
@@ -193,6 +193,13 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     @Restricted(NoExternalUse.class)
     public void setPasswordComplexityRule(PasswordComplexityRule passwordComplexityRule) {
         this.passwordComplexityRule = passwordComplexityRule;
+    }
+
+    private Object readResolve() {
+        if (passwordComplexityRule == null) {
+            passwordComplexityRule = new NonePasswordComplexityRule();
+        }
+        return this;
     }
 
     /**
@@ -481,10 +488,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             si.errors.put("password1", ex.getMessage());
         }
 
-        if (passwordComplexityRule != null && si.password1 != null && !si.password1.isEmpty()) {
-            List<String> complexityErrors = passwordComplexityRule.validate(si.password1);
-            if (!complexityErrors.isEmpty() && !si.errors.containsKey("password1")) {
-                si.errors.put("password1", String.join(" ", complexityErrors));
+        if (!si.errors.containsKey("password1") && si.password1 != null && !si.password1.isEmpty()) {
+            try {
+                passwordComplexityRule.validate(si.password1);
+            } catch (PasswordComplexityException e) {
+                si.errors.put("password1", e.getMessage());
             }
         }
 
@@ -887,12 +895,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
                 SecurityRealm realm = Jenkins.get().getSecurityRealm();
                 if (realm instanceof HudsonPrivateSecurityRealm hpsr) {
-                    PasswordComplexityRule rule = hpsr.getPasswordComplexityRule();
-                    if (rule != null) {
-                        List<String> complexityErrors = rule.validate(pwd);
-                        if (!complexityErrors.isEmpty()) {
-                            throw new FormException(String.join(" ", complexityErrors), "user.password");
-                        }
+                    try {
+                        hpsr.getPasswordComplexityRule().validate(pwd);
+                    } catch (PasswordComplexityException e) {
+                        throw new FormException(e.getMessage(), "user.password");
                     }
                 }
 

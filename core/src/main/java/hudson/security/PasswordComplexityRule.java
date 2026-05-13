@@ -29,7 +29,6 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import java.util.List;
 import jenkins.model.Jenkins;
 
 /**
@@ -40,11 +39,7 @@ import jenkins.model.Jenkins;
  * and password changes. Each implementation can have an optional {@code config.jelly}
  * to configure its validation rules.
  *
- * <p>
- * A default constructor is needed to create PasswordComplexityRule in the default configuration.
- *
  * @since TODO
- * @see PasswordComplexityRuleDescriptor
  */
 public abstract class PasswordComplexityRule implements Describable<PasswordComplexityRule>, ExtensionPoint {
 
@@ -59,14 +54,7 @@ public abstract class PasswordComplexityRule implements Describable<PasswordComp
      * Validates the given password against this rule.
      *
      * @param password the password to validate
-     * @return a list of error messages describing which requirements are not met;
-     *         an empty list means the password passes validation
+     * @throws PasswordComplexityException if the password does not meet the requirements
      */
-    @NonNull
-    public abstract List<String> validate(@NonNull String password);
-
-    @Override
-    public PasswordComplexityRuleDescriptor getDescriptor() {
-        return (PasswordComplexityRuleDescriptor) Describable.super.getDescriptor();
-    }
+    public abstract void validate(@NonNull String password) throws PasswordComplexityException;
 }
