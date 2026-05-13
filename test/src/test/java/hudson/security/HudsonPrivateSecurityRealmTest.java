@@ -41,7 +41,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.User;
-import hudson.security.DefaultPasswordComplexityRule;
 import hudson.security.HudsonPrivateSecurityRealm.Details;
 import hudson.security.pages.SignupPage;
 import java.lang.reflect.Field;
