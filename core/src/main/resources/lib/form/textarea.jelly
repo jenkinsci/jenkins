@@ -86,6 +86,10 @@ THE SOFTWARE.
   <j:if test="${attrs['codemirror-mode']!=null}">
     <st:adjunct includes="
         org.kohsuke.stapler.codemirror.mode.${attrs['codemirror-mode']}.${attrs['codemirror-mode']},
+        org.kohsuke.stapler.codemirror.lib.util.searchcursor,
+        org.kohsuke.stapler.codemirror.lib.util.dialog,
+        org.kohsuke.stapler.codemirror.lib.util.search,
+        lib.form.codemirrorSearch.codemirrorSearch,
         org.kohsuke.stapler.codemirror.theme.default"/>
   </j:if>
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>

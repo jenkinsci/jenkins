@@ -36,6 +36,10 @@
         <j:if test="${app.markupFormatter.codeMirrorMode != null}">
             <st:adjunct includes="
             org.kohsuke.stapler.codemirror.mode.${app.markupFormatter.codeMirrorMode}.${app.markupFormatter.codeMirrorMode},
+            org.kohsuke.stapler.codemirror.lib.util.searchcursor,
+            org.kohsuke.stapler.codemirror.lib.util.dialog,
+            org.kohsuke.stapler.codemirror.lib.util.search,
+            lib.form.codemirrorSearch.codemirrorSearch,
             org.kohsuke.stapler.codemirror.theme.default"/>
         </j:if>
 

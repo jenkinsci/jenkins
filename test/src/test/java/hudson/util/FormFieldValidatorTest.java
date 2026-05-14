@@ -40,6 +40,8 @@ import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.WebResponseListener;
@@ -119,6 +121,55 @@ class FormFieldValidatorTest {
 
         // value should have changed
         assertNotEquals(javaScriptResult1, javaScriptResult2);
+    }
+
+    @Test
+    @Issue("JENKINS-75751")
+    void codeMirrorTextAreaLoadsSearchAdjuncts() throws IOException, SAXException {
+        final FreeStyleProject freeStyleProject = j.createFreeStyleProject();
+        freeStyleProject.getBuildersList().add(new CodeMirrorStep(""));
+        freeStyleProject.save();
+        final JenkinsRule.WebClient wc = j.createWebClient();
+        wc.setJavaScriptEnabled(false);
+        final HtmlPage page = wc.getPage(freeStyleProject, "configure");
+
+        assertThat(page.getWebResponse().getContentAsString(), allOf(
+                containsString("org/kohsuke/stapler/codemirror/lib/util/searchcursor.js"),
+                containsString("org/kohsuke/stapler/codemirror/lib/util/dialog.js"),
+                containsString("org/kohsuke/stapler/codemirror/lib/util/search.js"),
+                containsString("lib/form/codemirrorSearch/codemirrorSearch.css"),
+                containsString("lib/form/codemirrorSearch/codemirrorSearch.js")));
+    }
+
+    @Test
+    @Issue("JENKINS-75751")
+    void codeMirrorSearchEnterDoesNotSubmitForm() throws IOException {
+        final String script = new String(Objects.requireNonNull(getClass()
+                .getResourceAsStream("/lib/form/codemirrorSearch/codemirrorSearch.js")).readAllBytes(), StandardCharsets.UTF_8);
+
+        assertThat(script, allOf(
+                containsString("requestAnimationFrame"),
+                containsString("jenkins-codemirror-search--visible"),
+                containsString("event.key === \"Enter\""),
+                containsString("stopEvent(event);"),
+                containsString("event.preventDefault();"),
+                containsString("event.stopPropagation();"),
+                containsString("cm.setSelection(match.from, match.to);"),
+                containsString("type=\"button\"")));
+    }
+
+    @Test
+    @Issue("JENKINS-75751")
+    void codeMirrorSearchUsesThemeAndSlideAnimation() throws IOException {
+        final String style = new String(Objects.requireNonNull(getClass()
+                .getResourceAsStream("/lib/form/codemirrorSearch/codemirrorSearch.css")).readAllBytes(), StandardCharsets.UTF_8);
+
+        assertThat(style, allOf(
+                containsString("var(--card-background"),
+                containsString("var(--text-color"),
+                containsString("transform: translateY(calc(-100% - 10px));"),
+                containsString("transition:"),
+                containsString("prefers-reduced-motion")));
     }
 
     public static class CodeMirrorStep extends Builder {
