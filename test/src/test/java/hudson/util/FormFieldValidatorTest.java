@@ -40,6 +40,10 @@ import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.WebResponseListener;
@@ -119,6 +123,83 @@ class FormFieldValidatorTest {
 
         // value should have changed
         assertNotEquals(javaScriptResult1, javaScriptResult2);
+    }
+
+    @Test
+    @Issue("JENKINS-75751")
+    void editorSearchLoadsFromCoreLayout() throws IOException {
+        final String layout = resource("/lib/layout/layout.jelly");
+        assertThat(layout, containsString("lib.form.editorSearch.editorSearch"));
+    }
+
+    @Test
+    @Issue("JENKINS-75751")
+    void editorSearchCodeMirrorTextAreaStoresEditorOnWrapper() throws IOException {
+        final String textareaScript = resource("/lib/form/textarea/textarea.js");
+
+        assertThat(textareaScript, allOf(
+                containsString("var codemirror = CodeMirror.fromTextArea(e, config);"),
+                containsString("e.codemirrorObject = codemirror;"),
+                containsString("codemirror.getWrapperElement().codemirrorObject = codemirror;")));
+
+        final String scriptConsoleBehavior = workspaceFile("war", "src", "main", "webapp", "scripts", "hudson-behavior.js");
+
+        assertThat(scriptConsoleBehavior, allOf(
+                containsString("var editor = CodeMirror.fromTextArea(e, {"),
+                containsString("e.codemirrorObject = editor;"),
+                containsString("editor.getWrapperElement().codemirrorObject = editor;")));
+    }
+
+    @Test
+    @Issue("JENKINS-75751")
+    void editorSearchSupportsCodeMirrorAndAceAdapters() throws IOException {
+        final String script = resource("/lib/form/editorSearch/editorSearch.js");
+
+        assertThat(script, allOf(
+                containsString("createCodeMirrorAdapter"),
+                containsString("createAceAdapter"),
+                containsString("cm.setSelection(from, to);"),
+                containsString("editor.selection.setSelectionRange")));
+    }
+
+    @Test
+    @Issue("JENKINS-75751")
+    void editorSearchEnterDoesNotSubmitForm() throws IOException {
+        final String script = resource("/lib/form/editorSearch/editorSearch.js");
+
+        assertThat(script, allOf(
+                containsString("event.key === \"Enter\""),
+                containsString("stopEvent(event);"),
+                containsString("event.preventDefault();"),
+                containsString("event.stopPropagation();"),
+                containsString("event.stopImmediatePropagation();"),
+                containsString("navigate(state, event.shiftKey);"),
+                containsString("button.type = \"button\";")));
+    }
+
+    @Test
+    @Issue("JENKINS-75751")
+    void editorSearchUsesThemeAndSlideAnimation() throws IOException {
+        final String style = resource("/lib/form/editorSearch/editorSearch.css");
+
+        assertThat(style, allOf(
+                containsString("var(--card-background"),
+                containsString("var(--text-color"),
+                containsString("transform: translateY(calc(-100% - 10px));"),
+                containsString("transition:"),
+                containsString("prefers-reduced-motion")));
+    }
+
+    private String resource(String path) throws IOException {
+        return new String(Objects.requireNonNull(getClass().getResourceAsStream(path)).readAllBytes(), StandardCharsets.UTF_8);
+    }
+
+    private static String workspaceFile(String first, String... more) throws IOException {
+        Path path = Path.of(System.getProperty("user.dir")).resolve(Path.of(first, more)).normalize();
+        if (!Files.exists(path)) {
+            path = Path.of(System.getProperty("user.dir")).resolve("..").resolve(Path.of(first, more)).normalize();
+        }
+        return Files.readString(path, StandardCharsets.UTF_8);
     }
 
     public static class CodeMirrorStep extends Builder {

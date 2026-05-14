@@ -1,0 +1,161 @@
+.jenkins-editor-search {
+  /* Jenkins themes own these variables, so the panel follows light and dark modes. */
+  --jenkins-editor-search-background: color-mix(
+    in sRGB,
+    var(--card-background, #ffffff) 92%,
+    var(--text-color, #111111) 8%
+  );
+  --jenkins-editor-search-input-background: color-mix(
+    in sRGB,
+    var(--card-background, #ffffff) 97%,
+    var(--text-color, #111111) 3%
+  );
+  --jenkins-editor-search-border: color-mix(
+    in sRGB,
+    var(--text-color-secondary, #4d545d) 30%,
+    transparent
+  );
+  --jenkins-editor-search-shadow: color-mix(
+    in sRGB,
+    var(--text-color, #111111) 20%,
+    transparent
+  );
+
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  z-index: 100;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 24px);
+  min-height: 34px;
+  padding: 4px 6px;
+  color: var(--text-color, #111111);
+  background: var(--jenkins-editor-search-background);
+  border: var(--jenkins-border-width, 1px) solid
+    var(--card-border-color, var(--jenkins-editor-search-border));
+  border-radius: 4px;
+  box-shadow: 0 8px 24px var(--jenkins-editor-search-shadow);
+  font-family: var(--font-family-sans, system-ui, sans-serif);
+  font-size: 12px;
+  opacity: 0;
+  transform: translateY(calc(-100% - 10px));
+  transition:
+    transform 200ms linear,
+    opacity 120ms ease-out;
+  will-change: transform, opacity;
+}
+
+.jenkins-editor-search--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.jenkins-editor-search__field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.jenkins-editor-search__input {
+  width: clamp(140px, 22vw, 220px);
+  min-height: 24px;
+  padding: 2px 6px;
+  color: var(--text-color, #111111);
+  background: var(--jenkins-editor-search-input-background);
+  border: var(--jenkins-border-width, 1px) solid
+    var(--input-border, var(--jenkins-editor-search-border));
+  border-radius: 3px;
+  outline: none;
+  font: inherit;
+}
+
+.jenkins-editor-search__input:focus {
+  border-color: var(--focus-input-border, var(--accent-color, #0b6aa2));
+  box-shadow: 0 0 0 1px var(--focus-input-border, var(--accent-color, #0b6aa2));
+}
+
+.jenkins-editor-search__count {
+  min-width: 44px;
+  color: var(--text-color-secondary, #4d545d);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.jenkins-editor-search__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.jenkins-editor-search__button {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 5px;
+  color: var(--text-color, #111111);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  font: inherit;
+  line-height: 22px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.jenkins-editor-search__button:hover,
+.jenkins-editor-search__button:focus {
+  background: var(
+    --item-background--hover,
+    var(--button-background--hover, transparent)
+  );
+  border-color: var(--input-border-hover, var(--jenkins-editor-search-border));
+  outline: none;
+}
+
+.jenkins-editor-search__button[aria-pressed="true"] {
+  color: var(--text-color, #111111);
+  background: var(
+    --item-background--active,
+    var(--button-background--active, transparent)
+  );
+  border-color: var(--focus-input-border, var(--accent-color, #0b6aa2));
+}
+
+.jenkins-editor-search__button:disabled {
+  color: color-mix(
+    in sRGB,
+    var(--text-color-secondary, #4d545d) 70%,
+    transparent
+  );
+  cursor: default;
+}
+
+.jenkins-editor-search__button:disabled:hover {
+  background: transparent;
+  border-color: transparent;
+}
+
+.jenkins-editor-search__regex {
+  min-width: 30px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.jenkins-editor-search__match {
+  background: color-mix(
+    in sRGB,
+    var(--warning-background-color, #ffec99) 70%,
+    transparent
+  );
+}
+
+.ace_marker-layer .jenkins-editor-search__match {
+  position: absolute;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jenkins-editor-search {
+    transition: none;
+  }
+}

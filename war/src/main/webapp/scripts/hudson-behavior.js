@@ -1374,8 +1374,7 @@ function rowvgStartEachRow(recursive, f) {
       var cmdKeyDown = false;
       var mode = e.getAttribute("script-mode") || "text/x-groovy";
 
-      // eslint-disable-next-line no-unused-vars
-      var w = CodeMirror.fromTextArea(e, {
+      var editor = CodeMirror.fromTextArea(e, {
         mode: mode,
         lineNumbers: true,
         matchBrackets: true,
@@ -1407,7 +1406,9 @@ function rowvgStartEachRow(recursive, f) {
             }
           }
         },
-      }).getWrapperElement();
+      });
+      e.codemirrorObject = editor;
+      editor.getWrapperElement().codemirrorObject = editor;
     })();
   });
 
