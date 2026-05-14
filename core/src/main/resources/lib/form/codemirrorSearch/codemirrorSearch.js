@@ -86,7 +86,7 @@
     if (state.regex) {
       try {
         return new RegExp(value, state.caseSensitive ? "g" : "gi");
-      } catch (e) {
+      } catch {
         return false;
       }
     }
