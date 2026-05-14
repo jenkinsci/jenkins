@@ -29,6 +29,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -41,8 +42,6 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.htmlunit.ScriptResult;
@@ -127,27 +126,37 @@ class FormFieldValidatorTest {
 
     @Test
     @Issue("JENKINS-75751")
-    void editorSearchLoadsFromCoreLayout() throws IOException {
-        final String layout = resource("/lib/layout/layout.jelly");
-        assertThat(layout, containsString("lib.form.editorSearch.editorSearch"));
-    }
+    void editorSearchLoadsLazilyForCodeMirrorEditor() throws Exception {
+        final FreeStyleProject freeStyleProject = j.createFreeStyleProject();
+        freeStyleProject.getBuildersList().add(new CodeMirrorStep(""));
+        freeStyleProject.save();
+        final JenkinsRule.WebClient wc = j.createWebClient();
+        final HtmlPage page = wc.getPage(freeStyleProject, "configure");
 
-    @Test
-    @Issue("JENKINS-75751")
-    void editorSearchCodeMirrorTextAreaStoresEditorOnWrapper() throws IOException {
-        final String textareaScript = resource("/lib/form/textarea/textarea.js");
+        assertFalse(page.getWebResponse().getContentAsString().contains("lib/form/editorSearch"));
+        assertTrue((Boolean) page
+                .executeJavaScript("!!document.querySelector('.CodeMirror').codemirrorObject")
+                .getJavaScriptResult());
 
-        assertThat(textareaScript, allOf(
-                containsString("var codemirror = CodeMirror.fromTextArea(e, config);"),
-                containsString("e.codemirrorObject = codemirror;"),
-                containsString("codemirror.getWrapperElement().codemirrorObject = codemirror;")));
+        page.executeJavaScript("""
+                document.querySelector('.CodeMirror').codemirrorObject.focus();
+                var textarea = document.querySelector('.CodeMirror textarea');
+                textarea.dispatchEvent(new KeyboardEvent('keydown', {
+                    key: 'f',
+                    ctrlKey: true,
+                    bubbles: true,
+                    cancelable: true
+                }));
+                """);
+        wc.waitForBackgroundJavaScript(1000);
 
-        final String scriptConsoleBehavior = workspaceFile("war", "src", "main", "webapp", "scripts", "hudson-behavior.js");
-
-        assertThat(scriptConsoleBehavior, allOf(
-                containsString("var editor = CodeMirror.fromTextArea(e, {"),
-                containsString("e.codemirrorObject = editor;"),
-                containsString("editor.getWrapperElement().codemirrorObject = editor;")));
+        assertTrue((Boolean) page
+                .executeJavaScript("""
+                        !!window.jenkinsEditorSearch &&
+                        !!document.querySelector('.jenkins-editor-search') &&
+                        !!document.querySelector('link[href*="lib/form/editorSearch/editorSearch.css"]')
+                        """)
+                .getJavaScriptResult());
     }
 
     @Test
@@ -192,14 +201,6 @@ class FormFieldValidatorTest {
 
     private String resource(String path) throws IOException {
         return new String(Objects.requireNonNull(getClass().getResourceAsStream(path)).readAllBytes(), StandardCharsets.UTF_8);
-    }
-
-    private static String workspaceFile(String first, String... more) throws IOException {
-        Path path = Path.of(System.getProperty("user.dir")).resolve(Path.of(first, more)).normalize();
-        if (!Files.exists(path)) {
-            path = Path.of(System.getProperty("user.dir")).resolve("..").resolve(Path.of(first, more)).normalize();
-        }
-        return Files.readString(path, StandardCharsets.UTF_8);
     }
 
     public static class CodeMirrorStep extends Builder {
