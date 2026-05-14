@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:dd="/lib/layout/dropdowns"
-         xmlns:st="jelly:stapler">
+         xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
   <st:documentation>
     A reusable container for subpages relating to Runs in Jenkins.
     Renders a tabbed layout for runs, including build status and actions.
@@ -69,6 +69,7 @@ THE SOFTWARE.
 
             <div class="app-build-bar__controls">
               <l:actions it="${it.object}" />
+              <t:actions actions="${it.object.transientActions}"/>
             </div>
           </div>
 
