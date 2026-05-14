@@ -106,19 +106,32 @@
 
 .jenkins-codemirror-search__button:hover,
 .jenkins-codemirror-search__button:focus {
-  background: var(--item-background--hover, var(--button-background--hover, transparent));
-  border-color: var(--input-border-hover, var(--jenkins-codemirror-search-border));
+  background: var(
+    --item-background--hover,
+    var(--button-background--hover, transparent)
+  );
+  border-color: var(
+    --input-border-hover,
+    var(--jenkins-codemirror-search-border)
+  );
   outline: none;
 }
 
 .jenkins-codemirror-search__button[aria-pressed="true"] {
   color: var(--text-color, #111111);
-  background: var(--item-background--active, var(--button-background--active, transparent));
+  background: var(
+    --item-background--active,
+    var(--button-background--active, transparent)
+  );
   border-color: var(--focus-input-border, var(--accent-color, #0b6aa2));
 }
 
 .jenkins-codemirror-search__button:disabled {
-  color: color-mix(in sRGB, var(--text-color-secondary, #4d545d) 70%, transparent);
+  color: color-mix(
+    in sRGB,
+    var(--text-color-secondary, #4d545d) 70%,
+    transparent
+  );
   cursor: default;
 }
 

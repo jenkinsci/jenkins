@@ -92,7 +92,10 @@
     }
 
     if (state.wholeWord) {
-      return new RegExp("\\b" + escapeRegExp(value) + "\\b", state.caseSensitive ? "g" : "gi");
+      return new RegExp(
+        "\\b" + escapeRegExp(value) + "\\b",
+        state.caseSensitive ? "g" : "gi",
+      );
     }
 
     return value;
@@ -102,7 +105,7 @@
     var cursor = cm.getSearchCursor(
       query,
       { line: 0, ch: 0 },
-      typeof query === "string" && !state.caseSensitive
+      typeof query === "string" && !state.caseSensitive,
     );
     var matches = [];
     var guard = 0;
@@ -125,7 +128,9 @@
 
   function updateCount(state) {
     var count = state.panel.querySelector(".jenkins-codemirror-search__count");
-    var previous = state.panel.querySelector(".jenkins-codemirror-search__previous");
+    var previous = state.panel.querySelector(
+      ".jenkins-codemirror-search__previous",
+    );
     var next = state.panel.querySelector(".jenkins-codemirror-search__next");
     var total = state.matches.length;
 
@@ -134,7 +139,9 @@
     } else if (!state.input.value) {
       count.textContent = "0 of 0";
     } else {
-      count.textContent = total ? state.selected + 1 + " of " + total : "0 of 0";
+      count.textContent = total
+        ? state.selected + 1 + " of " + total
+        : "0 of 0";
     }
 
     previous.disabled = next.disabled = total === 0;
@@ -217,7 +224,9 @@
       setPressed(button, getValue());
       refresh(cm);
     });
-    panel.querySelector(".jenkins-codemirror-search__actions").appendChild(button);
+    panel
+      .querySelector(".jenkins-codemirror-search__actions")
+      .appendChild(button);
     return button;
   }
 
@@ -250,40 +259,68 @@
     var actions = panel.querySelector(".jenkins-codemirror-search__actions");
     var closeButton = panel.querySelector(".jenkins-codemirror-search__close");
     actions.insertBefore(
-      addToggle(panel, "jenkins-codemirror-search__case", "Aa", "Match case", function () {
-        return state.caseSensitive;
-      }, function (value) {
-        state.caseSensitive = value;
-      }, cm),
-      panel.querySelector(".jenkins-codemirror-search__previous")
+      addToggle(
+        panel,
+        "jenkins-codemirror-search__case",
+        "Aa",
+        "Match case",
+        function () {
+          return state.caseSensitive;
+        },
+        function (value) {
+          state.caseSensitive = value;
+        },
+        cm,
+      ),
+      panel.querySelector(".jenkins-codemirror-search__previous"),
     );
     actions.insertBefore(
-      addToggle(panel, "jenkins-codemirror-search__whole-word", "ab", "Match whole word", function () {
-        return state.wholeWord;
-      }, function (value) {
-        state.wholeWord = value;
-      }, cm),
-      panel.querySelector(".jenkins-codemirror-search__previous")
+      addToggle(
+        panel,
+        "jenkins-codemirror-search__whole-word",
+        "ab",
+        "Match whole word",
+        function () {
+          return state.wholeWord;
+        },
+        function (value) {
+          state.wholeWord = value;
+        },
+        cm,
+      ),
+      panel.querySelector(".jenkins-codemirror-search__previous"),
     );
     actions.insertBefore(
-      addToggle(panel, "jenkins-codemirror-search__regex", ".*", "Use regular expression", function () {
-        return state.regex;
-      }, function (value) {
-        state.regex = value;
-      }, cm),
-      panel.querySelector(".jenkins-codemirror-search__previous")
+      addToggle(
+        panel,
+        "jenkins-codemirror-search__regex",
+        ".*",
+        "Use regular expression",
+        function () {
+          return state.regex;
+        },
+        function (value) {
+          state.regex = value;
+        },
+        cm,
+      ),
+      panel.querySelector(".jenkins-codemirror-search__previous"),
     );
 
-    panel.querySelector(".jenkins-codemirror-search__previous").addEventListener("click", function (event) {
-      stopEvent(event);
-      navigate(cm, true);
-      state.input.focus();
-    });
-    panel.querySelector(".jenkins-codemirror-search__next").addEventListener("click", function (event) {
-      stopEvent(event);
-      navigate(cm, false);
-      state.input.focus();
-    });
+    panel
+      .querySelector(".jenkins-codemirror-search__previous")
+      .addEventListener("click", function (event) {
+        stopEvent(event);
+        navigate(cm, true);
+        state.input.focus();
+      });
+    panel
+      .querySelector(".jenkins-codemirror-search__next")
+      .addEventListener("click", function (event) {
+        stopEvent(event);
+        navigate(cm, false);
+        state.input.focus();
+      });
     closeButton.addEventListener("click", function (event) {
       stopEvent(event);
       closeSearch(cm);
