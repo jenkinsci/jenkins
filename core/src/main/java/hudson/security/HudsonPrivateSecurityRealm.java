@@ -1194,6 +1194,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             }
             return FormValidation.ok();
         }
+
+        public PasswordComplexityRule getDefaultPasswordComplexityRule() {
+            return new NonePasswordComplexityRule();
+        }
     }
 
     private static final Filter CREATE_FIRST_USER_FILTER = new CompatibleFilter() {
