@@ -8,13 +8,7 @@
   }
 
   function closest(element, selector) {
-    while (element && element.nodeType === 1) {
-      if (element.matches(selector)) {
-        return element;
-      }
-      element = element.parentElement;
-    }
-    return null;
+    return element && element.nodeType === 1 ? element.closest(selector) : null;
   }
 
   function stopEvent(event) {
