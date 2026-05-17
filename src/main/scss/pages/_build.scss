@@ -146,29 +146,61 @@
   }
 }
 
+@keyframes app-build-bar-border-on-scroll {
+  from {
+    border-bottom-color: color-mix(
+            in sRGB,
+            var(--jenkins-border-color),
+            transparent
+    );
+  }
+
+  to {
+    border-bottom-color: var(--jenkins-border-color);
+  }
+}
+
 .app-build-bar {
-  position: relative;
+  --app-build-bar-border-color: color-mix(
+          in sRGB,
+          var(--jenkins-border-color),
+          transparent
+  );
+
+  position: sticky;
+  top: calc(var(--section-padding) * -1);
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  align-items: start;
+  align-items: center;
   gap: 0.5rem 1.5rem;
-  min-height: 2.875rem;
-  margin-top: -5px;
-  padding-bottom: 0.75rem;
+  min-height: var(--header-height);
+  backdrop-filter: blur(15px);
+  background-color: color-mix(
+          in sRGB,
+          transparent 25%,
+          var(--bg)
+  );
+  padding-inline: var(--section-padding);
   z-index: 102;
+  border-bottom: var(--jenkins-border-width) solid
+  var(--app-build-bar-border-color);
+  background-clip: padding-box;
+  margin-top: calc(var(--section-padding) * -1);
+  margin-left: calc(var(--section-padding) * -1);
+  margin-right: calc(var(--section-padding) * -1);
+
+  @supports (animation-timeline: scroll()) {
+    animation-name: app-build-bar-border-on-scroll;
+    animation-duration: 1s;
+    animation-fill-mode: both;
+    animation-timing-function: linear;
+    animation-timeline: scroll(nearest block);
+    animation-range: 0 var(--header-height);
+  }
 
   @media (width <= 1200px) {
     display: flex;
     flex-direction: column;
-  }
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: -1000px calc(var(--section-padding) * -1) 0;
-    background-color: var(--background);
-    border-bottom: var(--jenkins-border-width) solid var(--card-border-color);
-    z-index: -1;
   }
 
   .app-build-bar__content {
