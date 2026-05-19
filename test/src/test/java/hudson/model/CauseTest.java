@@ -29,12 +29,14 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.XmlFile;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.BuildTrigger;
+import hudson.triggers.SCMTrigger;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -268,6 +270,18 @@ class CauseTest {
             assertFalse(content.contains("Simple cause: <img"));
             assertTrue(content.contains("Simple cause: &lt;img"));
         }
+    }
+
+    @Test
+    @LocalData
+    void upstreamCauseOnLoad() throws Exception {
+        final Item item = j.jenkins.getItemByFullName("downstream");
+        assertThat(item, instanceOf(FreeStyleProject.class));
+        FreeStyleProject down = (FreeStyleProject) item;
+        final FreeStyleBuild build = down.getBuildByNumber(1);
+        Cause.UpstreamCause upstreamCause = (Cause.UpstreamCause) build.getCauses().getFirst();
+        SCMTrigger.SCMTriggerCause scmCause = (SCMTrigger.SCMTriggerCause) upstreamCause.getUpstreamCauses().getFirst();
+        assertNotNull(scmCause.getRun());
     }
 
     public static class SimpleCause extends Cause {

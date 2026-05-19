@@ -7,6 +7,7 @@
   width: 100%;
   min-height: 2.375rem;
   box-shadow: var(--form-input-glow);
+  caret-color: var(--focus-input-border);
 
   // Set height transition to 0s as vertical resizing has a delay/lag otherwise
   transition:

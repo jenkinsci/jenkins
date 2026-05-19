@@ -130,7 +130,7 @@ THE SOFTWARE.
     </j:otherwise>
   </j:choose>
 
-  <div class="repeated-container${!empty(header)?' with-drag-drop':''}" enableTopButton="${attrs.enableTopButton}">
+  <div class="repeated-container${!empty(header)?' with-drag-drop':''}" enableTopButton="${attrs.enableTopButton}" data-minimum="${minimum}">
     <!-- The first DIV is the master copy. -->
     <div class="repeated-chunk to-be-removed" name="${name}">
       <div class="repeated-chunk__header">

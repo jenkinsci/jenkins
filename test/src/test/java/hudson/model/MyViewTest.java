@@ -88,7 +88,7 @@ class MyViewTest {
         form.getInputByName("name").setValue("job");
         form.getInputByName("name").blur();
         // Select the item clicking on the first item type shown
-        HtmlElement itemType = newItemPage.getFirstByXPath("//div[@class='category']/ul/li");
+        HtmlElement itemType = newItemPage.querySelector(".jenkins-choice-list div label");
         itemType.click();
         rule.submit(form);
         Item item = rule.jenkins.getItem("job");

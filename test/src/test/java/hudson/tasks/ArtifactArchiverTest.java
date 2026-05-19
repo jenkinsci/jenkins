@@ -281,6 +281,7 @@ class ArtifactArchiverTest {
     @Issue("SECURITY-162")
     @Test
     void outsideSymlinks() throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -519,6 +520,7 @@ class ArtifactArchiverTest {
     @Test
     @Issue("JENKINS-55049")
     void lengthOfArtifactIsCorrect_eventForInvalidSymlink() throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {

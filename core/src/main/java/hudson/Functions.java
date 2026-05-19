@@ -170,8 +170,10 @@ import jenkins.model.SimplePageDecorator;
 import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DetailGroup;
+import jenkins.model.menu.Group;
 import jenkins.telemetry.impl.PasswordMasking;
 import jenkins.util.SystemProperties;
+import net.sf.json.JSONObject;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -180,6 +182,7 @@ import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
+import org.jenkins.ui.icon.IconSpec;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -2658,6 +2661,24 @@ public class Functions {
     @Restricted(NoExternalUse.class)
     public static String generateItemId() {
         return String.valueOf(Math.floor(Math.random() * 3000));
+    }
+
+    /**
+     * Converts the given actions to a JSON object
+     */
+    @Restricted(NoExternalUse.class)
+    public static String convertActionsToJson(String baseUrl, List<Action> actions) {
+        ModelObjectWithContextMenu.ContextMenu contextMenu = new ModelObjectWithContextMenu.ContextMenu();
+        contextMenu.addAll(actions
+                .stream()
+                .filter(action ->
+                        action.getIconFileName() != null
+                                || (action instanceof IconSpec iconSpec && iconSpec.getIconClassName() != null)
+                ).filter(action -> action.getGroup().getOrder() < Group.FIRST_IN_MENU.getOrder())
+                .toList());
+        JSONObject jsonObject = JSONObject.fromObject(contextMenu);
+        jsonObject.put("url", Util.ensureEndsWith(baseUrl, "/"));
+        return jsonObject.toString();
     }
 
     /**
