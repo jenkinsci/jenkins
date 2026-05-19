@@ -24,6 +24,8 @@
 
 package hudson.logging;
 
+import static jenkins.util.QueryUtils.getButtonByCaption;
+import static jenkins.util.QueryUtils.waitUntilElementIsPresent;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
@@ -135,8 +137,11 @@ class LogRecorderManagerTest {
     void createLogRecorderWithNonAsciiName() throws Exception {
         String name = "Journal d’accès";
 
-        HtmlPage page = j.createWebClient().goTo("log/new");
-        HtmlForm form = page.getFormByName("configSubmit");
+        JenkinsRule.WebClient webClient = j.createWebClient();
+        HtmlPage page = webClient.goTo("log/");
+        getButtonByCaption(page, "Add recorder").click();
+
+        HtmlForm form = waitUntilElementIsPresent(page, "[name='configSubmit']");
         form.getInputByName("name").setValueAttribute(name);
         j.submit(form);
 
@@ -277,5 +282,4 @@ class LogRecorderManagerTest {
         }
         return b.toString();
     }
-
 }
