@@ -142,6 +142,12 @@ const debouncedLoad = debounce(() => {
   load();
 }, 150);
 
+function maybeLoadBuilds() {
+  if (!document.hidden) {
+    load();
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   pageSearchInput.addEventListener("input", function () {
     container.classList.add("app-builds-container--loading");
@@ -152,7 +158,13 @@ document.addEventListener("DOMContentLoaded", function () {
   container.classList.add("app-builds-container--loading");
   load();
 
+  // Firefox may fire the focus event before document.hidden is updated when
+  // opening a job in a new background tab. Use setTimeout to defer the check
+  // until the next event loop cycle when document.hidden is properly updated.
   window.addEventListener("focus", function () {
-    load();
+    setTimeout(maybeLoadBuilds, 0);
   });
+
+  // Also handle visibility changes for all browsers
+  document.addEventListener("visibilitychange", maybeLoadBuilds);
 });
