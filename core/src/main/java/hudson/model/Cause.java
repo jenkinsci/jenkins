@@ -36,8 +36,11 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.util.XStream2;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import jenkins.model.Jenkins;
@@ -167,6 +170,7 @@ public abstract class Cause {
         @Deprecated
         private transient Cause upstreamCause;
         private @NonNull List<Cause> upstreamCauses;
+        private transient Map<Cause, Integer> causeBag = new LinkedHashMap<>();
 
         /**
          * @deprecated since 2009-02-28
@@ -190,6 +194,7 @@ public abstract class Cause {
                 }
                 upstreamCauses.add(trim(c, MAX_DEPTH, traversed));
             }
+            fillCauseBag();
         }
 
         private UpstreamCause(String upstreamProject, int upstreamBuild, String upstreamUrl, @NonNull List<Cause> upstreamCauses) {
@@ -197,17 +202,36 @@ public abstract class Cause {
             this.upstreamBuild = upstreamBuild;
             this.upstreamUrl = upstreamUrl;
             this.upstreamCauses = upstreamCauses;
+            fillCauseBag();
+        }
+
+        private void fillCauseBag() {
+            if (causeBag == null) {
+                causeBag = new LinkedHashMap<>();
+            }
+            for (Cause c : upstreamCauses) {
+                causeBag.compute(c, (unused, cnt) -> cnt == null ? 1 : cnt + 1);
+            }
+        }
+
+        @Restricted(DoNotUse.class) // used from Jelly
+        public Map<Cause, Integer> getCauseCounts() {
+            return Collections.unmodifiableMap(causeBag);
+        }
+
+        @Override
+        public void onLoad(@NonNull Run<?, ?> build) {
+            onLoad(build.getParent(), build.getNumber());
         }
 
         @Override
         public void onLoad(@NonNull Job<?, ?> _job, int _buildNumber) {
             Item i = Jenkins.get().getItemByFullName(this.upstreamProject);
-            if (!(i instanceof Job)) {
+            if (!(i instanceof Job j)) {
                 // cannot initialize upstream causes
                 return;
             }
 
-            Job j = (Job) i;
             for (Cause c : this.upstreamCauses) {
                 c.onLoad(j, upstreamBuild);
             }
@@ -221,9 +245,7 @@ public abstract class Cause {
 
             if (this == rhs) return true;
 
-            if (!(rhs instanceof UpstreamCause)) return false;
-
-            final UpstreamCause o = (UpstreamCause) rhs;
+            if (!(rhs instanceof UpstreamCause o)) return false;
 
             return Objects.equals(upstreamBuild, o.upstreamBuild) &&
                     Objects.equals(upstreamCauses, o.upstreamCauses) &&
@@ -240,10 +262,9 @@ public abstract class Cause {
         }
 
         private @NonNull Cause trim(@NonNull Cause c, int depth, Set<String> traversed) {
-            if (!(c instanceof UpstreamCause)) {
+            if (!(c instanceof UpstreamCause uc)) {
                 return c;
             }
-            UpstreamCause uc = (UpstreamCause) c;
             List<Cause> cs = new ArrayList<>();
             if (traversed.add(uc.upstreamUrl + uc.upstreamBuild)) {
                 for (Cause c2 : uc.upstreamCauses) {
@@ -350,12 +371,23 @@ public abstract class Cause {
                     uc.upstreamCause = null;
                     OldDataMonitor.report(context, "1.288");
                 }
+                uc.fillCauseBag();
             }
         }
 
         public static class DeeplyNestedUpstreamCause extends Cause {
             @Override public String getShortDescription() {
                 return "(deeply nested causes)";
+            }
+
+            @Override
+            public int hashCode() {
+                return 11;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                return obj instanceof DeeplyNestedUpstreamCause;
             }
 
             @Override public String toString() {

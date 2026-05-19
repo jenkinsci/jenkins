@@ -161,6 +161,18 @@ class ComputerTest {
     }
 
     @Test
+    @Issue("#26146")
+    void computerTemporaryOfflineCauseStaysOnConfigRound() throws Exception {
+        var agent = j.createSlave();
+        var computer = agent.toComputer();
+        var offlineCause = new OfflineCause.UserCause(User.getOrCreateByIdOrFullName("username"), "Initial cause");
+        computer.setTemporaryOfflineCause(offlineCause);
+        j.configRoundtrip(agent);
+        agent = (DumbSlave) j.jenkins.getNode(agent.getNodeName());
+        assertThat(agent.getTemporaryOfflineCause(), equalTo(offlineCause));
+    }
+
+    @Test
     @LocalData
     void removeUserDetailsFromOfflineCause() throws Exception {
         Computer computer = j.jenkins.getComputer("deserialized");
@@ -244,7 +256,7 @@ class ComputerTest {
 
         assertThat(data.size(), equalTo(0));
 
-        odm.doDiscard(null, null);
+        odm.doDiscard();
 
         User.AllUsers.scanAll();
         boolean createUser = false;
@@ -318,8 +330,8 @@ class ComputerTest {
         computer = null;
         j.jenkins.removeNode(agent);
         agent = null;
-        MemoryAssert.assertGC(computerRef, false);
-        MemoryAssert.assertGC(channelRef, false);
+        MemoryAssert.assertGC(computerRef, true);
+        MemoryAssert.assertGC(channelRef, true);
     }
 
     @Test
@@ -333,7 +345,7 @@ class ComputerTest {
 
         // Connect the computer
         computer.connect(false);
-        await("computer should be online after connect").atMost(Duration.ofSeconds(30)).until(() -> computer.isOnline(), is(true));
+        await("computer should be online after connect").atMost(Duration.ofSeconds(30)).until(computer::isOnline, is(true));
         assertThat(computer.isConnected(), is(true));
         assertThat(computer.isOffline(), is(false));
 
@@ -351,7 +363,7 @@ class ComputerTest {
         // Disconnect the computer
         computer.disconnect(new OfflineCause.UserCause(null, null));
         // wait for the slave process to be killed
-        await("disconnected agent is not available for scheduling").until(() -> computer.isOnline(), is(false));
+        await("disconnected agent is not available for scheduling").until(computer::isOnline, is(false));
         assertThat(computer.isConnected(), is(false));
         assertThat(computer.isOffline(), is(true));
     }

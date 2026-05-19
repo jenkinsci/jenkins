@@ -34,6 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerDispatchable;
+import jenkins.util.ClientHttpRedirect;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -127,7 +128,7 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
             // of course the irony is that this redirect won't work
             return HttpResponses.redirectViaContextPath("/manage");
         } else {
-            return new HttpRedirect("https://www.jenkins.io/redirect/troubleshooting/broken-reverse-proxy");
+            return new ClientHttpRedirect("https://www.jenkins.io/redirect/troubleshooting/broken-reverse-proxy");
         }
     }
 

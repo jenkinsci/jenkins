@@ -175,7 +175,7 @@ public class InetAddressValidator implements Serializable {
                 // String.split() drops ending empty segments
                 octetList.add("");
             } else if (inet6Address.startsWith("::") && !octetList.isEmpty()) {
-                octetList.remove(0);
+                octetList.removeFirst();
             }
             octets = octetList.toArray(new String[0]);
         }

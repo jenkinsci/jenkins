@@ -202,9 +202,9 @@ public class UpdateSiteTest {
         assertNull(j.jenkins.getUpdateCenter().getSite("default").getData(), "plugin data is not present");
 
         // nothing breaking?
-        j.jenkins.getExtensionList(UpdateSiteWarningsMonitor.class).get(0).getActivePluginWarningsByPlugin();
-        j.jenkins.getExtensionList(UpdateSiteWarningsMonitor.class).get(0).getActiveCoreWarnings();
-        j.jenkins.getExtensionList(UpdateSiteWarningsConfiguration.class).get(0).getAllWarnings();
+        j.jenkins.getExtensionList(UpdateSiteWarningsMonitor.class).getFirst().getActivePluginWarningsByPlugin();
+        j.jenkins.getExtensionList(UpdateSiteWarningsMonitor.class).getFirst().getActiveCoreWarnings();
+        j.jenkins.getExtensionList(UpdateSiteWarningsConfiguration.class).getFirst().getAllWarnings();
     }
 
     @Test

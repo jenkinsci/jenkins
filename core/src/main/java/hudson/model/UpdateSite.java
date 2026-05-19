@@ -67,7 +67,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -194,11 +193,7 @@ public class UpdateSite {
     @Deprecated
     public @CheckForNull Future<FormValidation> updateDirectly(final boolean signatureCheck) {
         if (! getDataFile().exists() || isDue()) {
-            return Jenkins.get().getUpdateCenter().updateService.submit(new Callable<>() {
-                @Override public FormValidation call() throws Exception {
-                    return updateDirectlyNow(signatureCheck);
-                }
-            });
+            return Jenkins.get().getUpdateCenter().updateService.submit(() -> updateDirectlyNow(signatureCheck));
         } else {
             return null;
         }
@@ -1070,9 +1065,7 @@ public class UpdateSite {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (!(o instanceof Warning)) return false;
-
-            Warning warning = (Warning) o;
+            if (!(o instanceof Warning warning)) return false;
 
             return id.equals(warning.id);
         }
@@ -1200,8 +1193,7 @@ public class UpdateSite {
         }
 
         private static IssueTracker createFromJSONObject(Object o) {
-            if (o instanceof JSONObject) {
-                JSONObject jsonObject = (JSONObject) o;
+            if (o instanceof JSONObject jsonObject) {
                 if (jsonObject.has("type") && jsonObject.has("viewUrl") && jsonObject.has("reportUrl")) {
                     return new IssueTracker(jsonObject.getString("type"), jsonObject.getString("viewUrl"), jsonObject.getString("reportUrl"));
                 }

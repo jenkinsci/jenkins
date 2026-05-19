@@ -684,7 +684,9 @@ function registerValidator(e) {
 
   var url = e.targetUrl();
   try {
-    FormChecker.delayedCheck(url, method, e.targetElement);
+    if (!e.disabled) {
+      FormChecker.delayedCheck(url, method, e.targetElement);
+    }
     // eslint-disable-next-line no-unused-vars
   } catch (x) {
     // this happens if the checkUrl refers to a non-existing element.
@@ -699,6 +701,9 @@ function registerValidator(e) {
   }
 
   var checker = function () {
+    if (this.disabled) {
+      return;
+    }
     const validationArea = this.targetElement;
     FormChecker.sendRequest(this.targetUrl(), {
       method: method,
@@ -784,6 +789,7 @@ function registerRegexpValidator(e, regexp, message) {
     return set;
   };
   e.onchange.call(e);
+  /* eslint-disable-next-line no-useless-assignment */
   e = null; // avoid memory leak
 }
 
@@ -886,6 +892,7 @@ function registerMinMaxValidator(e) {
     return set;
   };
   e.onchange.call(e);
+  /* eslint-disable-next-line no-useless-assignment */
   e = null; // avoid memory leak
 }
 
@@ -1482,7 +1489,7 @@ function rowvgStartEachRow(recursive, f) {
         return buildFormTree(this);
       };
     }
-
+    /* eslint-disable-next-line no-useless-assignment */
     form = null; // memory leak prevention
   });
 
@@ -1657,6 +1664,7 @@ function rowvgStartEachRow(recursive, f) {
       event.preventDefault();
       return false;
     };
+    /* eslint-disable-next-line no-useless-assignment */
     e = null; // memory leak prevention
   });
 
@@ -1683,21 +1691,25 @@ function rowvgStartEachRow(recursive, f) {
         return;
       }
 
-      var subForms = [];
-      var start = findInFollowingTR(e, "dropdownList-container");
+      function buildSubForms(e) {
+        var subForms = [];
+        var start = findInFollowingTR(e, "dropdownList-container");
 
-      do {
-        start = start.firstElementChild;
-      } while (start && !isTR(start));
+        do {
+          start = start.firstElementChild;
+        } while (start && !isTR(start));
 
-      if (start && !start.classList.contains("dropdownList-start")) {
-        start = findFollowingTR(start, "dropdownList-start");
+        if (start && !start.classList.contains("dropdownList-start")) {
+          start = findFollowingTR(start, "dropdownList-start");
+        }
+        while (start != null) {
+          subForms.push(start);
+          start = findFollowingTR(start, "dropdownList-start");
+        }
+        return subForms;
       }
-      while (start != null) {
-        subForms.push(start);
-        start = findFollowingTR(start, "dropdownList-start");
-      }
 
+      var subForms = buildSubForms(e);
       // control visibility
       function updateDropDownList() {
         for (var i = 0; i < subForms.length; i++) {
@@ -1705,23 +1717,38 @@ function rowvgStartEachRow(recursive, f) {
           var f = subForms[i];
 
           if (show) {
-            renderOnDemand(f.nextElementSibling);
+            const idx = i; // capture the index so that it is not mutated in the loop
+            renderOnDemand(f.nextElementSibling, function () {
+              const current = e.selectedIndex == idx;
+              if (!current) {
+                console.warn(
+                  "renderOnDemandCallback: selection is no longer valid, rebuilding correct DOM",
+                );
+                // our form div has changed (but the index is stable) so go and re-get the new domtree
+                const subForm = buildSubForms(e)[idx];
+                updateDropDownFormRowVisibility(subForm, false);
+              }
+            });
           }
-          f.rowVisibilityGroup.makeInnerVisible(show);
-
-          // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
-          // so far dropdownList doesn't create such a situation.
-          f.rowVisibilityGroup.eachRow(
-            true,
-            show
-              ? function (e) {
-                  e.removeAttribute("field-disabled");
-                }
-              : function (e) {
-                  e.setAttribute("field-disabled", "true");
-                },
-          );
+          updateDropDownFormRowVisibility(f, show);
         }
+      }
+
+      function updateDropDownFormRowVisibility(f, show) {
+        f.rowVisibilityGroup.makeInnerVisible(show);
+
+        // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
+        // so far dropdownList doesn't create such a situation.
+        f.rowVisibilityGroup.eachRow(
+          true,
+          show
+            ? function (e) {
+                e.removeAttribute("field-disabled");
+              }
+            : function (e) {
+                e.setAttribute("field-disabled", "true");
+              },
+        );
       }
 
       e.onchange = updateDropDownList;
@@ -1737,6 +1764,7 @@ function rowvgStartEachRow(recursive, f) {
       layoutUpdateCallback.call();
       return false;
     };
+    /* eslint-disable-next-line no-useless-assignment */
     e = null; // avoid memory leak
   });
 
@@ -1752,32 +1780,42 @@ function rowvgStartEachRow(recursive, f) {
   Behaviour.specify(
     "DIV.behavior-loading",
     "div-behavior-loading",
+    // Useless assignment retained for consistency with preceding use in
+    // Behaviour.specify("DIV.jenkins-form-skeleton" and earlier
+    /* eslint-disable-next-line no-useless-assignment */
     ++p,
     function (e) {
       console.warn(
-        ".behavior-loading is deprecated, use <l:skeleton /> instead - since TODO",
+        ".behavior-loading is deprecated, use <l:skeleton /> instead - since 2.515",
         e,
       );
       e.classList.add("behavior-loading--hidden");
     },
   );
 
-  window.addEventListener("load", function () {
-    // Add a class to the bottom bar when it's stuck to the bottom of the screen
-    const el = document.querySelector(".jenkins-bottom-app-bar__shadow");
-    if (el) {
+  // Add a class to the bottom bar when it's stuck to the bottom of the screen
+  Behaviour.specify(
+    ".jenkins-bottom-app-bar__shadow",
+    "jenkins-bottom-app-bar__shadow",
+    0,
+    function (el) {
+      const dialog = el.closest("dialog");
+
       const observer = new IntersectionObserver(
         ([e]) =>
           e.target.classList.toggle(
             "jenkins-bottom-app-bar__shadow--stuck",
             e.intersectionRatio < 1,
           ),
-        { threshold: [1] },
+        {
+          threshold: [1],
+          root: dialog || null,
+        },
       );
 
       observer.observe(el);
-    }
-  });
+    },
+  );
 
   /**
    * Function that provides compatibility to the checkboxes without title on an f:entry
@@ -1892,40 +1930,6 @@ function refillOnChange(e, onChange) {
 function xor(a, b) {
   // convert both values to boolean by '!' and then do a!=b
   return !a != !b;
-}
-
-// used by editableDescription.jelly to replace the description field with a form
-// eslint-disable-next-line no-unused-vars
-function replaceDescription(initialDescription, submissionUrl) {
-  const descriptionContent = document.getElementById("description-content");
-  const descriptionEditForm = document.getElementById("description-edit-form");
-  descriptionEditForm.innerHTML = "<div class='jenkins-spinner'></div>";
-  descriptionContent.classList.add("jenkins-hidden");
-  let parameters = {};
-  if (initialDescription !== null && initialDescription !== "") {
-    parameters["description"] = initialDescription;
-  }
-  if (submissionUrl !== null && submissionUrl !== "") {
-    parameters["submissionUrl"] = submissionUrl;
-  }
-  fetch("./descriptionForm", {
-    method: "post",
-    headers: crumb.wrap({
-      "Content-Type": "application/x-www-form-urlencoded",
-    }),
-    body: objectToUrlFormEncoded(parameters),
-  }).then((rsp) => {
-    rsp.text().then((responseText) => {
-      descriptionEditForm.innerHTML = responseText;
-      descriptionEditForm.classList.remove("jenkins-hidden");
-      evalInnerHtmlScripts(responseText, function () {
-        Behaviour.applySubtree(descriptionEditForm);
-        descriptionEditForm.getElementsByTagName("TEXTAREA")[0].focus();
-      });
-      layoutUpdateCallback.call();
-      return false;
-    });
-  });
 }
 
 /**

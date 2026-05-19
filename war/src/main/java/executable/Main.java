@@ -46,6 +46,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.NavigableSet;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.jar.JarFile;
@@ -317,13 +318,9 @@ public class Main {
             try {
                 Field f = cl.loadClass("winstone.WinstoneSession").getField("SESSION_COOKIE_NAME");
                 f.setAccessible(true);
-                if (JSESSIONID_COOKIE_NAME != null) {
-                    // Use the user-defined cookie name
-                    f.set(null, JSESSIONID_COOKIE_NAME);
-                } else {
-                    // Randomize session names by default to prevent collisions when running multiple Jenkins instances on the same host.
-                    f.set(null, "JSESSIONID." + UUID.randomUUID().toString().replace("-", "").substring(0, 8));
-                }
+                // Use the user-defined cookie name or
+                // randomized session names as default to prevent collisions when running multiple Jenkins instances on the same host.
+                f.set(null, Objects.requireNonNullElseGet(JSESSIONID_COOKIE_NAME, () -> "JSESSIONID." + UUID.randomUUID().toString().replace("-", "").substring(0, 8)));
             } catch (ClassNotFoundException | NoSuchFieldException e) {
                 throw new AssertionError(e);
             }

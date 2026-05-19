@@ -26,7 +26,7 @@ class InitMilestoneTest {
     @Test
     void testInitMilestones() {
 
-        List<InitMilestone> attained = r.jenkins.getExtensionList(Initializers.class).get(0).getAttained();
+        List<InitMilestone> attained = r.jenkins.getExtensionList(Initializers.class).getFirst().getAttained();
 
         // TODO assert that they are contained in order, currently it generally works but flakes after some time
         assertThat(attained, containsInAnyOrder(

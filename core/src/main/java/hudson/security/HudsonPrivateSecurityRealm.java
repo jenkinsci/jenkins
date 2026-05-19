@@ -64,6 +64,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
@@ -311,7 +312,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     @RequirePOST
     public void doCreateAccountByAdmin(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        createAccountByAdmin(req, rsp, "addUser.jelly", "."); // send the user back to the listing page on success
+        createAccountByAdmin(req, rsp, "addUserDialog.jelly", "."); // send the user back to the listing page on success
     }
 
     /**
@@ -455,7 +456,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         try {
-            PASSWORD_HASH_ENCODER.encode(si.password1);
+            PASSWORD_HASH_ENCODER.encode2(si.password1);
         }  catch (RuntimeException ex) {
             si.errors.put("password1", ex.getMessage());
         }
@@ -510,11 +511,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     private boolean containsOnlyAcceptableCharacters(@NonNull String value) {
-        if (ID_REGEX == null) {
-            return value.matches(DEFAULT_ID_REGEX);
-        } else {
-            return value.matches(ID_REGEX);
-        }
+        return value.matches(Objects.requireNonNullElse(ID_REGEX, DEFAULT_ID_REGEX));
     }
 
     @Restricted(NoExternalUse.class) // _entryForm.jelly and signup.jelly
@@ -856,7 +853,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
                 // The password is being changed
                 try {
-                    PASSWORD_HASH_ENCODER.encode(pwd);
+                    PASSWORD_HASH_ENCODER.encode2(pwd);
                 } catch (RuntimeException ex) {
                     throw new FormException(ex.getMessage(), "user.password");
                 }
@@ -937,9 +934,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         private static final Pattern BCRYPT_PATTERN = Pattern.compile("^\\$2a\\$([0-9]{2})\\$.{53}$");
 
         @Override
-        public String encode(CharSequence rawPassword) {
+        public String encode2(CharSequence rawPassword) {
             try {
-                return super.encode(rawPassword);
+                return encode(rawPassword);
             } catch (IllegalArgumentException ex) {
                 if (ex.getMessage().equals("password cannot be more than 72 bytes")) {
                     if (rawPassword.toString().matches("\\A\\p{ASCII}+\\z")) {

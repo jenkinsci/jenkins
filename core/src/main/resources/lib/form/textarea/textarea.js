@@ -70,6 +70,7 @@ Behaviour.specify(
       event.preventDefault();
       // Several TEXTAREAs may exist if CodeMirror is enabled. The first one has reference to the CodeMirror object.
       var textarea = e.parentNode.getElementsByTagName("TEXTAREA")[0];
+      /* eslint-disable-next-line no-useless-assignment */
       var text = "";
       //Textarea object will be null if the text area is disabled.
       if (textarea == null) {

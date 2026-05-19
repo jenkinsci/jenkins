@@ -188,7 +188,7 @@ class SlaveTest {
         assumeTrue(descriptors.size() > 1, "we need at least two launchers to test this");
         assertThat(descriptor.computerLauncherDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[0])));
 
-        Descriptor<ComputerLauncher> victim = descriptors.iterator().next();
+        Descriptor<ComputerLauncher> victim = descriptors.getFirst();
         assertThat(descriptor.computerLauncherDescriptors(null), hasItem(victim));
         DynamicFilter.descriptors().add(victim);
         assertThat(descriptor.computerLauncherDescriptors(null), not(hasItem(victim)));
@@ -205,7 +205,7 @@ class SlaveTest {
         assumeTrue(descriptors.size() > 1, "we need at least two retention strategies to test this");
         assertThat(descriptor.retentionStrategyDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[0])));
 
-        Descriptor<RetentionStrategy<?>> victim = descriptors.iterator().next();
+        Descriptor<RetentionStrategy<?>> victim = descriptors.getFirst();
         assertThat(descriptor.retentionStrategyDescriptors(null), hasItem(victim));
         DynamicFilter.descriptors().add(victim);
         assertThat(descriptor.retentionStrategyDescriptors(null), not(hasItem(victim)));
@@ -223,7 +223,7 @@ class SlaveTest {
         assumeTrue(descriptors.size() > 1, "we need at least two node properties to test this");
         assertThat(descriptor.nodePropertyDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[0])));
 
-        NodePropertyDescriptor victim = descriptors.iterator().next();
+        NodePropertyDescriptor victim = descriptors.getFirst();
         assertThat(descriptor.nodePropertyDescriptors(null), hasItem(victim));
         DynamicFilter.descriptors().add(victim);
         assertThat(descriptor.nodePropertyDescriptors(null), not(hasItem(victim)));
