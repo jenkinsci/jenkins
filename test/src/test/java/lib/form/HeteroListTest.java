@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -184,6 +185,33 @@ class HeteroListTest {
         assertThat(resultString, not(containsString("<img")));
     }
 
+    @Test
+    void oneEachAddButtonReenabledAfterDelete() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        RootActionImpl rootAction = ExtensionList.lookupSingleton(RootActionImpl.class);
+        TestItemDescribable.DynamicDisplayNameDescriptor dynamic = ExtensionList.lookupSingleton(TestItemDescribable.DynamicDisplayNameDescriptor.class);
+        rootAction.descriptorList = List.of(dynamic);
+        rootAction.oneEach = true;
+
+        HtmlPage page = wc.goTo("root");
+        page.executeJavaScript("""
+                document.querySelector('.hetero-list-add').click();
+                document.querySelector('.jenkins-dropdown__item').click();
+                """);
+        wc.waitForBackgroundJavaScript(1000);
+
+        Object disabledAfterAdd = page.executeJavaScript(
+                "document.querySelector('.hetero-list-add').disabled").getJavaScriptResult();
+        assertTrue((Boolean) disabledAfterAdd);
+
+        page.executeJavaScript("isRunAsTest = false; document.querySelector('.repeatable-delete').click();");
+
+        Object disabledAfterDelete = page.executeJavaScript(
+                "document.querySelector('.hetero-list-add').disabled").getJavaScriptResult();
+        assertFalse((Boolean) disabledAfterDelete);
+    }
+
     public static class TestItemDescribable implements Describable<TestItemDescribable> {
         @Override
         public Descriptor<TestItemDescribable> getDescriptor() {
@@ -205,6 +233,7 @@ class HeteroListTest {
     @TestExtension
     public static class RootActionImpl implements UnprotectedRootAction {
         public List<Descriptor<?>> descriptorList;
+        public boolean oneEach;
 
         @Override
         @CheckForNull
