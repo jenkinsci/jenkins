@@ -138,7 +138,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @Restricted(NoExternalUse.class)
     public List<Action> getAppBarActions() {
-        return getAllActions().stream()
+        List<Action> actions = getAllActions().stream()
                 .filter(e -> !(e instanceof Tab))
                 .filter(e -> {
                     String icon = e.getIconFileName();
@@ -152,6 +152,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                 .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
                         .thenComparing(e -> Objects.requireNonNullElse(e.getDisplayName(), "")))
                 .collect(Collectors.toUnmodifiableList());
+        return actions;
     }
 
     private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {

@@ -258,10 +258,19 @@ function renderOnDemandDialog(dialogId) {
       window.location.hash = hash;
     }
 
+    const form =
+      content.tagName === "FORM" ? content : content.querySelector("form");
+    let hasCancelButton = false;
+    if (form !== null) {
+      hasCancelButton = wireCancelButton(form) !== null;
+    }
+
     behaviorShim.applySubtree(content, false);
     dialog.modal(content, {
       maxWidth: "550px",
       title: title,
+      preventCloseOnOutsideClick: hasCancelButton,
+      hideCloseButton: hasCancelButton,
     });
   }
 
@@ -349,6 +358,7 @@ function init() {
           window.dialog.wizard(element.dataset.dialogUrl, {
             minWidth: "min(550px, 100vw)",
             preventCloseOnOutsideClick: true,
+            hideCloseButton: element.dataset.hideCloseButton === "true",
           });
         } else {
           renderOnDemandDialog(element.dataset.dialogId);
@@ -493,11 +503,13 @@ function renderWizardForm({
 }
 
 function wireCancelButton(form) {
-  const dialog = form.closest("dialog");
-  form.querySelector("[data-id=cancel]")?.addEventListener("click", (e) => {
+  const cancelButton = form.querySelector("[data-id=cancel]");
+  cancelButton?.addEventListener("click", (e) => {
     e.preventDefault();
+    const dialog = form.closest("dialog");
     dialog?.dispatchEvent(new Event("cancel"));
   });
+  return cancelButton;
 }
 
 function navigateToNextPage(url) {

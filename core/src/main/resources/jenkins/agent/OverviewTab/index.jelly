@@ -1,0 +1,92 @@
+<!--
+The MIT License
+
+Copyright (c) 2026, Markus Winter
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:agent-subpage agent="${it.object}">
+    <l:app-bar title="${it.displayName}" headingLevel="h2">
+      <l:details-bar it="${it.object}">
+        <a href="https://www.jenkins.io/doc/book/using/using-agents/" class="jenkins-button jenkins-details__button" tooltip="${%Help}" target="_blank" rel="noopener noreferrer">
+          <l:icon src="symbol-help-circle" />
+        </a>
+        <t:editDescriptionButton permission="${it.CONFIGURE}"
+                                 compact="true" />
+      </l:details-bar>
+    </l:app-bar>
+    <j:set var="it" value="${it.object}" />
+    <st:include page="index-top.jelly" it="${it}" />
+
+    <j:if test="${it.offlineCause!=null and it.offline and !it.connecting}">
+      <st:include it="${it.offlineCause}" page="cause.jelly" />
+    </j:if>
+
+    <j:if test="${it.offline and !it.manualLaunchAllowed and it.launchSupported}">
+      <p>${%title.no_manual_launch(it.retentionStrategy.descriptor.displayName)}</p>
+    </j:if>
+
+    <div class="app-agent-overview__content">
+      <j:if test="${it.manualLaunchAllowed}">
+        <l:card title="${%Launcher}">
+          <st:include from="${it.launcher}" page="main.jelly" optional="true"/>
+        </l:card>
+      </j:if>
+
+      <div class="app-agent-overview__grid">
+        <j:forEach var="box" items="${it.computerPanelBoxs}">
+          <st:include it="${box}" page="box.jelly" />
+        </j:forEach>
+        <j:forEach var="a" items="${it.widgets}">
+          <st:include page="index.jelly" from="${a}" optional="true" it="${a}" />
+        </j:forEach>
+        <l:card title="${%Labels}">
+          <div class="app-agent-overview__labels">
+            <j:if test="${it.node.assignedLabels.size() gt 1}">
+              <j:forEach var="entry" items="${it.node.labelCloud}">
+                <!-- Skip the label for this node -->
+                <j:if test="${entry.item!=it.node.selfLabel}">
+                  <a class="${entry.className} model-link inside" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
+                </j:if>
+              </j:forEach>
+            </j:if>
+            <j:if test="${it.node.assignedLabels.size() eq 1}">
+              <l:notice title="${%No labels defined}" icon="symbol-tag"/>
+            </j:if>
+          </div>
+        </l:card>
+      </div>
+      <l:card title="${%Node properties}" id="app-agent-overview__node-properties">
+        <st:include page="nodepropertysummaries.jelly" />
+      </l:card>
+      <j:set var="jobs" value="${it.tiedJobs}" />
+      <j:if test="${!empty(jobs)}">
+        <l:card title="${%title.projects_tied_on(it.displayName)}">
+          <t:projectView jobs="${jobs}"/>
+        </l:card>
+      </j:if>
+      <l:card title="${%Legacy}">
+        <st:include page="main.jelly" optional="true"/>
+      </l:card>
+    </div>
+  </l:agent-subpage>
+</j:jelly>

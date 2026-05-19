@@ -1,0 +1,90 @@
+<!--
+The MIT License
+
+Copyright (c) 2026, Markus Winter
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:dd="/lib/layout/dropdowns"
+         xmlns:st="jelly:stapler">
+  <st:documentation>
+    A reusable container for subpages relating to Agents in Jenkins.
+    Renders a tabbed layout for agents, including agent status and actions.
+    <st:attribute name="agent" use="required">
+      The agent that this page is related to. Used to render agent-specific information and actions in the header.
+    </st:attribute>
+    <st:attribute name="title">
+      Breadcrumb title.
+    </st:attribute>
+    <st:attribute name="permission">
+      Permission to check for accessing the page.
+    </st:attribute>
+    <st:attribute name="permissions">
+      Permissions to check for accessing the page.
+    </st:attribute>
+  </st:documentation>
+
+  <l:layout title="${attrs.agent.displayName}" permission="${attrs.permission}" permissions="${attrs.permissions}">
+    <l:userExperimentalFlag var="newAgentPage" flagClassName="jenkins.model.experimentalflags.NewAgentPageUserExperimentalFlag" />
+
+    <j:choose>
+      <j:when test="${newAgentPage}">
+        <j:if test="${not empty(attrs.title)}">
+          <l:breadcrumb title="${attrs.title}" />
+        </j:if>
+        <l:main-panel>
+          <div class="app-build-bar app-agent-bar">
+            <div class="app-build-bar__content">
+              <div>
+                <l:icon alt="${attrs.agent.description}"
+                        src="${attrs.agent.iconClassName}" class="icon-lg" />
+              </div>
+              <h1>${attrs.agent.caption}</h1>
+            </div>
+
+            <j:set var="url" value="${h.getNearestAncestorUrl(request2, attrs.agent)}"/>
+            <div class="app-build-bar__tabs">
+              <l:tabs items="${attrs.agent.agentTabs}" />
+            </div>
+
+            <div class="app-build-bar__controls">
+              <st:include page="app-controls.jelly" from="${attrs.agent}" it="${attrs.agent}"/>
+              <l:actions it="${attrs.agent}" />
+            </div>
+          </div>
+
+          <div class="app-build-content app-agent-content">
+            <d:invokeBody />
+          </div>
+        </l:main-panel>
+      </j:when>
+      <j:otherwise>
+        <st:include page="sidepanel.jelly"/>
+        <j:if test="${not empty(attrs.title)}">
+          <l:breadcrumb title="${attrs.title}" />
+        </j:if>
+        <l:main-panel>
+          <d:invokeBody />
+        </l:main-panel>
+      </j:otherwise>
+    </j:choose>
+  </l:layout>
+</j:jelly>
