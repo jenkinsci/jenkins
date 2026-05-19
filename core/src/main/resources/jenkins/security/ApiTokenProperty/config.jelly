@@ -84,6 +84,42 @@ THE SOFTWARE.
                     ${%It is not recommended to create tokens that never expire.}
                 </div>
             </div>
+            <div class="jenkins-form-label">${%Scope}</div>
+            <div class="token-scope-mode jenkins-!-margin-bottom-2">
+                <div class="jenkins-radio">
+                    <input class="jenkins-radio__input" type="radio" name="tokenScopeMode"
+                           id="tokenScopeMode-scoped" value="scoped" checked="true"/>
+                    <label class="jenkins-radio__label" for="tokenScopeMode-scoped">${%ScopeMode.Scoped}</label>
+                </div>
+                <div class="jenkins-radio">
+                    <input class="jenkins-radio__input" type="radio" name="tokenScopeMode"
+                           id="tokenScopeMode-inherit" value="inherit"/>
+                    <label class="jenkins-radio__label" for="tokenScopeMode-inherit">${%ScopeMode.Inherit}</label>
+                </div>
+            </div>
+            <div class="token-scope-picker jenkins-!-margin-bottom-3">
+                <j:set var="availableScopes" value="${descriptor.availableScopes}"/>
+                <j:choose>
+                    <j:when test="${availableScopes.isEmpty()}">
+                        <div class="jenkins-alert jenkins-alert-info">${%ScopePicker.NoPermissions}</div>
+                    </j:when>
+                    <j:otherwise>
+                        <j:forEach var="entry" items="${availableScopes.entrySet()}">
+                            <details class="token-scope-group" open="open">
+                                <summary class="token-scope-group__title">${entry.key.title}</summary>
+                                <div class="token-scope-group__items">
+                                    <j:forEach var="permission" items="${entry.value}">
+                                        <f:checkbox class="token-scope-checkbox"
+                                                    value="${permission.id}"
+                                                    title="${permission.name}"
+                                                    tooltip="${permission.description}"/>
+                                    </j:forEach>
+                                </div>
+                            </details>
+                        </j:forEach>
+                    </j:otherwise>
+                </j:choose>
+            </div>
         </div>
     </div>
     <div class="jenkins-hidden" id="api-token-row-template" xmlns:local="local">
@@ -91,6 +127,7 @@ THE SOFTWARE.
             <div class="token-card-inner">
                 <div class="token-card__title">
                     <span class="token-name">${token.name}</span>
+                    <span class="token-scope-chip jenkins-hidden" data-scoped-chip-text="${%ScopedChip('__COUNT__')}"/>
                 </div>
                 <div class="token-stats">
                     <span class="api-token-new-expiration token-creation" data-never="${%This token does not expire}"
@@ -159,6 +196,22 @@ THE SOFTWARE.
                                             <l:icon src="symbol-warning"/>
                                         </j:if>
                                         <span class="token-name">${token.name}</span>
+                                        <j:choose>
+                                            <j:when test="${token.isScoped()}">
+                                                <span class="token-scope-chip token-scope-chip--scoped"
+                                                      tooltip="${token.scopeLabels.toString()}">
+                                                    ${%ScopedChip(token.scopes.size())}
+                                                </span>
+                                            </j:when>
+                                            <j:otherwise>
+                                                <j:if test="${!token.isLegacy}">
+                                                    <span class="token-scope-chip token-scope-chip--unscoped"
+                                                          tooltip="${%UnscopedChipTooltip}">
+                                                        ${%UnscopedChip}
+                                                    </span>
+                                                </j:if>
+                                            </j:otherwise>
+                                        </j:choose>
                                 </div>
                                 <j:set var="creationDateFormat" value="${%NoCreationDate}" />
                                 <j:if test="${token.creationDate != null}">
