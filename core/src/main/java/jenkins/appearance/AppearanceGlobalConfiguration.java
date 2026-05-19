@@ -97,6 +97,11 @@ public class AppearanceGlobalConfiguration extends ManagementLink {
         return Category.CONFIGURATION;
     }
 
+    @Override
+    public @NonNull String getSearchKeywords() {
+        return "theme look feel ui";
+    }
+
     @POST
     public synchronized void doConfigure(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, Descriptor.FormException {
         boolean result = configure(req, req.getSubmittedForm());
