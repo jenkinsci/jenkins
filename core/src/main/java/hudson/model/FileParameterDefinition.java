@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Objects;
+import jenkins.model.EnvironmentVariableParameterNameFormValidation;
 import net.sf.json.JSONObject;
 import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.io.FileUtils;
@@ -73,7 +74,7 @@ public class FileParameterDefinition extends ParameterDefinition {
     }
 
     @Extension @Symbol({"file", "fileParam"})
-    public static class DescriptorImpl extends ParameterDescriptor {
+    public static class DescriptorImpl extends ParameterDescriptor implements EnvironmentVariableParameterNameFormValidation {
         @NonNull
         @Override
         public String getDisplayName() {
