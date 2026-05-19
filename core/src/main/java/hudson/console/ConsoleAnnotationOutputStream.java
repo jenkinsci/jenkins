@@ -150,6 +150,7 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
 
     @Override
     public void flush() throws IOException {
+        forceEol();
         out.flush();
     }
 
