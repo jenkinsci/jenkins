@@ -33,6 +33,7 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
   }
   var codemirror = CodeMirror.fromTextArea(e, config);
   e.codemirrorObject = codemirror;
+  codemirror.getWrapperElement().codemirrorObject = codemirror;
   if (typeof codemirror.getScrollerElement !== "function") {
     // Maybe older versions of CodeMirror do not provide getScrollerElement method.
     codemirror.getScrollerElement = function () {

@@ -29,6 +29,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -40,6 +41,8 @@ import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.WebResponseListener;
@@ -119,6 +122,85 @@ class FormFieldValidatorTest {
 
         // value should have changed
         assertNotEquals(javaScriptResult1, javaScriptResult2);
+    }
+
+    @Test
+    @Issue("JENKINS-75751")
+    void editorSearchLoadsLazilyForCodeMirrorEditor() throws Exception {
+        final FreeStyleProject freeStyleProject = j.createFreeStyleProject();
+        freeStyleProject.getBuildersList().add(new CodeMirrorStep(""));
+        freeStyleProject.save();
+        final JenkinsRule.WebClient wc = j.createWebClient();
+        final HtmlPage page = wc.getPage(freeStyleProject, "configure");
+
+        assertFalse(page.getWebResponse().getContentAsString().contains("lib/form/editorSearch"));
+        assertTrue((Boolean) page
+                .executeJavaScript("!!document.querySelector('.CodeMirror').codemirrorObject")
+                .getJavaScriptResult());
+
+        page.executeJavaScript("""
+                document.querySelector('.CodeMirror').codemirrorObject.focus();
+                var textarea = document.querySelector('.CodeMirror textarea');
+                textarea.dispatchEvent(new KeyboardEvent('keydown', {
+                    key: 'f',
+                    ctrlKey: true,
+                    bubbles: true,
+                    cancelable: true
+                }));
+                """);
+        wc.waitForBackgroundJavaScript(1000);
+
+        assertTrue((Boolean) page
+                .executeJavaScript("""
+                        !!window.jenkinsEditorSearch &&
+                        !!document.querySelector('.jenkins-editor-search') &&
+                        !!document.querySelector('link[href*="lib/form/editorSearch/editorSearch.css"]')
+                        """)
+                .getJavaScriptResult());
+    }
+
+    @Test
+    @Issue("JENKINS-75751")
+    void editorSearchSupportsCodeMirrorAndAceAdapters() throws IOException {
+        final String script = resource("/lib/form/editorSearch/editorSearch.js");
+
+        assertThat(script, allOf(
+                containsString("createCodeMirrorAdapter"),
+                containsString("createAceAdapter"),
+                containsString("cm.setSelection(from, to);"),
+                containsString("editor.selection.setSelectionRange")));
+    }
+
+    @Test
+    @Issue("JENKINS-75751")
+    void editorSearchEnterDoesNotSubmitForm() throws IOException {
+        final String script = resource("/lib/form/editorSearch/editorSearch.js");
+
+        assertThat(script, allOf(
+                containsString("event.key === \"Enter\""),
+                containsString("stopEvent(event);"),
+                containsString("event.preventDefault();"),
+                containsString("event.stopPropagation();"),
+                containsString("event.stopImmediatePropagation();"),
+                containsString("navigate(state, event.shiftKey);"),
+                containsString("button.type = \"button\";")));
+    }
+
+    @Test
+    @Issue("JENKINS-75751")
+    void editorSearchUsesThemeAndSlideAnimation() throws IOException {
+        final String style = resource("/lib/form/editorSearch/editorSearch.css");
+
+        assertThat(style, allOf(
+                containsString("var(--card-background"),
+                containsString("var(--text-color"),
+                containsString("transform: translateY(calc(-100% - 10px));"),
+                containsString("transition:"),
+                containsString("prefers-reduced-motion")));
+    }
+
+    private String resource(String path) throws IOException {
+        return new String(Objects.requireNonNull(getClass().getResourceAsStream(path)).readAllBytes(), StandardCharsets.UTF_8);
     }
 
     public static class CodeMirrorStep extends Builder {

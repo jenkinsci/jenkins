@@ -177,7 +177,7 @@ var isRunAsTest = undefined;
 // Be careful, this variable does not include the absolute root URL as in Java part of Jenkins,
 // but the contextPath only, like /jenkins
 var rootURL = "not-defined-yet"; // eslint-disable-line no-unused-vars
-var resURL = "not-defined-yet"; // eslint-disable-line no-unused-vars
+var resURL = "not-defined-yet";
 
 (function initializeUnitTestAndURLs() {
   var dataUnitTest = document.head.getAttribute("data-unit-test");
@@ -192,6 +192,132 @@ var resURL = "not-defined-yet"; // eslint-disable-line no-unused-vars
   if (dataResURL !== null) {
     resURL = dataResURL;
   }
+})();
+
+(function initializeEditorSearchShortcut() {
+  var jenkinsEditorSearchLoading = false;
+  var jenkinsEditorSearchCallbacks = [];
+
+  function closestEditorSearchElement(element, selector) {
+    return element && element.nodeType === 1 ? element.closest(selector) : null;
+  }
+
+  function findEditorSearchTarget(element) {
+    return (
+      closestEditorSearchElement(element, ".jenkins-editor-search") ||
+      closestEditorSearchElement(element, ".CodeMirror") ||
+      closestEditorSearchElement(element, ".ace_editor")
+    );
+  }
+
+  function isEditorSearchShortcut(event) {
+    return (
+      (event.ctrlKey || event.metaKey) &&
+      !event.altKey &&
+      event.key &&
+      event.key.toLowerCase() === "f"
+    );
+  }
+
+  function editorSearchAdjunctUrl(fileName) {
+    return (
+      resURL.replace("/static/", "/adjuncts/") +
+      "/lib/form/editorSearch/" +
+      fileName
+    );
+  }
+
+  function loadEditorSearchStyle(href) {
+    var head =
+      document.getElementsByTagName("head")[0] || document.documentElement;
+    var link;
+
+    if (document.querySelector('link[href="' + href + '"]')) {
+      return;
+    }
+
+    link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    link.type = "text/css";
+    head.insertBefore(link, head.firstElementChild);
+  }
+
+  function runEditorSearchCallbacks() {
+    var callbacks = jenkinsEditorSearchCallbacks;
+    jenkinsEditorSearchCallbacks = [];
+    jenkinsEditorSearchLoading = false;
+
+    for (var i = 0; i < callbacks.length; i++) {
+      callbacks[i]();
+    }
+  }
+
+  function loadEditorSearch(callback) {
+    if (window.jenkinsEditorSearch) {
+      callback();
+      return;
+    }
+
+    jenkinsEditorSearchCallbacks.push(callback);
+    if (jenkinsEditorSearchLoading) {
+      return;
+    }
+
+    jenkinsEditorSearchLoading = true;
+    loadEditorSearchStyle(editorSearchAdjunctUrl("editorSearch.css"));
+    loadScript(
+      editorSearchAdjunctUrl("editorSearch.js"),
+      runEditorSearchCallbacks,
+    );
+  }
+
+  function openEditorSearchForActiveElement() {
+    var panel;
+    var adapter;
+
+    if (!window.jenkinsEditorSearch) {
+      return;
+    }
+
+    panel = closestEditorSearchElement(
+      document.activeElement,
+      ".jenkins-editor-search",
+    );
+    if (panel && panel.jenkinsEditorSearchState) {
+      panel.jenkinsEditorSearchState.input.focus();
+      panel.jenkinsEditorSearchState.input.select();
+      return;
+    }
+
+    adapter = window.jenkinsEditorSearch.findAdapterFromElement(
+      document.activeElement,
+    );
+    if (adapter) {
+      window.jenkinsEditorSearch.openSearch(adapter);
+    }
+  }
+
+  document.addEventListener(
+    "keydown",
+    function (event) {
+      if (
+        !isEditorSearchShortcut(event) ||
+        !findEditorSearchTarget(document.activeElement)
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.stopImmediatePropagation) {
+        event.stopImmediatePropagation();
+      }
+
+      loadEditorSearch(openEditorSearchForActiveElement);
+    },
+    true,
+  );
 })();
 
 // Form check code
@@ -1374,8 +1500,7 @@ function rowvgStartEachRow(recursive, f) {
       var cmdKeyDown = false;
       var mode = e.getAttribute("script-mode") || "text/x-groovy";
 
-      // eslint-disable-next-line no-unused-vars
-      var w = CodeMirror.fromTextArea(e, {
+      var editor = CodeMirror.fromTextArea(e, {
         mode: mode,
         lineNumbers: true,
         matchBrackets: true,
@@ -1407,7 +1532,9 @@ function rowvgStartEachRow(recursive, f) {
             }
           }
         },
-      }).getWrapperElement();
+      });
+      e.codemirrorObject = editor;
+      editor.getWrapperElement().codemirrorObject = editor;
     })();
   });
 
