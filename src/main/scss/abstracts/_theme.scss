@@ -64,6 +64,13 @@ $semantics: (
   --primary-active: var(--accent-color);
 
   // Status icon colors
+  --status-background-opacity: 0.125;
+  --status-border-opacity: 0.25;
+
+  @media (prefers-contrast: more) {
+    --status-background-opacity: 0;
+    --status-border-opacity: 1;
+  }
   --weather-icon-color: var(--accent-color);
   --unstable-build-icon-color: var(--orange);
 
