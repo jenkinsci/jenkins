@@ -139,7 +139,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>jaxen</groupId>
         <artifactId>jaxen</artifactId>
-        <version>2.0.2</version>
+        <version>2.0.3</version>
       </dependency>
       <dependency>
         <groupId>net.java.dev.jna</groupId>
@@ -326,7 +326,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
-        <version>9.9.1</version>
+        <version>9.10</version>
       </dependency>
       <dependency>
         <!-- provided by jcl-over-slf4j -->
