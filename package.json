@@ -37,18 +37,18 @@
     "globals": "17.6.0",
     "handlebars-loader": "1.7.3",
     "mini-css-extract-plugin": "2.10.2",
-    "postcss": "8.5.14",
+    "postcss": "8.5.15",
     "postcss-loader": "8.2.1",
     "postcss-preset-env": "11.3.0",
     "postcss-scss": "4.0.9",
     "prettier": "3.8.3",
     "sass": "1.99.0",
-    "sass-loader": "16.0.8",
+    "sass-loader": "17.0.0",
     "style-loader": "4.0.0",
-    "stylelint": "17.11.1",
+    "stylelint": "17.12.0",
     "stylelint-checkstyle-reporter": "1.1.1",
     "stylelint-config-standard-scss": "17.0.0",
-    "webpack": "5.106.2",
+    "webpack": "5.107.0",
     "webpack-cli": "7.0.2",
     "webpack-remove-empty-scripts": "1.1.1"
   },
@@ -68,5 +68,5 @@
   "engines": {
     "node": ">=24.0.0"
   },
-  "packageManager": "yarn@4.14.1"
+  "packageManager": "yarn@4.15.0"
 }
