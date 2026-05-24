@@ -177,8 +177,9 @@ function generateButtons() {
        */
       function toggleButtonState() {
         const templateCount = templates.length;
-        const selectedCount = Array.from(e.children).filter(isSelectedItem)
-          .length;
+        const selectedCount = Array.from(e.children).filter(
+          isSelectedItem,
+        ).length;
 
         btn.disabled = oneEach && selectedCount >= templateCount;
       }
