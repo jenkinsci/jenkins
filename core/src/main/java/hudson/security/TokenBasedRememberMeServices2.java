@@ -77,6 +77,23 @@ public class TokenBasedRememberMeServices2 extends AbstractRememberMeServices {
             SystemProperties.getBoolean(TokenBasedRememberMeServices2.class.getName() + ".skipTooFarExpirationDateCheck");
 
     /**
+     * Number of seconds a remember-me cookie stays valid, overriding Spring Security's 14-day default.
+     * Configured via the system property
+     * {@code hudson.security.TokenBasedRememberMeServices2.tokenValiditySeconds}.
+     * When unset or not a positive number, the Spring Security default is used.
+     * Values larger than {@link #MAX_TOKEN_VALIDITY_SECONDS} are capped to that maximum of 1 year.
+     */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* Script Console modifiable */ Integer TOKEN_VALIDITY_SECONDS =
+            SystemProperties.getInteger(TokenBasedRememberMeServices2.class.getName() + ".tokenValiditySeconds");
+
+    /**
+     * Upper bound 1 year for {@link #TOKEN_VALIDITY_SECONDS}. A configured validity larger than this
+     * is capped to this value to avoid effectively non-expiring remember-me cookies.
+     */
+    public static final int MAX_TOKEN_VALIDITY_SECONDS = (int) TimeUnit.DAYS.toSeconds(365);
+
+    /**
      * Decorate {@link UserDetailsService} so that we can use information stored in
      * {@link LastGrantedAuthoritiesProperty}.
      * <p>
@@ -258,6 +275,15 @@ public class TokenBasedRememberMeServices2 extends AbstractRememberMeServices {
     @VisibleForTesting
     @Override
     protected int getTokenValiditySeconds() {
+        Integer configured = TOKEN_VALIDITY_SECONDS;
+        if (configured != null) {
+            if (configured > 0) {
+                if (configured > MAX_TOKEN_VALIDITY_SECONDS) {
+                    return MAX_TOKEN_VALIDITY_SECONDS;
+                }
+                return configured;
+            }
+        }
         return super.getTokenValiditySeconds();
     }
 

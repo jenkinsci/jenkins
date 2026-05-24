@@ -394,4 +394,67 @@ class TokenBasedRememberMeServices2Test {
             assertThat(page, hasXPath("//name", is("alice")));
         }
     }
+
+    @Test
+    @Issue("JENKINS-26718")
+    void tokenValidity_defaultsToSpringSecurityDefault() {
+        Integer previous = TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS;
+        try {
+            TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS = null;
+
+            HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
+            TokenBasedRememberMeServices2 tokenService = (TokenBasedRememberMeServices2) realm.getSecurityComponents().rememberMe2;
+
+            // Spring's AbstractRememberMeServices default is 14 days
+            assertEquals(1_209_600, tokenService.getTokenValiditySeconds());
+        } finally {
+            TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS = previous;
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-26718")
+    void tokenValidity_cappedAtMaximum() {
+        Integer previous = TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS;
+        try {
+            // requests 2 years, expects capped to the 1-year maximum
+            TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS = (int) TimeUnit.DAYS.toSeconds(730);
+
+            HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
+            TokenBasedRememberMeServices2 tokenService = (TokenBasedRememberMeServices2) realm.getSecurityComponents().rememberMe2;
+
+            assertEquals(TokenBasedRememberMeServices2.MAX_TOKEN_VALIDITY_SECONDS, tokenService.getTokenValiditySeconds());
+        } finally {
+            TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS = previous;
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-26718")
+    void tokenValidity_nonPositiveValueFallsBackToDefault() throws Exception {
+        Integer previous = TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS;
+        try {
+            TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS = 0;
+
+            j.jenkins.setDisableRememberMe(false);
+
+            HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
+            TokenBasedRememberMeServices2 tokenService = (TokenBasedRememberMeServices2) realm.getSecurityComponents().rememberMe2;
+            j.jenkins.setSecurityRealm(realm);
+
+            // a non-positive values are ignored, 14-day default is applied isntead
+            assertEquals(1_209_600, tokenService.getTokenValiditySeconds());
+
+            String username = "alice";
+            realm.createAccount(username, username);
+            Cookie cookie = getRememberMeCookie(j.createWebClient().login(username, username, true));
+            assertNotNull(cookie);
+
+            JenkinsRule.WebClient wc = j.createWebClient();
+            wc.getCookieManager().addCookie(cookie);
+            assertUserConnected(wc, username);
+        } finally {
+            TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS = previous;
+        }
+    }
 }
