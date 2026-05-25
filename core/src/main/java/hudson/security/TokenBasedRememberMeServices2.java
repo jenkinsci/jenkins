@@ -272,15 +272,16 @@ public class TokenBasedRememberMeServices2 extends AbstractRememberMeServices {
         return false;
     }
 
-    @VisibleForTesting
     @Override
     protected int getTokenValiditySeconds() {
         Integer configured = TOKEN_VALIDITY_SECONDS;
         if (configured != null) {
-            if (configured > 0) {
-                if (configured > MAX_TOKEN_VALIDITY_SECONDS) {
-                    return MAX_TOKEN_VALIDITY_SECONDS;
-                }
+            if (configured <= 0) {
+                LOGGER.log(Level.WARNING, "Ignoring non-positive remember-me token validity ({0}s); using the default", configured);
+            } else if (configured > MAX_TOKEN_VALIDITY_SECONDS) {
+                LOGGER.log(Level.WARNING, "Capping remember-me token validity ({0}s) to the maximum of {1}s", new Object[] {configured, MAX_TOKEN_VALIDITY_SECONDS});
+                return MAX_TOKEN_VALIDITY_SECONDS;
+            } else {
                 return configured;
             }
         }

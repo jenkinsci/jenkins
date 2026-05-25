@@ -442,7 +442,7 @@ class TokenBasedRememberMeServices2Test {
             TokenBasedRememberMeServices2 tokenService = (TokenBasedRememberMeServices2) realm.getSecurityComponents().rememberMe2;
             j.jenkins.setSecurityRealm(realm);
 
-            // a non-positive values are ignored, 14-day default is applied isntead
+            // non-positive values are ignored, 14-day default is applied instead
             assertEquals(1_209_600, tokenService.getTokenValiditySeconds());
 
             String username = "alice";
