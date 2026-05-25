@@ -145,6 +145,16 @@ public interface Action extends ModelObject {
     @CheckForNull String getUrlName();
 
     /**
+     * Returns the description for this action.
+     * This is displayed in dropdown menus.
+     *
+     * @return the description, or {@code null} if not set
+     */
+    default String getDescription() {
+        return null;
+    }
+
+    /**
      * Returns the group that this item belongs to.
      * The default implementation places the item in the menu group.
      *

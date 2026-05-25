@@ -4,6 +4,10 @@ html {
   -webkit-tap-highlight-color: transparent;
   color: var(--text-color);
   scroll-padding-top: calc(var(--header-height) + var(--section-padding));
+
+  $scrollbar-color: oklch(from var(--text-color-secondary) l c h / 0.35);
+
+  scrollbar-color: $scrollbar-color $scrollbar-color;
 }
 
 body {

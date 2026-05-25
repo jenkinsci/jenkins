@@ -47,7 +47,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * <p>For parameterized jobs this opens the parameters dialog; otherwise it posts directly
  * to {@code build?delay=0sec} using a small client-side script.
  *
- * @since TODO
+ * @since 2.560
  */
 @Restricted(Beta.class)
 public final class BuildJobAction implements Action {
