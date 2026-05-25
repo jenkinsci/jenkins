@@ -43,7 +43,7 @@
     "postcss-scss": "4.0.9",
     "prettier": "3.8.3",
     "sass": "1.100.0",
-    "sass-loader": "16.0.8",
+    "sass-loader": "17.0.0",
     "style-loader": "4.0.0",
     "stylelint": "17.11.1",
     "stylelint-checkstyle-reporter": "1.1.1",
