@@ -83,8 +83,12 @@ THE SOFTWARE.
                 <f:submit  value="${%Run}"/>
               </div>
             </form>
-            <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.groovy.groovy"/>
-            <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
+            <st:adjunct includes="
+                org.kohsuke.stapler.codemirror.mode.groovy.groovy,
+                org.kohsuke.stapler.codemirror.theme.default,
+                org.kohsuke.stapler.codemirror.lib.util.searchcursor,
+                org.kohsuke.stapler.codemirror.lib.util.dialog,
+                org.kohsuke.stapler.codemirror.lib.util.search"/>
             <j:if test="${output!=null}">
               <h2>
                 ${%Result}

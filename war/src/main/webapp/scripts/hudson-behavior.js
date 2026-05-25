@@ -1169,10 +1169,7 @@ function helpButtonOnClick() {
   return false;
 }
 
-function isCommandKey(event) {
-  return event.key === "Meta";
-}
-function isReturnKeyDown() {
+function isReturnKeyDown(event) {
   return event.type == "keydown" && event.key === "Enter";
 }
 function getParentForm(element) {
@@ -1185,6 +1182,178 @@ function getParentForm(element) {
 
   return getParentForm(element.parentNode);
 }
+
+function getCodeMirrorSearchState(editor) {
+  if (!editor._searchState) {
+    editor._searchState = {
+      posFrom: null,
+      posTo: null,
+      query: null,
+      marked: [],
+    };
+  }
+  return editor._searchState;
+}
+
+function parseCodeMirrorSearchQuery(query) {
+  var regex = query.match(/^\/(.*)\/([a-z]*)$/);
+  if (!regex) {
+    return query;
+  }
+  try {
+    return new RegExp(regex[1], regex[2].indexOf("i") == -1 ? "" : "i");
+  } catch {
+    return query;
+  }
+}
+
+function clearCodeMirrorSearch(editor) {
+  var state = getCodeMirrorSearchState(editor);
+  for (var i = 0; i < state.marked.length; i++) {
+    state.marked[i].clear();
+  }
+  state.marked.length = 0;
+  state.query = null;
+  state.posFrom = null;
+  state.posTo = null;
+}
+
+function markCodeMirrorSearchMatches(editor, state) {
+  if (editor.lineCount() >= 2000) {
+    return;
+  }
+  var caseInsensitive =
+    typeof state.query == "string" && state.query == state.query.toLowerCase();
+  var cursor = editor.getSearchCursor(state.query, null, caseInsensitive);
+  while (cursor.findNext()) {
+    if (cursor.from().line === cursor.to().line) {
+      state.marked.push(
+        editor.markText(cursor.from(), cursor.to(), "CodeMirror-searching"),
+      );
+    }
+  }
+}
+
+function getCodeMirrorSearchDialogHeight(editor) {
+  var dialog = editor
+    .getWrapperElement()
+    .querySelector(".CodeMirror-dialog-top");
+  return dialog ? dialog.getBoundingClientRect().height : 0;
+}
+
+function syncCodeMirrorSearchDialogOffset(editor) {
+  var wrapper = editor.getWrapperElement();
+  var searchDialogHeight = getCodeMirrorSearchDialogHeight(editor);
+  if (searchDialogHeight > 0) {
+    wrapper.classList.add("jenkins-codemirror-search-open");
+    wrapper.style.setProperty(
+      "--jenkins-codemirror-search-offset",
+      searchDialogHeight + "px",
+    );
+  } else {
+    wrapper.classList.remove("jenkins-codemirror-search-open");
+    wrapper.style.removeProperty("--jenkins-codemirror-search-offset");
+  }
+}
+
+function restoreCodeMirrorSearchInputFocus(input) {
+  if (input && document.body.contains(input)) {
+    input.focus();
+  }
+}
+
+function updateCodeMirrorSearch(editor, query) {
+  var state = getCodeMirrorSearchState(editor);
+  if (!query) {
+    clearCodeMirrorSearch(editor);
+    return;
+  }
+
+  var parsedQuery = parseCodeMirrorSearchQuery(query);
+  if (state.query !== null && String(state.query) === String(parsedQuery)) {
+    return;
+  }
+
+  var anchor = state.jenkinsSearchAnchor || editor.getCursor();
+  clearCodeMirrorSearch(editor);
+  state = getCodeMirrorSearchState(editor);
+  state.query = parsedQuery;
+  state.jenkinsSearchAnchor = anchor;
+  state.posFrom = anchor;
+  state.posTo = anchor;
+  markCodeMirrorSearchMatches(editor, state);
+}
+
+function installCodeMirrorSearchNavigation(editor) {
+  var wrapper = editor.getWrapperElement();
+  if (wrapper.jenkinsSearchNavigationInstalled) {
+    return;
+  }
+  wrapper.jenkinsSearchNavigationInstalled = true;
+  wrapper.CodeMirror = editor;
+
+  if (typeof MutationObserver === "function") {
+    new MutationObserver(function () {
+      syncCodeMirrorSearchDialogOffset(editor);
+    }).observe(wrapper, { childList: true });
+  }
+
+  // The bundled CodeMirror dialog closes on Enter. Keep Jenkins search open so
+  // Enter moves through matches instead of returning focus to the editor.
+  wrapper.addEventListener(
+    "keydown",
+    function (event) {
+      if (!isReturnKeyDown(event)) {
+        return;
+      }
+
+      var dialog = event.target.closest
+        ? event.target.closest(".CodeMirror-dialog")
+        : null;
+      if (
+        !dialog ||
+        event.target.tagName !== "INPUT" ||
+        dialog.textContent.indexOf("Search:") === -1
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.stopImmediatePropagation) {
+        event.stopImmediatePropagation();
+      }
+      var input = event.target;
+      updateCodeMirrorSearch(editor, input.value);
+      CodeMirror.commands[event.shiftKey ? "findPrev" : "findNext"](editor);
+      restoreCodeMirrorSearchInputFocus(input);
+    },
+    true,
+  );
+
+  wrapper.addEventListener("input", function (event) {
+    var dialog = event.target.closest
+      ? event.target.closest(".CodeMirror-dialog")
+      : null;
+    if (
+      !dialog ||
+      event.target.tagName !== "INPUT" ||
+      dialog.textContent.indexOf("Search:") === -1
+    ) {
+      return;
+    }
+
+    var state = getCodeMirrorSearchState(editor);
+    if (!state.query) {
+      state.jenkinsSearchAnchor = editor.getCursor();
+    }
+    var input = event.target;
+    updateCodeMirrorSearch(editor, input.value);
+    CodeMirror.commands.findNext(editor);
+    restoreCodeMirrorSearchInputFocus(input);
+  });
+}
+window.installCodeMirrorSearchNavigation = installCodeMirrorSearchNavigation;
 
 // figure out the corresponding end marker
 function findEnd(e) {
@@ -1371,11 +1540,9 @@ function rowvgStartEachRow(recursive, f) {
   // Script Console : settings and shortcut key
   Behaviour.specify("TEXTAREA.script", "textarea-script", ++p, function (e) {
     (function () {
-      var cmdKeyDown = false;
       var mode = e.getAttribute("script-mode") || "text/x-groovy";
 
-      // eslint-disable-next-line no-unused-vars
-      var w = CodeMirror.fromTextArea(e, {
+      var editor = CodeMirror.fromTextArea(e, {
         mode: mode,
         lineNumbers: true,
         matchBrackets: true,
@@ -1388,26 +1555,40 @@ function rowvgStartEachRow(recursive, f) {
 
           // Mac (Command + Enter)
           if (navigator.userAgent.indexOf("Mac") > -1) {
-            if (event.type == "keydown" && isCommandKey(event)) {
-              cmdKeyDown = true;
-            }
-            if (event.type == "keyup" && isCommandKey(event)) {
-              cmdKeyDown = false;
-            }
-            if (cmdKeyDown && isReturnKeyDown()) {
+            if (event.metaKey && isReturnKeyDown(event)) {
               saveAndSubmit();
               return true;
             }
 
             // Windows, Linux (Ctrl + Enter)
           } else {
-            if (event.ctrlKey && isReturnKeyDown()) {
+            if (event.ctrlKey && isReturnKeyDown(event)) {
               saveAndSubmit();
               return true;
             }
           }
         },
-      }).getWrapperElement();
+      });
+      installCodeMirrorSearchNavigation(editor);
+      var wrapper = editor.getWrapperElement();
+      var form = getParentForm(e);
+      var hasCodeMirrorFocus = false;
+
+      wrapper.addEventListener("focusin", function () {
+        hasCodeMirrorFocus = true;
+      });
+      wrapper.addEventListener("focusout", function (event) {
+        if (!wrapper.contains(event.relatedTarget)) {
+          hasCodeMirrorFocus = false;
+        }
+      });
+
+      form.addEventListener("submit", function (event) {
+        var activeElement = document.activeElement;
+        if (hasCodeMirrorFocus || wrapper.contains(activeElement)) {
+          event.preventDefault();
+        }
+      });
     })();
   });
 

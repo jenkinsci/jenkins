@@ -33,6 +33,9 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
   }
   var codemirror = CodeMirror.fromTextArea(e, config);
   e.codemirrorObject = codemirror;
+  if (typeof window.installCodeMirrorSearchNavigation === "function") {
+    window.installCodeMirrorSearchNavigation(codemirror);
+  }
   if (typeof codemirror.getScrollerElement !== "function") {
     // Maybe older versions of CodeMirror do not provide getScrollerElement method.
     codemirror.getScrollerElement = function () {

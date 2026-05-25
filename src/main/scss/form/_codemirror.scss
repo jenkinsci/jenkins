@@ -168,6 +168,45 @@
   .CodeMirror-nonmatchingbracket {
     color: var(--red) !important;
   }
+
+  .CodeMirror-dialog {
+    inset: 0 0 auto;
+    padding: 0.5rem;
+    background: var(--card-background);
+    border-bottom: var(--jenkins-border-width) solid var(--input-border);
+    color: var(--text-color);
+    box-shadow: 0 0.5rem 1rem
+      color-mix(in sRGB, var(--text-color) 10%, transparent);
+  }
+
+  .CodeMirror-dialog input {
+    width: min(24rem, 100%);
+    margin: 0 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: var(--input-color);
+    border: var(--jenkins-border-width) solid var(--input-border);
+    border-radius: var(--form-input-border-radius);
+    color: var(--text-color);
+    font-family: var(--font-family-mono);
+
+    &:focus {
+      outline: none;
+      border-color: var(--focus-input-border);
+      box-shadow: var(--form-input-glow--focus);
+    }
+  }
+
+  &.jenkins-codemirror-search-open .CodeMirror-scroll {
+    padding-top: var(--jenkins-codemirror-search-offset, 0);
+  }
+
+  .CodeMirror-searching {
+    background-color: color-mix(
+      in sRGB,
+      var(--warning-color) 35%,
+      transparent
+    ) !important;
+  }
 }
 
 .jenkins-codemirror-resizer {

@@ -29,6 +29,7 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
@@ -414,6 +415,25 @@ public class JenkinsTest {
         //TODO: remove once RUN_SCRIPTS is finally retired
         wc.withBasicApiToken(User.getById("charlie", true));
         wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
+    }
+
+    @Test
+    @Issue("JENKINS-75751")
+    void scriptConsoleLoadsNativeCodeMirrorSearchAddons() throws Exception {
+        HtmlPage page = j.createWebClient().goTo("script");
+
+        assertThat(page.getWebResponse().getContentAsString(), allOf(
+                containsString("searchcursor.js"),
+                containsString("dialog.js"),
+                containsString("dialog.css"),
+                containsString("search.js")));
+        assertTrue((Boolean) page.executeJavaScript("""
+                typeof CodeMirror.commands.find === 'function' &&
+                typeof CodeMirror.commands.findNext === 'function' &&
+                typeof CodeMirror.commands.findPrev === 'function' &&
+                typeof document.querySelector('.CodeMirror').CodeMirror.getSearchCursor === 'function' &&
+                typeof document.querySelector('.CodeMirror').CodeMirror.openDialog === 'function'
+                """).getJavaScriptResult());
     }
 
     @Test

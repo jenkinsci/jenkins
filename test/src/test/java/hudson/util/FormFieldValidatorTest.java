@@ -121,6 +121,28 @@ class FormFieldValidatorTest {
         assertNotEquals(javaScriptResult1, javaScriptResult2);
     }
 
+    @Test
+    @Issue("JENKINS-75751")
+    void codeMirrorTextAreaLoadsNativeSearchAddons() throws Exception {
+        final FreeStyleProject freeStyleProject = j.createFreeStyleProject();
+        freeStyleProject.getBuildersList().add(new CodeMirrorStep(""));
+        freeStyleProject.save();
+        final HtmlPage page = j.createWebClient().getPage(freeStyleProject, "configure");
+
+        assertThat(page.getWebResponse().getContentAsString(), allOf(
+                containsString("searchcursor.js"),
+                containsString("dialog.js"),
+                containsString("dialog.css"),
+                containsString("search.js")));
+        assertTrue((Boolean) page.executeJavaScript("""
+                typeof CodeMirror.commands.find === 'function' &&
+                typeof CodeMirror.commands.findNext === 'function' &&
+                typeof CodeMirror.commands.findPrev === 'function' &&
+                typeof document.querySelector('.CodeMirror').CodeMirror.getSearchCursor === 'function' &&
+                typeof document.querySelector('.CodeMirror').CodeMirror.openDialog === 'function'
+                """).getJavaScriptResult());
+    }
+
     public static class CodeMirrorStep extends Builder {
         private String command;
 
