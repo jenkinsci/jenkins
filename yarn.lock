@@ -4380,7 +4380,7 @@ __metadata:
     jquery: "npm:4.0.0"
     lodash: "npm:4.18.1"
     mini-css-extract-plugin: "npm:2.10.2"
-    postcss: "npm:8.5.14"
+    postcss: "npm:8.5.15"
     postcss-loader: "npm:8.2.1"
     postcss-preset-env: "npm:11.3.0"
     postcss-scss: "npm:4.0.9"
@@ -4827,7 +4827,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^3.3.11":
+"nanoid@npm:^3.3.12":
   version: 3.3.12
   resolution: "nanoid@npm:3.3.12"
   bin:
@@ -5906,14 +5906,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:8.5.14, postcss@npm:^8.4.40, postcss@npm:^8.5.14":
-  version: 8.5.14
-  resolution: "postcss@npm:8.5.14"
+"postcss@npm:8.5.15, postcss@npm:^8.4.40, postcss@npm:^8.5.14":
+  version: 8.5.15
+  resolution: "postcss@npm:8.5.15"
   dependencies:
-    nanoid: "npm:^3.3.11"
+    nanoid: "npm:^3.3.12"
     picocolors: "npm:^1.1.1"
     source-map-js: "npm:^1.2.1"
-  checksum: 10c0/48138207cf5ef5581be1bfe2cb65ccfe0ac75e43888ba045afc8ed6043d7b56aeb3b9a9fe5b353ff554be943cd0cc15d826ccb991525159175971e5ee8ab0237
+  checksum: 10c0/7f2e63ae22fbe43aace1bf652bd99da4e90737c64194d49e51ddc9cd0f9e51ff2861a7d734379b494deffa03a880a5c65eec70bc29ee9ebaa7136dde3eee8f31
   languageName: node
   linkType: hard
 
