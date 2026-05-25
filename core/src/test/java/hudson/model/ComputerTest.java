@@ -1,20 +1,34 @@
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import hudson.FilePath;
+import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
+import hudson.slaves.RetentionStrategy;
+import hudson.util.Futures;
 import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.LogRecord;
 import jenkins.model.Jenkins;
 import jenkins.util.SetContextClassLoader;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -86,4 +100,61 @@ class ComputerTest {
             return ccl;
         }
     }
+
+    @Test
+    void testRecordTerminationWithoutRequest() {
+        Node mockNode = mock(Node.class);
+        when(mockNode.getNumExecutors()).thenReturn(0);
+
+        Computer computer = new Computer(mockNode) {
+            @Override
+            public VirtualChannel getChannel() {
+                return null;
+            }
+
+            @Override
+            public Charset getDefaultCharset() {
+                return StandardCharsets.UTF_8;
+            }
+
+            @Override
+            public List<LogRecord> getLogRecords() {
+                return Collections.emptyList();
+            }
+
+            @Override
+            public void doLaunchSlaveAgent(StaplerRequest2 req, StaplerResponse2 rsp) {}
+
+            @Override
+            protected Future<?> _connect(boolean forceReconnect) {
+                return Futures.precomputed(null);
+            }
+
+            @Override
+            public Boolean isUnix() {
+                return null;
+            }
+
+            @Override
+            public  boolean isConnecting() {
+                return false;
+            }
+
+            @Override
+            public RetentionStrategy getRetentionStrategy() {
+                return mock(RetentionStrategy.class);
+            }
+        };
+
+        computer.recordTermination();
+
+        List<Computer.TerminationRequest> list = computer.getTerminatedBy();
+
+        assertThat(list.size(), is(1));
+
+        String message = list.get(0).getMessage();
+        assertThat(message, containsString("Termination requested at"));
+        assertThat(message, containsString("by Thread"));
+        assertFalse(message.contains("from HTTP request"));
+        }
 }
