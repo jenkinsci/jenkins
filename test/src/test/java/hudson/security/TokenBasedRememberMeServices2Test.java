@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.User;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Set;
@@ -398,9 +399,9 @@ class TokenBasedRememberMeServices2Test {
     @Test
     @Issue("JENKINS-26718")
     void tokenValidity_defaultsToSpringSecurityDefault() {
-        Integer previous = TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS;
+        Duration previous = TokenBasedRememberMeServices2.TOKEN_VALIDITY;
         try {
-            TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS = null;
+            TokenBasedRememberMeServices2.TOKEN_VALIDITY = null;
 
             HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
             TokenBasedRememberMeServices2 tokenService = (TokenBasedRememberMeServices2) realm.getSecurityComponents().rememberMe2;
@@ -408,33 +409,33 @@ class TokenBasedRememberMeServices2Test {
             // Spring's AbstractRememberMeServices default is 14 days
             assertEquals(1_209_600, tokenService.getTokenValiditySeconds());
         } finally {
-            TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS = previous;
+            TokenBasedRememberMeServices2.TOKEN_VALIDITY = previous;
         }
     }
 
     @Test
     @Issue("JENKINS-26718")
     void tokenValidity_cappedAtMaximum() {
-        Integer previous = TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS;
+        Duration previous = TokenBasedRememberMeServices2.TOKEN_VALIDITY;
         try {
             // requests 2 years, expects capped to the 1-year maximum
-            TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS = (int) TimeUnit.DAYS.toSeconds(730);
+            TokenBasedRememberMeServices2.TOKEN_VALIDITY = Duration.ofDays(600);
 
             HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
             TokenBasedRememberMeServices2 tokenService = (TokenBasedRememberMeServices2) realm.getSecurityComponents().rememberMe2;
 
-            assertEquals(TokenBasedRememberMeServices2.MAX_TOKEN_VALIDITY_SECONDS, tokenService.getTokenValiditySeconds());
+            assertEquals((int) TokenBasedRememberMeServices2.MAX_TOKEN_VALIDITY.toSeconds(), tokenService.getTokenValiditySeconds());
         } finally {
-            TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS = previous;
+            TokenBasedRememberMeServices2.TOKEN_VALIDITY = previous;
         }
     }
 
     @Test
     @Issue("JENKINS-26718")
     void tokenValidity_nonPositiveValueFallsBackToDefault() throws Exception {
-        Integer previous = TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS;
+        Duration previous = TokenBasedRememberMeServices2.TOKEN_VALIDITY;
         try {
-            TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS = 0;
+            TokenBasedRememberMeServices2.TOKEN_VALIDITY = Duration.ZERO;
 
             j.jenkins.setDisableRememberMe(false);
 
@@ -454,7 +455,7 @@ class TokenBasedRememberMeServices2Test {
             wc.getCookieManager().addCookie(cookie);
             assertUserConnected(wc, username);
         } finally {
-            TokenBasedRememberMeServices2.TOKEN_VALIDITY_SECONDS = previous;
+            TokenBasedRememberMeServices2.TOKEN_VALIDITY = previous;
         }
     }
 }
