@@ -1572,7 +1572,7 @@ public class Util {
     /**
      * Returns the number of entries in the {@link #isOverridden} result cache.
      *
-     * @since TODO
+     * @since 2.566
      */
     public static int isOverriddenCacheSize() {
         return IS_OVERRIDDEN_CACHE.size();
@@ -1581,7 +1581,7 @@ public class Util {
     /**
      * Clears the {@link #isOverridden} result cache.
      *
-     * @since TODO
+     * @since 2.566
      */
     @VisibleForTesting
     @Restricted(NoExternalUse.class)
