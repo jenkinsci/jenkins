@@ -24,6 +24,7 @@
 
 package hudson;
 
+import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -47,6 +48,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.InetAddress;
@@ -97,11 +99,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.SimpleTimeZone;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -1500,6 +1504,34 @@ public class Util {
         }
     }
 
+    // Keyed by (base, derived, methodName, paramTypes). Derived is held weakly so that plugin
+    // classloaders remain GC-eligible after unload. Results are stable for the lifetime of a
+    // classloader, so no invalidation is needed.
+    private static final ConcurrentHashMap<IsOverriddenCacheKey, Boolean> IS_OVERRIDDEN_CACHE =
+            new ConcurrentHashMap<>();
+
+    private record IsOverriddenCacheKey(
+            Class<?> base,
+            WeakReference<Class<?>> derivedRef,
+            String methodName,
+            List<Class<?>> types) {
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof IsOverriddenCacheKey other)) return false;
+            return base == other.base
+                    && derivedRef.get() == other.derivedRef.get()
+                    && methodName.equals(other.methodName)
+                    && types.equals(other.types);
+        }
+
+        @Override
+        public int hashCode() {
+            // Identity hash matches the identity comparison in equals.
+            return Objects.hash(base, System.identityHashCode(derivedRef.get()), methodName, types);
+        }
+    }
+
     /**
      * Checks whether the method defined on the base type with the given arguments is overridden in the given derived
      * type.
@@ -1527,10 +1559,34 @@ public class Util {
         if (baseMethod == null) {
             throw new IllegalArgumentException("The specified method is not declared by the specified base class (" + base.getCanonicalName() + "), or it is private, static or final.");
         }
-        final Method derivedMethod = Util.getMethod(derived, base, methodName, types);
-        // the lookup will either return null or the base method when no override has been found (depending on whether
-        // the base is an interface)
-        return derivedMethod != null && derivedMethod != baseMethod;
+        IsOverriddenCacheKey key = new IsOverriddenCacheKey(
+                base, new WeakReference<>(derived), methodName, List.of(types));
+        return IS_OVERRIDDEN_CACHE.computeIfAbsent(key, k -> {
+            final Method derivedMethod = Util.getMethod(derived, base, methodName, types);
+            // the lookup will either return null or the base method when no override has been found (depending on
+            // whether the base is an interface)
+            return derivedMethod != null && derivedMethod != baseMethod;
+        });
+    }
+
+    /**
+     * Returns the number of entries in the {@link #isOverridden} result cache.
+     *
+     * @since TODO
+     */
+    public static int isOverriddenCacheSize() {
+        return IS_OVERRIDDEN_CACHE.size();
+    }
+
+    /**
+     * Clears the {@link #isOverridden} result cache.
+     *
+     * @since TODO
+     */
+    @VisibleForTesting
+    @Restricted(NoExternalUse.class)
+    public static void clearIsOverriddenCache() {
+        IS_OVERRIDDEN_CACHE.clear();
     }
 
     /**
