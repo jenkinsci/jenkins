@@ -29,6 +29,7 @@
   & > .app-page-body__sidebar {
     width: 320px;
     padding: var(--section-padding);
+    height: calc(100vh - var(--header-height) - 0.375rem);
 
     // Remove this when sidepanels no longer contain widgets
     #tasks {
