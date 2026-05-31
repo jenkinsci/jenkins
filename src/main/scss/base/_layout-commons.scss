@@ -39,6 +39,7 @@
 
   & > .app-page-body__contents {
     padding: var(--section-padding);
+    padding-bottom: 0;
   }
 
   &:not(:has(#side-panel .pane, #side-panel .jenkins-card)) {
@@ -49,7 +50,6 @@
 
     & > .app-page-body__contents {
       overflow-y: auto;
-      padding: var(--section-padding);
     }
   }
 
