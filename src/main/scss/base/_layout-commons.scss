@@ -1,7 +1,5 @@
 @use "../base/breakpoints";
 
-// new ui
-
 .app-page-body {
   position: relative;
   display: grid;
@@ -28,7 +26,7 @@
     grid-template-columns: auto 1fr;
   }
 
-  .app-page-body__sidebar {
+  & > .app-page-body__sidebar {
     width: 320px;
     padding: var(--section-padding);
 
@@ -38,18 +36,18 @@
     }
   }
 
-  .app-page-body__contents {
+  & > .app-page-body__contents {
     padding: var(--section-padding);
   }
 
   &:not(:has(#side-panel .pane, #side-panel .jenkins-card)) {
-    .app-page-body__sidebar {
+    & > .app-page-body__sidebar {
       overflow-y: auto;
       overscroll-behavior: contain;
       border-right: var(--jenkins-border);
     }
 
-    .app-page-body__contents {
+    & > .app-page-body__contents {
       overflow-y: auto;
       overscroll-behavior: contain;
       padding: var(--section-padding);
@@ -61,9 +59,21 @@
     overflow-y: auto;
     overscroll-behavior: contain;
 
-    .app-page-body__sidebar {
+    & > .app-page-body__sidebar {
       padding-right: 0;
     }
+  }
+}
+
+.noemotion {
+  &--narrow {
+    max-width: 900px;
+    margin-inline: auto;
+  }
+
+  &--wide {
+    max-width: 1700px;
+    margin-inline: auto;
   }
 }
 

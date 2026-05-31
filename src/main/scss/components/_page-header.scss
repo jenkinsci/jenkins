@@ -1,10 +1,6 @@
 @use "../abstracts/mixins";
 
 .jenkins-header {
-  --background-opacity: 0%;
-  --background-blur: 0;
-  --border-opacity: 0%;
-
   position: sticky;
   top: 0;
   z-index: 999;
@@ -15,26 +11,6 @@
   line-height: var(--line-height-base);
   min-height: var(--header-height);
   color: var(--header-color);
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    backdrop-filter: blur(var(--background-blur));
-    background: color-mix(
-      in sRGB,
-      var(--header-background) var(--background-opacity),
-      transparent
-    );
-    border-bottom: var(--jenkins-border-width) solid
-      color-mix(
-        in sRGB,
-        var(--header-border) var(--border-opacity),
-        transparent
-      );
-    background-clip: padding-box;
-    z-index: -1;
-  }
 
   .app-jenkins-logo {
     @include mixins.item($border: false);

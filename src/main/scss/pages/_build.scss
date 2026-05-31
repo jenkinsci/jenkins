@@ -139,13 +139,6 @@
   }
 }
 
-.app-settings-container {
-  &__inner {
-    max-width: 900px;
-    margin: auto;
-  }
-}
-
 @keyframes app-build-bar-border-on-scroll {
   from {
     border-bottom-color: color-mix(
