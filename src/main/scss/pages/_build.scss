@@ -167,20 +167,27 @@
   align-items: center;
   gap: 0.5rem 1.5rem;
   min-height: var(--header-height);
-  backdrop-filter: blur(15px);
   background-color: color-mix(
           in sRGB,
           transparent 25%,
-          var(--background)
+          var(--top)
   );
   padding-inline: var(--section-padding);
   z-index: 102;
   border-bottom: var(--jenkins-border-width) solid
   var(--app-build-bar-border-color);
-  background-clip: padding-box;
   margin-top: calc(var(--section-padding) * -1);
   margin-left: calc(var(--section-padding) * -1);
   margin-right: calc(var(--section-padding) * -1);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    backdrop-filter: blur(15px);
+  }
 
   @supports (animation-timeline: scroll()) {
     animation-name: app-build-bar-border-on-scroll;
