@@ -106,8 +106,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-right: var(--section-padding);
     gap: 0.25rem;
+    padding-right: var(--section-padding);
   }
 
   &--has-sticky-app-bar {
