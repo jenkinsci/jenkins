@@ -27,19 +27,27 @@
   &:has(> .app-page-body__sidebar) {
     grid-template-columns: auto 1fr;
   }
-}
 
-.app-page-body {
+  .app-page-body__sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 320px;
+    padding: var(--section-padding);
+  }
+
+  .app-page-body__contents {
+    padding: var(--section-padding);
+  }
+
   &:not(:has(#side-panel .pane, #side-panel .jenkins-card)) {
-    &__sidebar {
-      width: 320px;
+    .app-page-body__sidebar {
       overflow-y: auto;
       overscroll-behavior: contain;
       border-right: var(--jenkins-border);
-      padding: var(--section-padding);
     }
 
-    &__contents {
+    .app-page-body__contents {
       overflow-y: auto;
       overscroll-behavior: contain;
       padding: var(--section-padding);
@@ -48,14 +56,8 @@
 
   // old ui
   &:has(#side-panel .pane, #side-panel .jenkins-card) {
-    &__sidebar {
-      width: 320px;
-      padding: var(--section-padding);
+    .app-page-body__sidebar {
       padding-right: 0;
-    }
-
-    &__contents {
-      padding: var(--section-padding);
     }
   }
 }
