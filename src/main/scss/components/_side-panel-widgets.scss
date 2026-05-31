@@ -8,8 +8,8 @@
   overflow: hidden;
 }
 
-#side-panel .pane-frame {
-  margin-left: 10px;
+#side-panel .pane-frame, #side-panel .jenkins-card {
+  margin-left: -10px;
 }
 
 #side-panel .pane-header,

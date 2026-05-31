@@ -29,11 +29,13 @@
   }
 
   .app-page-body__sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
     width: 320px;
     padding: var(--section-padding);
+
+    // Remove this when sidepanels no longer contain widgets
+    #tasks {
+      margin-bottom: 1rem;
+    }
   }
 
   .app-page-body__contents {
@@ -54,8 +56,11 @@
     }
   }
 
-  // old ui
+  // Remove this when sidepanels no longer contain widgets
   &:has(#side-panel .pane, #side-panel .jenkins-card) {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
     .app-page-body__sidebar {
       padding-right: 0;
     }
