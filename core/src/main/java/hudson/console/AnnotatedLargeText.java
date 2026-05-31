@@ -247,6 +247,9 @@ public class AnnotatedLargeText<T> extends LargeText {
                 w, createAnnotator(req), context, charset);
         long r = super.writeLogTo(start, caw);
 
+        // Back-track any pending bytes in the line buffer.
+        r -= caw.lineBufferSize();
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Cipher sym = PASSING_ANNOTATOR.encrypt();
         ObjectOutputStream oos = AnonymousClassWarnings.checkingObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos, sym)));
