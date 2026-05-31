@@ -55,7 +55,7 @@
     }
 
     #jenkins-head-icon {
-      width: 1.625rem;
+      width: 1.5rem;
     }
   }
 
@@ -66,11 +66,6 @@
 
     // For customizable-header-plugin
     color: inherit !important;
-
-    svg {
-      width: 1.25rem;
-      height: 1.25rem;
-    }
 
     img {
       width: 1.625rem;
@@ -111,8 +106,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
     padding-right: var(--section-padding);
+    gap: 0.25rem;
   }
 
   &--has-sticky-app-bar {
