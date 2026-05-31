@@ -44,13 +44,11 @@
   &:not(:has(#side-panel .pane, #side-panel .jenkins-card)) {
     & > .app-page-body__sidebar {
       overflow-y: auto;
-      overscroll-behavior: contain;
       border-right: var(--jenkins-border);
     }
 
     & > .app-page-body__contents {
       overflow-y: auto;
-      overscroll-behavior: contain;
       padding: var(--section-padding);
     }
   }
@@ -58,7 +56,6 @@
   // Remove this when sidepanels no longer contain widgets
   &:has(#side-panel .pane, #side-panel .jenkins-card) {
     overflow-y: auto;
-    overscroll-behavior: contain;
 
     & > .app-page-body__sidebar {
       padding-right: 0;
