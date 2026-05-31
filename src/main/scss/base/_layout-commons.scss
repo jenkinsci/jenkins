@@ -64,6 +64,8 @@
 }
 
 .noemotion {
+  margin-bottom: var(--section-padding);
+
   &--narrow {
     max-width: 900px;
     margin-inline: auto;
