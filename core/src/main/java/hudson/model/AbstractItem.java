@@ -47,6 +47,7 @@ import hudson.util.AtomicFileWriter;
 import hudson.util.FormValidation;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
+import hudson.widgets.Widget;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import java.io.File;
@@ -547,6 +548,10 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
             List<Ancestor> ancestors = req.getAncestors();
             if (!ancestors.isEmpty()) {
                 Ancestor last = ancestors.getLast();
+                if (last.getObject() instanceof Widget) {
+                    // likely loaded via ajax so get the previous one which should be the view
+                    last = last.getPrev();
+                }
                 if (last.getObject() instanceof View view) {
                     if (view.getOwner().getItemGroup() == getParent() && !view.isDefault()) {
                         // Showing something inside a view, so should use that as the base URL.

@@ -550,12 +550,7 @@ public class QueueTest {
         p.setAssignedLabel(label);
         p.scheduleBuild2(0);
 
-        // Wait 3 seconds if job is not already in the queue, reduce test flakes
-        if (!p.isInQueue()) {
-            Thread.sleep(3000);
-        }
-
-        assertTrue(p.isInQueue(), "Build not queued");
+        await().untilAsserted(() -> assertTrue(p.isInQueue(), "Build not queued"));
 
         JenkinsRule.WebClient webclient = r.createWebClient();
 
@@ -667,18 +662,15 @@ public class QueueTest {
         await().until(() -> buildFuture.getStartCondition().isCancelled());
     }
 
-    private void waitUntilWaitingListIsEmpty(Queue q) throws InterruptedException {
-        boolean waitingItemsPresent = true;
-        while (waitingItemsPresent) {
-            waitingItemsPresent = false;
+    private void waitUntilWaitingListIsEmpty(Queue q) {
+        await().until(() -> {
             for (Queue.Item i : q.getItems()) {
                 if (i instanceof WaitingItem) {
-                    waitingItemsPresent = true;
-                    break;
+                    return false;
                 }
             }
-            Thread.sleep(1000);
-        }
+            return true;
+        });
     }
 
     @Issue("JENKINS-68780")

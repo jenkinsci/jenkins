@@ -45,7 +45,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  *
  * <p>Only permalinks that currently resolve to a build are shown in the menu.
  *
- * @since TODO
+ * @since 2.564
  */
 @Restricted(Beta.class)
 public final class PermalinksAction implements Action {
