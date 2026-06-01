@@ -25,9 +25,9 @@ import jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
 import jenkins.model.menu.event.ConfirmationEvent;
+import jenkins.model.menu.event.DropdownEvent;
 import jenkins.model.menu.event.Event;
 import jenkins.model.menu.event.LinkEvent;
-import jenkins.model.menu.event.SplitButtonEvent;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
@@ -124,9 +124,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         public ContextMenu addAll(Collection<? extends Action> actions) {
             for (Action a : actions) {
-                if (a.isVisibleInContextMenu()) {
-                    add(a);
-                }
+                add(a);
             }
 
             return this;
@@ -140,6 +138,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                     .withDisplayName(action.getDisplayName());
 
             menuItem.semantic = action.getSemantic();
+            menuItem.description = action.getDescription();
             menuItem.group = action.getGroup();
             menuItem.event = action.getEvent();
 
@@ -147,9 +146,10 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 return this;
             }
 
-            if (action.getEvent() instanceof SplitButtonEvent splitButtonEvent) {
+            // Move actions to subMenu so we can access them from JavaScript
+            if (action.getEvent() instanceof DropdownEvent dropdownEvent) {
                 menuItem.subMenu = new ContextMenu();
-                menuItem.subMenu.addAll(splitButtonEvent.getActions());
+                menuItem.subMenu.addAll(dropdownEvent.getActions());
             }
 
             // Set icon
@@ -309,6 +309,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                                         || (action instanceof IconSpec iconSpec && iconSpec.getIconClassName() != null)
                         )
                         .filter(action -> !menuOnly || action.getGroup().getOrder() >= Group.FIRST_IN_MENU.getOrder())
+                        .filter(action -> menuOnly || action.isVisibleInContextMenu())
                         .toList();
 
                 return new ModelObjectWithContextMenu.ContextMenu().addAll(actions);
@@ -412,6 +413,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         private Badge badge;
 
+        private String description;
+
         private Group group;
 
         private Event event;
@@ -444,6 +447,11 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported
         public Badge getBadge() {
             return badge;
+        }
+
+        @Exported
+        public String getDescription() {
+            return description;
         }
 
         @Exported(inline = true)
