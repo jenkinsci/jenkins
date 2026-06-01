@@ -213,6 +213,8 @@ var FormChecker = {
   // be a great performance improvement
   maxParallel: 1,
 
+  controller: null, // AbortController to cancel pending requests when the page is unloaded
+
   /**
    * Schedules a form field check. Executions are serialized to reduce the bandwidth impact.
    *
@@ -228,51 +230,69 @@ var FormChecker = {
       // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
       return;
     }
-    this.queue.push({ url: url, method: method, target: target });
+
+    const controller = new AbortController();
+    this.queue.push({ url: url, method: method, target: target, controller: controller });
     this.schedule();
   },
 
-  sendRequest: function (url, params) {
+
+
+  
+
+ sendRequest: function (url, params, controller) {
     const method = params.method.toLowerCase();
+
     if (method !== "get") {
-      var idx = url.indexOf("?");
-      params.parameters = url.substring(idx + 1);
-      url = url.substring(0, idx);
+        var idx = url.indexOf("?");
+        params.parameters = url.substring(idx + 1);
+        url = url.substring(0, idx);
     }
 
+    // ✅ Use the passed-in controller, don't create a new one here
     fetch(url, {
-      method: params.method,
-      headers: crumb.wrap({
-        "Content-Type": "application/x-www-form-urlencoded",
-      }),
-      body: method !== "get" ? params.parameters : null,
-    }).then((response) => {
-      params.onComplete(response);
+        method: params.method,
+        headers: crumb.wrap({
+            "Content-Type": "application/x-www-form-urlencoded",
+        }),
+        body: method !== "get" ? params.parameters : null,
+        signal: controller ? controller.signal : null,  // ✅ use passed controller
+    })
+    .then((response) => {
+        params.onComplete(response);
+    })
+    .catch((err) => {
+        if (err.name === "AbortError") {
+            console.log("Request aborted");
+        }
     });
-  },
+},
 
-  schedule: function () {
+
+
+ schedule: function () {
     if (this.inProgress >= this.maxParallel) {
-      return;
+        return;
     }
     if (this.queue.length === 0) {
-      return;
+        return;
     }
 
     var next = this.queue.shift();
+    this.inProgress++;  // ✅ ADD THIS - was missing
+
     this.sendRequest(next.url, {
-      method: next.method,
-      onComplete: function (x) {
-        x.text().then((responseText) => {
-          updateValidationArea(next.target, responseText);
-          FormChecker.inProgress--;
-          FormChecker.schedule();
-          layoutUpdateCallback.call();
-        });
-      },
-    });
-    this.inProgress++;
-  },
+        method: next.method,
+        onComplete: function (x) {
+            x.text().then((responseText) => {
+                updateValidationArea(next.target, responseText);
+                FormChecker.inProgress--;
+                FormChecker.schedule();
+                layoutUpdateCallback.call();
+            });
+        },
+    }, next.controller);  // ✅ pass the controller from the queue
+},
 };
 
 /**
@@ -702,23 +722,24 @@ function registerValidator(e) {
 
   var checker = function () {
     if (this.disabled) {
-      return;
+        return;
     }
     const validationArea = this.targetElement;
+    const controller = new AbortController(); // ✅ add this
     FormChecker.sendRequest(this.targetUrl(), {
-      method: method,
-      onComplete: function (response) {
-        // TODO Add i18n support
-        response.text().then((responseText) => {
-          const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${response.status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
-          updateValidationArea(
-            validationArea,
-            response.status === 200 ? responseText : errorMessage,
-          );
-        });
-      },
-    });
-  };
+        method: method,
+        onComplete: function (response) {
+            response.text().then((responseText) => {
+                const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${response.status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
+                updateValidationArea(
+                    validationArea,
+                    response.status === 200 ? responseText : errorMessage,
+                );
+            });
+        },
+    }, controller); // ✅ pass it here
+};
+  
   var oldOnchange = e.onchange;
   if (typeof oldOnchange == "function") {
     e.onchange = function () {
