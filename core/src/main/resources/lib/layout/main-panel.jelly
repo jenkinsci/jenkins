@@ -32,9 +32,9 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:if test="${mode=='main-panel'}">
-    <div class="noemotion
-              ${attrs.width eq 'wide' ? 'noemotion--wide' : ''}
-              ${attrs.width eq 'narrow' ? 'noemotion--narrow' : ''}">
+    <div class="app-main-panel
+              ${attrs.width eq 'wide' ? 'app-main-panel--wide' : ''}
+              ${attrs.width eq 'narrow' ? 'app-main-panel--narrow' : ''}">
       <j:if test="${app.isQuietingDown()}">
         <j:choose>
           <j:when test="${app.isPreparingSafeRestart()}">
