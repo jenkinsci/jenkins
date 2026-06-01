@@ -23,8 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:dd="/lib/layout/dropdowns"
-         xmlns:st="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
   <st:documentation>
     A reusable container for subpages relating to Jobs in Jenkins.
     Renders a tabbed layout for jobs, including build status and actions.
@@ -56,61 +55,7 @@ THE SOFTWARE.
             </div>
 
             <div class="app-build-bar__controls">
-              <j:if test="${it.object.buildable and h.hasPermission(it.object, it.object.BUILD)}">
-                <j:choose>
-                  <j:when test="${!it.object.parameterized}">
-                    <a class="jenkins-button jenkins-!-build-color task-link-no-confirm"
-                            data-callback="lib_hudson_project_configurable_build_now_callback"
-                            data-build-failure="${%Build failed}"
-                            data-build-success="${%Build scheduled}"
-                            data-parameterized="false"
-                            data-task-post="true"
-                            href="${url}/build?delay=0sec">
-                      <l:icon src="symbol-play" />
-                      ${it.object.buildNowText}
-                    </a>
-                  </j:when>
-                  <j:otherwise>
-                    <l:dialog title="${it.object.buildNowText}" hash="build-with-parameters">
-                      <div>
-                        <st:include page="contents.jelly" it="${it.object.parametersDefinitionProperty}" />
-                      </div>
-                    </l:dialog>
-
-                    <button class="jenkins-button jenkins-!-build-color"
-                            data-type="dialog-opener"
-                            data-dialog-id="${dialogId}">
-                      <l:icon src="symbol-play" />
-                      ${it.object.buildNowText}
-                    </button>
-                  </j:otherwise>
-                </j:choose>
-
-                <st:adjunct includes="lib.hudson.project.configurable.configurable"/>
-                <st:adjunct includes="lib.layout.task.task" />
-              </j:if>
-
-              <j:choose>
-                <j:when test="${h.hasPermission(it.object, it.object.CONFIGURE)}">
-                  <a href="${url}/configure" class="jenkins-button">
-                    ${%Configure}
-                  </a>
-                </j:when>
-                <j:when test="${h.hasPermission(it.object, it.object.EXTENDED_READ)}">
-                  <a href="${url}/configure" class="jenkins-button">
-                    ${%View Configuration}
-                  </a>
-                </j:when>
-              </j:choose>
-
-              <l:overflowButton id="more-item-actions">
-                <dd:custom>
-                  <div class="app-build-overflow">
-                    <j:set var="mode" value="side-panel" />
-                    <st:include page="sidepanel.jelly" it="${it.object}" />
-                  </div>
-                </dd:custom>
-              </l:overflowButton>
+              <l:actions it="${it.object}" />
             </div>
           </div>
 
