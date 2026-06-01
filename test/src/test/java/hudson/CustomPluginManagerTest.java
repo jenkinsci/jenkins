@@ -29,26 +29,29 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import jakarta.servlet.ServletContext;
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRecipe;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 
 /**
  * Tests for the use of a custom plugin manager in custom wars.
  */
-public class CustomPluginManagerTest {
-    @Rule public final JenkinsRule r = new JenkinsRule();
+class CustomPluginManagerTest {
+
+    @RegisterExtension
+    private final JenkinsSessionExtension session = new JenkinsSessionExtension();
 
     // TODO: Move to jenkins-test-harness
     @JenkinsRecipe(WithCustomLocalPluginManager.RuleRunnerImpl.class)
@@ -65,7 +68,6 @@ public class CustomPluginManagerTest {
                 jenkinsRule.useLocalPluginManager = true;
                 oldValue = System.getProperty(PluginManager.CUSTOM_PLUGIN_MANAGER);
                 System.setProperty(PluginManager.CUSTOM_PLUGIN_MANAGER, recipe.value().getName());
-
             }
 
             @Override
@@ -79,9 +81,11 @@ public class CustomPluginManagerTest {
         }
     }
 
-    private void check(Class<? extends CustomPluginManager> klass) {
-        assertTrue("Correct plugin manager installed", klass.isAssignableFrom(r.getPluginManager().getClass()));
-        assertNotNull("Plugin 'htmlpublisher' installed", r.jenkins.getPlugin("htmlpublisher"));
+    private void check(Class<? extends CustomPluginManager> klass) throws Throwable {
+        session.then(r -> {
+            assertTrue(klass.isAssignableFrom(r.getPluginManager().getClass()), "Correct plugin manager installed");
+            assertNotNull(r.jenkins.getPlugin("htmlpublisher"), "Plugin 'htmlpublisher' installed");
+        });
     }
 
     // An interface not to override every constructor.
@@ -91,11 +95,13 @@ public class CustomPluginManagerTest {
     @Issue("JENKINS-34681")
     @WithPlugin("htmlpublisher.jpi")
     @WithCustomLocalPluginManager(CustomPluginManager1.class)
-    @Test public void customPluginManager1() {
+    @Test
+    void customPluginManager1() throws Throwable {
         check(CustomPluginManager1.class);
     }
 
     public static class CustomPluginManager1 extends LocalPluginManager implements CustomPluginManager {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public CustomPluginManager1(Jenkins jenkins) {
             super(jenkins);
         }
@@ -104,11 +110,13 @@ public class CustomPluginManagerTest {
     @Issue("JENKINS-34681")
     @WithPlugin("htmlpublisher.jpi")
     @WithCustomLocalPluginManager(CustomPluginManager2.class)
-    @Test public void customPluginManager2() {
+    @Test
+    void customPluginManager2() throws Throwable {
         check(CustomPluginManager2.class);
     }
 
     public static class CustomPluginManager2 extends LocalPluginManager implements CustomPluginManager {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public CustomPluginManager2(ServletContext ctx, File root) {
             super(ctx, root);
         }
@@ -117,11 +125,13 @@ public class CustomPluginManagerTest {
     @Issue("JENKINS-34681")
     @WithPlugin("htmlpublisher.jpi")
     @WithCustomLocalPluginManager(CustomPluginManager3.class)
-    @Test public void customPluginManager3() {
+    @Test
+    void customPluginManager3() throws Throwable {
         check(CustomPluginManager3.class);
     }
 
     public static class CustomPluginManager3 extends LocalPluginManager implements CustomPluginManager {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public CustomPluginManager3(File root) {
             super(root);
         }
@@ -130,11 +140,15 @@ public class CustomPluginManagerTest {
     @Issue("JENKINS-34681")
     @WithPlugin("htmlpublisher.jpi")
     @WithCustomLocalPluginManager(BadCustomPluginManager.class)
-    @Test public void badCustomPluginManager() {
-        assertThat("Custom plugin manager not installed", r.getPluginManager(), not(instanceOf(CustomPluginManager.class)));
+    @Test
+    void badCustomPluginManager() throws Throwable {
+        session.then(r ->
+            assertThat("Custom plugin manager not installed", r.getPluginManager(), not(instanceOf(CustomPluginManager.class)))
+        );
     }
 
     public static class BadCustomPluginManager extends LocalPluginManager implements CustomPluginManager {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public BadCustomPluginManager(File root, ServletContext ctx) {
             super(ctx, root);
         }

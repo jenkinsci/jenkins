@@ -1,6 +1,7 @@
 package hudson.console;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Item;
@@ -66,6 +67,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
         return encodeTo("/" + label.getUrl(), label.getName());
     }
 
+    @SuppressFBWarnings(value = "HSM_HIDING_METHOD", justification = "TODO needs triage")
     public static String encodeTo(String url, String text) {
         return HyperlinkNote.encodeTo(url, text, ModelHyperlinkNote::new);
     }

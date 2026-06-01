@@ -46,9 +46,9 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <mina-sshd-api.version>2.14.0-143.v2b_362fc39576</mina-sshd-api.version>
+    <mina-sshd-api.version>2.17.1-187.v0341274c2905</mina-sshd-api.version>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
-    <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
 
   </properties>
 
@@ -148,7 +148,7 @@ THE SOFTWARE.
                 <enforceBytecodeVersion>
                   <maxJdkVersion>11</maxJdkVersion>
                   <excludes>
-                    <exclude>com.infradna.tool:bridge-method-annotation</exclude>
+                    <exclude>io.jenkins.tools:bridge-method-annotation</exclude>
                     <exclude>org.jenkins-ci:annotation-indexer</exclude>
                     <exclude>org.jenkins-ci:commons-jelly</exclude>
                     <exclude>org.jenkins-ci:commons-jelly-tags-fmt</exclude>
@@ -156,6 +156,7 @@ THE SOFTWARE.
                     <exclude>org.jenkins-ci:crypto-util</exclude>
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
+                    <exclude>org.jenkins-ci.main:remoting</exclude>
                     <exclude>org.jenkins-ci.main:websocket-jetty12-ee9</exclude>
                     <exclude>org.jenkins-ci.main:websocket-spi</exclude>
                     <exclude>org.jenkins-ci:memory-monitor</exclude>
@@ -165,6 +166,7 @@ THE SOFTWARE.
                     <exclude>org.jvnet.hudson:commons-jelly-tags-define</exclude>
                     <exclude>org.jvnet.winp:winp</exclude>
                     <exclude>org.kohsuke:access-modifier-annotation</exclude>
+                    <exclude>org.kohsuke.stapler:json-lib</exclude>
                     <exclude>org.kohsuke.stapler:stapler</exclude>
                     <exclude>org.kohsuke.stapler:stapler-groovy</exclude>
                     <exclude>org.kohsuke.stapler:stapler-jelly</exclude>
@@ -274,21 +276,21 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, junit, and mailer -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>display-url-api</artifactId>
-                  <version>2.209.v582ed814ff2f</version>
+                  <version>2.217.va_6b_de84cc74b_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 1.493 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>489.vd4b_25144138f</version>
+                  <version>534.v1b_36f5864073</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 1.535 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-auth</artifactId>
-                  <version>3.2.4</version>
+                  <version>3.2.10</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -302,49 +304,56 @@ THE SOFTWARE.
                   <!-- detached after 1.561 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>845.vffd7fa_f27555</version>
+                  <version>870.v9db_fcfc2f45b_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1373.vb_b_4a_a_c26fa_00</version>
+                  <version>1402.v94c9ce464861</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1317.v5b_35d792b_06a_</version>
+                  <version>1403.vd9d1413fd205</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1363.v03f731255494</version>
+                  <version>1413.v2ff1a_5e720fa_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of checks-api, echarts-api, font-awesome-api, and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>plugin-util-api</artifactId>
-                  <version>6.0.0</version>
+                  <version>7.1341.v039f146993d9</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of echarts-api and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.3-3</version>
+                  <version>5.3.8-1038.vee76a_fe825ff</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>checks-api</artifactId>
-                  <version>2.2.3</version>
+                  <version>402.vca_263b_f200e3</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of junit -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>prism-api</artifactId>
+                  <version>1.30.0-727.vc475481f034d</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -352,36 +361,84 @@ THE SOFTWARE.
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>961.v51869f7b_d409</version>
+                  <version>1015.v785e5a_b_b_8b_22</version>
                   <type>hpi</type>
                 </artifactItem>
 
                 <artifactItem>
-                  <!-- dependency of junit and echarts-api -->
+                  <!-- dependency of echarts-api -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jackson2-api</artifactId>
-                  <version>2.17.0-389.va_5c7e45cd806</version>
+                  <version>2.21.2-436.v29efdb_7418ff</version>
                   <type>hpi</type>
                 </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of junit -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jackson3-api</artifactId>
+                  <version>3.1.3-76.vd9b_7cd2e80b_8</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of jackson2-api and jackson3-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jackson-annotations2-api</artifactId>
+                  <version>2.21-7.v4777a_f3a_a_d47</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of jackson2-api and jackson3-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jackson-annotations2-api</artifactId>
+                  <version>2.21-7.v4777a_f3a_a_d47</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of jackson3-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>snakeyaml-engine-api</artifactId>
+                  <version>3.0.1-5.vd98ea_ff3b_92e</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of jackson2-api and jackson3-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>woodstox-core-api</artifactId>
+                  <version>7.1.1-1.v4d297985f397</version>
+                  <type>hpi</type>
+                </artifactItem>
+
                 <artifactItem>
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>echarts-api</artifactId>
-                  <version>5.5.1-6</version>
+                  <version>6.0.0-1287.vfd24c22a_3d00</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of trilead-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>eddsa-api</artifactId>
-                  <version>0.3.0-13.v7cb_69ed68f00</version>
+                  <version>0.3.0.1-29.v67e9a_1c969b_b_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>snakeyaml-api</artifactId>
-                  <version>2.3-123.v13484c65210a_</version>
+                  <version>2.5-149.v72471e9c6371</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of jackson2-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jakarta-xml-bind-api</artifactId>
+                  <version>4.0.6-12.vb_1833c1231d3</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -389,7 +446,7 @@ THE SOFTWARE.
                   <!-- dependency of script-security and workflow-support -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>caffeine-api</artifactId>
-                  <version>3.2.0-161.v691ef352cee1</version>
+                  <version>3.2.3-194.v31a_b_f7a_b_5a_81</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -397,7 +454,7 @@ THE SOFTWARE.
                   <!-- dependency of echarts-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jquery3-api</artifactId>
-                  <version>3.7.1-3</version>
+                  <version>3.7.1-687.v68d468e40b_30</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -405,7 +462,7 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api and echarts-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>font-awesome-api</artifactId>
-                  <version>6.7.2-1</version>
+                  <version>7.2.0-990.vf220b_2a_496f9</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -413,35 +470,35 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, junit, plugin-util-api, workflow-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-step-api</artifactId>
-                  <version>700.v6e45cb_a_5a_a_21</version>
+                  <version>724.v538c2362b_dfb_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of workflow-api and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>703.v72ff4b_259600</version>
+                  <version>728.vc30dcf7a_0df5</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of scm-api and workflow-step-api -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>structs</artifactId>
-                  <version>343.vdcf37b_a_c81d5</version>
+                  <version>362.va_b_695ef4fdf9</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 2.16 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>bouncycastle-api</artifactId>
-                  <version>2.30.1.80-256.vf98926042a_9b_</version>
+                  <version>2.30.1.84-291.v9f17b_21896e2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 2.86 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>command-launcher</artifactId>
-                  <version>118.v72741845c17a_</version>
+                  <version>134.v025a_5fcf9dea_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -455,21 +512,21 @@ THE SOFTWARE.
                   <!-- detached after 2.163 -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jaxb</artifactId>
-                  <version>2.3.9-1</version>
+                  <version>2.3.9-143.v5979df3304e6</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 2.281 -->
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>sshd</artifactId>
-                  <version>3.353.v2b_d33c46e970</version>
+                  <version>3.384.vc89b_5e138cf9</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 2.184 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>trilead-api</artifactId>
-                  <version>2.190.v1ed19f8137f8</version>
+                  <version>2.284.v1974ea_324382</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -490,7 +547,7 @@ THE SOFTWARE.
                   <!-- detached after 2.356 -->
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>instance-identity</artifactId>
-                  <version>201.vd2a_b_5a_468a_a_6</version>
+                  <version>203.v15e81a_1b_7a_38</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -504,56 +561,56 @@ THE SOFTWARE.
                   <!-- dependency of scm-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>asm-api</artifactId>
-                  <version>9.7.1-97.v4cc844130d97</version>
+                  <version>9.10.1-216.va_9256d3b_844b_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of bootstrap5-api, checks-api, commons-text-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-lang3-api</artifactId>
-                  <version>3.17.0-84.vb_b_938040b_078</version>
+                  <version>3.20.0-109.ve43756e2d2b_4</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of bootstrap5-api, checks-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-text-api</artifactId>
-                  <version>1.13.0-153.v91dcd89e2a_22</version>
+                  <version>1.15.0-218.va_61573470393</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of trilead-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>gson-api</artifactId>
-                  <version>2.12.1-113.v347686d6729f</version>
+                  <version>2.14.0-201.v8eefe5515533</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit and matrix-auth -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>ionicons-api</artifactId>
-                  <version>82.v0597178874e1</version>
+                  <version>94.vcc3065403257</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of jakarta-mail-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jakarta-activation-api</artifactId>
-                  <version>2.1.3-2</version>
+                  <version>2.1.4-1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of mailer -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jakarta-mail-api</artifactId>
-                  <version>2.1.3-2</version>
+                  <version>2.1.5-1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>json-api</artifactId>
-                  <version>20250107-125.v28b_a_ffa_eb_f01</version>
+                  <version>20250517-173.v596efb_962a_31</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -590,7 +647,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.lib</groupId>
                   <artifactId>support-log-formatter</artifactId>
-                  <version>1.3</version>
+                  <version>123.v72513b_f61500</version>
                 </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}</outputDirectory>
@@ -647,7 +704,12 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty.ee9</groupId>
         <artifactId>jetty-ee9-maven-plugin</artifactId>
-        <version>12.0.16</version>
+        <!--
+          Make sure to keep the Winstone version in pom.xml in sync with this version. If the current Winstone release
+          contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
+          result before proceeding with the update here.
+        -->
+        <version>12.1.8</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
@@ -700,35 +762,4 @@ THE SOFTWARE.
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <!-- sign war -->
-      <id>sign</id>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-jarsigner-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>signWar</id>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-                <phase>pre-integration-test</phase>
-                <configuration>
-                  <archive>${project.build.directory}/${project.build.finalName}.war</archive>
-                  <arguments>
-                    <argument>-tsa</argument>
-                    <argument>http://timestamp.digicert.com</argument>
-                  </arguments>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-  </profiles>
 </project>

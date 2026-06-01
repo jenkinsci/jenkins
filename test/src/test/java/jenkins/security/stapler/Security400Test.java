@@ -27,9 +27,9 @@ package jenkins.security.stapler;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -58,14 +58,14 @@ import jenkins.model.Jenkins;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.WebApp;
 
 /**
@@ -76,14 +76,16 @@ import org.kohsuke.stapler.WebApp;
  * </pre>
  */
 @Issue("SECURITY-400")
-public class Security400Test {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class Security400Test {
 
     private static boolean filteredDoActionTriggered = false;
 
-    @Before
-    public void prepareFilterListener() {
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         WebApp webApp = WebApp.get(j.jenkins.getServletContext());
         webApp.setFilteredDoActionTriggerListener((f, req, rsp, node) -> {
             filteredDoActionTriggered = true;
@@ -95,32 +97,33 @@ public class Security400Test {
         });
     }
 
-    @After
-    public void resetFilter() {
+    @AfterEach
+    void resetFilter() {
         filteredDoActionTriggered = false;
     }
 
     private void assertRequestWasBlockedAndResetFlag() {
-        assertTrue("No request was blocked", filteredDoActionTriggered);
+        assertTrue(filteredDoActionTriggered, "No request was blocked");
         filteredDoActionTriggered = false;
     }
 
     private void assertRequestWasNotBlocked() {
-        assertFalse("There was at least a request that was blocked", filteredDoActionTriggered);
+        assertFalse(filteredDoActionTriggered, "There was at least a request that was blocked");
     }
 
     @Test
     @Issue("SECURITY-391")
-    public void asyncDoRun() throws Exception {
+    void asyncDoRun() throws Exception {
         j.createWebClient().assertFails("extensionList/" + AsyncPeriodicWork.class.getName() + "/" + Work.class.getName() + "/run", HttpURLConnection.HTTP_NOT_FOUND);
         Thread.sleep(1000); // give the thread a moment to finish
-        assertFalse("should never have run", ran);
+        assertFalse(ran, "should never have run");
     }
 
     private static boolean ran;
 
     @TestExtension("asyncDoRun")
     public static class Work extends AsyncPeriodicWork {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public Work() {
             super("Test");
         }
@@ -136,10 +139,10 @@ public class Security400Test {
         }
     }
 
+    // particular case of SECURITY-391
     @Test
     @Issue("SECURITY-397")
-    // particular case of SECURITY-391
-    public void triggerCronDoRun() throws Exception {
+    void triggerCronDoRun() throws Exception {
         j.createWebClient().assertFails("extensionList/" + PeriodicWork.class.getName() + "/" + Trigger.Cron.class.getName() + "/run", HttpURLConnection.HTTP_NOT_FOUND);
         assertRequestWasBlockedAndResetFlag();
     }
@@ -149,7 +152,7 @@ public class Security400Test {
      */
     @Test
     @Issue("SECURITY-404")
-    public void avoidDangerousAccessToSession() throws Exception {
+    void avoidDangerousAccessToSession() throws Exception {
         j.jenkins.setCrumbIssuer(null);
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -214,7 +217,7 @@ public class Security400Test {
 
     @Test
     @Issue("SECURITY-404")
-    public void ensureDoStopStillReachable() throws Exception {
+    void ensureDoStopStillReachable() throws Exception {
         j.jenkins.setCrumbIssuer(null);
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
@@ -272,7 +275,7 @@ public class Security400Test {
      */
     @Test
     @Issue("JENKINS-59656")
-    public void ensureDoStopBuildWorks() throws Exception {
+    void ensureDoStopBuildWorks() throws Exception {
         j.jenkins.setCrumbIssuer(null);
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false); // we expect 404
@@ -375,7 +378,7 @@ public class Security400Test {
 
     @Test
     @Issue("SECURITY-404")
-    public void anonCannotReadTextConsole() throws Exception {
+    void anonCannotReadTextConsole() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         FullControlOnceLoggedInAuthorizationStrategy authorizationStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
         authorizationStrategy.setAllowAnonymousRead(false);
@@ -434,7 +437,7 @@ public class Security400Test {
 
     @Test
     @Issue("SECURITY-404")
-    public void anonCannotAccessExecutorApi() throws Exception {
+    void anonCannotAccessExecutorApi() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         FullControlOnceLoggedInAuthorizationStrategy authorizationStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
         authorizationStrategy.setAllowAnonymousRead(false);
@@ -491,7 +494,7 @@ public class Security400Test {
 
     @Test
     @Issue("SECURITY-404")
-    public void anonCannotAccessJenkinsItemMap() throws Exception {
+    void anonCannotAccessJenkinsItemMap() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
@@ -542,7 +545,7 @@ public class Security400Test {
     // currently there is no other way to reach logRecorderManager in core / or plugin
     @Test
     @Issue("SECURITY-471")
-    public void ensureLogRecordManagerAccessibleOnlyByAdmin() throws Exception {
+    void ensureLogRecordManagerAccessibleOnlyByAdmin() throws Exception {
         j.jenkins.setCrumbIssuer(null);
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -613,7 +616,7 @@ public class Security400Test {
     }
 
     @Test
-    public void anonCannotHaveTheListOfUsers() throws Exception {
+    void anonCannotHaveTheListOfUsers() throws Exception {
         j.jenkins.setCrumbIssuer(null);
 
         FullControlOnceLoggedInAuthorizationStrategy authorizationStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
@@ -664,7 +667,7 @@ public class Security400Test {
 
     @Test
     @Issue("SECURITY-722")
-    public void noAccessToAllUsers() throws Exception {
+    void noAccessToAllUsers() throws Exception {
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);

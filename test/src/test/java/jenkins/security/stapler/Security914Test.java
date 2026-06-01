@@ -24,37 +24,43 @@
 
 package jenkins.security.stapler;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.Functions;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @Issue("SECURITY-914")
-public class Security914Test {
+@WithJenkins
+class Security914Test {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void cannotUseInvalidLocale_toTraverseFolder() throws Exception {
+    void cannotUseInvalidLocale_toTraverseFolder() throws Exception {
         assumeTrue(Functions.isWindows());
 
-        assertNotNull(j.getPluginManager().getPlugin("credentials"));
-        j.createWebClient().goTo("plugin/credentials/images/credentials.svg", "image/svg+xml");
+        assertNotNull(j.getPluginManager().getPlugin("matrix-project"));
+        j.createWebClient().goTo("plugin/matrix-project/images/matrixproject.svg", "image/svg+xml");
 
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
-        WebRequest request = new WebRequest(new URI(j.getURL() + "plugin/credentials/.xml").toURL());
+        WebRequest request = new WebRequest(new URI(j.getURL() + "plugin/matrix-project/.xml").toURL());
         // plugin deployed in: test\target\jenkins7375296945862059919tmp
         // rootDir is in     : test\target\jenkinsTests.tmp\jenkins1274934531848159942test
         // j.jenkins.getRootDir().getName() = jenkins1274934531848159942test
@@ -62,19 +68,19 @@ public class Security914Test {
 
         Page p = wc.getPage(request);
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, p.getWebResponse().getStatusCode());
-        assertNotEquals(p.getWebResponse().getContentType(), "application/xml");
+        assertNotEquals("application/xml", p.getWebResponse().getContentType());
     }
 
     @Test
-    public void cannotUseInvalidLocale_toAnyFileInSystem() throws Exception {
+    void cannotUseInvalidLocale_toAnyFileInSystem() throws Exception {
         assumeTrue(Functions.isWindows());
 
-        assertNotNull(j.getPluginManager().getPlugin("credentials"));
-        j.createWebClient().goTo("plugin/credentials/images/credentials.svg", "image/svg+xml");
+        assertNotNull(j.getPluginManager().getPlugin("matrix-project"));
+        j.createWebClient().goTo("plugin/matrix-project/images/matrixproject.svg", "image/svg+xml");
 
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
-        WebRequest request = new WebRequest(new URI(j.getURL() + "plugin/credentials/.ini").toURL());
+        WebRequest request = new WebRequest(new URI(j.getURL() + "plugin/matrix-project/.ini").toURL());
         // ../ can be multiply to infinity, no impact, we just need to have enough to reach the root
         request.setAdditionalHeader("Accept-Language", "../../../../../../../../../../../../windows/win");
 

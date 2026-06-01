@@ -24,8 +24,6 @@
   }
 
   @media (prefers-contrast: more) {
-    text-decoration: underline;
-
     &:hover {
       text-decoration-thickness: 3px;
     }
@@ -94,7 +92,9 @@
 
   &:not(:disabled) {
     &:hover,
-    &:focus-visible {
+    &:focus-visible,
+    &[aria-describedby],
+    &[aria-expanded="true"] {
       &::before {
         background-color: var(--item-background--hover);
       }
@@ -122,7 +122,7 @@
   }
 
   @if $border == false {
-    &:not(:hover, &:active, &:focus) {
+    &:not(:hover, &:active, &:focus, &[aria-expanded="true"]) {
       &::before {
         border-color: transparent;
       }

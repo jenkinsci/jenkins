@@ -29,29 +29,35 @@ import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyArray;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.model.Node;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import org.apache.tools.ant.DirectoryScanner;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-public class FilePathTest {
+@WithJenkins
+class FilePathTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue("JENKINS-50237")
     @Test
-    public void listGlob() throws Exception {
+    void listGlob() throws Exception {
         for (Node n : new Node[] {r.jenkins, r.createOnlineSlave()}) {
             FilePath d = n.getRootPath().child("globbing");
             FilePath exists = d.child("dir/exists");
@@ -70,7 +76,7 @@ public class FilePathTest {
     @Test
     @Issue("JENKINS-32778")
     @LocalData("zip_with_relative")
-    public void zipRelativePathHandledCorrectly() throws Exception {
+    void zipRelativePathHandledCorrectly() throws Exception {
         assumeTrue(Functions.isWindows());
         FilePath zipFile = r.jenkins.getRootPath().child("zip-with-folder.zip");
         FilePath targetLocation = r.jenkins.getRootPath().child("unzip-target");
@@ -90,7 +96,7 @@ public class FilePathTest {
     @Test
     @Issue("JENKINS-32778")
     @LocalData("zip_with_relative")
-    public void zipAbsolutePathHandledCorrectly_win() throws Exception {
+    void zipAbsolutePathHandledCorrectly_win() throws Exception {
         assumeTrue(Functions.isWindows());
 
         // this special zip contains a ..\..\ [..] \..\Temp\evil.txt
@@ -114,7 +120,7 @@ public class FilePathTest {
     @Test
     @Issue("JENKINS-32778")
     @LocalData("zip_with_relative")
-    public void zipAbsolutePathHandledCorrectly_unix() throws Exception {
+    void zipAbsolutePathHandledCorrectly_unix() throws Exception {
         assumeFalse(Functions.isWindows());
 
         // this special zip contains a ../../../ [..] /../tmp/evil.txt
@@ -138,7 +144,7 @@ public class FilePathTest {
     @Test
     @Issue("JENKINS-32778")
     @LocalData("zip_with_relative")
-    public void zipRelativePathHandledCorrectly_oneUp() throws Exception {
+    void zipRelativePathHandledCorrectly_oneUp() throws Exception {
         // internal structure:
         //  ../simple3.txt
         //  child/simple2.txt
@@ -159,7 +165,7 @@ public class FilePathTest {
     @Test
     @Issue("XXX")
     @LocalData("zip_with_relative")
-    public void zipTarget_regular() throws Exception {
+    void zipTarget_regular() throws Exception {
         assumeTrue(Functions.isWindows());
         File zipFile = new File(r.jenkins.getRootDir(), "zip-with-folder.zip");
         File targetLocation = new File(r.jenkins.getRootDir(), "unzip-target");
@@ -185,7 +191,7 @@ public class FilePathTest {
     @Test
     @Issue("XXX")
     @LocalData("zip_with_relative")
-    public void zipTarget_relative() throws Exception {
+    void zipTarget_relative() throws Exception {
         assumeTrue(Functions.isWindows());
         File zipFile = new File(r.jenkins.getRootDir(), "zip-with-folder.zip");
         // the main difference is here, the ./
@@ -212,7 +218,7 @@ public class FilePathTest {
     @Test
     @Issue("JENKINS-66094")
     @LocalData("ZipSlipSamePathPrefix")
-    public void zipSlipSamePathPrefix() throws Exception {
+    void zipSlipSamePathPrefix() throws Exception {
         assumeFalse(Functions.isWindows());
 
         // > unzip -l evil.zip
@@ -237,7 +243,7 @@ public class FilePathTest {
     @Test
     @Issue("JENKINS-66094")
     @LocalData("ZipSlipSamePathPrefix")
-    public void zipSlipSamePathPrefixWin() throws Exception {
+    void zipSlipSamePathPrefixWin() throws Exception {
         assumeTrue(Functions.isWindows());
 
         // > unzip -l evil-win.zip

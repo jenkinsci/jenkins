@@ -24,26 +24,32 @@
 
 package jenkins.security.seed;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.servlet.http.HttpSession;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.Stapler;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
-public class UserSeedSecurityListenerTest {
+@WithJenkins
+class UserSeedSecurityListenerTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-59107")
-    public void authenticateSecondaryUserWhileLoggedIn_shouldNotOverwritePrimaryUserSessionSeed() throws Exception {
+    void authenticateSecondaryUserWhileLoggedIn_shouldNotOverwritePrimaryUserSessionSeed() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         AuthenticationManager authenticationManager = j.jenkins.getSecurityRealm().getSecurityComponents().manager2;
         JenkinsRule.WebClient wc = j.createWebClient();

@@ -1,13 +1,15 @@
 package jenkins.security.stapler;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest2;
 
 @Issue("SECURITY-400")
-public class TypedFilterTest extends StaplerAbstractTest {
+@WithJenkins
+class TypedFilterTest extends StaplerAbstractTest {
     @TestExtension
     public static class GetTarget1 extends AbstractUnprotectedRootAction {
         public Renderable getTarget() {
@@ -16,7 +18,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getTarget_withoutArg_isNotRoutableDirectly() throws Exception {
+    void getTarget_withoutArg_isNotRoutableDirectly() {
         assertNotReachable("getTarget1/target/");
     }
 
@@ -29,7 +31,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getTarget_withoutArg_isRoutableWithAnnotation() throws Exception {
+    void getTarget_withoutArg_isRoutableWithAnnotation() throws Exception {
         assertReachable("getTarget2/target/");
     }
 
@@ -42,7 +44,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getTarget_withArg_isNotRoutableWithStaplerNotDispatchable() throws Exception {
+    void getTarget_withArg_isNotRoutableWithStaplerNotDispatchable() {
         assertNotReachable("getTarget3/target/");
     }
 
@@ -54,7 +56,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getTarget_withArg_isRoutable() throws Exception {
+    void getTarget_withArg_isRoutable() throws Exception {
         assertReachable("getTarget4/target/");
     }
 
@@ -66,7 +68,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getStaplerFallback_withoutArg_isNotRoutableDirectly() throws Exception {
+    void getStaplerFallback_withoutArg_isNotRoutableDirectly() {
         assertNotReachable("getStaplerFallback1/staplerFallback/");
     }
 
@@ -79,7 +81,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getStaplerFallback_withoutArg_isRoutableWithAnnotation() throws Exception {
+    void getStaplerFallback_withoutArg_isRoutableWithAnnotation() throws Exception {
         assertReachable("getStaplerFallback2/staplerFallback/");
     }
 
@@ -92,7 +94,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getStaplerFallback_withArg_isNotRoutableWithStaplerNotDispatchable() throws Exception {
+    void getStaplerFallback_withArg_isNotRoutableWithStaplerNotDispatchable() {
         assertNotReachable("getStaplerFallback3/staplerFallback/");
     }
 
@@ -104,7 +106,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getStaplerFallback_withArg_isRoutable() throws Exception {
+    void getStaplerFallback_withArg_isRoutable() throws Exception {
         assertReachable("getStaplerFallback4/staplerFallback/");
     }
 
@@ -149,26 +151,26 @@ public class TypedFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void typeImplementingStaplerProxy_isRoutableByDefault() throws Exception {
+    void typeImplementingStaplerProxy_isRoutableByDefault() throws Exception {
         assertReachable("getTypeImplementingStaplerProxy/typeImplementingStaplerProxy/");
         assertReachable("getTypeImplementingStaplerProxy/typeImplementingStaplerProxy/valid");
     }
 
     @Test
-    public void typeExtendingParentImplementingStaplerProxy_isRoutableByDefault() throws Exception {
+    void typeExtendingParentImplementingStaplerProxy_isRoutableByDefault() throws Exception {
         assertReachable("getTypeImplementingStaplerProxy/typeExtendingTypeImplementingStaplerProxy/");
         assertReachable("getTypeImplementingStaplerProxy/typeExtendingTypeImplementingStaplerProxy/valid/");
     }
 
     @Test
-    public void typeImplementingStaplerProxy_isNotRoutableWithNonroutable() throws Exception {
+    void typeImplementingStaplerProxy_isNotRoutableWithNonroutable() {
         //TODO no way to avoid routability if implementing StaplerProxy
 //        assertNotReachable("getTypeImplementingStaplerProxy/typeImplementingStaplerProxy2/");
 //        assertNotReachable("getTypeImplementingStaplerProxy/typeImplementingStaplerProxy2/valid/");
     }
 
     @Test
-    public void typeExtendingParentImplementingStaplerProxy_isNotRoutableWithNonroutable() throws Exception {
+    void typeExtendingParentImplementingStaplerProxy_isNotRoutableWithNonroutable() {
         //TODO no way to avoid routability if super type implementing StaplerProxy
 //        assertNotReachable("getTypeImplementingStaplerProxy/typeExtendingTypeImplementingStaplerProxy2/");
 //        assertNotReachable("getTypeImplementingStaplerProxy/typeExtendingTypeImplementingStaplerProxy2/valid/");
@@ -182,7 +184,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getDynamic_withoutArg_isRoutable() throws Exception {
+    void getDynamic_withoutArg_isRoutable() throws Exception {
         assertReachable("getDynamic1/dynamic/");
         assertNotReachable("getDynamic1/<anyString>/");
     }
@@ -195,7 +197,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getDynamic_withArgStartingWithString_isRoutable() throws Exception {
+    void getDynamic_withArgStartingWithString_isRoutable() throws Exception {
         // dynamic is "just" a subcase of regular getDynamic usage
         assertReachable("getDynamic2/dynamic/");
         assertReachable("getDynamic2/<anyString>/");
@@ -209,7 +211,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getDynamic_withArgNotStartingWithString_isNotRoutable() throws Exception {
+    void getDynamic_withArgNotStartingWithString_isNotRoutable() {
         assertNotReachable("getDynamic3/dynamic/");
         assertNotReachable("getDynamic3/<anyString>/");
     }
@@ -222,7 +224,7 @@ public class TypedFilterTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getDynamic_withArgNotIncludingString_isRoutable() throws Exception {
+    void getDynamic_withArgNotIncludingString_isRoutable() throws Exception {
         assertReachable("getDynamic4/dynamic/");
         // there is no magic here, as the string argument is missing, just a regular getter
         assertNotReachable("getDynamic4/<anyString>/");

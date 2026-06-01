@@ -1,0 +1,227 @@
+.jenkins-choice-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  border-radius: var(--form-input-border-radius);
+  border: var(--card-border-width) solid var(--card-border-color);
+  background: var(--card-background);
+
+  &__heading {
+    font-size: 1rem;
+    padding: 0.875rem;
+    border-bottom: var(--card-border-width) solid var(--card-border-color);
+
+    & > * {
+      margin: 0;
+    }
+
+    h2 {
+      font-weight: var(--font-bold-weight);
+      font-size: var(--font-size-sm);
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: var(--text-color-secondary);
+    }
+  }
+
+  &__item {
+    -webkit-touch-callout: none;
+    position: relative;
+    user-select: none;
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+    white-space: unset;
+    border-radius: 0;
+    cursor: pointer;
+
+    &:not(:last-of-type) {
+      border-bottom: var(--card-border-width) solid var(--card-border-color);
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      transition: var(--standard-transition);
+      background: transparent;
+      box-shadow:
+        0 0 0 0.09375rem transparent,
+        0 0 0 0.5rem transparent;
+      pointer-events: none;
+    }
+
+    &:hover {
+      &::before {
+        background: color-mix(
+          in sRGB,
+          var(--text-color-secondary) 7.5%,
+          transparent
+        );
+      }
+    }
+
+    &:active,
+    &:has(input[type="radio"]:focus-visible) {
+      z-index: 10;
+      border-radius: calc(var(--form-input-border-radius) / 2);
+
+      &::before {
+        background: color-mix(
+          in sRGB,
+          var(--text-color-secondary) 12.5%,
+          transparent
+        ) !important;
+        box-shadow:
+          0 0 0 0.09375rem
+            color-mix(
+              in sRGB,
+              var(--text-color-secondary) 20%,
+              var(--card-background)
+            ),
+          0 0 0 0.34375rem
+            color-mix(
+              in sRGB,
+              color-mix(
+                  in sRGB,
+                  var(--text-color-secondary) 15%,
+                  var(--card-background)
+                )
+                65%,
+              transparent
+            );
+      }
+    }
+
+    &:hover,
+    &:active,
+    &:has(input[type="radio"]:focus-visible) {
+      .jenkins-choice-list__item__icon::before {
+        background: rgb(from var(--text-color-secondary) r g b / 0.1);
+        box-shadow:
+          inset var(--jenkins-border--subtle-shadow),
+          inset 0 0 0 var(--jenkins-border-width)
+            rgb(from var(--text-color-secondary) r g b / 0.1);
+      }
+    }
+
+    &:has(input[type="radio"]:focus-visible) {
+      &::before {
+        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+      }
+    }
+
+    &:has(input:checked) {
+      &::before {
+        background: color-mix(
+          in sRGB,
+          var(--text-color-secondary) 5%,
+          transparent
+        );
+      }
+
+      .jenkins-choice-list__item__icon {
+        color: var(--background);
+
+        &::before {
+          box-shadow:
+            inset var(--jenkins-border--subtle-shadow),
+            inset 0 0 18px 18px var(--accent-color) !important;
+        }
+      }
+
+      .jenkins-choice-list__item__conditional {
+        display: block;
+      }
+    }
+
+    &:first-of-type {
+      border-top-left-radius: calc(
+        var(--form-input-border-radius) - var(--jenkins-border-width)
+      ) !important;
+      border-top-right-radius: calc(
+        var(--form-input-border-radius) - var(--jenkins-border-width)
+      ) !important;
+    }
+
+    &:last-of-type {
+      border-bottom-left-radius: calc(
+        var(--form-input-border-radius) - var(--jenkins-border-width)
+      ) !important;
+      border-bottom-right-radius: calc(
+        var(--form-input-border-radius) - var(--jenkins-border-width)
+      ) !important;
+    }
+
+    label {
+      display: grid;
+      gap: 0.25rem 0.875rem;
+      padding: 0.875rem;
+      grid-template-columns: auto 1fr;
+      cursor: pointer;
+    }
+
+    label > input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+    }
+
+    &__icon {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 2.25rem;
+      width: 2.25rem;
+      grid-row: span 2;
+      z-index: 10;
+      transition: var(--standard-transition);
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: var(--form-input-border-radius);
+        transition: var(--standard-transition);
+        z-index: 0;
+        background: rgb(from var(--text-color-secondary) r g b / 0.05);
+        box-shadow:
+          inset 0 0 0 var(--jenkins-border-width) var(--jenkins-border-color),
+          inset 0 0 0 var(--jenkins-border-width)
+            rgb(from var(--text-color-secondary) r g b / 0.05);
+      }
+
+      svg,
+      img {
+        position: relative;
+        width: 1.25rem;
+        height: 1.25rem;
+        z-index: 1;
+      }
+    }
+
+    &__label {
+      display: block;
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-bold-weight);
+      color: var(--text-color);
+    }
+
+    &__description {
+      color: var(--text-color-secondary);
+      grid-column: 2;
+      padding-right: 2rem;
+    }
+
+    &__conditional {
+      display: none;
+      margin-left: 4rem;
+      margin-top: -0.25rem;
+      margin-bottom: 0.875rem;
+    }
+  }
+}

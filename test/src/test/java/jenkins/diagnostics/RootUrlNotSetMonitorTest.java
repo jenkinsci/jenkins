@@ -24,25 +24,31 @@
 
 package jenkins.diagnostics;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.JenkinsLocationConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class RootUrlNotSetMonitorTest {
+@WithJenkins
+class RootUrlNotSetMonitorTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-31661")
-    public void testWithRootUrl_configured() {
+    void testWithRootUrl_configured() {
         // test relies on the default JTH behavior
         JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
         String url = config.getUrl();
@@ -50,18 +56,18 @@ public class RootUrlNotSetMonitorTest {
         assertFalse(url.isBlank());
 
         RootUrlNotSetMonitor monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(RootUrlNotSetMonitor.class);
-        assertFalse("Monitor must not be activated", monitor.isActivated());
+        assertFalse(monitor.isActivated(), "Monitor must not be activated");
 
         config.setUrl(null);
 
-        assertTrue("Monitor must be activated", monitor.isActivated());
+        assertTrue(monitor.isActivated(), "Monitor must be activated");
 
         config.setUrl("ftp://localhost:8080/jenkins");
 
-        assertTrue("Monitor must be activated", monitor.isActivated());
+        assertTrue(monitor.isActivated(), "Monitor must be activated");
 
         config.setUrl("http://localhost:8080/jenkins");
 
-        assertFalse("Monitor must be activated", monitor.isActivated());
+        assertFalse(monitor.isActivated(), "Monitor must be activated");
     }
 }

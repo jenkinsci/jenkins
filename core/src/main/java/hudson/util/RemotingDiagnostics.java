@@ -142,7 +142,6 @@ public final class RemotingDiagnostics {
         }
 
         @Override
-        @SuppressFBWarnings(value = "GROOVY_SHELL", justification = "script console is a feature, not a bug")
         public String call() throws RuntimeException {
             // if we run locally, cl!=null. Otherwise the delegating classloader will be available as context classloader.
             if (cl == null)       cl = Thread.currentThread().getContextClassLoader();
@@ -158,13 +157,18 @@ public final class RemotingDiagnostics {
             PrintWriter pw = new PrintWriter(out);
             shell.setVariable("out", pw);
             try {
-                Object output = shell.evaluate(script);
+                Object output = evaluateScript(shell);
                 if (output != null)
                 pw.println("Result: " + output);
             } catch (Throwable t) {
                 Functions.printStackTrace(t, pw);
             }
             return out.toString();
+        }
+
+        @SuppressFBWarnings(value = "GROOVY_SHELL", justification = "script console is a feature, not a bug")
+        private Object evaluateScript(GroovyShell shell) {
+            return shell.evaluate(script);
         }
 
         private static final long serialVersionUID = 1L;

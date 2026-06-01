@@ -24,7 +24,7 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.Launcher;
 import java.io.IOException;
@@ -32,18 +32,26 @@ import jenkins.model.Jenkins;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPasswordInput;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class PasswordParameterDefinitionTest {
+@WithJenkins
+class PasswordParameterDefinitionTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Test public void defaultValueKeptSecret() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
+    @Test
+    void defaultValueKeptSecret() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty(new PasswordParameterDefinition("p", "s3cr3t", "")));
         j.configRoundtrip(p);
@@ -51,7 +59,8 @@ public class PasswordParameterDefinitionTest {
     }
 
     @Issue("JENKINS-36476")
-    @Test public void defaultValueAlwaysAvailable() throws Exception {
+    @Test
+    void defaultValueAlwaysAvailable() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("admin").

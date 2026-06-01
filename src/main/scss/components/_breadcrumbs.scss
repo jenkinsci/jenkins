@@ -1,130 +1,81 @@
 @use "../abstracts/mixins";
 
 .jenkins-breadcrumbs {
-  position: sticky;
-  top: 0;
-  z-index: 999;
   display: flex;
   align-items: center;
-  padding: 0.55rem 0.7rem 0.55rem 0.75rem;
-  backdrop-filter: blur(15px);
-  overflow-x: auto;
-  background: var(--breadcrumbs-bar-background);
+  gap: 0.5rem;
+  margin-left: -2rem;
+  overflow: hidden;
 
   &__list {
-    display: contents;
-    list-style-type: none;
+    display: flex;
 
     & > * {
-      flex-shrink: 0;
+      z-index: 1;
     }
 
     &-item {
-      position: relative;
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      justify-content: center;
-      color: var(--text-color);
-      font-weight: normal;
-      font-size: var(--font-size-sm);
-      padding: 0.2rem 0.4rem;
 
-      & > a {
-        @include mixins.item($border: false);
-
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: inherit;
-        font-size: inherit;
-        margin: 0;
-        padding: 0;
-        color: var(--text-color);
-        margin-right: 0 !important;
-        transition: var(--standard-transition);
-
-        &::before,
-        &::after {
-          inset: -0.25rem -0.6rem;
-        }
-
-        &:hover,
-        &:active,
-        &:focus,
-        &:focus-visible {
-          color: var(--text-color);
-        }
-      }
-
-      & > .model-link {
-        @media (hover: none) {
-          margin-right: 30px !important;
-        }
-
-        &:hover,
-        &--open {
-          margin-right: 30px !important;
-        }
-      }
-    }
-
-    // '>' separator between two items
-    .children,
-    .separator {
-      position: relative;
-      width: 1rem;
-      height: 1rem;
-      margin: 0.375rem 0.2rem;
-
-      &::after {
+      a::before {
         content: "";
         position: absolute;
         inset: 0;
-        transition: var(--standard-transition);
-        background: var(--text-color-secondary);
-        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Forward%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M184 112l144 144-144 144'/%3E%3C/svg%3E");
-        opacity: 0.6;
-      }
-    }
-
-    .separator {
-      &:last-of-type {
-        display: none;
-      }
-    }
-
-    .children {
-      cursor: pointer;
-
-      &:hover {
-        &::after {
-          opacity: 1;
-          transform: rotate(90deg);
-        }
+        pointer-events: all !important;
       }
 
-      &:active {
-        &::after {
-          transform: translateY(2px) rotate(90deg);
-          opacity: 0.5;
-        }
+      %breadcrumb-interactive-base {
+        @include mixins.item($border: false);
+
+        --item-background: transparent;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 1.75rem;
       }
 
-      &:hover,
-      &:active,
-      &:focus,
-      &:focus-visible {
-        &::after {
-          background: var(--text-color);
-        }
+      & > a {
+        @extend %breadcrumb-interactive-base;
       }
 
-      // Increase the hit target
+      .dropdown-indicator {
+        @extend %breadcrumb-interactive-base;
+
+        padding: 0 0.3125rem;
+      }
+
+      & > a,
+      span {
+        position: relative;
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-bold-weight);
+        margin: 0;
+        padding: 0.25rem 0.5rem;
+        color: inherit;
+        text-decoration: none;
+        text-wrap: nowrap;
+        flex-shrink: 0;
+        max-width: 25ch;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        display: inline-block;
+      }
+
+      // '/' separator between two items
       &::before {
-        content: "";
-        position: absolute;
-        inset: -14px -5px;
-        background: transparent;
+        content: "/";
+        position: relative;
+        flex-shrink: 0;
+        color: color-mix(in sRGB, var(--text-color-secondary) 30%, transparent);
+        padding-left: 4px;
+        padding-right: 4px;
+
+        @media (prefers-contrast: more) {
+          color: var(--text-color);
+        }
       }
     }
   }
@@ -140,7 +91,6 @@
   outline: none;
   cursor: pointer;
   padding: 0;
-  pointer-events: none;
   transition: var(--standard-transition);
   background: transparent;
   top: 4px;
@@ -175,7 +125,7 @@
     opacity: 0;
     transition: var(--standard-transition);
     background: var(--text-color);
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Down%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M112 184l144 144 144-144'/%3E%3C/svg%3E");
+    mask-image: url("../images/svgs/mask-breadcrumbs__after.svg");
     mask-position: center;
     mask-repeat: no-repeat;
   }
@@ -305,6 +255,7 @@
       .jenkins-menu-dropdown-chevron {
         &::after {
           opacity: 0.5;
+          display: none;
         }
       }
     }

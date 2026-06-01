@@ -64,24 +64,28 @@ td.no-wrap {
 
 #safe-restart-msg {
   font-weight: bold;
-  color: white;
-  background-color: var(--warning);
+  color: var(--background) !important;
+  background-color: var(--warning-color);
   text-align: center;
   margin-bottom: var(--section-padding);
   padding: 0.5em;
   -moz-border-radius: 0.5em;
   border-radius: var(--form-input-border-radius);
+  position: relative;
+  z-index: 103;
 }
 
 #shutdown-msg {
   font-weight: bold;
-  color: white;
-  background-color: #ef2929;
+  color: var(--background) !important;
+  background-color: var(--destructive-color);
   text-align: center;
   margin-bottom: var(--section-padding);
   padding: 0.5em;
   -moz-border-radius: 0.5em;
   border-radius: var(--form-input-border-radius);
+  position: relative;
+  z-index: 103;
 }
 
 a.lowkey:link {
@@ -148,19 +152,19 @@ td.tab {
 
 pre {
   white-space: pre-wrap;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   margin: 0 0 var(--section-padding);
   padding: 0.8rem 1rem;
   border-radius: var(--form-input-border-radius);
-  border: var(--jenkins-border--subtle);
-  background-color: var(--pre-background);
+  background: var(--card-background);
+  border: var(--card-border-width) solid var(--card-border-color);
   color: var(--pre-color);
   font-family: var(--font-family-mono);
   font-weight: 400;
   line-height: 1.66;
 
   a {
-    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 }
 
@@ -248,7 +252,7 @@ pre.console {
 }
 
 .jenkins-not-applicable {
-  color: darkgrey;
+  color: var(--text-color-secondary);
   font-style: italic;
 }
 
@@ -285,12 +289,16 @@ pre.console {
 
 /* ====================== help ===================================== */
 
+.help-area {
+  display: none; /* hidden until loaded */
+}
+
 .help {
   position: relative;
-  display: none; /* hidden until loaded */
   padding: 1rem;
   margin: 1rem 0;
-  word-break: break-word;
+  overflow-wrap: anywhere;
+  word-break: normal;
   border-radius: var(--form-input-border-radius);
   background-color: var(--button-background);
   border: var(--jenkins-border--subtle);
@@ -327,7 +335,7 @@ pre.console {
 
 .help .from-plugin {
   text-align: right;
-  color: #666;
+  color: var(--text-color-secondary);
 }
 
 .icon-help,
@@ -380,7 +388,7 @@ img.icon-help {
   overflow-y: scroll;
   color: var(--text-color);
   border-radius: var(--form-input-border-radius);
-  box-shadow: 0 10px 20px rgba(black, 0.15);
+  box-shadow: 0 10px 20px rgb(black, 0.15);
   margin-top: 8px;
   margin-left: 3px;
   max-height: 300px;
@@ -464,24 +472,24 @@ table.fileList td.fileSize {
 
 /* ========================= test result ========================= */
 .result-passed {
-  color: #3465a4;
+  color: var(--success-color);
 }
 
 .result-skipped {
-  color: #db0;
+  color: var(--skipped-color);
 }
 
 .result-fixed {
-  color: #3465a4;
+  color: var(--success-color);
   font-weight: bold;
 }
 
 .result-failed {
-  color: #ef2929;
+  color: var(--error-color);
 }
 
 .result-regression {
-  color: #ef2929;
+  color: var(--error-color);
   font-weight: bold;
 }
 
@@ -679,12 +687,14 @@ table.progress-bar.red td.progress-bar-done {
   border-radius: var(--form-input-border-radius);
   overflow: hidden;
   margin-bottom: var(--section-padding);
+  border: var(--jenkins-border);
 
   pre {
     padding-top: 0;
     padding-bottom: 0.1rem;
     margin-bottom: 0;
     border-radius: 0;
+    border: none;
 
     &:first-of-type {
       padding-top: 0.8rem;
@@ -693,6 +703,10 @@ table.progress-bar.red td.progress-bar-done {
     &:last-of-type {
       padding-bottom: 0.8rem;
     }
+  }
+
+  &:empty {
+    display: none;
   }
 }
 

@@ -27,25 +27,24 @@ package hudson.util;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assume.assumeNoException;
-import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * In its own suite to minimize the chance of mucking about with other tests.
  */
-public class XStream2EncodingTest {
+class XStream2EncodingTest {
 
     private static void useNonUTF8() {
         clearDefaultEncoding();
         System.setProperty("file.encoding", "ISO-8859-1");
-        assumeThat(Charset.defaultCharset().name(), is("ISO-8859-1"));
+        assumeTrue(Charset.defaultCharset().name().equals("ISO-8859-1"));
     }
 
     private static void clearDefaultEncodingAfter() {
@@ -59,12 +58,13 @@ public class XStream2EncodingTest {
             defaultCharset.set(null, null);
         } catch (Exception x) {
             // Per JDK-4163515, this is not supported. It happened to work prior to Java 17, though.
-            assumeNoException(x);
+            assumeTrue(false, x.toString());
         }
     }
 
     @SuppressWarnings("deprecation")
-    @Test public void toXMLUnspecifiedEncoding() throws Exception {
+    @Test
+    void toXMLUnspecifiedEncoding() throws Exception {
       useNonUTF8();
       try {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -84,7 +84,8 @@ public class XStream2EncodingTest {
       }
     }
 
-    @Test public void toXMLUTF8() throws Exception {
+    @Test
+    void toXMLUTF8() throws Exception {
       useNonUTF8();
       try {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

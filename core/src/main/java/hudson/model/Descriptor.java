@@ -869,9 +869,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
     public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         if (Util.isOverridden(Descriptor.class, getClass(), "configure", StaplerRequest.class, JSONObject.class)) {
             return configure(StaplerRequest.fromStaplerRequest2(req), json);
-        } else {
+        } else if (Util.isOverridden(Descriptor.class, getClass(), "configure", StaplerRequest.class)) {
             // compatibility
             return configure(StaplerRequest.fromStaplerRequest2(req));
+        } else {
+            return true;
         }
     }
 

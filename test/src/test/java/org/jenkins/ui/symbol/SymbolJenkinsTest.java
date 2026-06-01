@@ -4,22 +4,23 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 
-import org.junit.Rule;
-import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RealJenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 
-public class SymbolJenkinsTest {
-    @Rule
-    public RealJenkinsRule rjr = new RealJenkinsRule()
+class SymbolJenkinsTest {
+
+    @RegisterExtension
+    private final RealJenkinsExtension rjr = new RealJenkinsExtension()
             .addPlugins("plugins/design-library.jpi", "plugins/prism-api.jpi", "plugins/bootstrap5-api.jpi");
 
     @Test
     @Issue("JENKINS-73243")
     @DisplayName("When resolving a symbol where the tooltip contains '$' no error is thrown")
-    public void dollarInToolTipSucceeds() throws Throwable {
+    void dollarInToolTipSucceeds() throws Throwable {
         rjr.then(SymbolJenkinsTest::_dollarInTooltipSucceeds);
     }
 
@@ -34,7 +35,7 @@ public class SymbolJenkinsTest {
 
     @Test
     @DisplayName("When resolving a symbol from a missing plugin, the placeholder is generated instead")
-    public void missingSymbolFromPluginDefaultsToPlaceholder() throws Throwable {
+    void missingSymbolFromPluginDefaultsToPlaceholder() throws Throwable {
         rjr.then(SymbolJenkinsTest::_missingSymbolFromPluginDefaultsToPlaceholder);
     }
 
@@ -49,7 +50,7 @@ public class SymbolJenkinsTest {
 
     @Test
     @DisplayName("Resolving a valid symbol from an installed plugin does not return the placeholder")
-    public void resolvingSymbolFromPlugin() throws Throwable {
+    void resolvingSymbolFromPlugin() throws Throwable {
         rjr.then(SymbolJenkinsTest::_resolvingSymbolFromPlugin);
     }
 

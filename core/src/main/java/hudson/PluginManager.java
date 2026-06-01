@@ -58,8 +58,10 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.Permission;
 import hudson.security.PermissionScope;
+import hudson.util.CachingClassLoader;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
+import hudson.util.ExistenceCheckingClassLoader;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import hudson.util.Retrier;
@@ -100,21 +102,19 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -217,6 +217,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Number of attempts to check the updates sites. It's kind of constant, but let it so for tests
      */
     /* private final */ static int CHECK_UPDATE_ATTEMPTS;
+
+    /**
+     * Class name prefixes to skip in the class loading
+     */
+    private static final String[] CLASS_PREFIXES_TO_SKIP = {
+            "SimpleTemplateScript",  // cf. groovy.text.SimpleTemplateEngine
+            "groovy.tmp.templates.GStringTemplateScript", // Leaks on classLoader in some cases, see JENKINS-75879
+    };
 
     static {
         try {
@@ -363,6 +371,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * This is used to report a message that Jenkins needs to be restarted
      * for new plugins to take effect.
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public volatile boolean pluginUploaded = false;
 
     /**
@@ -574,56 +583,47 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
                     // schedule execution of loading plugins
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[0])) {
-                        g.followedBy().notFatal().attains(PLUGINS_PREPARED).add(String.format("Loading plugin %s v%s (%s)", p.getLongName(), p.getVersion(), p.getShortName()), new Executable() {
-                            @Override
-                            public void run(Reactor session) throws Exception {
-                                try {
-                                    p.resolvePluginDependencies();
-                                    strategy.load(p);
-                                } catch (MissingDependencyException e) {
-                                    failedPlugins.add(new FailedPlugin(p, e));
-                                    activePlugins.remove(p);
-                                    plugins.remove(p);
-                                    p.releaseClassLoader();
-                                    LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { p.getShortName(), e.getMessage() });
-                                } catch (IOException e) {
-                                    failedPlugins.add(new FailedPlugin(p, e));
-                                    activePlugins.remove(p);
-                                    plugins.remove(p);
-                                    p.releaseClassLoader();
-                                    throw e;
-                                }
+                        g.followedBy().notFatal().attains(PLUGINS_PREPARED).add(String.format("Loading plugin %s v%s (%s)", p.getLongName(), p.getVersion(), p.getShortName()), reactor -> {
+                            try {
+                                p.resolvePluginDependencies();
+                                strategy.load(p);
+                            } catch (MissingDependencyException e) {
+                                failedPlugins.add(new FailedPlugin(p, e));
+                                activePlugins.remove(p);
+                                plugins.remove(p);
+                                p.releaseClassLoader();
+                                LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { p.getShortName(), e.getMessage() });
+                            } catch (IOException e) {
+                                failedPlugins.add(new FailedPlugin(p, e));
+                                activePlugins.remove(p);
+                                plugins.remove(p);
+                                p.releaseClassLoader();
+                                throw e;
                             }
                         });
                     }
 
                     // schedule execution of initializing plugins
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[0])) {
-                        g.followedBy().notFatal().attains(PLUGINS_STARTED).add("Initializing plugin " + p.getShortName(), new Executable() {
-                            @Override
-                            public void run(Reactor session) throws Exception {
-                                if (!activePlugins.contains(p)) {
-                                    return;
-                                }
-                                try {
-                                    p.getPluginOrFail().postInitialize();
-                                } catch (Exception e) {
-                                    failedPlugins.add(new FailedPlugin(p, e));
-                                    activePlugins.remove(p);
-                                    plugins.remove(p);
-                                    p.releaseClassLoader();
-                                    throw e;
-                                }
+                        g.followedBy().notFatal().attains(PLUGINS_STARTED).add("Initializing plugin " + p.getShortName(), reactor -> {
+                            if (!activePlugins.contains(p)) {
+                                return;
+                            }
+                            try {
+                                p.getPluginOrFail().postInitialize();
+                            } catch (Exception e) {
+                                failedPlugins.add(new FailedPlugin(p, e));
+                                activePlugins.remove(p);
+                                plugins.remove(p);
+                                p.releaseClassLoader();
+                                throw e;
                             }
                         });
                     }
 
-                    g.followedBy().attains(PLUGINS_STARTED).add("Discovering plugin initialization tasks", new Executable() {
-                        @Override
-                        public void run(Reactor reactor) throws Exception {
-                            // rescan to find plugin-contributed @Initializer
-                            reactor.addAll(initializerFinder.discoverTasks(reactor));
-                        }
+                    g.followedBy().attains(PLUGINS_STARTED).add("Discovering plugin initialization tasks", reactor -> {
+                        // rescan to find plugin-contributed @Initializer
+                        reactor.addAll(initializerFinder.discoverTasks(reactor));
                     });
 
                     // register them all
@@ -632,12 +632,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             });
 
             // All plugins are loaded. Now we can figure out who depends on who.
-            requires(PLUGINS_PREPARED).attains(COMPLETED).add("Resolving Dependent Plugins Graph", new Executable() {
-                @Override
-                public void run(Reactor reactor) throws Exception {
-                    resolveDependentPlugins();
-                }
-            });
+            requires(PLUGINS_PREPARED).attains(COMPLETED).add("Resolving Dependent Plugins Graph", reactor -> resolveDependentPlugins());
         }});
     }
 
@@ -804,35 +799,32 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             final List<DetachedPluginsUtil.DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(lastExecVersion);
 
-            Set<String> loadedDetached = loadPluginsFromWar(getDetachedLocation(), new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    name = normalisePluginName(name);
+            Set<String> loadedDetached = loadPluginsFromWar(getDetachedLocation(), (dir, name) -> {
+                name = normalisePluginName(name);
 
-                    // If this was a plugin that was detached some time in the past i.e. not just one of the
-                    // plugins that was bundled "for fun".
-                    if (DetachedPluginsUtil.isDetachedPlugin(name)) {
-                        VersionNumber installedVersion = getPluginVersion(rootDir, name);
-                        VersionNumber bundledVersion = getPluginVersion(dir, name);
-                        // If the plugin is already installed, we need to decide whether to replace it with the bundled version.
-                        if (installedVersion != null && bundledVersion != null) {
-                            // If the installed version is older than the bundled version, then it MUST be upgraded.
-                            // If the installed version is newer than the bundled version, then it MUST NOT be upgraded.
-                            // If the versions are equal we just keep the installed version.
-                            return installedVersion.isOlderThan(bundledVersion);
-                        }
+                // If this was a plugin that was detached some time in the past i.e. not just one of the
+                // plugins that was bundled "for fun".
+                if (DetachedPluginsUtil.isDetachedPlugin(name)) {
+                    VersionNumber installedVersion = getPluginVersion(rootDir, name);
+                    VersionNumber bundledVersion = getPluginVersion(dir, name);
+                    // If the plugin is already installed, we need to decide whether to replace it with the bundled version.
+                    if (installedVersion != null && bundledVersion != null) {
+                        // If the installed version is older than the bundled version, then it MUST be upgraded.
+                        // If the installed version is newer than the bundled version, then it MUST NOT be upgraded.
+                        // If the versions are equal we just keep the installed version.
+                        return installedVersion.isOlderThan(bundledVersion);
                     }
-
-                    // If it's a plugin that was detached since the last running version.
-                    for (DetachedPluginsUtil.DetachedPlugin detachedPlugin : detachedPlugins) {
-                        if (detachedPlugin.getShortName().equals(name)) {
-                            return true;
-                        }
-                    }
-
-                    // Otherwise skip this and do not install.
-                    return false;
                 }
+
+                // If it's a plugin that was detached since the last running version.
+                for (DetachedPluginsUtil.DetachedPlugin detachedPlugin : detachedPlugins) {
+                    if (detachedPlugin.getShortName().equals(name)) {
+                        return true;
+                    }
+                }
+
+                // Otherwise skip this and do not install.
+                return false;
             });
 
             LOGGER.log(INFO, "Upgraded Jenkins from version {0} to version {1}. Loaded detached plugins (and dependencies): {2}",
@@ -851,17 +843,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             }
             if (!forceUpgrade.isEmpty()) {
-                Set<String> loadedDetached = loadPluginsFromWar(getDetachedLocation(), new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                        name = normalisePluginName(name);
-                        for (DetachedPluginsUtil.DetachedPlugin detachedPlugin : forceUpgrade) {
-                            if (detachedPlugin.getShortName().equals(name)) {
-                                return true;
-                            }
+                Set<String> loadedDetached = loadPluginsFromWar(getDetachedLocation(), (dir, name) -> {
+                    name = normalisePluginName(name);
+                    for (DetachedPluginsUtil.DetachedPlugin detachedPlugin : forceUpgrade) {
+                        if (detachedPlugin.getShortName().equals(name)) {
+                            return true;
                         }
-                        return false;
                     }
+                    return false;
                 });
                 LOGGER.log(INFO, "Upgraded detached plugins (and dependencies): {0}",
                         new Object[]{loadedDetached});
@@ -1161,8 +1150,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         InputStream in = null;
         // Magic, which allows to avoid using stream generated for JarURLConnection.
         // It prevents getting into JENKINS-37332 due to the file descriptor leak
-        if (uc instanceof JarURLConnection) {
-            final JarURLConnection jarURLConnection = (JarURLConnection) uc;
+        if (uc instanceof JarURLConnection jarURLConnection) {
             final String entryName = jarURLConnection.getEntryName();
 
             try (JarFile jarFile = jarURLConnection.getJarFile()) {
@@ -1202,8 +1190,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         // It prevents file descriptor leak if the URL references a file within JAR
         // See JENKINS-37332  for more info
         // The code idea is taken from https://github.com/jknack/handlebars.java/pull/394
-        if (uc instanceof JarURLConnection) {
-            final JarURLConnection connection = (JarURLConnection) uc;
+        if (uc instanceof JarURLConnection connection) {
             final URL jarURL = connection.getJarFileURL();
             if (jarURL.getProtocol().equals("file")) {
                 String file = jarURL.getFile();
@@ -1556,6 +1543,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         releaseTimestamp.put("displayValue", Messages.PluginManager_ago(Functions.getTimeSpanString(plugin.releaseTimestamp)));
                         jsonObject.put("releaseTimestamp", releaseTimestamp);
                     }
+                    if (plugin.healthScore != null) {
+                        jsonObject.put("healthScore", plugin.healthScore);
+                        jsonObject.put("healthScoreClass", plugin.healthScoreClass);
+                    }
                     return jsonObject;
                 })
                 .collect(toList());
@@ -1780,37 +1771,34 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         if (!jenkins.getInstallState().isSetupComplete()) {
             jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING);
             updateCenter.persistInstallStatus();
-            new Thread() {
-                @Override
-                public void run() {
-                    boolean failures = false;
-                    INSTALLING: while (true) {
-                        try {
-                            updateCenter.persistInstallStatus();
-                            Thread.sleep(500);
-                            failures = false;
-                            for (Future<UpdateCenter.UpdateCenterJob> jobFuture : installJobs) {
-                                if (!jobFuture.isDone() && !jobFuture.isCancelled()) {
-                                    continue INSTALLING;
-                                }
-                                UpdateCenter.UpdateCenterJob job = jobFuture.get();
-                                if (job instanceof InstallationJob && ((InstallationJob) job).status instanceof DownloadJob.Failure) {
-                                    failures = true;
-                                }
+            new Thread(() -> {
+                boolean failures = false;
+                INSTALLING: while (true) {
+                    try {
+                        updateCenter.persistInstallStatus();
+                        Thread.sleep(500);
+                        failures = false;
+                        for (Future<UpdateCenter.UpdateCenterJob> jobFuture : installJobs) {
+                            if (!jobFuture.isDone() && !jobFuture.isCancelled()) {
+                                continue INSTALLING;
                             }
-                        } catch (Exception e) {
-                            LOGGER.log(WARNING, "Unexpected error while waiting for initial plugin set to install.", e);
+                            UpdateCenter.UpdateCenterJob job = jobFuture.get();
+                            if (job instanceof InstallationJob && ((InstallationJob) job).status instanceof DownloadJob.Failure) {
+                                failures = true;
+                            }
                         }
-                        break;
+                    } catch (Exception e) {
+                        LOGGER.log(WARNING, "Unexpected error while waiting for initial plugin set to install.", e);
                     }
-                    updateCenter.persistInstallStatus();
-                    if (!failures) {
-                        try (ACLContext acl = ACL.as2(currentAuth)) {
-                            InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_PLUGINS_INSTALLING);
-                        }
+                    break;
+                }
+                updateCenter.persistInstallStatus();
+                if (!failures) {
+                    try (ACLContext acl = ACL.as2(currentAuth)) {
+                        InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_PLUGINS_INSTALLING);
                     }
                 }
-            }.start();
+            }).start();
         }
 
         return installJobs;
@@ -1865,11 +1853,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         @Override
         public void copy(File target) throws IOException {
-            try {
-                fileItem.write(Util.fileToPath(target));
-            } catch (UncheckedIOException e) {
-                throw e.getCause();
-            }
+            fileItem.write(Util.fileToPath(target));
         }
 
         @Override
@@ -1947,7 +1931,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 copier = new UrlPluginCopier(fileName);
             } else {
                 // this is a file upload
-                FileItem fileItem = items.get(0);
+                FileItem fileItem = items.getFirst();
                 fileName = Util.getFileName(fileItem.getName());
                 copier = new FileUploadPluginCopier(fileItem);
             }
@@ -2391,43 +2375,50 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * {@link ClassLoader} that can see all plugins.
      */
-    public static final class UberClassLoader extends ClassLoader {
+    public static final class UberClassLoader extends CachingClassLoader {
         private final List<PluginWrapper> activePlugins;
 
-        /** Cache of loaded, or known to be unloadable, classes. */
-        private final ConcurrentMap<String, Optional<Class<?>>> loaded = new ConcurrentHashMap<>();
-
-        static {
-            registerAsParallelCapable();
-        }
-
+        /**
+         * The servlet container's {@link ClassLoader} (the parent of Jenkins core) is
+         * parallel-capable and maintains its own growing {@link Map} of {@link
+         * ClassLoader#getClassLoadingLock} objects per class name for every load attempt (including
+         * misses), and we cannot override this behavior. Wrap the servlet container {@link
+         * ClassLoader} in {@link ExistenceCheckingClassLoader} to avoid calling {@link
+         * ClassLoader#getParent}'s {@link ClassLoader#loadClass(String, boolean)} at all for misses
+         * by first checking if the resource exists. If the resource does not exist, we immediately
+         * throw {@link ClassNotFoundException}. As a result, the servlet container's {@link
+         * ClassLoader} is never asked to try and fail, and it never creates/retains lock objects
+         * for those misses.
+         */
         public UberClassLoader(List<PluginWrapper> activePlugins) {
-            super("UberClassLoader", PluginManager.class.getClassLoader());
+            super("UberClassLoader", new ExistenceCheckingClassLoader(PluginManager.class.getClassLoader()));
             this.activePlugins = activePlugins;
         }
 
         @Override
-        protected Class<?> findClass(String name) throws ClassNotFoundException {
-            if (name.startsWith("SimpleTemplateScript")) { // cf. groovy.text.SimpleTemplateEngine
-                throw new ClassNotFoundException("ignoring " + name);
+        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            for (String namePrefixToSkip : CLASS_PREFIXES_TO_SKIP) {
+                if (name.startsWith(namePrefixToSkip)) {
+                    throw new ClassNotFoundException("ignoring " + name);
+                }
             }
-            return loaded.computeIfAbsent(name, this::computeValue).orElseThrow(() -> new ClassNotFoundException(name));
+            return super.loadClass(name, resolve);
         }
 
-        private Optional<Class<?>> computeValue(String name) {
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
             for (PluginWrapper p : activePlugins) {
                 try {
                     if (FAST_LOOKUP) {
-                        return Optional.of(ClassLoaderReflectionToolkit.loadClass(p.classLoader, name));
+                        return ClassLoaderReflectionToolkit.loadClass(p.classLoader, name);
                     } else {
-                        return Optional.of(p.classLoader.loadClass(name));
+                        return p.classLoader.loadClass(name);
                     }
                 } catch (ClassNotFoundException e) {
                     // Not found. Try the next class loader.
                 }
             }
-            // Not found in any of the class loaders. Delegate.
-            return Optional.empty();
+            throw new ClassNotFoundException(name);
         }
 
         @Override
@@ -2457,10 +2448,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             }
             return Collections.enumeration(resources);
-        }
-
-        void clearCacheMisses() {
-            loaded.values().removeIf(Optional::isEmpty);
         }
 
         @Override
@@ -2661,7 +2648,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         public Map<PluginWrapper, String> getDeprecatedPlugins() {
             return Jenkins.get().getPluginManager().getPlugins().stream()
                     .filter(PluginWrapper::isDeprecated)
-                    .collect(Collectors.toMap(Function.identity(), it -> it.getDeprecations().get(0).url));
+                    .sorted(Comparator.comparing(PluginWrapper::getDisplayName)) // Sort by plugin name
+                    .collect(LinkedHashMap::new,
+                            (map, plugin) -> map.put(plugin, plugin.getDeprecations().getFirst().url),
+                            Map::putAll);
         }
     }
 

@@ -3,7 +3,6 @@
 .jenkins-section {
   border-top: var(--jenkins-border);
   padding: var(--section-padding) 0 0 0;
-  max-width: 1800px;
 
   &:last-child {
     padding-bottom: 0;
@@ -39,7 +38,7 @@
 .jenkins-section__items {
   display: grid;
   grid-template-columns: 1fr;
-  grid-gap: var(--section-padding);
+  gap: var(--section-padding);
 
   @media screen and (width >= 800px) {
     grid-template-columns: 1fr 1fr;
@@ -105,6 +104,7 @@
       position: absolute;
       top: -4px;
       right: -4px;
+      backdrop-filter: blur(10px);
     }
   }
 

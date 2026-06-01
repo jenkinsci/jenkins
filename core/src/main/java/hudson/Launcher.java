@@ -1000,6 +1000,7 @@ public abstract class Launcher {
         }
 
         @Override
+        @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "TODO needs triage")
         public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String, String> envVars) throws IOException {
             printCommandLine(cmd, workDir);
 
@@ -1437,11 +1438,15 @@ public abstract class Launcher {
             this.envOverrides = envOverrides;
         }
 
+        @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "TODO needs triage")
+        private Process launchProcess() throws IOException {
+            return Runtime.getRuntime()
+                    .exec(cmd, Util.mapToEnv(inherit(envOverrides)), workDir == null ? null : new File(workDir));
+        }
+
         @Override
         public OutputStream call() throws IOException {
-            Process p = Runtime.getRuntime().exec(cmd,
-                Util.mapToEnv(inherit(envOverrides)),
-                workDir == null ? null : new File(workDir));
+            Process p = launchProcess();
 
             List<String> cmdLines = Arrays.asList(cmd);
             new StreamCopyThread("stdin copier for remote agent on " + cmdLines,

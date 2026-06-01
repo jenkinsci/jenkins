@@ -29,8 +29,11 @@ Behaviour.specify(".secret", "secret-button", 0, function (e) {
   }
 
   var unhideSecretInput = function () {
-    var textArea = e.querySelector('textarea[hidden="hidden"]');
+    const header = e.querySelector(".secret-header");
+    header.classList.add("secret-header--expanded");
+    const textArea = e.querySelector('textarea[hidden="hidden"]');
     textArea.removeAttribute("hidden");
+    textArea.focus();
   };
 
   var clearSecretValue = function () {

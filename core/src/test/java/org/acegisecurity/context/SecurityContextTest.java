@@ -35,10 +35,10 @@ import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("deprecation")
-public class SecurityContextTest {
+class SecurityContextTest {
 
     @Test
-    public void serializabilityFromSpring() throws Exception {
+    void serializabilityFromSpring() throws Exception {
         org.springframework.security.core.context.SecurityContext spring1 = new org.springframework.security.core.context.SecurityContextImpl();
         spring1.setAuthentication(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken("user", null));
         SecurityContext acegi1 = SecurityContext.fromSpring(spring1);
@@ -48,7 +48,7 @@ public class SecurityContextTest {
     }
 
     @Test
-    public void serializabilityToSpring() throws Exception {
+    void serializabilityToSpring() throws Exception {
         SecurityContext acegi1 = new SecurityContextImpl();
         acegi1.setAuthentication(new UsernamePasswordAuthenticationToken("user", null));
         org.springframework.security.core.context.SecurityContext spring1 = acegi1.toSpring();

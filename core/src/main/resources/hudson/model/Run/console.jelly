@@ -28,29 +28,24 @@ THE SOFTWARE.
   Displays the console output
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <l:layout title="${it.fullDisplayName} Console">
-    <st:include page="sidepanel.jelly" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <j:new className="jenkins.run.ConsoleTab" var="it">
+    <j:arg value="${it}"/>
+  </j:new>
 
-    <l:breadcrumb title="${%Console Output}" />
+  <l:run-subpage>
+    <l:app-bar title="${%Console}">
+      <a class="jenkins-button" href="consoleText" download="${it.object.displayName}.txt">
+        <l:icon src="symbol-download" />
+        ${%Download}
+      </a>
+      <l:copyButton ref="out" label="${%Copy}" />
+      <a class="jenkins-button" href="consoleText">
+        ${%View as plain text}
+      </a>
+    </l:app-bar>
 
-    <l:main-panel>
-      <j:set var="controls">
-        <a class="jenkins-button" href="consoleText" download="${it.displayName}.txt">
-          <l:icon src="symbol-download" />
-          ${%Download}
-        </a>
-        <l:copyButton ref="out" label="${%Copy}" />
-        <a class="jenkins-button" href="consoleText">
-          ${%View as plain text}
-        </a>
-      </j:set>
-
-      <t:buildCaption controls="${controls}">
-        ${%Console Output}
-      </t:buildCaption>
-
-      <st:include page="console-log.jelly" />
-    </l:main-panel>
-  </l:layout>
+    <j:set var="it" value="${it.object}" />
+    <st:include page="console-log.jelly" />
+  </l:run-subpage>
 </j:jelly>

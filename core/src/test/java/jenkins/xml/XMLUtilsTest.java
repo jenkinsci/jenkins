@@ -26,44 +26,47 @@ package jenkins.xml;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Objects;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPathExpressionException;
 import jenkins.util.xml.XMLUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.xml.sax.SAXException;
 
-public class XMLUtilsTest {
+class XMLUtilsTest {
 
     @Issue("SECURITY-167")
     @Test
-    public void testSafeTransformDoesNotProcessForeignResources() throws Exception {
-        final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
-                "<!DOCTYPE project[\n" +
-                "  <!ENTITY foo SYSTEM \"file:///\">\n" +
-                "]>\n" +
-                "<project>\n" +
-                "  <actions/>\n" +
-                "  <description>&foo;</description>\n" +
-                "  <keepDependencies>false</keepDependencies>\n" +
-                "  <properties/>\n" +
-                "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
-                "  <canRoam>true</canRoam>\n" +
-                "  <triggers/>\n" +
-                "  <builders/>\n" +
-                "  <publishers/>\n" +
-                "  <buildWrappers/>\n" +
-                "</project>";
+    void testSafeTransformDoesNotProcessForeignResources() throws Exception {
+        final String xml = """
+                <?xml version='1.0' encoding='UTF-8'?>
+                <!DOCTYPE project[
+                  <!ENTITY foo SYSTEM "file:///">
+                ]>
+                <project>
+                  <actions/>
+                  <description>&foo;</description>
+                  <keepDependencies>false</keepDependencies>
+                  <properties/>
+                  <scm class="hudson.scm.NullSCM"/>
+                  <canRoam>true</canRoam>
+                  <triggers/>
+                  <builders/>
+                  <publishers/>
+                  <buildWrappers/>
+                </project>""";
 
 
         StringWriter stringWriter = new StringWriter();
@@ -80,20 +83,21 @@ public class XMLUtilsTest {
 
     @Issue("SECURITY-167")
     @Test
-    public void testUpdateByXmlIDoesNotFail() throws Exception {
-        final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
-                "<project>\n" +
-                "  <actions/>\n" +
-                "  <description>&amp;</description>\n" +
-                "  <keepDependencies>false</keepDependencies>\n" +
-                "  <properties/>\n" +
-                "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
-                "  <canRoam>true</canRoam>\n" +
-                "  <triggers/>\n" +
-                "  <builders/>\n" +
-                "  <publishers/>\n" +
-                "  <buildWrappers/>\n" +
-                "</project>";
+    void testUpdateByXmlIDoesNotFail() throws Exception {
+        final String xml = """
+                <?xml version='1.0' encoding='UTF-8'?>
+                <project>
+                  <actions/>
+                  <description>&amp;</description>
+                  <keepDependencies>false</keepDependencies>
+                  <properties/>
+                  <scm class="hudson.scm.NullSCM"/>
+                  <canRoam>true</canRoam>
+                  <triggers/>
+                  <builders/>
+                  <publishers/>
+                  <buildWrappers/>
+                </project>""";
 
         StringWriter stringWriter = new StringWriter();
 
@@ -107,21 +111,23 @@ public class XMLUtilsTest {
      * tests for each).
      */
     @Test
-    public void testGetValue() throws XPathExpressionException, SAXException, IOException {
-        URL configUrl = getClass().getResource("/jenkins/xml/config.xml");
-        File configFile = new File(configUrl.getFile());
+    void testGetValue() throws XPathExpressionException, SAXException, IOException, URISyntaxException {
+        URL configUrl = Objects.requireNonNull(getClass().getResource("/jenkins/xml/config.xml"),
+                "Missing test resource /jenkins/xml/config.xml");
+        File configFile = new File(configUrl.toURI());
 
-        Assert.assertEquals("1.480.1", XMLUtils.getValue("/hudson/version", configFile));
-        Assert.assertEquals("", XMLUtils.getValue("/hudson/unknown-element", configFile));
+        assertEquals("1.480.1", XMLUtils.getValue("/hudson/version", configFile));
+        assertEquals("", XMLUtils.getValue("/hudson/unknown-element", configFile));
     }
 
     @Test
-    public void testParse_with_XXE() {
-        final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<!DOCTYPE foo [\n" +
-                "   <!ELEMENT foo ANY >\n" +
-                "   <!ENTITY xxe SYSTEM \"http://abc.com/temp/test.jsp\" >]> " +
-                "<foo>&xxe;</foo>";
+    void testParse_with_XXE() {
+        final String xml = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE foo [
+                   <!ELEMENT foo ANY >
+                   <!ENTITY xxe SYSTEM "http://abc.com/temp/test.jsp" >]> \
+                <foo>&xxe;</foo>""";
 
         StringReader stringReader = new StringReader(xml);
         final SAXException e = assertThrows(SAXException.class, () -> XMLUtils.parse(stringReader));

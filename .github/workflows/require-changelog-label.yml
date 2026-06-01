@@ -6,12 +6,13 @@ on:
       - "master"
 jobs:
   label:
+    if: ${{ github.repository_owner == 'jenkinsci' }}
     runs-on: ubuntu-latest
     permissions:
       issues: write
       pull-requests: write
     steps:
-      - uses: mheap/github-action-required-labels@388fd6af37b34cdfe5a23b37060e763217e58b03 # v5
+      - uses: mheap/github-action-required-labels@0ac283b4e65c1fb28ce6079dea5546ceca98ccbe # v5.5.2
         with:
           mode: minimum
           count: 1

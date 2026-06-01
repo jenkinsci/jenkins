@@ -59,7 +59,8 @@ THE SOFTWARE.
             ref="${attrs.ref}"
             message="${attrs.message ?: '%Copied'}"
             tooltip="${attrs.label != null ? null : attrs.tooltip ?: '%Copy'}"
-            type="button">
+            type="button"
+            data-tooltip-append-to-parent="true">
       <span class="jenkins-copy-button__icon">
         <l:icon src="symbol-check" />
       </span>

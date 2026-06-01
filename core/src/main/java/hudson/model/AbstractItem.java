@@ -47,6 +47,7 @@ import hudson.util.AtomicFileWriter;
 import hudson.util.FormValidation;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
+import hudson.widgets.Widget;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import java.io.File;
@@ -69,7 +70,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
 import jenkins.model.queue.ItemDeletion;
 import jenkins.security.ExtendedReadRedaction;
-import jenkins.security.NotReallyRoleSensitiveCallable;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import jenkins.util.xml.XMLUtils;
@@ -129,6 +129,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
         doSetName(name);
     }
 
+    @NonNull
     @Override
     @Exported(visibility = 999)
     public String getName() {
@@ -470,6 +471,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     @Override
     public abstract Collection<? extends Job> getAllJobs();
 
+    @NonNull
     @Override
     @Exported
     public final String getFullName() {
@@ -545,7 +547,11 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
             }
             List<Ancestor> ancestors = req.getAncestors();
             if (!ancestors.isEmpty()) {
-                Ancestor last = ancestors.get(ancestors.size() - 1);
+                Ancestor last = ancestors.getLast();
+                if (last.getObject() instanceof Widget) {
+                    // likely loaded via ajax so get the previous one which should be the view
+                    last = last.getPrev();
+                }
                 if (last.getObject() instanceof View view) {
                     if (view.getOwner().getItemGroup() == getParent() && !view.isDefault()) {
                         // Showing something inside a view, so should use that as the base URL.
@@ -912,6 +918,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
      *               sources may not be handled.
      * @since 1.473
      */
+    @SuppressWarnings("unchecked")
     public void updateByXml(Source source) throws IOException {
         checkPermission(CONFIGURE);
         XmlFile configXmlFile = getConfigFile();
@@ -932,12 +939,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
                 throw new IOException("Expecting " + this.getClass() + " but got " + o.getClass() + " instead");
             }
 
-            Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void, IOException>() {
-                @Override public Void call() throws IOException {
-                    onLoad(getParent(), getRootDir().getName());
-                    return null;
-                }
-            });
+            Items.runWhileUpdatingByXml(() -> onLoad(getParent(), getRootDir().getName()));
             Jenkins.get().rebuildDependencyGraphAsync();
 
             // if everything went well, commit this new version
@@ -965,18 +967,13 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void load() throws IOException {
         checkPermission(CONFIGURE);
 
         // try to reflect the changes by reloading
         getConfigFile().unmarshal(this);
-        Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void, IOException>() {
-            @Override
-            public Void call() throws IOException {
-                onLoad(getParent(), getParent().getItemName(getRootDir(), AbstractItem.this));
-                return null;
-            }
-        });
+        Items.runWhileUpdatingByXml(() -> onLoad(getParent(), getParent().getItemName(getRootDir(), this)));
         Jenkins.get().rebuildDependencyGraphAsync();
     }
 

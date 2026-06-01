@@ -42,7 +42,6 @@ import io.jenkins.servlet.ServletContextWrapper;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -51,7 +50,6 @@ import java.util.List;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -291,27 +289,6 @@ public class Hudson extends Jenkins {
     @Deprecated
     public static boolean isDarwin() {
         return Platform.isDarwin();
-    }
-
-    /**
-     * @deprecated since 2007-12-18.
-     *      Use {@link #checkPermission(hudson.security.Permission)}
-     */
-    @Deprecated
-    public static boolean adminCheck() throws IOException {
-        return adminCheck(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
-    }
-
-    /**
-     * @deprecated since 2007-12-18.
-     *      Use {@link #checkPermission(hudson.security.Permission)}
-     */
-    @Deprecated
-    public static boolean adminCheck(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if (isAdmin(req)) return true;
-
-        rsp.sendError(HttpServletResponse.SC_FORBIDDEN);
-        return false;
     }
 
     /**

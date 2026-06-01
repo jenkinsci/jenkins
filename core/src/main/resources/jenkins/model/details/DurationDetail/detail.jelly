@@ -25,8 +25,8 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <j:set var="object" value="${it.object}" />
-  <div class="jenkins-card__details__item">
-    <div class="jenkins-card__details__item__icon">
+  <div class="jenkins-details__item">
+    <div class="jenkins-details__item__icon">
       <l:icon src="symbol-timer" />
     </div>
     <div>

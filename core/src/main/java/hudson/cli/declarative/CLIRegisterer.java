@@ -27,11 +27,9 @@ package hudson.cli.declarative;
 import static java.util.logging.Level.SEVERE;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
-import hudson.Functions;
 import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.cli.CloneableCLICommand;
@@ -49,19 +47,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Stack;
-import java.util.UUID;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
+import jenkins.cli.listeners.CLIContext;
+import jenkins.cli.listeners.CLIListener;
 import jenkins.model.Jenkins;
+import jenkins.util.Listeners;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.localizer.ResourceBundleHolder;
-import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.ParserProperties;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -202,6 +198,9 @@ public class CLIRegisterer extends ExtensionFinder {
 
                             List<MethodBinder> binders = new ArrayList<>();
 
+                            Authentication auth = getTransportAuthentication2();
+                            CLIContext context = new CLIContext(getName(), args, auth);
+
                             CmdLineParser parser = bindMethod(binders);
                             try {
                                 // TODO this could probably use ACL.as; why is it calling SecurityContext.setAuthentication rather than SecurityContextHolder.setContext?
@@ -211,19 +210,19 @@ public class CLIRegisterer extends ExtensionFinder {
                                     // fill up all the binders
                                     parser.parseArgument(args);
 
-                                    Authentication auth = getTransportAuthentication2();
                                     sc.setAuthentication(auth); // run the CLI with the right credential
                                     jenkins.checkPermission(Jenkins.READ);
+
+                                    Listeners.notify(CLIListener.class, true, listener -> listener.onExecution(context));
 
                                     // resolve them
                                     Object instance = null;
                                     for (MethodBinder binder : binders)
                                         instance = binder.call(instance);
 
-                                    if (instance instanceof Integer)
-                                        return (Integer) instance;
-                                    else
-                                        return 0;
+                                    Integer exitCode = (instance instanceof Integer) ? (Integer) instance : 0;
+                                    Listeners.notify(CLIListener.class, true, listener -> listener.onCompleted(context, exitCode));
+                                    return exitCode;
                                 } catch (InvocationTargetException e) {
                                     Throwable t = e.getTargetException();
                                     if (t instanceof Exception)
@@ -232,45 +231,11 @@ public class CLIRegisterer extends ExtensionFinder {
                                 } finally {
                                     sc.setAuthentication(old); // restore
                                 }
-                            } catch (CmdLineException e) {
-                                printError(e.getMessage());
-                                printUsage(stderr, parser);
-                                return 2;
-                            } catch (IllegalStateException e) {
-                                printError(e.getMessage());
-                                return 4;
-                            } catch (IllegalArgumentException e) {
-                                printError(e.getMessage());
-                                return 3;
-                            } catch (AbortException e) {
-                                printError(e.getMessage());
-                                return 5;
-                            } catch (AccessDeniedException e) {
-                                printError(e.getMessage());
-                                return 6;
-                            } catch (BadCredentialsException e) {
-                                // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
-                                // do that to the server log instead
-                                String id = UUID.randomUUID().toString();
-                                logAndPrintError(e, "Bad Credentials. Search the server log for " + id + " for more details.",
-                                        "CLI login attempt failed: " + id, Level.INFO);
-                                return 7;
                             } catch (Throwable e) {
-                                final String errorMsg = "Unexpected exception occurred while performing " + getName() + " command.";
-                                logAndPrintError(e, errorMsg, errorMsg, Level.WARNING);
-                                Functions.printStackTrace(e, stderr);
-                                return 1;
+                                int exitCode = handleException(e, context, parser);
+                                Listeners.notify(CLIListener.class, true, listener -> listener.onThrowable(context, e));
+                                return exitCode;
                             }
-                        }
-
-                        private void printError(String errorMessage) {
-                            this.stderr.println();
-                            this.stderr.println("ERROR: " + errorMessage);
-                        }
-
-                        private void logAndPrintError(Throwable e, String errorMessage, String logMessage, Level logLevel) {
-                            LOGGER.log(logLevel, logMessage, e);
-                            printError(errorMessage);
                         }
 
                         @Override

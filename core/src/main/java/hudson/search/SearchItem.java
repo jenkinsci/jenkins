@@ -25,6 +25,7 @@
 package hudson.search;
 
 import hudson.model.Build;
+import jenkins.search.SearchGroup;
 import org.jenkins.ui.icon.IconSpec;
 
 /**
@@ -61,6 +62,10 @@ public interface SearchItem {
         }
 
         return "symbol-search";
+    }
+
+    default SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.UnclassifiedSearchGroup.class);
     }
 
     /**

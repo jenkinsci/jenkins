@@ -61,7 +61,7 @@ THE SOFTWARE.
           </j:otherwise>
         </j:choose>
       </div>
-      <img src="graph?type=${type}&amp;width=500&amp;height=300" />
+      <img src="graph?type=${type}&amp;width=500&amp;height=300" class="jenkins-graph-card" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

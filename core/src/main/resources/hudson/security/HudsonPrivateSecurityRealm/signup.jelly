@@ -165,7 +165,7 @@ THE SOFTWARE.
               <div class="app-sign-in-register__switcher">
                 <a href="${rootURL}/login">${%or sign in}</a>
               </div>
-              <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request)}"/>
+              <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request2)}"/>
               <div class="footer">
                 <j:forEach var="decorator" items="${simpleDecorators}">
                   <st:include it="${decorator}" page="simple-footer.jelly" optional="true"/>

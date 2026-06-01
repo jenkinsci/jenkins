@@ -24,8 +24,8 @@
 
 package hudson.bugs;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.Slave;
 import hudson.model.User;
@@ -34,6 +34,7 @@ import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
+import jenkins.model.Jenkins;
 import jenkins.security.s2m.AdminWhitelistRule;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -41,32 +42,42 @@ import org.dom4j.io.DOMReader;
 import org.htmlunit.Page;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.xml.XmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Email;
-import org.jvnet.hudson.test.InboundAgentRule;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.recipes.PresetData;
-import org.jvnet.hudson.test.recipes.PresetData.DataSet;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.InboundAgentExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Makes sure that the jars that web start needs are readable, even when the anonymous user doesn't have any read access.
  *
  * @author Kohsuke Kawaguchi
  */
-public class JnlpAccessWithSecuredHudsonTest {
+@WithJenkins
+class JnlpAccessWithSecuredHudsonTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    @RegisterExtension
+    private final InboundAgentExtension inboundAgents = new InboundAgentExtension();
 
-    @Rule
-    public InboundAgentRule inboundAgents = new InboundAgentRule();
+    private JenkinsRule r;
 
-    @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
+
     @Email("http://markmail.org/message/on4wkjdaldwi2atx")
     @Test
-    public void anonymousCanAlwaysLoadJARs() throws Exception {
-        inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().name("test").skipStart().build());
+    void anonymousCanAlwaysLoadJARs() throws Exception {
+        JenkinsRule.DummySecurityRealm realm = r.createDummySecurityRealm();
+        r.jenkins.setSecurityRealm(realm);
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().toAuthenticated());
+
+        inboundAgents.createAgent(r, InboundAgentExtension.Options.newBuilder().name("test").skipStart().build());
         JenkinsRule.WebClient wc = r.createWebClient();
         HtmlPage p = wc.withBasicApiToken(User.getById("alice", true)).goTo("computer/test/");
 
@@ -87,21 +98,30 @@ public class JnlpAccessWithSecuredHudsonTest {
         }
     }
 
-    @PresetData(DataSet.ANONYMOUS_READONLY)
     @Test
-    public void anonymousCannotGetSecrets() throws Exception {
-        inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().name("test").skipStart().build());
+    void anonymousCannotGetSecrets() throws Exception {
+        JenkinsRule.DummySecurityRealm realm = r.createDummySecurityRealm();
+        r.jenkins.setSecurityRealm(realm);
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toEveryone()
+                .grant(Jenkins.ADMINISTER).everywhere().toAuthenticated());
+
+        inboundAgents.createAgent(r, InboundAgentExtension.Options.newBuilder().name("test").skipStart().build());
         r.createWebClient().assertFails("computer/test/jenkins-agent.jnlp", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
-    @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     @Test
-    public void serviceUsingDirectSecret() throws Exception {
-        Slave slave = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().name("test").secret().build());
+    void serviceUsingDirectSecret() throws Exception {
+        JenkinsRule.DummySecurityRealm realm = r.createDummySecurityRealm();
+        r.jenkins.setSecurityRealm(realm);
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().toAuthenticated());
+
+        Slave slave = inboundAgents.createAgent(r, InboundAgentExtension.Options.newBuilder().name("test").build());
         try {
             r.createWebClient().goTo("computer/test/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
             Channel channel = slave.getComputer().getChannel();
-            assertFalse("SECURITY-206", channel.isRemoteClassLoadingAllowed());
+            assertFalse(channel.isRemoteClassLoadingAllowed(), "SECURITY-206");
             r.jenkins.getExtensionList(AdminWhitelistRule.class).get(AdminWhitelistRule.class).setMasterKillSwitch(false);
             final File f = new File(r.jenkins.getRootDir(), "config.xml");
             assertTrue(f.exists());

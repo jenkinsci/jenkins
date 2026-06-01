@@ -1,9 +1,9 @@
 package jenkins.security;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.FilePath;
 import hudson.Functions;
@@ -15,20 +15,19 @@ import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.SecureRandom;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class DefaultConfidentialStoreTest {
+class DefaultConfidentialStoreTest {
 
-    @Rule
-    public TemporaryFolder tmpRule = new TemporaryFolder();
+    @TempDir
+    private File tmpRule;
 
     private final SecureRandom sr = new SecureRandom();
 
     @Test
-    public void roundtrip() throws Exception {
-        File tmp = new File(tmpRule.getRoot(), "tmp"); // let ConfidentialStore create a directory
+    void roundtrip() throws Exception {
+        File tmp = new File(tmpRule, "tmp"); // let ConfidentialStore create a directory
 
         DefaultConfidentialStore store = new DefaultConfidentialStore(tmp);
         ConfidentialKey key = new ConfidentialKey("test") {};
@@ -60,9 +59,9 @@ public class DefaultConfidentialStoreTest {
     }
 
     @Test
-    public void masterKeyGeneratedBeforehand() throws IOException, InterruptedException {
-        File external = new File(tmpRule.getRoot(), "external");
-        File tmp = new File(tmpRule.getRoot(), "tmp");
+    void masterKeyGeneratedBeforehand() throws IOException, InterruptedException {
+        File external = new File(tmpRule, "external");
+        File tmp = new File(tmpRule, "tmp");
         var masterKeyFile = new File(external, "master.key");
         new TextFile(masterKeyFile).write(Util.toHexString(randomBytes(128)));
         System.setProperty(DefaultConfidentialStore.MASTER_KEY_FILE_SYSTEM_PROPERTY, masterKeyFile.getAbsolutePath());

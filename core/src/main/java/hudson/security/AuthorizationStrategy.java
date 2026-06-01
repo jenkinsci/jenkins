@@ -28,7 +28,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.AbstractItem;
 import hudson.model.AbstractProject;
 import hudson.model.Computer;
@@ -71,7 +70,7 @@ import org.kohsuke.stapler.StaplerRequest2;
  * @see SecurityRealm
  */
 @StaplerAccessibleType
-public abstract class AuthorizationStrategy extends AbstractDescribableImpl<AuthorizationStrategy> implements ExtensionPoint {
+public abstract class AuthorizationStrategy implements Describable<AuthorizationStrategy>, ExtensionPoint {
     /**
      * Returns the instance of {@link ACL} where all the other {@link ACL} instances
      * for all the other model objects eventually delegate.
