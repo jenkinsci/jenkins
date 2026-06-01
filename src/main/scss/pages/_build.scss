@@ -142,9 +142,9 @@
 @keyframes app-build-bar-border-on-scroll {
   from {
     border-bottom-color: color-mix(
-            in sRGB,
-            var(--jenkins-border-color),
-            transparent
+      in sRGB,
+      var(--jenkins-border-color),
+      transparent
     );
   }
 
@@ -155,9 +155,9 @@
 
 .app-build-bar {
   --app-build-bar-border-color: color-mix(
-          in sRGB,
-          var(--jenkins-border-color),
-          transparent
+    in sRGB,
+    var(--jenkins-border-color),
+    transparent
   );
 
   position: sticky;
@@ -167,15 +167,11 @@
   align-items: center;
   gap: 0.5rem 1.5rem;
   min-height: var(--header-height);
-  background-color: color-mix(
-          in sRGB,
-          transparent 25%,
-          var(--top)
-  );
+  background-color: color-mix(in sRGB, transparent 25%, var(--top));
   padding-inline: var(--section-padding);
   z-index: 102;
   border-bottom: var(--jenkins-border-width) solid
-  var(--app-build-bar-border-color);
+    var(--app-build-bar-border-color);
   margin-top: calc(var(--section-padding) * -1);
   margin-left: calc(var(--section-padding) * -1);
   margin-right: calc(var(--section-padding) * -1);
