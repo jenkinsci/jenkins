@@ -254,6 +254,10 @@ public class AnnotatedLargeText<T> extends LargeText {
         ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
                 w, createAnnotator(req), context, charset);
         long r = writeHtmlToFilter(start, w, caw);
+        if (isComplete()) {
+            // The client is not expected to perform any further reads after this one. Make sure that we have flushed the line buffer.
+            caw.forceEol();
+        }
         // Back-track any pending bytes in the line buffer.
         r -= caw.lineBufferSize();
 
