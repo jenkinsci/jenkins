@@ -390,14 +390,6 @@ THE SOFTWARE.
                 </artifactItem>
 
                 <artifactItem>
-                  <!-- dependency of jackson2-api and jackson3-api -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>jackson-annotations2-api</artifactId>
-                  <version>2.21-7.v4777a_f3a_a_d47</version>
-                  <type>hpi</type>
-                </artifactItem>
-
-                <artifactItem>
                   <!-- dependency of jackson3-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>snakeyaml-engine-api</artifactId>
