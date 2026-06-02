@@ -203,11 +203,6 @@ public abstract class OfflineCause implements IOfflineCause {
         public String getIcon() {
             return "symbol-person";
         }
-
-        @Override
-        public String toString() {
-            return Util.escape(super.toString());
-        }
     }
 
     public static class ByCLI extends UserCause {
