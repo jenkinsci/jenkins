@@ -43,6 +43,7 @@ public abstract class LineTransformationOutputStream extends OutputStream {
 
     /**
      * Returns the number of bytes currently buffered for the current line.
+     * @since TODO
      */
     public int lineBufferSize() {
         return buf.size();
