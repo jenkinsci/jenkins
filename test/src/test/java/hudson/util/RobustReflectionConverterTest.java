@@ -234,12 +234,11 @@ class RobustReflectionConverterTest {
             assertNull(p.getProperty(KeywordProperty.class).getNonCriticalField());
             assertEquals(AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
 
-            // but save to the disk.
+            // Also not saved to disk as we serialize the object after load
             r.jenkins.reload();
 
             p = r.jenkins.getItemByFullName(p.getFullName(), FreeStyleProject.class);
-            assertEquals("badvalue", p.getProperty(KeywordProperty.class).getNonCriticalField().getKeyword());
-            assertEquals(AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
+            assertNull(p.getProperty(KeywordProperty.class).getNonCriticalField());
         }
 
         // with addCriticalField. This is not accepted.
@@ -306,11 +305,11 @@ class RobustReflectionConverterTest {
             assertNull(p.getProperty(KeywordProperty.class).getNonCriticalField());
             assertEquals(AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
 
-            // but save to the disk.
+            // Also not saved to disk as we serialize the object after load
             r.jenkins.reload();
 
             p = r.jenkins.getItemByFullName(p.getFullName(), FreeStyleProject.class);
-            assertEquals("badvalue", p.getProperty(KeywordProperty.class).getNonCriticalField().getKeyword());
+            assertNull(p.getProperty(KeywordProperty.class).getNonCriticalField());
         }
 
         // with addCriticalField. This is not accepted.
