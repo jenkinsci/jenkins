@@ -239,14 +239,21 @@ public class AnnotatedLargeText<T> extends LargeText {
         return super.writeLogTo(start, out);
     }
 
+    /**
+     * Extension point for intercepting writes from {@link #writeHtmlTo(long, Writer)} and directly inserting content into the output.
+     * @since TODO
+     */
+    protected long writeHtmlToFilter(long start, Writer w, ConsoleAnnotationOutputStream<T> caos) throws IOException {
+        return super.writeLogTo(start, caos);
+    }
+
     @CheckReturnValue
     public long writeHtmlTo(long start, Writer w) throws IOException {
         StaplerRequest2 req = Stapler.getCurrentRequest2();
         StaplerResponse2 rsp = Stapler.getCurrentResponse2();
         ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
                 w, createAnnotator(req), context, charset);
-        long r = super.writeLogTo(start, caw);
-
+        long r = writeHtmlToFilter(start, w, caw);
         // Back-track any pending bytes in the line buffer.
         r -= caw.lineBufferSize();
 
