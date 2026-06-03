@@ -74,6 +74,14 @@
   }
 }
 
+.app-full-screen-page-body {
+  .app-main-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+}
+
 .page-footer {
   display: none;
 }
