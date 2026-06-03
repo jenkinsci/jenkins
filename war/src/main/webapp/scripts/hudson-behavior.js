@@ -616,9 +616,10 @@ function fireEvent(element, event) {
 
 function formatValidationResponse(response, responseText) {
   // TODO Add i18n support
-  return response.status === 200
+  return response.ok
     ? responseText
     : `<div class="error">An internal error occurred during form field validation (HTTP ${response.status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
+}
 }
 
 /**
