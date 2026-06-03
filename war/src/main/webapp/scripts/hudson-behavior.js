@@ -620,7 +620,6 @@ function formatValidationResponse(response, responseText) {
     ? responseText
     : `<div class="error">An internal error occurred during form field validation (HTTP ${response.status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
 }
-}
 
 /**
  * Updates the validation area for a form element
