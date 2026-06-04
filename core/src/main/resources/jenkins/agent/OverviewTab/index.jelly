@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:agent-subpage agent="${it.object}">
+  <l:agent-subpage title="${it.displayName}" agent="${it.object}">
     <l:app-bar title="${it.displayName}" headingLevel="h2">
       <l:details-bar it="${it.object}">
         <a href="https://www.jenkins.io/doc/book/using/using-agents/" class="jenkins-button jenkins-details__button" tooltip="${%Help}" target="_blank" rel="noopener noreferrer">

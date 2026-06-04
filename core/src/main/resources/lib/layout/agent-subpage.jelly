@@ -31,7 +31,7 @@ THE SOFTWARE.
     <st:attribute name="agent" use="required">
       The agent that this page is related to. Used to render agent-specific information and actions in the header.
     </st:attribute>
-    <st:attribute name="title">
+    <st:attribute name="title" use="required">
       Breadcrumb title.
     </st:attribute>
     <st:attribute name="permission">
@@ -42,7 +42,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <l:layout title="${attrs.agent.displayName}" permission="${attrs.permission}" permissions="${attrs.permissions}">
+  <l:layout title="${attrs.agent.displayName} - ${attrs.title}" permission="${attrs.permission}" permissions="${attrs.permissions}">
     <l:userExperimentalFlag var="newAgentPage" flagClassName="jenkins.model.experimentalflags.NewAgentPageUserExperimentalFlag" />
 
     <j:choose>
