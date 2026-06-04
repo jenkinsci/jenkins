@@ -28,6 +28,7 @@ THE SOFTWARE.
 
   <l:ajax>
     <form method="post" action="doDisconnect">
+      <p>${%blurb}</p>
       <f:textarea name="offlineMessage" class="jenkins-form-item"/>
       <f:bottomButtonBar borderless="true">
         <j:choose>
