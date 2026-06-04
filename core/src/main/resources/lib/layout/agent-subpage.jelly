@@ -28,7 +28,7 @@ THE SOFTWARE.
   <st:documentation>
     A reusable container for subpages relating to Agents in Jenkins.
     Renders a tabbed layout for agents, including agent status and actions.
-    <st:attribute name="agent" use="required">
+    <st:attribute name="agent">
       The agent that this page is related to. Used to render agent-specific information and actions in the header.
     </st:attribute>
     <st:attribute name="title" use="required">
@@ -40,16 +40,19 @@ THE SOFTWARE.
     <st:attribute name="permissions">
       Permissions to check for accessing the page.
     </st:attribute>
+    <st:attribute name="noSidepanel">
+      If set to true, the sidepanel will be omitted from this page for old layouts.
+    </st:attribute>
   </st:documentation>
 
   <l:layout title="${attrs.agent.displayName} - ${attrs.title}" permission="${attrs.permission}" permissions="${attrs.permissions}">
     <l:userExperimentalFlag var="newAgentPage" flagClassName="jenkins.model.experimentalflags.NewAgentPageUserExperimentalFlag" />
+    <j:if test="${not empty(attrs.title)}">
+      <l:breadcrumb title="${attrs.title}" />
+    </j:if>
 
     <j:choose>
       <j:when test="${newAgentPage}">
-        <j:if test="${not empty(attrs.title)}">
-          <l:breadcrumb title="${attrs.title}" />
-        </j:if>
         <l:main-panel>
           <div class="app-build-bar app-agent-bar">
             <div class="app-build-bar__content">
@@ -77,9 +80,8 @@ THE SOFTWARE.
         </l:main-panel>
       </j:when>
       <j:otherwise>
-        <st:include page="sidepanel.jelly"/>
-        <j:if test="${not empty(attrs.title)}">
-          <l:breadcrumb title="${attrs.title}" />
+        <j:if test="${attrs.noSidepanel ne 'true'}">
+          <st:include page="sidepanel.jelly" it="${attrs.agent}"/>
         </j:if>
         <l:main-panel>
           <d:invokeBody />

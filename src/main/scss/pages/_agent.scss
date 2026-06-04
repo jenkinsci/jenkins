@@ -61,3 +61,13 @@
     min-height: revert;
   }
 }
+
+.app-agent-configure {
+  display: flex;
+  gap: var(--section-padding);
+  margin-left: calc(var(--section-padding) * -1);
+
+  &__content {
+    flex-grow: 1;
+  }
+}

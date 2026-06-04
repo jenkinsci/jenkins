@@ -28,35 +28,44 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${it.EXTENDED_READ}" title="${it.displayName}">
+
+  <l:agent-subpage agent="${it}" title="${%Configure}" permission="${it.EXTENDED_READ}" noSidepanel="true">
     <j:set var="readOnlyMode" value="${!h.hasPermission(it, it.CONFIGURE)}" />
-    <st:include page="sidepanel.jelly"/>
-    <l:breadcrumb title="${%Configure}" />
-    <l:main-panel>
-      <f:form method="post" action="configSubmit" name="config">
-        <j:set var="instance" value="${it.node}" />
-        <j:set var="descriptor" value="${instance.descriptor}" />
+    <script src="${resURL}/jsbundles/section-to-sidebar-items.js" type="text/javascript" defer="true" />
+    <div class="app-agent-configure">
+      <div id="side-panel" class="app-page-body__sidebar ${attrs.sticky == 'true' ? 'app-page-body__sidebar--sticky' : ''}">
+        <l:app-bar title="${readOnlyMode ? '%Configuration' : '%Configure'}" />
+        <div id="tasks">
+          <l:skeleton type="side-panel" />
+        </div>
+      </div>
+      <div class="app-agent-configure__content">
+        <f:form method="post" action="configSubmit" name="config" tableClass="config-table">
+          <j:set var="instance" value="${it.node}" />
+          <j:set var="descriptor" value="${instance.descriptor}" />
+          <l:app-bar title="${%General}" headingLevel="h2"/>
 
-        <!-- Currently not editable
-        <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html">
-          <f:textbox field="nodeDescription" />
-        </f:entry>
-        -->
+          <!-- Currently not editable
+          <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html">
+            <f:textbox field="nodeDescription" />
+          </f:entry>
+          -->
 
-        <f:entry title="${%Number of executors}" field="numExecutors">
-          <f:number clazz="non-negative-number-required" min="0" step="1"/>
-        </f:entry>
+          <f:entry title="${%Number of executors}" field="numExecutors">
+            <f:number clazz="non-negative-number-required" min="0" step="1"/>
+          </f:entry>
 
-        <f:entry title="${%Labels}" field="labelString">
-          <f:textbox />
-        </f:entry>
+          <f:entry title="${%Labels}" field="labelString">
+            <f:textbox />
+          </f:entry>
 
-        <f:slave-mode name="builtin.mode" node="${it.node}"/>
+          <f:slave-mode name="builtin.mode" node="${it.node}"/>
 
-        <f:descriptorList title="${%Node Properties}" descriptors="${h.getNodePropertyDescriptors(descriptor.clazz)}" field="nodeProperties" />
+          <f:descriptorList title="${%Node Properties}" descriptors="${h.getNodePropertyDescriptors(descriptor.clazz)}" field="nodeProperties" />
 
-        <f:saveApplyBar/>
-      </f:form>
-    </l:main-panel>
-  </l:layout>
+          <f:saveApplyBar/>
+        </f:form>
+      </div>
+    </div>
+  </l:agent-subpage>
 </j:jelly>
