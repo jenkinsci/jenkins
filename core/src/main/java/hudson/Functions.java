@@ -2409,12 +2409,13 @@ public class Functions {
 
     /**
      * Returns whether sticky positioning of UI elements should be disabled via the
-     * {@code hudson.Functions.disableStickyPositioning} system property (primarily for UI acceptance tests).
+     * {@code disableStickyPositioning} cookie (primarily for UI acceptance tests).
      * Sticky elements can otherwise float over the element under test and intercept clicks.
      */
     @Restricted(NoExternalUse.class)
     public static boolean isStickyPositioningDisabled() {
-        return SystemProperties.getBoolean(Functions.class.getName() + ".disableStickyPositioning");
+        String cookieValue = Functions.getCookie(Stapler.getCurrentRequest2(), "disableStickyPositioning", null);
+        return Boolean.valueOf(cookieValue);
     }
 
     @Deprecated
