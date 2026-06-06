@@ -29,7 +29,7 @@
   }
 
   & > .app-page-body__sidebar {
-    padding: var(--section-padding) calc(var(--section-padding) - 0.25rem);
+    padding: var(--section-padding);
 
     @media (width >= 740px) {
       width: 280px;
@@ -68,6 +68,11 @@
 
       #tasks {
         margin-bottom: 1rem;
+      }
+
+      .jenkins-card,
+      .pane-frame {
+        margin-inline: -0.5rem;
       }
     }
   }
