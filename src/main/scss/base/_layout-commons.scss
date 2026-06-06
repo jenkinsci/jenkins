@@ -36,7 +36,7 @@
       min-height: calc(100vh - var(--header-height) - 0.375rem);
     }
 
-    @media (width >= 1000px) {
+    @media (width > breakpoints.$tablet-breakpoint) {
       width: 320px;
     }
   }
