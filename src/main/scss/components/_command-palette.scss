@@ -84,6 +84,9 @@
     z-index: 10;
     max-width: unset;
 
+    // Thin highlight for dark themes to differentiate the dialog from its backdrop
+    outline: 1px solid rgb(255 255 255 / 0.05);
+
     input {
       padding: 0 0.5rem 0 45px;
       background: transparent !important;
@@ -116,6 +119,9 @@
     transition: height 0.15s ease;
     overflow: hidden;
     will-change: height;
+
+    // Thin highlight for dark themes to differentiate the dialog from its backdrop
+    outline: 1px solid rgb(255 255 255 / 0.05);
   }
 
   &__results {

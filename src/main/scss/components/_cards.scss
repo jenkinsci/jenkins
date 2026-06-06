@@ -7,7 +7,9 @@ $card-padding: 1rem;
   flex-direction: column;
   position: relative;
   border-radius: var(--form-input-border-radius);
-  background: var(--card-background);
+  background: color-mix(in srgb, var(--text-color-secondary), var(--background) 95%);
+  box-shadow: inset 0 10px 10px color-mix(in srgb, white 0.5%, transparent),
+  var(--control-shadow);
 
   &__title {
     display: flex;
@@ -46,7 +48,7 @@ $card-padding: 1rem;
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    border: var(--card-border-width) solid var(--card-border-color);
+    border: var(--jenkins-border);
     z-index: 1;
     pointer-events: none;
   }
@@ -130,10 +132,6 @@ $card-padding: 1rem;
       width: 3rem;
       height: 3rem;
       margin-bottom: 0.5rem;
-
-      * {
-        stroke-width: 40px;
-      }
     }
 
     div {
@@ -149,7 +147,7 @@ $card-padding: 1rem;
   hr {
     align-self: stretch;
     border: none;
-    border-top: var(--card-border-width) solid var(--text-color-secondary);
+    border-top: var(--jenkins-border-width) solid var(--text-color-secondary);
     opacity: 0.1;
     margin: 0;
   }

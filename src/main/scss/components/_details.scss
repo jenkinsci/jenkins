@@ -1,12 +1,13 @@
 @use "../abstracts/mixins";
 
-$icon-size: 1.125rem;
+$icon-size: 1rem;
 
 .jenkins-details {
   display: flex;
   align-items: center;
-  gap: 0.25rem 1.25rem;
+  gap: 0.25rem 1.125rem;
   flex-wrap: wrap;
+  font-variant-numeric: tabular-nums;
 
   button.jenkins-details__item,
   a.jenkins-details__item {
@@ -28,7 +29,6 @@ $icon-size: 1.125rem;
   &__item {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 0.5rem;
     font-weight: normal;
     color: var(--text-color-secondary) !important;
@@ -68,10 +68,6 @@ $icon-size: 1.125rem;
     min-height: 2rem;
     padding-block: 0;
     color: var(--text-color-secondary) !important;
-
-    &:not(:hover, :active, :focus-visible) {
-      --jenkins-border--subtle: var(--jenkins-border);
-    }
 
     svg {
       width: $icon-size;

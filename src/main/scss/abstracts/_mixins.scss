@@ -79,11 +79,11 @@
 
   &::before {
     background-color: var(--item-background);
-    border: var(--jenkins-border--subtle);
+    border: var(--jenkins-border);
   }
 
   &::after {
-    box-shadow: 0 0 0 0.5rem transparent;
+    box-shadow: 0 0 0 0.375rem transparent;
   }
 
   &:focus-visible {
@@ -109,13 +109,13 @@
       }
 
       &::after {
-        box-shadow: 0 0 0 0.25rem var(--item-box-shadow--focus);
+        box-shadow: 0 0 0 0.1875rem var(--item-box-shadow--focus);
       }
     }
 
     &:focus-visible {
       &::after {
-        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+        box-shadow: 0 0 0 0.1875rem var(--text-color) !important;
         opacity: 1 !important;
       }
     }

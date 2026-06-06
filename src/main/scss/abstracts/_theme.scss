@@ -118,18 +118,18 @@ $semantics: (
   --text-color-secondary: var(--secondary);
 
   // Borders
-  --jenkins-border-width: 1.5px;
+  --jenkins-border-width: 1px;
   --jenkins-border-color: color-mix(
     in sRGB,
     var(--text-color-secondary) 17.5%,
-    var(--card-background)
+    transparent
   );
   --jenkins-border-color--subtle: color-mix(
     in sRGB,
     var(--text-color) 3.5%,
     transparent
   );
-  --jenkins-border-color--inherit-subtle: oklch(from currentColor l c h / 0.08);
+  --jenkins-border-color--inherit-subtle: oklch(from currentColor l c h / 0.2);
 
   /* This is a harsher border - for dividers, content blocks and more */
   --jenkins-border: var(--jenkins-border-width) solid
@@ -142,10 +142,6 @@ $semantics: (
     var(--jenkins-border-color--inherit-subtle);
   --jenkins-border--subtle-shadow: 0 0 0 var(--jenkins-border-width)
     var(--jenkins-border-color--subtle);
-
-  @media (resolution <= 1dppx) {
-    --jenkins-border-width: 2px;
-  }
 
   @media (prefers-contrast: more) {
     --header-border: var(--text-color);
@@ -164,8 +160,8 @@ $semantics: (
   --table-header-foreground: var(--text-color);
   --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
-  --table-border-radius: 0.75rem;
-  --table-row-border-radius: 0.3125rem;
+  --table-border-radius: 1rem;
+  --table-row-border-radius: 0.4rem;
 
   // Deprecated
   --even-row-color: var(--very-light-grey);
@@ -292,11 +288,12 @@ $semantics: (
     --form-item-max-width--small: 100%;
   }
 
+  --control-shadow: 0 2px 2px color-mix(in srgb, black 2%, transparent);
   --form-label-font-weight: var(--font-bold-weight);
   --form-input-padding: 0.5rem 0.625rem;
-  --form-input-border-radius: 0.625rem;
-  --form-input-glow: 0 0 0 0.5rem transparent;
-  --form-input-glow--focus: 0 0 0 0.25rem var(--focus-input-glow);
+  --form-input-border-radius: 0.6875rem;
+  --form-input-glow: 0 0 0 0.375rem transparent;
+  --form-input-glow--focus: 0 0 0 0.1875rem var(--focus-input-glow);
   --pre-background: var(--button-background);
   --pre-color: var(--text-color);
   --selection-color: oklch(from var(--accent-color) l c h / 0.2);
@@ -309,7 +306,7 @@ $semantics: (
   }
 
   // Animations
-  --standard-transition: 0.25s ease;
+  --standard-transition: 0.2s ease;
   --elastic-transition: 0.3s cubic-bezier(0, 0.68, 0.5, 1.5);
 
   // Plugin manager

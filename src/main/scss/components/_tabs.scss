@@ -20,7 +20,7 @@ $border-radius: 19px;
     content: "";
     position: absolute;
     inset: 0;
-    border: var(--jenkins-border-width) solid var(--card-border-color);
+    border: var(--jenkins-border);
     border-radius: inherit;
     pointer-events: none;
   }
@@ -90,32 +90,69 @@ $border-radius: 19px;
 .app-build-tabs {
   position: relative;
   display: inline-flex;
+  z-index: 0;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  //padding: 1.5px;
+  //border: var(--jenkins-border);
+  //border-radius: 19px;
 
   @media (width <= 1200px) {
     justify-content: start;
   }
 
-  &::before {
+  &::after {
     content: "";
     position: absolute;
-    inset: 0;
-    border: var(--jenkins-border--subtle);
-    border-radius: 22px;
-    opacity: 0;
-    transition: var(--standard-transition);
-  }
-
-  &:hover::before {
-    opacity: 1;
-    inset: -4px;
-    background: var(--card-background);
-  }
-
-  a {
+    top: anchor(--a top);
+    bottom: anchor(--a bottom);
+    border: var(--jenkins-border);
     border-radius: 100px;
+    transition: var(--standard-transition);
+    left: anchor(--a left);
+    width: anchor-size(--a width);
+    background-color: var(--button-background);
+    pointer-events: none;
+    box-shadow: var(--control-shadow);
+  }
+
+  &:hover {
+    &::after {
+      background-color: var(--button-background--hover);
+    }
+  }
+
+  &:active {
+    &::after {
+      background-color: var(--button-background--active);
+    }
+  }
+
+  &:has(.jenkins-button:focus-visible) {
+    &::after {
+      box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+    }
+  }
+
+  &:not(:has(.jenkins-button:hover, .jenkins-button:focus-visible)) .jenkins-button:not(.jenkins-button--tertiary) {
+    anchor-name: --a;
+    color: var(--text-color) !important;
+  }
+
+  a, button {
+    border-radius: 100px;
+    color: color-mix(
+                    in sRGB,
+                    var(--text-color-secondary) 85%,
+                    var(--text-color)) !important;
+    transition: color var(--standard-transition);
+    //min-height: 34px;
+
+    &::before,
+    &::after {
+      display: none;
+    }
 
     svg {
       width: 1rem;
@@ -126,31 +163,20 @@ $border-radius: 19px;
       }
     }
 
+    &.jenkins-button--tertiary {
+      &::after {
+        display: flex;
+        box-shadow: inset 0 0 0 1px var(--jenkins-border-color);
+      }
+    }
+
     &:not(.jenkins-button--tertiary) {
       pointer-events: none;
-      font-weight: var(--font-bold-weight);
     }
 
-    &.jenkins-button--tertiary {
-      color: color-mix(
-        in sRGB,
-        var(--text-color-secondary) 75%,
-        var(--text-color)
-      ) !important;
-
-      &::before,
-      &::after {
-        inset: 3px;
-      }
-    }
-
-    &:hover {
+    &:hover, &:focus-visible {
       color: var(--text-color) !important;
-
-      &::before,
-      &::after {
-        inset: 1.5px;
-      }
+      anchor-name: --a !important;
     }
 
     .jenkins-badge {
