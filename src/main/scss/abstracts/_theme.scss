@@ -71,7 +71,11 @@ $semantics: (
   --background: rgb(254 254 254);
 
   // Header
-  --header-background: var(--background);
+  --header-background: color-mix(
+    in sRGB,
+    var(--background),
+    var(--text-color-secondary) 2.5%
+  );
   --header-border: var(--text-color-secondary);
   --header-color: var(--text-color);
   --header-height: 3.625rem;
