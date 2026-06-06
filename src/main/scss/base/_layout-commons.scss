@@ -29,7 +29,7 @@
   }
 
   & > .app-page-body__sidebar {
-    padding: var(--section-padding) calc(var(--section-padding) - 0.5rem);
+    padding: var(--section-padding) calc(var(--section-padding) - 0.25rem);
 
     @media (width >= 740px) {
       width: 280px;
