@@ -202,7 +202,7 @@ $semantics: (
   --dialog-box-shadow: var(--elev-box-shadow) !important;
 
   // elev
-  --elev-background: color-mix(in sRGB, var(--card-background), var(--white) 3%);
+  --elev-background: color-mix(in sRGB, var(--card-background), var(--white) 2%);
   --elev-box-shadow: inset 0 0 0 1px color-mix(in sRGB, var(--white) 10%, transparent),
   0 0 0 1px color-mix(in sRGB, var(--black) 5%, transparent),
   0 15px 40px color-mix(in sRGB, var(--black) 15%, transparent),
