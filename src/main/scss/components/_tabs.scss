@@ -114,7 +114,7 @@ $border-radius: 19px;
     width: anchor-size(--a width);
     background-color: var(--button-background);
     pointer-events: none;
-    box-shadow: var(--control-shadow);
+    box-shadow: var(--shadow-xs);
   }
 
   &:hover {

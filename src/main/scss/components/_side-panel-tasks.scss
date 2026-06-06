@@ -92,7 +92,7 @@ $background-outset: 0.5rem;
     &--active {
       font-weight: var(--font-bold-weight);
       cursor: default;
-      box-shadow: var(--control-shadow);
+      box-shadow: var(--shadow-xs);
 
       &::before {
         background-color: var(--button-background) !important;

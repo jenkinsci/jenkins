@@ -188,21 +188,25 @@ $semantics: (
   // Tooltips
   --tooltip-backdrop-filter: contrast(1.1) saturate(2) blur(20px);
   --tooltip-color: var(--text-color);
-  --tooltip-box-shadow:
-    0 0 8px 2px rgb(0 0 50 / 0.05), var(--jenkins-border--subtle-shadow),
-    0 10px 50px rgb(0 0 20 / 0.1), inset 0 -1px 2px rgb(255 255 255 / 0.025);
+
+  --tooltip-background: var(--elev-background) !important;
+  --tooltip-box-shadow: var(--elev-box-shadow) !important;
 
   // Dropdowns
   --dropdown-backdrop-filter: contrast(1.1) saturate(2) blur(20px);
-  --dropdown-box-shadow:
-    var(--jenkins-border--subtle-shadow), 0 10px 30px rgb(0 0 20 / 0.1),
-    0 2px 10px rgb(0 0 20 / 0.05), inset 0 -1px 2px rgb(255 255 255 / 0.025);
+  --dropdown-background: var(--elev-background) !important;
+  --dropdown-box-shadow: var(--elev-box-shadow) !important;
 
   // Dialogs
-  --dialog-background: var(--card-background);
-  --dialog-box-shadow:
-    var(--jenkins-border--subtle-shadow), 0 5px 25px rgb(0 0 10 / 0.025),
-    0 0 1.5px color-mix(in sRGB, var(--black) 20%, transparent);
+  --dialog-background: var(--elev-background) !important;
+  --dialog-box-shadow: var(--elev-box-shadow) !important;
+
+  // elev
+  --elev-background: color-mix(in sRGB, var(--card-background), var(--white) 3%);
+  --elev-box-shadow: inset 0 0 0 1px color-mix(in sRGB, var(--white) 10%, transparent),
+  0 0 0 1px color-mix(in sRGB, var(--black) 5%, transparent),
+  0 15px 40px color-mix(in sRGB, var(--black) 15%, transparent),
+  0 2px 8px color-mix(in sRGB, var(--black) 7.5%, transparent) !important;
 
   ::backdrop {
     --dialog-backdrop-backdrop-filter: blur(0.25px);
@@ -288,7 +292,9 @@ $semantics: (
     --form-item-max-width--small: 100%;
   }
 
-  --control-shadow: 0 2px 2px color-mix(in srgb, black 2%, transparent);
+  // Shadows
+  --shadow-xs: 0 2px 2px color-mix(in srgb, black 2%, transparent);
+
   --form-label-font-weight: var(--font-bold-weight);
   --form-input-padding: 0.5rem 0.625rem;
   --form-input-border-radius: 0.6875rem;

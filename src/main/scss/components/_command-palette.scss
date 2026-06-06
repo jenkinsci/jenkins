@@ -68,6 +68,7 @@
   color: var(--text-color);
   pointer-events: auto;
   margin: 0 auto var(--inset);
+  z-index: 0;
 
   @media (max-width: breakpoints.$tablet-breakpoint) {
     width: calc(100% - (var(--section-padding) * 2));
@@ -81,11 +82,7 @@
     margin-bottom: var(--section-padding);
     border-radius: 1rem;
     transition: var(--standard-transition);
-    z-index: 10;
     max-width: unset;
-
-    // Thin highlight for dark themes to differentiate the dialog from its backdrop
-    outline: 1px solid rgb(255 255 255 / 0.05);
 
     input {
       padding: 0 0.5rem 0 45px;
@@ -119,9 +116,6 @@
     transition: height 0.15s ease;
     overflow: hidden;
     will-change: height;
-
-    // Thin highlight for dark themes to differentiate the dialog from its backdrop
-    outline: 1px solid rgb(255 255 255 / 0.05);
   }
 
   &__results {
@@ -213,4 +207,8 @@
       color: var(--text-color-secondary);
     }
   }
+}
+
+.jenkins-search-container {
+  z-index: -1;
 }

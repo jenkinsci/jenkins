@@ -9,7 +9,7 @@ $card-padding: 1rem;
   border-radius: var(--form-input-border-radius);
   background: color-mix(in srgb, var(--text-color-secondary), var(--background) 95%);
   box-shadow: inset 0 10px 10px color-mix(in srgb, white 0.5%, transparent),
-  var(--control-shadow);
+  var(--shadow-xs);
 
   &__title {
     display: flex;
