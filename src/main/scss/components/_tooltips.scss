@@ -8,7 +8,7 @@
   max-width: min(50vw, 1000px) !important;
   white-space: pre-line;
   z-index: 0;
-  background: color-mix(in srgb, var(--tooltip-background), transparent 20%);
+  background: color-mix(in srgb, var(--tooltip-background), transparent 15%);
   backdrop-filter: var(--tooltip-backdrop-filter);
 
   .tippy-content {
