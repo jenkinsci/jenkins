@@ -92,7 +92,7 @@
   &__main {
     display: grid;
     grid-template-columns: 1fr auto;
-    padding-left: var(--section-padding);
+    padding-left: calc(var(--section-padding) + 0.375rem);
     width: 100%;
   }
 
@@ -107,7 +107,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.25rem;
-    padding-right: var(--section-padding);
+    padding-right: calc(var(--section-padding) + 0.375rem);
   }
 
   &--has-sticky-app-bar {
