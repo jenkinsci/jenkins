@@ -74,6 +74,10 @@
     width: calc(100% - (var(--section-padding) * 2));
   }
 
+  .jenkins-search-container {
+    z-index: -1;
+  }
+
   &__search {
     --search-bar-height: 3rem !important;
 
@@ -207,8 +211,4 @@
       color: var(--text-color-secondary);
     }
   }
-}
-
-.jenkins-search-container {
-  z-index: -1;
 }
