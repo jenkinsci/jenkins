@@ -1,15 +1,16 @@
+@use "../abstracts/mixins";
+
 .tippy-box[data-theme~="tooltip"] {
+  @include mixins.wwdc2026($opacity: 85%);
+
   color: var(--tooltip-color);
   padding: 0.375rem 0.75rem;
   border-radius: var(--form-input-border-radius);
-  box-shadow: var(--elev-box-shadow);
   font-size: 0.75rem;
   line-height: 1.6;
   max-width: min(50vw, 1000px) !important;
   white-space: pre-line;
   z-index: 0;
-  background: color-mix(in srgb, var(--elev-background), transparent 15%);
-  backdrop-filter: var(--tooltip-backdrop-filter);
 
   .tippy-content {
     padding: 0;
