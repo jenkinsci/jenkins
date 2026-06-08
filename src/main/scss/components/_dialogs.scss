@@ -26,8 +26,8 @@ $jenkins-dialog-padding: 1.25rem;
     animation: jenkins-dialog-backdrop-animate-in 0.15s;
   }
 
-  * {
-    --background: var(--dialog-background);
+  div {
+    --background: var(--elev-background);
   }
 
   &__title {
