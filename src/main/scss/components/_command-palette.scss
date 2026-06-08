@@ -68,9 +68,14 @@
   color: var(--text-color);
   pointer-events: auto;
   margin: 0 auto var(--inset);
+  z-index: 0;
 
   @media (max-width: breakpoints.$tablet-breakpoint) {
     width: calc(100% - (var(--section-padding) * 2));
+  }
+
+  .jenkins-search-container {
+    z-index: -1;
   }
 
   &__search {
@@ -81,7 +86,6 @@
     margin-bottom: var(--section-padding);
     border-radius: 1rem;
     transition: var(--standard-transition);
-    z-index: 10;
     max-width: unset;
 
     input {
