@@ -145,8 +145,10 @@
     content: "";
     position: absolute;
     inset: 0;
+    // Display a subtle border to elevate the dialog from its backdrop
     border: 1px solid color-mix(in sRGB, var(--white) 10%, transparent);
     border-radius: inherit;
+    // One layer above bottom app bar's z-index
     z-index: 998;
     pointer-events: none;
   }
