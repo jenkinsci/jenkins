@@ -79,7 +79,7 @@
   }
 
   &__search {
-    @include mixins.wwdc2026;
+    @include mixins.overlay-surface;
 
     --search-bar-height: 3rem !important;
 
@@ -109,7 +109,7 @@
   }
 
   &__results-container {
-    @include mixins.wwdc2026;
+    @include mixins.overlay-surface;
 
     display: flex;
     flex-direction: column;

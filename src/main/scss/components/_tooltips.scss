@@ -1,7 +1,7 @@
 @use "../abstracts/mixins";
 
 .tippy-box[data-theme~="tooltip"] {
-  @include mixins.wwdc2026($opacity: 85%);
+  @include mixins.overlay-surface($opacity: 85%);
 
   color: var(--tooltip-color);
   padding: 0.375rem 0.75rem;

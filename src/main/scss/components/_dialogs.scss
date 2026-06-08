@@ -3,7 +3,7 @@
 $jenkins-dialog-padding: 1.25rem;
 
 .jenkins-dialog {
-  @include mixins.wwdc2026;
+  @include mixins.overlay-surface;
 
   --section-padding: #{$jenkins-dialog-padding};
   --bottom-app-bar-padding: #{$jenkins-dialog-padding};
@@ -27,7 +27,7 @@ $jenkins-dialog-padding: 1.25rem;
   }
 
   div {
-    --background: var(--elev-background);
+    --background: var(--overlay-surface-background);
   }
 
   &__title {

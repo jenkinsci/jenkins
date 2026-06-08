@@ -192,12 +192,16 @@ $semantics: (
   // Tooltips
   --tooltip-color: var(--text-color);
 
-  // Elevation
-  --elev-background: color-mix(in sRGB, var(--card-background), var(--white) 2.5%);
-  --elev-box-shadow:
-  0 0 0 1px color-mix(in sRGB, var(--black) 5%, transparent),
-  0 15px 40px color-mix(in sRGB, var(--black) 15%, transparent),
-  0 2px 8px color-mix(in sRGB, var(--black) 7.5%, transparent) !important;
+  // Overlay surfaces
+  --overlay-surface-background: color-mix(
+    in sRGB,
+    var(--card-background),
+    var(--white) 2.5%
+  );
+  --overlay-surface-box-shadow:
+    0 0 0 1px color-mix(in sRGB, var(--black) 5%, transparent),
+    0 15px 40px color-mix(in sRGB, var(--black) 15%, transparent),
+    0 2px 8px color-mix(in sRGB, var(--black) 7.5%, transparent) !important;
 
   ::backdrop {
     --dialog-backdrop-backdrop-filter: blur(0.25px);

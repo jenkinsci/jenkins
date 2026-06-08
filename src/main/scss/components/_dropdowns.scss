@@ -4,7 +4,7 @@ $dropdown-border-radius: 1rem;
 $dropdown-padding: 0.375rem;
 
 .tippy-box[data-theme~="dropdown"] {
-  @include mixins.wwdc2026($opacity: 85%);
+  @include mixins.overlay-surface($opacity: 85%);
 
   border-radius: $dropdown-border-radius;
   max-width: unset !important;
