@@ -6,8 +6,8 @@ $jenkins-dialog-padding: 1.25rem;
 
   border-radius: 1rem;
   border: none;
-  background-color: var(--dialog-background);
-  box-shadow: var(--dialog-box-shadow);
+  background-color: var(--elev-background);
+  box-shadow: var(--elev-box-shadow);
   animation: jenkins-dialog-animate-in 0.25s cubic-bezier(0, 0.68, 0.5, 1.5);
   overflow: hidden;
   padding: 0;

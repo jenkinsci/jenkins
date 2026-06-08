@@ -193,19 +193,10 @@ $semantics: (
   --tooltip-backdrop-filter: contrast(1.1) saturate(2) blur(20px);
   --tooltip-color: var(--text-color);
 
-  --tooltip-background: var(--elev-background) !important;
-  --tooltip-box-shadow: var(--elev-box-shadow) !important;
-
   // Dropdowns
   --dropdown-backdrop-filter: contrast(1.1) saturate(2) blur(20px);
-  --dropdown-background: var(--elev-background) !important;
-  --dropdown-box-shadow: var(--elev-box-shadow) !important;
 
-  // Dialogs
-  --dialog-background: var(--elev-background) !important;
-  --dialog-box-shadow: var(--elev-box-shadow) !important;
-
-  // elev
+  // Elevation
   --elev-background: color-mix(in sRGB, var(--card-background), var(--white) 2%);
   --elev-box-shadow: inset 0 0 0 1px color-mix(in sRGB, var(--white) 10%, transparent),
   0 0 0 1px color-mix(in sRGB, var(--black) 5%, transparent),
