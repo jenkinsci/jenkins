@@ -32,7 +32,7 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:if test="${mode=='main-panel'}">
-    <div class="app-main-panel
+    <div id="main-panel" class="app-main-panel
               ${attrs.width eq 'wide' ? 'app-main-panel--wide' : ''}
               ${attrs.width eq 'narrow' ? 'app-main-panel--narrow' : ''}">
       <j:if test="${app.isQuietingDown()}">

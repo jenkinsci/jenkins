@@ -174,7 +174,7 @@ THE SOFTWARE.
         <j:set var="mode" value="side-panel" />
         <d:invokeBody />
       </j:if>
-      <div id="main-panel" class="app-page-body__contents">
+      <div class="app-page-body__contents">
         <j:set var="mode" value="main-panel" />
         <d:invokeBody/>
       </div>
