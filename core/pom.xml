@@ -159,11 +159,6 @@ THE SOFTWARE.
       <artifactId>commons-io</artifactId>
     </dependency>
     <dependency>
-      <!-- Jenkins doesn't use this directly, but some plugins wanted to use the latest -->
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-    </dependency>
-    <dependency>
       <groupId>io.jenkins.tools</groupId>
       <artifactId>bridge-method-annotation</artifactId>
       <version>${bridge-method-injector.version}</version>

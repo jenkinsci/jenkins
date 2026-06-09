@@ -37,7 +37,6 @@ import jenkins.security.csp.CspBuilder;
 import jenkins.security.csp.CspHeader;
 import jenkins.security.csp.CspHeaderDecider;
 import jenkins.security.csp.ReportingContext;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
@@ -74,7 +73,7 @@ public class CspDecorator extends PageDecorator {
     @CheckForNull
     /* package */ static String getReportingEndpoint(HttpServletRequest req) {
         Class<?> modelObjectClass = null;
-        String restOfPath = StringUtils.removeStart(req.getRequestURI(), req.getContextPath());
+        String restOfPath = req.getRequestURI().replaceFirst("^" + req.getContextPath(), "");
         final StaplerRequest2 staplerRequest2 = Stapler.getCurrentRequest2();
         if (staplerRequest2 != null) {
             final List<Ancestor> ancestors = staplerRequest2.getAncestors();
