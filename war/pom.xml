@@ -409,7 +409,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api and jackson3-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>woodstox-core-api</artifactId>
-                  <version>7.1.1-1.v4d297985f397</version>
+                  <version>7.2.1-6.v3718a_a_11f5c4</version>
                   <type>hpi</type>
                 </artifactItem>
 
