@@ -43,18 +43,19 @@ import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
-import hudson.util.AtomicFileWriter;
 import hudson.util.FormValidation;
-import hudson.util.IOUtils;
 import hudson.util.Secret;
+import hudson.util.XStream2;
 import hudson.widgets.Widget;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
@@ -888,10 +889,13 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
         checkPermission(EXTENDED_READ);
         XmlFile configFile = getConfigFile();
         if (hasPermission(CONFIGURE)) {
-            IOUtils.copy(configFile.getFile(), os);
+            Items.XSTREAM2.toXMLUTF8(this, os);
         } else {
+            var baos = new ByteArrayOutputStream();
+            Items.XSTREAM2.toXMLUTF8(this, baos);
+            String xml = baos.toString(StandardCharsets.UTF_8);
+
             String encoding = configFile.sniffEncoding();
-            String xml = Files.readString(Util.fileToPath(configFile.getFile()), Charset.forName(encoding));
 
             for (ExtendedReadRedaction redaction : ExtendedReadRedaction.all()) {
                 LOGGER.log(Level.FINE, () -> "Applying redaction " + redaction.getClass().getName());
@@ -922,34 +926,29 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     public void updateByXml(Source source) throws IOException {
         checkPermission(CONFIGURE);
         XmlFile configXmlFile = getConfigFile();
-        final AtomicFileWriter out = new AtomicFileWriter(configXmlFile.getFile());
+        final StringWriter out = new StringWriter();
         try {
-            try {
-                XMLUtils.safeTransform(source, new StreamResult(out));
-                out.close();
-            } catch (TransformerException | SAXException e) {
-                throw new IOException("Failed to persist config.xml", e);
-            }
-
-            // try to reflect the changes by reloading
-            Object o = new XmlFile(Items.XSTREAM, out.getTemporaryPath().toFile()).unmarshalNullingOut(this);
-            if (o != this) {
-                // ensure that we've got the same job type. extending this code to support updating
-                // to different job type requires destroying & creating a new job type
-                throw new IOException("Expecting " + this.getClass() + " but got " + o.getClass() + " instead");
-            }
-
-            Items.runWhileUpdatingByXml(() -> onLoad(getParent(), getRootDir().getName()));
-            Jenkins.get().rebuildDependencyGraphAsync();
-
-            // if everything went well, commit this new version
-            out.commit();
-            SaveableListener.fireOnChange(this, getConfigFile());
-            ItemListener.fireOnUpdated(this);
-
-        } finally {
-            out.abort(); // don't leave anything behind
+            XMLUtils.safeTransform(source, new StreamResult(out));
+            out.close();
+        } catch (TransformerException | SAXException e) {
+            throw new IOException("Failed to process config.xml", e);
         }
+
+        // try to reflect the changes by reloading
+        Object o = Items.XSTREAM2.unmarshal(XStream2.getDefaultDriver().createReader(new StringReader(out.getBuffer().toString())), this, null, true);
+        if (o != this) {
+            // ensure that we've got the same job type. extending this code to support updating
+            // to different job type requires destroying & creating a new job type
+            throw new IOException("Expecting " + this.getClass() + " but got " + o.getClass() + " instead");
+        }
+
+        Items.runWhileUpdatingByXml(() -> onLoad(getParent(), getRootDir().getName()));
+        Jenkins.get().rebuildDependencyGraphAsync();
+
+        // if everything went well, re-serialize from memory to encrypt secrets submitted in plaintext
+        configXmlFile.write(this);
+        SaveableListener.fireOnChange(this, getConfigFile());
+        ItemListener.fireOnUpdated(this);
     }
 
     /**
