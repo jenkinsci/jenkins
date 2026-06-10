@@ -43,7 +43,7 @@ THE SOFTWARE.
 
       <j:choose>
         <j:when test="${it.channel != null}">
-          <h4>${it.oSDescription} agent, version ${it.slaveVersion}</h4>
+          <h4>${it.oSDescription} agent, version ${it.agentVersion}</h4>
 
           <j:forEach var="instance" items="${it.systemInfoExtensions}">
             <l:hasPermission permission="${instance.requiredPermission}">
