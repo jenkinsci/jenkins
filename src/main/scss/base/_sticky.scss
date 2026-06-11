@@ -1,0 +1,29 @@
+// When sticky positioning is disabled (hudson.Functions.disableStickyPositioning, used by
+// acceptance tests), neutralise every sticky element so it cannot float over and intercept
+// clicks.
+// Keep this list in sync with the `position: sticky` rules across the SCSS sources.
+:root[data-disable-sticky="true"] {
+  .jenkins-header,
+  .jenkins-app-bar--sticky,
+  .jenkins-bottom-app-bar__shadow,
+  .bottom-sticker,
+  #bottom-sticker,
+  .app-page-body__sidebar--sticky,
+  .app-plugin-manager__sidebar {
+    position: relative !important;
+
+    // Reset the sticky offsets too — with relative positioning these would otherwise
+    // shift the element (e.g. top: var(--header-height) pushes the app-bar down over the
+    // content) and reintroduce the overlap we are trying to avoid.
+    top: auto !important;
+    bottom: auto !important;
+  }
+
+  // The bottom app bar shadow uses negative margins to overlap content; reset them so it
+  // cannot intercept clicks when sticky positioning is disabled.
+  .jenkins-bottom-app-bar__shadow {
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+    height: 0 !important;
+  }
+}
