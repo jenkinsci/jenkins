@@ -1703,11 +1703,12 @@ public class Util {
     }
 
     /**
-     * Return true iff the parameter does not denote an absolute URI and not a scheme-relative URI.
+     * Return true if and only if the parameter does not denote an absolute URI and not a scheme-relative URI.
      * @since 2.3 / 1.651.2
      */
     public static boolean isSafeToRedirectTo(@NonNull String uri) {
-        return !isAbsoluteUri(uri) && !uri.startsWith("\\") && !uri.replace('\\', '/').startsWith("//");
+        String normalized = uri.replace("\t", "").replace("\n", "").replace("\r", "");
+        return !isAbsoluteUri(normalized) && !normalized.startsWith("\\") && !normalized.replace('\\', '/').contains("//");
     }
 
     /**
