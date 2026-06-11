@@ -318,7 +318,7 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1403.vd9d1413fd205</version>
+                  <version>1413.v736fa_5b_61d80</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -401,7 +401,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api and jackson3-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>woodstox-core-api</artifactId>
-                  <version>7.1.1-1.v4d297985f397</version>
+                  <version>7.2.1-6.v3718a_a_11f5c4</version>
                   <type>hpi</type>
                 </artifactItem>
 
