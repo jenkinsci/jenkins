@@ -1,0 +1,39 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:set var="controls">
+    <form method="post" name="clear" action="${rootURL}/${it.url}/clear">
+      <f:submit value="${%Clear}"/>
+    </form>
+  </j:set>
+  <l:adminMonitor controls="${controls}" dismissValue="${%Disable}">
+    ${%blurb}
+    <table class="sortable jenkins-table jenkins-!-margin-top-3 jenkins-!-margin-bottom-0">
+      <thead>
+        <tr>
+          <th>${%Trigger}</th>
+          <th>${%Most Recent Occurrence}</th>
+          <th>${%Most Recently Occurring Job}</th>
+          <th>${%Duration}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <j:forEach var="trigger" items="${it.getErrors().entrySet()}">
+          <j:set var="trigger" value="${trigger.key}"/>
+          <j:set var="val" value="${trigger.value}"/>
+          <j:set var="job" value="${app.getItemByFullName(trigger.fullJobName)}"/>
+          <tr>
+            <td>${app.getDescriptorByType(val.trigger).getDisplayName()}</td>
+            <td>${val.getTimeString()}</td>
+            <j:if test="${job!=null}">
+               <td><a href="${rootURL}/${job.url}" class="model-link">${job.fullDisplayName}</a></td>
+            </j:if>
+            <j:if test="${job==null}">
+               <td>${val.fullJobName}</td>
+            </j:if>
+            <td>${h.getTimeSpanString(val.duration)}</td>
+          </tr>
+        </j:forEach>
+      </tbody>
+    </table>
+  </l:adminMonitor>
+</j:jelly>
