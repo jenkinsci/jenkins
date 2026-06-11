@@ -315,6 +315,10 @@ function tryPost(element, opt, context) {
         notificationBar.ERROR,
       );
     }
+
+   setTimeout(() => {
+  window.location.href = ".";
+}, 2000);
   });
 });
 }
