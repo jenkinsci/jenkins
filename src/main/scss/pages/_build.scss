@@ -16,6 +16,7 @@
 
   & > * {
     height: 350px;
+    min-width: 0;
   }
 
   // Legacy card shouldn't have a fixed height
