@@ -308,7 +308,6 @@ function tryPost(element, opt, context) {
     return;
   }
 
-  // Do not prepend the context path for root-relative URLs
   if (opt.event.url.startsWith("/")) {
     context = "";
   }
@@ -317,8 +316,23 @@ function tryPost(element, opt, context) {
     fetch(context + xmlEscape(opt.event.url), {
       method: "post",
       headers: crumb.wrap({}),
+    }).then((rsp) => {
+      if (rsp.ok) {
+        notificationBar.show(
+          opt.displayName + ": Done.",
+          notificationBar.SUCCESS,
+        );
+      } else {
+        notificationBar.show(
+          opt.displayName + ": Failed.",
+          notificationBar.ERROR,
+        );
+      }
+
+      setTimeout(() => {
+        window.location.href = ".";
+      }, 2000);
     });
-    window.location.href = ".";
   });
 }
 
