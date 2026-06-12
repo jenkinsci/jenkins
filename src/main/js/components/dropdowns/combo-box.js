@@ -21,18 +21,20 @@ function init() {
     };
   }
 
-  function createAndShowDropdown(e, div, suggestions) {
+  function createAndShowDropdown(e, suggestions) {
     const items = suggestions
       .splice(0, Utils.getMaxSuggestionCount(e, 20))
       .map((s) => convertSuggestionToItem(s, e));
     if (!e.dropdown) {
       Utils.generateDropdown(
-        div,
+        e,
         (instance) => {
           e.dropdown = instance;
         },
         true,
         {
+          trigger: "manual",
+          hideOnClick: false,
           appendTo: "parent",
         },
       );
@@ -41,7 +43,7 @@ function init() {
     e.dropdown.show();
   }
 
-  function updateSuggestions(e, div, items) {
+  function updateSuggestions(e, items) {
     const text = e.value.trim();
 
     let filteredItems = text
@@ -53,15 +55,13 @@ function init() {
       .map((item) => {
         return { name: item };
       });
-    createAndShowDropdown(e, div, suggestions || []);
+    createAndShowDropdown(e, suggestions || []);
   }
 
   behaviorShim.specify("INPUT.combobox2", "combobox", 100, function (e) {
     // form field with auto-completion support
     // insert the auto-completion container
     refillOnChange(e, function (params) {
-      const div = document.createElement("DIV");
-      e.parentNode.insertBefore(div, e.nextElementSibling);
       e.style.position = "relative";
 
       const url = e.getAttribute("fillUrl");
@@ -74,7 +74,7 @@ function init() {
       })
         .then((rsp) => (rsp.ok ? rsp.json() : {}))
         .then((items) => {
-          e.addEventListener("focus", () => updateSuggestions(e, div, items));
+          e.addEventListener("focus", () => updateSuggestions(e, items));
 
           // otherwise menu won't hide on tab with nothing selected
           // needs delay as without that it blocks click selection of an item
@@ -85,7 +85,7 @@ function init() {
           e.addEventListener(
             "input",
             Utils.debounce(() => {
-              updateSuggestions(e, div, items);
+              updateSuggestions(e, items);
             }),
           );
         });
