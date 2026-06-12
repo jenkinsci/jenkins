@@ -72,9 +72,29 @@ function init() {
         method: "post",
         body: new URLSearchParams(params),
       })
-        .then((rsp) => (rsp.ok ? rsp.json() : {}))
+        .then((rsp) => (rsp.ok ? rsp.json() : []))
         .then((items) => {
-          e.addEventListener("focus", () => updateSuggestions(e, items));
+          // Keep the latest suggestions on the element. refillOnChange runs
+          // this callback once on initial load and again on every change of a
+          // fillDependsOn dependency, so the listeners below read from here
+          // rather than capturing a stale `items` in their closures. Coerce to
+          // an array so a failed request (resolved to [] above) or an
+          // unexpected response shape can never make updateSuggestions throw on
+          // items.filter(...).
+          e.suggestions = Array.isArray(items) ? items : [];
+
+          // Register the focus/focusout/input listeners exactly once. Without
+          // this guard every refill would attach another set of handlers,
+          // stacking duplicates that fire repeatedly (and over stale data) as
+          // dependencies change.
+          if (e.comboboxListenersAttached) {
+            return;
+          }
+          e.comboboxListenersAttached = true;
+
+          e.addEventListener("focus", () =>
+            updateSuggestions(e, e.suggestions),
+          );
 
           // otherwise menu won't hide on tab with nothing selected
           // needs delay as without that it blocks click selection of an item
@@ -85,7 +105,7 @@ function init() {
           e.addEventListener(
             "input",
             Utils.debounce(() => {
-              updateSuggestions(e, items);
+              updateSuggestions(e, e.suggestions);
             }),
           );
         });
