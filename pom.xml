@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.568</revision>
+    <revision>2.569</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2026-06-02T05:55:22Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-06-08T20:20:18Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -98,7 +98,7 @@ THE SOFTWARE.
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>8.1039.v78300b_1d48a_9</winstone.version>
+    <winstone.version>8.1041.v055ce9e062e3</winstone.version>
     <node.version>24.16.0</node.version>
   </properties>
 
@@ -269,7 +269,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>13.4.2</version>
+              <version>13.5.0</version>
             </dependency>
           </dependencies>
           <executions>
@@ -285,7 +285,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.14</version>
+          <version>0.8.15</version>
         </plugin>
       </plugins>
     </pluginManagement>
