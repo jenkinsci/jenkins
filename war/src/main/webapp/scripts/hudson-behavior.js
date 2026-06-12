@@ -37,7 +37,7 @@ if (window.isRunAsTest) {
 // create a new object whose prototype is the given object
 // eslint-disable-next-line no-unused-vars
 function object(o) {
-  function F() { }
+  function F() {}
   F.prototype = o;
   return new F();
 }
@@ -236,10 +236,8 @@ var FormChecker = {
     const method = params.method.toLowerCase();
     if (method !== "get") {
       var idx = url.indexOf("?");
-      if (idx !== -1) {
-        params.parameters = url.substring(idx + 1);
-        url = url.substring(0, idx);
-      }
+      params.parameters = url.substring(idx + 1);
+      url = url.substring(0, idx);
     }
 
     fetch(url, {
@@ -247,7 +245,7 @@ var FormChecker = {
       headers: crumb.wrap({
         "Content-Type": "application/x-www-form-urlencoded",
       }),
-      body: method !== "get" && params.parameters ? params.parameters : null,
+      body: method !== "get" ? params.parameters : null,
     }).then((response) => {
       params.onComplete(response);
     }).catch((e) => {
@@ -269,7 +267,7 @@ var FormChecker = {
     this.sendRequest(next.url, {
       method: next.method,
       onComplete: function (x) {
-        return x.text().then((responseText) => {
+        x.text().then((responseText) => {
           updateValidationArea(next.target, responseText);
           FormChecker.inProgress--;
           FormChecker.schedule();
@@ -699,9 +697,9 @@ function registerValidator(e) {
     // don't let this kill off the entire JavaScript
     console.warn(
       "Failed to register validation method: " +
-      e.getAttribute("checkUrl") +
-      " : " +
-      e,
+        e.getAttribute("checkUrl") +
+        " : " +
+        e,
     );
     return;
   }
@@ -715,7 +713,7 @@ function registerValidator(e) {
       method: method,
       onComplete: function (response) {
         // TODO Add i18n support
-        return response.text().then((responseText) => {
+        response.text().then((responseText) => {
           const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${response.status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
           updateValidationArea(
             validationArea,
@@ -1085,7 +1083,7 @@ function evalInnerHtmlScripts(text, callback) {
  * of the function it needs to invoke "continuation()" to signal the execution of the next function.
  */
 function sequencer(fs) {
-  var nullFunction = function () { };
+  var nullFunction = function () {};
   function next() {
     if (fs.length > 0) {
       (fs.shift() || nullFunction)(next);
@@ -1749,11 +1747,11 @@ function rowvgStartEachRow(recursive, f) {
           true,
           show
             ? function (e) {
-              e.removeAttribute("field-disabled");
-            }
+                e.removeAttribute("field-disabled");
+              }
             : function (e) {
-              e.setAttribute("field-disabled", "true");
-            },
+                e.setAttribute("field-disabled", "true");
+              },
         );
       }
 
@@ -2098,8 +2096,8 @@ function refreshPart(id, url) {
             if (!responseText) {
               console.log(
                 "Failed to retrieve response for ID " +
-                id +
-                ", perhaps Jenkins is unavailable",
+                  id +
+                  ", perhaps Jenkins is unavailable",
               );
               return;
             }
@@ -2195,21 +2193,21 @@ function findMatchingFormInput(base, name) {
 
   var bases = f.querySelectorAll(
     'input[name="' +
-    base.name +
-    '"], textarea[name="' +
-    base.name +
-    '"], select[name="' +
-    base.name +
-    '"]',
+      base.name +
+      '"], textarea[name="' +
+      base.name +
+      '"], select[name="' +
+      base.name +
+      '"]',
   );
   var targets = f.querySelectorAll(
     'input[name="' +
-    name +
-    '"], textarea[name="' +
-    name +
-    '"], select[name="' +
-    name +
-    '"]',
+      name +
+      '"], textarea[name="' +
+      name +
+      '"], select[name="' +
+      name +
+      '"]',
   );
 
   for (var i = 0; i < bases.length; i++) {
