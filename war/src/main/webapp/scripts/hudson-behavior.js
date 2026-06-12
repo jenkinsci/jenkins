@@ -242,18 +242,18 @@ var FormChecker = {
       }
     }
 
-    fetch(url, {
+    var fetchBody = method !== "get" && params.parameters ? params.parameters : null;
+    var headers = {};
+    if (fetchBody) {
+      headers["Content-Type"] = "application/x-www-form-urlencoded";
+    }
+
+    return fetch(url, {
       method: params.method,
-      headers: crumb.wrap({
-        "Content-Type": "application/x-www-form-urlencoded",
-      }),
-      body: method !== "get" && params.parameters ? params.parameters : null,
+      headers: crumb.wrap(headers),
+      body: fetchBody,
     }).then((response) => {
       return params.onComplete(response);
-    }).catch((e) => {
-      FormChecker.inProgress--;
-      FormChecker.schedule();
-      console.warn("Form validation failed:", e);
     });
   },
 
@@ -266,18 +266,21 @@ var FormChecker = {
     }
 
     var next = this.queue.shift();
+    this.inProgress++;
     this.sendRequest(next.url, {
       method: next.method,
       onComplete: function (x) {
         return x.text().then((responseText) => {
           updateValidationArea(next.target, responseText);
-          FormChecker.inProgress--;
-          FormChecker.schedule();
           layoutUpdateCallback.call();
         });
       },
+    }).catch((e) => {
+      console.warn("Form validation failed:", e);
+    }).finally(() => {
+      FormChecker.inProgress--;
+      FormChecker.schedule();
     });
-    this.inProgress++;
   },
 };
 
@@ -723,6 +726,8 @@ function registerValidator(e) {
           );
         });
       },
+    }).catch((e) => {
+      console.warn("Form validation failed:", e);
     });
   };
   var oldOnchange = e.onchange;
@@ -2652,7 +2657,7 @@ function validateButton(checkUrl, paramList, button) {
       "Content-Type": "application/x-www-form-urlencoded",
     }),
   }).then((rsp) => {
-    rsp.text().then((responseText) => {
+    return rsp.text().then((responseText) => {
       spinner.style.display = "none";
       target.innerHTML = `<div class="validation-error-area" />`;
       updateValidationArea(target.children[0], responseText);
@@ -2673,11 +2678,11 @@ function validateButton(checkUrl, paramList, button) {
       } catch (e) {
         window.alert("failed to evaluate " + s + "\n" + e.message);
       }
-    }).catch((e) => {
-      spinner.style.display = "none";
-      updateValidationArea(target.children[0], "<div class='error'>Validation failed: " + escapeHTML(String(e)) + "</div>");
-      layoutUpdateCallback.call();
     });
+  }).catch((e) => {
+    spinner.style.display = "none";
+    updateValidationArea(target.children[0], "<div class=\"error\">Validation failed: " + escapeHTML(String(e)) + "</div>");
+    layoutUpdateCallback.call();
   });
 }
 
