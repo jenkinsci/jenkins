@@ -44,6 +44,7 @@ THE SOFTWARE.
        data-page-entry-oldest="${page.oldestOnPage}"
        data-page-has-up="${page.hasUpPage}"
        data-page-has-down="${page.hasDownPage}">
+  <div class="jenkins-build-history-card">
     <l:card id="jenkins-builds" title="Builds" controls="${controls}" expandable="${it.baseUrl}/buildTimeTrend">
       <l:search-bar placeholder="${%find}"
                     clazz="${page.runs.isEmpty() and page.queueItems.isEmpty() ? 'jenkins-hidden' : ''}"/>
@@ -75,5 +76,5 @@ THE SOFTWARE.
       <!--after that component has been rendered to get the correct value to use in `builds-card.js`-->
       <div id="properties" page-next-build="${it.nextBuildNumberToFetch ?: it.owner.nextBuildNumber}"/>
     </l:card>
-  </div>
+  </div></div>
 </j:jelly>

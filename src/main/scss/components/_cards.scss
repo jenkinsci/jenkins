@@ -36,6 +36,10 @@ $card-padding: 1rem;
     padding: 0 $card-padding $card-padding;
     overflow-y: auto;
 
+    .jenkins-build-history-card & {
+      overflow: visible;
+    }
+
     &:empty {
       display: none;
     }
