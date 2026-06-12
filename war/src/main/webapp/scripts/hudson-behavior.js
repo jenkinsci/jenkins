@@ -37,7 +37,7 @@ if (window.isRunAsTest) {
 // create a new object whose prototype is the given object
 // eslint-disable-next-line no-unused-vars
 function object(o) {
-  function F() {}
+  function F() { }
   F.prototype = o;
   return new F();
 }
@@ -242,18 +242,18 @@ var FormChecker = {
       }
     }
 
-    var fetchBody = method !== "get" && params.parameters ? params.parameters : null;
-    var headers = {};
-    if (fetchBody) {
-      headers["Content-Type"] = "application/x-www-form-urlencoded";
-    }
-
-    return fetch(url, {
+    fetch(url, {
       method: params.method,
-      headers: crumb.wrap(headers),
-      body: fetchBody,
+      headers: crumb.wrap({
+        "Content-Type": "application/x-www-form-urlencoded",
+      }),
+      body: method !== "get" && params.parameters ? params.parameters : null,
     }).then((response) => {
-      return params.onComplete(response);
+      params.onComplete(response);
+    }).catch((e) => {
+      FormChecker.inProgress--;
+      FormChecker.schedule();
+      console.warn("Form validation failed:", e);
     });
   },
 
@@ -266,21 +266,18 @@ var FormChecker = {
     }
 
     var next = this.queue.shift();
-    this.inProgress++;
     this.sendRequest(next.url, {
       method: next.method,
       onComplete: function (x) {
         return x.text().then((responseText) => {
           updateValidationArea(next.target, responseText);
+          FormChecker.inProgress--;
+          FormChecker.schedule();
           layoutUpdateCallback.call();
         });
       },
-    }).catch((e) => {
-      console.warn("Form validation failed:", e);
-    }).finally(() => {
-      FormChecker.inProgress--;
-      FormChecker.schedule();
     });
+    this.inProgress++;
   },
 };
 
@@ -702,9 +699,9 @@ function registerValidator(e) {
     // don't let this kill off the entire JavaScript
     console.warn(
       "Failed to register validation method: " +
-        e.getAttribute("checkUrl") +
-        " : " +
-        e,
+      e.getAttribute("checkUrl") +
+      " : " +
+      e,
     );
     return;
   }
@@ -726,8 +723,6 @@ function registerValidator(e) {
           );
         });
       },
-    }).catch((e) => {
-      console.warn("Form validation failed:", e);
     });
   };
   var oldOnchange = e.onchange;
@@ -1090,7 +1085,7 @@ function evalInnerHtmlScripts(text, callback) {
  * of the function it needs to invoke "continuation()" to signal the execution of the next function.
  */
 function sequencer(fs) {
-  var nullFunction = function () {};
+  var nullFunction = function () { };
   function next() {
     if (fs.length > 0) {
       (fs.shift() || nullFunction)(next);
@@ -1754,11 +1749,11 @@ function rowvgStartEachRow(recursive, f) {
           true,
           show
             ? function (e) {
-                e.removeAttribute("field-disabled");
-              }
+              e.removeAttribute("field-disabled");
+            }
             : function (e) {
-                e.setAttribute("field-disabled", "true");
-              },
+              e.setAttribute("field-disabled", "true");
+            },
         );
       }
 
@@ -2103,8 +2098,8 @@ function refreshPart(id, url) {
             if (!responseText) {
               console.log(
                 "Failed to retrieve response for ID " +
-                  id +
-                  ", perhaps Jenkins is unavailable",
+                id +
+                ", perhaps Jenkins is unavailable",
               );
               return;
             }
@@ -2200,21 +2195,21 @@ function findMatchingFormInput(base, name) {
 
   var bases = f.querySelectorAll(
     'input[name="' +
-      base.name +
-      '"], textarea[name="' +
-      base.name +
-      '"], select[name="' +
-      base.name +
-      '"]',
+    base.name +
+    '"], textarea[name="' +
+    base.name +
+    '"], select[name="' +
+    base.name +
+    '"]',
   );
   var targets = f.querySelectorAll(
     'input[name="' +
-      name +
-      '"], textarea[name="' +
-      name +
-      '"], select[name="' +
-      name +
-      '"]',
+    name +
+    '"], textarea[name="' +
+    name +
+    '"], select[name="' +
+    name +
+    '"]',
   );
 
   for (var i = 0; i < bases.length; i++) {
@@ -2657,7 +2652,7 @@ function validateButton(checkUrl, paramList, button) {
       "Content-Type": "application/x-www-form-urlencoded",
     }),
   }).then((rsp) => {
-    return rsp.text().then((responseText) => {
+    rsp.text().then((responseText) => {
       spinner.style.display = "none";
       target.innerHTML = `<div class="validation-error-area" />`;
       updateValidationArea(target.children[0], responseText);
@@ -2678,11 +2673,11 @@ function validateButton(checkUrl, paramList, button) {
       } catch (e) {
         window.alert("failed to evaluate " + s + "\n" + e.message);
       }
+    }).catch((e) => {
+      spinner.style.display = "none";
+      updateValidationArea(target.children[0], "<div class='error'>Validation failed: " + escapeHTML(String(e)) + "</div>");
+      layoutUpdateCallback.call();
     });
-  }).catch((e) => {
-    spinner.style.display = "none";
-    updateValidationArea(target.children[0], "<div class=\"error\">Validation failed: " + escapeHTML(String(e)) + "</div>");
-    layoutUpdateCallback.call();
   });
 }
 
