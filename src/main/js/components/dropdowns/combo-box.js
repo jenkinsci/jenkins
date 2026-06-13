@@ -35,7 +35,7 @@ function init() {
         {
           trigger: "manual",
           hideOnClick: false,
-          appendTo: "parent",
+          appendTo: (ref) => ref.closest("dialog") || document.body,
         },
       );
     }
