@@ -69,4 +69,9 @@ public class SystemInfoLink extends ManagementLink {
     public Category getCategory() {
         return Category.STATUS;
     }
+
+    @Override
+    public @NonNull String getSearchKeywords() {
+        return "environment properties memory threads";
+    }
 }

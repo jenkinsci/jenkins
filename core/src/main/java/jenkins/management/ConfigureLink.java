@@ -26,6 +26,8 @@ package jenkins.management;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.Functions;
+import hudson.model.Descriptor;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
@@ -67,5 +69,14 @@ public class ConfigureLink extends ManagementLink {
     @Override
     public Category getCategory() {
         return Category.CONFIGURATION;
+    }
+
+    @Override
+    public @NonNull String getSearchKeywords() {
+        StringBuilder keywords = new StringBuilder("usage statistics system message executors quiet period scm checkout retry resource root");
+        for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassifiedReadable()) {
+            keywords.append(" ").append(d.getDisplayName());
+        }
+        return keywords.toString();
     }
 }

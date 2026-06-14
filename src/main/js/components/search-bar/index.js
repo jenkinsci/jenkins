@@ -54,7 +54,9 @@ function init() {
         // Filter results
         const results = searchBar
           .suggestions()
-          .filter((item) => item.label.toLowerCase().includes(query))
+          .filter((item) =>
+            (item.searchText || item.label.toLowerCase()).includes(query),
+          )
           .slice(0, 5);
 
         searchResults.innerHTML = "";

@@ -184,6 +184,11 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         return Jenkins.SYSTEM_READ;
     }
 
+    @Override
+    public @NonNull String getSearchKeywords() {
+        return "csrf authorization authentication realm access control api token agent port";
+    }
+
     @Restricted(NoExternalUse.class)
     @RestrictedSince("2.222")
     public static final Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof GlobalConfigurationCategory.Security;
