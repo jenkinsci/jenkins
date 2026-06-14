@@ -320,7 +320,7 @@ Code reviews do NOT pursue the following goals:
 ** We want to keep pull requests focused when possible (one feature/fix per pull request),
    but we can live without it if there is no need to backport changes to the stable baseline.
 
-== Issue triage
+== Issue triage [[issue-triage]]
 
 The *Issue Triage Team* and *Core Maintainers* are roles that are expected to process the incoming issues.
 These contributors perform initial triage of incoming issues and periodically scrub the issue tracker.
