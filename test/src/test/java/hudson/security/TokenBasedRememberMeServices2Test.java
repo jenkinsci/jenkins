@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import jenkins.security.seed.UserSeedProperty;
 import org.htmlunit.CookieManager;
-import org.htmlunit.util.Cookie;
+import org.htmlunit.http.Cookie;
 import org.htmlunit.xml.XmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

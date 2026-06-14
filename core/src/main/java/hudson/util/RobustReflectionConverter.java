@@ -457,9 +457,26 @@ public class RobustReflectionConverter implements Converter {
                 converter = new RobustCollectionConverter(mapper, reflectionProvider, field.getGenericType());
             } else if (new RobustMapConverter(mapper).canConvert(type)) {
                 converter = new RobustMapConverter(mapper, field.getGenericType());
+            } else if (DescribableList.ConverterImpl.canConvertRobust(type)) {
+                Class<?> elementType = extractElementType(field.getGenericType(), DescribableList.class);
+                converter = new DescribableList.ConverterImpl(mapper, elementType);
             }
         }
         return context.convertAnother(result, type, converter);
+    }
+
+    /**
+     * Extracts the element type from a generic list type.
+     * For example, given {@code DescribableList<Foo, Descriptor<Foo>>}, returns {@code Foo.class}.
+     */
+    private Class<?> extractElementType(Type genericType, Class<?> listClass) {
+        if (genericType != null && listClass.isAssignableFrom(Types.erasure(genericType))) {
+            var baseType = Types.getBaseClass(genericType, listClass);
+            // Get the first type argument (the element type T)
+            var typeArg = Types.getTypeArgument(baseType, 0, Object.class);
+            return Types.erasure(typeArg);
+        }
+        return null;
     }
 
     private void writeValueToImplicitCollection(
