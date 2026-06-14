@@ -316,9 +316,7 @@ function tryPost(element, opt, context) {
         );
       }
 
-      setTimeout(() => {
-        window.location.href = ".";
-      }, 2000);
+      window.location.href = ".";
     });
   });
 }
