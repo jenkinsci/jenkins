@@ -248,6 +248,10 @@ var FormChecker = {
       body: method !== "get" ? params.parameters : null,
     }).then((response) => {
       params.onComplete(response);
+    }).catch((e) => {
+      FormChecker.inProgress--;
+      FormChecker.schedule();
+      console.warn("Form validation failed:", e);
     });
   },
 
@@ -1160,7 +1164,7 @@ function helpButtonOnClick() {
         }
         layoutUpdateCallback.call();
       });
-    });
+    }).catch((e) => console.warn("Failed to load help:", e));
   } else {
     helpArea.style.display = "none";
     layoutUpdateCallback.call();
@@ -1425,7 +1429,7 @@ function rowvgStartEachRow(recursive, f) {
           e.setAttribute("usemap", "#" + id);
         });
       }
-    });
+    }).catch((e) => console.warn("Failed to load lazymap:", e));
   });
 
   // Native browser resizing doesn't work for CodeMirror textboxes so let's create our own
@@ -2109,7 +2113,7 @@ function refreshPart(id, url) {
             layoutUpdateCallback.call();
           });
         }
-      });
+      }).catch((e) => console.warn("Failed to refresh part:", e));
     }
   };
   // if run as test, just do it once and do it now to make sure it's working,
@@ -2667,6 +2671,10 @@ function validateButton(checkUrl, paramList, button) {
       } catch (e) {
         window.alert("failed to evaluate " + s + "\n" + e.message);
       }
+    }).catch((e) => {
+      spinner.style.display = "none";
+      updateValidationArea(target.children[0], "<div class='error'>Validation failed: " + escapeHTML(String(e)) + "</div>");
+      layoutUpdateCallback.call();
     });
   });
 }
