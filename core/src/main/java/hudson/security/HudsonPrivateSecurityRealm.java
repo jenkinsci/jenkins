@@ -84,6 +84,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.CompatibleFilter;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -135,6 +136,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     private final boolean enableCaptcha;
 
+    private PasswordComplexityRule passwordComplexityRule = new NonePasswordComplexityRule();
+
     @Deprecated
     public HudsonPrivateSecurityRealm(boolean allowsSignup) {
         this(allowsSignup, false, (CaptchaSupport) null);
@@ -173,6 +176,29 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     public boolean isEnableCaptcha() {
         return enableCaptcha;
+    }
+
+    /**
+     * @since TODO
+     */
+    @Restricted(NoExternalUse.class)
+    public PasswordComplexityRule getPasswordComplexityRule() {
+        return passwordComplexityRule;
+    }
+
+    /**
+     * @since TODO
+     */
+    @DataBoundSetter
+    public void setPasswordComplexityRule(PasswordComplexityRule passwordComplexityRule) {
+        this.passwordComplexityRule = passwordComplexityRule;
+    }
+
+    private Object readResolve() {
+        if (passwordComplexityRule == null) {
+            passwordComplexityRule = new NonePasswordComplexityRule();
+        }
+        return this;
     }
 
     /**
@@ -459,6 +485,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             PASSWORD_HASH_ENCODER.encode2(si.password1);
         }  catch (RuntimeException ex) {
             si.errors.put("password1", ex.getMessage());
+        }
+
+        if (!si.errors.containsKey("password1") && si.password1 != null && !si.password1.isEmpty()) {
+            try {
+                passwordComplexityRule.validate(si.password1);
+            } catch (PasswordComplexityException e) {
+                si.errors.put("password1", e.getMessage());
+            }
         }
 
         if (si.fullname == null || si.fullname.isEmpty()) {
@@ -858,6 +892,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                     throw new FormException(ex.getMessage(), "user.password");
                 }
 
+                SecurityRealm realm = Jenkins.get().getSecurityRealm();
+                if (realm instanceof HudsonPrivateSecurityRealm hpsr) {
+                    try {
+                        hpsr.getPasswordComplexityRule().validate(pwd);
+                    } catch (PasswordComplexityException e) {
+                        throw new FormException(e.getMessage(), "user.password");
+                    }
+                }
+
                 User user = Util.getNearestAncestorOfTypeOrThrow(req, User.class);
                 // the UserSeedProperty is not touched by the configure page
                 UserSeedProperty userSeedProperty = user.getProperty(UserSeedProperty.class);
@@ -1150,6 +1193,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 return FormValidation.warning(Messages.HudsonPrivateSecurityRealm_SignupWarning());
             }
             return FormValidation.ok();
+        }
+
+        public PasswordComplexityRule getDefaultPasswordComplexityRule() {
+            return new NonePasswordComplexityRule();
         }
     }
 

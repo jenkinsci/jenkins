@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -797,5 +798,125 @@ class HudsonPrivateSecurityRealmTest {
     private void assertUserNotConnected(JenkinsRule.WebClient wc, String notExpectedUsername) throws Exception {
         XmlPage page = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
         assertThat(page, hasXPath("//name", not(is(notExpectedUsername))));
+    }
+
+    @Test
+    void defaultPasswordComplexityRuleValidation() {
+        DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(8, true, true, true, true);
+
+        assertThrows(PasswordComplexityException.class, () -> rule.validate("bad"));
+        assertDoesNotThrow(() -> rule.validate("GoodPass1!"));
+    }
+
+    @Test
+    void defaultPasswordComplexityRuleMinimumLength() {
+        DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(8, false, false, false, false);
+        assertThrows(PasswordComplexityException.class, () -> rule.validate("short"));
+        assertDoesNotThrow(() -> rule.validate("longenough"));
+    }
+
+    @Test
+    void defaultPasswordComplexityRuleCharacterTypes() {
+        DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(0, true, true, true, true);
+        assertThrows(PasswordComplexityException.class, () -> rule.validate("alllowercase"));
+        assertThrows(PasswordComplexityException.class, () -> rule.validate("ALLUPPERCASE"));
+        assertThrows(PasswordComplexityException.class, () -> rule.validate("NoDigitsHere!"));
+        assertThrows(PasswordComplexityException.class, () -> rule.validate("NoSpecial123Aa"));
+        assertDoesNotThrow(() -> rule.validate("Good1!aA"));
+    }
+
+    @Test
+    void noPasswordComplexityRuleAllowsAnyPassword() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("testuser");
+        signup.enterPassword("a");
+        signup.enterFullName("Test User");
+        signup.enterEmail("test@example.com");
+        HtmlPage success = signup.submit(j);
+        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
+    }
+
+    @Test
+    void signupRejectsWeakPasswordWhenComplexityRuleConfigured() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        securityRealm.setPasswordComplexityRule(new DefaultPasswordComplexityRule(8, true, false, true, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("testuser");
+        signup.enterPassword("weak");
+        signup.enterFullName("Test User");
+        signup.enterEmail("test@example.com");
+        signup = new SignupPage(signup.submit(j));
+        signup.assertErrorContains("Password must be at least 8 characters long");
+        assertNull(User.get("testuser", false, Collections.emptyMap()));
+    }
+
+    @Test
+    void signupAcceptsStrongPasswordWhenComplexityRuleConfigured() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        securityRealm.setPasswordComplexityRule(new DefaultPasswordComplexityRule(8, true, false, true, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("testuser2");
+        signup.enterPassword("StrongPass1");
+        signup.enterFullName("Test User");
+        signup.enterEmail("test@example.com");
+        HtmlPage success = signup.submit(j);
+        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
+    }
+
+    @Test
+    void passwordChangeRejectsWeakPasswordWhenComplexityRuleConfigured() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setPasswordComplexityRule(new DefaultPasswordComplexityRule(8, true, false, true, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User alice = securityRealm.createAccount("alice", "AlicePass1");
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.login("alice", "AlicePass1");
+
+        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/security/");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+
+        password1.setText("weak");
+        password2.setText("weak");
+
+        HtmlForm form = configurePage.getFormByName("config");
+        assertThrows(FailingHttpStatusCodeException.class, () -> j.submit(form));
+    }
+
+    @Test
+    void passwordChangeAcceptsStrongPasswordWhenComplexityRuleConfigured() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setPasswordComplexityRule(new DefaultPasswordComplexityRule(8, true, false, true, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User alice = securityRealm.createAccount("alice", "AlicePass1");
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.login("alice", "AlicePass1");
+
+        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/security/");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+
+        password1.setText("NewStrong1");
+        password2.setText("NewStrong1");
+
+        HtmlForm form = configurePage.getFormByName("config");
+        j.submit(form);
+
+        wc.login("alice", "NewStrong1");
+        assertUserConnected(wc, "alice");
     }
 }
