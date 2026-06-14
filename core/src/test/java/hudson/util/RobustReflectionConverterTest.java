@@ -462,4 +462,56 @@ class RobustReflectionConverterTest {
             }
         }
     }
+
+    // record deserialization (#26077)
+
+    public record ConfigRecord(String name, int age) {}
+
+    @Test
+    @Issue("JENKINS-26077")
+    void unmarshalRecord() {
+        XStream2 xs = new XStream2();
+        xs.alias("config-record", ConfigRecord.class);
+        String xml = "<config-record><name>Jenkins</name><age>20</age></config-record>";
+        ConfigRecord rec = (ConfigRecord) xs.fromXML(xml);
+        assertEquals("Jenkins", rec.name());
+        assertEquals(20, rec.age());
+    }
+
+    @Test
+    @Issue("JENKINS-26077")
+    void unmarshalRecordWithMissingField() {
+        XStream2 xs = new XStream2();
+        xs.alias("config-record", ConfigRecord.class);
+        // age is omitted, should default to 0
+        String xml = "<config-record><name>Jenkins</name></config-record>";
+        ConfigRecord rec = (ConfigRecord) xs.fromXML(xml);
+        assertEquals("Jenkins", rec.name());
+        assertEquals(0, rec.age(), "primitive int should default to 0 when missing from XML");
+    }
+
+    @Test
+    @Issue("JENKINS-26077")
+    void unmarshalRecordWithExtraField() {
+        XStream2 xs = new XStream2();
+        xs.alias("config-record", ConfigRecord.class);
+        // extra element that doesn't exist on the record
+        String xml = "<config-record><name>Jenkins</name><age>20</age><extra>ignored</extra></config-record>";
+        ConfigRecord rec = (ConfigRecord) xs.fromXML(xml);
+        assertEquals("Jenkins", rec.name());
+        assertEquals(20, rec.age());
+    }
+
+    @Test
+    @Issue("JENKINS-26077")
+    void recordRoundTrip() {
+        XStream2 xs = new XStream2();
+        xs.alias("config-record", ConfigRecord.class);
+        ConfigRecord original = new ConfigRecord("Jenkins", 20);
+        String xml = xs.toXML(original);
+        ConfigRecord deserialized = (ConfigRecord) xs.fromXML(xml);
+        assertEquals(original.name(), deserialized.name());
+        assertEquals(original.age(), deserialized.age());
+    }
+
 }
