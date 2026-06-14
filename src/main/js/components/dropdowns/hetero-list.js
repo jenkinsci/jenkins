@@ -118,7 +118,7 @@ function generateButtons() {
               }
 
               let current = Array.from(e.children).filter(function (e) {
-                return e.matches("DIV.repeated-chunk");
+                return isSelectedItem(e);
               });
 
               function o(did) {
@@ -158,9 +158,15 @@ function generateButtons() {
       }
 
       function has(id) {
+        return Array.from(e.children).some(
+          (n) => isSelectedItem(n) && n.getAttribute("descriptorId") == id,
+        );
+      }
+
+      function isSelectedItem(e) {
         return (
-          e.querySelector('DIV.repeated-chunk[descriptorId="' + id + '"]') !=
-          null
+          e.classList.contains("repeated-chunk") &&
+          !e.classList.contains("fade-out")
         );
       }
 
@@ -171,12 +177,21 @@ function generateButtons() {
        */
       function toggleButtonState() {
         const templateCount = templates.length;
-        const selectedCount = Array.from(e.children).filter((e) =>
-          e.classList.contains("repeated-chunk"),
+        const selectedCount = Array.from(e.children).filter(
+          isSelectedItem,
         ).length;
 
         btn.disabled = oneEach && selectedCount >= templateCount;
       }
+      e.addEventListener("click", (event) => {
+        if (
+          event.target instanceof Element &&
+          event.target.closest(".repeatable-delete") !== null
+        ) {
+          // Regression fix: recompute after removal starts, before the DOM node is finally removed.
+          toggleButtonState();
+        }
+      });
       const observer = new MutationObserver(() => {
         toggleButtonState();
       });
