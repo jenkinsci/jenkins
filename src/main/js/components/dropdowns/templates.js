@@ -317,17 +317,15 @@ function tryPost(element, opt, context) {
       method: "post",
       headers: crumb.wrap({}),
     }).then((rsp) => {
-      if (rsp.ok) {
-        notificationBar.show(
-          opt.displayName + ": Done.",
-          notificationBar.SUCCESS,
-        );
-      } else {
-        notificationBar.show(
-          opt.displayName + ": Failed.",
-          notificationBar.ERROR,
-        );
-      }
+      sessionStorage.setItem(
+        "jenkins-dropdown-notification",
+        JSON.stringify({
+          message: rsp.ok
+            ? opt.displayName + ": Done."
+            : opt.displayName + ": Failed.",
+          type: rsp.ok ? "SUCCESS" : "ERROR",
+        }),
+      );
 
       window.location.href = ".";
     });
