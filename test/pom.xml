@@ -166,6 +166,13 @@ THE SOFTWARE.
       <version>${project.version}</version>
       <type>executable-war</type>
       <scope>test</scope>
+      <exclusions>
+        <!-- Remove from test classpath -->
+        <exclusion>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>jenkins-core-libs</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
