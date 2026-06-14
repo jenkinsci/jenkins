@@ -30,6 +30,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.PluginWrapper;
+import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.node_monitors.ArchitectureMonitor;
 import hudson.security.Permission;
@@ -42,6 +43,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Key;
@@ -85,11 +91,6 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
      */
     private transient volatile RSAPublicKey key;
 
-    /**
-     * When was the last time we asked a browser to send the usage stats for us?
-     */
-    private transient volatile long lastAttempt = -1;
-
     public UsageStatistics() {
         this(DEFAULT_KEY_BYTES);
     }
@@ -99,22 +100,6 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
      */
     public UsageStatistics(String keyImage) {
         this.keyImage = keyImage;
-    }
-
-    /**
-     * Returns true if it's time for us to check for new version.
-     */
-    public boolean isDue() {
-        if (!isEnabled()) {
-            return false;
-        }
-
-        long now = System.currentTimeMillis();
-        if (now - lastAttempt > DAY) {
-            lastAttempt = now;
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -324,4 +309,65 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
 
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean DISABLED = SystemProperties.getBoolean(UsageStatistics.class.getName() + ".disabled");
+
+    @Restricted(NoExternalUse.class)
+    static String USAGE_STATS_ENDPOINT = SystemProperties.getString(UsageStatistics.class.getName() + ".endpoint", "https://usage.jenkins.io/usage-stats.js");
+
+    /**
+     * Periodically submit usage statistics to the server from the controller.
+     * This replaces the old browser-based submission mechanism.
+     *
+     * @since TODO
+     */
+    @Extension
+    public static class UsageStatisticsReporter extends AsyncPeriodicWork {
+
+        public UsageStatisticsReporter() {
+            super("usage statistics submission");
+        }
+
+        @Override
+        public long getRecurrencePeriod() {
+            return DAY;
+        }
+
+        @Override
+        protected void execute(TaskListener listener) throws IOException, InterruptedException {
+            if (!isEnabled()) {
+                LOG.fine("Usage statistics collection is disabled, skipping submission");
+                return;
+            }
+
+            UsageStatistics stats = Jenkins.get().getDescriptorByType(UsageStatistics.class);
+            if (stats == null) {
+                LOG.warning("UsageStatistics descriptor not found");
+                return;
+            }
+
+            String statData = stats.getStatData();
+            if (statData == null) {
+                LOG.fine("No usage statistics data to submit");
+                return;
+            }
+
+            HttpClient httpClient = ProxyConfiguration.newHttpClient();
+            HttpRequest httpRequest;
+            try {
+                URI uri = new URI(USAGE_STATS_ENDPOINT + "?" + statData);
+                httpRequest = ProxyConfiguration.newHttpRequestBuilder(uri)
+                        .GET()
+                        .build();
+            } catch (IllegalArgumentException | URISyntaxException e) {
+                LOG.log(Level.WARNING, "Malformed endpoint URL: " + USAGE_STATS_ENDPOINT, e);
+                return;
+            }
+
+            try {
+                HttpResponse<Void> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.discarding());
+                LOG.log(Level.FINE, "Usage statistics submission received response {0}", response.statusCode());
+            } catch (IOException | InterruptedException e) {
+                LOG.log(Level.FINE, "Failed to submit usage statistics to: " + USAGE_STATS_ENDPOINT, e);
+            }
+        }
+    }
 }
