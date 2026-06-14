@@ -17,14 +17,26 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import org.apache.tools.tar.TarConstants;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 
 public class Security3657Test {
+
+    @BeforeEach
+    public void setup() throws IllegalAccessException, NoSuchFieldException {
+        // Since we're not running "in" a JenkinsJVM for core tests, need to force the flags to behave safely
+        for (String fieldName : List.of("ALLOW_UNTAR_SYMLINK_RESOLUTION", "ALLOW_REENTRY_PATH_TRAVERSAL")) {
+            final Field escapeHatch = FilePath.class.getDeclaredField(fieldName);
+            escapeHatch.setAccessible(true);
+            escapeHatch.set(null, Boolean.FALSE);
+        }
+    }
 
     @Test
     void tarSymlinkPathTraversal(@TempDir File root) throws Exception {
@@ -53,7 +65,7 @@ public class Security3657Test {
         assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final Field escapeHatch = FilePath.class.getDeclaredField("ALLOW_UNTAR_SYMLINK_RESOLUTION");
         escapeHatch.setAccessible(true);
-        escapeHatch.setBoolean(null, true);
+        escapeHatch.set(null, Boolean.TRUE);
         try {
             final FilePath tarfile = new FilePath(createTarFile(root, symlink("attacker", ".."), fileOrDir("attacker/pwned.txt")));
 
@@ -66,7 +78,7 @@ public class Security3657Test {
             assertTrue(extractDir.child("attacker").exists());
             assertTrue(new File(root, "pwned.txt").exists());
         } finally {
-            escapeHatch.setBoolean(null, false);
+            escapeHatch.set(null, null);
         }
     }
 
@@ -390,12 +402,12 @@ public class Security3657Test {
         extractFilePath.mkdirs();
         final Field escapeHatch = FilePath.class.getDeclaredField("ALLOW_REENTRY_PATH_TRAVERSAL");
         escapeHatch.setAccessible(true);
-        escapeHatch.setBoolean(null, true);
+        escapeHatch.set(null, Boolean.TRUE);
         try {
             symlinkTarFile.untar(extractFilePath, FilePath.TarCompression.NONE);
             assertTrue(Files.exists(extractDir.toPath().resolve("foo")));
         } finally {
-            escapeHatch.setBoolean(null, false);
+            escapeHatch.set(null, null);
         }
     }
 
@@ -411,12 +423,12 @@ public class Security3657Test {
         extractFilePath.mkdirs();
         final Field escapeHatch = FilePath.class.getDeclaredField("ALLOW_REENTRY_PATH_TRAVERSAL");
         escapeHatch.setAccessible(true);
-        escapeHatch.setBoolean(null, true);
+        escapeHatch.set(null, Boolean.TRUE);
         try {
             symlinkTarFile.untar(extractFilePath, FilePath.TarCompression.NONE);
             assertTrue(Files.exists(extractDir.toPath().resolve("foo")));
         } finally {
-            escapeHatch.setBoolean(null, false);
+            escapeHatch.set(null, null);
         }
     }
 

@@ -141,6 +141,9 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
   );
 
   const label = xmlEscape(itemOptions.displayName);
+  const description = itemOptions.description
+    ? `<span class="jenkins-dropdown__item__description">${xmlEscape(itemOptions.description)}</span>`
+    : "";
 
   const clazz = [
     type,
@@ -212,6 +215,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
         })}>
           ${icon(itemOptions)}
           ${label}
+          ${description}
           ${badge(itemOptions)}
           ${
             itemOptions.event &&
