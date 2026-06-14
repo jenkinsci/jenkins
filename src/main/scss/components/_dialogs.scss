@@ -1,23 +1,20 @@
+@use "../abstracts/mixins";
+
 $jenkins-dialog-padding: 1.25rem;
 
 .jenkins-dialog {
-  --background: var(--dialog-background);
+  @include mixins.overlay-surface;
+
   --section-padding: #{$jenkins-dialog-padding};
   --bottom-app-bar-padding: #{$jenkins-dialog-padding};
 
   border-radius: 1rem;
-  border: none;
-  background-color: var(--dialog-background);
-  box-shadow: var(--dialog-box-shadow);
   animation: jenkins-dialog-animate-in 0.25s cubic-bezier(0, 0.68, 0.5, 1.5);
   overflow: hidden;
   padding: 0;
   display: flex;
   flex-direction: column;
   color: var(--text-color);
-
-  // Thin highlight for dark themes to differentiate the dialog from its backdrop
-  outline: 1px solid rgb(255 255 255 / 0.05);
 
   &::backdrop {
     background: color-mix(
@@ -27,6 +24,10 @@ $jenkins-dialog-padding: 1.25rem;
     );
     backdrop-filter: var(--dialog-backdrop-backdrop-filter);
     animation: jenkins-dialog-backdrop-animate-in 0.15s;
+  }
+
+  div {
+    --background: var(--overlay-surface-background);
   }
 
   &__title {
