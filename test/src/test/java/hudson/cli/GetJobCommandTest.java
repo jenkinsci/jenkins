@@ -56,12 +56,13 @@ class GetJobCommandTest {
         MockFolder d = j.createFolder("d");
         FreeStyleProject p = d.createProject(FreeStyleProject.class, "p");
         CLICommandInvoker.Result result = command.invokeWithArgs("d/p");
-        assertThat(result.stdout(), equalTo(p.getConfigFile().asString()));
+        // TODO Change XStream2#toXMLUTF8 to use single quotes consistent with XmlFile
+        assertThat(result.stdout().replace('"', '\''), equalTo(p.getConfigFile().asString().replace('"', '\'')));
         assertThat(result, hasNoErrorOutput());
         assertThat(result, succeeded());
 
         result = command.invokeWithArgs("d");
-        assertThat(result.stdout(), equalTo(d.getConfigFile().asString()));
+        assertThat(result.stdout().replace('"', '\''), equalTo(d.getConfigFile().asString().replace('"', '\'')));
         assertThat(result, hasNoErrorOutput());
         assertThat(result, succeeded());
     }

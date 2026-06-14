@@ -129,3 +129,33 @@
     }
   }
 }
+
+@mixin overlay-surface($opacity: 100%) {
+  position: relative;
+  background-color: color-mix(
+    in sRGB,
+    var(--overlay-surface-background) $opacity,
+    transparent
+  );
+  box-shadow: var(--overlay-surface-box-shadow);
+  border: none;
+  outline: none;
+
+  @if $opacity != 100% {
+    backdrop-filter: contrast(1.1) saturate(2.5) blur(20px);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    // Display a subtle border to elevate the dialog from its backdrop
+    border: 1px solid color-mix(in sRGB, var(--white) 10%, transparent);
+    border-radius: inherit;
+
+    // One layer above bottom app bar's z-index
+    z-index: 998;
+    pointer-events: none;
+  }
+}

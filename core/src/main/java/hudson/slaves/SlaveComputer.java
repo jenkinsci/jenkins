@@ -294,7 +294,9 @@ public class SlaveComputer extends Computer {
                 try {
                     for (ComputerListener cl : ComputerListener.all())
                         cl.preLaunch(SlaveComputer.this, taskListener);
-                    offlineCause = null;
+                    if (offlineCause == null || offlineCause instanceof OfflineCause.LaunchFailed) {
+                        offlineCause = null;
+                    }
                     launcher.launch(SlaveComputer.this, taskListener);
                 } catch (AbortException e) {
                     e.addSuppressed(threadInfo);

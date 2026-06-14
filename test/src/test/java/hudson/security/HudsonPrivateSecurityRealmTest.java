@@ -64,7 +64,7 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPasswordInput;
-import org.htmlunit.util.Cookie;
+import org.htmlunit.http.Cookie;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.xml.XmlPage;
 import org.junit.jupiter.api.BeforeEach;
