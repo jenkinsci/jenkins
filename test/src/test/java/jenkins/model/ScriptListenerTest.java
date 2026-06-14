@@ -2,6 +2,7 @@ package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -13,9 +14,11 @@ import hudson.cli.GroovyshCommand;
 import hudson.model.User;
 import hudson.util.RemotingDiagnostics;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Level;
 import jenkins.util.DefaultScriptListener;
@@ -156,6 +159,45 @@ class ScriptListenerTest {
             assertThat(execution, containsString(script));
             assertThat(listener.getOutput(), containsString(output));
         }
+    }
+
+    @Test
+    void listenerOutputStreamCapturesPartialWrite() throws IOException {
+        // A backing buffer with a prefix and suffix that must not be captured, only [off, off+len) is written.
+        final byte[] buf = "XXXhello from output streamYYY".getBytes(StandardCharsets.UTF_8);
+        final int off = 3;
+        final int len = "hello from output stream".length();
+
+        final ByteArrayOutputStream sink = new ByteArrayOutputStream();
+        try (ScriptListener.ListenerOutputStream los = new ScriptListener.ListenerOutputStream(
+                sink, StandardCharsets.UTF_8, ScriptListenerTest.class, null, "correlation", null)) {
+            los.write(buf, off, len);
+        }
+
+        final String expected = new String(buf, off, len, StandardCharsets.UTF_8);
+        final DummyScriptUsageListener listener = ExtensionList.lookupSingleton(DummyScriptUsageListener.class);
+        // The captured string must represent exactly the bytes forwarded downstream.
+        assertThat(listener.getOutput(), equalTo(expected));
+        assertThat(sink.toString(StandardCharsets.UTF_8), equalTo(expected));
+    }
+
+    @Test
+    void listenerOutputStreamCapturesWriteWhenOffsetExceedsHalfLength() throws IOException {
+        // Regression: off > len/2 previously threw StringIndexOutOfBoundsException in substring(off, len - off).
+        final byte[] buf = "0123456789ab".getBytes(StandardCharsets.UTF_8);
+        final int off = 8;
+        final int len = 4;
+
+        final ByteArrayOutputStream sink = new ByteArrayOutputStream();
+        try (ScriptListener.ListenerOutputStream los = new ScriptListener.ListenerOutputStream(
+                sink, StandardCharsets.UTF_8, ScriptListenerTest.class, null, "correlation", null)) {
+            los.write(buf, off, len);
+        }
+
+        final String expected = new String(buf, off, len, StandardCharsets.UTF_8);
+        final DummyScriptUsageListener listener = ExtensionList.lookupSingleton(DummyScriptUsageListener.class);
+        assertThat(listener.getOutput(), equalTo(expected));
+        assertThat(sink.toString(StandardCharsets.UTF_8), equalTo(expected));
     }
 
     @TestExtension

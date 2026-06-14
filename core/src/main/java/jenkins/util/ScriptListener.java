@@ -198,7 +198,7 @@ public interface ScriptListener extends ExtensionPoint {
 
         @Override
         public void write(@NonNull byte[] b, int off, int len) throws IOException {
-            final String writtenString = new String(b, charset).substring(off, len - off);
+            final String writtenString = new String(b, off, len, charset);
             ScriptListener.fireScriptOutput(writtenString, feature, context, correlationId, user);
             os.write(b, off, len);
         }
