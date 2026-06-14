@@ -103,11 +103,15 @@ class FlightRecorderInputStream extends InputStream {
 
     /**
      * To record the bytes we've skipped, convert the call to read.
+     *
+     * <p>At end of stream this returns {@code 0} rather than {@code -1}, honoring the
+     * {@link InputStream#skip(long)} contract that the returned value is never negative.
      */
     @Override
     public long skip(long n) throws IOException {
         byte[] buf = new byte[(int) Math.min(n, 64 * 1024)];
-        return read(buf, 0, buf.length);
+        int read = read(buf, 0, buf.length);
+        return read < 0 ? 0 : read; // honor InputStream.skip contract: never return negative at EOF
     }
 
     @Override
