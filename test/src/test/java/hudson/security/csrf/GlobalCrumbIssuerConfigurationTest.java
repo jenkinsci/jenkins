@@ -36,7 +36,7 @@ class GlobalCrumbIssuerConfigurationTest {
         }
         descriptors.removeAll(toRemove);
 
-        j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
+        j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer());
 
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage page = wc.goTo("configureSecurity");
