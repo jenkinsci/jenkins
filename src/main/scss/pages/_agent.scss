@@ -1,0 +1,73 @@
+@use "../base/breakpoints";
+@use "../components/cards";
+@use "../components/dialogs";
+
+.app-agent-content .jenkins-card:has(.jenkins-card__content:empty),
+.app-agent-content .widget-refresh-reference {
+  display: none;
+}
+
+.app-agent-content .tabBar {
+  width: fit-content;
+}
+
+.app-agent-content #projectStatus,
+.app-agent-content #executors,
+.app-agent-content #buildQueue {
+  margin-bottom: 0;
+}
+
+.app-agent-overview__content {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--section-padding) / 2);
+}
+
+.app-agent-overview__grid {
+  gap: calc(var(--section-padding) / 2);
+  display: flex;
+  flex-wrap: wrap;
+
+  & > div:nth-last-child(n + 3) {
+    min-width: 274px;
+    max-width: 330px;
+  }
+
+  & > div:last-of-type {
+    flex-grow: 1; /* takes remaining space */
+    min-width: 0; /* important for overflow handling */
+  }
+
+  .jenkins-table {
+    margin-bottom: 0;
+    border-spacing: 2px;
+
+    td {
+      padding-right: calc(var(--table-padding) * 2);
+    }
+  }
+}
+
+.app-agent-content .jenkins-details .jenkins-button {
+  min-height: 2rem;
+}
+
+.app-agent-overview__labels {
+  flex-direction: row !important;
+  flex-wrap: wrap;
+
+  .jenkins-notice {
+    margin-bottom: 0;
+    min-height: revert;
+  }
+}
+
+.app-agent-configure {
+  display: flex;
+  gap: var(--section-padding);
+  margin-left: calc(var(--section-padding) * -1);
+
+  &__content {
+    flex-grow: 1;
+  }
+}
