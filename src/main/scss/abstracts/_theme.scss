@@ -71,10 +71,14 @@ $semantics: (
   --background: rgb(254 254 254);
 
   // Header
-  --header-background: var(--background);
+  --header-background: color-mix(
+    in sRGB,
+    var(--background),
+    var(--text-color-secondary) 2.5%
+  );
   --header-border: var(--text-color-secondary);
   --header-color: var(--text-color);
-  --header-height: 4.125rem;
+  --header-height: 3.625rem;
 
   // App bar
   --bottom-app-bar-padding: 0.875rem;
@@ -269,7 +273,7 @@ $semantics: (
   --panel-border-color: var(--light-grey);
 
   // Form
-  --section-padding: 1.625rem;
+  --section-padding: 1.25rem;
   --input-color: var(--white);
   --input-border: color-mix(
     in sRGB,
@@ -286,7 +290,7 @@ $semantics: (
   --form-item-max-width--small: min(35vw, 1200px);
 
   @media screen and (max-width: breakpoints.$tablet-breakpoint) {
-    --section-padding: 1.25rem;
+    --section-padding: 1rem;
     --form-item-max-width: 100%;
     --form-item-max-width--medium: 100%;
     --form-item-max-width--small: 100%;
