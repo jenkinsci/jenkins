@@ -226,15 +226,17 @@ public class Iterators {
     }
 
     /**
-     * Returns a list that represents [start,end).
+     * Returns a list that represents the half-open range [start,end) stepped by {@code step}.
      *
-     * For example sequence(1,5,1)={1,2,3,4}, and sequence(7,1,-2)={7.5,3}
+     * <p>The last in-range element is included even when the range length is not an exact
+     * multiple of {@code step}. For example sequence(1,5,1)={1,2,3,4}, sequence(7,1,-2)={7,5,3},
+     * and sequence(1,6,2)={1,3,5}.
      *
      * @since 1.150
      */
     public static List<Integer> sequence(final int start, int end, final int step) {
 
-        final int size = (end - start) / step;
+        final int size = (end - start + step - (step > 0 ? 1 : -1)) / step;
         if (size < 0)  throw new IllegalArgumentException("List size is negative");
 
         return new AbstractList<>() {

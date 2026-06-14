@@ -62,6 +62,18 @@ class IteratorsTest {
     }
 
     @Test
+    void sequenceWithNonUnitStep() {
+        assertEquals(List.of(1, 3, 5), Iterators.sequence(1, 6, 2));
+        assertEquals(List.of(0, 3, 6, 9), Iterators.sequence(0, 10, 3));
+        assertEquals(List.of(10, 7, 4, 1), Iterators.sequence(10, 0, -3));
+        // ranges that are an exact multiple of the step are unaffected
+        assertEquals(List.of(1, 2, 3, 4), Iterators.sequence(1, 5, 1));
+        assertEquals(List.of(7, 5, 3), Iterators.sequence(7, 1, -2));
+        // an empty range stays empty
+        assertEquals(List.of(), Iterators.sequence(5, 5, 1));
+    }
+
+    @Test
     void wrap() {
         List<Integer> lst = Iterators.sequence(1, 4);
         Iterable<Integer> wrapped = Iterators.wrap(lst);
