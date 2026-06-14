@@ -284,7 +284,7 @@ public class FileParameterValue extends ParameterValue {
      * Serve this file parameter in response to a {@link StaplerRequest2}.
      */
     public DirectoryBrowserSupport doDynamic(StaplerRequest2 request, StaplerResponse2 response) {
-        AbstractBuild build = (AbstractBuild) request.findAncestor(AbstractBuild.class).getObject();
+        Run<?, ?> build = (Run<?, ?>) request.findAncestor(Run.class).getObject();
         File fileParameter = getFileParameterFolderUnderBuild(build);
         return new DirectoryBrowserSupport(build, new FilePath(fileParameter), Messages.FileParameterValue_IndexTitle(), "folder.png", false);
     }
@@ -295,11 +295,11 @@ public class FileParameterValue extends ParameterValue {
      * @param build the build
      * @return the location to store the file parameter
      */
-    private File getLocationUnderBuild(AbstractBuild build) {
+    private File getLocationUnderBuild(Run<?, ?> build) {
         return new File(getFileParameterFolderUnderBuild(build), location);
     }
 
-    private File getFileParameterFolderUnderBuild(AbstractBuild<?, ?> build) {
+    private File getFileParameterFolderUnderBuild(Run<?, ?> build) {
         return new File(build.getRootDir(), FOLDER_NAME);
     }
 
