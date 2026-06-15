@@ -25,6 +25,7 @@
 package hudson.util;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -85,6 +86,15 @@ class QuotedStringTokenizerTest {
         assertFalse(tokenizer.hasMoreTokens());
         tokenizer = new QuotedStringTokenizer("one");
         assertTrue(tokenizer.hasMoreTokens());
+    }
+
+    @Test
+    void quoteOverloadsHaveDifferentContracts() {
+        // The 1-arg overload always quotes, regardless of content.
+        assertEquals("\"foo\"", QuotedStringTokenizer.quote("foo"));
+        // The 2-arg overload quotes conditionally and returns the input
+        // unchanged when no delimiter or special character is present.
+        assertEquals("foo", QuotedStringTokenizer.quote("foo", ","));
     }
 
     private void check(String src, String... expected) {

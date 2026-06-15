@@ -360,12 +360,12 @@ public class QuotedStringTokenizer
     }
 
     /* ------------------------------------------------------------ */
-    /** Quote a string.
-     * The string is quoted only if quoting is required due to
-     * embedded delimiters, quote characters or the
-     * empty string.
+    /** Quote a string by always wrapping it in double quotes and escaping
+     * embedded {@code "}, {@code \} and control characters.
+     * Unlike {@link #quote(String, String)}, this overload quotes
+     * unconditionally regardless of whether quoting is required.
      * @param s The string to quote.
-     * @return quoted string
+     * @return the quoted string, or {@code null} if {@code s} is {@code null}
      */
     public static String quote(String s)
     {
