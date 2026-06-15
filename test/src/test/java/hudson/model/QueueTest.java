@@ -1292,7 +1292,7 @@ public class QueueTest {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.READ, Item.READ, Item.CANCEL).everywhere().to("admin")
-                .grant(Jenkins.READ).everywhere().to("user")
+                .grant(Jenkins.READ, Item.READ).everywhere().to("user")
         );
 
         // prevent execution to push stuff into the queue
