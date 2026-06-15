@@ -74,6 +74,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Stream;
+import jenkins.core.PluginExcerptSanitizer;
 import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsConfiguration;
@@ -1292,7 +1293,7 @@ public class UpdateSite {
             super(sourceId, o, UpdateSite.this.url);
             this.wiki = get(o, "wiki");
             this.title = get(o, "title");
-            this.excerpt = get(o, "excerpt");
+            this.excerpt = sanitizeExcerpt(get(o, "excerpt"));
             this.compatibleSinceVersion = Util.intern(get(o, "compatibleSinceVersion"));
             this.requiredCore = Util.intern(get(o, "requiredCore"));
             final String releaseTimestamp = get(o, "releaseTimestamp");
@@ -1343,6 +1344,21 @@ public class UpdateSite {
                 }
             }
 
+        }
+
+        /**
+         * Sanitizes HTML excerpt to prevent XSS from unsafe update sites.
+         */
+        private static String sanitizeExcerpt(String excerpt) {
+            if (excerpt == null) {
+                return null;
+            }
+            final Jenkins jenkins = Jenkins.getInstanceOrNull();
+            final PluginExcerptSanitizer sanitizer = jenkins != null ? jenkins.getCoreLibrary(PluginExcerptSanitizer.class) : null;
+            if (sanitizer == null) {
+                return Util.xmlEscape(excerpt);
+            }
+            return sanitizer.sanitize(excerpt);
         }
 
         @Restricted(NoExternalUse.class)

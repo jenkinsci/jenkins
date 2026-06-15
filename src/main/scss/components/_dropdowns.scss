@@ -4,11 +4,9 @@ $dropdown-border-radius: 1rem;
 $dropdown-padding: 0.375rem;
 
 .tippy-box[data-theme~="dropdown"] {
+  @include mixins.overlay-surface($opacity: 85%);
+
   border-radius: $dropdown-border-radius;
-  box-shadow: var(--dropdown-box-shadow);
-  outline: none !important;
-  background: color-mix(in sRGB, var(--card-background) 85%, transparent);
-  backdrop-filter: var(--dropdown-backdrop-filter);
   max-width: unset !important;
   max-height: 60vh;
   overflow-y: auto;
@@ -25,8 +23,8 @@ $dropdown-padding: 0.375rem;
 }
 
 .tippy-box[data-animation="dropdown"][data-state="hidden"] {
-  $translate: 5px;
-  $scale: 0.99;
+  $translate: 6px;
+  $scale: 0.97;
 
   opacity: 0;
   transform: scale($scale);
@@ -134,7 +132,7 @@ $dropdown-padding: 0.375rem;
     border: none;
     outline: none;
     margin: 0;
-    padding: $dropdown-padding 1.75rem $dropdown-padding 0.6rem;
+    padding: $dropdown-padding 1.75rem $dropdown-padding 0.625rem;
     font-size: 0.8125rem;
     font-weight: normal;
     text-decoration: none !important;
@@ -142,9 +140,9 @@ $dropdown-padding: 0.375rem;
     color: var(--text-color) !important;
     border-radius: calc($dropdown-border-radius - $dropdown-padding);
     cursor: pointer;
-    min-height: 36px;
+    min-height: 2.375rem;
     white-space: nowrap;
-    gap: 1.2ch;
+    gap: 0.625rem;
     min-width: 180px;
     user-select: none;
 

@@ -460,6 +460,12 @@ public class RobustReflectionConverter implements Converter {
             } else if (DescribableList.ConverterImpl.canConvertRobust(type)) {
                 Class<?> elementType = extractElementType(field.getGenericType(), DescribableList.class);
                 converter = new DescribableList.ConverterImpl(mapper, elementType);
+            } else if (PersistedList.ConverterImpl.canConvertRobust(type)) {
+                Class<?> elementType = extractElementType(field.getGenericType(), PersistedList.class);
+                converter = new PersistedList.ConverterImpl(mapper, elementType);
+            } else if (CopyOnWriteList.ConverterImpl.canConvertRobust(type)) {
+                Class<?> elementType = extractElementType(field.getGenericType(), CopyOnWriteList.class);
+                converter = new CopyOnWriteList.ConverterImpl(mapper, elementType);
             }
         }
         return context.convertAnother(result, type, converter);
