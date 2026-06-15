@@ -175,13 +175,16 @@ function generateButtons() {
           e.classList.contains("repeated-chunk"),
         ).length;
 
-        btn.disabled = oneEach && selectedCount >= templateCount;
+        if (btn) {
+          btn.disabled = oneEach && selectedCount >= templateCount;
+        }
       }
       const observer = new MutationObserver(() => {
         toggleButtonState();
       });
-      observer.observe(e, { childList: true });
+      observer.observe(e, { childList: true, subtree: true });
       toggleButtonState();
+      layoutUpdateCallback.add(toggleButtonState);
 
       generateDropDown(btn, (instance) => {
         let menuItems = [];
