@@ -112,13 +112,13 @@ class LogRecorderManagerTest {
         assertEquals(warning, testRecorder.doCheckName("", Level.ALL.getName()).toString());
         assertEquals(warning, testRecorder.doCheckName("", Level.FINEST.getName()).toString());
         assertEquals(warning, testRecorder.doCheckName("", Level.FINER.getName()).toString());
-        assertEquals(warning, testRecorder.doCheckName("", Level.FINER.getName()).toString());
+        assertEquals(warning, testRecorder.doCheckName("", Level.FINE.getName()).toString());
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", "illegalArgument"));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", null));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.ALL.getName()));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.FINEST.getName()));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.FINER.getName()));
-        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.FINER.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.FINE.getName()));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("", Level.CONFIG.getName()));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("", Level.INFO.getName()));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("", Level.WARNING.getName()));
