@@ -36,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -54,6 +55,8 @@ import hudson.model.Saveable;
 import hudson.security.ACL;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -62,6 +65,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.xml.transform.stream.StreamSource;
 import jenkins.model.Jenkins;
+import jenkins.util.xstream.CriticalXStreamException;
 import net.sf.json.JSONObject;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
@@ -344,6 +348,90 @@ class RobustReflectionConverterTest {
             // rejected configuration is not saved
             p = r.jenkins.getItemByFullName(p.getFullName(), FreeStyleProject.class);
             assertNotEquals("badvalue", p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
+        }
+    }
+
+    @Test
+    void failObjectField() {
+        final XStream2 xStream2 = new XStream2();
+        final String xml = xStream2.toXML(new MyType("foo", "bar"));
+        final CriticalXStreamException exception = assertThrows(CriticalXStreamException.class, () -> xStream2.fromXML(xml));
+        assertThat(exception.getMessage(), containsString("Refusing to unmarshal type 'java.lang.String' to Object typed field 'foo' in 'hudson.util.RobustReflectionConverterTest$MyType'"));
+    }
+
+    @Test
+    void successObjectFieldWithAllowlist() {
+        final String className = MyType.class.getName();
+        RobustReflectionConverter.SAFE_TYPES_WITH_OBJECT_FIELDS.add(className);
+        try {
+            final XStream2 xStream2 = new XStream2();
+            final String xml = xStream2.toXML(new MyType("foo", "bar"));
+            xStream2.fromXML(xml);
+        } finally {
+            RobustReflectionConverter.SAFE_TYPES_WITH_OBJECT_FIELDS.remove(className);
+        }
+    }
+
+    @Test
+    void successObjectFieldWithEscapeHatch() {
+        RobustReflectionConverter.ALLOW_ALL_OBJECT_FIELDS = true;
+        try {
+            final XStream2 xStream2 = new XStream2();
+            final String xml = xStream2.toXML(new MyType("foo", "bar"));
+            xStream2.fromXML(xml);
+        } finally {
+            RobustReflectionConverter.ALLOW_ALL_OBJECT_FIELDS = false;
+        }
+    }
+
+    static class MyType {
+        private Object foo;
+        private String bar;
+
+        MyType(Object foo, String bar) {
+            this.foo = foo;
+            this.bar = bar;
+        }
+    }
+
+    @Test
+    void successObjectFieldWithActualAnnotation() {
+        final XStream2 xStream2 = new XStream2();
+        final String xml = xStream2.toXML(new MyTypeWithActualAnnotation("foo", "bar"));
+        xStream2.fromXML(xml);
+    }
+
+    static class MyTypeWithActualAnnotation {
+        @jenkins.security.XstreamSafeObjectField
+        private Object foo;
+        private String bar;
+
+        MyTypeWithActualAnnotation(Object foo, String bar) {
+            this.foo = foo;
+            this.bar = bar;
+        }
+    }
+
+    @Test
+    void successObjectFieldWithSameNameAnnotation() {
+        final XStream2 xStream2 = new XStream2();
+        final String xml = xStream2.toXML(new MyTypeWithSameNameAnnotation("foo", "bar"));
+        xStream2.fromXML(xml);
+    }
+
+    /** Marker annotation with same name as the real one, testing the case of plugin without updated core dependency */
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface XstreamSafeObjectField {
+    }
+
+    static class MyTypeWithSameNameAnnotation {
+        @XstreamSafeObjectField
+        private Object foo;
+        private String bar;
+
+        MyTypeWithSameNameAnnotation(Object foo, String bar) {
+            this.foo = foo;
+            this.bar = bar;
         }
     }
 
