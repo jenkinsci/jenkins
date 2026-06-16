@@ -1356,7 +1356,7 @@ class DirectoryBrowserSupportTest {
         Page page = getWebClient().goTo("job/" + p.getName() + "/ws/Test.java", null);
         assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
         assertThat("text file Content-Type should include charset",
-                page.getWebResponse().getResponseHeaderValue("Content-Type").toLowerCase(),
+                page.getWebResponse().getResponseHeaderValue("Content-Type").toLowerCase(java.util.Locale.ROOT),
                 containsString("charset=utf-8"));
         assertThat("text file content should be correctly served",
                 page.getWebResponse().getContentAsString(),
