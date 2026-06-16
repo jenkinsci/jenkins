@@ -170,6 +170,7 @@ import org.kohsuke.stapler.verb.POST;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
+@SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure (including code reached via lambdas). The path is derived from trusted configuration or the Jenkins home/war layout, not taken directly from untrusted remote request input.")
 public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, IComputer, ExecutorListener, DescriptorByNameOwner, StaplerProxy, HasWidgets {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<>();

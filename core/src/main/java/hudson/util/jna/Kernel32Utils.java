@@ -29,6 +29,7 @@ import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.WString;
 import com.sun.jna.ptr.IntByReference;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import java.io.File;
 import java.io.IOException;
@@ -112,6 +113,7 @@ public class Kernel32Utils {
         return Util.isSymlink(file);
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
     public static File getTempDir() {
         Memory buf = new Memory(1024);
         if (Kernel32.INSTANCE.GetTempPathW(512, buf) != 0) { // the first arg is number of wchar

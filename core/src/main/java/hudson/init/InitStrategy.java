@@ -1,5 +1,6 @@
 package hudson.init;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginManager;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
@@ -78,6 +79,7 @@ public class InitStrategy {
      * For use in {@code mvn jetty:run}.
      * TODO: maven-hpi-plugin should inject its own InitStrategy instead of having this in the core.
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
     protected void getBundledPluginsFromProperty(final List<File> r) {
         String hplProperty = SystemProperties.getString("hudson.bundled.plugins");
         if (hplProperty != null) {

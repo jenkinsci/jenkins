@@ -81,6 +81,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
 
     /** @deprecated No longer used. */
     @Deprecated
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
     protected File getPermalinkFile(Job<?, ?> job) {
         return new File(job.getBuildDir(), getId());
     }

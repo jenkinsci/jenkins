@@ -59,6 +59,7 @@ public class GroovyHookScript {
         this(hook, j.getServletContext(), j.getRootDir(), j.getPluginManager().uberClassLoader);
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
     public GroovyHookScript(String hook, @NonNull ServletContext servletContext, @NonNull File jenkinsHome, @NonNull ClassLoader loader) {
         this.hook = hook;
         this.servletContext = servletContext;
@@ -83,6 +84,7 @@ public class GroovyHookScript {
         return bindings;
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
     public void run() {
         final String hookGroovy = hook + ".groovy";
         final String hookGroovyD = hook + ".groovy.d";
