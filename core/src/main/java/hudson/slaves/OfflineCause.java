@@ -114,8 +114,35 @@ public abstract class OfflineCause implements IOfflineCause {
             this.cause = cause;
         }
 
+        /**
+         * The string representation of the exception that caused the channel to terminate.
+         *
+         * @since TODO
+         */
+        @Exported
         public String getShortDescription() {
             return cause.toString();
+        }
+
+        /**
+         * The class name of the exception that caused the channel to terminate.
+         *
+         * @since TODO
+         */
+        @Exported
+        public String getExceptionClass() {
+            return cause.getClass().getName();
+        }
+
+        /**
+         * The detail message of the exception that caused the channel to terminate, if any.
+         *
+         * @since TODO
+         */
+        @Exported
+        @CheckForNull
+        public String getExceptionMessage() {
+            return cause.getMessage();
         }
 
         @Override public String toString() {
