@@ -145,7 +145,7 @@ class SlaveTest {
 
         // Check that requests to other WEB-INF contents fail
         assertJnlpJarUrlFails(slave, "web.xml");
-        assertJnlpJarUrlFails(slave, "web.xml");
+        assertJnlpJarUrlFails(slave, "lib/jenkins-core.jar");
         assertJnlpJarUrlFails(slave, "classes/bundled-plugins.txt");
         assertJnlpJarUrlFails(slave, "classes/dependencies.txt");
         assertJnlpJarUrlFails(slave, "plugins/ant.hpi");
