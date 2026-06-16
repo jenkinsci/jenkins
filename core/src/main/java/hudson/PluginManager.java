@@ -1145,6 +1145,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @throws IOException Operation error
      */
     @NonNull
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Reads a manifest from a bundled plugin resource URL resolved on the classpath/war, not from user input.")
     /*package*/ static InputStream getBundledJpiManifestStream(@NonNull URL url) throws IOException {
         URLConnection uc = url.openConnection();
         InputStream in = null;
@@ -1184,6 +1185,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @throws IOException Operation error
      */
     @NonNull
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Reads the modification date of a bundled plugin resource URL resolved on the classpath/war, not from user input.")
     /*package*/ static long getModificationDate(@NonNull URL url) throws IOException {
         URLConnection uc = url.openConnection();
 

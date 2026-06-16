@@ -1033,6 +1033,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
         }
     }
 
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Serves a static help page resolved from this descriptor's own classpath resources, not from a user-supplied URL.")
     private void doHelpImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();
         if (path.contains("..")) throw new ServletException("Illegal path: " + path);
