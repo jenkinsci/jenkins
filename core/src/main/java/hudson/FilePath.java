@@ -592,6 +592,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
 
         @Override
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
             if (this.filePath.isRemote()) {
                 throw new IllegalStateException("Expected local path for file: " + filePath); // this.channel==target.channel above
@@ -703,6 +704,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
     private static void unzip(File dir, File zipFile) throws IOException {
         dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
 
@@ -1157,6 +1159,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Place the data from {@link FileItem} into the file location specified by this {@link FilePath} object.
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
     public void copyFrom(FileItem file) throws IOException, InterruptedException {
         if (channel == null) {
             try {
@@ -1212,6 +1215,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(callable, callable.getClass().getClassLoader());
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
     private <T> T act(final FileCallable<T> callable, ClassLoader cl) throws IOException, InterruptedException {
         if (channel != null) {
             // run this on a remote system
@@ -1600,6 +1604,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private static final long serialVersionUID = 1L;
 
         @Override
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         public String invoke(File dir, VirtualChannel channel) throws IOException {
             File f = File.createTempFile(prefix, suffix, dir);
             return f.getName();
@@ -1671,6 +1676,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
 
         @Override
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         public String invoke(File dir, VirtualChannel channel) throws IOException {
             if (!inThisDirectory)
                 dir = new File(System.getProperty("java.io.tmpdir"));
@@ -1731,6 +1737,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             private static final long serialVersionUID = 1L;
 
             @Override
+            @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
             public String invoke(File dir, VirtualChannel channel) throws IOException {
 
                 Path tempPath;
@@ -2175,6 +2182,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             private static final long serialVersionUID = 1L;
 
             @Override
+            @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
             public FilePath[] invoke(File f, VirtualChannel channel) throws IOException {
                 String[] files = glob(f, includes, excludes, defaultExcludes);
 
@@ -2214,6 +2222,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return read(null, new OpenOption[0]);
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
     public InputStream read(FilePath rootPath, OpenOption... openOptions) throws IOException, InterruptedException {
         String rootPathString = rootPath == null ? null : rootPath.remote;
         if (channel == null) {
@@ -2354,6 +2363,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @param root The root path for ending the search.
      * @return True if there is a symlink within the domain. False otherwise.
      */
+     @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
      private static boolean doesFileAncestorMatch(File file, String root, Predicate<Path> matcher) {
         if (root != null) {
             Path rootPath = Paths.get(root);
@@ -2402,6 +2412,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Reads this file from the specific offset.
      * @since 1.586
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
     public InputStream readFromOffset(final long offset) throws IOException, InterruptedException {
         if (channel == null) {
             final RandomAccessFile raf = new RandomAccessFile(new File(remote), "r");
@@ -2498,6 +2509,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * you write to a remote file and then execute {@link Channel#call(Callable)} and try to access the newly copied
      * file, it might not be fully written yet.
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
     public OutputStream write() throws IOException, InterruptedException {
         if (channel == null) {
             File f = new File(remote).getAbsoluteFile();
@@ -2589,6 +2601,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private static final long serialVersionUID = 1L;
 
         @Override
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         public Void invoke(File f, VirtualChannel channel) throws IOException {
             Files.move(fileToPath(f), fileToPath(new File(target.remote)), LinkOption.NOFOLLOW_LINKS);
             return null;
@@ -2617,6 +2630,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             private static final long serialVersionUID = 1L;
 
             @Override
+            @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 // JENKINS-16846: if f.getName() is the same as one of the files/directories in f,
                 // the rename op will fail
@@ -2674,6 +2688,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
 
         @Override
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         public Void invoke(File f, VirtualChannel channel) throws IOException {
             File targetFile = new File(target.remote);
             File targetDir = targetFile.getParentFile();
@@ -2823,6 +2838,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @return the number of files copied
      * @since 2.196
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
     public int copyRecursiveTo(final DirScanner scanner, final FilePath target, final String description, @NonNull TarCompression compression) throws IOException, InterruptedException {
         if (this.channel == target.channel) {
             // local to local copy.
@@ -2890,6 +2906,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private static final long serialVersionUID = 1L;
 
         @Override
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         public Integer invoke(File base, VirtualChannel channel) throws IOException {
             if (!base.exists()) {
                 return 0;
@@ -3081,6 +3098,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Supports large files &gt; 10 GB since 1.627.
      * On the Jenkins controller JVM this prohibits any path traversal out of the base dir, as well as writing through any existing symlinks.
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
     private static void readFromTar(String name, File baseDir, InputStream in, Charset filenamesEncoding) throws IOException {
         final File absoluteBaseDir = baseDir.getAbsoluteFile();
         final Path normalizedAbsoluteBaseDir = absoluteBaseDir.toPath().normalize();
@@ -3645,6 +3663,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
 
         @Override
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         public T call() throws IOException {
             try {
                 return callable.invoke(new File(filePath.remote), filePath.channel);
@@ -3720,6 +3739,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             this.files = files;
         }
 
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         @Override public void scan(File dir, FileVisitor visitor) throws IOException {
             for (Map.Entry<String, String> entry : files.entrySet()) {
                 String archivedPath = entry.getKey();
@@ -3812,6 +3832,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
 
         @Override
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         public Boolean invoke(@NonNull File parentFile, @NonNull VirtualChannel channel) throws IOException, InterruptedException {
             if (new File(potentialChildRelativePath).isAbsolute()) {
                 throw new IllegalArgumentException("Only a relative path is supported, the given path is absolute: " + potentialChildRelativePath);

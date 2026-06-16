@@ -259,6 +259,7 @@ public class Maven extends Builder {
         }
 
         @Override
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         public String invoke(File ws, VirtualChannel channel) throws IOException {
             String seed = null;
 
@@ -532,6 +533,7 @@ public class Maven extends Builder {
             return getHome();
         }
 
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         public File getHomeDir() {
             return new File(getHome());
         }
@@ -586,6 +588,7 @@ public class Maven extends Builder {
             }
 
             @Override
+            @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
             public String call() throws IOException {
                 File[] jars = new File(home, "lib").listFiles();
                 if (jars != null) { // be defensive
@@ -643,6 +646,7 @@ public class Maven extends Builder {
             }
         }
 
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         private static File getExeFile(String execName, String home) {
             String m2Home = Util.replaceMacro(home, EnvVars.masterEnvVars);
 

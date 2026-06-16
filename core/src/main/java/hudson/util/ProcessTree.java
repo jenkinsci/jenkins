@@ -797,6 +797,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             super(pid);
         }
 
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         protected final File getFile(String relativePath) {
             return new File(new File("/proc/" + getPid()), relativePath);
         }

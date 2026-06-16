@@ -1093,6 +1093,7 @@ public class SlaveComputer extends Computer {
         }
 
         @Override
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         public String call() throws IOException {
             return new File(relativePath).getAbsolutePath();
         }

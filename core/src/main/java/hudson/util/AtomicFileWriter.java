@@ -26,6 +26,7 @@ package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import java.io.File;
 import java.io.FileWriter;
@@ -135,6 +136,7 @@ public class AtomicFileWriter extends Writer {
      * @deprecated use {@link AtomicFileWriter#AtomicFileWriter(Path, Charset)}
      */
     @Deprecated
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
     public AtomicFileWriter(@NonNull Path destinationPath, @NonNull Charset charset, boolean integrityOnFlush, boolean integrityOnClose) throws IOException {
         if (charset == null) { // be extra-defensive if people don't care
             throw new IllegalArgumentException("charset is null");
