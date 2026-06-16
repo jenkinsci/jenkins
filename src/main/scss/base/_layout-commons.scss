@@ -4,8 +4,8 @@
   position: relative;
   display: grid;
   border: var(--jenkins-border);
-  margin-inline: 0.375rem;
-  height: calc(100vh - var(--header-height) - 0.375rem);
+  margin-inline: var(--page-inset);
+  height: calc(100vh - var(--header-height) - var(--page-inset));
   border-radius: var(--form-input-border-radius);
   overflow: hidden;
 
@@ -33,7 +33,7 @@
 
     @media (width >= 740px) {
       width: 280px;
-      min-height: calc(100vh - var(--header-height) - 0.375rem);
+      min-height: calc(100vh - var(--header-height) - var(--page-inset));
     }
 
     @media (width > breakpoints.$tablet-breakpoint) {
