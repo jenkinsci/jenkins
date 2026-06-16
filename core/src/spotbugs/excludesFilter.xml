@@ -227,24 +227,6 @@
           <Class name="jenkins.util.VirtualFile$FileVF"/>
         </Or>
       </And>
-      <And>
-        <Bug pattern="REDOS"/>
-        <Class name="jenkins.org.apache.commons.validator.routines.UrlValidator"/>
-      </And>
-      <And>
-        <Bug pattern="URLCONNECTION_SSRF_FD"/>
-        <Or>
-          <Class name="hudson.FilePath"/>
-          <Class name="hudson.FilePath$Unpack"/>
-          <Class name="hudson.Main"/>
-          <Class name="hudson.model.Descriptor"/>
-          <Class name="hudson.model.Slave$JnlpJar"/>
-          <Class name="hudson.PluginManager"/>
-          <Class name="hudson.PluginWrapper"/>
-          <Class name="hudson.ProxyConfiguration"/>
-          <Class name="jenkins.security.ResourceDomainConfiguration"/>
-        </Or>
-      </And>
     </Or>
   </Match>
 </FindBugsFilter>

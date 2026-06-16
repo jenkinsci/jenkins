@@ -1101,7 +1101,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             this.archive = archive;
         }
 
-        @Override public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
+        @Override
+        @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Unpacking the caller-supplied archive URL is the documented purpose of FilePath.installIfNecessaryFrom.")
+        public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
             try (InputStream in = archive.openStream()) {
                 CountingInputStream cis = new CountingInputStream(in);
                 try {
@@ -1125,6 +1127,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * prefer <a href="http://javadoc.jenkins.io/plugin/apache-httpcomponents-client-4-api/io/jenkins/plugins/httpclient/RobustHTTPClient.html#copyFromRemotely-hudson.FilePath-java.net.URL-hudson.model.TaskListener-">{@code RobustHTTPClient.copyFromRemotely}</a>.
      * @since 1.293
      */
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Reading the caller-supplied URL into this file is the documented purpose of this public API.")
     public void copyFrom(URL url) throws IOException, InterruptedException {
         try (InputStream in = url.openStream()) {
             copyFrom(in);

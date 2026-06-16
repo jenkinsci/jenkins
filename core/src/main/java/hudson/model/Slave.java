@@ -469,6 +469,7 @@ public abstract class Slave extends Node implements Serializable {
             doIndex(req, rsp);
         }
 
+        @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "getURL() resolves a classpath resource restricted to an allow-list of JNLP jar names (SECURITY-195), not a user-supplied URL.")
         private URLConnection connect() throws IOException {
             URL res = getURL();
             return res.openConnection();
