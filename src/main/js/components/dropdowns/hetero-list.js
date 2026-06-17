@@ -159,8 +159,9 @@ function generateButtons() {
 
       function has(id) {
         return (
-          e.querySelector('DIV.repeated-chunk[descriptorId="' + id + '"]') !=
-          null
+          e.querySelector(
+            'DIV.repeated-chunk:not(.fade-out)[descriptorId="' + id + '"]',
+          ) != null
         );
       }
 
@@ -171,8 +172,10 @@ function generateButtons() {
        */
       function toggleButtonState() {
         const templateCount = templates.length;
-        const selectedCount = Array.from(e.children).filter((e) =>
-          e.classList.contains("repeated-chunk"),
+        const selectedCount = Array.from(e.children).filter(
+          (child) =>
+            child.classList.contains("repeated-chunk") &&
+            !child.classList.contains("fade-out"),
         ).length;
 
         btn.disabled = oneEach && selectedCount >= templateCount;
@@ -180,7 +183,12 @@ function generateButtons() {
       const observer = new MutationObserver(() => {
         toggleButtonState();
       });
-      observer.observe(e, { childList: true });
+      observer.observe(e, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["class"],
+      });
       toggleButtonState();
 
       generateDropDown(btn, (instance) => {
