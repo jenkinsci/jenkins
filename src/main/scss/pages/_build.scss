@@ -12,7 +12,6 @@
 
 .app-build__grid {
   gap: calc(var(--section-padding) / 2);
-  margin-bottom: calc(var(--section-padding) * -0.5);
 
   & > * {
     height: 350px;
@@ -299,6 +298,16 @@
   flex-direction: column;
   padding: 0 var(--section-padding);
   margin-inline: calc(var(--section-padding) * -1);
+
+  // This is horrible
+  // TODO - Do this properly
+  min-height: calc(
+    100vh - var(--header-height) - var(--header-height) - var(
+        --page-inset
+      ) - var(--section-padding) - var(--jenkins-border-width) - var(
+        --jenkins-border-width
+      )
+  );
 
   .jenkins-app-bar {
     margin-block: 1.0625rem;
