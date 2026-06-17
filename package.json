@@ -42,7 +42,7 @@
     "postcss-preset-env": "11.3.0",
     "postcss-scss": "4.0.9",
     "prettier": "3.8.4",
-    "sass": "1.100.0",
+    "sass": "1.101.0",
     "sass-loader": "17.0.0",
     "style-loader": "4.0.0",
     "stylelint": "17.13.0",
