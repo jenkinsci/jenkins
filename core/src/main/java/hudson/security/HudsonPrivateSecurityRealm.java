@@ -987,6 +987,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public String encode(CharSequence rawPassword) {
+            if (rawPassword == null) {
+                throw new IllegalArgumentException("Null rawPassword cannot be encoded");
+            }
             if (rawPassword.length() < FIPS_PASSWORD_LENGTH) {
                 throw new IllegalArgumentException(Messages.HudsonPrivateSecurityRealm_CreateAccount_FIPS_PasswordLengthInvalid());
             }
@@ -999,6 +1002,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public boolean matches(CharSequence rawPassword, String encodedPassword) {
+            if (rawPassword == null) {
+                throw new IllegalArgumentException("Null rawPassword cannot be compared");
+            }
             try {
                 return validatePassword(rawPassword.toString(), encodedPassword);
             } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
