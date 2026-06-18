@@ -251,8 +251,10 @@ var FormChecker = {
         params.onComplete(response);
       })
       .catch((e) => {
-        FormChecker.inProgress--;
-        FormChecker.schedule();
+        if (FormChecker.inProgress > 0) {
+          FormChecker.inProgress--;
+          FormChecker.schedule();
+        }
         console.warn("Form validation failed:", e);
       });
   },
@@ -1138,7 +1140,7 @@ function helpButtonOnClick() {
 
     fetch(this.getAttribute("helpURL"))
       .then((rsp) => {
-        rsp.text().then((responseText) => {
+        return rsp.text().then((responseText) => {
           if (rsp.ok) {
             var from = rsp.headers.get("X-Plugin-From");
             // Which plugin is this from?
@@ -1424,7 +1426,7 @@ function rowvgStartEachRow(recursive, f) {
     fetch(e.getAttribute("lazymap"))
       .then((rsp) => {
         if (rsp.ok) {
-          rsp.text().then((responseText) => {
+          return rsp.text().then((responseText) => {
             var div = document.createElement("div");
             document.body.appendChild(div);
             div.innerHTML = responseText;
@@ -2090,7 +2092,7 @@ function refreshPart(id, url) {
       })
         .then((rsp) => {
           if (rsp.ok) {
-            rsp.text().then((responseText) => {
+            return rsp.text().then((responseText) => {
               var hist = document.getElementById(id);
               if (hist == null) {
                 console.log("There's no element that has ID of " + id);
@@ -2656,10 +2658,9 @@ function validateButton(checkUrl, paramList, button) {
     headers: crumb.wrap({
       "Content-Type": "application/x-www-form-urlencoded",
     }),
-  }).then((rsp) => {
-    rsp
-      .text()
-      .then((responseText) => {
+  })
+    .then((rsp) => {
+      return rsp.text().then((responseText) => {
         spinner.style.display = "none";
         target.innerHTML = `<div class="validation-error-area" />`;
         updateValidationArea(target.children[0], responseText);
@@ -2680,18 +2681,19 @@ function validateButton(checkUrl, paramList, button) {
         } catch (e) {
           window.alert("failed to evaluate " + s + "\n" + e.message);
         }
-      })
-      .catch((e) => {
-        spinner.style.display = "none";
-        updateValidationArea(
-          target.children[0],
-          "<div class='error'>Validation failed: " +
-            escapeHTML(String(e)) +
-            "</div>",
-        );
-        layoutUpdateCallback.call();
       });
-  });
+    })
+    .catch((e) => {
+      spinner.style.display = "none";
+      target.innerHTML = `<div class="validation-error-area" />`;
+      updateValidationArea(
+        target.children[0],
+        "<div class='error'>Validation failed: " +
+          escapeHTML(String(e)) +
+          "</div>",
+      );
+      layoutUpdateCallback.call();
+    });
 }
 
 // create a combobox.
