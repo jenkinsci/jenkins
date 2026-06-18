@@ -108,7 +108,11 @@ public abstract class KeyedDataStorage<T, P> {
      * @throws IOException Loading error
      */
     public @NonNull T getOrCreate(String key, P createParams) throws IOException {
-        return get(key, true, createParams);
+        T result = get(key, true, createParams);
+        if (result == null) {
+            throw new IOException("Failed to create data object for key: " + key);
+        }
+        return result;
     }
 
     /**

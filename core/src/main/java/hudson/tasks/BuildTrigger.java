@@ -197,7 +197,8 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
             }
             jobs.add(job);
         }
-        if (!jobs.isEmpty() && build.getResult().isBetterOrEqualTo(threshold)) {
+        Result buildResult = build.getResult();
+        if (!jobs.isEmpty() && buildResult != null && buildResult.isBetterOrEqualTo(threshold)) {
             PrintStream logger = listener.getLogger();
             for (Job<?, ?> downstream : jobs) {
                 if (Jenkins.get().getItemByFullName(downstream.getFullName()) != downstream) {

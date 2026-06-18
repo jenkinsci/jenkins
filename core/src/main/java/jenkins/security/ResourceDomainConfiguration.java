@@ -224,6 +224,9 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
             return false;
         }
         String resourceRootUrl = get().getUrl();
+        if (resourceRootUrl == null) {
+            return false;
+        }
         try {
             URL url = new URL(resourceRootUrl);
 

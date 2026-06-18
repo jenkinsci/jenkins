@@ -638,6 +638,9 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             public VirtualFile[] list(OpenOption... openOptions) throws IOException {
                 String rootPath = determineRootPath();
                 File[] kids = f.listFiles();
+                if (kids == null) {
+                    return new VirtualFile[0];
+                }
                 List<VirtualFile> contents = new ArrayList<>(kids.length);
                 for (File child : kids) {
                     if (!FilePath.isSymlink(child, rootPath, openOptions) && !FilePath.isTmpDir(child, rootPath, openOptions)) {
@@ -758,6 +761,9 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         public boolean containsSymLinkChild(OpenOption... openOptions) {
             String rootPath = determineRootPath();
             File[] kids = f.listFiles();
+            if (kids == null) {
+                return false;
+            }
             for (File child : kids) {
                 if (FilePath.isSymlink(child, rootPath, openOptions)) {
                     return true;
@@ -889,7 +895,8 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             }
 
             @Override public VirtualFile getParent() {
-                return f.getParent().toVirtualFile();
+                FilePath parent = f.getParent();
+                return parent == null ? null : parent.toVirtualFile();
             }
 
             @Override public boolean isDirectory() throws IOException {

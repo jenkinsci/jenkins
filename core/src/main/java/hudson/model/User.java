@@ -571,6 +571,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         }
 
         String id = CanonicalIdResolver.resolve(idOrFullName, context);
+        if (id == null) {
+            return null;
+        }
         return getOrCreateById(id, idOrFullName, create);
     }
 

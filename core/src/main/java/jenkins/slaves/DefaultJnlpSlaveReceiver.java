@@ -153,6 +153,9 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     @SuppressFBWarnings(value = "OS_OPEN_STREAM", justification = "Closed by hudson.slaves.SlaveComputer#kill")
     public void beforeChannel(@NonNull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
+        if (state == null) {
+            return;
+        }
         final SlaveComputer computer = state.getNode();
         final OutputStream log = computer.openLogFile();
         state.setLog(log);
@@ -171,12 +174,18 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     @Override
     public void afterChannel(@NonNull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
+        if (state == null) {
+            return;
+        }
         final SlaveComputer computer = state.getNode();
         try {
             computer.setChannel(event.getChannel(), state.getLog(), null);
         } catch (IOException | InterruptedException e) {
-            PrintWriter logw = new PrintWriter(new OutputStreamWriter(state.getLog(), /* TODO switch agent logs to UTF-8 */ Charset.defaultCharset()), true);
-            Functions.printStackTrace(e, logw);
+            OutputStream log = state.getLog();
+            if (log != null) {
+                PrintWriter logw = new PrintWriter(new OutputStreamWriter(log, /* TODO switch agent logs to UTF-8 */ Charset.defaultCharset()), true);
+                Functions.printStackTrace(e, logw);
+            }
             try {
                 event.getChannel().close();
             } catch (IOException x) {

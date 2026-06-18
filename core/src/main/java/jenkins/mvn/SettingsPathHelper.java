@@ -23,8 +23,12 @@ class SettingsPathHelper {
         if (IOUtils.isAbsolute(targetPath)) {
             return new FilePath(new File(targetPath));
         } else {
+            FilePath workspace = build.getWorkspace();
+            if (workspace == null) {
+                throw new IOException("Failed to find settings.xml: no workspace available for " + build);
+            }
             FilePath mrSettings = build.getModuleRoot().child(targetPath);
-            FilePath wsSettings = build.getWorkspace().child(targetPath);
+            FilePath wsSettings = workspace.child(targetPath);
             try {
                 if (!wsSettings.exists() && mrSettings.exists()) {
                     wsSettings = mrSettings;

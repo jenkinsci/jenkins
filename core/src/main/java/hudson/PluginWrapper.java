@@ -932,7 +932,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     public void setPlugin(Plugin plugin) {
-        Jenkins.lookup(PluginInstanceStore.class).store.put(this, plugin);
+        PluginInstanceStore pluginInstanceStore = Jenkins.lookup(PluginInstanceStore.class);
+        if (pluginInstanceStore == null) {
+            throw new IllegalStateException("Cannot register plugin instance: PluginInstanceStore is not available");
+        }
+        pluginInstanceStore.store.put(this, plugin);
         plugin.wrapper = this;
     }
 
@@ -964,8 +968,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                 LOGGER.warning(shortName + " doesn't declare required core version.");
             } else {
                 VersionNumber actualVersion = Jenkins.getVersion();
-                if (actualVersion.isOlderThan(new VersionNumber(requiredCoreVersion))) {
-                    versionDependencyError(Messages.PluginWrapper_obsoleteCore(Jenkins.getVersion().toString(), requiredCoreVersion), Jenkins.getVersion().toString(), requiredCoreVersion);
+                if (actualVersion != null && actualVersion.isOlderThan(new VersionNumber(requiredCoreVersion))) {
+                    versionDependencyError(Messages.PluginWrapper_obsoleteCore(actualVersion.toString(), requiredCoreVersion), actualVersion.toString(), requiredCoreVersion);
                 }
             }
         }

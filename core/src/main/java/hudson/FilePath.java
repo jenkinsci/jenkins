@@ -2640,10 +2640,13 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
                 File t = new File(target.getRemote());
 
-                for (File child : tmp.listFiles()) {
-                    File target = new File(t, child.getName());
-                    if (!child.renameTo(target))
-                        throw new IOException("Failed to rename " + child + " to " + target);
+                File[] children = tmp.listFiles();
+                if (children != null) {
+                    for (File child : children) {
+                        File target = new File(t, child.getName());
+                        if (!child.renameTo(target))
+                            throw new IOException("Failed to rename " + child + " to " + target);
+                    }
                 }
                 Files.deleteIfExists(Util.fileToPath(tmp));
                 return null;
@@ -3858,6 +3861,11 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             Path currentFilePath = parentFile.toPath();
             while (!remainingPath.isEmpty()) {
                 Path directChild = this.getDirectChild(currentFilePath, remainingPath);
+                if (directChild == null) {
+                    // Could not resolve a direct child under the current path; conservatively
+                    // treat this as not a descendant.
+                    return false;
+                }
                 Path childUsingFullPath = currentFilePath.resolve(remainingPath);
                 String childUsingFullPathAbs = childUsingFullPath.toAbsolutePath().toString();
                 String directChildAbs = directChild.toAbsolutePath().toString();

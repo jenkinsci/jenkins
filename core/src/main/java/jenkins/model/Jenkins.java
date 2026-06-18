@@ -3469,6 +3469,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             throw new IOException("Unable to create " + projectsDir + "\nPermission issue? Please create this directory manually.");
         }
         File[] subdirs = projectsDir.listFiles();
+        if (subdirs == null) {
+            subdirs = new File[0];
+        }
 
         final Set<String> loadedNames = Collections.synchronizedSet(new HashSet<>());
 
@@ -4452,7 +4455,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void doDoFingerprintCheck(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         // Parse the request
         try (MultipartFormDataParser p = new MultipartFormDataParser(req, 10)) {
-            if (isUseCrumbs() && !getCrumbIssuer().validateCrumb(req, p)) {
+            CrumbIssuer issuer = getCrumbIssuer();
+            if (issuer != null && !issuer.validateCrumb(req, p)) {
                 // TODO investigate whether this check can be removed
                 rsp.sendError(HttpServletResponse.SC_FORBIDDEN, "No crumb found");
             }

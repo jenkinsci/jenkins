@@ -81,7 +81,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @since 2.236
  */
 @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "Currently Jenkins instance may have one ond only one context")
-@SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure (including code reached via lambdas). The path is derived from trusted configuration or the Jenkins home/war layout, not taken directly from untrusted remote request input.")
 public class SystemProperties {
 
     @FunctionalInterface

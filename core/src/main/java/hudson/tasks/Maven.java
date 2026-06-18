@@ -29,6 +29,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.CopyOnWrite;
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
@@ -298,6 +299,12 @@ public class Maven extends Builder {
         targets = env.expand(targets);
         String pom = env.expand(this.pom);
 
+        FilePath workspace = build.getWorkspace();
+        if (workspace == null) {
+            listener.fatalError("No workspace is available for this build.");
+            return false;
+        }
+
         int startIndex = 0;
         int endIndex;
         do {
@@ -314,10 +321,16 @@ public class Maven extends Builder {
             ArgumentListBuilder args = new ArgumentListBuilder();
             MavenInstallation mi = getMaven();
             if (mi == null) {
-                String execName = build.getWorkspace().act(new DecideDefaultMavenCommand(normalizedTarget));
+                String execName = workspace.act(new DecideDefaultMavenCommand(normalizedTarget));
                 args.add(execName);
             } else {
-                mi = mi.forNode(Computer.currentComputer().getNode(), listener);
+                Computer currentComputer = Computer.currentComputer();
+                if (currentComputer != null) {
+                    Node node = currentComputer.getNode();
+                    if (node != null) {
+                        mi = mi.forNode(node, listener);
+                    }
+                }
                 mi = mi.forEnvironment(env);
                 String exec = mi.getExecutable(launcher);
                 if (exec == null) {
@@ -355,7 +368,7 @@ public class Maven extends Builder {
             args.addKeyValuePairsFromPropertyString("-D", this.properties, resolver, sensitiveVars);
 
             if (usesPrivateRepository())
-                args.add("-Dmaven.repo.local=" + build.getWorkspace().child(".repository"));
+                args.add("-Dmaven.repo.local=" + workspace.child(".repository"));
             args.addTokenized(normalizedTarget);
             wrapUpArguments(args, normalizedTarget, build, launcher, listener);
 
@@ -535,7 +548,8 @@ public class Maven extends Builder {
 
         @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         public File getHomeDir() {
-            return new File(getHome());
+            String home = getHome();
+            return home == null ? null : new File(home);
         }
 
         @Override
@@ -560,7 +574,11 @@ public class Maven extends Builder {
         public boolean meetsMavenReqVersion(Launcher launcher, int mavenReqVersion) throws IOException, InterruptedException {
             // FIXME using similar stuff as in the maven plugin could be better
             // olamy : but will add a dependency on maven in core -> so not so good
-            String mavenVersion = launcher.getChannel().call(new GetMavenVersion(getHome()));
+            VirtualChannel channel = launcher.getChannel();
+            if (channel == null) {
+                throw new IOException("Unable to determine Maven version: no channel to the node");
+            }
+            String mavenVersion = channel.call(new GetMavenVersion(getHome()));
 
             if (!mavenVersion.isEmpty()) {
                 if (mavenReqVersion == MAVEN_20) {
@@ -622,7 +640,11 @@ public class Maven extends Builder {
          * Gets the executable path of this maven on the given target system.
          */
         public String getExecutable(Launcher launcher) throws IOException, InterruptedException {
-            return launcher.getChannel().call(new GetExecutable(getHome()));
+            VirtualChannel channel = launcher.getChannel();
+            if (channel == null) {
+                return null;
+            }
+            return channel.call(new GetExecutable(getHome()));
         }
 
         private static class GetExecutable extends MasterToSlaveCallable<String, IOException> {
@@ -744,15 +766,21 @@ public class Maven extends Builder {
 
             final MavenInstallation that = (MavenInstallation) o;
 
-            if (getHome() != null ? !getHome().equals(that.getHome()) : that.getHome() != null) return false;
-            if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null) return false;
+            String thisHome = getHome();
+            String thatHome = that.getHome();
+            if (thisHome != null ? !thisHome.equals(thatHome) : thatHome != null) return false;
+            String thisName = getName();
+            String thatName = that.getName();
+            if (thisName != null ? !thisName.equals(thatName) : thatName != null) return false;
             return true;
         }
 
         @Override
         public int hashCode() {
-            int result = getHome() != null ? getHome().hashCode() : 0;
-            result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+            String home = getHome();
+            int result = home != null ? home.hashCode() : 0;
+            String name = getName();
+            result = 31 * result + (name != null ? name.hashCode() : 0);
             //result = 31 * result + (getProperties() != null ? getProperties().hashCode() : 0);
             return result;
         }

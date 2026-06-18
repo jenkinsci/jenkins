@@ -165,13 +165,14 @@ public class FileFingerprintStorage extends FingerprintStorage {
                 w.print("  <timestamp>");
                 w.print(DATE_CONVERTER.toString(fp.getTimestamp()));
                 w.println("</timestamp>");
-                if (fp.getOriginal() != null) {
+                Fingerprint.BuildPtr original = fp.getOriginal();
+                if (original != null) {
                     w.println("  <original>");
                     w.print("    <name>");
-                    w.print(Util.xmlEscape(fp.getOriginal().getName()));
+                    w.print(Util.xmlEscape(original.getName()));
                     w.println("</name>");
                     w.print("    <number>");
-                    w.print(fp.getOriginal().getNumber());
+                    w.print(original.getNumber());
                     w.println("</number>");
                     w.println("  </original>");
                 }
@@ -183,15 +184,18 @@ public class FileFingerprintStorage extends FingerprintStorage {
                 w.print(Util.xmlEscape(fp.getFileName()));
                 w.println("</fileName>");
                 w.println("  <usages>");
-                for (Map.Entry<String, Fingerprint.RangeSet> e : fp.getUsages().entrySet()) {
-                    w.println("    <entry>");
-                    w.print("      <string>");
-                    w.print(Util.xmlEscape(e.getKey()));
-                    w.println("</string>");
-                    w.print("      <ranges>");
-                    w.print(Fingerprint.RangeSet.ConverterImpl.serialize(e.getValue()));
-                    w.println("</ranges>");
-                    w.println("    </entry>");
+                Map<String, Fingerprint.RangeSet> usages = fp.getUsages();
+                if (usages != null) {
+                    for (Map.Entry<String, Fingerprint.RangeSet> e : usages.entrySet()) {
+                        w.println("    <entry>");
+                        w.print("      <string>");
+                        w.print(Util.xmlEscape(e.getKey()));
+                        w.println("</string>");
+                        w.print("      <ranges>");
+                        w.print(Fingerprint.RangeSet.ConverterImpl.serialize(e.getValue()));
+                        w.println("</ranges>");
+                        w.println("    </entry>");
+                    }
                 }
                 w.println("  </usages>");
                 w.println("  <facets/>");
@@ -259,13 +263,17 @@ public class FileFingerprintStorage extends FingerprintStorage {
         if (files1 != null) {
             for (File file1 : files1) {
                 File[] files2 = file1.listFiles(f -> f.isDirectory() && f.getName().length() == 2);
-                for (File file2 : files2) {
-                    File[] files3 = file2.listFiles(f -> f.isFile() && FINGERPRINT_FILE_PATTERN.matcher(f.getName()).matches());
-                    for (File file3 : files3) {
-                        if (cleanFingerprint(file3, taskListener))
-                            numFiles++;
+                if (files2 != null) {
+                    for (File file2 : files2) {
+                        File[] files3 = file2.listFiles(f -> f.isFile() && FINGERPRINT_FILE_PATTERN.matcher(f.getName()).matches());
+                        if (files3 != null) {
+                            for (File file3 : files3) {
+                                if (cleanFingerprint(file3, taskListener))
+                                    numFiles++;
+                            }
+                        }
+                        deleteIfEmpty(file2);
                     }
-                    deleteIfEmpty(file2);
                 }
                 deleteIfEmpty(file1);
             }
@@ -277,13 +285,13 @@ public class FileFingerprintStorage extends FingerprintStorage {
     private boolean cleanFingerprint(File fingerprintFile, TaskListener listener) {
         try {
             Fingerprint fp = loadFingerprint(fingerprintFile);
-            if (fp == null || (!fp.isAlive() && fp.getFacetBlockingDeletion() == null)) {
+            FingerprintFacet deletionBlockerFacet = fp == null ? null : fp.getFacetBlockingDeletion();
+            if (fp == null || (!fp.isAlive() && deletionBlockerFacet == null)) {
                 listener.getLogger().println("deleting obsolete " + fingerprintFile);
                 Files.deleteIfExists(fingerprintFile.toPath());
                 return true;
             } else {
-                if (!fp.isAlive()) {
-                    FingerprintFacet deletionBlockerFacet = fp.getFacetBlockingDeletion();
+                if (!fp.isAlive() && deletionBlockerFacet != null) {
                     listener.getLogger().println(deletionBlockerFacet.getClass().getName() + " created on " + new Date(deletionBlockerFacet.getTimestamp()) + " blocked deletion of " + fingerprintFile);
                 }
                 // get the fingerprint in the official map so have the changes visible to Jenkins

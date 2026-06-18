@@ -114,13 +114,13 @@ public abstract class FingerprintStorage implements Describable<FingerprintStora
      */
     public boolean cleanFingerprint(@NonNull Fingerprint fingerprint, TaskListener taskListener) {
         try {
-            if (!fingerprint.isAlive() && fingerprint.getFacetBlockingDeletion() == null) {
+            FingerprintFacet deletionBlockerFacet = fingerprint.getFacetBlockingDeletion();
+            if (!fingerprint.isAlive() && deletionBlockerFacet == null) {
                 taskListener.getLogger().println("deleting obsolete " + fingerprint);
                 Fingerprint.delete(fingerprint.getHashString());
                 return true;
             } else {
-                if (!fingerprint.isAlive()) {
-                    FingerprintFacet deletionBlockerFacet = fingerprint.getFacetBlockingDeletion();
+                if (!fingerprint.isAlive() && deletionBlockerFacet != null) {
                     taskListener.getLogger().println(deletionBlockerFacet.getClass().getName() + " created on " +
                             new Date(deletionBlockerFacet.getTimestamp()) + " blocked deletion of " +
                             fingerprint.getHashString());

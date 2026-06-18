@@ -674,8 +674,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     //TODO: Consider refactoring in order to avoid DMI_COLLECTION_OF_URLS
-    @SuppressFBWarnings(value = "DMI_COLLECTION_OF_URLS", justification = "Plugin loading happens only once on Jenkins startup")
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+    @SuppressFBWarnings(value = {"DMI_COLLECTION_OF_URLS", "PATH_TRAVERSAL_IN"}, justification = "Plugin loading happens only once on Jenkins startup. PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
     protected @NonNull Set<String> loadPluginsFromWar(@NonNull String fromPath, @CheckForNull FilenameFilter filter) {
         Set<String> names = new HashSet<>();
 
@@ -1190,7 +1189,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @throws IOException Operation error
      */
     @NonNull
-    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Reads the modification date of a bundled plugin resource URL resolved on the classpath/war, not from user input.")
+    @SuppressFBWarnings(value = {"URLCONNECTION_SSRF_FD", "PATH_TRAVERSAL_IN"}, justification = "Reads the modification date of a bundled plugin resource URL resolved on the classpath/war, not from user input.")
     /*package*/ static long getModificationDate(@NonNull URL url) throws IOException {
         URLConnection uc = url.openConnection();
 
@@ -2133,13 +2132,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             FormValidation result = updateServerRetrier.start();
 
             // Check how it went
-            if (!FormValidation.Kind.OK.equals(result.kind)) {
-                LOGGER.log(Level.SEVERE, Messages.PluginManager_UpdateSiteError(CHECK_UPDATE_ATTEMPTS, result.getMessage()));
+            if (result == null || !FormValidation.Kind.OK.equals(result.kind)) {
+                String message = result != null ? result.getMessage() : null;
+                LOGGER.log(Level.SEVERE, Messages.PluginManager_UpdateSiteError(CHECK_UPDATE_ATTEMPTS, message));
                 if (CHECK_UPDATE_ATTEMPTS > 1 && !Logger.getLogger(Retrier.class.getName()).isLoggable(Level.WARNING)) {
                     LOGGER.log(Level.SEVERE, Messages.PluginManager_UpdateSiteChangeLogLevel(Retrier.class.getName()));
                 }
 
-                lastErrorCheckUpdateCenters = Messages.PluginManager_CheckUpdateServerError(result.getMessage());
+                lastErrorCheckUpdateCenters = Messages.PluginManager_CheckUpdateServerError(message);
             } else {
                 lastErrorCheckUpdateCenters = null;
             }

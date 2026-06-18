@@ -1105,7 +1105,7 @@ public abstract class Launcher {
             if (vc == null) {
                 throw new IllegalStateException("RemoteLauncher has been initialized with Null channel. It should not happen");
             }
-            return super.getChannel();
+            return vc;
         }
 
         @Override
@@ -1440,8 +1440,7 @@ public abstract class Launcher {
             this.envOverrides = envOverrides;
         }
 
-        @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "TODO needs triage")
-        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+        @SuppressFBWarnings(value = {"COMMAND_INJECTION", "PATH_TRAVERSAL_IN"}, justification = "COMMAND_INJECTION TODO needs triage. PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
         private Process launchProcess() throws IOException {
             return Runtime.getRuntime()
                     .exec(cmd, Util.mapToEnv(inherit(envOverrides)), workDir == null ? null : new File(workDir));

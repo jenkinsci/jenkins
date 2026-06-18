@@ -67,7 +67,10 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
     }
 
     public static void invoke() {
-        ExtensionList.lookup(AsyncPeriodicWork.class).get(WorkspaceCleanupThread.class).run();
+        WorkspaceCleanupThread thread = ExtensionList.lookup(AsyncPeriodicWork.class).get(WorkspaceCleanupThread.class);
+        if (thread != null) {
+            thread.run();
+        }
     }
 
     @Override protected void execute(TaskListener listener) throws InterruptedException, IOException {

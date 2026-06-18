@@ -164,7 +164,8 @@ public abstract class   Build<P extends Project<P, B>, B extends Build<P, B>>
                 if (!build(listener, project.getBuilders()))
                     r = FAILURE;
             } catch (InterruptedException e) {
-                r = Executor.currentExecutor().abortResult();
+                Executor executor = Executor.currentExecutor();
+                r = executor != null ? executor.abortResult() : Result.ABORTED;
                 // not calling Executor.recordCauseOfInterruption here. We do that where this exception is consumed.
                 throw e;
             } finally {

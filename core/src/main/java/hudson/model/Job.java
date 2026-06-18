@@ -1082,8 +1082,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         RunT r = getLastBuild();
         List<RunT> fallbackCandidates = new ArrayList<>(3);
         while (r != null && candidates.size() < 3 && i < 6) {
-            if (!r.isBuilding() && r.getResult() != null && r.getNumber() != lastSuccessfulNumber) {
-                Result result = r.getResult();
+            Result result = r.getResult();
+            if (!r.isBuilding() && result != null && r.getNumber() != lastSuccessfulNumber) {
                 if (result.isBetterOrEqualTo(Result.UNSTABLE)) {
                     candidates.add(r);
                 } else if (result.isCompleteBuild()) {

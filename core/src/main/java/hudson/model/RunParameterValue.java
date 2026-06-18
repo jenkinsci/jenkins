@@ -124,7 +124,8 @@ public class RunParameterValue extends ParameterValue {
         // if run is null, default to the standard '#1' display name format
         env.put(name + "_NAME",  null == run ? "#" + getNumber() : run.getDisplayName());  // since 1.504
 
-        String buildResult = null == run || null == run.getResult() ? "UNKNOWN" : run.getResult().toString();
+        Result runResult = run == null ? null : run.getResult();
+        String buildResult = runResult == null ? "UNKNOWN" : runResult.toString();
         env.put(name + "_RESULT",  buildResult);  // since 1.517
 
         env.put(name.toUpperCase(Locale.ENGLISH), value); // backward compatibility pre 1.345

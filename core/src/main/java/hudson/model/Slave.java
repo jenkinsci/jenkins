@@ -167,6 +167,7 @@ public abstract class Slave extends Node implements Serializable {
      * @deprecated since 2.184
      */
     @Deprecated
+    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "Util.tryParseNumber returns null only when the supplied default is null; the default here (1) is non-null, so the result is never null.")
     protected Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this(name, nodeDescription, remoteFS, Util.tryParseNumber(numExecutors, 1).intValue(), mode, labelString, launcher, retentionStrategy, nodeProperties);
