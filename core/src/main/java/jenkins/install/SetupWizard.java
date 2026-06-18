@@ -630,7 +630,8 @@ public class SetupWizard extends PageDecorator {
      */
     /*package*/ JSONArray getPlatformPluginsForUpdate(VersionNumber from, VersionNumber to) {
         Jenkins jenkins = Jenkins.get();
-        JSONArray pluginCategories = JSONArray.fromObject(getPlatformPluginList().toString());
+        JSONArray platformPlugins = getPlatformPluginList();
+        JSONArray pluginCategories = JSONArray.fromObject(platformPlugins == null ? "[]" : platformPlugins.toString());
         for (Iterator<?> categoryIterator = pluginCategories.iterator(); categoryIterator.hasNext();) {
             Object category = categoryIterator.next();
             if (category instanceof JSONObject cat) {
@@ -708,7 +709,10 @@ public class SetupWizard extends PageDecorator {
     /*package*/ void completeSetup() throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         InstallUtil.saveLastExecVersion();
-        setCurrentLevel(Jenkins.getVersion());
+        VersionNumber version = Jenkins.getVersion();
+        if (version != null) {
+            setCurrentLevel(version);
+        }
         InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_SETUP_COMPLETED);
     }
 

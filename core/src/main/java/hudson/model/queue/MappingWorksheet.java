@@ -130,6 +130,9 @@ public class MappingWorksheet {
             assert !base.isEmpty();
             computer = base.getFirst().getExecutor().getOwner();
             node = computer.getNode();
+            if (node == null) {
+                throw new IllegalStateException("Computer " + computer.getName() + " has no associated node");
+            }
             nodeAcl = node.getACL();
         }
 

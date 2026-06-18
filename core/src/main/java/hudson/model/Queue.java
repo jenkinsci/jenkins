@@ -322,7 +322,8 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         public boolean isNotExclusive() {
-            return getNode().getMode() == Mode.NORMAL;
+            Node node = getNode();
+            return node != null && node.getMode() == Mode.NORMAL;
         }
 
         @Override
@@ -1178,10 +1179,12 @@ public class Queue extends ResourceController implements Saveable {
         lock.lock();
         try { try {
             final WorkUnit wu = exec.getCurrentWorkUnit();
-            pendings.remove(wu.context.item);
+            if (wu != null) {
+                pendings.remove(wu.context.item);
 
-            LeftItem li = new LeftItem(wu.context);
-            li.enter(this);
+                LeftItem li = new LeftItem(wu.context);
+                li.enter(this);
+            }
         } finally { updateSnapshot(); } } finally {
             lock.unlock();
         }

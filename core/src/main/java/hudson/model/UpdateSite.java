@@ -1088,7 +1088,7 @@ public class UpdateSite {
             switch (this.type) {
                 case CORE:
                     VersionNumber current = Jenkins.getVersion();
-                    return isRelevantToVersion(current);
+                    return current != null && isRelevantToVersion(current);
                 case PLUGIN:
 
                     // check whether plugin is installed
@@ -1353,7 +1353,15 @@ public class UpdateSite {
 
         @Restricted(NoExternalUse.class)
         public UpdateSite.Deprecation getDeprecation() {
-            return Jenkins.get().getUpdateCenter().getSite(sourceId).getData().getDeprecations().get(this.name);
+            UpdateSite site = Jenkins.get().getUpdateCenter().getSite(sourceId);
+            if (site == null) {
+                return null;
+            }
+            Data data = site.getData();
+            if (data == null) {
+                return null;
+            }
+            return data.getDeprecations().get(this.name);
         }
 
         public String getDisplayName() {
@@ -1639,7 +1647,8 @@ public class UpdateSite {
          */
         @Restricted(DoNotUse.class)
         public boolean hasWarnings() {
-            return !getWarnings().isEmpty();
+            Set<Warning> warnings = getWarnings();
+            return warnings != null && !warnings.isEmpty();
         }
 
         /**

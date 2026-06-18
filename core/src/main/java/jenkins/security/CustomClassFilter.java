@@ -152,7 +152,11 @@ public interface CustomClassFilter extends ExtensionPoint {
 
         @Initializer(after = InitMilestone.PLUGINS_PREPARED, before = InitMilestone.PLUGINS_STARTED, fatal = false)
         public static void load() throws IOException {
-            Map<String, Boolean> overrides = ExtensionList.lookup(CustomClassFilter.class).get(Contributed.class).overrides;
+            Contributed contributed = ExtensionList.lookup(CustomClassFilter.class).get(Contributed.class);
+            if (contributed == null) {
+                return;
+            }
+            Map<String, Boolean> overrides = contributed.overrides;
             overrides.clear();
             Enumeration<URL> resources = Jenkins.get().getPluginManager().uberClassLoader.getResources("META-INF/hudson.remoting.ClassFilter");
             while (resources.hasMoreElements()) {

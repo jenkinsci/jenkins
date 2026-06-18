@@ -430,7 +430,10 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
             if (baseline != SCMRevisionState.NONE) {
                 baseline2 = baseline;
             } else {
-                baseline2 = calcRevisionsFromBuild(project.getLastBuild(), launcher, listener);
+                var lastBuild = project.getLastBuild();
+                baseline2 = lastBuild != null
+                        ? calcRevisionsFromBuild(lastBuild, launcher, listener)
+                        : SCMRevisionState.NONE;
             }
 
             return compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);

@@ -151,7 +151,8 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      * @since 1.220
      */
     public @NonNull ACL getACL(@NonNull Computer computer) {
-        return getACL(computer.getNode());
+        Node node = computer.getNode();
+        return node != null ? getACL(node) : getRootACL();
     }
 
     /**

@@ -197,7 +197,11 @@ public abstract class ToolInstallation implements Describable<ToolInstallation>,
      */
     public ToolInstallation translate(AbstractBuild<?, ?> buildInProgress, TaskListener listener) throws IOException, InterruptedException {
         assert buildInProgress.isBuilding();
-        return translate(buildInProgress.getBuiltOn(), buildInProgress.getEnvironment(listener), listener);
+        Node node = buildInProgress.getBuiltOn();
+        if (node == null) {
+            throw new IllegalStateException("Cannot translate tool installation: build " + buildInProgress + " has no node");
+        }
+        return translate(node, buildInProgress.getEnvironment(listener), listener);
     }
 
     /**

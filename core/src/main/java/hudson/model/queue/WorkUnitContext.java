@@ -133,8 +133,8 @@ public final class WorkUnitContext {
         } finally {
             // the main thread will send a notification
             Executor e = Executor.currentExecutor();
-            WorkUnit wu = e.getCurrentWorkUnit();
-            if (wu.isMainWork()) {
+            WorkUnit wu = e != null ? e.getCurrentWorkUnit() : null;
+            if (wu != null && wu.isMainWork()) {
                 future.start.set(e.getCurrentExecutable());
                 for (ExecutorListener listener : ExtensionList.lookup(ExecutorListener.class)) {
                     try {
@@ -167,8 +167,8 @@ public final class WorkUnitContext {
             endLatch.synchronize();
         } finally {
             // the main thread will send a notification
-            WorkUnit wu = e.getCurrentWorkUnit();
-            if (wu.isMainWork()) {
+            WorkUnit wu = e != null ? e.getCurrentWorkUnit() : null;
+            if (wu != null && wu.isMainWork()) {
                 if (problems == null) {
                     future.set(executable);
                     e.getOwner().taskCompleted(e, task, duration);

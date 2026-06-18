@@ -143,6 +143,9 @@ public class AtomicFileWriter extends Writer {
         }
         this.destPath = destinationPath;
         Path dir = this.destPath.getParent();
+        if (dir == null) {
+            throw new IOException("Destination path has no parent directory: " + destinationPath);
+        }
 
         if (Files.exists(dir) && !Files.isDirectory(dir)) {
             throw new IOException(dir + " exists and is neither a directory nor a symlink to a directory");
@@ -233,8 +236,11 @@ public class AtomicFileWriter extends Writer {
          *     reached disk. For that an explicit fsync() on a file descriptor for the directory is also needed.
          */
         if (!DISABLE_FORCED_FLUSH && REQUIRES_DIR_FSYNC) {
-            try (FileChannel parentChannel = FileChannel.open(destPath.getParent())) {
-                parentChannel.force(true);
+            Path parent = destPath.getParent();
+            if (parent != null) {
+                try (FileChannel parentChannel = FileChannel.open(parent)) {
+                    parentChannel.force(true);
+                }
             }
         }
     }

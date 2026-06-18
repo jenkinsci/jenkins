@@ -25,6 +25,7 @@
 package hudson.cli;
 
 import hudson.Extension;
+import hudson.model.Computer;
 import hudson.model.Node;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
@@ -49,7 +50,11 @@ public class UpdateNodeCommand extends CLICommand {
     @Override
     protected int run() throws IOException, ServletException {
 
-        node.toComputer().updateByXml(stdin);
+        final Computer computer = node.toComputer();
+        if (computer == null) {
+            throw new IllegalStateException("Node '" + node.getNodeName() + "' has no associated computer");
+        }
+        computer.updateByXml(stdin);
 
         return 0;
     }

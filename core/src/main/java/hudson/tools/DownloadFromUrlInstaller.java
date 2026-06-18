@@ -216,7 +216,9 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
          * @return never null.
          */
         public List<? extends Installable> getInstallables() throws IOException {
-            JSONObject d = Downloadable.get(getId()).getData();
+            Downloadable downloadable = Downloadable.get(getId());
+            if (downloadable == null)     return Collections.emptyList();
+            JSONObject d = downloadable.getData();
             if (d == null)     return Collections.emptyList();
             return Arrays.asList(((InstallableList) JSONObject.toBean(d, InstallableList.class)).list);
         }

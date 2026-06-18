@@ -25,6 +25,7 @@
 package hudson.cli;
 
 import hudson.Extension;
+import hudson.model.Computer;
 import hudson.model.Node;
 import org.kohsuke.args4j.Argument;
 
@@ -46,7 +47,11 @@ public class WaitNodeOnlineCommand extends CLICommand {
 
     @Override
     protected int run() throws Exception {
-        node.toComputer().waitUntilOnline();
+        final Computer computer = node.toComputer();
+        if (computer == null) {
+            throw new IllegalStateException("Node '" + node.getNodeName() + "' has no associated computer");
+        }
+        computer.waitUntilOnline();
         return 0;
     }
 }

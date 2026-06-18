@@ -510,7 +510,8 @@ public abstract class Cause {
 
         @Override
         public void print(TaskListener listener) {
-            User user = getUserId() == null ? null : User.getById(getUserId(), false);
+            String userId = getUserId();
+            User user = userId == null ? null : User.getById(userId, false);
             if (user != null) {
                 listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
                         ModelHyperlinkNote.encodeTo(user)));

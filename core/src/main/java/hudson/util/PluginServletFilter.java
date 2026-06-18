@@ -166,10 +166,11 @@ public final class PluginServletFilter implements CompatibleFilter {
      */
     public static void removeFilter(Filter filter) throws ServletException {
         Jenkins j = Jenkins.getInstanceOrNull();
-        if (j == null || getInstance(j.getServletContext()) == null) {
+        PluginServletFilter instance = j == null ? null : getInstance(j.getServletContext());
+        if (instance == null) {
             LEGACY.remove(filter);
         } else {
-            getInstance(j.getServletContext()).list.remove(filter);
+            instance.list.remove(filter);
         }
     }
 

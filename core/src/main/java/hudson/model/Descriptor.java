@@ -264,7 +264,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
 
         private String resolve() {
             // the resolution has to be deferred to avoid ordering issue among descriptor registrations.
-            return Jenkins.get().getDescriptor(owner).getHelpFile(fieldNameToRedirectTo);
+            Descriptor descriptor = Jenkins.get().getDescriptor(owner);
+            return descriptor == null ? null : descriptor.getHelpFile(fieldNameToRedirectTo);
         }
     }
 
@@ -729,7 +730,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
                 if (isApplicable(targetTypeErasure, json)) {
                     LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {targetTypeErasure.getName(), json});
                     try {
-                        return Jenkins.get().getDescriptor(targetTypeErasure).newInstance(Stapler.getCurrentRequest2(), json);
+                        Descriptor descriptor = Jenkins.get().getDescriptor(targetTypeErasure);
+                        if (descriptor != null) {
+                            return descriptor.newInstance(Stapler.getCurrentRequest2(), json);
+                        }
                     } catch (Exception x) {
                         LOGGER.log(Level.WARNING, "falling back to default instantiation " + targetTypeErasure.getName() + " " + json, x);
                     }

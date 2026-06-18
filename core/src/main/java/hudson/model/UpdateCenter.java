@@ -1317,8 +1317,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
          * @throws IOException if there were problems downloading the resource.
          * @see DownloadJob
          */
-        @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_SHA1", justification = "SHA-1 is only used as a fallback if SHA-256/SHA-512 are not available")
-        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: writes the downloaded artifact to a temp file derived from the trusted destination path computed by Jenkins, not from untrusted remote input.")
+        @SuppressFBWarnings(value = {"WEAK_MESSAGE_DIGEST_SHA1", "PATH_TRAVERSAL_IN"}, justification = "SHA-1 is only used as a fallback if SHA-256/SHA-512 are not available. PATH_TRAVERSAL_IN false positive: writes the downloaded artifact to a temp file derived from the trusted destination path computed by Jenkins, not from untrusted remote input.")
         public File download(DownloadJob job, URL src) throws IOException {
             MessageDigest sha1 = null;
             MessageDigest sha256 = null;
@@ -2729,7 +2728,11 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
             if (site == null) {
                 throw new MalformedURLException("no update site defined");
             }
-            return new URL(site.getData().core.url);
+            UpdateSite.Data data = site.getData();
+            if (data == null || data.core == null) {
+                throw new MalformedURLException("no update center data available");
+            }
+            return new URL(data.core.url);
         }
 
         @Override
@@ -2752,7 +2755,11 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
             if (site == null) {
                 throw new IOException("no update site defined");
             }
-            verifyChecksums(this, site.getData().core, src);
+            UpdateSite.Data data = site.getData();
+            if (data == null || data.core == null) {
+                throw new IOException("no update center data available");
+            }
+            verifyChecksums(this, data.core, src);
             Lifecycle.get().rewriteHudsonWar(src);
         }
     }
@@ -2776,7 +2783,11 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
             if (site == null) {
                 throw new MalformedURLException("no update site defined");
             }
-            return new URL(site.getData().core.url);
+            UpdateSite.Data data = site.getData();
+            if (data == null || data.core == null) {
+                throw new MalformedURLException("no update center data available");
+            }
+            return new URL(data.core.url);
         }
 
         @Override

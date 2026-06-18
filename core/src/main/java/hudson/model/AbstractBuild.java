@@ -839,11 +839,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
 
         private void reportBrokenChannel(BuildListener listener) throws IOException {
             final Node node = getCurrentNode();
-            listener.hyperlink("/" + node.toComputer().getUrl() + "log", "Agent went offline during the build");
-            listener.getLogger().println();
-            final OfflineCause offlineCause = node.toComputer().getOfflineCause();
-            if (offlineCause != null) {
-                listener.error(offlineCause.toString());
+            final Computer computer = node.toComputer();
+            if (computer != null) {
+                listener.hyperlink("/" + computer.getUrl() + "log", "Agent went offline during the build");
+                listener.getLogger().println();
+                final OfflineCause offlineCause = computer.getOfflineCause();
+                if (offlineCause != null) {
+                    listener.error(offlineCause.toString());
+                }
             }
         }
 

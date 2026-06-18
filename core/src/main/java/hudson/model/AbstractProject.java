@@ -1362,6 +1362,11 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         if (scm.requiresWorkspaceForPolling()) {
             R b = getSomeBuildWithExistingWorkspace();
             if (b == null) b = getLastBuild();
+            if (b == null) {
+                // No existing build to provide a workspace; trigger a build so polling can establish one.
+                listener.getLogger().print(Messages.AbstractProject_NewBuildForWorkspace());
+                return BUILD_NOW;
+            }
             // lock the workspace for the given build
             FilePath ws = b.getWorkspace();
 
@@ -1379,7 +1384,8 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
                 // because otherwise there's no way we can detect changes.
                 // However, first there are some conditions in which we do not want to do so.
                 // give time for agents to come online if we are right after reconnection (JENKINS-8408)
-                long running = Jenkins.get().getInjector().getInstance(Uptime.class).getUptime();
+                var injector = Jenkins.get().getInjector();
+                long running = injector != null ? injector.getInstance(Uptime.class).getUptime() : 0;
                 long remaining = TimeUnit.MINUTES.toMillis(10) - running;
                 if (remaining > 0 && /* this logic breaks tests of polling */!Functions.getIsUnitTest()) {
                     listener.getLogger().print(Messages.AbstractProject_AwaitingWorkspaceToComeOnline(remaining / 1000));
@@ -1417,15 +1423,26 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
                 listener.getLogger().println(" (" + workspaceOfflineReason.name() + ")");
                 return BUILD_NOW;
             } else {
-                WorkspaceList l = b.getBuiltOn().toComputer().getWorkspaceList();
+                Node builtOn = b.getBuiltOn();
+                Computer c = builtOn != null ? builtOn.toComputer() : null;
+                if (c == null) {
+                    // The node/computer that ran the build is no longer available; cannot poll its workspace.
+                    listener.getLogger().println(Messages.AbstractProject_WorkspaceOffline());
+                    return NO_CHANGES;
+                }
+                WorkspaceList l = c.getWorkspaceList();
                 return pollWithWorkspace(listener, scm, b, ws, l);
             }
 
         } else {
             // polling without workspace
             LOGGER.fine("Polling SCM changes of " + getName());
-            if (pollingBaseline == null) // see NOTE-NO-BASELINE above
-                calcPollingBaseline(getLastBuild(), null, listener);
+            if (pollingBaseline == null) { // see NOTE-NO-BASELINE above
+                R lastBuild = getLastBuild();
+                if (lastBuild != null) {
+                    calcPollingBaseline(lastBuild, null, listener);
+                }
+            }
             PollingResult r = scm.poll(this, null, null, listener, pollingBaseline);
             pollingBaseline = r.remote;
             return r;

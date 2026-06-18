@@ -712,7 +712,8 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public @NonNull BallColor getIconColor() {
         if (!isBuilding()) {
             // already built
-            return getResult().color;
+            Result result = getResult();
+            return result != null ? result.color : BallColor.NOTBUILT;
         }
 
         // a new build is in progress
@@ -926,8 +927,8 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         RunT r = _this();
         while (r != null && builds.size() < numberOfBuilds) {
-            if (!r.isBuilding() &&
-                 r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold)) {
+            Result result = r.getResult();
+            if (!r.isBuilding() && result != null && result.isBetterOrEqualTo(threshold)) {
                 builds.add(r);
             }
             r = r.getPreviousBuild();
@@ -1855,9 +1856,12 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                     LOGGER.log(FINE, "Build " + this + " aborted", e);
                 } catch (InterruptedException e) {
                     // aborted
-                    result = Executor.currentExecutor().abortResult();
+                    Executor executor = Executor.currentExecutor();
+                    result = executor != null ? executor.abortResult() : Result.ABORTED;
                     listener.getLogger().println(Messages.Run_BuildAborted());
-                    Executor.currentExecutor().recordCauseOfInterruption(Run.this, listener);
+                    if (executor != null) {
+                        executor.recordCauseOfInterruption(Run.this, listener);
+                    }
                     LOGGER.log(Level.INFO, this + " aborted", e);
                 } catch (Throwable e) {
                     handleFatalBuildProblem(listener, e);
@@ -2163,7 +2167,9 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 if (since == null)
                     return new Summary(false, Messages.Run_Summary_BrokenForALongTime());
                 RunT failedBuild = since.getNextBuild();
-                return new Summary(false, Messages.Run_Summary_BrokenSince(failedBuild.getDisplayName()));
+                return failedBuild != null
+                        ? new Summary(false, Messages.Run_Summary_BrokenSince(failedBuild.getDisplayName()))
+                        : new Summary(false, Messages.Run_Summary_BrokenForALongTime());
 
             case NOW_UNSTABLE:
             case STILL_UNSTABLE:
