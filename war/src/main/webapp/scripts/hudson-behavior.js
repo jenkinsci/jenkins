@@ -247,9 +247,7 @@ var FormChecker = {
       }),
       body: method !== "get" ? params.parameters : null,
     })
-      .then((response) => {
-        params.onComplete(response);
-      })
+      .then((response) => params.onComplete(response))
       .catch((e) => {
         if (FormChecker.inProgress > 0) {
           FormChecker.inProgress--;
