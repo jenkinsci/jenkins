@@ -246,9 +246,15 @@ var FormChecker = {
         "Content-Type": "application/x-www-form-urlencoded",
       }),
       body: method !== "get" ? params.parameters : null,
-    }).then((response) => {
-      params.onComplete(response);
-    });
+    })
+      .then((response) => {
+        params.onComplete(response);
+      })
+      .catch((e) => {
+        FormChecker.inProgress--;
+        FormChecker.schedule();
+        console.warn("Form validation failed:", e);
+      });
   },
 
   schedule: function () {
@@ -906,7 +912,6 @@ function preventInputEe(event) {
   }
 }
 
-// eslint-disable-next-line no-unused-vars
 function escapeHTML(html) {
   return html
     .replace(/&/g, "&amp;")
@@ -1131,36 +1136,38 @@ function helpButtonOnClick() {
     helpArea.style.display = "block";
     // make it visible
 
-    fetch(this.getAttribute("helpURL")).then((rsp) => {
-      rsp.text().then((responseText) => {
-        if (rsp.ok) {
-          var from = rsp.headers.get("X-Plugin-From");
-          // Which plugin is this from?
-          div.innerHTML =
-            responseText +
-            (from ? "<div class='from-plugin'>" + from + "</div>" : "");
+    fetch(this.getAttribute("helpURL"))
+      .then((rsp) => {
+        rsp.text().then((responseText) => {
+          if (rsp.ok) {
+            var from = rsp.headers.get("X-Plugin-From");
+            // Which plugin is this from?
+            div.innerHTML =
+              responseText +
+              (from ? "<div class='from-plugin'>" + from + "</div>" : "");
 
-          // Ensure links open in new window unless explicitly specified otherwise
-          var links = div.getElementsByTagName("a");
-          for (var i = 0; i < links.length; i++) {
-            var link = links[i];
-            if (link.hasAttribute("href")) {
-              // ignore document anchors
-              if (!link.hasAttribute("target")) {
-                link.setAttribute("target", "_blank");
-              }
-              if (!link.hasAttribute("rel")) {
-                link.setAttribute("rel", "noopener noreferrer");
+            // Ensure links open in new window unless explicitly specified otherwise
+            var links = div.getElementsByTagName("a");
+            for (var i = 0; i < links.length; i++) {
+              var link = links[i];
+              if (link.hasAttribute("href")) {
+                // ignore document anchors
+                if (!link.hasAttribute("target")) {
+                  link.setAttribute("target", "_blank");
+                }
+                if (!link.hasAttribute("rel")) {
+                  link.setAttribute("rel", "noopener noreferrer");
+                }
               }
             }
+          } else {
+            div.innerHTML =
+              "<b>ERROR</b>: Failed to load help file: " + rsp.statusText;
           }
-        } else {
-          div.innerHTML =
-            "<b>ERROR</b>: Failed to load help file: " + rsp.statusText;
-        }
-        layoutUpdateCallback.call();
-      });
-    });
+          layoutUpdateCallback.call();
+        });
+      })
+      .catch((e) => console.warn("Failed to load help:", e));
   } else {
     helpArea.style.display = "none";
     layoutUpdateCallback.call();
@@ -1414,18 +1421,20 @@ function rowvgStartEachRow(recursive, f) {
   // deferred client-side clickable map.
   // this is useful where the generation of <map> element is time consuming
   Behaviour.specify("IMG[lazymap]", "img-lazymap-", ++p, function (e) {
-    fetch(e.getAttribute("lazymap")).then((rsp) => {
-      if (rsp.ok) {
-        rsp.text().then((responseText) => {
-          var div = document.createElement("div");
-          document.body.appendChild(div);
-          div.innerHTML = responseText;
-          var id = "map" + iota++;
-          div.firstElementChild.setAttribute("name", id);
-          e.setAttribute("usemap", "#" + id);
-        });
-      }
-    });
+    fetch(e.getAttribute("lazymap"))
+      .then((rsp) => {
+        if (rsp.ok) {
+          rsp.text().then((responseText) => {
+            var div = document.createElement("div");
+            document.body.appendChild(div);
+            div.innerHTML = responseText;
+            var id = "map" + iota++;
+            div.firstElementChild.setAttribute("name", id);
+            e.setAttribute("usemap", "#" + id);
+          });
+        }
+      })
+      .catch((err) => console.warn("Failed to load lazymap:", err));
   });
 
   // Native browser resizing doesn't work for CodeMirror textboxes so let's create our own
@@ -2078,38 +2087,40 @@ function refreshPart(id, url) {
       fetch(url, {
         headers: crumb.wrap({}),
         method: "post",
-      }).then((rsp) => {
-        if (rsp.ok) {
-          rsp.text().then((responseText) => {
-            var hist = document.getElementById(id);
-            if (hist == null) {
-              console.log("There's no element that has ID of " + id);
-              if (intervalID !== null) {
-                window.clearInterval(intervalID);
+      })
+        .then((rsp) => {
+          if (rsp.ok) {
+            rsp.text().then((responseText) => {
+              var hist = document.getElementById(id);
+              if (hist == null) {
+                console.log("There's no element that has ID of " + id);
+                if (intervalID !== null) {
+                  window.clearInterval(intervalID);
+                }
+                return;
               }
-              return;
-            }
-            if (!responseText) {
-              console.log(
-                "Failed to retrieve response for ID " +
-                  id +
-                  ", perhaps Jenkins is unavailable",
-              );
-              return;
-            }
-            var p = hist.parentNode;
+              if (!responseText) {
+                console.log(
+                  "Failed to retrieve response for ID " +
+                    id +
+                    ", perhaps Jenkins is unavailable",
+                );
+                return;
+              }
+              var p = hist.parentNode;
 
-            var div = document.createElement("div");
-            div.innerHTML = responseText;
+              var div = document.createElement("div");
+              div.innerHTML = responseText;
 
-            var node = div.firstElementChild;
-            p.replaceChild(node, hist);
+              var node = div.firstElementChild;
+              p.replaceChild(node, hist);
 
-            Behaviour.applySubtree(node);
-            layoutUpdateCallback.call();
-          });
-        }
-      });
+              Behaviour.applySubtree(node);
+              layoutUpdateCallback.call();
+            });
+          }
+        })
+        .catch((e) => console.warn("Failed to refresh part:", e));
     }
   };
   // if run as test, just do it once and do it now to make sure it's working,
@@ -2646,28 +2657,40 @@ function validateButton(checkUrl, paramList, button) {
       "Content-Type": "application/x-www-form-urlencoded",
     }),
   }).then((rsp) => {
-    rsp.text().then((responseText) => {
-      spinner.style.display = "none";
-      target.innerHTML = `<div class="validation-error-area" />`;
-      updateValidationArea(target.children[0], responseText);
-      layoutUpdateCallback.call();
-      let json = rsp.headers.get("X-Jenkins-ValidateButton-Callback");
-      if (json != null) {
-        let callInfo = JSON.parse(json);
-        let callback = callInfo["callback"];
-        let args = callInfo["arguments"];
-        if (window[callback] && typeof window[callback] === "function") {
-          window[callback].apply(window, args);
+    rsp
+      .text()
+      .then((responseText) => {
+        spinner.style.display = "none";
+        target.innerHTML = `<div class="validation-error-area" />`;
+        updateValidationArea(target.children[0], responseText);
+        layoutUpdateCallback.call();
+        let json = rsp.headers.get("X-Jenkins-ValidateButton-Callback");
+        if (json != null) {
+          let callInfo = JSON.parse(json);
+          let callback = callInfo["callback"];
+          let args = callInfo["arguments"];
+          if (window[callback] && typeof window[callback] === "function") {
+            window[callback].apply(window, args);
+          }
         }
-      }
 
-      var s = rsp.headers.get("script");
-      try {
-        geval(s);
-      } catch (e) {
-        window.alert("failed to evaluate " + s + "\n" + e.message);
-      }
-    });
+        var s = rsp.headers.get("script");
+        try {
+          geval(s);
+        } catch (e) {
+          window.alert("failed to evaluate " + s + "\n" + e.message);
+        }
+      })
+      .catch((e) => {
+        spinner.style.display = "none";
+        updateValidationArea(
+          target.children[0],
+          "<div class='error'>Validation failed: " +
+            escapeHTML(String(e)) +
+            "</div>",
+        );
+        layoutUpdateCallback.call();
+      });
   });
 }
 
