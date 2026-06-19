@@ -168,7 +168,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
 
     }
 
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     protected StreamTaskListener createListener() {
         File f = getLogFile();
         if (!f.getParentFile().isDirectory()) {
@@ -226,7 +226,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     /**
      * Determines the log file that records the result of this task.
      */
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     protected File getLogFile() {
         return new File(getLogsRoot(), "/tasks/" + name + ".log");
     }

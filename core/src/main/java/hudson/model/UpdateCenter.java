@@ -883,7 +883,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
     /**
      * Returns true if backup of jenkins.war exists on the hard drive
      */
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     public boolean isDowngradable() {
         return new File(Lifecycle.get().getHudsonWar() + ".bak").exists();
     }
@@ -922,7 +922,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
      * Returns String with version of backup .war file,
      * if the file does not exists returns null
      */
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     public String getBackupVersion() {
         try {
             try (JarFile backupWar = new JarFile(new File(Lifecycle.get().getHudsonWar() + ".bak"))) {
@@ -1058,7 +1058,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         return new UpdateSite(PREDEFINED_UPDATE_SITE_ID, config.getUpdateCenterUrl() + "update-center.json");
     }
 
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private XmlFile getConfigFile() {
         return new XmlFile(XSTREAM, new File(Jenkins.get().root,
                                     UpdateCenter.class.getName() + ".xml"));
@@ -1317,7 +1317,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
          * @throws IOException if there were problems downloading the resource.
          * @see DownloadJob
          */
-        @SuppressFBWarnings(value = {"WEAK_MESSAGE_DIGEST_SHA1", "PATH_TRAVERSAL_IN"}, justification = "SHA-1 is only used as a fallback if SHA-256/SHA-512 are not available. PATH_TRAVERSAL_IN false positive: writes the downloaded artifact to a temp file derived from the trusted destination path computed by Jenkins, not from untrusted remote input.")
+        @SuppressFBWarnings(value = {"WEAK_MESSAGE_DIGEST_SHA1", "PATH_TRAVERSAL_IN"}, justification = "SHA-1 only a fallback when stronger digests are unavailable; writes to a temp file from a trusted path, not untrusted input.")
         public File download(DownloadJob job, URL src) throws IOException {
             MessageDigest sha1 = null;
             MessageDigest sha256 = null;
@@ -2330,13 +2330,13 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         }
 
         @Override
-        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         protected File getDestination() {
             File baseDir = pm.rootDir;
             return new File(baseDir, plugin.name + ".jpi");
         }
 
-        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         private File getLegacyDestination() {
             File baseDir = pm.rootDir;
             return new File(baseDir, plugin.name + ".hpi");
@@ -2359,7 +2359,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         }
 
         @Override
-        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         public void _run() throws IOException, InstallationStatus {
             if (wasInstalled()) {
                 // Do this first so we can avoid duplicate downloads, too
@@ -2426,7 +2426,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
          * @return The cached file, or null for a cache miss
          */
         @CheckForNull
-        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         private File getCached(DownloadJob job) {
             URL src;
             try {
@@ -2635,7 +2635,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         }
 
         @Override
-        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         protected File getDestination() {
             File baseDir = pm.rootDir;
             final File legacy = new File(baseDir, plugin.name + ".hpi");
@@ -2645,7 +2645,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
             return new File(baseDir, plugin.name + ".jpi");
         }
 
-        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         protected File getBackup() {
             File baseDir = pm.rootDir;
             return new File(baseDir, plugin.name + ".bak");
@@ -2823,7 +2823,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         }
 
         @Override
-        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         protected void _run() throws IOException {
 
             File backup = new File(Lifecycle.get().getHudsonWar() + ".bak");

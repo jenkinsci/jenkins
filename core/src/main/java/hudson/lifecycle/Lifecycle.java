@@ -148,7 +148,7 @@ public abstract class Lifecycle {
      * When a non-null value is returned, Hudson will offer an upgrade UI
      * to a newer version.
      */
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     public File getHudsonWar() {
         String war = SystemProperties.getString("executable-war");
         if (war != null && new File(war).exists())
@@ -164,7 +164,7 @@ public abstract class Lifecycle {
      * so rewriting {@code jenkins.war} requires some special trick. Override this method
      * to do so.
      */
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     public void rewriteHudsonWar(File by) throws IOException {
         File dest = getHudsonWar();
         // this should be impossible given the canRewriteHudsonWar method,

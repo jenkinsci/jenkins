@@ -215,7 +215,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
      * Deletes the Fingerprint with the given unique ID.
      */
     @Override
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     public void delete(String id) throws IOException {
         File file = getFingerprintFile(id);
         if (!file.exists()) {
@@ -315,7 +315,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Determines the file name from unique id (md5sum).
      */
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private static @NonNull File getFingerprintFile(@NonNull String id) {
         return new File(Jenkins.get().getRootDir(),
                 "fingerprints/" + id.substring(0, 2) + '/' + id.substring(2, 4) + '/' + id.substring(4) + ".xml");

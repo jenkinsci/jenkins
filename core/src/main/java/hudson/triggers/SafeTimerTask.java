@@ -107,7 +107,7 @@ public abstract class SafeTimerTask extends TimerTask {
      * @return the path where the logs should be put.
      * @since 2.114
      */
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     public static File getLogsRoot() {
         String tagsLogsPath = SystemProperties.getString(LOGS_ROOT_PATH_PROPERTY);
         if (tagsLogsPath == null) {

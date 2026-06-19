@@ -68,7 +68,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * yet is not mentioned in {@code whitelisted-classes.txt}.
  */
 @Restricted(NoExternalUse.class)
-@SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure (including code reached via lambdas). The path is derived from trusted configuration or the Jenkins home/war layout, not taken directly from untrusted remote request input.")
+@SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
 public class ClassFilterImpl extends ClassFilter {
 
     private static final Logger LOGGER = Logger.getLogger(ClassFilterImpl.class.getName());
