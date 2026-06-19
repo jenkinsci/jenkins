@@ -71,4 +71,60 @@ class TaskActionTest {
         assertTrue(length >= 219, "length should be longer or even 219");
         assertTrue(os.toString(StandardCharsets.UTF_8).startsWith("a linkCompleted"));
     }
+
+    private static class ErrorThrowingTaskThread extends TaskThread {
+        ErrorThrowingTaskThread(TaskAction taskAction) {
+            super(taskAction, ListenerAndText.forMemory(taskAction));
+        }
+
+        @Override
+        protected void perform(TaskListener listener) throws Exception {
+            throw new OutOfMemoryError("simulated OOM");
+        }
+    }
+
+    private static class ErrorThrowingTaskAction extends TaskAction {
+        void start() {
+            workerThread = new ErrorThrowingTaskThread(this);
+            workerThread.start();
+        }
+
+        @Override
+        public String getIconFileName() {
+            return "Iconfilename";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Error Task Thread";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "errxyz";
+        }
+
+        @Override
+        protected Permission getPermission() {
+            return Permission.READ;
+        }
+
+        @Override
+        protected ACL getACL() {
+            return ACL.lambda2((a, p) -> true);
+        }
+    }
+
+    @Test
+    void logMarkedCompleteEvenWhenPerformThrowsError() throws Exception {
+        ErrorThrowingTaskAction action = new ErrorThrowingTaskAction();
+        action.start();
+
+        // Wait for the thread to finish (it will throw an Error internally)
+        action.workerThread.join(5000);
+
+        AnnotatedLargeText<?> annotatedText = action.obtainLog();
+
+        assertTrue(annotatedText.isComplete(), "log should be marked complete even when perform() throws an Error");
+    }
 }
