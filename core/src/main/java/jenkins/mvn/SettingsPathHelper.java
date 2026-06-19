@@ -14,7 +14,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
 class SettingsPathHelper {
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     static FilePath getSettings(AbstractBuild<?, ?> build, TaskListener listener, String path) throws IOException, InterruptedException {
         EnvVars env = build.getEnvironment(listener);
         String targetPath = Util.replaceMacro(path, build.getBuildVariableResolver());

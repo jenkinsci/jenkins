@@ -146,7 +146,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             }
     }
 
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     @Override public PluginWrapper createPluginWrapper(File archive) throws IOException {
         final Manifest manifest;
 
@@ -441,7 +441,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             return new File(base.getParentFile(), relative);
     }
 
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure. The path is derived from trusted configuration, the Jenkins home/war layout, or is validated before use, not taken directly from untrusted remote request input.")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private static void parseClassPath(Manifest manifest, File archive, List<File> paths, String attributeName, String separator) throws IOException {
         String classPath = manifest.getMainAttributes().getValue(attributeName);
         if (classPath == null) return; // attribute not found

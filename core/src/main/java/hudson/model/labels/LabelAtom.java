@@ -74,7 +74,7 @@ import org.kohsuke.stapler.verb.POST;
  * @author Kohsuke Kawaguchi
  * @since  1.372
  */
-@SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "PATH_TRAVERSAL_IN false positive: intentional, controlled file-system access within Jenkins core/agent infrastructure (including code reached via lambdas). The path is derived from trusted configuration or the Jenkins home/war layout, not taken directly from untrusted remote request input.")
+@SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
 public class LabelAtom extends Label implements Saveable {
 
     private static final Pattern PROHIBITED_DOUBLE_DOT = Pattern.compile(".*\\.\\.[\\\\/].*");
