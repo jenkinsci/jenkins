@@ -141,7 +141,10 @@ public class AtomicFileWriter extends Writer {
         if (charset == null) { // be extra-defensive if people don't care
             throw new IllegalArgumentException("charset is null");
         }
-        this.destPath = destinationPath;
+        // Normalize to an absolute path so that a relative destination (e.g. "config.xml", whose
+        // Path parent is null even though it resolves to a file in the current working directory)
+        // still exposes a parent directory for temp-file creation and the directory fsync in commit().
+        this.destPath = destinationPath.toAbsolutePath();
         Path dir = this.destPath.getParent();
         if (dir == null) {
             throw new IOException("Destination path has no parent directory: " + destinationPath);

@@ -24,6 +24,7 @@
 
 package hudson.tasks;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.CopyOnWrite;
@@ -546,6 +547,10 @@ public class Maven extends Builder {
             return getHome();
         }
 
+        /**
+         * Gets the Maven home directory, or {@code null} if the home location is not configured.
+         */
+        @CheckForNull
         @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         public File getHomeDir() {
             String home = getHome();

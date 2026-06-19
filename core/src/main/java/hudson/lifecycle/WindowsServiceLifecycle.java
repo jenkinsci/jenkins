@@ -27,6 +27,7 @@ package hudson.lifecycle;
 import static hudson.util.jna.Kernel32.MOVEFILE_DELAY_UNTIL_REBOOT;
 import static hudson.util.jna.Kernel32.MOVEFILE_REPLACE_EXISTING;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
