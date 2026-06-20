@@ -24,6 +24,12 @@
 
 package hudson.util;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -31,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionList;
 import hudson.cli.CLICommandInvoker;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Describable;
@@ -40,7 +47,9 @@ import hudson.model.Items;
 import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
+import hudson.model.ListView;
 import hudson.model.Saveable;
+import hudson.model.ViewProperty;
 import hudson.security.ACL;
 import java.io.ByteArrayInputStream;
 import java.net.HttpURLConnection;
@@ -225,12 +234,11 @@ class RobustReflectionConverterTest {
             assertNull(p.getProperty(KeywordProperty.class).getNonCriticalField());
             assertEquals(AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
 
-            // but save to the disk.
+            // Also not saved to disk as we serialize the object after load
             r.jenkins.reload();
 
             p = r.jenkins.getItemByFullName(p.getFullName(), FreeStyleProject.class);
-            assertEquals("badvalue", p.getProperty(KeywordProperty.class).getNonCriticalField().getKeyword());
-            assertEquals(AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
+            assertNull(p.getProperty(KeywordProperty.class).getNonCriticalField());
         }
 
         // with addCriticalField. This is not accepted.
@@ -297,11 +305,11 @@ class RobustReflectionConverterTest {
             assertNull(p.getProperty(KeywordProperty.class).getNonCriticalField());
             assertEquals(AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
 
-            // but save to the disk.
+            // Also not saved to disk as we serialize the object after load
             r.jenkins.reload();
 
             p = r.jenkins.getItemByFullName(p.getFullName(), FreeStyleProject.class);
-            assertEquals("badvalue", p.getProperty(KeywordProperty.class).getNonCriticalField().getKeyword());
+            assertNull(p.getProperty(KeywordProperty.class).getNonCriticalField());
         }
 
         // with addCriticalField. This is not accepted.
@@ -333,5 +341,85 @@ class RobustReflectionConverterTest {
             p = r.jenkins.getItemByFullName(p.getFullName(), FreeStyleProject.class);
             assertNotEquals("badvalue", p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
         }
+    }
+
+    public static class TypeA implements Describable<TypeA> {
+        private final String value;
+
+        @SuppressWarnings("checkstyle:redundantmodifier")
+        @DataBoundConstructor
+        public TypeA(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        @TestExtension
+        public static class DescriptorImpl extends Descriptor<TypeA> {
+            @NonNull
+            @Override
+            public String getDisplayName() {
+                return "TypeA";
+            }
+        }
+    }
+
+    public static class TypeB implements Describable<TypeB> {
+        private final String value;
+
+        @SuppressWarnings("checkstyle:redundantmodifier")
+        @DataBoundConstructor
+        public TypeB(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        @TestExtension
+        public static class DescriptorImpl extends Descriptor<TypeB> {
+            @NonNull
+            @Override
+            public String getDisplayName() {
+                return "TypeB";
+            }
+        }
+    }
+
+    @Test
+    @Issue("SECURITY-3707")
+    void testDescribableListGenericTypeConfusion() throws Exception {
+        // TypeA is a Describable but not a ViewProperty
+        String maliciousXml = "<?xml version='1.1' encoding='UTF-8'?>"
+                + "<hudson.model.ListView>"
+                + "<name>test</name>"
+                + "<properties>"
+                + "<hudson.util.RobustReflectionConverterTest_-TypeA>"
+                + "<value>malicious</value>"
+                + "</hudson.util.RobustReflectionConverterTest_-TypeA>"
+                + "</properties>"
+                + "</hudson.model.ListView>";
+
+        ListView view = (ListView) Items.XSTREAM2.fromXML(maliciousXml);
+
+        assertThat(view.getProperties(), not(contains(instanceOf(ViewProperty.class))));
+        assertThat(view.getProperties(), not(contains(instanceOf(TypeA.class))));
+        assertThat(view.getProperties(), not(contains(instanceOf(TypeB.class))));
+
+        // Verify the rejected data is recorded in OldDataMonitor
+        final OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
+        assertTrue(odm.isActivated());
+
+        Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
+        assertTrue(data.containsKey(view));
+        String errorText = data.get(view).extra;
+        assertThat(errorText, allOf(
+                containsString("message             : Invalid type for CopyOnWriteList element"),
+                containsString("required-type       : hudson.model.ViewProperty"),
+                containsString("class               : hudson.util.RobustReflectionConverterTest$TypeA"),
+                containsString("converter-type      : hudson.util.CopyOnWriteList$ConverterImpl")));
     }
 }

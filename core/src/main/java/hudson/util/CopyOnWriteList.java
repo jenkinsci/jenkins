@@ -25,6 +25,7 @@
 package hudson.util;
 
 import com.thoughtworks.xstream.XStreamException;
+import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -32,6 +33,7 @@ import com.thoughtworks.xstream.converters.collections.AbstractCollectionConvert
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -177,8 +179,26 @@ public class CopyOnWriteList<E> implements Iterable<E> {
      * {@link Converter} implementation for XStream.
      */
     public static final class ConverterImpl extends AbstractCollectionConverter {
+        /**
+         * When available, this field holds the declared element type of the CopyOnWriteList being deserialized.
+         */
+        private final @CheckForNull Class<?> elementType;
+
         public ConverterImpl(Mapper mapper) {
+            this(mapper, null);
+        }
+
+        /**
+         * Creates a converter that will validate the types of list elements during deserialization.
+         * <p>Elements with invalid types will be omitted from deserialized lists and may result in an
+         * {@link hudson.diagnosis.OldDataMonitor} warning.
+         *
+         * @param mapper the XStream mapper
+         * @param elementType the expected element type, or null to skip type checking
+         */
+        ConverterImpl(Mapper mapper, Class<?> elementType) {
             super(mapper);
+            this.elementType = elementType;
         }
 
         @Override
@@ -201,7 +221,17 @@ public class CopyOnWriteList<E> implements Iterable<E> {
                 reader.moveDown();
                 try {
                     Object item = readItem(reader, context, items);
-                    items.add(item);
+                    if (elementType != null && item != null && !elementType.isInstance(item)) {
+                        var exception = new ConversionException("Invalid type for CopyOnWriteList element");
+                        // c.f. TreeUnmarshaller.addInformationTo
+                        exception.add("required-type", elementType.getName());
+                        exception.add("class", item.getClass().getName());
+                        exception.add("converter-type", getClass().getName());
+                        reader.appendErrors(exception);
+                        RobustReflectionConverter.addErrorInContext(context, exception);
+                    } else {
+                        items.add(item);
+                    }
                 } catch (CriticalXStreamException e) {
                     throw e;
                 } catch (XStreamException | LinkageError e) {
