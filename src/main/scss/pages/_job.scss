@@ -103,7 +103,7 @@
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 0.5rem 0.65rem;
-  padding: 0 0 0.25rem;
+  padding: 0.25rem 0;
   margin: 0 -0.5rem;
   font-size: 0.8125rem !important;
   min-height: 2rem;
@@ -166,8 +166,7 @@
   }
 
   .jenkins-jumplist-link {
-    margin-top: 0.2rem;
-    padding-right: 0.8rem;
+    align-self: center;
   }
 
   &__description {

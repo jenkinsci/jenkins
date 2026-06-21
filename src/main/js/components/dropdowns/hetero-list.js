@@ -259,7 +259,7 @@ function generateDropDown(button, callback) {
         instance.popper.addEventListener("click", () => {
           instance.hide();
         });
-        instance.popper.addEventListener("keydown", () => {
+        instance.popper.addEventListener("keydown", (event) => {
           if (event.key === "Escape") {
             instance.hide();
           }
