@@ -7,11 +7,11 @@
   width: 100%;
   background: var(--table-background);
   border-radius: calc(
-    var(--table-border-radius) + (var(--card-border-width) * 2)
+    var(--table-border-radius) + (var(--jenkins-border-width) * 2)
   );
-  border: calc(var(--card-border-width) * 2) solid var(--table-background);
-  border-bottom-width: var(--card-border-width);
-  border-spacing: 0 var(--card-border-width);
+  border: calc(var(--jenkins-border-width) * 2) solid var(--table-background);
+  border-bottom-width: var(--jenkins-border-width);
+  border-spacing: 0 var(--jenkins-border-width);
   background-clip: padding-box;
   margin-bottom: var(--section-padding);
 
