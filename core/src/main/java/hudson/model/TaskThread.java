@@ -41,16 +41,14 @@ import org.kohsuke.stapler.framework.io.LargeText;
  * <p>
  * Designed to be used inside {@link TaskAction}.
  *
- *
- *
  * @author Kohsuke Kawaguchi
- * @since 1.191
  * @see TaskAction
+ * @since 1.191
  */
 public abstract class TaskThread extends Thread {
     /**
      * @deprecated as of Hudson 1.350
-     *      Use {@link #log}. It's the same object, in a better type.
+     * Use {@link #log}. It's the same object, in a better type.
      */
     @Deprecated
     private final LargeText text;
@@ -71,8 +69,7 @@ public abstract class TaskThread extends Thread {
 
     /**
      *
-     * @param output
-     *      Determines where the output from this task thread goes.
+     * @param output Determines where the output from this task thread goes.
      */
     protected TaskThread(TaskAction owner, ListenerAndText output) {
         //FIXME this failed to compile super(owner.getBuild().toString()+' '+owner.getDisplayName());
@@ -136,15 +133,15 @@ public abstract class TaskThread extends Thread {
         } finally {
             listener = null;
             isRunning = false;
+            log.markAsComplete();
         }
-        log.markAsComplete();
+
     }
 
     /**
      * Do the actual work.
      *
-     * @throws Exception
-     *      The exception is recorded and reported as a failure.
+     * @throws Exception The exception is recorded and reported as a failure.
      */
     protected abstract void perform(TaskListener listener) throws Exception;
 
@@ -163,7 +160,7 @@ public abstract class TaskThread extends Thread {
 
         /**
          * @deprecated as of Hudson 1.350
-         *      Use {@link #forMemory(TaskAction)} and pass in the calling {@link TaskAction}
+         * Use {@link #forMemory(TaskAction)} and pass in the calling {@link TaskAction}
          */
         @Deprecated
         public static ListenerAndText forMemory() {
@@ -172,7 +169,7 @@ public abstract class TaskThread extends Thread {
 
         /**
          * @deprecated as of Hudson 1.350
-         *      Use {@link #forFile(File, TaskAction)} and pass in the calling {@link TaskAction}
+         * Use {@link #forFile(File, TaskAction)} and pass in the calling {@link TaskAction}
          */
         @Deprecated
         public static ListenerAndText forFile(File f) throws IOException {
@@ -187,8 +184,8 @@ public abstract class TaskThread extends Thread {
             ByteBuffer log = new ByteBuffer();
 
             return new ListenerAndText(
-                new StreamTaskListener(log),
-                new AnnotatedLargeText<>(log, Charset.defaultCharset(), false, context)
+                    new StreamTaskListener(log),
+                    new AnnotatedLargeText<>(log, Charset.defaultCharset(), false, context)
             );
         }
 
@@ -197,8 +194,8 @@ public abstract class TaskThread extends Thread {
          */
         public static ListenerAndText forFile(File f, TaskAction context) throws IOException {
             return new ListenerAndText(
-                new StreamTaskListener(f),
-                new AnnotatedLargeText<>(f, Charset.defaultCharset(), false, context)
+                    new StreamTaskListener(f),
+                    new AnnotatedLargeText<>(f, Charset.defaultCharset(), false, context)
             );
         }
     }

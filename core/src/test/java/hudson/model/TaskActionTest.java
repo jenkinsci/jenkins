@@ -25,6 +25,18 @@ class TaskActionTest {
         }
     }
 
+    private static class ErrorTaskThread extends TaskThread {
+        ErrorTaskThread(TaskAction taskAction) {
+            super(taskAction, ListenerAndText.forMemory(taskAction));
+        }
+
+        @Override
+        protected void perform(TaskListener listener) {
+            throw new OutOfMemoryError("simulated");
+        }
+    }
+
+
     private static class MyTaskAction extends TaskAction {
         void start() {
             workerThread = new MyTaskThread(this);
@@ -57,6 +69,38 @@ class TaskActionTest {
         }
     }
 
+    private static class ErrorTaskAction extends TaskAction {
+        void start() {
+            workerThread = new ErrorTaskThread(this);
+            workerThread.start();
+        }
+
+        @Override
+        public String getIconFileName() {
+            return "Iconfilename";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Error Task Thread";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "error";
+        }
+
+        @Override
+        protected Permission getPermission() {
+            return Permission.READ;
+        }
+
+        @Override
+        protected ACL getACL() {
+            return ACL.lambda2((a, p) -> true);
+        }
+    }
+
     @Test
     void annotatedText() throws Exception {
         MyTaskAction action = new MyTaskAction();
@@ -70,5 +114,24 @@ class TaskActionTest {
         // Windows based systems will be 220, linux base 219
         assertTrue(length >= 219, "length should be longer or even 219");
         assertTrue(os.toString(StandardCharsets.UTF_8).startsWith("a linkCompleted"));
+    }
+
+    @Test
+    void logMarkedCompleteAfterError() throws Exception {
+        ErrorTaskAction action = new ErrorTaskAction();
+        action.start();
+
+        AnnotatedLargeText<?> annotatedText = action.obtainLog();
+
+        long deadline = System.currentTimeMillis() + 5000;
+
+        while (!annotatedText.isComplete()
+                && System.currentTimeMillis() < deadline) {
+            Thread.sleep(10);
+        }
+
+        assertTrue(
+                annotatedText.isComplete(),
+                "Log should be marked complete even when perform throws Error");
     }
 }
