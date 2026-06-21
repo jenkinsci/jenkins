@@ -150,17 +150,11 @@ function ComboBox(idOrField, callback, config) {
  * I am the onKeyDown listener that gets installed on the input field
  * that is the core of the ComboBox.  I handle action operations.
  *
- * @param e The event object on Mozilla browsers, null on IE
+ * @param e The event object
  */
 ComboBox.onKeyDown = function (e) {
-  if (!e) {
-    e = window.event;
-  }
   var capture = function () {
-    e.cancelBubble = true;
-    if (e.stopPropagation) {
-      e.stopPropagation();
-    }
+    e.stopPropagation();
   };
   switch (e.keyCode) {
     case 13: // enter
@@ -187,17 +181,11 @@ ComboBox.onKeyDown = function (e) {
  * I am the onKeyUp listener that gets installed on the input field
  * that is the core of the ComboBox.  I handle value-change operations.
  *
- * @param e The event object on Mozilla browsers, null on IE
+ * @param e The event object
  */
 ComboBox.onKeyUp = function (e) {
-  if (!e) {
-    e = window.event;
-  }
   var capture = function () {
-    e.cancelBubble = true;
-    if (e.stopPropagation) {
-      e.stopPropagation();
-    }
+    e.stopPropagation();
   };
   switch (e.keyCode) {
     case 38: // up arrow
