@@ -160,7 +160,7 @@ $semantics: (
   --table-header-foreground: var(--text-color);
   --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
-  --table-border-radius: 1rem;
+  --table-border-radius: var(--form-input-border-radius);
   --table-row-border-radius: 0.4rem;
 
   // Deprecated

@@ -20,8 +20,8 @@
     &::before {
       content: "";
       position: absolute;
-      inset: -3px -3px -2px;
-      border: var(--jenkins-border-width) solid var(--card-border-color);
+      inset: -2px -2px -2px;
+      border: var(--jenkins-border);
       border-radius: inherit;
       pointer-events: none;
     }
