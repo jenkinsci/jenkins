@@ -299,16 +299,6 @@
   padding: 0 var(--section-padding);
   margin-inline: calc(var(--section-padding) * -1);
 
-  // This is horrible
-  // TODO - Do this properly
-  min-height: calc(
-    100vh - var(--header-height) - var(--header-height) - var(
-        --page-inset
-      ) - var(--section-padding) - var(--jenkins-border-width) - var(
-        --jenkins-border-width
-      )
-  );
-
   .jenkins-app-bar {
     margin-block: 1.0625rem;
   }
