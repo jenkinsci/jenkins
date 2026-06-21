@@ -29,6 +29,7 @@ $icon-size: 1rem;
   &__item {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     font-weight: normal;
     color: var(--text-color-secondary) !important;
