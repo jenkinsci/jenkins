@@ -6,9 +6,10 @@
  */
 
 def failFast = false
+def numBuildToKeep = env.CHANGE_ID ? '10' : '50'
 
 properties([
-  buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')),
+  buildDiscarder(logRotator(numToKeepStr: numBuildToKeep, artifactNumToKeepStr: '3')),
   disableConcurrentBuilds(abortPrevious: true)
 ])
 
