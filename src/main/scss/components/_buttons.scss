@@ -18,7 +18,6 @@
   min-height: 2.375rem;
   white-space: nowrap;
   gap: 1ch;
-  box-shadow: inset 0 10px 10px color-mix(in srgb, white 1.5%, transparent), var(--shadow-xs);
 
   svg {
     width: 1.125rem;
@@ -26,8 +25,8 @@
   }
 
   &:disabled {
-    opacity: 0.4;
-    filter: saturate(0.5);
+    opacity: 0.5;
+    filter: saturate(0.6);
     cursor: not-allowed;
   }
 }
@@ -39,10 +38,6 @@
   --button-box-shadow--focus: oklch(from var(--accent-color) l c h / 0.4);
 
   color: var(--button-color--primary) !important;
-
-  &::before {
-    border: var(--jenkins-border--subtle);
-  }
 }
 
 // Support for custom colors
@@ -81,8 +76,6 @@
     &[aria-describedby],
     &[aria-expanded="true"]
   ) {
-    box-shadow: none;
-
     &::before {
       border-color: transparent;
     }
@@ -278,12 +271,6 @@ $jenkins-split-button-border-radius: 0.2rem;
     svg {
       width: 0.75rem;
       height: 0.75rem;
-    }
-  }
-
-  &:hover {
-    .jenkins-button--tertiary {
-      --button-background: oklch(from currentColor l c h / 0.1) !important;
     }
   }
 }

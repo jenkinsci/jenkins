@@ -288,9 +288,9 @@ $semantics: (
 
   --form-label-font-weight: var(--font-bold-weight);
   --form-input-padding: 0.5rem 0.625rem;
-  --form-input-border-radius: 0.6875rem;
-  --form-input-glow: 0 0 0 0.375rem transparent;
-  --form-input-glow--focus: 0 0 0 0.1875rem var(--focus-input-glow);
+  --form-input-border-radius: 0.625rem;
+  --form-input-glow: 0 0 0 0.5rem transparent;
+  --form-input-glow--focus: 0 0 0 0.25rem var(--focus-input-glow);
   --pre-background: var(--button-background);
   --pre-color: var(--text-color);
   --selection-color: oklch(from var(--accent-color) l c h / 0.2);
@@ -303,7 +303,7 @@ $semantics: (
   }
 
   // Animations
-  --standard-transition: 0.2s ease;
+  --standard-transition: 0.25s ease;
   --elastic-transition: 0.3s cubic-bezier(0, 0.68, 0.5, 1.5);
 
   // Plugin manager
