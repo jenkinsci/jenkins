@@ -142,4 +142,22 @@ class PrivateKeyProviderTest {
         String password = "password";
         assertThrows(IllegalArgumentException.class, () -> PrivateKeyProvider.loadKey(file, password));
     }
+
+    /**
+    key command: ssh-keygen -t ecdsa -b 256 -N "" -C "" -f ecdsa
+    */
+    @Test
+    void loadKeyECDSA() throws IOException, GeneralSecurityException {
+        File file = resourceAsFile("ecdsa");
+        assertKeyPairNotNull(file, null);
+    }
+
+    /**
+    key command: ssh-keygen -t ed25519 -N "" -C "" -f ed25519
+    */
+    @Test
+    void loadKeyED25519() throws IOException, GeneralSecurityException {
+        File file = resourceAsFile("ed25519");
+        assertKeyPairNotNull(file, null);
+    }
 }
