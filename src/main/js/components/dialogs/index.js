@@ -84,7 +84,7 @@ Dialog.prototype.init = function () {
     if (this.options.form != null && this.dialogType === "form") {
       this.form = this.options.form;
       content.appendChild(this.options.form);
-      behaviorShim.applySubtree(content, true);
+      setTimeout(() => behaviorShim.applySubtree(content, true));
     }
     if (this.dialogType !== "form") {
       if (this.options.content != null && this.dialogType === "alert") {
