@@ -57,6 +57,11 @@
       "matchDatasources": ["maven"],
       "enabled": false,
       "description": "maven-metadata.xml is missing for this really old package which is required by renovate"
+    },
+    {
+      "description": "Group core-changelog-generator updates together",
+      "matchPackageNames": ["jenkinsci/core-changelog-generator"],
+      "groupName": "core-changelog-generator"
     }
   ],
   "customManagers": [
@@ -95,6 +100,14 @@
       "matchStrings": ["<version>(?<currentValue>.*?)</version>"],
       "depNameTemplate": "org.apache.maven.skins:maven-fluido-skin",
       "datasourceTemplate": "maven"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/\\.github/workflows/changelog\\.yml/"],
+      "matchStrings": [
+        "https://raw\\.githubusercontent\\.com/(?<depName>jenkinsci/core-changelog-generator)/(?<currentValue>[^/]+)/generate-weekly-changelog\\.sh"
+      ],
+      "datasourceTemplate": "github-tags"
     }
   ],
   "lockFileMaintenance": {

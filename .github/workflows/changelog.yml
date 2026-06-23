@@ -64,7 +64,7 @@ jobs:
           GIT_COMMITTER_NAME: jenkins-infra-changelog-generator
           GIT_COMMITTER_EMAIL: <86592549+jenkins-infra-changelog-generator[bot]@users.noreply.github.com>
         run: |
-          wget --quiet https://raw.githubusercontent.com/jenkinsci/core-changelog-generator/feb124ed2262f8586ac4561348436afb965812e1/generate-weekly-changelog.sh
+          wget --quiet https://raw.githubusercontent.com/jenkinsci/core-changelog-generator/v2.2.2/generate-weekly-changelog.sh
           # Create a Python virtual environment for pip install
           # See https://github.com/jenkinsci/core-changelog-generator/issues/37
           python3 -m venv venv
