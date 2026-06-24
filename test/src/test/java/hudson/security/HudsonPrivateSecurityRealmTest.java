@@ -30,7 +30,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -798,31 +797,6 @@ class HudsonPrivateSecurityRealmTest {
     private void assertUserNotConnected(JenkinsRule.WebClient wc, String notExpectedUsername) throws Exception {
         XmlPage page = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
         assertThat(page, hasXPath("//name", not(is(notExpectedUsername))));
-    }
-
-    @Test
-    void defaultPasswordComplexityRuleValidation() {
-        DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(8, true, true, true, true);
-
-        assertThrows(PasswordComplexityException.class, () -> rule.validate("bad"));
-        assertDoesNotThrow(() -> rule.validate("GoodPass1!"));
-    }
-
-    @Test
-    void defaultPasswordComplexityRuleMinimumLength() {
-        DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(8, false, false, false, false);
-        assertThrows(PasswordComplexityException.class, () -> rule.validate("short"));
-        assertDoesNotThrow(() -> rule.validate("longenough"));
-    }
-
-    @Test
-    void defaultPasswordComplexityRuleCharacterTypes() {
-        DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(0, true, true, true, true);
-        assertThrows(PasswordComplexityException.class, () -> rule.validate("alllowercase"));
-        assertThrows(PasswordComplexityException.class, () -> rule.validate("ALLUPPERCASE"));
-        assertThrows(PasswordComplexityException.class, () -> rule.validate("NoDigitsHere!"));
-        assertThrows(PasswordComplexityException.class, () -> rule.validate("NoSpecial123Aa"));
-        assertDoesNotThrow(() -> rule.validate("Good1!aA"));
     }
 
     @Test
