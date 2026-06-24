@@ -7,6 +7,7 @@ import hudson.security.ACL;
 import hudson.security.Permission;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -120,8 +121,8 @@ class TaskActionTest {
         ErrorThrowingTaskAction action = new ErrorThrowingTaskAction();
         action.start();
 
-        // Wait for the thread to finish (it will throw an Error internally)
-        action.workerThread.join(5000);
+        // Wait up to 5s for the thread to finish (it will throw an Error internally)
+        assertTrue(action.workerThread.join(Duration.ofSeconds(5)), "TaskThread should have terminated");
 
         AnnotatedLargeText<?> annotatedText = action.obtainLog();
 
