@@ -1521,7 +1521,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Checks the {@link #CONSOLE} permission if it has been enabled via the
-     * {@code hudson.security.ConsolePermission} system property.
+     * {@code jenkins.security.ConsolePermission} system property.
      *
      * @see Functions#isConsolePermissionEnabled()
      */

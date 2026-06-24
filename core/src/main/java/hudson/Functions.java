@@ -2404,14 +2404,15 @@ public class Functions {
      * {@code false} otherwise.
      *
      * <p>When the {@link Run#CONSOLE} permission is not turned on using the
-     * {@code hudson.security.ConsolePermission} system property, this
+     * {@code jenkins.security.ConsolePermission} system property, this
      * permission must not be considered to be set to {@code false} for every
      * user. It must rather be like if the permission doesn't exist at all
      * (which means that every user has to have access to the console output but
      * the permission can't be configured in the security screen).</p>
      */
     public static boolean isConsolePermissionEnabled() {
-        return SystemProperties.getBoolean("hudson.security.ConsolePermission");
+        return SystemProperties.getBoolean("jenkins.security.ConsolePermission")
+                || SystemProperties.getBoolean("hudson.security.ConsolePermission");
     }
 
     /**

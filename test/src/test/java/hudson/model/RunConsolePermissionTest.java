@@ -42,16 +42,19 @@ import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 @WithJenkins
 class RunConsolePermissionTest {
 
-    private static final String CONSOLE_PROPERTY = "hudson.security.ConsolePermission";
+    private static final String CONSOLE_PROPERTY = "jenkins.security.ConsolePermission";
+    private static final String LEGACY_CONSOLE_PROPERTY = "hudson.security.ConsolePermission";
     private static final String MARKER = "the secret console output";
 
     private JenkinsRule j;
     private String previousPropertyValue;
+    private String previousLegacyPropertyValue;
 
     @BeforeEach
     void setUp(JenkinsRule rule) {
         j = rule;
         previousPropertyValue = System.getProperty(CONSOLE_PROPERTY);
+        previousLegacyPropertyValue = System.getProperty(LEGACY_CONSOLE_PROPERTY);
     }
 
     @AfterEach
@@ -60,6 +63,11 @@ class RunConsolePermissionTest {
             System.clearProperty(CONSOLE_PROPERTY);
         } else {
             System.setProperty(CONSOLE_PROPERTY, previousPropertyValue);
+        }
+        if (previousLegacyPropertyValue == null) {
+            System.clearProperty(LEGACY_CONSOLE_PROPERTY);
+        } else {
+            System.setProperty(LEGACY_CONSOLE_PROPERTY, previousLegacyPropertyValue);
         }
     }
 
@@ -113,5 +121,19 @@ class RunConsolePermissionTest {
         JenkinsRule.WebClient adminClient = j.createWebClient().login("admin");
         Page adminRsp = adminClient.goTo(b.getUrl() + "consoleText", "text/plain");
         assertThat(adminRsp.getWebResponse().getContentAsString(), containsString(MARKER));
+    }
+
+    @Test
+    void legacyConsolePropertyStillEnablesPermission() throws Exception {
+        System.clearProperty(CONSOLE_PROPERTY);
+        System.setProperty(LEGACY_CONSOLE_PROPERTY, "true");
+        FreeStyleBuild b = createBuildWithConsoleOutput();
+        configureSecurity(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ, Item.READ).everywhere().to("reader"));
+
+        JenkinsRule.WebClient readerClient = j.createWebClient().login("reader");
+        FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class,
+                () -> readerClient.goTo(b.getUrl() + "consoleText", "text/plain"));
+        assertEquals(403, ex.getStatusCode());
     }
 }
