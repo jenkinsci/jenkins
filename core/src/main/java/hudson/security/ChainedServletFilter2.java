@@ -41,11 +41,17 @@ import java.util.regex.Pattern;
 
 /**
  * Servlet {@link Filter} that chains multiple {@link Filter}s.
+ * Thread-safe for dynamic filter updates during runtime.
  *
  * @author Kohsuke Kawaguchi
  */
 public class ChainedServletFilter2 implements Filter {
-    // array is assumed to be immutable once set
+
+    private static final Logger LOGGER = Logger.getLogger(ChainedServletFilter2.class.getName());
+    private static final Pattern UNINTERESTING_URIS = Pattern.compile("/(images|jsbundles|css|scripts|adjuncts)/|/favicon[.](ico|svg)|/ajax");
+
+    // volatile ensures atomic reads and visibility across threads without locking HTTP traffic.
+    // protected access must be maintained for backwards compatibility with existing subclasses (e.g., HudsonFilter).
     protected volatile Filter[] filters;
 
     public ChainedServletFilter2() {
@@ -60,63 +66,87 @@ public class ChainedServletFilter2 implements Filter {
         setFilters(filters);
     }
 
-    public void setFilters(Collection<? extends Filter> filters) {
-        this.filters = filters.toArray(new Filter[0]);
+    /**
+     * Dynamically updates the filter chain. 
+     * In the Jenkins ecosystem, filter lifecycles (init/destroy) are typically managed by the IoC container 
+     * (e.g., Guice or the plugin manager). Therefore, this method strictly performs a lock-free array swap 
+     * without invoking init() or destroy() to prevent regressions like double-initialization.
+     */
+    public void setFilters(Collection<? extends Filter> newFilters) {
+        // Atomic swap. Since filters is volatile, this immediately becomes visible to all threads 
+        // calling doFilter without needing synchronized blocks.
+        this.filters = newFilters.toArray(new Filter[0]);
     }
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        if (LOGGER.isLoggable(Level.FINEST))
-            for (Filter f : filters)
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            // Snapshot for thread-safe iteration
+            Filter[] snapshot = this.filters;
+            for (Filter f : snapshot) {
                 LOGGER.finest("ChainedServletFilter2 contains: " + f);
+            }
+        }
 
-        for (Filter f : filters)
+        Filter[] snapshot = this.filters;
+        for (Filter f : snapshot) {
             f.init(filterConfig);
+        }
     }
 
-    private static final Pattern UNINTERESTING_URIS = Pattern.compile("/(images|jsbundles|css|scripts|adjuncts)/|/favicon[.](ico|svg)|/ajax");
-
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, final FilterChain chain) throws IOException, ServletException {
-        String uri = request instanceof HttpServletRequest ? ((HttpServletRequest) request).getRequestURI() : "?";
+    public void doFilter(ServletRequest request, ServletResponse response, final FilterChain chain) 
+            throws IOException, ServletException {
+        
+        String uri = request instanceof HttpServletRequest 
+                ? ((HttpServletRequest) request).getRequestURI() 
+                : "?";
+        
         Level level = UNINTERESTING_URIS.matcher(uri).find() ? Level.FINER : Level.FINE;
         LOGGER.log(level, () -> "starting filter on " + uri);
 
+        // Capture snapshot array locally. 
+        // Because `filters` is volatile, this is a lock-free, atomic, thread-safe read!
+        final Filter[] activeFilters = this.filters;
+
         new FilterChain() {
             private int position = 0;
-            // capture the array for thread-safety
-            private final Filter[] filters = ChainedServletFilter2.this.filters;
 
             @Override
-            public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
-                if (position == filters.length) {
-                    LOGGER.log(level, () -> uri + " end: " + status());
-                    chain.doFilter(request, response);
+            public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
+                if (position == activeFilters.length) {
+                    LOGGER.log(level, () -> uri + " end: " + status(res));
+                    chain.doFilter(req, res);
                 } else {
-                    Filter next = filters[position++];
+                    Filter next = activeFilters[position++];
                     try {
                         LOGGER.log(level, () -> uri + " @" + position + " " + next + " »");
-                        next.doFilter(request, response, this);
-                        LOGGER.log(level, () -> uri + " @" + position + " " + next + " « success: " + status());
+                        next.doFilter(req, res, this);
+                        LOGGER.log(level, () -> uri + " @" + position + " " + next + " « success: " + status(res));
                     } catch (IOException | ServletException | RuntimeException x) {
-                        LOGGER.log(level, () -> uri + " @" + position + " " + next + " « " + x + ": " + status());
+                        LOGGER.log(level, () -> uri + " @" + position + " " + next + " « " + x + ": " + status(res));
                         throw x;
                     }
                 }
             }
-
-            private int status() {
-                return response instanceof HttpServletResponse ? ((HttpServletResponse) response).getStatus() : 0;
+            
+            private int status(ServletResponse res) {
+                return res instanceof HttpServletResponse ? ((HttpServletResponse) res).getStatus() : 0;
             }
         }.doFilter(request, response);
-
     }
 
     @Override
     public void destroy() {
-        for (Filter f : filters)
-            f.destroy();
-    }
+        Filter[] snapshot = this.filters;
+        this.filters = new Filter[0]; // Clear the active chain
 
-    private static final Logger LOGGER = Logger.getLogger(ChainedServletFilter2.class.getName());
+        for (Filter f : snapshot) {
+            try {
+                f.destroy();
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Error destroying filter: " + f, e);
+            }
+        }
+    }
 }
