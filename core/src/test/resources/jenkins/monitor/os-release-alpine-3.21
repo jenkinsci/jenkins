@@ -1,0 +1,6 @@
+NAME="Alpine Linux"
+ID=alpine
+VERSION_ID=3.21.3
+PRETTY_NAME="Alpine Linux v3.21"
+HOME_URL="https://alpinelinux.org/"
+BUG_REPORT_URL="https://gitlab.alpinelinux.org/alpine/aports/-/issues"
