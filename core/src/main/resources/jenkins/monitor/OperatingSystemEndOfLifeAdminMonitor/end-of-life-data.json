@@ -89,7 +89,7 @@
   },
   {
     "pattern": "Debian.* 13.*",
-    "endOfLife": "2028-08-09"
+    "endOfLife": "2030-06-30"
   },
   {
     "pattern": "Fedora.* 36.*",
