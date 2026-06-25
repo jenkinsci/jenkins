@@ -817,7 +817,7 @@ class HudsonPrivateSecurityRealmTest {
     @Test
     void signupRejectsWeakPasswordWhenComplexityRuleConfigured() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
-        securityRealm.setPasswordComplexityRule(new DefaultPasswordComplexityRule(8, true, false, true, false));
+        securityRealm.setPasswordComplexityRule(new BasicPasswordComplexityRule(8, true, false, true, false));
         j.jenkins.setSecurityRealm(securityRealm);
 
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -834,7 +834,7 @@ class HudsonPrivateSecurityRealmTest {
     @Test
     void signupAcceptsStrongPasswordWhenComplexityRuleConfigured() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
-        securityRealm.setPasswordComplexityRule(new DefaultPasswordComplexityRule(8, true, false, true, false));
+        securityRealm.setPasswordComplexityRule(new BasicPasswordComplexityRule(8, true, false, true, false));
         j.jenkins.setSecurityRealm(securityRealm);
 
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -850,7 +850,7 @@ class HudsonPrivateSecurityRealmTest {
     @Test
     void passwordChangeRejectsWeakPasswordWhenComplexityRuleConfigured() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
-        securityRealm.setPasswordComplexityRule(new DefaultPasswordComplexityRule(8, true, false, true, false));
+        securityRealm.setPasswordComplexityRule(new BasicPasswordComplexityRule(8, true, false, true, false));
         j.jenkins.setSecurityRealm(securityRealm);
 
         User alice = securityRealm.createAccount("alice", "AlicePass1");
@@ -872,7 +872,7 @@ class HudsonPrivateSecurityRealmTest {
     @Test
     void passwordChangeAcceptsStrongPasswordWhenComplexityRuleConfigured() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
-        securityRealm.setPasswordComplexityRule(new DefaultPasswordComplexityRule(8, true, false, true, false));
+        securityRealm.setPasswordComplexityRule(new BasicPasswordComplexityRule(8, true, false, true, false));
         j.jenkins.setSecurityRealm(securityRealm);
 
         User alice = securityRealm.createAccount("alice", "AlicePass1");

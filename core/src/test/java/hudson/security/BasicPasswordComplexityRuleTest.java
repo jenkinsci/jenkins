@@ -7,11 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-class DefaultPasswordComplexityRuleTest {
+class BasicPasswordComplexityRuleTest {
 
     @Test
     void validationWithAllRulesEnabled() {
-        DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(8, true, true, true, true);
+        BasicPasswordComplexityRule rule = new BasicPasswordComplexityRule(8, true, true, true, true);
 
         PasswordComplexityException e = assertThrows(PasswordComplexityException.class, () -> rule.validate("bad"));
         assertThat(e.getMessage(), containsString("Password must be at least 8 characters long"));
@@ -21,7 +21,7 @@ class DefaultPasswordComplexityRuleTest {
 
     @Test
     void minimumLengthEnforced() {
-        DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(8, false, false, false, false);
+        BasicPasswordComplexityRule rule = new BasicPasswordComplexityRule(8, false, false, false, false);
 
         PasswordComplexityException e = assertThrows(PasswordComplexityException.class, () -> rule.validate("short"));
         assertThat(e.getMessage(), containsString("Password must be at least 8 characters long"));
@@ -31,7 +31,7 @@ class DefaultPasswordComplexityRuleTest {
 
     @Test
     void uppercaseRequired() {
-        DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(0, true, false, false, false);
+        BasicPasswordComplexityRule rule = new BasicPasswordComplexityRule(0, true, false, false, false);
 
         PasswordComplexityException e = assertThrows(PasswordComplexityException.class, () -> rule.validate("alllowercase"));
         assertThat(e.getMessage(), containsString("uppercase letter"));
@@ -41,7 +41,7 @@ class DefaultPasswordComplexityRuleTest {
 
     @Test
     void lowercaseRequired() {
-        DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(0, false, true, false, false);
+        BasicPasswordComplexityRule rule = new BasicPasswordComplexityRule(0, false, true, false, false);
 
         PasswordComplexityException e = assertThrows(PasswordComplexityException.class, () -> rule.validate("ALLUPPERCASE"));
         assertThat(e.getMessage(), containsString("lowercase letter"));
@@ -51,7 +51,7 @@ class DefaultPasswordComplexityRuleTest {
 
     @Test
     void digitRequired() {
-        DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(0, false, false, true, false);
+        BasicPasswordComplexityRule rule = new BasicPasswordComplexityRule(0, false, false, true, false);
 
         PasswordComplexityException e = assertThrows(PasswordComplexityException.class, () -> rule.validate("NoDigitsHere"));
         assertThat(e.getMessage(), containsString("digit"));
@@ -61,7 +61,7 @@ class DefaultPasswordComplexityRuleTest {
 
     @Test
     void specialCharacterRequired() {
-        DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(0, false, false, false, true);
+        BasicPasswordComplexityRule rule = new BasicPasswordComplexityRule(0, false, false, false, true);
 
         PasswordComplexityException e = assertThrows(PasswordComplexityException.class, () -> rule.validate("NoSpecial123"));
         assertThat(e.getMessage(), containsString("special character"));
@@ -71,7 +71,7 @@ class DefaultPasswordComplexityRuleTest {
 
     @Test
     void multipleViolationsReportedTogether() {
-        DefaultPasswordComplexityRule rule = new DefaultPasswordComplexityRule(8, true, true, true, true);
+        BasicPasswordComplexityRule rule = new BasicPasswordComplexityRule(8, true, true, true, true);
 
         PasswordComplexityException e = assertThrows(PasswordComplexityException.class, () -> rule.validate("bad"));
         assertThat(e.getMessage(), containsString("at least 8 characters"));

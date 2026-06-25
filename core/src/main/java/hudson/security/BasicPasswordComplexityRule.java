@@ -38,7 +38,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  *
  * @since TODO
  */
-public class DefaultPasswordComplexityRule extends PasswordComplexityRule {
+public class BasicPasswordComplexityRule extends PasswordComplexityRule {
 
     private final int minimumLength;
     private final boolean requireUppercase;
@@ -47,7 +47,7 @@ public class DefaultPasswordComplexityRule extends PasswordComplexityRule {
     private final boolean requireSpecialCharacter;
 
     @DataBoundConstructor
-    public DefaultPasswordComplexityRule(
+    public BasicPasswordComplexityRule(
             int minimumLength,
             boolean requireUppercase,
             boolean requireLowercase,
@@ -103,12 +103,12 @@ public class DefaultPasswordComplexityRule extends PasswordComplexityRule {
         }
     }
 
-    @Extension @Symbol("defaultPasswordComplexity")
+    @Extension @Symbol("basicPasswordComplexity")
     public static final class DescriptorImpl extends Descriptor<PasswordComplexityRule> {
         @NonNull
         @Override
         public String getDisplayName() {
-            return Messages.DefaultPasswordComplexityRule_DisplayName();
+            return Messages.BasicPasswordComplexityRule_DisplayName();
         }
     }
 }
