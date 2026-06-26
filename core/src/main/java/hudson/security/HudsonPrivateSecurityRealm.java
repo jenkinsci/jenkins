@@ -191,7 +191,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     @DataBoundSetter
     public void setPasswordComplexityRule(PasswordComplexityRule passwordComplexityRule) {
-        this.passwordComplexityRule = passwordComplexityRule;
+        this.passwordComplexityRule = passwordComplexityRule != null ? passwordComplexityRule : new NonePasswordComplexityRule();
     }
 
     private Object readResolve() {
