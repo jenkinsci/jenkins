@@ -26,7 +26,6 @@ package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.model.Descriptor;
 import java.util.ArrayList;
 import java.util.List;
 import org.jenkinsci.Symbol;
@@ -104,7 +103,7 @@ public class BasicPasswordComplexityRule extends PasswordComplexityRule {
     }
 
     @Extension @Symbol("basicPasswordComplexity")
-    public static final class DescriptorImpl extends Descriptor<PasswordComplexityRule> {
+    public static final class DescriptorImpl extends PasswordComplexityRuleDescriptor {
         @NonNull
         @Override
         public String getDisplayName() {
