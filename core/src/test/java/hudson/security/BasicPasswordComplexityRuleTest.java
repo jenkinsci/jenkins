@@ -1,6 +1,7 @@
 package hudson.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -74,10 +75,12 @@ class BasicPasswordComplexityRuleTest {
         BasicPasswordComplexityRule rule = new BasicPasswordComplexityRule(8, true, true, true, true);
 
         PasswordComplexityException e = assertThrows(PasswordComplexityException.class, () -> rule.validate("bad"));
-        assertThat(e.getMessage(), containsString("at least 8 characters"));
-        assertThat(e.getMessage(), containsString("uppercase letter"));
-        assertThat(e.getMessage(), containsString("digit"));
-        assertThat(e.getMessage(), containsString("special character"));
+        assertThat(e.getMessage(), allOf(
+                containsString("at least 8 characters"),
+                containsString("uppercase letter"),
+                containsString("digit"),
+                containsString("special character")
+        ));
     }
 
     @Test
