@@ -26,7 +26,6 @@ package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 

@@ -93,6 +93,7 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -911,6 +912,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 return Details.fromPlainPassword(Util.fixNull(pwd));
             }
 
+            @POST
             public FormValidation doCheckPassword(@QueryParameter String value) {
                 String password = Util.fixEmpty(value);
                 if (password == null) {
