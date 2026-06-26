@@ -911,6 +911,34 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 return Details.fromPlainPassword(Util.fixNull(pwd));
             }
 
+            public FormValidation doCheckPassword(@QueryParameter String value) {
+                String password = Util.fixEmpty(value);
+                if (password == null) {
+                    return FormValidation.ok();
+                }
+
+                // will be null if it wasn't encrypted
+                String data = Protector.unprotect(password);
+                if (data != null) {
+                    String prefix = Stapler.getCurrentRequest2().getSession().getId() + ':';
+                    if (data.startsWith(prefix)) {
+                        // The password is not being changed
+                        return FormValidation.ok();
+                    }
+                }
+
+                SecurityRealm realm = Jenkins.get().getSecurityRealm();
+                if (realm instanceof HudsonPrivateSecurityRealm hpsr) {
+                    try {
+                        hpsr.getPasswordComplexityRule().validate(password);
+                    } catch (PasswordComplexityException e) {
+                        return FormValidation.error(e.getMessage());
+                    }
+                }
+
+                return FormValidation.ok();
+            }
+
             @Override
             public boolean isEnabled() {
                 // this feature is only when HudsonPrivateSecurityRealm is enabled
