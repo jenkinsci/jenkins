@@ -46,7 +46,7 @@ public abstract class PasswordComplexityRule implements Describable<PasswordComp
     /**
      * Returns all the registered {@link PasswordComplexityRule} descriptors.
      */
-    public static DescriptorExtensionList<PasswordComplexityRule, PasswordComplexityRuleDescriptor> all() {
+    public static DescriptorExtensionList<PasswordComplexityRule, Descriptor<PasswordComplexityRule>> all() {
         return Jenkins.get().getDescriptorList(PasswordComplexityRule.class);
     }
 
