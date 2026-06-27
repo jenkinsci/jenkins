@@ -37,15 +37,17 @@ THE SOFTWARE.
         <l:main-panel>
           <div class="app-build-bar">
             <div class="app-build-bar__content">
-              <j:set var="lastBuild" value="${it.object.lastBuild}" />
-              <j:if test="${lastBuild != null}">
-                <a href="${rootURL + '/' + lastBuild.url}" class="jenkins-!-display-contents" tabindex="-1">
-                  <l:icon src="symbol-status-${lastBuild.iconColor.iconName}" tooltip="${lastBuild.iconColor.description}" class="icon-md" />
-                </a>
-              </j:if>
-              <h1 class="job-index-headline page-headline">
-                <l:breakable value="${it.object.displayName}"/>
-              </h1>
+              <div class="app-build-bar__content__headline">
+                <j:set var="lastBuild" value="${it.object.lastBuild}" />
+                <j:if test="${lastBuild != null}">
+                  <a href="${rootURL + '/' + lastBuild.url}" class="jenkins-!-display-contents" tabindex="-1">
+                    <l:icon src="symbol-status-${lastBuild.iconColor.iconName}" tooltip="${lastBuild.iconColor.description}" />
+                  </a>
+                </j:if>
+                <h1>
+                  <l:breakable value="${it.object.displayName}"/>
+                </h1>
+              </div>
             </div>
 
             <j:set var="url" value="${h.getNearestAncestorUrl(request2, it.object)}"/>

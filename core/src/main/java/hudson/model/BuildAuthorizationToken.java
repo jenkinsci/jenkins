@@ -35,17 +35,20 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -122,6 +125,13 @@ public final class BuildAuthorizationToken {
 
         if (req.getMethod().equals("POST")) {
             return;
+        }
+
+        for (RequirePOST.ErrorCustomizer handler : ServiceLoader.load(RequirePOST.ErrorCustomizer.class)) {
+            ForwardToView forwardToView = handler.getForwardView();
+            if (forwardToView != null) {
+                throw forwardToView.with("requestURL", req.getRequestURLWithQueryString().toString());
+            }
         }
 
         rsp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
