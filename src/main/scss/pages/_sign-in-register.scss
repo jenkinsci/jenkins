@@ -15,9 +15,9 @@
 
 .app-sign-in-register__branding {
   position: fixed;
-  top: .375rem;
-  bottom: .375rem;
-  left: .375rem;
+  top: var(--page-inset);
+  bottom: var(--page-inset);
+  left: var(--page-inset);
   width: 40vw;
   border-radius: var(--form-input-border-radius);
 
