@@ -139,28 +139,7 @@ THE SOFTWARE.
 
               <j:out value="${attrs.header}" />
 
-              <j:choose>
-                <j:when test="${!attrs.noDefer}">
-                  <l:defer>
-                    <l:defer.placeholder>
-                      <j:choose>
-                        <j:when test="${attrs.containsKey('placeholder')}">
-                          <j:out value="${attrs.placeholder}" />
-                        </j:when>
-                        <j:otherwise>
-                          <l:skeleton type="form" />
-                        </j:otherwise>
-                      </j:choose>
-                    </l:defer.placeholder>
-                    <l:defer.children>
-                      <d:invokeBody />
-                    </l:defer.children>
-                  </l:defer>
-                </j:when>
-                <j:otherwise>
-                  <d:invokeBody />
-                </j:otherwise>
-              </j:choose>
+              <d:invokeBody />
             </div>
           </div>
         </l:main-panel>
