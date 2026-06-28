@@ -4,10 +4,11 @@
   @include mixins.overlay-surface($opacity: 75%);
 
   position: fixed;
-  right: calc(var(--bottom-app-bar-padding) + var(--page-inset));
-  bottom: calc(var(--bottom-app-bar-padding) + var(--page-inset));
-  min-width: 320px;
-  max-width: min(600px, calc(100vw - 2.5rem));
+  right: 0;
+  bottom: 0;
+  margin: calc(var(--bottom-app-bar-padding) + var(--page-inset));
+  width: 300px;
+  max-width: 600px;
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 0.75rem;
