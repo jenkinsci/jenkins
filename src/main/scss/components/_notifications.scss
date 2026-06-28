@@ -20,7 +20,6 @@
   z-index: 999;
   cursor: pointer;
   transition: filter var(--standard-transition);
-  backdrop-filter: brightness(2) blur(30px);
   transform-origin: bottom right;
 
   svg {
