@@ -15,7 +15,6 @@
   min-height: 100dvh;
   padding: 0;
   margin: 0;
-  overflow: hidden;
 
   @media (width < 992px) {
     grid-template-columns: 1fr;
@@ -36,6 +35,7 @@
   align-items: safe center;
   justify-content: center;
   min-height: 100dvh;
+  overflow-y: auto;
 }
 
 .app-sign-in-register__content-inner {
@@ -97,8 +97,8 @@
     &::before {
       content: "";
       position: absolute;
-      inset: calc(50% + 1px) 0;
-      height: 2px;
+      inset: calc(50% + (var(--jenkins-border-width) / 2)) 0;
+      height: var(--jenkins-border-width);
       border-radius: var(--form-input-border-radius);
       background-color: var(--input-border);
     }
