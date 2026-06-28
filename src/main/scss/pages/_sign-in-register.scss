@@ -65,10 +65,6 @@
     font-family: Georgia, serif;
     text-align: left;
     margin-bottom: 0;
-
-    @media (width < 992px) {
-      font-size: 1.5rem;
-    }
   }
 
   input {
