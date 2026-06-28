@@ -38,6 +38,15 @@
   overflow-y: auto;
 }
 
+.app-sign-in-register__content-logo {
+  height: 3.5rem;
+  align-self: start;
+
+  @media (width >= 992px) {
+    display: none;
+  }
+}
+
 .app-sign-in-register__content-inner {
   display: flex;
   align-items: stretch;
