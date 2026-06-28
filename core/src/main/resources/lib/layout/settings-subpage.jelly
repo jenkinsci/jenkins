@@ -101,7 +101,7 @@ THE SOFTWARE.
     <j:choose>
       <j:when test="${newManageJenkins}">
         <l:side-panel>
-          <script src="${resURL}/jsbundles/pages/manage-jenkins.js" type="text/javascript" async="true" />
+          <script src="${resURL}/jsbundles/pages/manage-jenkins.js" type="text/javascript" defer="true" />
 
           <l:app-bar title="${manageJenkinsAction.displayName}" />
 
