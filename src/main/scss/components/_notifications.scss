@@ -40,7 +40,7 @@
   background-color: var(--color);
   color: var(--background) !important;
 
-  // We can't rely on the border from the mixin as on light background the border looks fuzzy
+  // We can't rely on the border from the mixin as on light backgrounds the border looks fuzzy
   &::after {
     border: 1px solid color-mix(in sRGB, var(--text-color) 10%, transparent);
   }
