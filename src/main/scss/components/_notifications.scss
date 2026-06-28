@@ -6,7 +6,7 @@
   position: fixed;
   right: 0;
   bottom: 0;
-  margin: calc(var(--bottom-app-bar-padding) + var(--page-inset));
+  margin: calc(var(--section-padding) + var(--page-inset));
   width: 300px;
   max-width: 600px;
   display: grid;
