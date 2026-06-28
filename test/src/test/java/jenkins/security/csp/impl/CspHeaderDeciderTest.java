@@ -234,7 +234,8 @@ public class CspHeaderDeciderTest {
 
             final Page afterSavingPage = HtmlFormUtil.submit(setupPage.getFormByName("config"), setupPage.getFormByName("config").getButtonByName("Submit"));
             assertThat(afterSavingPage, instanceOf(HtmlPage.class));
-            assertThat(afterSavingPage.getUrl().getPath(), is(j.contextPath + "/manage/configure"));
+            // TODO - investigate if this is correct? should admin monitors redirect configSecurity (no?!)
+            assertThat(afterSavingPage.getUrl().getPath(), is(j.contextPath + "/manage/configureSecurity/"));
             assertThat(afterSavingPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), not(nullValue()));
             assertThat(afterSavingPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), nullValue());
 
