@@ -66,7 +66,7 @@
     text-align: left;
     margin-bottom: 0;
 
-    @media (width <= 600px) {
+    @media (width < 992px) {
       font-size: 1.5rem;
     }
   }
@@ -76,7 +76,7 @@
     border-radius: var(--form-input-border-radius);
     font-size: 0.9375rem;
 
-    @media (width <= 600px) {
+    @media (width < 992px) {
       font-size: 1rem;
     }
   }
