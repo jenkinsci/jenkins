@@ -16,7 +16,6 @@
   border-radius: var(--form-input-border-radius);
   font-weight: var(--font-bold-weight);
   color: var(--text-color);
-  will-change: opacity, transform;
   z-index: 999;
   cursor: pointer;
   transition: filter var(--standard-transition);
