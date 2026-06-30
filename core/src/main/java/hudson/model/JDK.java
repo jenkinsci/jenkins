@@ -25,6 +25,7 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
@@ -104,6 +105,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     /**
      * Gets the path to the bin directory.
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     public File getBinDir() {
         return new File(getHome(), "bin");
     }
@@ -111,6 +113,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * Gets the path to 'java'.
      */
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private File getExecutable() {
         String execName = File.separatorChar == '\\' ? "java.exe" : "java";
         return new File(getHome(), "bin/" + execName);

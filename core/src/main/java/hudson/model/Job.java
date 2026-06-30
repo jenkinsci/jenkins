@@ -736,6 +736,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Extension
     public static class SubItemBuildsLocationImpl extends ItemListener {
         @Override
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         public void onLocationChanged(Item item, String oldFullName, String newFullName) {
             final Jenkins jenkins = Jenkins.get();
             if (!jenkins.isDefaultBuildDir() && item instanceof Job) {

@@ -523,6 +523,7 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
     /**
      * The file we save our configuration.
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private XmlFile getConfigFile() {
         return new XmlFile(XSTREAM, new File(LogRecorderManager.configDir(), name + ".xml"));
     }

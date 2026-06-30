@@ -27,6 +27,7 @@ package hudson.lifecycle;
 import static hudson.util.jna.Kernel32.MOVEFILE_DELAY_UNTIL_REBOOT;
 import static hudson.util.jna.Kernel32.MOVEFILE_REPLACE_EXISTING;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
@@ -60,6 +61,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
      * schedule an overwrite (except that since it's currently running,
      * we can only do it when Jenkins restarts next time.)
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private void updateJenkinsExeIfNeeded() {
         try {
             File baseDir = getBaseDir();
@@ -94,6 +96,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
      * which is picked up by the service wrapper upon restart.
      */
     @Override
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     public void rewriteHudsonWar(File by) throws IOException {
         File dest = getHudsonWar();
         // this should be impossible given the canRewriteHudsonWar method,

@@ -26,6 +26,7 @@ package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -62,6 +63,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @since 1.607
  */
 @Restricted(NoExternalUse.class) // for now, we may make it public later
+@SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
 public class Nodes implements PersistenceRoot {
 
     private static final Logger LOGGER = Logger.getLogger(Nodes.class.getName());

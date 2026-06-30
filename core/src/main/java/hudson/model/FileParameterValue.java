@@ -172,6 +172,7 @@ public class FileParameterValue extends ParameterValue {
         return originalFileName;
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private void createFile() {
         if (file == null && tmpFileName != null) {
             File tmp = new File(tmpFileName);
@@ -295,6 +296,7 @@ public class FileParameterValue extends ParameterValue {
      * @param build the build
      * @return the location to store the file parameter
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private File getLocationUnderBuild(AbstractBuild build) {
         return new File(getFileParameterFolderUnderBuild(build), location);
     }

@@ -2,6 +2,7 @@ package hudson.util;
 
 import static hudson.Util.fixEmpty;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Util;
 import java.io.File;
@@ -129,6 +130,7 @@ public abstract class DirScanner implements Serializable {
         }
 
         @Override
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         public void scan(File dir, FileVisitor visitor) throws IOException {
             if (fixEmpty(includes) == null && excludes == null) {
                 // optimization
