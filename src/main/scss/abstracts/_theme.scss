@@ -330,6 +330,9 @@ $semantics: (
   );
   --item-box-shadow--focus: oklch(from var(--text-color-secondary) l c h / 0.1);
 
+  // Page
+  --page-inset: 0px;
+
   // Deprecated
   --primary: var(--accent-color); // Use var(--accent-color) instead
   --success: var(--green); // Use var(--success-color) instead
