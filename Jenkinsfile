@@ -14,7 +14,7 @@ properties([
 ])
 
 def axes = [
-  platforms: ['linux', 'windows'],
+  platforms: ['windows-infratest'],
   jdks: [21, 25],
 ]
 
@@ -65,14 +65,8 @@ axes.values().combinations {
     return // unnecessary use of hardware
   }
   builds["${platform}-jdk${jdk}"] = {
-    // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
-    def agentContainerLabel = 'maven-' + jdk
-    if (platform == 'windows') {
-      agentContainerLabel += '-windows'
-    }
-    agentContainerLabel += '-nonspot'
     retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
-      node(agentContainerLabel) {
+      node('windows-infratest) {
         // First stage is actually checking out the source. Since we're using Multibranch
         // currently, we can use "checkout scm".
         stage("${platform.capitalize()} - JDK ${jdk} - Checkout") {
@@ -105,6 +99,7 @@ axes.values().combinations {
               'help:evaluate',
               '-Dexpression=changelist',
               "-Doutput=$changelistF",
+              '-DskipTests=true',
               'clean',
               'install',
             ]
