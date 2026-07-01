@@ -145,14 +145,6 @@ $card-padding: 1rem;
       }
     }
   }
-
-  hr {
-    align-self: stretch;
-    border: none;
-    border-top: var(--jenkins-border-width) solid var(--text-color-secondary);
-    opacity: 0.1;
-    margin: 0;
-  }
 }
 
 .jenkins-graph-card {
