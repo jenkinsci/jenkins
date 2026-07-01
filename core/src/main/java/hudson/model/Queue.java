@@ -132,6 +132,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.CancelRequestHandlingException;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
@@ -2399,14 +2400,25 @@ public class Queue extends ResourceController implements Saveable {
             return Collections.emptyList();
         }
 
+        private Map<Cause, Integer> getCauseCounts() {
+            CauseAction ca = getAction(CauseAction.class);
+            if (ca != null)
+                return ca.getCauseCounts();
+            return Collections.emptyMap();
+        }
+
         @Restricted(DoNotUse.class) // used from Jelly
         @Override
         public String getCausesDescription() {
-            List<Cause> causes = getCauses();
+            Map<Cause, Integer> causeCounts = getCauseCounts();
             StringBuilder s = new StringBuilder();
-            for (Cause c : causes) {
-                s.append(c.getShortDescription()).append('\n');
-            }
+            causeCounts.forEach((ca, count) -> {
+                s.append(ca.getShortDescription());
+                if (count > 1) {
+                    s.append(" ").append(Messages._Queue_Ntimes(count));
+                }
+                s.append('\n');
+            });
             return s.toString();
         }
 
@@ -2480,6 +2492,9 @@ public class Queue extends ResourceController implements Saveable {
         @Deprecated
         @RequirePOST
         public HttpResponse doCancelQueue() {
+            if (!hasReadPermission(this, true)) {
+                throw new CancelRequestHandlingException();
+            }
             if (hasCancelPermission()) {
                 Jenkins.get().getQueue().cancel(this);
             }

@@ -70,7 +70,9 @@ class GlobalSCMRetryCountConfigurationTest {
 
             JSONObject emptyJson = new JSONObject();
             gc.configure(Stapler.getCurrentRequest2(), emptyJson);
+            throw new AssertionError("Expected FormException");
         } catch (Descriptor.FormException e) {
+            assertThat(e.getFormField(), equalTo("scmCheckoutRetryCount"));
             assertThat("Scm Retry count value changed! This shouldn't happen.",
                     j.getInstance().getScmCheckoutRetryCount(), equalTo(3));
         }

@@ -24,7 +24,6 @@
 
 package hudson.model;
 
-import static hudson.model.WindowsUtil.isWindowsSymlinkSupported;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -590,7 +589,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_outsideWorkspace_areNotAllowed() throws Exception {
-        assumeTrue(!Functions.isWindows() || isWindowsSymlinkSupported());
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
 
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -731,7 +730,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_avoidLeakingInformation_aboutIllegalFolder() throws Exception {
-        assumeTrue(!Functions.isWindows() || isWindowsSymlinkSupported());
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
 
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -805,7 +804,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void junctionAndSymlink_outsideWorkspace_areNotAllowed_windowsJunction() throws Exception {
-        assumeTrue(Functions.isWindows() && isWindowsSymlinkSupported());
+        assumeTrue(Functions.isWindows() && !"true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
 
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -1025,7 +1024,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue({"SECURITY-904", "SECURITY-1452"})
     void symlink_insideWorkspace_areNotAllowedAnymore() throws Exception {
-        assumeTrue(!Functions.isWindows() || isWindowsSymlinkSupported());
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
 
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -1337,6 +1336,31 @@ class DirectoryBrowserSupportTest {
                 "anotherDir/one.txt",
                 "anotherDir/insideDir/two.txt"
         ));
+    }
+
+    @Issue("JENKINS-26894")
+    @Test
+    void workspaceTextFileShouldIncludeCharset() throws Exception {
+        String chineseContent = "public class Test { // 用户中心模块\n}";
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                build.getWorkspace().child("Test.java").write(chineseContent, "UTF-8");
+                return true;
+            }
+        });
+        j.buildAndAssertSuccess(p);
+
+        // Test workspace file serving includes charset
+        Page page = getWebClient().goTo("job/" + p.getName() + "/ws/Test.java", null);
+        assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+        assertThat("text file Content-Type should include charset",
+                page.getWebResponse().getResponseHeaderValue("Content-Type").toLowerCase(java.util.Locale.ROOT),
+                containsString("charset=utf-8"));
+        assertThat("text file content should be correctly served",
+                page.getWebResponse().getContentAsString(),
+                containsString(chineseContent));
     }
 
     @Test

@@ -127,6 +127,7 @@ import jenkins.agents.ControllerToAgentFileCallable;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.ContextResettingExecutorService;
+import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import org.apache.commons.fileupload2.core.FileItem;
@@ -214,13 +215,15 @@ import org.kohsuke.stapler.Stapler;
 public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
-     * Set to {@code true} to disable validation to ensure that we do not attempt to extract paths that may allow determining the path to the destination directory.
+     * Set to {@code true} to disable validation to ensure that we do not attempt to extract paths that may allow determining the path to the destination directory,
+     * or to {@code false} to enable it. If unset, validation will be done if and only if the current JVM is the controller JVM.
      */
-    private static /* non-final for script console */ boolean ALLOW_REENTRY_PATH_TRAVERSAL = SystemProperties.getBoolean(FilePath.class.getName() + ".ALLOW_REENTRY_PATH_TRAVERSAL");
+    private static /* non-final for script console */ Boolean ALLOW_REENTRY_PATH_TRAVERSAL = SystemProperties.optBoolean(FilePath.class.getName() + ".ALLOW_REENTRY_PATH_TRAVERSAL");
     /**
-     * Set to {@code true} to disable the fix for SECURITY-3657 that prevents path traversal from crafted tar files.
+     * Set to {@code true} to disable prevention of path traversal from crafted tar files,
+     * or to {@code false} to enable it. If unset, validation will be done if and only if the current JVM is the controller JVM.
      */
-    private static /* non-final for script console */ boolean ALLOW_UNTAR_SYMLINK_RESOLUTION = SystemProperties.getBoolean(FilePath.class.getName() + ".ALLOW_UNTAR_SYMLINK_RESOLUTION");
+    private static /* non-final for script console */ Boolean ALLOW_UNTAR_SYMLINK_RESOLUTION = SystemProperties.optBoolean(FilePath.class.getName() + ".ALLOW_UNTAR_SYMLINK_RESOLUTION");
 
     public enum DisplayOption implements OpenOption, CopyOption {
         IGNORE_TMP_DIRS
@@ -3058,9 +3061,22 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
+     * Determines whether to perform additional validation to prevent path traversal during {@link #readFromTar(String, java.io.File, java.io.InputStream, java.nio.charset.Charset)}.
+     *
+     * @param trueIfPermissiveFlag a {@code Boolean} flag that is {@code false} when requiring validation, {@code true} when it should be skipped, and {@code null} when {@link jenkins.util.JenkinsJVM} should determine the need to validate.
+     * @return true if and only if we should check for and prevent path traversals
+     */
+    private static boolean requireReadFromTarPathTraversalValidation(Boolean trueIfPermissiveFlag) {
+        if (trueIfPermissiveFlag == null) {
+            return JenkinsJVM.isJenkinsJVM();
+        }
+        return !trueIfPermissiveFlag;
+    }
+
+    /**
      * Reads from a tar stream and stores obtained files to the base dir.
      * Supports large files &gt; 10 GB since 1.627.
-     * This prohibits any path traversal out of the base dir, as well as writing through any existing symlinks.
+     * On the Jenkins controller JVM this prohibits any path traversal out of the base dir, as well as writing through any existing symlinks.
      */
     private static void readFromTar(String name, File baseDir, InputStream in, Charset filenamesEncoding) throws IOException {
         final File absoluteBaseDir = baseDir.getAbsoluteFile();
@@ -3069,7 +3085,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             TarEntry te;
             while ((te = t.getNextEntry()) != null) {
                 final String entryName = te.getName();
-                if (!ALLOW_REENTRY_PATH_TRAVERSAL) {
+                if (requireReadFromTarPathTraversalValidation(ALLOW_REENTRY_PATH_TRAVERSAL)) {
                     if (new File(entryName).toPath().normalize().startsWith(Path.of(".."))) {
                         // catch relative path that would escape and then enter the destination dir again, like `../../../var/jenkins_home/...`
                         throw new IOException("Tar " + name + " contains entry that escapes destination directory: " + entryName);
@@ -3084,7 +3100,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     throw new IOException("Tar " + name + " contains entry that escapes destination directory: " + entryName);
                 }
 
-                if (!ALLOW_UNTAR_SYMLINK_RESOLUTION) {
+                if (requireReadFromTarPathTraversalValidation(ALLOW_UNTAR_SYMLINK_RESOLUTION)) {
                     // getCanonicalFile doesn't follow symlinks on Windows, so do this the hard way: Check each ancestor up to the base dir for whether it's a symlink
                     File current = parent;
                     while (current != null && !current.equals(absoluteBaseDir)) {
@@ -3103,7 +3119,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     if (te.isSymbolicLink()) {
                         new FilePath(f).symlinkTo(te.getLinkName(), TaskListener.NULL);
                     } else {
-                        if (!ALLOW_UNTAR_SYMLINK_RESOLUTION) {
+                        if (requireReadFromTarPathTraversalValidation(ALLOW_UNTAR_SYMLINK_RESOLUTION)) {
                             if (Util.isSymlink(f)) {
                                 throw new IOException("Tar '" + name + "' entry '" + entryName + "' would write through existing symlink: " + f);
                             }
