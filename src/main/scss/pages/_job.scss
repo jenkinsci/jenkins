@@ -11,6 +11,10 @@
     margin-inline: -0.25rem;
     margin-bottom: 5px;
   }
+
+  #jenkins-builds .jenkins-card__content {
+    overflow: visible;
+  }
 }
 
 .app-builds-container {
