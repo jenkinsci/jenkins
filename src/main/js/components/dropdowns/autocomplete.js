@@ -44,7 +44,7 @@ function init() {
         },
         true,
         {
-          appendTo: "parent",
+          appendTo: (ref) => ref.closest("dialog") || document.body,
         },
       );
     }
