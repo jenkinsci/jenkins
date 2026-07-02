@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2026, Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Side panel for the log recorder
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:header />
-  <l:side-panel>
-    <l:tasks>
-      <l:task href="." icon="symbol-journal" title="${%Log records}"/>
-      <l:isAdmin>
-        <l:task href="configure" icon="symbol-settings" title="${%Configure}"/>
-        <l:delete title="${%Delete}" message="${%delete.logrecorder(it.displayName)}" />
-      </l:isAdmin>
-    </l:tasks>
-  </l:side-panel>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:setHeader name="X-Dialog-Title" value="${it.job.buildNowText}" />
+
+  <l:ajax>
+    <j:set var="delay" value="0sec" />
+    <st:include page="contents.jelly" />
+  </l:ajax>
 </j:jelly>
