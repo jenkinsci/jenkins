@@ -2,6 +2,17 @@
 @use "../components/cards";
 @use "../components/dialogs";
 
+.app-settings-agent-container {
+  width: 100% !important;
+  max-width: 1700px !important;
+}
+
+.app-agent-bar::before {
+  content: "";
+  background-color: unset !important;
+  border-bottom: unset !important;
+}
+
 .app-agent-content .jenkins-card:has(.jenkins-card__content:empty),
 .app-agent-content .widget-refresh-reference {
   display: none;
@@ -11,9 +22,7 @@
   width: fit-content;
 }
 
-.app-agent-content #projectStatus,
-.app-agent-content #executors,
-.app-agent-content #buildQueue {
+.app-agent-content #projectStatus {
   margin-bottom: 0;
 }
 
@@ -26,17 +35,48 @@
 .app-agent-overview__grid {
   gap: calc(var(--section-padding) / 2);
   display: flex;
-  flex-wrap: wrap;
 
-  & > div:nth-last-child(n + 3) {
-    min-width: 274px;
-    max-width: 330px;
+  @media (width <= 1430px) {
+    flex-direction: column;
+  }
+}
+
+.app-agent-overview__widgets {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--section-padding) / 2);
+
+  @media (1024px < width <= 1430px) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
   }
 
-  & > div:last-of-type {
-    flex-grow: 1; /* takes remaining space */
-    min-width: 0; /* important for overflow handling */
+  @media (max-width: breakpoints.$tablet-breakpoint) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
   }
+
+  & > div.pane-frame {
+
+    min-width: 275px;
+    margin-bottom: 0;
+    @media (width <= 1430px) {
+      flex-grow: 1;
+    }
+    @media (width > 1430px) {
+      max-width: 330px;
+    }
+  }
+}
+
+.app-agent-overview__cards {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--section-padding) / 2);
+  width: 100%;
+  flex-grow: 1;
 
   .jenkins-table {
     margin-bottom: 0;
@@ -53,6 +93,8 @@
 }
 
 .app-agent-overview__labels {
+  display: flex;
+  gap: 0.25rem 0;
   flex-direction: row !important;
   flex-wrap: wrap;
 
@@ -65,9 +107,30 @@
 .app-agent-configure {
   display: flex;
   gap: var(--section-padding);
-  margin-left: calc(var(--section-padding) * -1);
 
   &__content {
     flex-grow: 1;
   }
+}
+
+
+.app-agent-details {
+  display: flex;
+  flex-direction: column;
+  background: var(--card-background);
+  border: var(--card-border-width) solid var(--card-border-color);
+  border-radius: var(--form-input-border-radius);
+
+  &__line {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border-bottom: var(--card-border-width) solid var(--card-border-color);
+    padding: 0.5rem 0.75rem;
+
+    & > div:last-of-type {
+      margin-left: auto;
+    }
+  }
+
 }

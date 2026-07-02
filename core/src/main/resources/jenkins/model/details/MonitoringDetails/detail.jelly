@@ -25,17 +25,15 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:dialog title="${%Monitoring Data}">
-    <table class="jenkins-table jenkins-table--small">
-      <tbody>
-        <j:forEach var="m" items="${it.object.monitoringData}">
-          <tr>
-            <td>${m.key.columnCaption}</td>
-            <j:set var="data" value="${m.value}"/>
-            <st:include page="column.jelly" from="${m.key}" />
-          </tr>
-        </j:forEach>
-      </tbody>
-    </table>
+    <div class="app-agent-details">
+      <j:forEach var="m" items="${it.object.monitoringData}">
+        <div class="app-agent-details__line">
+          <div>${m.key.columnCaption}</div>
+          <j:set var="data" value="${m.value}"/>
+          <div><st:include page="column.jelly" from="${m.key}" /></div>
+        </div>
+      </j:forEach>
+    </div>
   </l:dialog>
 
   <button class="jenkins-details__item"

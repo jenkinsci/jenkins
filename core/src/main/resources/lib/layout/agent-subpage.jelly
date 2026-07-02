@@ -40,19 +40,44 @@ THE SOFTWARE.
     <st:attribute name="permissions">
       Permissions to check for accessing the page.
     </st:attribute>
-    <st:attribute name="noSidepanel">
-      If set to true, the sidepanel will be omitted from this page for old layouts.
-    </st:attribute>
   </st:documentation>
 
-  <l:layout title="${attrs.agent.displayName} - ${attrs.title}" permission="${attrs.permission}" permissions="${attrs.permissions}">
-    <l:userExperimentalFlag var="newAgentPage" flagClassName="jenkins.model.experimentalflags.NewAgentPageUserExperimentalFlag" />
+  <l:userExperimentalFlag var="newAgentPage" flagClassName="jenkins.model.experimentalflags.NewAgentPageUserExperimentalFlag" />
+
+  <l:layout title="${attrs.agent.displayName} - ${attrs.title}" permission="${attrs.permission}" permissions="${attrs.permissions}"
+            type="${(newAgentPage or not attrs.noSidepanel) ? 'two-column' : 'one-column'}">
     <j:if test="${not empty(attrs.title)}">
       <l:breadcrumb title="${attrs.title}" />
     </j:if>
 
     <j:choose>
       <j:when test="${newAgentPage}">
+        <l:side-panel>
+          <j:new className="hudson.model.ManageJenkinsAction" var="manageJenkinsAction" />
+          <l:app-bar title="${manageJenkinsAction.displayName}" />
+
+          <l:tasks>
+            <l:search-bar placeholder="${%Search}" id="settings-search-bar" />
+
+            <script src="${resURL}/jsbundles/pages/manage-jenkins.js" type="text/javascript" />
+
+            <j:invokeStatic var="j" className="jenkins.model.Jenkins" method="get" />
+            <j:forEach var="category" items="${j.categorizedManagementLinks.entrySet()}">
+              <summary class="jenkins-side-nav__heading">
+                ${category.key.label}
+              </summary>
+              <j:forEach var="item" items="${category.value}">
+                <l:task title="${item.displayName}"
+                        href="${rootURL}/manage/${item.urlName}"
+                        icon="${item.iconFileName}"
+                        badge="${item.badge}"
+                        requiresConfirmation="${item.requiresConfirmation}"
+                        post="${item.requiresPOST}"
+                        confirmationMessage="${%sure}" />
+              </j:forEach>
+            </j:forEach>
+          </l:tasks>
+        </l:side-panel>
         <l:main-panel>
           <div class="app-build-bar app-agent-bar">
             <div class="app-build-bar__content">
@@ -73,16 +98,18 @@ THE SOFTWARE.
               <l:actions it="${attrs.agent}" />
             </div>
           </div>
+          <div class="app-settings-container">
+            <div class="app-settings-container__inner app-settings-agent-container" >
 
-          <div class="app-build-content app-agent-content">
-            <d:invokeBody />
+              <div class="app-build-content app-agent-content">
+                <d:invokeBody />
+              </div>
+            </div>
           </div>
         </l:main-panel>
       </j:when>
       <j:otherwise>
-        <j:if test="${attrs.noSidepanel ne 'true'}">
-          <st:include page="sidepanel.jelly" it="${attrs.agent}"/>
-        </j:if>
+        <st:include page="sidepanel.jelly" it="${attrs.agent}"/>
         <l:main-panel>
           <d:invokeBody />
         </l:main-panel>

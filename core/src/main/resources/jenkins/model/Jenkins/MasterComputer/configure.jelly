@@ -29,21 +29,14 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
-  <l:agent-subpage agent="${it}" title="${%Configure}" permission="${it.EXTENDED_READ}" noSidepanel="true">
+  <l:agent-subpage agent="${it}" title="${%Configure}" permission="${it.EXTENDED_READ}">
     <j:set var="readOnlyMode" value="${!h.hasPermission(it, it.CONFIGURE)}" />
-    <script src="${resURL}/jsbundles/section-to-sidebar-items.js" type="text/javascript" defer="true" />
+    <l:app-bar title="${%Configure}"/>
     <div class="app-agent-configure">
-      <div id="side-panel" class="app-page-body__sidebar ${attrs.sticky == 'true' ? 'app-page-body__sidebar--sticky' : ''}">
-        <l:app-bar title="${readOnlyMode ? '%Configuration' : '%Configure'}" />
-        <div id="tasks">
-          <l:skeleton type="side-panel" />
-        </div>
-      </div>
       <div class="app-agent-configure__content">
         <f:form method="post" action="configSubmit" name="config" tableClass="config-table">
           <j:set var="instance" value="${it.node}" />
           <j:set var="descriptor" value="${instance.descriptor}" />
-          <l:app-bar title="${%General}" headingLevel="h2"/>
 
           <!-- Currently not editable
           <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html">

@@ -53,40 +53,42 @@ THE SOFTWARE.
       </j:if>
 
       <div class="app-agent-overview__grid">
-        <j:forEach var="box" items="${it.computerPanelBoxs}">
-          <st:include it="${box}" page="box.jelly" />
-        </j:forEach>
-        <j:forEach var="a" items="${it.widgets}">
-          <st:include page="index.jelly" from="${a}" optional="true" it="${a}" />
-        </j:forEach>
-        <l:card title="${%Labels}">
-          <div class="app-agent-overview__labels">
-            <j:if test="${it.node.assignedLabels.size() gt 1}">
-              <j:forEach var="entry" items="${it.node.labelCloud}">
-                <!-- Skip the label for this node -->
-                <j:if test="${entry.item!=it.node.selfLabel}">
-                  <a class="${entry.className} model-link inside" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
-                </j:if>
-              </j:forEach>
-            </j:if>
-            <j:if test="${it.node.assignedLabels.size() eq 1}">
-              <l:notice title="${%No labels defined}" icon="symbol-tag"/>
-            </j:if>
-          </div>
-        </l:card>
+        <div class="app-agent-overview__widgets">
+          <j:forEach var="a" items="${it.widgets}">
+            <st:include page="index.jelly" from="${a}" optional="true" it="${a}" />
+          </j:forEach>
+        </div>
+
+        <div class="app-agent-overview__cards">
+          <l:card title="${%Labels}">
+            <div class="app-agent-overview__labels">
+              <j:if test="${it.node.assignedLabels.size() gt 1}">
+                <j:forEach var="entry" items="${it.node.labelCloud}">
+                  <!-- Skip the label for this node -->
+                  <j:if test="${entry.item!=it.node.selfLabel}">
+                    <a class="${entry.className} model-link inside" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
+                  </j:if>
+                </j:forEach>
+              </j:if>
+              <j:if test="${it.node.assignedLabels.size() eq 1}">
+                <l:notice title="${%No labels defined}" icon="symbol-tag"/>
+              </j:if>
+            </div>
+          </l:card>
+          <l:card title="${%Node properties}" id="app-agent-overview__node-properties">
+            <st:include page="nodepropertysummaries.jelly" />
+          </l:card>
+          <j:set var="jobs" value="${it.tiedJobs}" />
+          <j:if test="${!empty(jobs)}">
+            <l:card title="${%title.projects_tied_on(it.displayName)}">
+              <t:projectView jobs="${jobs}"/>
+            </l:card>
+          </j:if>
+          <l:card title="${%Legacy}">
+            <st:include page="main.jelly" optional="true"/>
+          </l:card>
+        </div>
       </div>
-      <l:card title="${%Node properties}" id="app-agent-overview__node-properties">
-        <st:include page="nodepropertysummaries.jelly" />
-      </l:card>
-      <j:set var="jobs" value="${it.tiedJobs}" />
-      <j:if test="${!empty(jobs)}">
-        <l:card title="${%title.projects_tied_on(it.displayName)}">
-          <t:projectView jobs="${jobs}"/>
-        </l:card>
-      </j:if>
-      <l:card title="${%Legacy}">
-        <st:include page="main.jelly" optional="true"/>
-      </l:card>
     </div>
   </l:agent-subpage>
 </j:jelly>
