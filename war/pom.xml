@@ -46,7 +46,7 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <mina-sshd-api.version>2.16.0-184.v1e0e8b_e8e813</mina-sshd-api.version>
+    <mina-sshd-api.version>2.17.1-187.v0341274c2905</mina-sshd-api.version>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
     <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
 
@@ -311,14 +311,14 @@ THE SOFTWARE.
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1402.v94c9ce464861</version>
+                  <version>1402.1405.vc96e74964250</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1403.vd9d1413fd205</version>
+                  <version>1413.v736fa_5b_61d80</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -339,21 +339,21 @@ THE SOFTWARE.
                   <!-- dependency of echarts-api and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.8-1038.vee76a_fe825ff</version>
+                  <version>5.3.8-1048.va_c299057e35c</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>checks-api</artifactId>
-                  <version>402.vca_263b_f200e3</version>
+                  <version>415.vf022234a_931d</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>prism-api</artifactId>
-                  <version>1.30.0-727.vc475481f034d</version>
+                  <version>1.30.0-741.v034eb_0b_0a_a_fa_</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -369,7 +369,7 @@ THE SOFTWARE.
                   <!-- dependency of echarts-api -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jackson2-api</artifactId>
-                  <version>2.21.2-436.v29efdb_7418ff</version>
+                  <version>2.22.0-439.vb_b_43658d6176</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -377,7 +377,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jackson3-api</artifactId>
-                  <version>3.1.3-76.vd9b_7cd2e80b_8</version>
+                  <version>3.2.0-83.vfb_04cee1ea_0f</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -385,15 +385,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api and jackson3-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jackson-annotations2-api</artifactId>
-                  <version>2.21-7.v4777a_f3a_a_d47</version>
-                  <type>hpi</type>
-                </artifactItem>
-
-                <artifactItem>
-                  <!-- dependency of jackson2-api and jackson3-api -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>jackson-annotations2-api</artifactId>
-                  <version>2.21-7.v4777a_f3a_a_d47</version>
+                  <version>2.22-19.v10a_a_582ea_26e</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -409,7 +401,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api and jackson3-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>woodstox-core-api</artifactId>
-                  <version>7.1.1-1.v4d297985f397</version>
+                  <version>7.2.1-6.v3718a_a_11f5c4</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -438,7 +430,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jakarta-xml-bind-api</artifactId>
-                  <version>4.0.6-12.vb_1833c1231d3</version>
+                  <version>4.0.9-19.v2b_a_5b_44d9a_1c</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -446,7 +438,7 @@ THE SOFTWARE.
                   <!-- dependency of script-security and workflow-support -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>caffeine-api</artifactId>
-                  <version>3.2.3-194.v31a_b_f7a_b_5a_81</version>
+                  <version>3.2.4-208.v7e2da_a_7db_82b_</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -561,7 +553,7 @@ THE SOFTWARE.
                   <!-- dependency of scm-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>asm-api</artifactId>
-                  <version>9.9.1-189.vb_5ef2964da_91</version>
+                  <version>9.10.1-216.va_9256d3b_844b_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -709,7 +701,7 @@ THE SOFTWARE.
           contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
           result before proceeding with the update here.
         -->
-        <version>12.1.8</version>
+        <version>12.1.10</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
