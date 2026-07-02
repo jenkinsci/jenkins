@@ -59,7 +59,6 @@
   }
 
   & > div.pane-frame {
-
     min-width: 275px;
     margin-bottom: 0;
     @media (width <= 1430px) {
@@ -113,7 +112,6 @@
   }
 }
 
-
 .app-agent-details {
   display: flex;
   flex-direction: column;
@@ -132,5 +130,4 @@
       margin-left: auto;
     }
   }
-
 }
