@@ -64,6 +64,14 @@ $semantics: (
   --primary-active: var(--accent-color);
 
   // Status icon colors
+  --status-background-opacity: 0.125;
+  --status-border-opacity: 0.25;
+
+  @media (prefers-contrast: more) {
+    --status-background-opacity: 0;
+    --status-border-opacity: 1;
+  }
+
   --weather-icon-color: var(--accent-color);
   --unstable-build-icon-color: var(--orange);
 
@@ -329,6 +337,9 @@ $semantics: (
     from var(--text-color-secondary) l c h / 0.15
   );
   --item-box-shadow--focus: oklch(from var(--text-color-secondary) l c h / 0.1);
+
+  // Page
+  --page-inset: 0px;
 
   // Deprecated
   --primary: var(--accent-color); // Use var(--accent-color) instead
