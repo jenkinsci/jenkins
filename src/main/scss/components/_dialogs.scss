@@ -5,6 +5,8 @@ $jenkins-dialog-padding: 1.25rem;
 .jenkins-dialog {
   @include mixins.overlay-surface;
 
+  position: fixed;
+
   --section-padding: #{$jenkins-dialog-padding};
   --bottom-app-bar-padding: #{$jenkins-dialog-padding};
 
