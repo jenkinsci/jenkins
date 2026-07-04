@@ -89,13 +89,13 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
      */
     @Exported
     @NonNull default Set<User> getCulprits() {
-        if (shouldCalculateCulprits()) {
+        Set<String> ids = shouldCalculateCulprits() ? null : getCulpritIds();
+        if (ids == null) {
             return calculateCulprits();
         }
 
+        final Set<String> culpritIds = Set.copyOf(ids);
         return new AbstractSet<>() {
-            private Set<String> culpritIds = Set.copyOf(getCulpritIds());
-
             @Override
             public Iterator<User> iterator() {
                 return new AdaptedIterator<>(culpritIds.iterator()) {
