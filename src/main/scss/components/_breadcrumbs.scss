@@ -234,6 +234,7 @@
       background: var(--text-color);
     }
 
+    &.model-link--open,
     &:hover {
       z-index: 10;
       margin-right: calc(2ch + 14px) !important;
