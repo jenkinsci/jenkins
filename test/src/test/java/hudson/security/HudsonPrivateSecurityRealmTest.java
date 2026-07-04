@@ -43,6 +43,7 @@ import hudson.ExtensionList;
 import hudson.model.User;
 import hudson.security.HudsonPrivateSecurityRealm.Details;
 import hudson.security.pages.SignupPage;
+import hudson.util.FormValidation;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -892,5 +893,48 @@ class HudsonPrivateSecurityRealmTest {
 
         wc.login("alice", "NewStrong1");
         assertUserConnected(wc, "alice");
+    }
+
+    @Test
+    void doCheckPasswordReturnsErrorForWeakPassword() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setPasswordComplexityRule(new BasicPasswordComplexityRule(8, true, false, false, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        Details.DescriptorImpl descriptor = ExtensionList.lookupSingleton(Details.DescriptorImpl.class);
+        FormValidation result = descriptor.doCheckPassword("weak");
+        assertEquals(FormValidation.Kind.ERROR, result.kind);
+    }
+
+    @Test
+    void doCheckPasswordReturnsOkForStrongPassword() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setPasswordComplexityRule(new BasicPasswordComplexityRule(8, true, false, false, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        Details.DescriptorImpl descriptor = ExtensionList.lookupSingleton(Details.DescriptorImpl.class);
+        FormValidation result = descriptor.doCheckPassword("StrongPass1");
+        assertEquals(FormValidation.Kind.OK, result.kind);
+    }
+
+    @Test
+    void doCheckPasswordReturnsOkWhenNoRuleConfigured() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        Details.DescriptorImpl descriptor = ExtensionList.lookupSingleton(Details.DescriptorImpl.class);
+        FormValidation result = descriptor.doCheckPassword("weak");
+        assertEquals(FormValidation.Kind.OK, result.kind);
+    }
+
+    @Test
+    void doCheckPasswordReturnsOkForEmptyPassword() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setPasswordComplexityRule(new BasicPasswordComplexityRule(8, true, false, false, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        Details.DescriptorImpl descriptor = ExtensionList.lookupSingleton(Details.DescriptorImpl.class);
+        FormValidation result = descriptor.doCheckPassword("");
+        assertEquals(FormValidation.Kind.OK, result.kind);
     }
 }
