@@ -312,7 +312,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     @RequirePOST
     public void doCreateAccountByAdmin(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        createAccountByAdmin(req, rsp, "addUser.jelly", "."); // send the user back to the listing page on success
+        createAccountByAdmin(req, rsp, "addUserDialog.jelly", "."); // send the user back to the listing page on success
     }
 
     /**
@@ -987,6 +987,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public String encode(CharSequence rawPassword) {
+            if (rawPassword == null) {
+                throw new IllegalArgumentException("Null rawPassword cannot be encoded");
+            }
             if (rawPassword.length() < FIPS_PASSWORD_LENGTH) {
                 throw new IllegalArgumentException(Messages.HudsonPrivateSecurityRealm_CreateAccount_FIPS_PasswordLengthInvalid());
             }
@@ -999,6 +1002,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public boolean matches(CharSequence rawPassword, String encodedPassword) {
+            if (rawPassword == null) {
+                throw new IllegalArgumentException("Null rawPassword cannot be compared");
+            }
             try {
                 return validatePassword(rawPassword.toString(), encodedPassword);
             } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
