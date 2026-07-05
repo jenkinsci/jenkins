@@ -90,10 +90,4 @@ class BasicPasswordComplexityRuleTest {
         assertDoesNotThrow(() -> rule.validate(""));
     }
 
-    @Test
-    void setNullPasswordComplexityRuleFallsBackToNone() {
-        HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
-        realm.setPasswordComplexityRule(null);
-        assertDoesNotThrow(() -> realm.getPasswordComplexityRule().validate("weak"));
-    }
 }

@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -936,5 +937,12 @@ class HudsonPrivateSecurityRealmTest {
         Details.DescriptorImpl descriptor = ExtensionList.lookupSingleton(Details.DescriptorImpl.class);
         FormValidation result = descriptor.doCheckPassword("");
         assertEquals(FormValidation.Kind.OK, result.kind);
+    }
+
+    @Test
+    void setNullPasswordComplexityRuleFallsBackToNone() {
+        HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
+        realm.setPasswordComplexityRule(null);
+        assertDoesNotThrow(() -> realm.getPasswordComplexityRule().validate("weak"));
     }
 }
