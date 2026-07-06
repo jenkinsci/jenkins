@@ -2045,8 +2045,24 @@ public class Functions {
      * @since 1.528
      */
     public void calcCheckUrl(Map attributes, String userDefined, Object descriptor, String field) {
-        if (userDefined != null || field == null)   return;
+        calcCheckUrl(attributes, userDefined, descriptor, field, true);
+    }
 
+    /**
+     * @param insideForm
+     *      Whether the field being rendered is enclosed in an {@code <f:form>} tag.
+     *      When {@code false}, a warning is logged, since fields outside a form
+     *      do not correctly participate in dependency-based re-validation
+     *      ({@code checkDependsOn}).
+     */
+    public void calcCheckUrl(Map attributes, String userDefined, Object descriptor, String field, boolean insideForm) {
+        if (userDefined != null || field == null)   return;
+        if (!insideForm) {
+            LOGGER.log(Level.WARNING,
+                "Field ''{0}'' with form validation is not enclosed in an <f:form> tag; "
+              + "dependency-based re-validation between fields may not work correctly.",
+                field);
+        }
         if (descriptor instanceof Descriptor d) {
             CheckMethod m = d.getCheckMethod(field);
             attributes.put("checkUrl", m.toStemUrl());
