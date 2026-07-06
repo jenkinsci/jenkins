@@ -26,11 +26,9 @@ THE SOFTWARE.
   Log view
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:dd="/lib/layout/dropdowns">
-<l:layout title="Log" permission="${app.SYSTEM_READ}" type="one-column">
-  <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-  <l:main-panel>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:dd="/lib/layout/dropdowns">
+  <l:settings-subpage title="${it.displayName}" permission="${app.SYSTEM_READ}" header="${null}" width="wide">
+    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <j:set var="noLogs" value="${it.logRecords.isEmpty() and it.slaveLogRecords.isEmpty()}" />
 
     <l:app-bar title="${it.displayName}">
@@ -39,11 +37,12 @@ THE SOFTWARE.
           <form method="post" id='clear-logrecorder' action="clear">
             <f:submit icon="symbol-close-circle"
                       value="${%Clear This Log}"
-                      primary="false" />
+                      primary="false"
+                      clazz="jenkins-!-destructive-color" />
           </form>
         </j:if>
         <a class="jenkins-button" href="configure">
-          Configure
+          ${%Configure}
         </a>
       </l:isAdmin>
       <l:overflowButton>
@@ -77,6 +76,5 @@ THE SOFTWARE.
       <h2><a href="${rootURL}/${entry.key.url}" class="model-link">${entry.key.displayName}</a></h2>
       <t:logRecords logRecords="${entry.value}"/>
     </j:forEach>
-  </l:main-panel>
-</l:layout>
+  </l:settings-subpage>
 </j:jelly>
