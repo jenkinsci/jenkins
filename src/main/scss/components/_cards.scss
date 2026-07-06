@@ -46,7 +46,7 @@ $card-padding: 1rem;
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    border: var(--card-border-width) solid var(--card-border-color);
+    border: var(--jenkins-border);
     z-index: 1;
     pointer-events: none;
   }
@@ -144,14 +144,6 @@ $card-padding: 1rem;
         color: var(--text-color);
       }
     }
-  }
-
-  hr {
-    align-self: stretch;
-    border: none;
-    border-top: var(--card-border-width) solid var(--text-color-secondary);
-    opacity: 0.1;
-    margin: 0;
   }
 }
 
