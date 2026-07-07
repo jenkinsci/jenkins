@@ -130,6 +130,23 @@ THE SOFTWARE.
                 </l:confirmationLink>
               </dd:custom>
             </j:if>
+            <j:set var="ownerItem" value="${it.ownerItemGroup}" />
+            <j:if test="${ownerItem != app and h.hasPermission(ownerItem, ownerItem.DELETE)}">
+              <dd:separator />
+              <dd:custom>
+                <l:confirmationLink class="jenkins-dropdown__item jenkins-!-destructive-color"
+                                    href="${rootURL}/${ownerItem.url}doDelete"
+                                    title="${%delete(ownerItem.pronoun)}"
+                                    message="${%delete.confirm(ownerItem.pronoun, ownerItem.displayName)}"
+                                    destructive="true"
+                                    post="true">
+                  <div class="jenkins-dropdown__item__icon">
+                    <l:icon src="symbol-trash" />
+                  </div>
+                  ${%delete(ownerItem.pronoun)}
+                </l:confirmationLink>
+              </dd:custom>
+            </j:if>
           </l:overflowButton>
         </div>
       </div>
