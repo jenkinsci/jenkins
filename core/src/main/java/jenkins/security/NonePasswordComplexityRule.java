@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2025, Jenkins project contributors
+ * Copyright (c) 2026, Jenkins project contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +22,35 @@
  * THE SOFTWARE.
  */
 
-package hudson.security;
+package jenkins.security;
 
-import hudson.model.Descriptor;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
- * {@link Descriptor} for {@link PasswordComplexityRule}.
+ * A {@link PasswordComplexityRule} that accepts any password.
  *
  * @since TODO
  */
-public abstract class PasswordComplexityRuleDescriptor extends Descriptor<PasswordComplexityRule> {
+public class NonePasswordComplexityRule extends PasswordComplexityRule {
+
+    @DataBoundConstructor
+    public NonePasswordComplexityRule() {
+    }
+
+    @Override
+    public void validate(@NonNull String password) {
+    }
+
+    @Extension
+    @Symbol("nonePasswordComplexity")
+    public static final class DescriptorImpl extends PasswordComplexityRuleDescriptor {
+        @NonNull
+        @Override
+        public String getDisplayName() {
+            return Messages.NonePasswordComplexityRule_DisplayName();
+        }
+    }
 }

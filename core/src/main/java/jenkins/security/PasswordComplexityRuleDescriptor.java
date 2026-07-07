@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2025, Jenkins project contributors
+ * Copyright (c) 2026, Jenkins project contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +22,14 @@
  * THE SOFTWARE.
  */
 
-package hudson.security;
+package jenkins.security;
+
+import hudson.model.Descriptor;
 
 /**
- * Thrown by {@link PasswordComplexityRule#validate(String)} when a password
- * does not meet the configured complexity requirements.
+ * {@link Descriptor} for {@link PasswordComplexityRule}.
  *
  * @since TODO
  */
-public class PasswordComplexityException extends Exception {
-    public PasswordComplexityException(String message) {
-        super(message);
-    }
+public abstract class PasswordComplexityRuleDescriptor extends Descriptor<PasswordComplexityRule> {
 }
