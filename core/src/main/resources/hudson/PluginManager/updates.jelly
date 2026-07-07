@@ -159,7 +159,7 @@ THE SOFTWARE.
                           <div class="jenkins-alert jenkins-alert-danger">${%coreWarning(p.requiredCore)}</div>
                         </j:if>
                         <j:if test="${p.fixesSecurityVulnerabilities()}">
-                          <div class="jenkins-alert jenkins-alert-warning">
+                          <div class="jenkins-alert jenkins-alert-danger">
                             ${%Applying this update will address security vulnerabilities in the currently installed version.}
                           </div>
                         </j:if>
