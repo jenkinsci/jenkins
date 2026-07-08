@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2026, Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,24 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Create a new LogRecorder
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout title="${%New log recorder}" type="one-column">
-    <l:breadcrumb title="${%New log recorder}" />
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:setHeader name="X-Dialog-Title" value="${%Add recorder}" />
 
-    <l:main-panel>
-      <l:app-bar title="${%New log recorder}"/>
-      <f:form name="configSubmit" method="post" action="newLogRecorder">
-        <f:entry title="${%Name}">
-          <f:textbox name="name" checkDependsOn="name" checkUrl="checkNewName" />
-        </f:entry>
-        <f:block>
-          <f:submit value="${%Create}" />
-        </f:block>
-      </f:form>
-    </l:main-panel>
-  </l:layout>
+  <l:ajax>
+    <f:form name="configSubmit" method="post" action="newLogRecorder">
+      <f:entry title="${%Name}">
+        <f:textbox name="name" checkDependsOn="name" checkUrl="checkNewName" autofocus="true" />
+      </f:entry>
+
+      <f:bottomButtonBar>
+        <f:submit value="${%Create}" />
+      </f:bottomButtonBar>
+    </f:form>
+  </l:ajax>
 </j:jelly>
