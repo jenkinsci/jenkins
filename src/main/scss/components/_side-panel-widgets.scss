@@ -3,7 +3,7 @@
 .pane-frame {
   border-radius: var(--form-input-border-radius);
   background: var(--card-background);
-  border: var(--card-border-width) solid var(--card-border-color);
+  border: var(--jenkins-border);
   margin-bottom: calc(var(--section-padding) / 2);
   overflow: hidden;
 }
