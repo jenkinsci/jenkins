@@ -56,7 +56,6 @@ import java.util.List;
 import java.util.logging.Level;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.BasicPasswordComplexityRule;
-import jenkins.security.NonePasswordComplexityRule;
 import jenkins.security.SecurityListener;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.seed.UserSeedProperty;
