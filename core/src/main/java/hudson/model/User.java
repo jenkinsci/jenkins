@@ -1124,32 +1124,32 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             }
             var byName = instance.byName;
             var idStrategy = idStrategy();
-            for (var dir : subdirectories) {
+            java.util.Arrays.stream(subdirectories).parallel().forEach(dir -> {
                 var dirName = dir.getName();
                 if (!HASHED_DIRNAMES.matcher(dirName).matches()) {
                     LOGGER.fine(() -> "ignoring unrecognized dir " + dir);
-                    continue;
+                    return;
                 }
                 var xml = new XmlFile(XSTREAM, new File(dir, CONFIG_XML));
                 if (!xml.exists()) {
                     LOGGER.fine(() -> "ignoring dir " + dir + " with no " + CONFIG_XML);
-                    continue;
+                    return;
                 }
                 var user = new User();
                 try {
                     xml.unmarshal(user);
                 } catch (Exception x) {
                     LOGGER.log(Level.WARNING, "failed to load " + xml, x);
-                    continue;
+                    return;
                 }
                 if (user.id == null) {
                     LOGGER.warning(() -> "ignoring " + xml + " with no <id>");
-                    continue;
+                    return;
                 }
                 var expectedFolderName = getUserFolderNameFor(user.id);
                 if (!dirName.equals(expectedFolderName)) {
                     LOGGER.warning(() -> "ignoring " + xml + " with <id> " + user.id + " expected to be in " + expectedFolderName);
-                    continue;
+                    return;
                 }
                 user.fixUpAfterLoad();
                 var old = byName.put(idStrategy.keyFor(user.id), user);
@@ -1158,7 +1158,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 } else {
                     LOGGER.fine(() -> "successfully loaded " + user.id + " from " + xml);
                 }
-            }
+            });
             LOGGER.fine(() -> "loaded " + byName.size() + " entries");
         }
 
