@@ -34,12 +34,10 @@ THE SOFTWARE.
       <l:app-bar title="${it.displayName}">
         <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
         <j:if test="${h.hasPermission(createPermission)}">
-          <button class="jenkins-button jenkins-button--primary"
-                  data-type="dialog-opener"
-                  data-dialog-url="newDialog">
+          <a class="jenkins-button jenkins-button--primary" href="new">
             <l:icon src="symbol-add" />
             ${%New Node}
-          </button>
+          </a>
         </j:if>
         <j:set var="hasPermission" value="${h.hasAnyPermission(it, app.MANAGE_AND_SYSTEM_READ)}" />
         <j:if test="${hasPermission}">
