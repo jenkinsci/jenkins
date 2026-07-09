@@ -75,7 +75,7 @@ public class PrivateKeyProvider {
     /**
      * Read keys from default keyFiles
      *
-     * {@code .ssh/id_rsa}, {@code .ssh/id_dsa} and {@code .ssh/identity}.
+     * {@code .ssh/id_rsa}, {@code .ssh/id_ecdsa}, {@code .ssh/id_ed25519}, {@code .ssh/id_dsa} and {@code .ssh/identity}.
      *
      * @return true if some key was read successfully.
      */
@@ -83,7 +83,7 @@ public class PrivateKeyProvider {
         final File home = new File(System.getProperty("user.home"));
 
         boolean read = false;
-        for (String path : new String[] {".ssh/id_rsa", ".ssh/id_dsa", ".ssh/identity"}) {
+        for (String path : new String[] {".ssh/id_rsa", ".ssh/id_ecdsa", ".ssh/id_ed25519", ".ssh/id_dsa", ".ssh/identity"}) {
             final File key = new File(home, path);
             if (!key.exists()) continue;
 

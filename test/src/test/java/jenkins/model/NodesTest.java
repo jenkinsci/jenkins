@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,10 +51,12 @@ import hudson.model.Failure;
 import hudson.model.Node;
 import hudson.model.Saveable;
 import hudson.model.Slave;
+import hudson.model.User;
 import hudson.model.listeners.SaveableListener;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.ComputerRetentionWork;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.OfflineCause;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
 import java.io.IOException;
@@ -354,6 +357,21 @@ class NodesTest {
             // Don't allow loading any node.
             return false;
         }
+    }
+
+    @Test
+    void setNodesRetainsOfflineCause() throws URISyntaxException, IOException, Descriptor.FormException {
+        var agentA = new DumbSlave("nodeA", "temp", r.createComputerLauncher(null));
+        var agentB = new DumbSlave("nodeB", "temp", r.createComputerLauncher(null));
+        Jenkins.get().setNodes(List.of(agentA, agentB));
+        User user = User.getOrCreateByIdOrFullName("user");
+        agentA.setTemporaryOfflineCause(new OfflineCause.UserCause(user, "unitTest"));
+        agentA = new DumbSlave("nodeA", "temp", r.createComputerLauncher(null));
+        Jenkins.get().setNodes(List.of(agentA, agentB));
+        var nodeA = Jenkins.get().getNode("nodeA");
+        assertThat(nodeA, notNullValue());
+        assertThat(nodeA.getTemporaryOfflineCause(), notNullValue());
+        assertThat(nodeA.getTemporaryOfflineCause().getReason(), equalTo("unitTest"));
     }
 
     @Test

@@ -92,7 +92,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.htmlunit.AlertHandler;
 import org.htmlunit.Page;
-import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.AfterEach;
@@ -855,11 +854,34 @@ class PluginManagerTest {
                         .getTextContent().contains("This plugin is built for Jenkins 9999999"));
                 wc.waitForBackgroundJavaScript(100);
 
-                HtmlAnchor anchor = available.querySelector(".jenkins-table__link");
-                anchor.click(true, false, false);
+                assertNull(available.querySelector(".jenkins-table__link"));
                 wc.waitForBackgroundJavaScript(100);
                 assertTrue(alertHandler.messages.isEmpty());
             }
+        });
+    }
+
+    @Test
+    @Issue("JENKINS-70794")
+    void pluginsSearchReturnsAvailablePluginWithoutWikiUrl() throws Throwable {
+        session.then(r -> {
+            DownloadService.signatureCheck = false;
+            Jenkins.get().getUpdateCenter().getSites().clear();
+            UpdateSite us = new UpdateSite("NoWiki", Jenkins.get().getRootUrl() + "noWikiUpdateCenter/update-center.json");
+            Jenkins.get().getUpdateCenter().getSites().add(us);
+            assertEquals(FormValidation.ok(), us.updateDirectly(false).get());
+            assertNotNull(us.getData());
+
+            JenkinsRule.JSONWebResponse response = r.getJSON("pluginManager/pluginsSearch?query=plugin-without-wiki&limit=5");
+            JSONObject json = response.getJSONObject();
+            assertTrue(json.has("data"));
+            JSONArray data = json.getJSONArray("data");
+            assertEquals(1, data.size(), "Should be one search hit for plugin-without-wiki");
+            JSONObject plugin = data.getJSONObject(0);
+            assertEquals("plugin-without-wiki", plugin.getString("name"));
+            assertEquals("Plugin Without Wiki", plugin.getString("displayName"));
+            assertEquals("", plugin.getString("wiki"));
+            assertEquals(100, plugin.getInt("healthScore"));
         });
     }
 
@@ -933,6 +955,31 @@ class PluginManagerTest {
             staplerResponse.setContentType("application/json");
             staplerResponse.setStatus(200);
             staplerResponse.serveFile(staplerRequest, PluginManagerTest.class.getResource("/plugins/security3037-update-center.json"));
+        }
+    }
+
+    @TestExtension("pluginsSearchReturnsAvailablePluginWithoutWikiUrl")
+    public static final class NoWikiUpdateCenter implements RootAction {
+
+        @Override
+        public String getIconFileName() {
+            return "gear2.png";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "no-wiki-update-center";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "noWikiUpdateCenter";
+        }
+
+        public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse) throws ServletException, IOException {
+            staplerResponse.setContentType("application/json");
+            staplerResponse.setStatus(200);
+            staplerResponse.serveFile(staplerRequest, PluginManagerTest.class.getResource("/plugins/no-wiki-update-center.json"));
         }
     }
 
