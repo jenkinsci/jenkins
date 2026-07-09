@@ -157,9 +157,8 @@ public final class DeleteAction implements Action {
     }
 
     /**
-     * Factory that contributes a {@link DeleteAction} to every {@link Run} the current
-     * user has {@link Run#DELETE} permission on when the new run page experimental flag
-     * is enabled.
+     * Factory that contributes a {@link DeleteAction} to every {@link Computer} the current
+     * user has {@link Computer#DELETE} permission.
      */
     @Extension(ordinal = 80)
     @Restricted(Beta.class)
