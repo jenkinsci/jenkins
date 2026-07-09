@@ -69,12 +69,17 @@ class PluginManagerInstalledGUITest {
 
             // enabled, no mandatory dependents → sort key "2"
             installedPlugins.get("mandatory-depender").assertEnabledCellSortKey("2");
-            // enabled, has mandatory dependents (checked disabled) → sort key "1"
+            // enabled, has mandatory dependents (checkbox disabled) → sort key "1"
             installedPlugins.get("dependee").assertEnabledCellSortKey("1");
             // enabled, no mandatory dependents → sort key "2"
             installedPlugins.get("depender").assertEnabledCellSortKey("2");
             // detached plugin, enabled, no mandatory dependents → sort key "2"
             installedPlugins.get("matrix-auth").assertEnabledCellSortKey("2");
+
+            // disable a plugin and reload to verify disabled state → sort key "0"
+            installedPlugins.get("matrix-auth").clickEnabledWidget();
+            InstalledPlugins reloaded = new InstalledPlugins(j);
+            reloaded.get("matrix-auth").assertEnabledCellSortKey("0");
         });
     }
 
