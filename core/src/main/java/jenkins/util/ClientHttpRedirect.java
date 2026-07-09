@@ -24,9 +24,12 @@
 
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
+import hudson.util.HttpResponses;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.util.Locale;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
@@ -40,10 +43,29 @@ import org.kohsuke.stapler.StaplerResponse2;
  * @see <a href="https://github.com/w3c/webappsec-csp/issues/8">Content Security Policy issue discussing this behavior</a>
  * @since 2.550
  */
-public record ClientHttpRedirect(String redirectUrl) implements HttpResponse {
+public record ClientHttpRedirect(@NonNull String redirectUrl) implements HttpResponse {
+
+    public ClientHttpRedirect {
+        if (redirectUrl == null) {
+            throw new IllegalArgumentException("redirectUrl must not be null");
+        }
+    }
+
+    private static boolean isSafeToRedirectTo(@NonNull String url) {
+        if (Util.isSafeToRedirectTo(url)) {
+            return true;
+        }
+
+        String urlLower = url.toLowerCase(Locale.ENGLISH);
+        return urlLower.startsWith("http://") || urlLower.startsWith("https://");
+    }
+
     @Override
     public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object o) throws IOException, ServletException {
+        if (!isSafeToRedirectTo(redirectUrl)) {
+            throw HttpResponses.error(403, "Unsafe redirect blocked");
+        }
         rsp.setContentType("text/html;charset=UTF-8");
-        Util.printRedirect(req.getContextPath(), redirectUrl, redirectUrl, rsp.getWriter());
+        Util.printRedirect(req.getContextPath(), redirectUrl, Util.escape(redirectUrl), rsp.getWriter());
     }
 }
