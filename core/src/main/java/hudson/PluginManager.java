@@ -582,46 +582,78 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     TaskGraphBuilder g = new TaskGraphBuilder();
 
                     // schedule execution of loading plugins
+                    Map<String, org.jvnet.hudson.reactor.Handle> loadHandles = new HashMap<>();
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[0])) {
-                        g.followedBy().notFatal().attains(PLUGINS_PREPARED).add(String.format("Loading plugin %s v%s (%s)", p.getLongName(), p.getVersion(), p.getShortName()), reactor -> {
-                            try {
-                                p.resolvePluginDependencies();
-                                strategy.load(p);
-                            } catch (MissingDependencyException e) {
-                                failedPlugins.add(new FailedPlugin(p, e));
-                                activePlugins.remove(p);
-                                plugins.remove(p);
-                                p.releaseClassLoader();
-                                LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { p.getShortName(), e.getMessage() });
-                            } catch (IOException e) {
-                                failedPlugins.add(new FailedPlugin(p, e));
-                                activePlugins.remove(p);
-                                plugins.remove(p);
-                                p.releaseClassLoader();
-                                throw e;
+                        List<org.jvnet.hudson.reactor.Handle> reqs = new ArrayList<>();
+                        for (PluginWrapper.Dependency dep : p.getDependencies()) {
+                            org.jvnet.hudson.reactor.Handle h = loadHandles.get(dep.shortName);
+                            if (h != null) {
+                                reqs.add(h);
                             }
-                        });
+                        }
+
+                        org.jvnet.hudson.reactor.Handle handle = g.requires(reqs.toArray(new org.jvnet.hudson.reactor.Handle[0]))
+                                .notFatal()
+                                .attains(PLUGINS_PREPARED)
+                                .add(String.format("Loading plugin %s v%s (%s)", p.getLongName(), p.getVersion(), p.getShortName()), reactor -> {
+                                    try {
+                                        p.resolvePluginDependencies();
+                                        strategy.load(p);
+                                    } catch (MissingDependencyException e) {
+                                        failedPlugins.add(new FailedPlugin(p, e));
+                                        activePlugins.remove(p);
+                                        plugins.remove(p);
+                                        p.releaseClassLoader();
+                                        LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { p.getShortName(), e.getMessage() });
+                                    } catch (IOException e) {
+                                        failedPlugins.add(new FailedPlugin(p, e));
+                                        activePlugins.remove(p);
+                                        plugins.remove(p);
+                                        p.releaseClassLoader();
+                                        throw e;
+                                    }
+                                });
+                        loadHandles.put(p.getShortName(), handle);
                     }
 
                     // schedule execution of initializing plugins
+                    Map<String, org.jvnet.hudson.reactor.Handle> initHandles = new HashMap<>();
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[0])) {
-                        g.followedBy().notFatal().attains(PLUGINS_STARTED).add("Initializing plugin " + p.getShortName(), reactor -> {
-                            if (!activePlugins.contains(p)) {
-                                return;
+                        List<org.jvnet.hudson.reactor.Handle> reqs = new ArrayList<>();
+                        org.jvnet.hudson.reactor.Handle loadH = loadHandles.get(p.getShortName());
+                        if (loadH != null) {
+                            reqs.add(loadH);
+                        }
+                        for (PluginWrapper.Dependency dep : p.getDependencies()) {
+                            org.jvnet.hudson.reactor.Handle h = initHandles.get(dep.shortName);
+                            if (h != null) {
+                                reqs.add(h);
                             }
-                            try {
-                                p.getPluginOrFail().postInitialize();
-                            } catch (Exception e) {
-                                failedPlugins.add(new FailedPlugin(p, e));
-                                activePlugins.remove(p);
-                                plugins.remove(p);
-                                p.releaseClassLoader();
-                                throw e;
-                            }
-                        });
+                        }
+
+                        org.jvnet.hudson.reactor.Handle handle = g.requires(reqs.toArray(new org.jvnet.hudson.reactor.Handle[0]))
+                                .notFatal()
+                                .attains(PLUGINS_STARTED)
+                                .add("Initializing plugin " + p.getShortName(), reactor -> {
+                                    if (!activePlugins.contains(p)) {
+                                        return;
+                                    }
+                                    try {
+                                        p.getPluginOrFail().postInitialize();
+                                    } catch (Exception e) {
+                                        failedPlugins.add(new FailedPlugin(p, e));
+                                        activePlugins.remove(p);
+                                        plugins.remove(p);
+                                        p.releaseClassLoader();
+                                        throw e;
+                                    }
+                                });
+                        initHandles.put(p.getShortName(), handle);
                     }
 
-                    g.followedBy().attains(PLUGINS_STARTED).add("Discovering plugin initialization tasks", reactor -> {
+                    g.requires(initHandles.values().toArray(new org.jvnet.hudson.reactor.Handle[0]))
+                            .attains(PLUGINS_STARTED)
+                            .add("Discovering plugin initialization tasks", reactor -> {
                         // rescan to find plugin-contributed @Initializer
                         reactor.addAll(initializerFinder.discoverTasks(reactor));
                     });
