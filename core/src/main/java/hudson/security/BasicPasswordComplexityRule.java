@@ -35,7 +35,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * Built-in {@link PasswordComplexityRule} that checks minimum length
  * and character type requirements.
  *
- * @since TODO
+ * @since 2.572
  */
 public class BasicPasswordComplexityRule extends PasswordComplexityRule {
 
