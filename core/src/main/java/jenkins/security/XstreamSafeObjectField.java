@@ -46,7 +46,7 @@ import java.lang.annotation.Target;
  * @see <a href="https://www.jenkins.io/security/issue/SECURITY-3707/">SECURITY-3707</a>
  * @see <a href="https://jenkins.io/jep/200">JEP-200: Switch Remoting/XStream denylist to an allowlist</a>
  *
- * @since TODO
+ * @since 2.572
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

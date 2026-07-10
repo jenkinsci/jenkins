@@ -39,7 +39,7 @@ import jenkins.model.Jenkins;
  * and password changes. Each implementation can have an optional {@code config.jelly}
  * to configure its validation rules.
  *
- * @since TODO
+ * @since 2.572
  */
 public abstract class PasswordComplexityRule implements Describable<PasswordComplexityRule>, ExtensionPoint {
 
