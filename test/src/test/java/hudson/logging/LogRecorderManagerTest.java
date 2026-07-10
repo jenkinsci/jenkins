@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import jenkins.security.MasterToSlaveCallable;
 import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.WebClientUtil;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
@@ -289,10 +290,65 @@ class LogRecorderManagerTest {
         }
     }
 
+    @Issue("JENKINS-75310")
+    @Test
+    void removingRecorderTargetClearsLoggerLevel() throws Exception {
+        String loggerName = getClass().getName() + ".removed";
+        Logger logger = Logger.getLogger(loggerName);
+        LogRecorder recorder = new LogRecorder("removed");
+        recorder.setLoggers(List.of(new LogRecorder.Target(loggerName, Level.FINEST)));
+        j.jenkins.getLog().getRecorders().add(recorder);
+
+        try {
+            recorder.save();
+            assertEquals(Level.FINEST, logger.getLevel());
+
+            removeTarget(recorder);
+
+            assertTrue(recorder.getLoggers().isEmpty());
+            assertNull(logger.getLevel());
+        } finally {
+            logger.setLevel(null);
+        }
+    }
+
+    @Issue("JENKINS-75310")
+    @Test
+    void removingRecorderTargetPreservesSharedTarget() throws Exception {
+        String loggerName = getClass().getName() + ".removedShared";
+        Logger logger = Logger.getLogger(loggerName);
+        LogRecorder first = new LogRecorder("removed-first");
+        first.setLoggers(List.of(new LogRecorder.Target(loggerName, Level.FINEST)));
+        LogRecorder second = new LogRecorder("removed-second");
+        second.setLoggers(List.of(new LogRecorder.Target(loggerName, Level.FINE)));
+        j.jenkins.getLog().getRecorders().addAll(List.of(first, second));
+
+        try {
+            first.save();
+            second.save();
+            assertEquals(Level.FINEST, logger.getLevel());
+
+            removeTarget(first);
+
+            assertEquals(Level.FINE, logger.getLevel());
+        } finally {
+            logger.setLevel(null);
+        }
+    }
+
     private void configureLevel(LogRecorder recorder, Level level) throws Exception {
         HtmlPage page = j.createWebClient().goTo("log/" + Util.rawEncode(recorder.getName()) + "/configure");
         HtmlForm form = page.getFormByName("config");
         form.getSelectByName("level").getOptionByValue(level.getName()).setSelected(true);
+        j.submit(form);
+    }
+
+    private void removeTarget(LogRecorder recorder) throws Exception {
+        JenkinsRule.WebClient webClient = j.createWebClient();
+        HtmlPage page = webClient.goTo("log/" + Util.rawEncode(recorder.getName()) + "/configure");
+        HtmlForm form = page.getFormByName("config");
+        j.getButtonByCaption(form, "Delete").click();
+        WebClientUtil.waitForJSExec(webClient);
         j.submit(form);
     }
 

@@ -414,20 +414,20 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
     }
 
     /**
-     * Updates controller logger levels after existing targets are reconfigured. {@link Target#enable()} only makes a
-     * logger more verbose, so it cannot otherwise apply a change such as {@code FINEST} to {@code INFO}.
+     * Updates controller logger levels after existing targets are reconfigured or removed. {@link Target#enable()}
+     * only makes a logger more verbose, so it cannot otherwise apply a change such as {@code FINEST} to {@code INFO}.
      */
     private void updateLogLevels(List<Target> previousTargets) {
         List<LogRecorder> recorders = getParent().getRecorders();
         Set<String> changedTargetNames = new LinkedHashSet<>();
         for (Target previousTarget : previousTargets) {
             Target target = getTarget(previousTarget.name, loggers);
-            if (target == null || target.getLevel().intValue() <= previousTarget.getLevel().intValue()) {
+            if (target != null && target.getLevel().intValue() <= previousTarget.getLevel().intValue()) {
                 continue;
             }
             changedTargetNames.add(previousTarget.name);
             if (sameLevel(previousTarget.getLogger().getLevel(), previousTarget.getLevel())) {
-                target.getLogger().setLevel(null);
+                previousTarget.getLogger().setLevel(null);
             }
         }
 
