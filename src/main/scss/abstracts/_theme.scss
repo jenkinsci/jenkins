@@ -118,18 +118,18 @@ $semantics: (
   --text-color-secondary: var(--secondary);
 
   // Borders
-  --jenkins-border-width: 1.5px;
+  --jenkins-border-width: 1px;
   --jenkins-border-color: color-mix(
     in sRGB,
     var(--text-color-secondary) 17.5%,
-    var(--card-background)
+    transparent
   );
   --jenkins-border-color--subtle: color-mix(
     in sRGB,
     var(--text-color) 3.5%,
     transparent
   );
-  --jenkins-border-color--inherit-subtle: oklch(from currentColor l c h / 0.08);
+  --jenkins-border-color--inherit-subtle: oklch(from currentColor l c h / 0.2);
 
   /* This is a harsher border - for dividers, content blocks and more */
   --jenkins-border: var(--jenkins-border-width) solid
@@ -142,10 +142,6 @@ $semantics: (
     var(--jenkins-border-color--inherit-subtle);
   --jenkins-border--subtle-shadow: 0 0 0 var(--jenkins-border-width)
     var(--jenkins-border-color--subtle);
-
-  @media (resolution <= 1dppx) {
-    --jenkins-border-width: 2px;
-  }
 
   @media (prefers-contrast: more) {
     --header-border: var(--text-color);
@@ -164,7 +160,7 @@ $semantics: (
   --table-header-foreground: var(--text-color);
   --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
-  --table-border-radius: 0.75rem;
+  --table-border-radius: var(--form-input-border-radius);
   --table-row-border-radius: 0.3125rem;
 
   // Deprecated
