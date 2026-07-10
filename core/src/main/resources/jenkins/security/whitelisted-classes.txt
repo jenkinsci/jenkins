@@ -111,6 +111,7 @@ java.util.LinkedHashMap
 java.util.LinkedHashSet
 java.util.LinkedList
 java.util.Locale
+java.util.Map$Entry
 java.util.Optional
 java.util.Properties
 java.util.RandomAccessSublist

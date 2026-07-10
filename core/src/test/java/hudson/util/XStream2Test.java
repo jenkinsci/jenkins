@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -43,12 +44,15 @@ import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import hudson.Functions;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.model.Saveable;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -638,6 +642,34 @@ class XStream2Test {
             fail("expected to fail fast; not supported to read either");
         } catch (RuntimeException x) {
             assertThat("cause is com.thoughtworks.xstream.io.StreamException: Invalid character 0x0 in XML stream", Functions.printThrowable(x), containsString("0x0"));
+        }
+    }
+
+    @Issue("JENKINS-27009")
+    @Test
+    void saveableWithMapRoundTrip() {
+        XStream2 xs = new XStream2();
+        MapWithSaveable orig = new MapWithSaveable();
+        orig.map = new HashMap<>();
+        orig.map.put("key1", "value1");
+        orig.map.put("key2", "value2");
+        orig.map.put("key3", "value3");
+
+        String xml = xs.toXML(orig);
+        MapWithSaveable restored = (MapWithSaveable) xs.fromXML(xml);
+
+        assertNotNull(restored.map, "map should not be null after round-trip");
+        assertEquals(3, restored.map.size(), "map should have all entries after round-trip");
+        assertEquals("value1", restored.map.get("key1"));
+        assertEquals("value2", restored.map.get("key2"));
+        assertEquals("value3", restored.map.get("key3"));
+    }
+
+    private static class MapWithSaveable implements Saveable {
+        Map<String, String> map;
+
+        @Override
+        public void save() throws IOException {
         }
     }
 
