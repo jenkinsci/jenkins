@@ -215,6 +215,111 @@
     font-size: 0.95rem;
   }
 
+  .app-sign-in-register__password-wrapper {
+    position: relative;
+
+    input {
+      padding-right: 2.75rem;
+
+      // The page provides its own visibility toggle, hide the built-in one
+      &::-ms-reveal {
+        display: none;
+      }
+
+      // Replaced by the cross-browser indicator rendered by this page
+      &::-webkit-caps-lock-indicator {
+        display: none;
+      }
+    }
+
+    &:has(.app-sign-in-register__caps-lock-indicator:not([hidden])) input {
+      padding-right: 5rem;
+    }
+  }
+
+  .app-sign-in-register__caps-lock-indicator {
+    position: absolute;
+    top: 0;
+    right: 2.75rem;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    color: var(--warning-color);
+    pointer-events: none;
+
+    &[hidden] {
+      display: none;
+    }
+
+    svg {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+
+    // Same recipe as .jenkins-visually-hidden, which is not part of the
+    // simple page styles
+    .jenkins-visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      border: 0;
+      white-space: nowrap;
+    }
+  }
+
+  .app-sign-in-register__password-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    border-radius: var(--form-input-border-radius);
+
+    &[hidden] {
+      display: none;
+    }
+
+    &:hover {
+      color: var(--text-color);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--focus-input-border);
+      outline-offset: -4px;
+    }
+
+    span {
+      display: flex;
+      align-items: center;
+    }
+
+    svg {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+
+    &[aria-pressed="false"] .app-sign-in-register__password-toggle-icon--hide {
+      display: none;
+    }
+
+    &[aria-pressed="true"] .app-sign-in-register__password-toggle-icon--show {
+      display: none;
+    }
+  }
+
   & > div {
     &:empty {
       display: none;
@@ -277,11 +382,6 @@
 
 .jenkins-input--error {
   border-color: var(--error-color);
-}
-
-.inputHeader {
-  display: flex;
-  justify-content: space-between;
 }
 
 #passwordStrengthWrapper {
