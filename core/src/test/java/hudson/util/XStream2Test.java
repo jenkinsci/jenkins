@@ -47,6 +47,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,6 +56,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.security.ClassFilterImpl;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -639,6 +641,25 @@ class XStream2Test {
         } catch (RuntimeException x) {
             assertThat("cause is com.thoughtworks.xstream.io.StreamException: Invalid character 0x0 in XML stream", Functions.printThrowable(x), containsString("0x0"));
         }
+    }
+
+    @Issue("JENKINS-27009")
+    @Test
+    void mapEntryNotRejectedByBlacklistedTypesConverter() throws Exception {
+        // BlacklistedTypesConverter.canConvert(type) calls
+        //   ClassFilter.DEFAULT.isBlacklisted(type)
+        // In production, DEFAULT is ClassFilterImpl. In unit tests it's
+        // STANDARD. Reflectively instantiate ClassFilterImpl to verify
+        // Map.Entry is not blacklisted after the whitelist addition.
+        // (Reflection needed because ClassFilterImpl's constructor is
+        // package-private in jenkins.security, not visible from hudson.util.)
+        Constructor<?> ctor = ClassFilterImpl.class.getDeclaredConstructor();
+        ctor.setAccessible(true);
+        ClassFilterImpl filter = (ClassFilterImpl) ctor.newInstance();
+        assertFalse(filter.isBlacklisted(Map.Entry.class),
+            "Map.Entry must not be blacklisted after whitelist addition; "
+            + "otherwise BlacklistedTypesConverter would intercept it "
+            + "during XStream deserialization and corrupt build metadata");
     }
 
 }
