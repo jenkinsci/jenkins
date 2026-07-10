@@ -324,10 +324,14 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
          * Makes sure that the logger passes through messages at the correct level to us.
          */
         public void enable() {
+            enableLogger();
+            new SetLevel(name, getLevel()).broadcast();
+        }
+
+        private void enableLogger() {
             Logger l = getLogger();
             if (!l.isLoggable(getLevel()))
                 l.setLevel(getLevel());
-            new SetLevel(name, getLevel()).broadcast();
         }
 
         public void disable() {
@@ -410,6 +414,60 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
     }
 
     /**
+     * Updates controller logger levels after existing targets are reconfigured. {@link Target#enable()} only makes a
+     * logger more verbose, so it cannot otherwise apply a change such as {@code FINEST} to {@code INFO}.
+     */
+    private void updateLogLevels(List<Target> previousTargets) {
+        List<LogRecorder> recorders = getParent().getRecorders();
+        Set<String> changedTargetNames = new LinkedHashSet<>();
+        for (Target previousTarget : previousTargets) {
+            Target target = getTarget(previousTarget.name, loggers);
+            if (target == null || target.getLevel().intValue() <= previousTarget.getLevel().intValue()) {
+                continue;
+            }
+            changedTargetNames.add(previousTarget.name);
+            if (sameLevel(previousTarget.getLogger().getLevel(), previousTarget.getLevel())) {
+                target.getLogger().setLevel(null);
+            }
+        }
+
+        for (LogRecorder recorder : recorders) {
+            for (Target target : recorder.loggers) {
+                if (changedTargetNames.contains(target.name)) {
+                    target.enableLogger();
+                }
+            }
+        }
+
+        List<Target> descendantTargets = new ArrayList<>();
+        for (LogRecorder recorder : recorders) {
+            for (Target target : recorder.loggers) {
+                if (changedTargetNames.stream().anyMatch(name -> isDescendant(name, target.name))) {
+                    descendantTargets.add(target);
+                }
+            }
+        }
+        descendantTargets.sort(Comparator.comparingInt(target -> target.name.length()));
+        descendantTargets.forEach(Target::enableLogger);
+    }
+
+    private static Target getTarget(String loggerName, List<Target> targets) {
+        return targets.stream().filter(target -> target.name.equals(loggerName)).findFirst().orElse(null);
+    }
+
+    private static boolean isDescendant(String loggerName, String candidate) {
+        return loggerName.isEmpty()
+                ? !candidate.isEmpty()
+                : candidate.startsWith(loggerName)
+                        && candidate.length() > loggerName.length()
+                        && candidate.charAt(loggerName.length()) == '.';
+    }
+
+    private static boolean sameLevel(Level first, Level second) {
+        return first == null ? second == null : second != null && first.intValue() == second.intValue();
+    }
+
+    /**
      * Accepts submission from the configuration page.
      */
     @POST
@@ -431,10 +489,11 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
             redirect = "../" + Util.rawEncode(newName) + '/';
         }
 
+        List<Target> previousTargets = List.copyOf(loggers);
         List<Target> newTargets = req.bindJSONToList(Target.class, src.get("loggers"));
         setLoggers(newTargets);
 
-        save();
+        save(previousTargets);
         if (oldFile != null) oldFile.delete();
         FormApply.success(redirect).generateResponse(req, rsp, null);
     }
@@ -461,10 +520,17 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
      */
     @Override
     public synchronized void save() throws IOException {
+        save(null);
+    }
+
+    private synchronized void save(List<Target> previousTargets) throws IOException {
         if (BulkChange.contains(this))   return;
 
         getConfigFile().write(this);
         loggers.forEach(Target::enable);
+        if (previousTargets != null) {
+            updateLogLevels(previousTargets);
+        }
 
         SaveableListener.fireOnChange(this, getConfigFile());
     }
