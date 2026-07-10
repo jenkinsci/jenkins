@@ -28,7 +28,7 @@ package hudson.security;
  * Thrown by {@link PasswordComplexityRule#validate(String)} when a password
  * does not meet the configured complexity requirements.
  *
- * @since TODO
+ * @since 2.572
  */
 public class PasswordComplexityException extends Exception {
     public PasswordComplexityException(String message) {
