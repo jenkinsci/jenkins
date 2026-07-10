@@ -29,7 +29,7 @@ import hudson.model.Descriptor;
 /**
  * {@link Descriptor} for {@link PasswordComplexityRule}.
  *
- * @since TODO
+ * @since 2.572 (moved from hudson.security to jenkins.security in 2.TODO)
  */
 public abstract class PasswordComplexityRuleDescriptor extends Descriptor<PasswordComplexityRule> {
 }

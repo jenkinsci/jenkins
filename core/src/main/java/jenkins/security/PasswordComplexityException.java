@@ -30,7 +30,7 @@ import java.util.List;
  * Thrown by {@link PasswordComplexityRule#validate(String)} when a password
  * does not meet the configured complexity requirements.
  *
- * @since TODO
+ * @since 2.572 (moved from hudson.security to jenkins.security in 2.TODO)
  */
 public class PasswordComplexityException extends Exception {
 
