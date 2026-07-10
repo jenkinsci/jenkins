@@ -107,8 +107,10 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
                     justification = "Guards against corrupted persisted build data where the "
                             + "underlying collection's internal state is null despite a non-null reference")
                     NullPointerException e) {
+                Run<?, ?> run = (Run<?, ?>) this;
                 Logger.getLogger(RunWithSCM.class.getName())
-                        .log(Level.WARNING, "Corrupted culprit data encountered while reading culprits", e);
+                        .log(Level.WARNING, "Corrupted culprit data encountered while reading culprits for "
+                                + run.getFullDisplayName(), e);
                 copy = new HashSet<>();
             }
             culpritIds = Collections.unmodifiableSet(copy);
