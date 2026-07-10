@@ -1124,7 +1124,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             }
             var byName = instance.byName;
             var idStrategy = idStrategy();
-            java.util.Arrays.stream(subdirectories).parallel().forEach(dir -> {
+            Arrays.stream(subdirectories).parallel().forEach(dir -> {
                 var dirName = dir.getName();
                 if (!HASHED_DIRNAMES.matcher(dirName).matches()) {
                     LOGGER.fine(() -> "ignoring unrecognized dir " + dir);
