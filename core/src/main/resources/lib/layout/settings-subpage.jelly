@@ -69,6 +69,9 @@ THE SOFTWARE.
       Optional, includes the sidepanel for if the Experimental Manage Jenkins is disabled.
       Defaults to false if not set.
     </st:attribute>
+    <st:attribute name="width">
+      Optional, sets the width of the page. Available options are 'default' or 'wide'.
+    </st:attribute>
   </st:documentation>
 
   <j:new className="hudson.model.ManageJenkinsAction" var="manageJenkinsAction" />
@@ -124,7 +127,7 @@ THE SOFTWARE.
         </l:side-panel>
         <l:main-panel>
           <div class="app-settings-container">
-            <div class="app-settings-container__inner">
+            <div class="app-settings-container__inner ${attrs.width eq 'wide' ? 'app-settings-container__inner--wide' : ''}">
               <j:if test="${!attrs.containsKey('header')}">
                 <l:app-bar title="${pageTitle}" />
                 <j:if test="${!empty(description)}">
