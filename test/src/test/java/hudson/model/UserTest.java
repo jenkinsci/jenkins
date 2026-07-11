@@ -882,4 +882,3 @@ class UserTest {
         }
     }
 }
-
