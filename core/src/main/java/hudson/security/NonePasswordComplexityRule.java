@@ -32,7 +32,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 /**
  * A {@link PasswordComplexityRule} that accepts any password.
  *
- * @since TODO
+ * @since 2.572
  */
 public class NonePasswordComplexityRule extends PasswordComplexityRule {
 

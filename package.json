@@ -48,8 +48,8 @@
     "stylelint": "17.14.0",
     "stylelint-checkstyle-reporter": "1.1.1",
     "stylelint-config-standard-scss": "17.0.0",
-    "webpack": "5.108.3",
-    "webpack-cli": "7.1.0",
+    "webpack": "5.108.4",
+    "webpack-cli": "7.2.1",
     "webpack-remove-empty-scripts": "1.1.1"
   },
   "dependencies": {
