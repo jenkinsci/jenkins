@@ -6,6 +6,8 @@
 
   const statusIconSelector = ".app-build-bar__content__headline svg, svg";
   const progressRingSelector = "[data-build-caption-progress-ring]";
+  const progressRingPercentageAttribute =
+    "data-build-caption-progress-ring-percentage";
   const svgNamespace = "http://www.w3.org/2000/svg";
   const progress =
     buildCaption.dataset.progress ||
@@ -93,9 +95,26 @@
       return;
     }
 
-    updateBuildIconProgress(nextIcon, progress);
+    const previousProgress = getBuildIconProgress(currentIcon);
+    const nextProgress = parseProgressPercentage(progress);
+    updateBuildIconProgress(
+      nextIcon,
+      nextProgress === undefined
+        ? undefined
+        : (previousProgress ?? nextProgress),
+    );
     removeCurrentIconLabel(currentIcon);
     currentIcon.outerHTML = template.innerHTML;
+
+    if (
+      previousProgress !== undefined &&
+      nextProgress !== undefined &&
+      previousProgress !== nextProgress
+    ) {
+      requestAnimationFrame(() => {
+        updateCurrentBuildIconProgress(nextProgress);
+      });
+    }
   }
 
   function updateCurrentBuildIconProgress(progress) {
@@ -110,10 +129,11 @@
       return;
     }
 
-    icon.querySelector(progressRingSelector)?.remove();
+    let ring = icon.querySelector(progressRingSelector);
 
     const percentage = parseProgressPercentage(progress);
     if (percentage === undefined) {
+      ring?.remove();
       return;
     }
 
@@ -122,10 +142,14 @@
     const radius = getBuildIconOuterRadius(icon);
     const circumference = 2 * Math.PI * radius;
     const offset = circumference - (percentage / 100) * circumference;
-    const ring = document.createElementNS(svgNamespace, "circle");
 
     icon.style.overflow = "visible";
-    ring.setAttribute("data-build-caption-progress-ring", "true");
+    if (!ring) {
+      ring = document.createElementNS(svgNamespace, "circle");
+      ring.setAttribute("data-build-caption-progress-ring", "true");
+    }
+
+    ring.setAttribute(progressRingPercentageAttribute, percentage);
     ring.setAttribute("cx", center);
     ring.setAttribute("cy", center);
     ring.setAttribute("r", radius);
@@ -137,15 +161,26 @@
     ring.setAttribute("stroke-dashoffset", offset);
     ring.setAttribute(
       "style",
-      "transform: rotate(-90deg); transform-origin: 50% 50%; transition: var(--standard-transition);",
+      `stroke-dasharray: ${circumference}; stroke-dashoffset: ${offset}; transform: rotate(-90deg); transform-origin: 50% 50%; transition: var(--standard-transition);`,
     );
 
     const runningIndicator = icon.querySelector(".app-status-icon-running");
+    if (ring.parentElement) {
+      return;
+    }
     if (runningIndicator) {
       icon.insertBefore(ring, runningIndicator);
     } else {
       icon.append(ring);
     }
+  }
+
+  function getBuildIconProgress(icon) {
+    return parseProgressPercentage(
+      icon
+        .querySelector(progressRingSelector)
+        ?.getAttribute(progressRingPercentageAttribute),
+    );
   }
 
   function getBuildIconColor(icon) {
