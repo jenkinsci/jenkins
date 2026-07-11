@@ -180,7 +180,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     /**
-     * @since TODO
+     * @since 2.572
      */
     @Restricted(NoExternalUse.class)
     public PasswordComplexityRule getPasswordComplexityRule() {
@@ -188,7 +188,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     /**
-     * @since TODO
+     * @since 2.572
      */
     @DataBoundSetter
     public void setPasswordComplexityRule(PasswordComplexityRule passwordComplexityRule) {

@@ -29,7 +29,7 @@ import hudson.model.Descriptor;
 /**
  * {@link Descriptor} for {@link PasswordComplexityRule}.
  *
- * @since TODO
+ * @since 2.572
  */
 public abstract class PasswordComplexityRuleDescriptor extends Descriptor<PasswordComplexityRule> {
 }
