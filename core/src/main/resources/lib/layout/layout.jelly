@@ -101,7 +101,7 @@ THE SOFTWARE.
   </j:if>
 </j:if>
 <x:doctype name="html" />
-<html>
+<html data-disable-sticky="${h.stickyPositioningDisabled}">
   <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}"
         data-extensions-available="${extensionsAvailable}"
         data-crumb-header="${h.getCrumbRequestField()}" data-crumb-value="${h.getCrumb(request2)}"
@@ -169,12 +169,12 @@ THE SOFTWARE.
                     logout="${%logout}"/>
     </j:if>
 
-    <div id="page-body" class="app-page-body app-page-body--${layoutType} clear">
+    <div id="page-body" class="${layoutType eq 'full-screen' ? 'app-full-screen-page-body' : 'app-page-body'} clear">
       <j:if test="${layoutType=='two-column'}">
         <j:set var="mode" value="side-panel" />
         <d:invokeBody />
       </j:if>
-      <div id="main-panel">
+      <div class="app-page-body__contents">
         <j:set var="mode" value="main-panel" />
         <d:invokeBody/>
       </div>

@@ -57,7 +57,7 @@ public class ViewTest {
         List<SearchItem> result = new ArrayList<>();
         index.find(displayName1, result);
         assertEquals(1, result.size());
-        SearchItem actual = result.get(0);
+        SearchItem actual = result.getFirst();
         assertEquals(actual.getSearchName(), item1.getDisplayName());
         assertEquals(actual.getSearchUrl(), item1.getSearchUrl());
 
@@ -66,7 +66,7 @@ public class ViewTest {
         // make sure we can fetch item 2 from the index
         index.find(displayName2, result);
         assertEquals(1, result.size());
-        actual = result.get(0);
+        actual = result.getFirst();
         assertEquals(actual.getSearchName(), item2.getDisplayName());
         assertEquals(actual.getSearchUrl(), item2.getSearchUrl());
     }

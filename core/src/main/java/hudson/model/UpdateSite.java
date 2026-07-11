@@ -67,7 +67,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -75,6 +74,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Stream;
+import jenkins.core.PluginExcerptSanitizer;
 import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsConfiguration;
@@ -194,11 +194,7 @@ public class UpdateSite {
     @Deprecated
     public @CheckForNull Future<FormValidation> updateDirectly(final boolean signatureCheck) {
         if (! getDataFile().exists() || isDue()) {
-            return Jenkins.get().getUpdateCenter().updateService.submit(new Callable<>() {
-                @Override public FormValidation call() throws Exception {
-                    return updateDirectlyNow(signatureCheck);
-                }
-            });
+            return Jenkins.get().getUpdateCenter().updateService.submit(() -> updateDirectlyNow(signatureCheck));
         } else {
             return null;
         }
@@ -294,7 +290,29 @@ public class UpdateSite {
      */
     @Restricted(NoExternalUse.class)
     public final FormValidation verifySignatureInternal(JSONObject o) throws IOException {
-        return getJsonSignatureValidator().verifySignature(o);
+        FormValidation result = getJsonSignatureValidator(null).verifySignature(o);
+
+        if (result.kind == FormValidation.Kind.ERROR) {
+            String message = result.getMessage();
+            if (message != null) {
+//                String siteUrl = getUrl();
+                String updatedMessage;
+
+                if (message.contains("update site") && message.contains(" Path") && !message.contains(url)) {
+                    // Ensure the update site URL is included in error messages by replacing the site identifier in messages of the 'update site … Path' pattern or appending it otherwise.
+                    updatedMessage = message.replaceAll(
+                            "(update site\\s+).*?(\\s+Path)",
+                            "$1" + url + "$2"
+                    );
+                } else {
+                    // Do not alter message structure; only add URL context
+                    updatedMessage = message + " (URL: " + url + ")";
+                }
+                return FormValidation.error(updatedMessage);
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -1048,9 +1066,7 @@ public class UpdateSite {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (!(o instanceof Warning)) return false;
-
-            Warning warning = (Warning) o;
+            if (!(o instanceof Warning warning)) return false;
 
             return id.equals(warning.id);
         }
@@ -1178,8 +1194,7 @@ public class UpdateSite {
         }
 
         private static IssueTracker createFromJSONObject(Object o) {
-            if (o instanceof JSONObject) {
-                JSONObject jsonObject = (JSONObject) o;
+            if (o instanceof JSONObject jsonObject) {
                 if (jsonObject.has("type") && jsonObject.has("viewUrl") && jsonObject.has("reportUrl")) {
                     return new IssueTracker(jsonObject.getString("type"), jsonObject.getString("viewUrl"), jsonObject.getString("reportUrl"));
                 }
@@ -1278,7 +1293,7 @@ public class UpdateSite {
             super(sourceId, o, UpdateSite.this.url);
             this.wiki = get(o, "wiki");
             this.title = get(o, "title");
-            this.excerpt = get(o, "excerpt");
+            this.excerpt = sanitizeExcerpt(get(o, "excerpt"));
             this.compatibleSinceVersion = Util.intern(get(o, "compatibleSinceVersion"));
             this.requiredCore = Util.intern(get(o, "requiredCore"));
             final String releaseTimestamp = get(o, "releaseTimestamp");
@@ -1329,6 +1344,21 @@ public class UpdateSite {
                 }
             }
 
+        }
+
+        /**
+         * Sanitizes HTML excerpt to prevent XSS from unsafe update sites.
+         */
+        private static String sanitizeExcerpt(String excerpt) {
+            if (excerpt == null) {
+                return null;
+            }
+            final Jenkins jenkins = Jenkins.getInstanceOrNull();
+            final PluginExcerptSanitizer sanitizer = jenkins != null ? jenkins.getCoreLibrary(PluginExcerptSanitizer.class) : null;
+            if (sanitizer == null) {
+                return Util.xmlEscape(excerpt);
+            }
+            return sanitizer.sanitize(excerpt);
         }
 
         @Restricted(NoExternalUse.class)

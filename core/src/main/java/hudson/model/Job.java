@@ -1053,6 +1053,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public List<RunT> getLastBuildsOverThreshold(int numberOfBuilds, Result threshold) {
         RunT r = getLastBuild();
+        if (r == null) {
+            return Collections.emptyList();
+        }
         return r.getBuildsOverThreshold(numberOfBuilds, threshold);
     }
 
@@ -1093,7 +1096,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         while (candidates.size() < 3) {
             if (fallbackCandidates.isEmpty())
                 break;
-            RunT run = fallbackCandidates.remove(0);
+            RunT run = fallbackCandidates.removeFirst();
             candidates.add(run);
         }
 
@@ -1119,12 +1122,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * @return never null
      */
+    @SuppressWarnings("deprecation")
     public PermalinkList getPermalinks() {
         PeepholePermalink.initialized();
         // TODO: shall we cache this?
         PermalinkList permalinks = new PermalinkList(Permalink.BUILTIN);
-        for (PermalinkProjectAction ppa : getActions(PermalinkProjectAction.class)) {
-            permalinks.addAll(ppa.getPermalinks());
+        for (var action : getActions()) {
+            if (action instanceof PermalinkProjectAction ppa) {
+                permalinks.addAll(ppa.getPermalinks());
+            }
         }
         return permalinks;
     }
@@ -1266,7 +1272,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public HealthReport getBuildHealth() {
         List<HealthReport> reports = getBuildHealthReports();
-        return reports.isEmpty() ? new HealthReport() : reports.get(0);
+        return reports.isEmpty() ? new HealthReport() : reports.getFirst();
     }
 
     @Exported(name = "healthReport")
@@ -1715,7 +1721,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Restricted(NoExternalUse.class)
     public List<Tab> getJobTabs() {
-        return getActions(Tab.class);
+        return getActions(Tab.class).stream().filter(e -> e.getIconFileName() != null).toList();
     }
 
     @Restricted(NoExternalUse.class)

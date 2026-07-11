@@ -12,10 +12,10 @@
 
 .app-build__grid {
   gap: calc(var(--section-padding) / 2);
-  margin-bottom: calc(var(--section-padding) * -0.5);
 
   & > * {
     height: 350px;
+    min-width: 0;
   }
 
   // Legacy card shouldn't have a fixed height
@@ -138,41 +138,66 @@
   }
 }
 
-body:has(.app-build-bar) {
-  --top: color-mix(in sRGB, var(--text-color-secondary) 4%, var(--background));
-  --bottom: color-mix(
-    in sRGB,
-    var(--text-color-secondary) 2%,
-    var(--background)
-  );
+@keyframes app-build-bar-border-on-scroll {
+  from {
+    border-bottom-color: color-mix(
+      in sRGB,
+      var(--jenkins-border-color),
+      transparent
+    );
+  }
 
-  background: linear-gradient(var(--top), var(--bottom));
-  background-attachment: fixed;
+  to {
+    border-bottom-color: var(--jenkins-border-color);
+  }
 }
 
 .app-build-bar {
-  position: relative;
+  --app-build-bar-border-color: color-mix(
+    in sRGB,
+    var(--jenkins-border-color),
+    transparent
+  );
+
+  position: sticky;
+  top: 0;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  align-items: start;
+  align-items: center;
   gap: 0.5rem 1.5rem;
-  min-height: 2.875rem;
-  margin-top: -5px;
-  padding-bottom: 0.75rem;
+  min-height: var(--header-height);
+  background-color: color-mix(in sRGB, transparent 25%, var(--top));
+  padding-inline: var(--section-padding);
   z-index: 102;
-
-  @media (width <= 1200px) {
-    display: flex;
-    flex-direction: column;
-  }
+  border-bottom: var(--jenkins-border-width) solid
+    var(--app-build-bar-border-color);
+  margin-left: calc(var(--section-padding) * -1);
+  margin-right: calc(var(--section-padding) * -1);
 
   &::before {
     content: "";
     position: absolute;
-    inset: -1000px calc(var(--section-padding) * -1) 0;
-    background-color: var(--background);
-    border-bottom: var(--jenkins-border-width) solid var(--card-border-color);
+    inset: 0;
     z-index: -1;
+    pointer-events: none;
+    backdrop-filter: blur(15px);
+  }
+
+  @supports (animation-timeline: scroll()) {
+    animation-name: app-build-bar-border-on-scroll;
+    animation-duration: 1s;
+    animation-fill-mode: both;
+    animation-timing-function: linear;
+    animation-timeline: scroll(nearest block);
+    animation-range: 0 var(--header-height);
+  }
+
+  @media (width < 740px) {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    padding-block: var(--section-padding);
   }
 
   .app-build-bar__content {
@@ -186,6 +211,7 @@ body:has(.app-build-bar) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    margin-block: 0.5rem;
   }
 
   .app-build-bar__controls {
@@ -264,6 +290,10 @@ body:has(.app-build-bar) {
   }
 }
 
+.app-page-body__contents:has(.app-build-bar) {
+  padding-top: 0;
+}
+
 .app-build-content {
   display: flex;
   flex-direction: column;
@@ -271,6 +301,6 @@ body:has(.app-build-bar) {
   margin-inline: calc(var(--section-padding) * -1);
 
   .jenkins-app-bar {
-    margin-block: 1.0625rem;
+    margin-block: 0.875rem;
   }
 }

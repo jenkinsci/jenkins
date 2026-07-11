@@ -45,7 +45,7 @@ class HistoryPageFilterCaseSensitiveSearchTest {
     void should_search_case_sensitively_when_enabled_for_user() throws IOException {
         setCaseSensitiveSearchForUserAndCheckAssertionForGivenSearchString("FAILURE", historyPageFilter -> {
                 assertEquals(1, historyPageFilter.runs.size());
-                assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
+                assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.getFirst().getEntryId());
         });
     }
 

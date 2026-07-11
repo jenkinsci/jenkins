@@ -113,6 +113,10 @@ import jenkins.model.DisplayExecutor;
 import jenkins.model.IComputer;
 import jenkins.model.IDisplayExecutor;
 import jenkins.model.Jenkins;
+import jenkins.model.Tab;
+import jenkins.model.details.Detail;
+import jenkins.model.details.DetailFactory;
+import jenkins.model.details.MonitoringDetails;
 import jenkins.search.SearchGroup;
 import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.ImpersonatingExecutorService;
@@ -1503,7 +1507,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             throw new FormException(Messages.Slave_InvalidConfig_Executors(nodeName), "numExecutors");
         }
 
+        OfflineCause offlineCause = node.getTemporaryOfflineCause();
         Node result = node.reconfigure(req, req.getSubmittedForm());
+        result.setTemporaryOfflineCause(offlineCause);
         Jenkins.get().getNodesObject().replaceNode(this.getNode(), result);
 
         if (result.getNodeProperty(DiskSpaceMonitorNodeProperty.class) != null) {
@@ -1736,6 +1742,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
+    /**
+     * Retrieves the tabs for a given job
+     */
+    @Restricted(NoExternalUse.class)
+    public List<Tab> getAgentTabs() {
+        return getActions(Tab.class).stream().filter(e -> e.getIconFileName() != null).toList();
+    }
+
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Computer.class, Messages._Computer_Permissions_Title());
     public static final Permission CONFIGURE =
             new Permission(
@@ -1796,4 +1810,18 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             new Permission[] { EXTENDED_READ, CONNECT };
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
+
+    @Extension
+    public static final class BasicComputerDetailFactory extends DetailFactory<Computer> {
+
+        @Override
+        public Class<Computer> type() {
+            return Computer.class;
+        }
+
+        @NonNull @Override public List<? extends Detail> createFor(@NonNull Computer target) {
+            return List.of(new MonitoringDetails(target));
+        }
+    }
+
 }

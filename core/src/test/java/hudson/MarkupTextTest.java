@@ -61,8 +61,8 @@ class MarkupTextTest {
         MarkupText t = new MarkupText("Fixed 2 issues in this commit, fixing issue 155, 145");
         List<SubText> tokens = t.findTokens(Pattern.compile("issue .*"));
         assertEquals(1, tokens.size(), "Expected one token");
-        assertEquals("issue 155, 145", tokens.get(0).group(0), "Expected single token was incorrect");
-        for (SubText st : tokens.get(0).findTokens(Pattern.compile("([0-9]+)")))
+        assertEquals("issue 155, 145", tokens.getFirst().group(0), "Expected single token was incorrect");
+        for (SubText st : tokens.getFirst().findTokens(Pattern.compile("([0-9]+)")))
             st.surroundWith("<$1>", "<$1>");
 
         assertEquals("Fixed 2 issues in this commit, fixing issue <155>155<155>, <145>145<145>", t.toString(false));

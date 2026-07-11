@@ -116,6 +116,7 @@ THE SOFTWARE.
                     </div>
                   </j:if>
                   <input type="hidden" name="from" value="${from}"/>
+                  <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request2)}"/>
                   <button type="submit"
                       name="Submit"
                       class="jenkins-button jenkins-button--primary">

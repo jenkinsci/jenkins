@@ -1,14 +1,14 @@
 @use "../abstracts/mixins";
 
-.jenkins-form {
-  max-width: var(--form-item-max-width);
-}
-
 .jenkins-page-description {
-  font-size: 0.9375rem;
   color: var(--text-color-secondary);
   margin: 0 0 var(--section-padding) 0;
   line-height: 1.66;
+  text-wrap: pretty;
+}
+
+.jenkins-app-bar + .jenkins-page-description {
+  margin-top: -0.5rem;
 }
 
 .jenkins-fieldset {
@@ -22,7 +22,6 @@
 }
 
 .jenkins-form-item {
-  max-width: var(--form-item-max-width);
   margin-bottom: var(--section-padding);
 
   // Workaround for float:right button controls
@@ -45,6 +44,22 @@
 
   &--medium {
     max-width: var(--form-item-max-width--medium);
+  }
+
+  &:has(> .validation-error-area .warning) {
+    --input-border: var(--warning-color);
+    --input-border-hover: var(--warning-color);
+    --focus-input-border: var(--warning-color);
+    --form-input-glow--focus: 0 0 0 0.25rem
+      color-mix(in sRGB, var(--warning-color) 20%, transparent);
+  }
+
+  &:has(> .validation-error-area .error) {
+    --input-border: var(--error-color);
+    --input-border-hover: var(--error-color);
+    --focus-input-border: var(--error-color);
+    --form-input-glow--focus: 0 0 0 0.25rem
+      color-mix(in sRGB, var(--error-color) 20%, transparent);
   }
 }
 
@@ -72,12 +87,13 @@
   align-items: center;
   background-color: var(--button-background);
   border-radius: var(--form-input-border-radius);
-  outline: var(--jenkins-border--subtle);
+  outline: var(--jenkins-border);
   outline-offset: calc(var(--jenkins-border-width) * -1);
   padding: 0 1rem;
   gap: 1.5rem;
+  overflow-wrap: anywhere;
 
-  .jenkins-copy-button {
+  .jenkins-button {
     margin-top: 0.25rem;
     margin-bottom: 0.25rem;
     margin-right: -0.75rem;

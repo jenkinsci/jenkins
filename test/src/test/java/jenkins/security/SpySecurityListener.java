@@ -98,7 +98,7 @@ public abstract class SpySecurityListener extends SecurityListener {
                 fail("event list is empty");
             }
 
-            T t = eventList.remove(eventList.size() - 1);
+            T t = eventList.removeLast();
             assertTrue(predicate.test(t));
             eventList.clear();
         }

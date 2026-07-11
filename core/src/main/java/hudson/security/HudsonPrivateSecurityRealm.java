@@ -64,6 +64,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
@@ -83,6 +84,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.CompatibleFilter;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -91,6 +93,7 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -134,6 +137,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     private final boolean enableCaptcha;
 
+    private PasswordComplexityRule passwordComplexityRule = new NonePasswordComplexityRule();
+
     @Deprecated
     public HudsonPrivateSecurityRealm(boolean allowsSignup) {
         this(allowsSignup, false, (CaptchaSupport) null);
@@ -172,6 +177,29 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     public boolean isEnableCaptcha() {
         return enableCaptcha;
+    }
+
+    /**
+     * @since 2.572
+     */
+    @Restricted(NoExternalUse.class)
+    public PasswordComplexityRule getPasswordComplexityRule() {
+        return passwordComplexityRule;
+    }
+
+    /**
+     * @since 2.572
+     */
+    @DataBoundSetter
+    public void setPasswordComplexityRule(PasswordComplexityRule passwordComplexityRule) {
+        this.passwordComplexityRule = passwordComplexityRule != null ? passwordComplexityRule : new NonePasswordComplexityRule();
+    }
+
+    private Object readResolve() {
+        if (passwordComplexityRule == null) {
+            passwordComplexityRule = new NonePasswordComplexityRule();
+        }
+        return this;
     }
 
     /**
@@ -311,7 +339,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     @RequirePOST
     public void doCreateAccountByAdmin(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        createAccountByAdmin(req, rsp, "addUser.jelly", "."); // send the user back to the listing page on success
+        createAccountByAdmin(req, rsp, "addUserDialog.jelly", "."); // send the user back to the listing page on success
     }
 
     /**
@@ -363,11 +391,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This can be run by anyone, but only to create the very first user account.
      */
     @RequirePOST
-    public void doCreateFirstAccount(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+    public synchronized void doCreateFirstAccount(StaplerRequest2 req, StaplerResponse2 rsp)
+            throws IOException, ServletException {
+
         if (hasSomeUser()) {
             rsp.sendError(SC_UNAUTHORIZED, "First user was already created");
             return;
         }
+
         User u = createAccount(req, rsp, false, "firstUser.jelly");
         if (u != null) {
             tryToMakeAdmin(u);
@@ -452,9 +483,17 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         try {
-            PASSWORD_HASH_ENCODER.encode(si.password1);
+            PASSWORD_HASH_ENCODER.encode2(si.password1);
         }  catch (RuntimeException ex) {
             si.errors.put("password1", ex.getMessage());
+        }
+
+        if (!si.errors.containsKey("password1") && si.password1 != null && !si.password1.isEmpty()) {
+            try {
+                passwordComplexityRule.validate(si.password1);
+            } catch (PasswordComplexityException e) {
+                si.errors.put("password1", e.getMessage());
+            }
         }
 
         if (si.fullname == null || si.fullname.isEmpty()) {
@@ -507,11 +546,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     private boolean containsOnlyAcceptableCharacters(@NonNull String value) {
-        if (ID_REGEX == null) {
-            return value.matches(DEFAULT_ID_REGEX);
-        } else {
-            return value.matches(ID_REGEX);
-        }
+        return value.matches(Objects.requireNonNullElse(ID_REGEX, DEFAULT_ID_REGEX));
     }
 
     @Restricted(NoExternalUse.class) // _entryForm.jelly and signup.jelly
@@ -853,9 +888,18 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
                 // The password is being changed
                 try {
-                    PASSWORD_HASH_ENCODER.encode(pwd);
+                    PASSWORD_HASH_ENCODER.encode2(pwd);
                 } catch (RuntimeException ex) {
                     throw new FormException(ex.getMessage(), "user.password");
+                }
+
+                SecurityRealm realm = Jenkins.get().getSecurityRealm();
+                if (realm instanceof HudsonPrivateSecurityRealm hpsr) {
+                    try {
+                        hpsr.getPasswordComplexityRule().validate(pwd);
+                    } catch (PasswordComplexityException e) {
+                        throw new FormException(e.getMessage(), "user.password");
+                    }
                 }
 
                 User user = Util.getNearestAncestorOfTypeOrThrow(req, User.class);
@@ -866,6 +910,35 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 }
 
                 return Details.fromPlainPassword(Util.fixNull(pwd));
+            }
+
+            @POST
+            public FormValidation doCheckPassword(@QueryParameter String value) {
+                String password = Util.fixEmpty(value);
+                if (password == null) {
+                    return FormValidation.ok();
+                }
+
+                // will be null if it wasn't encrypted
+                String data = Protector.unprotect(password);
+                if (data != null) {
+                    String prefix = Stapler.getCurrentRequest2().getSession().getId() + ':';
+                    if (data.startsWith(prefix)) {
+                        // The password is not being changed
+                        return FormValidation.ok();
+                    }
+                }
+
+                SecurityRealm realm = Jenkins.get().getSecurityRealm();
+                if (realm instanceof HudsonPrivateSecurityRealm hpsr) {
+                    try {
+                        hpsr.getPasswordComplexityRule().validate(password);
+                    } catch (PasswordComplexityException e) {
+                        return FormValidation.error(e.getMessage());
+                    }
+                }
+
+                return FormValidation.ok();
             }
 
             @Override
@@ -934,9 +1007,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         private static final Pattern BCRYPT_PATTERN = Pattern.compile("^\\$2a\\$([0-9]{2})\\$.{53}$");
 
         @Override
-        public String encode(CharSequence rawPassword) {
+        public String encode2(CharSequence rawPassword) {
             try {
-                return super.encode(rawPassword);
+                return encode(rawPassword);
             } catch (IllegalArgumentException ex) {
                 if (ex.getMessage().equals("password cannot be more than 72 bytes")) {
                     if (rawPassword.toString().matches("\\A\\p{ASCII}+\\z")) {
@@ -987,6 +1060,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public String encode(CharSequence rawPassword) {
+            if (rawPassword == null) {
+                throw new IllegalArgumentException("Null rawPassword cannot be encoded");
+            }
             if (rawPassword.length() < FIPS_PASSWORD_LENGTH) {
                 throw new IllegalArgumentException(Messages.HudsonPrivateSecurityRealm_CreateAccount_FIPS_PasswordLengthInvalid());
             }
@@ -999,6 +1075,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public boolean matches(CharSequence rawPassword, String encodedPassword) {
+            if (rawPassword == null) {
+                throw new IllegalArgumentException("Null rawPassword cannot be compared");
+            }
             try {
                 return validatePassword(rawPassword.toString(), encodedPassword);
             } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
@@ -1150,6 +1229,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 return FormValidation.warning(Messages.HudsonPrivateSecurityRealm_SignupWarning());
             }
             return FormValidation.ok();
+        }
+
+        public PasswordComplexityRule getDefaultPasswordComplexityRule() {
+            return new NonePasswordComplexityRule();
         }
     }
 

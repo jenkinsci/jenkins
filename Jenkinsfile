@@ -6,20 +6,21 @@
  */
 
 def failFast = false
+def numBuildToKeep = env.CHANGE_ID ? '10' : '50'
 
 properties([
-  buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')),
+  buildDiscarder(logRotator(numToKeepStr: numBuildToKeep, artifactNumToKeepStr: '3')),
   disableConcurrentBuilds(abortPrevious: true)
 ])
 
 def axes = [
   platforms: ['linux', 'windows'],
-  jdks: [17, 21, 25],
+  jdks: [21, 25],
 ]
 
 stage('Record build') {
   retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
-    node('maven-17') {
+    node('maven-21-nonspot') {
       infra.checkoutSCM()
 
       /*
@@ -69,13 +70,8 @@ axes.values().combinations {
     if (platform == 'windows') {
       agentContainerLabel += '-windows'
     }
-    int retryCount = 0
+    agentContainerLabel += '-nonspot'
     retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
-      if (retryCount == 1 && platform == 'windows' ) {
-        agentContainerLabel = agentContainerLabel + '-nonspot'
-      }
-      // Increment before allocating the node in case it fails
-      retryCount++
       node(agentContainerLabel) {
         // First stage is actually checking out the source. Since we're using Multibranch
         // currently, we can use "checkout scm".
@@ -216,40 +212,40 @@ axes.values().combinations {
   }
 }
 
-def athAxes = [
-  platforms: ['linux'],
-  jdks: [17],
-  browsers: ['firefox'],
-]
-athAxes.values().combinations {
-  def (platform, jdk, browser) = it
-  builds["ath-${platform}-jdk${jdk}-${browser}"] = {
-    retry(conditions: [agent(), nonresumable()], count: 2) {
-      node('docker-highmem') {
-        // Just to be safe
-        deleteDir()
-        checkout scm
-
-        withChecks(name: 'Tests', includeStage: true) {
-          infra.withArtifactCachingProxy {
-            sh "bash ath.sh ${jdk} ${browser}"
-          }
-          junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
-        }
-        /*
-         * Currently disabled, as the fact that this is a manually created subset will confuse Launchable,
-         * which expects this to be a full build. When we implement subsetting, this can be re-enabled using
-         * Launchable's subset rather than our own.
-         */
-        /*
-         withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
-         sh "launchable verify && launchable record tests --no-build --flavor platform=${platform} --flavor jdk=${jdk} --flavor browser=${browser} maven './target/ath-reports'"
-         }
-         */
-      }
-    }
-  }
-}
+// def athAxes = [
+//   platforms: ['linux'],
+//   jdks: [21],
+//   browsers: ['firefox'],
+// ]
+// athAxes.values().combinations {
+//   def (platform, jdk, browser) = it
+//   builds["ath-${platform}-jdk${jdk}-${browser}"] = {
+//     retry(conditions: [agent(), nonresumable()], count: 2) {
+//       node('docker-highmem') {
+//         // Just to be safe
+//         deleteDir()
+//         checkout scm
+//
+//         withChecks(name: 'Tests', includeStage: true) {
+//           infra.withArtifactCachingProxy {
+//             sh "bash ath.sh ${jdk} ${browser}"
+//           }
+//           junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
+//         }
+//         /*
+//          * Currently disabled, as the fact that this is a manually created subset will confuse Launchable,
+//          * which expects this to be a full build. When we implement subsetting, this can be re-enabled using
+//          * Launchable's subset rather than our own.
+//          */
+//         /*
+//          withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
+//          sh "launchable verify && launchable record tests --no-build --flavor platform=${platform} --flavor jdk=${jdk} --flavor browser=${browser} maven './target/ath-reports'"
+//          }
+//          */
+//       }
+//     }
+//   }
+// }
 
 builds.failFast = failFast
 parallel builds
