@@ -89,51 +89,54 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
      * @return
      *      can be empty but never null.
      */
-    @Exported
-    @NonNull default Set<User> getCulprits() {
-        if (shouldCalculateCulprits()) {
-            return calculateCulprits();
-        }
-
-        Set<String> ids = getCulpritIds();
-        final Set<String> culpritIds;
-        if (ids == null) {
-            culpritIds = Set.of();
-        } else {
-            Set<String> copy;
-            try {
-                copy = new HashSet<>(ids);
-            } catch (@SuppressFBWarnings(value = "DCN_NULLPOINTER_EXCEPTION",
-                    justification = "Guards against corrupted persisted build data where the "
-                            + "underlying collection's internal state is null despite a non-null reference")
-                    NullPointerException e) {
-                Run<?, ?> run = (Run<?, ?>) this;
-                Logger.getLogger(RunWithSCM.class.getName())
-                        .log(Level.WARNING, "Corrupted culprit data encountered while reading culprits for "
-                                + run.getFullDisplayName(), e);
-                copy = new HashSet<>();
-            }
-            culpritIds = Collections.unmodifiableSet(copy);
-        }
-
-        return new AbstractSet<>() {
-            @Override
-            public Iterator<User> iterator() {
-                return new AdaptedIterator<>(culpritIds.iterator()) {
-                    @Override
-                    protected User adapt(String id) {
-                        // TODO: Probably it should not auto-create users
-                        return User.getById(id, true);
-                    }
-                };
-            }
-
-            @Override
-            public int size() {
-                return culpritIds.size();
-            }
-        };
+@Exported
+@NonNull
+default Set<User> getCulprits() {
+    if (shouldCalculateCulprits()) {
+        return calculateCulprits();
     }
+
+    Set<String> ids = getCulpritIds();
+    final Set<String> culpritIds;
+    if (ids == null) {
+        culpritIds = Set.of();
+    } else {
+        culpritIds = Collections.unmodifiableSet(defensiveCopy(ids));
+    }
+
+    return new AbstractSet<User>() {
+        @Override
+        public Iterator<User> iterator() {
+            return new AdaptedIterator<>(culpritIds.iterator()) {
+                @Override
+                protected User adapt(String id) {
+                    // TODO: Probably it should not auto-create users
+                    return User.getById(id, true);
+                }
+            };
+        }
+
+        @Override
+        public int size() {
+            return culpritIds.size();
+        }
+    };
+}
+
+@SuppressFBWarnings(value = "DCN_NULLPOINTER_EXCEPTION",
+        justification = "Guards against corrupted persisted build data where the underlying "
+                + "collection's internal state is null despite a non-null reference")
+private Set<String> defensiveCopy(Set<String> ids) {
+    try {
+        return new HashSet<>(ids);
+    } catch (NullPointerException e) {
+        Run<?, ?> run = (Run<?, ?>) this;
+        Logger.getLogger(RunWithSCM.class.getName())
+                .log(Level.WARNING, "Corrupted culprit data encountered while reading culprits for "
+                        + run.getFullDisplayName(), e);
+        return new HashSet<>();
+    }
+}
 
     /**
      * Method used for actually calculating the culprits from scratch. Called by {@link #getCulprits()} and
