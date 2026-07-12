@@ -71,6 +71,8 @@ td.no-wrap {
   padding: 0.5em;
   -moz-border-radius: 0.5em;
   border-radius: var(--form-input-border-radius);
+  position: relative;
+  z-index: 103;
 }
 
 #shutdown-msg {
@@ -82,6 +84,8 @@ td.no-wrap {
   padding: 0.5em;
   -moz-border-radius: 0.5em;
   border-radius: var(--form-input-border-radius);
+  position: relative;
+  z-index: 103;
 }
 
 a.lowkey:link {
@@ -153,7 +157,7 @@ pre {
   padding: 0.8rem 1rem;
   border-radius: var(--form-input-border-radius);
   background: var(--card-background);
-  border: var(--card-border-width) solid var(--card-border-color);
+  border: var(--jenkins-border);
   color: var(--pre-color);
   font-family: var(--font-family-mono);
   font-weight: 400;
@@ -248,7 +252,7 @@ pre.console {
 }
 
 .jenkins-not-applicable {
-  color: darkgrey;
+  color: var(--text-color-secondary);
   font-style: italic;
 }
 
@@ -285,19 +289,22 @@ pre.console {
 
 /* ====================== help ===================================== */
 
+.help-area {
+  display: none; /* hidden until loaded */
+}
+
 .help {
   position: relative;
-  display: none; /* hidden until loaded */
   padding: 1rem;
   margin: 1rem 0;
   overflow-wrap: anywhere;
   word-break: normal;
   border-radius: var(--form-input-border-radius);
   background-color: var(--button-background);
-  border: var(--jenkins-border--subtle);
+  border: var(--jenkins-border);
   z-index: 0;
 
-  --section-padding: 0.8rem;
+  --section-padding: 0.75rem;
 
   p:first-of-type {
     margin-top: 0;
@@ -672,41 +679,6 @@ table.progress-bar.red td.progress-bar-done {
 
 .tag9 {
   font-size: 1.9em;
-}
-
-/* ========================= logRecords.jelly ================== */
-
-.logrecord-container {
-  border-radius: var(--form-input-border-radius);
-  overflow: hidden;
-  margin-bottom: var(--section-padding);
-
-  pre {
-    padding-top: 0;
-    padding-bottom: 0.1rem;
-    margin-bottom: 0;
-    border-radius: 0;
-
-    &:first-of-type {
-      padding-top: 0.8rem;
-    }
-
-    &:last-of-type {
-      padding-bottom: 0.8rem;
-    }
-  }
-}
-
-.logrecord-metadata {
-  font-size: var(--font-size-xs);
-}
-
-.logrecord-metadata-new {
-  color: var(--green);
-}
-
-.logrecord-metadata-old {
-  color: var(--text-color-secondary);
 }
 
 /* ========================= matrix configuration table ================== */

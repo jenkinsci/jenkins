@@ -38,7 +38,7 @@ THE SOFTWARE.
               <st:include page="config.jelly" from="${descriptor}" class="${descriptor.clazz}"/>
               <f:descriptorList descriptors="${descriptor.propertyDescriptors}" field="properties"/>
               <l:isAdmin>
-                <f:repeatableDeleteButton value="${%label.delete(descriptor.displayName)}"/>
+                <f:repeatableDeleteButton />
               </l:isAdmin>
             </div>
           </f:repeatable>

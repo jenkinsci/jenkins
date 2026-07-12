@@ -223,7 +223,7 @@ class CLIActionTest {
         // Anonymous read access
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(ADMIN).grant(Jenkins.READ, Item.READ).everywhere().toEveryone());
         assertExitCode(6, false, jar, "get-view", "v1");
-        assertExitCode(6, false, jar, "get-view", "v2"); // Error code 3 before SECURITY-754
+        assertExitCode(3, false, jar, "get-view", "v2"); // View/Read no longer exists, so we know the view does not exist
     }
 
     @TestExtension("encodingAndLocale")

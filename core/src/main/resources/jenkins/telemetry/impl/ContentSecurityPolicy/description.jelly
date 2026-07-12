@@ -1,0 +1,20 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    This trial collects basic information about the current configuration of Content Security Policy (CSP):
+    <ul>
+        <li>Whether the user-facing configuration option is set to enforce CSP</li>
+        <li>The active <code>CspHeaderDecider</code>, which roughly corresponds to how Jenkins is run and whether system properties related to CSP are set</li>
+        <li>The current Content Security Policy header (<code>Content-Security-Policy</code> or <code>Content-Security-Policy-Report-Only</code>)</li>
+        <li>Which <code>Contributor</code>s are known, i.e., extensions that contribute to the CSP rules</li>
+        <li>Which <code>AdvancedConfiguration</code>s are known, i.e., extensions that add CSP configuration options</li>
+        <li>Which directives (e.g., <code>img-src</code>) are set, and the length in bytes of their values</li>
+    </ul>
+
+    <p>
+        <strong>This trial does not collect the actual CSP rules.</strong>
+    </p>
+    <p>
+        Additionally this trial collects the list of installed plugins, their version, and the version of Jenkins.
+        This data will be used to understand how widely CSP protection is used.
+    </p>
+</j:jelly>

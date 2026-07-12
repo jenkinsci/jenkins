@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.141</version>
+    <version>2.1376.vb_7813a_893286</version>
     <relativePath />
   </parent>
 
@@ -53,6 +53,7 @@ THE SOFTWARE.
     <module>bom</module>
     <module>websocket/spi</module>
     <module>websocket/jetty12-ee9</module>
+    <module>core-libs</module>
     <module>core</module>
     <module>war</module>
     <module>test</module>
@@ -68,14 +69,14 @@ THE SOFTWARE.
   </scm>
 
   <issueManagement>
-    <system>jira</system>
-    <url>https://issues.jenkins.io/issues/?jql=component=15593</url>
+    <system>GitHub</system>
+    <url>https://github.com/jenkinsci/jenkins/issues</url>
   </issueManagement>
 
   <properties>
-    <revision>2.536</revision>
+    <revision>2.573</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2025-11-04T12:31:47Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-07-07T05:57:28Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,7 +88,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3345.v03dee9b_f88fc</remoting.version>
+    <remoting.version>3383.vc8881d4b_0e76</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
@@ -98,8 +99,8 @@ THE SOFTWARE.
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>8.16</winstone.version>
-    <node.version>24.11.0</node.version>
+    <winstone.version>8.1044.v8e30078854c2</winstone.version>
+    <node.version>24.18.0</node.version>
   </properties>
 
   <!--
@@ -170,21 +171,9 @@ THE SOFTWARE.
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
-          </configuration>
-        </plugin>
-        <plugin>
-          <artifactId>maven-jarsigner-plugin</artifactId>
-          <version>3.1.0</version>
-          <configuration>
-            <!--
-              during the development, debug profile will cause
-              the jars to be signed by a self-certified dummy public key.
-
-              For release, you should define the real values in ~/.m2/settings.xml
-            -->
-            <alias>${hudson.sign.alias}</alias>
-            <storepass>${hudson.sign.storepass}</storepass>
-            <keystore>${hudson.sign.keystore}</keystore>
+            <environmentVariables>
+              <DISABLE_SYMLINK_TESTS>${disable.symlink.tests}</DISABLE_SYMLINK_TESTS>
+            </environmentVariables>
           </configuration>
         </plugin>
         <plugin>
@@ -281,7 +270,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>12.1.0</version>
+              <version>13.8.0</version>
             </dependency>
           </dependencies>
           <executions>
@@ -297,7 +286,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.14</version>
+          <version>0.8.15</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -327,7 +316,7 @@ THE SOFTWARE.
         <!-- Version specified in parent POM -->
         <configuration>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
-          <preparationGoals>clean install</preparationGoals>
+          <preparationGoals>-Dspotless.check.skip clean install</preparationGoals>
           <goals>-DskipTests -Dspotbugs.skip -Dmaven.checkstyle.skip -Dspotless.check.skip generate-resources javadoc:javadoc deploy</goals>
           <pushChanges>false</pushChanges>
           <localCheckout>true</localCheckout>
@@ -389,11 +378,6 @@ THE SOFTWARE.
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
-      <properties>
-        <hudson.sign.alias>jenkins</hudson.sign.alias>
-        <hudson.sign.keystore>../dummy.keystore</hudson.sign.keystore>
-        <hudson.sign.storepass>jenkins</hudson.sign.storepass>
-      </properties>
     </profile>
     <profile>
       <id>release</id>
@@ -433,7 +417,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.15.4</version>
+            <version>2.0.1</version>
             <executions>
               <execution>
                 <id>install node and corepack</id>
@@ -487,6 +471,10 @@ THE SOFTWARE.
                   <followSymlinks>false</followSymlinks>
                 </fileset>
                 <fileset>
+                  <directory>war/src/main/webapp/WEB-INF/core-lib</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
                   <directory>war/src/main/webapp/jsbundles</directory>
                   <followSymlinks>false</followSymlinks>
                 </fileset>
@@ -511,7 +499,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.15.4</version>
+            <version>2.0.1</version>
             <executions>
               <execution>
                 <id>yarn lint:ci</id>
@@ -556,7 +544,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.15.4</version>
+            <version>2.0.1</version>
             <executions>
               <execution>
                 <id>yarn lint</id>
@@ -573,6 +561,20 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>disable-symlink-tests</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+        <property>
+          <name>!env.CI</name>
+        </property>
+      </activation>
+      <properties>
+        <disable.symlink.tests>true</disable.symlink.tests>
+      </properties>
     </profile>
   </profiles>
 </project>

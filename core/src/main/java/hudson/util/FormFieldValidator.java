@@ -231,9 +231,7 @@ public abstract class FormFieldValidator {
         } else {
             response.setContentType("text/html;charset=UTF-8");
             if (APPLY_CONTENT_SECURITY_POLICY_HEADERS) {
-                for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-                    response.setHeader(header, "sandbox; default-src 'none';");
-                }
+                response.setHeader("Content-Security-Policy", "sandbox; default-src 'none';");
             }
             response.getWriter().print("<div class=" + cssClass + ">" +
                     message + "</div>");
