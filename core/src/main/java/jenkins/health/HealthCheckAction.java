@@ -26,8 +26,19 @@ package jenkins.health;
 
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.FilePath;
 import hudson.model.InvisibleAction;
 import hudson.model.UnprotectedRootAction;
+import hudson.util.RemotingDiagnostics;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import jenkins.util.JenkinsJVM;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
@@ -42,6 +53,10 @@ import org.kohsuke.stapler.json.JsonHttpResponse;
 @Restricted(NoExternalUse.class)
 public final class HealthCheckAction extends InvisibleAction implements UnprotectedRootAction {
 
+    private static final Logger LOGGER = Logger.getLogger(HealthCheckAction.class.getName());
+    private static final Duration THRESHOLD_TIMEOUT = SystemProperties.getDuration(
+        HealthCheckAction.class.getName() + ".thresholdTimeout", Duration.ofSeconds(10));
+
     @Override
     public String getUrlName() {
         return "health";
@@ -50,17 +65,40 @@ public final class HealthCheckAction extends InvisibleAction implements Unprotec
     public HttpResponse doIndex() {
         boolean success = true;
         var failing = new JSONArray();
-        for (var healthCheck : ExtensionList.lookup(HealthCheck.class)) {
-            var check = healthCheck.check();
-            success &= check;
-            if (!check) {
-                failing.add(healthCheck.getName());
+
+        var watchdog = new Timer("HealthCheckActionWatchdog", true);
+        watchdog.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (JenkinsJVM.isJenkinsJVM()) {
+                    try {
+                        var threadDump = RemotingDiagnostics.getThreadDump(FilePath.localChannel);
+                        LOGGER.severe(() -> "health check did not complete in timely fashion:\n\n"
+                                            + threadDump.values().stream().collect(Collectors.joining()).trim());
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "Failed to get thread dump during slow health check", e);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
             }
+        }, THRESHOLD_TIMEOUT.toMillis());
+
+        try {
+            for (var healthCheck : ExtensionList.lookup(HealthCheck.class)) {
+                var check = healthCheck.check();
+                success &= check;
+                if (!check) {
+                    failing.add(healthCheck.getName());
+                }
+            }
+            var payload = new JSONObject().element("status", success);
+            if (!success) {
+                payload = payload.element("failures", failing);
+            }
+            return new JsonHttpResponse(payload, success ? 200 : 503);
+        } finally {
+            watchdog.cancel();
         }
-        var payload = new JSONObject().element("status", success);
-        if (!success) {
-            payload = payload.element("failures", failing);
-        }
-        return new JsonHttpResponse(payload, success ? 200 : 503);
     }
 }

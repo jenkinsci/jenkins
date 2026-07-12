@@ -38,12 +38,12 @@ import java.util.Locale;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import jenkins.model.Jenkins;
+import jenkins.util.ClientHttpRedirect;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
@@ -78,8 +78,8 @@ public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor
 
     static {
         NavigableMap<Integer, LocalDate> supportedVersions = new TreeMap<>();
-        supportedVersions.put(17, LocalDate.of(2026, 3, 31)); // Temurin: 2027-10-31
         supportedVersions.put(21, LocalDate.of(2027, 9, 30)); // Temurin: 2029-09-30
+        supportedVersions.put(25, LocalDate.of(2029, 9, 30)); // Temurin: 2031-09-30
         SUPPORTED_JAVA_VERSIONS = Collections.unmodifiableNavigableMap(supportedVersions);
     }
 
@@ -138,7 +138,7 @@ public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor
             disable(true);
             return HttpResponses.forwardToPreviousPage();
         } else {
-            return new HttpRedirect("https://jenkins.io/redirect/java-support/");
+            return new ClientHttpRedirect("https://jenkins.io/redirect/java-support/");
         }
     }
 

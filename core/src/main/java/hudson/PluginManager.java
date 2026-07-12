@@ -583,56 +583,47 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
                     // schedule execution of loading plugins
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[0])) {
-                        g.followedBy().notFatal().attains(PLUGINS_PREPARED).add(String.format("Loading plugin %s v%s (%s)", p.getLongName(), p.getVersion(), p.getShortName()), new Executable() {
-                            @Override
-                            public void run(Reactor session) throws Exception {
-                                try {
-                                    p.resolvePluginDependencies();
-                                    strategy.load(p);
-                                } catch (MissingDependencyException e) {
-                                    failedPlugins.add(new FailedPlugin(p, e));
-                                    activePlugins.remove(p);
-                                    plugins.remove(p);
-                                    p.releaseClassLoader();
-                                    LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { p.getShortName(), e.getMessage() });
-                                } catch (IOException e) {
-                                    failedPlugins.add(new FailedPlugin(p, e));
-                                    activePlugins.remove(p);
-                                    plugins.remove(p);
-                                    p.releaseClassLoader();
-                                    throw e;
-                                }
+                        g.followedBy().notFatal().attains(PLUGINS_PREPARED).add(String.format("Loading plugin %s v%s (%s)", p.getLongName(), p.getVersion(), p.getShortName()), reactor -> {
+                            try {
+                                p.resolvePluginDependencies();
+                                strategy.load(p);
+                            } catch (MissingDependencyException e) {
+                                failedPlugins.add(new FailedPlugin(p, e));
+                                activePlugins.remove(p);
+                                plugins.remove(p);
+                                p.releaseClassLoader();
+                                LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { p.getShortName(), e.getMessage() });
+                            } catch (IOException e) {
+                                failedPlugins.add(new FailedPlugin(p, e));
+                                activePlugins.remove(p);
+                                plugins.remove(p);
+                                p.releaseClassLoader();
+                                throw e;
                             }
                         });
                     }
 
                     // schedule execution of initializing plugins
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[0])) {
-                        g.followedBy().notFatal().attains(PLUGINS_STARTED).add("Initializing plugin " + p.getShortName(), new Executable() {
-                            @Override
-                            public void run(Reactor session) throws Exception {
-                                if (!activePlugins.contains(p)) {
-                                    return;
-                                }
-                                try {
-                                    p.getPluginOrFail().postInitialize();
-                                } catch (Exception e) {
-                                    failedPlugins.add(new FailedPlugin(p, e));
-                                    activePlugins.remove(p);
-                                    plugins.remove(p);
-                                    p.releaseClassLoader();
-                                    throw e;
-                                }
+                        g.followedBy().notFatal().attains(PLUGINS_STARTED).add("Initializing plugin " + p.getShortName(), reactor -> {
+                            if (!activePlugins.contains(p)) {
+                                return;
+                            }
+                            try {
+                                p.getPluginOrFail().postInitialize();
+                            } catch (Exception e) {
+                                failedPlugins.add(new FailedPlugin(p, e));
+                                activePlugins.remove(p);
+                                plugins.remove(p);
+                                p.releaseClassLoader();
+                                throw e;
                             }
                         });
                     }
 
-                    g.followedBy().attains(PLUGINS_STARTED).add("Discovering plugin initialization tasks", new Executable() {
-                        @Override
-                        public void run(Reactor reactor) throws Exception {
-                            // rescan to find plugin-contributed @Initializer
-                            reactor.addAll(initializerFinder.discoverTasks(reactor));
-                        }
+                    g.followedBy().attains(PLUGINS_STARTED).add("Discovering plugin initialization tasks", reactor -> {
+                        // rescan to find plugin-contributed @Initializer
+                        reactor.addAll(initializerFinder.discoverTasks(reactor));
                     });
 
                     // register them all
@@ -641,12 +632,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             });
 
             // All plugins are loaded. Now we can figure out who depends on who.
-            requires(PLUGINS_PREPARED).attains(COMPLETED).add("Resolving Dependent Plugins Graph", new Executable() {
-                @Override
-                public void run(Reactor reactor) throws Exception {
-                    resolveDependentPlugins();
-                }
-            });
+            requires(PLUGINS_PREPARED).attains(COMPLETED).add("Resolving Dependent Plugins Graph", reactor -> resolveDependentPlugins());
         }});
     }
 
@@ -813,35 +799,32 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             final List<DetachedPluginsUtil.DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(lastExecVersion);
 
-            Set<String> loadedDetached = loadPluginsFromWar(getDetachedLocation(), new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    name = normalisePluginName(name);
+            Set<String> loadedDetached = loadPluginsFromWar(getDetachedLocation(), (dir, name) -> {
+                name = normalisePluginName(name);
 
-                    // If this was a plugin that was detached some time in the past i.e. not just one of the
-                    // plugins that was bundled "for fun".
-                    if (DetachedPluginsUtil.isDetachedPlugin(name)) {
-                        VersionNumber installedVersion = getPluginVersion(rootDir, name);
-                        VersionNumber bundledVersion = getPluginVersion(dir, name);
-                        // If the plugin is already installed, we need to decide whether to replace it with the bundled version.
-                        if (installedVersion != null && bundledVersion != null) {
-                            // If the installed version is older than the bundled version, then it MUST be upgraded.
-                            // If the installed version is newer than the bundled version, then it MUST NOT be upgraded.
-                            // If the versions are equal we just keep the installed version.
-                            return installedVersion.isOlderThan(bundledVersion);
-                        }
+                // If this was a plugin that was detached some time in the past i.e. not just one of the
+                // plugins that was bundled "for fun".
+                if (DetachedPluginsUtil.isDetachedPlugin(name)) {
+                    VersionNumber installedVersion = getPluginVersion(rootDir, name);
+                    VersionNumber bundledVersion = getPluginVersion(dir, name);
+                    // If the plugin is already installed, we need to decide whether to replace it with the bundled version.
+                    if (installedVersion != null && bundledVersion != null) {
+                        // If the installed version is older than the bundled version, then it MUST be upgraded.
+                        // If the installed version is newer than the bundled version, then it MUST NOT be upgraded.
+                        // If the versions are equal we just keep the installed version.
+                        return installedVersion.isOlderThan(bundledVersion);
                     }
-
-                    // If it's a plugin that was detached since the last running version.
-                    for (DetachedPluginsUtil.DetachedPlugin detachedPlugin : detachedPlugins) {
-                        if (detachedPlugin.getShortName().equals(name)) {
-                            return true;
-                        }
-                    }
-
-                    // Otherwise skip this and do not install.
-                    return false;
                 }
+
+                // If it's a plugin that was detached since the last running version.
+                for (DetachedPluginsUtil.DetachedPlugin detachedPlugin : detachedPlugins) {
+                    if (detachedPlugin.getShortName().equals(name)) {
+                        return true;
+                    }
+                }
+
+                // Otherwise skip this and do not install.
+                return false;
             });
 
             LOGGER.log(INFO, "Upgraded Jenkins from version {0} to version {1}. Loaded detached plugins (and dependencies): {2}",
@@ -860,17 +843,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             }
             if (!forceUpgrade.isEmpty()) {
-                Set<String> loadedDetached = loadPluginsFromWar(getDetachedLocation(), new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                        name = normalisePluginName(name);
-                        for (DetachedPluginsUtil.DetachedPlugin detachedPlugin : forceUpgrade) {
-                            if (detachedPlugin.getShortName().equals(name)) {
-                                return true;
-                            }
+                Set<String> loadedDetached = loadPluginsFromWar(getDetachedLocation(), (dir, name) -> {
+                    name = normalisePluginName(name);
+                    for (DetachedPluginsUtil.DetachedPlugin detachedPlugin : forceUpgrade) {
+                        if (detachedPlugin.getShortName().equals(name)) {
+                            return true;
                         }
-                        return false;
                     }
+                    return false;
                 });
                 LOGGER.log(INFO, "Upgraded detached plugins (and dependencies): {0}",
                         new Object[]{loadedDetached});
@@ -1170,8 +1150,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         InputStream in = null;
         // Magic, which allows to avoid using stream generated for JarURLConnection.
         // It prevents getting into JENKINS-37332 due to the file descriptor leak
-        if (uc instanceof JarURLConnection) {
-            final JarURLConnection jarURLConnection = (JarURLConnection) uc;
+        if (uc instanceof JarURLConnection jarURLConnection) {
             final String entryName = jarURLConnection.getEntryName();
 
             try (JarFile jarFile = jarURLConnection.getJarFile()) {
@@ -1211,8 +1190,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         // It prevents file descriptor leak if the URL references a file within JAR
         // See JENKINS-37332  for more info
         // The code idea is taken from https://github.com/jknack/handlebars.java/pull/394
-        if (uc instanceof JarURLConnection) {
-            final JarURLConnection connection = (JarURLConnection) uc;
+        if (uc instanceof JarURLConnection connection) {
             final URL jarURL = connection.getJarFileURL();
             if (jarURL.getProtocol().equals("file")) {
                 String file = jarURL.getFile();
@@ -1793,37 +1771,34 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         if (!jenkins.getInstallState().isSetupComplete()) {
             jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING);
             updateCenter.persistInstallStatus();
-            new Thread() {
-                @Override
-                public void run() {
-                    boolean failures = false;
-                    INSTALLING: while (true) {
-                        try {
-                            updateCenter.persistInstallStatus();
-                            Thread.sleep(500);
-                            failures = false;
-                            for (Future<UpdateCenter.UpdateCenterJob> jobFuture : installJobs) {
-                                if (!jobFuture.isDone() && !jobFuture.isCancelled()) {
-                                    continue INSTALLING;
-                                }
-                                UpdateCenter.UpdateCenterJob job = jobFuture.get();
-                                if (job instanceof InstallationJob && ((InstallationJob) job).status instanceof DownloadJob.Failure) {
-                                    failures = true;
-                                }
+            new Thread(() -> {
+                boolean failures = false;
+                INSTALLING: while (true) {
+                    try {
+                        updateCenter.persistInstallStatus();
+                        Thread.sleep(500);
+                        failures = false;
+                        for (Future<UpdateCenter.UpdateCenterJob> jobFuture : installJobs) {
+                            if (!jobFuture.isDone() && !jobFuture.isCancelled()) {
+                                continue INSTALLING;
                             }
-                        } catch (Exception e) {
-                            LOGGER.log(WARNING, "Unexpected error while waiting for initial plugin set to install.", e);
+                            UpdateCenter.UpdateCenterJob job = jobFuture.get();
+                            if (job instanceof InstallationJob && ((InstallationJob) job).status instanceof DownloadJob.Failure) {
+                                failures = true;
+                            }
                         }
-                        break;
+                    } catch (Exception e) {
+                        LOGGER.log(WARNING, "Unexpected error while waiting for initial plugin set to install.", e);
                     }
-                    updateCenter.persistInstallStatus();
-                    if (!failures) {
-                        try (ACLContext acl = ACL.as2(currentAuth)) {
-                            InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_PLUGINS_INSTALLING);
-                        }
+                    break;
+                }
+                updateCenter.persistInstallStatus();
+                if (!failures) {
+                    try (ACLContext acl = ACL.as2(currentAuth)) {
+                        InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_PLUGINS_INSTALLING);
                     }
                 }
-            }.start();
+            }).start();
         }
 
         return installJobs;
@@ -1956,7 +1931,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 copier = new UrlPluginCopier(fileName);
             } else {
                 // this is a file upload
-                FileItem fileItem = items.get(0);
+                FileItem fileItem = items.getFirst();
                 fileName = Util.getFileName(fileItem.getName());
                 copier = new FileUploadPluginCopier(fileItem);
             }
@@ -2675,7 +2650,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     .filter(PluginWrapper::isDeprecated)
                     .sorted(Comparator.comparing(PluginWrapper::getDisplayName)) // Sort by plugin name
                     .collect(LinkedHashMap::new,
-                            (map, plugin) -> map.put(plugin, plugin.getDeprecations().get(0).url),
+                            (map, plugin) -> map.put(plugin, plugin.getDeprecations().getFirst().url),
                             Map::putAll);
         }
     }
