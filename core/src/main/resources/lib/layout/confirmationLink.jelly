@@ -34,18 +34,29 @@ THE SOFTWARE.
         <st:attribute name="post" type="boolean">
             Use POST rather than GET (recommended).
         </st:attribute>
-        <st:attribute name="message" use="required">
+        <st:attribute name="title" use="required">
+            The title to show in the confirmation dialog
+        </st:attribute>
+        <st:attribute name="message" use="optional">
             The confirmation dialog message.
         </st:attribute>
         <st:attribute name="class">
             A CSS class to use to style the link.
         </st:attribute>
-        <st:attribute name="title">
-          The title to show in the confirmation dialog
-        </st:attribute>
-        <st:attribute name="destructive" type="boolean">
-            Show a red confirmation button
-        </st:attribute>
+      <st:attribute name="destructive" type="boolean">
+        Show a red confirmation button
+      </st:attribute>
+      <st:attribute name="okText" type="string" use="optional">
+        Optional confirmation button text for the dialog.
+      </st:attribute>
     </st:documentation>
-    <a href="#" class="${class} confirmation-link" data-post="${post}" data-url="${attrs.href}" data-message="${message}" data-title="${title ?: ''}" data-destructive="${destructive}"><d:invokeBody/></a>
+    <a href="#" class="${class} confirmation-link"
+       data-post="${post}"
+       data-url="${attrs.href}"
+       data-message="${message}"
+       data-title="${title ?: ''}"
+       data-destructive="${destructive}"
+       data-ok-text="${attrs.okText}">
+      <d:invokeBody/>
+    </a>
 </j:jelly>

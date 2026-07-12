@@ -29,7 +29,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DependencyRunner;
-import hudson.DependencyRunner.ProjectRunnable;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -267,18 +266,15 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                 // ignored, only the global setting is honored. The polling job is submitted only if the previous job has
                 // terminated.
                 // FIXME allow to set a global crontab spec
-                previousSynchronousPolling = scmd.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
-                    @Override
-                    public void run(AbstractProject p) {
-                        for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
-                            if (t instanceof SCMTrigger) {
-                                if (t.job != null) {
-                                    LOGGER.fine("synchronously triggering SCMTrigger for project " + t.job.getName());
-                                } else {
-                                    LOGGER.fine("synchronously triggering SCMTrigger for unknown project");
-                                }
-                                t.run();
+                previousSynchronousPolling = scmd.getExecutor().submit(new DependencyRunner(p -> {
+                    for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
+                        if (t instanceof SCMTrigger) {
+                            if (t.job != null) {
+                                LOGGER.fine("synchronously triggering SCMTrigger for project " + t.job.getName());
+                            } else {
+                                LOGGER.fine("synchronously triggering SCMTrigger for unknown project");
                             }
+                            t.run();
                         }
                     }
                 }));

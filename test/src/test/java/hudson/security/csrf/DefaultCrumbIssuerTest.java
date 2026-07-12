@@ -8,6 +8,7 @@ package hudson.security.csrf;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -15,11 +16,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.jvnet.hudson.test.LoggerRule.recorded;
 
+import hudson.ExtensionList;
 import hudson.model.User;
 import jakarta.servlet.http.HttpServletResponse;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.htmlunit.FailingHttpStatusCodeException;
@@ -36,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.WithTimeout;
@@ -51,83 +56,8 @@ class DefaultCrumbIssuerTest {
     @BeforeEach
     void setUp(JenkinsRule rule) {
         r = rule;
-        r.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
+        r.jenkins.setCrumbIssuer(new DefaultCrumbIssuer());
     }
-
-    private static final String[] testData = {
-        "10.2.3.1",
-        "10.2.3.1,10.20.30.40",
-        "10.2.3.1,10.20.30.41",
-        "10.2.3.3,10.20.30.40,10.20.30.41",
-    };
-    private static final String HEADER_NAME = "X-Forwarded-For";
-
-    @Issue("JENKINS-3854")
-    @Test
-    void clientIPFromHeader() throws Exception {
-        WebClient wc = r.createWebClient();
-
-        wc.addRequestHeader(HEADER_NAME, testData[0]);
-        HtmlPage p = wc.goTo("configure");
-        r.submit(p.getFormByName("config"));
-    }
-
-    @Issue("JENKINS-3854")
-    @Test
-    void headerChange() throws Exception {
-        WebClient wc = r.createWebClient();
-
-        wc.addRequestHeader(HEADER_NAME, testData[0]);
-        HtmlPage p = wc.goTo("configure");
-
-        wc.removeRequestHeader(HEADER_NAME);
-
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        // The crumb should no longer match if we remove the proxy info
-        Page page = r.submit(p.getFormByName("config"));
-        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, page.getWebResponse().getStatusCode());
-    }
-
-    @Issue("JENKINS-3854")
-    @Test
-    void proxyIPChanged() throws Exception {
-        WebClient wc = r.createWebClient();
-
-        wc.addRequestHeader(HEADER_NAME, testData[1]);
-        HtmlPage p = wc.goTo("configure");
-
-        wc.removeRequestHeader(HEADER_NAME);
-        wc.addRequestHeader(HEADER_NAME, testData[2]);
-
-        // The crumb should be the same even if the proxy IP changes
-        r.submit(p.getFormByName("config"));
-    }
-
-    @Issue("JENKINS-3854")
-    @Test
-    void proxyIPChain() throws Exception {
-        WebClient wc = r.createWebClient();
-
-        wc.addRequestHeader(HEADER_NAME, testData[3]);
-        HtmlPage p = wc.goTo("configure");
-        r.submit(p.getFormByName("config"));
-    }
-
-    @Issue("JENKINS-7518")
-    @Test
-    void proxyCompatibilityMode() throws Exception {
-        CrumbIssuer issuer = new DefaultCrumbIssuer(true);
-        assertNotNull(issuer);
-        r.jenkins.setCrumbIssuer(issuer);
-
-        WebClient wc = r.createWebClient();
-        wc.addRequestHeader(HEADER_NAME, testData[0]);
-        HtmlPage p = wc.goTo("configure");
-
-        wc.removeRequestHeader(HEADER_NAME);
-        // The crumb should still match if we remove the proxy info
-        r.submit(p.getFormByName("config"));
-   }
 
     @Test
     void apiXml() throws Exception {
@@ -170,7 +100,7 @@ class DefaultCrumbIssuerTest {
     @Issue("JENKINS-34254")
     @Test
     void testRequirePostErrorPageCrumb() throws Exception {
-        r.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
+        r.jenkins.setCrumbIssuer(new DefaultCrumbIssuer());
         WebClient wc = r.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
 
@@ -190,7 +120,7 @@ class DefaultCrumbIssuerTest {
     @WithTimeout(300)
     void crumbOnlyValidForOneSession() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
-        DefaultCrumbIssuer issuer = new DefaultCrumbIssuer(false);
+        DefaultCrumbIssuer issuer = new DefaultCrumbIssuer();
         r.jenkins.setCrumbIssuer(issuer);
 
         User.getById("foo", true);
@@ -251,7 +181,7 @@ class DefaultCrumbIssuerTest {
             authorizationStrategy.grant(Jenkins.ADMINISTER).everywhere().toEveryone();
             r.jenkins.setAuthorizationStrategy(authorizationStrategy);
 
-            DefaultCrumbIssuer issuer = new DefaultCrumbIssuer(true);
+            DefaultCrumbIssuer issuer = new DefaultCrumbIssuer();
             r.jenkins.setCrumbIssuer(issuer);
 
             DefaultCrumbIssuer.EXCLUDE_SESSION_ID = true;
@@ -328,11 +258,65 @@ class DefaultCrumbIssuerTest {
         authorizationStrategy.grant(Jenkins.ADMINISTER).everywhere().toEveryone();
         r.jenkins.setAuthorizationStrategy(authorizationStrategy);
 
-        DefaultCrumbIssuer issuer = new DefaultCrumbIssuer(true);
+        DefaultCrumbIssuer issuer = new DefaultCrumbIssuer();
         r.jenkins.setCrumbIssuer(issuer);
 
         HtmlPage p = r.createWebClient().goTo("configure");
         r.submit(p.getFormByName("config"));
+    }
+
+    @Test
+    @Issue("https://github.com/jenkinsci/jenkins/issues/18841")
+    void adminMonitorShowsWhenSessionIsExcluded() {
+        final DefaultCrumbIssuer.ExcludeSessionIdAdministrativeMonitor monitor = ExtensionList.lookupSingleton(DefaultCrumbIssuer.ExcludeSessionIdAdministrativeMonitor.class);
+        assertThat(monitor.isActivated(), equalTo(false));
+
+        try {
+            DefaultCrumbIssuer.EXCLUDE_SESSION_ID = true;
+            assertThat(monitor.isActivated(), equalTo(true));
+        } finally {
+            DefaultCrumbIssuer.EXCLUDE_SESSION_ID = false;
+        }
+    }
+
+    @Test
+    @Issue("https://github.com/jenkinsci/jenkins/issues/18841")
+    void logWarningWithoutSessionOrIp() {
+        LoggerRule logger = new LoggerRule().record(DefaultCrumbIssuer.class, Level.WARNING).capture(100);
+
+        r.jenkins.setCrumbIssuer(new DefaultCrumbIssuer());
+        assertThat(logger.getRecords(), empty());
+
+        r.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(true));
+        assertThat(logger.getRecords(), empty());
+
+        r.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
+        assertThat(logger.getRecords(), empty());
+
+        try {
+            DefaultCrumbIssuer.EXCLUDE_SESSION_ID = true;
+
+            r.jenkins.setCrumbIssuer(new DefaultCrumbIssuer());
+            assertThat(logger, recorded(Level.WARNING,
+                    containsString("Jenkins no longer uses the client IP address as part of CSRF protection. This controller is configured to also not use the session ID " +
+                            "(hudson.security.csrf.DefaultCrumbIssuer.EXCLUDE_SESSION_ID), which is even less safe now. This option will be removed in future releases.")));
+            // "clear"
+            logger = new LoggerRule().record(DefaultCrumbIssuer.class, Level.WARNING).capture(100);
+
+            r.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(true));
+            assertThat(logger, recorded(Level.WARNING,
+                    containsString("Jenkins no longer uses the client IP address as part of CSRF protection. This controller is configured to also not use the session ID " +
+                            "(hudson.security.csrf.DefaultCrumbIssuer.EXCLUDE_SESSION_ID), which is even less safe now. This option will be removed in future releases.")));
+            // "clear"
+            logger = new LoggerRule().record(DefaultCrumbIssuer.class, Level.WARNING).capture(100);
+
+            r.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
+            assertThat(logger, recorded(Level.WARNING,
+                    containsString("Jenkins no longer uses the client IP address as part of CSRF protection. This controller is configured to also not use the session ID " +
+                            "(hudson.security.csrf.DefaultCrumbIssuer.EXCLUDE_SESSION_ID), which is even less safe now. This option will be removed in future releases.")));
+        } finally {
+            DefaultCrumbIssuer.EXCLUDE_SESSION_ID = false;
+        }
     }
 
     @Test

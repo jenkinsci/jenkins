@@ -44,6 +44,7 @@ import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -281,6 +282,12 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         final Jenkins app = Jenkins.get();
         app.checkPermission(Computer.CREATE);
 
+        String requestContentType = req.getContentType();
+
+        boolean isXmlSubmission = requestContentType != null
+                && (requestContentType.startsWith("application/xml")
+                || requestContentType.startsWith("text/xml"));
+
         if (mode != null && mode.equals("copy")) {
             name = checkName(name);
 
@@ -319,6 +326,22 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             // send the browser to the config page
             rsp.sendRedirect2(result.getNodeName() + "/configure");
         } else {
+            if (isXmlSubmission) {
+                final Node newNode = (Node) Jenkins.XSTREAM2.fromXML(req.getInputStream());
+                name = Util.fixEmptyAndTrim(name);
+
+                if (name != null) {
+                    newNode.setNodeName(name);
+                }
+
+                if (app.getNode(newNode.getNodeName()) != null) {
+                    throw new Failure("Node '" + newNode.getNodeName() + "' already exists");
+                }
+
+                app.addNode(newNode);
+                rsp.setStatus(HttpServletResponse.SC_OK);
+                return;
+            }
             // proceed to step 2
             if (mode == null) {
                 throw new Failure("No mode given");

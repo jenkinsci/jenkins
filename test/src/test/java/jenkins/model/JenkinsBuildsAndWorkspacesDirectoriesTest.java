@@ -288,18 +288,18 @@ class JenkinsBuildsAndWorkspacesDirectoriesTest {
         story.then(steps -> {
             builds.add(newFolder(tmp, "junit").toString());
             assertTrue(steps.getInstance().isDefaultBuildDir());
-            setBuildsDirProperty(builds.get(0) + "/${ITEM_FULL_NAME}");
+            setBuildsDirProperty(builds.getFirst() + "/${ITEM_FULL_NAME}");
         });
 
         story.then(steps -> {
-            assertEquals(builds.get(0) + "/${ITEM_FULL_NAME}", steps.jenkins.getRawBuildsDir());
+            assertEquals(builds.getFirst() + "/${ITEM_FULL_NAME}", steps.jenkins.getRawBuildsDir());
             FreeStyleProject p = steps.jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "prj");
             FreeStyleBuild b = p.scheduleBuild2(0).get();
-            File oldBuildDir = new File(builds.get(0), "d/prj");
+            File oldBuildDir = new File(builds.getFirst(), "d/prj");
             assertEquals(new File(oldBuildDir, b.getId()), b.getRootDir());
             assertTrue(b.getRootDir().isDirectory());
             p.renameTo("proj");
-            File newBuildDir = new File(builds.get(0), "d/proj");
+            File newBuildDir = new File(builds.getFirst(), "d/proj");
             assertEquals(new File(newBuildDir, b.getId()), b.getRootDir());
             assertTrue(b.getRootDir().isDirectory());
             p.delete();

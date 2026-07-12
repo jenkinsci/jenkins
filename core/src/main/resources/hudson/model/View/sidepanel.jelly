@@ -60,7 +60,7 @@ THE SOFTWARE.
       <j:if test="${it.owner.canDelete(it)}">
         <l:delete permission="${it.DELETE}" title="${%Delete View}" message="${%delete.view(it.displayName)}"/>
       </j:if>
-      <j:if test="${f.hasPemission(app.READ) and app.fingerprintMap.ready}">
+      <j:if test="${h.hasPermission(app.READ) and app.fingerprintMap.ready}">
         <l:task href="${rootURL}/projectRelationship" icon="symbol-project-relationship" title="${%Project Relationship}"/>
         <l:task href="${rootURL}/fingerprintCheck" icon="icon-fingerprint icon-md" title="${%Check File Fingerprint}"/>
       </j:if>

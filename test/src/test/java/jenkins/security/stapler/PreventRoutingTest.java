@@ -110,7 +110,7 @@ class PreventRoutingTest extends StaplerAbstractTest {
         StaplerRequest2 req = Stapler.getCurrentRequest2();
         if (req != null) {
             List<Ancestor> ancestors = req.getAncestors();
-            if (!ancestors.isEmpty() && ancestors.get(ancestors.size() - 1).getObject() == o) {
+            if (!ancestors.isEmpty() && ancestors.getLast().getObject() == o) {
                 throw HttpResponses.notFound();
             }
         }

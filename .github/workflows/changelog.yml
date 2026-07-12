@@ -24,18 +24,18 @@ jobs:
       # Drafts your next Release notes as Pull Requests are merged into "master"
       - name: Generate GitHub Release Draft
         id: release-drafter
-        uses: release-drafter/release-drafter@b1476f6e6eb133afa41ed8589daba6dc69b4d3f5 # v6.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: release-drafter/release-drafter@4d75298e00d9e34c483e5ff8c68d0ea1c1940c1e # v7.5.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       # Generates a YAML changelog file using https://github.com/jenkinsci/jenkins-core-changelog-generator
       # used by Oleg N in open graph generator experiment for now
       - name: Generate YAML changelog draft
         id: jenkins-core-changelog-generator
         uses: jenkinsci/core-changelog-generator@feb124ed2262f8586ac4561348436afb965812e1 # v2.2.2
-        env:
-          GITHUB_AUTH: github-actions:${{ secrets.GITHUB_TOKEN }}
+        with:
+          token: github-actions:${{ secrets.GITHUB_TOKEN }}
       - name: Upload Changelog YAML
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: changelog.yaml
           path: changelog.yaml
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'jenkinsci'
     steps:
-      - uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: generate-token
         with:
           app-id: ${{ secrets.JENKINS_CHANGELOG_UPDATER_APP_ID }}
@@ -52,7 +52,7 @@ jobs:
           owner: jenkins-infra
           repositories: jenkins.io
       - name: Check out
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
       - name: Publish jenkins.io changelog draft

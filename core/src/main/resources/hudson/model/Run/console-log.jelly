@@ -29,7 +29,7 @@
     </j:when>
     <!-- output is completed now. -->
     <j:otherwise>
-      <pre class="console-output">
+      <pre id="out" class="console-output">
         <st:getOutput var="output" />
         <j:whitespace>${it.writeLogTo(offset,output)}</j:whitespace>
       </pre>

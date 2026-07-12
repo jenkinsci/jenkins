@@ -220,7 +220,7 @@ class ArtifactArchiverTest {
         assumeTrue(ws.child("dir/lodge").exists(), "May not be testable on Windows:\n" + JenkinsRule.getLog(b));
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(1, artifacts.size());
-        FreeStyleBuild.Artifact artifact = artifacts.get(0);
+        FreeStyleBuild.Artifact artifact = artifacts.getFirst();
         assertEquals("dir/lodge", artifact.relativePath);
         VirtualFile[] kids = b.getArtifactManager().root().child("dir").list();
         assertEquals(1, kids.length);
@@ -281,6 +281,7 @@ class ArtifactArchiverTest {
     @Issue("SECURITY-162")
     @Test
     void outsideSymlinks() throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -296,7 +297,7 @@ class ArtifactArchiverTest {
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(1, artifacts.size());
-        FreeStyleBuild.Artifact artifact = artifacts.get(0);
+        FreeStyleBuild.Artifact artifact = artifacts.getFirst();
         assertEquals("hack", artifact.relativePath);
         VirtualFile[] kids = b.getArtifactManager().root().list();
         assertEquals(1, kids.length);
@@ -519,6 +520,7 @@ class ArtifactArchiverTest {
     @Test
     @Issue("JENKINS-55049")
     void lengthOfArtifactIsCorrect_eventForInvalidSymlink() throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -545,7 +547,7 @@ class ArtifactArchiverTest {
         artifacts.sort(Comparator.comparing(Run.Artifact::getFileName));
 
         // invalid symlink => size of 0
-        FreeStyleBuild.Artifact artifact = artifacts.get(0);
+        FreeStyleBuild.Artifact artifact = artifacts.getFirst();
         assertEquals("dir/_nonexistant", artifact.relativePath);
         assertEquals(0, artifact.getFileSize());
         assertEquals("", artifact.getLength());

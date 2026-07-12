@@ -625,6 +625,7 @@ public class SlaveComputer extends Computer {
      * @param listener Channel event listener to be attached (if not {@code null})
      * @since 1.444
      */
+    @SuppressFBWarnings(value = "NN_NAKED_NOTIFY", justification = "False positive, the warning isn't for this scenario")
     public void setChannel(@NonNull Channel channel,
                            @CheckForNull OutputStream launchLog,
                            @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
@@ -817,15 +818,12 @@ public class SlaveComputer extends Computer {
     @Override
     public Future<?> disconnect(OfflineCause cause) {
         super.disconnect(cause);
-        return Computer.threadPoolForRemoting.submit(new Runnable() {
-            @Override
-            public void run() {
-                // do this on another thread so that any lengthy disconnect operation
-                // (which could be typical) won't block UI thread.
-                launcher.beforeDisconnect(SlaveComputer.this, taskListener);
-                closeChannel();
-                launcher.afterDisconnect(SlaveComputer.this, taskListener);
-            }
+        return Computer.threadPoolForRemoting.submit(() -> {
+            // do this on another thread so that any lengthy disconnect operation
+            // (which could be typical) won't block UI thread.
+            launcher.beforeDisconnect(SlaveComputer.this, taskListener);
+            closeChannel();
+            launcher.afterDisconnect(SlaveComputer.this, taskListener);
         });
     }
 
