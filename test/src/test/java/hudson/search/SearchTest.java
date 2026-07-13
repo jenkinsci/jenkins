@@ -33,7 +33,6 @@ import static org.jvnet.hudson.test.QueryUtils.waitUntilStringIsPresent;
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
 import hudson.model.User;
-import hudson.model.View;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
@@ -41,7 +40,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
@@ -348,6 +346,7 @@ public class SearchTest {
     @Test
     void testCompletionOutsideView() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo-bar");
+        p.setDisplayName("display-name-only");
         ListView v = new ListView("empty1", j.jenkins);
         ListView w = new ListView("empty2", j.jenkins);
         j.jenkins.addView(v);
@@ -360,6 +359,7 @@ public class SearchTest {
         assertFalse(j.jenkins.getPrimaryView().contains(p));
 
         assertTrue(suggest(j.jenkins.getSearchIndex(), "foo").contains(p));
+        assertTrue(suggest(j.jenkins.getSearchIndex(), "display-name").contains(p));
     }
 
     @Issue("SECURITY-385")
@@ -379,14 +379,13 @@ public class SearchTest {
         assertEquals(1, results.size(), "nonempty results list");
 
 
-        // Alice can't
-        assertFalse(j.jenkins.getView("foo").hasPermission2(User.get("alice").impersonate2(), View.READ), "no permission");
+        // So can alice
         ACL.impersonate2(User.get("alice").impersonate2(), () -> {
-            assertEquals(0, Jenkins.get().getViews().size(), "no visible views");
+            assertEquals(2, Jenkins.get().getViews().size(), "two views exist");
 
             List<SearchItem> results1 = new ArrayList<>();
             j.jenkins.getSearchIndex().suggest("foo", results1);
-            assertEquals(Collections.emptyList(), results1, "empty results list");
+            assertEquals(1, results1.size(), "nonempty results list");
         });
     }
 

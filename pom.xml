@@ -53,6 +53,7 @@ THE SOFTWARE.
     <module>bom</module>
     <module>websocket/spi</module>
     <module>websocket/jetty12-ee9</module>
+    <module>core-libs</module>
     <module>core</module>
     <module>war</module>
     <module>test</module>
@@ -467,6 +468,10 @@ THE SOFTWARE.
                 </fileset>
                 <fileset>
                   <directory>node_modules</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
+                  <directory>war/src/main/webapp/WEB-INF/core-lib</directory>
                   <followSymlinks>false</followSymlinks>
                 </fileset>
                 <fileset>
