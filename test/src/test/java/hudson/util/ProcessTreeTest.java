@@ -88,13 +88,14 @@ class ProcessTreeTest {
         FreeStyleProject sleepProject = j.createFreeStyleProject();
         FreeStyleProject processJob = j.createFreeStyleProject();
 
-        sleepProject.getBuildersList().add(new Shell("nohup sleep 100000 &"));
+        int sleepTime = 90000 + java.util.concurrent.ThreadLocalRandom.current().nextInt(20000);
+        sleepProject.getBuildersList().add(new Shell("nohup sleep " + sleepTime + " &"));
 
         j.buildAndAssertSuccess(sleepProject);
 
         processJob.getBuildersList().add(new Shell("ps -ef | grep sleep"));
 
-        j.assertLogNotContains("sleep 100000", processJob.scheduleBuild2(0).get());
+        j.assertLogNotContains("sleep " + sleepTime, processJob.scheduleBuild2(0).get());
     }
 
     @Test
