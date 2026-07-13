@@ -23,7 +23,7 @@
     "lint": "yarn lint:js && yarn lint:css"
   },
   "devDependencies": {
-    "@babel/cli": "8.0.1",
+    "@babel/cli": "8.0.4",
     "@babel/core": "8.0.1",
     "@babel/preset-env": "8.0.2",
     "@eslint/js": "10.0.1",
