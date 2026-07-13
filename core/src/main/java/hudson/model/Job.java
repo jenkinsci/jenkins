@@ -110,6 +110,7 @@ import jenkins.scm.RunWithSCM;
 import jenkins.security.HexStringConfidentialKey;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
+import jenkins.util.SystemProperties;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -1155,6 +1156,17 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
         }
 
+        // Default 20 entries (JENKINS-18992). Overridable via system property or ?max=
+        int maxEntries = SystemProperties.getInteger(Job.class.getName() + ".rssChangelogMaxEntries", 20);
+        String maxParam = req.getParameter("max");
+        if (maxParam != null) {
+            try {
+                maxEntries = Math.max(1, Integer.parseInt(maxParam));
+            } catch (NumberFormatException e) {
+                // keep default
+            }
+        }
+
         List<FeedItem> entries = new ArrayList<>();
         String scmDisplayName = "";
         if (this instanceof SCMTriggerItem scmItem) {
@@ -1165,11 +1177,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             scmDisplayName = " " + String.join(", ", scmNames);
         }
 
+        // stop once we have enough; avoids loading every build for large jobs
+        outer:
         for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
             int idx = 0;
             if (r instanceof RunWithSCM) {
                 for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM<?, ?>) r).getChangeSets()) {
                     for (ChangeLogSet.Entry e : c) {
+                        if (entries.size() >= maxEntries) {
+                            break outer;
+                        }
                         entries.add(new FeedItem(e, idx++));
                     }
                 }
