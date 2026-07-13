@@ -1124,7 +1124,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             }
             var byName = instance.byName;
             var idStrategy = idStrategy();
-            int concurrency = Integer.getInteger("hudson.model.User.scanConcurrency", Math.min(4, Runtime.getRuntime().availableProcessors()));
+            int concurrency = SystemProperties.getInteger("hudson.model.User.scanConcurrency", Math.min(4, Runtime.getRuntime().availableProcessors()));
             var pool = new java.util.concurrent.ForkJoinPool(concurrency);
             try {
                 pool.submit(() -> {
