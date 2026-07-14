@@ -81,6 +81,7 @@ import jenkins.security.HMACConfidentialKey;
 import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
+import jenkins.util.SetContextClassLoader;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -1113,6 +1114,42 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             }
         }
 
+        private static void scanDir(File dir, ConcurrentMap<String, User> byName, IdStrategy idStrategy) {
+            var dirName = dir.getName();
+            if (!HASHED_DIRNAMES.matcher(dirName).matches()) {
+                LOGGER.fine(() -> "ignoring unrecognized dir " + dir);
+                return;
+            }
+            var xml = new XmlFile(XSTREAM, new File(dir, CONFIG_XML));
+            if (!xml.exists()) {
+                LOGGER.fine(() -> "ignoring dir " + dir + " with no " + CONFIG_XML);
+                return;
+            }
+            var user = new User();
+            try {
+                xml.unmarshal(user);
+            } catch (Exception x) {
+                LOGGER.log(Level.WARNING, "failed to load " + xml, x);
+                return;
+            }
+            if (user.id == null) {
+                LOGGER.warning(() -> "ignoring " + xml + " with no <id>");
+                return;
+            }
+            var expectedFolderName = getUserFolderNameFor(user.id);
+            if (!dirName.equals(expectedFolderName)) {
+                LOGGER.warning(() -> "ignoring " + xml + " with <id> " + user.id + " expected to be in " + expectedFolderName);
+                return;
+            }
+            user.fixUpAfterLoad();
+            var old = byName.put(idStrategy.keyFor(user.id), user);
+            if (old != null) {
+                LOGGER.warning(() -> "entry for " + user.id + " in " + dir + " duplicates one seen earlier for " + old.id);
+            } else {
+                LOGGER.fine(() -> "successfully loaded " + user.id + " from " + xml);
+            }
+        }
+
         @Initializer(after = InitMilestone.JOB_CONFIG_ADAPTED)
         public static void scanAll() throws IOException {
             DIRNAMES.createMac(); // force the key to be saved during startup
@@ -1125,52 +1162,31 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             var byName = instance.byName;
             var idStrategy = idStrategy();
             int concurrency = SystemProperties.getInteger("hudson.model.User.scanConcurrency", Math.min(4, Runtime.getRuntime().availableProcessors()));
-            var pool = new java.util.concurrent.ForkJoinPool(concurrency);
-            try {
-                pool.submit(() -> {
-                    Arrays.stream(subdirectories).parallel().forEach(dir -> {
-                        var dirName = dir.getName();
-                        if (!HASHED_DIRNAMES.matcher(dirName).matches()) {
-                            LOGGER.fine(() -> "ignoring unrecognized dir " + dir);
-                            return;
+            if (concurrency <= 1) {
+                for (var dir : subdirectories) {
+                    scanDir(dir, byName, idStrategy);
+                }
+            } else {
+                ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+                var pool = new java.util.concurrent.ForkJoinPool(concurrency);
+                try {
+                    pool.submit(() -> {
+                        try (var ignored = new SetContextClassLoader(originalClassLoader)) {
+                            Arrays.stream(subdirectories).parallel().forEach(dir -> {
+                                try (var ignored2 = new SetContextClassLoader(originalClassLoader)) {
+                                    scanDir(dir, byName, idStrategy);
+                                }
+                            });
                         }
-                        var xml = new XmlFile(XSTREAM, new File(dir, CONFIG_XML));
-                        if (!xml.exists()) {
-                            LOGGER.fine(() -> "ignoring dir " + dir + " with no " + CONFIG_XML);
-                            return;
-                        }
-                        var user = new User();
-                        try {
-                            xml.unmarshal(user);
-                        } catch (Exception x) {
-                            LOGGER.log(Level.WARNING, "failed to load " + xml, x);
-                            return;
-                        }
-                        if (user.id == null) {
-                            LOGGER.warning(() -> "ignoring " + xml + " with no <id>");
-                            return;
-                        }
-                        var expectedFolderName = getUserFolderNameFor(user.id);
-                        if (!dirName.equals(expectedFolderName)) {
-                            LOGGER.warning(() -> "ignoring " + xml + " with <id> " + user.id + " expected to be in " + expectedFolderName);
-                            return;
-                        }
-                        user.fixUpAfterLoad();
-                        var old = byName.put(idStrategy.keyFor(user.id), user);
-                        if (old != null) {
-                            LOGGER.warning(() -> "entry for " + user.id + " in " + dir + " duplicates one seen earlier for " + old.id);
-                        } else {
-                            LOGGER.fine(() -> "successfully loaded " + user.id + " from " + xml);
-                        }
-                    });
-                }).get();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                LOGGER.log(Level.WARNING, "User directory scanning was interrupted", e);
-            } catch (ExecutionException e) {
-                LOGGER.log(Level.WARNING, "User directory scanning failed", e);
-            } finally {
-                pool.shutdown();
+                    }).get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    LOGGER.log(Level.WARNING, "User directory scanning was interrupted", e);
+                } catch (ExecutionException e) {
+                    LOGGER.log(Level.WARNING, "User directory scanning failed", e);
+                } finally {
+                    pool.shutdown();
+                }
             }
             LOGGER.fine(() -> "loaded " + byName.size() + " entries");
         }
