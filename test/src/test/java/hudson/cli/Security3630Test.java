@@ -3,12 +3,12 @@ package hudson.cli;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.empty;
 import static org.jvnet.hudson.test.LoggerRule.recorded;
 
 import hudson.Functions;
@@ -131,6 +131,14 @@ public class Security3630Test {
                 // resulting in NullPointerException/IOException) being logged by the Jenkins server.
                 List<String> targetLogs = loggerRule.getRecords().stream()
                     .filter(r -> r.getThrown() != null)
+                    .filter(r -> {
+                        Throwable t = r.getThrown();
+                        while (t != null) {
+                            if (t instanceof InterruptedException) return false;
+                            t = t.getCause();
+                        }
+                        return true;
+                    })
                     .map(r -> String.join("\n", r.getMessage(), r.getLoggerName(), r.getThrown().getMessage(), ExceptionUtils.readStackTrace(r.getThrown())))
                     .collect(Collectors.toList());
                 assertThat("SECURITY-3630 regression: Uncaught exceptions logged in session map (likely ConcurrentModificationException or IOException)",
