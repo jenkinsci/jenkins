@@ -14,8 +14,6 @@ import static org.jvnet.hudson.test.LoggerRule.recorded;
 import hudson.Functions;
 import hudson.init.impl.InstallUncaughtExceptionHandler;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.management.ThreadInfo;
 import java.net.URL;
 import java.util.ArrayList;
@@ -29,7 +27,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import jenkins.util.FullDuplexHttpService;
@@ -121,8 +118,11 @@ public class Security3630Test {
                         f.get(FullDuplexHttpService.CONNECTION_TIMEOUT * 2, TimeUnit.MILLISECONDS);
                     } catch (java.util.concurrent.TimeoutException e) {
                         f.cancel(true);
-                    } catch (ExecutionException | InterruptedException e) {
+                    } catch (ExecutionException e) {
                         // Expected
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw e;
                     }
                 }
 
