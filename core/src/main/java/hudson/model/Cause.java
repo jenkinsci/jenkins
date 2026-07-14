@@ -194,7 +194,6 @@ public abstract class Cause {
                 }
                 upstreamCauses.add(trim(c, MAX_DEPTH, traversed));
             }
-            fillCauseBag();
         }
 
         private UpstreamCause(String upstreamProject, int upstreamBuild, String upstreamUrl, @NonNull List<Cause> upstreamCauses) {
@@ -202,20 +201,16 @@ public abstract class Cause {
             this.upstreamBuild = upstreamBuild;
             this.upstreamUrl = upstreamUrl;
             this.upstreamCauses = upstreamCauses;
-            fillCauseBag();
-        }
-
-        private void fillCauseBag() {
-            if (causeBag == null) {
-                causeBag = new LinkedHashMap<>();
-            }
-            for (Cause c : upstreamCauses) {
-                causeBag.compute(c, (unused, cnt) -> cnt == null ? 1 : cnt + 1);
-            }
         }
 
         @Restricted(DoNotUse.class) // used from Jelly
         public Map<Cause, Integer> getCauseCounts() {
+            if (causeBag == null) {
+                causeBag = new LinkedHashMap<>();
+                for (Cause c : upstreamCauses) {
+                    causeBag.compute(c, (unused, cnt) -> cnt == null ? 1 : cnt + 1);
+                }
+            }
             return Collections.unmodifiableMap(causeBag);
         }
 
@@ -371,7 +366,6 @@ public abstract class Cause {
                     uc.upstreamCause = null;
                     OldDataMonitor.report(context, "1.288");
                 }
-                uc.fillCauseBag();
             }
         }
 

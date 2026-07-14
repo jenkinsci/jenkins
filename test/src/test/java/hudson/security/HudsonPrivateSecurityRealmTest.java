@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import jenkins.security.ApiTokenProperty;
+import jenkins.security.BasicPasswordComplexityRule;
 import jenkins.security.SecurityListener;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.seed.UserSeedProperty;
@@ -220,6 +221,27 @@ class HudsonPrivateSecurityRealmTest {
 
         assertEquals("Alice User", securityRealm.getUser("alice").getDisplayName());
 
+    }
+
+    @Test
+    void signupPageHasPasswordVisibilityToggleAndCapsLockIndicator() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage signup = wc.goTo("signup");
+        assertNotNull(signup.getElementById("togglePassword"));
+        assertNotNull(signup.getElementById("capsLockWarning"));
+        assertNull(signup.getElementById("showPassword"));
+    }
+
+    @Test
+    void loginPageHasPasswordVisibilityToggleAndCapsLockIndicator() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage login = wc.goTo("login");
+        assertNotNull(login.getElementById("togglePassword"));
+        assertNotNull(login.getElementById("capsLockWarning"));
     }
 
     @Issue("SECURITY-166")

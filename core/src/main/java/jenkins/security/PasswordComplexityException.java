@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2025, Jenkins project contributors
+ * Copyright (c) 2026, Jenkins project contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +22,26 @@
  * THE SOFTWARE.
  */
 
-package hudson.security;
+package jenkins.security;
+
+import java.util.List;
 
 /**
  * Thrown by {@link PasswordComplexityRule#validate(String)} when a password
  * does not meet the configured complexity requirements.
  *
- * @since 2.572
+ * @since 2.572 (moved from hudson.security to jenkins.security in 2.TODO)
  */
 public class PasswordComplexityException extends Exception {
-    public PasswordComplexityException(String message) {
-        super(message);
+
+    private final List<String> violations;
+
+    public PasswordComplexityException(List<String> violations) {
+        super(String.join(" ", violations));
+        this.violations = List.copyOf(violations);
+    }
+
+    public List<String> getViolations() {
+        return violations;
     }
 }

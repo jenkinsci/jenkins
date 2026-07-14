@@ -818,4 +818,67 @@ class UserTest {
             throw new UserMayOrMayNotExistException2(username + " not found");
         }
     }
+
+    @Test
+    void parallelScanAllWithMalformedConfig() throws Exception {
+        List<String> validIds = List.of("valid1", "valid2", "valid3", "valid4", "valid5", "valid6", "valid7", "valid8", "valid9", "valid10");
+        for (String id : validIds) {
+            User.getById(id, true).save();
+        }
+
+        File malformedDir1 = User.getUserFolderFor("malformed1");
+        File malformedDir2 = User.getUserFolderFor("malformed2");
+
+        assertTrue(malformedDir1.mkdirs());
+        assertTrue(malformedDir2.mkdirs());
+
+        // Write a malformed config.xml (syntactically invalid XML) for malformed1
+        java.nio.file.Files.writeString(
+                new File(malformedDir1, "config.xml").toPath(),
+                "<hudson.model.User>\n  <id>malformed1</id>\n  <invalid>...\n"
+        );
+
+        // Write a malformed config.xml (syntactically valid but unmarshal-failing XML) for malformed2
+        java.nio.file.Files.writeString(
+                new File(malformedDir2, "config.xml").toPath(),
+                "<hudson.model.Descriptor>\n</hudson.model.Descriptor>\n"
+        );
+
+        try {
+            // Clear the memory cache of users before scanning to make sure scanAll actually loads them
+            User.clear();
+
+            // Verify they are not in the registry
+            for (String id : validIds) {
+                assertNull(User.getById(id, false));
+            }
+            assertNull(User.getById("malformed1", false));
+            assertNull(User.getById("malformed2", false));
+
+            // Execute the parallel unmarshaling / scan
+            User.AllUsers.scanAll();
+
+            // Verify that all valid users are successfully unmarshaled and populated in the registry
+            for (String id : validIds) {
+                User u = User.getById(id, false);
+                assertNotNull(u, "User " + id + " should have been loaded");
+                assertEquals(id, u.getId());
+            }
+
+            // Verify that malformed users are not populated in the registry
+            assertNull(User.getById("malformed1", false), "Malformed user 1 should not be loaded");
+            assertNull(User.getById("malformed2", false), "Malformed user 2 should not be loaded");
+
+        } finally {
+            // Clean up files on disk
+            for (String id : validIds) {
+                hudson.Util.deleteRecursive(User.getUserFolderFor(id));
+            }
+            hudson.Util.deleteRecursive(malformedDir1);
+            hudson.Util.deleteRecursive(malformedDir2);
+
+            // Reset the memory cache again
+            User.clear();
+        }
+    }
 }
