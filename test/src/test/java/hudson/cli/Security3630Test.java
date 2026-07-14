@@ -84,7 +84,7 @@ public class Security3630Test {
         // It concurrently establishes 'download' and 'upload' connections
         // to verify that the FullDuplexHttpService's session map handles concurrent put/get
         // operations without throwing ConcurrentModificationException (SECURITY-3630).
-        loggerRule.capture(100);
+        loggerRule.capture(CONCURRENCY * ITERATIONS + 10);
 
         ExecutorService executor = Executors.newFixedThreadPool(CONCURRENCY);
 
@@ -93,12 +93,14 @@ public class Security3630Test {
                 java.util.concurrent.CountDownLatch startLatch = new java.util.concurrent.CountDownLatch(1);
                 List<Callable<Void>> tasks = new ArrayList<>();
                 URL baseUrl = j.getURL();
+                java.util.concurrent.atomic.AtomicInteger successfulRuns = new java.util.concurrent.atomic.AtomicInteger();
 
                 for (int c = 0; c < CONCURRENCY; c++) {
                     tasks.add(() -> {
                         startLatch.await();
                         try {
                             hudson.cli.CLI._main(new String[] {"-http", "-s", baseUrl.toString(), "who-am-i"});
+                            successfulRuns.incrementAndGet();
                         } catch (Exception e) {
                             // Expected under heavy concurrent load: timeouts, connection resets, 500s.
                         }
@@ -113,9 +115,16 @@ public class Security3630Test {
                 }
                 startLatch.countDown();
 
+                long timeoutMs = FullDuplexHttpService.CONNECTION_TIMEOUT * 2;
+                long deadlineNanos = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMs);
                 for (Future<Void> f : futures) {
+                    long remainingNanos = deadlineNanos - System.nanoTime();
+                    if (remainingNanos <= 0) {
+                        f.cancel(true);
+                        continue;
+                    }
                     try {
-                        f.get(FullDuplexHttpService.CONNECTION_TIMEOUT * 2, TimeUnit.MILLISECONDS);
+                        f.get(remainingNanos, TimeUnit.NANOSECONDS);
                     } catch (java.util.concurrent.TimeoutException e) {
                         f.cancel(true);
                     } catch (ExecutionException e) {
@@ -125,6 +134,9 @@ public class Security3630Test {
                         throw e;
                     }
                 }
+
+                assertThat("Iteration did not complete any successful CLI invocation; this can make the regression check inconclusive",
+                    successfulRuns.get(), not(0));
 
                 // Assert the absence of the SECURITY-3630 bug signature every iteration.
                 // The original issue resulted in ConcurrentModificationException (or corrupted map states
@@ -139,7 +151,11 @@ public class Security3630Test {
                         }
                         return true;
                     })
-                    .map(r -> String.join("\n", r.getMessage(), r.getLoggerName(), r.getThrown().getMessage(), ExceptionUtils.readStackTrace(r.getThrown())))
+                    .map(r -> String.join("\n",
+                            String.valueOf(r.getMessage()),
+                            String.valueOf(r.getLoggerName()),
+                            String.valueOf(r.getThrown().getMessage()),
+                            ExceptionUtils.readStackTrace(r.getThrown())))
                     .collect(Collectors.toList());
                 assertThat("SECURITY-3630 regression: Uncaught exceptions logged in session map (likely ConcurrentModificationException or IOException)",
                     targetLogs, empty());
