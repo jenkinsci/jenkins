@@ -75,6 +75,9 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import jenkins.model.Jenkins;
 import jenkins.security.FIPS140;
+import jenkins.security.NonePasswordComplexityRule;
+import jenkins.security.PasswordComplexityException;
+import jenkins.security.PasswordComplexityRule;
 import jenkins.security.SecurityListener;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
@@ -180,7 +183,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     /**
-     * @since TODO
+     * @since 2.572
      */
     @Restricted(NoExternalUse.class)
     public PasswordComplexityRule getPasswordComplexityRule() {
@@ -188,7 +191,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     /**
-     * @since TODO
+     * @since 2.572
      */
     @DataBoundSetter
     public void setPasswordComplexityRule(PasswordComplexityRule passwordComplexityRule) {

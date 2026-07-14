@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.573</revision>
+    <revision>2.574</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2026-07-07T05:57:28Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-07-14T06:08:12Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -269,7 +269,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>13.7.0</version>
+              <version>13.8.0</version>
             </dependency>
           </dependencies>
           <executions>

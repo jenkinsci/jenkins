@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2025, Jenkins project contributors
+ * Copyright (c) 2026, Jenkins project contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +22,38 @@
  * THE SOFTWARE.
  */
 
-package hudson.security;
+package jenkins.security;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
- * Thrown by {@link PasswordComplexityRule#validate(String)} when a password
- * does not meet the configured complexity requirements.
+ * A {@link PasswordComplexityRule} that accepts any password.
  *
- * @since TODO
+ * @since 2.572 (moved from hudson.security to jenkins.security in 2.TODO)
  */
-public class PasswordComplexityException extends Exception {
-    public PasswordComplexityException(String message) {
-        super(message);
+@Restricted(NoExternalUse.class)
+public class NonePasswordComplexityRule extends PasswordComplexityRule {
+
+    @DataBoundConstructor
+    public NonePasswordComplexityRule() {
+    }
+
+    @Override
+    public void validate(@NonNull String password) {
+    }
+
+    @Extension
+    @Symbol("nonePasswordComplexity")
+    public static final class DescriptorImpl extends PasswordComplexityRuleDescriptor {
+        @NonNull
+        @Override
+        public String getDisplayName() {
+            return Messages.NonePasswordComplexityRule_DisplayName();
+        }
     }
 }
