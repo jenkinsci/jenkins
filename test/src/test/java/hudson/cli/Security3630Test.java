@@ -113,16 +113,9 @@ public class Security3630Test {
                 }
                 startLatch.countDown();
 
-                long timeoutMs = FullDuplexHttpService.CONNECTION_TIMEOUT * 2;
-                long deadlineNanos = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMs);
                 for (Future<Void> f : futures) {
-                    long remainingNanos = deadlineNanos - System.nanoTime();
-                    if (remainingNanos <= 0) {
-                        f.cancel(true);
-                        continue;
-                    }
                     try {
-                        f.get(remainingNanos, TimeUnit.NANOSECONDS);
+                        f.get(FullDuplexHttpService.CONNECTION_TIMEOUT * 2, TimeUnit.MILLISECONDS);
                     } catch (java.util.concurrent.TimeoutException e) {
                         f.cancel(true);
                     } catch (ExecutionException e) {
