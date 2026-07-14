@@ -1,4 +1,4 @@
-package hudson.security;
+package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
