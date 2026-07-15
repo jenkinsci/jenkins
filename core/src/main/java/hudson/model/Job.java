@@ -1156,12 +1156,17 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
         }
 
-        // Default 20 entries (JENKINS-18992). Overridable via system property or ?max=
-        int maxEntries = Math.max(1, SystemProperties.getInteger(Job.class.getName() + ".rssChangelogMaxEntries", 20));
+        // Default 20 entries (JENKINS-18992). Overridable via system property or ?max=,
+        // but always hard-capped so callers cannot reintroduce unbounded feeds.
+        int hardLimit =
+                Math.max(1, SystemProperties.getInteger(Job.class.getName() + ".rssChangelogHardLimit", 1000));
+        int maxEntries = Math.min(
+                hardLimit,
+                Math.max(1, SystemProperties.getInteger(Job.class.getName() + ".rssChangelogMaxEntries", 20)));
         String maxParam = req.getParameter("max");
         if (maxParam != null) {
             try {
-                maxEntries = Math.max(1, Integer.parseInt(maxParam));
+                maxEntries = Math.min(hardLimit, Math.max(1, Integer.parseInt(maxParam)));
             } catch (NumberFormatException e) {
                 // keep default
             }
