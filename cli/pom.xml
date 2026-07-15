@@ -157,6 +157,12 @@
                     <exclude>META-INF/*.SF</exclude>
                     <exclude>META-INF/*.DSA</exclude>
                     <exclude>META-INF/*.RSA</exclude>
+                    <!--
+                      Multi-release variants are dead code in this uber jar: the shaded manifest does not declare
+                      Multi-Release: true and the versioned classes are not relocated, so the JVM can never load
+                      them. BouncyCastle et al. run on their base classes.
+                    -->
+                    <exclude>META-INF/versions/**</exclude>
                   </excludes>
                 </filter>
               </filters>
