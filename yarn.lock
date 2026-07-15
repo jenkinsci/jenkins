@@ -4222,7 +4222,7 @@ __metadata:
     jquery: "npm:4.0.0"
     lodash: "npm:4.18.1"
     mini-css-extract-plugin: "npm:2.10.2"
-    postcss: "npm:8.5.16"
+    postcss: "npm:8.5.17"
     postcss-loader: "npm:8.2.1"
     postcss-preset-env: "npm:11.3.2"
     postcss-scss: "npm:4.0.9"
@@ -5792,14 +5792,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:8.5.16, postcss@npm:^8.4.40, postcss@npm:^8.5.15":
-  version: 8.5.16
-  resolution: "postcss@npm:8.5.16"
+"postcss@npm:8.5.17, postcss@npm:^8.4.40, postcss@npm:^8.5.15":
+  version: 8.5.17
+  resolution: "postcss@npm:8.5.17"
   dependencies:
     nanoid: "npm:^3.3.12"
     picocolors: "npm:^1.1.1"
     source-map-js: "npm:^1.2.1"
-  checksum: 10c0/625de7a02f662f3a340964d14b487bd5097adf16f5f171e257d19005ba37aea8768ee446557500e88e91ca46b4d14d6cb4a0bf033c6ec0c8c0b660d85719f1ef
+  checksum: 10c0/5ff97c377a34becb6dc51262eb3f892c474459c682506eff04bac3b65bc6af4451802b40341af4e69956c05665a4a298dec975ba12d75e1310dfa3d89b9f587d
   languageName: node
   linkType: hard
 
