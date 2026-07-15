@@ -647,6 +647,31 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
+        <executions>
+          <execution>
+            <!--
+              License headers make up the majority of the bytes of the localization files (the license
+              is retained in the source files and in the LICENSE.txt shipped in the war, just as it is
+              not retained in compiled class files), so strip comments from the packaged jar.
+            -->
+            <id>strip-properties-comments</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>process-resources</phase>
+            <configuration>
+              <target>
+                <replaceregexp match="^[ \t]*#.*(\r?\n)?" replace="" flags="gm" encoding="UTF-8">
+                  <fileset dir="${project.build.outputDirectory}" includes="**/*.properties" />
+                </replaceregexp>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <configuration>
