@@ -1157,7 +1157,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         // Default 20 entries (JENKINS-18992). Overridable via system property or ?max=
-        int maxEntries = SystemProperties.getInteger(Job.class.getName() + ".rssChangelogMaxEntries", 20);
+        int maxEntries = Math.max(1, SystemProperties.getInteger(Job.class.getName() + ".rssChangelogMaxEntries", 20));
         String maxParam = req.getParameter("max");
         if (maxParam != null) {
             try {
