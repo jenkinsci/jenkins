@@ -107,12 +107,6 @@
     padding-right: calc(var(--section-padding) + var(--page-inset));
   }
 
-  &--has-sticky-app-bar {
-    &::before {
-      mask-image: linear-gradient(black 50%, transparent);
-    }
-  }
-
   &--no-breadcrumbs {
     .app-jenkins-logo span {
       display: block !important;
