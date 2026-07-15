@@ -37,7 +37,7 @@
     "globals": "17.7.0",
     "handlebars-loader": "1.7.3",
     "mini-css-extract-plugin": "2.10.2",
-    "postcss": "8.5.16",
+    "postcss": "8.5.17",
     "postcss-loader": "8.2.1",
     "postcss-preset-env": "11.3.2",
     "postcss-scss": "4.0.9",
