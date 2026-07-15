@@ -203,14 +203,18 @@ public abstract class Cause {
             this.upstreamCauses = upstreamCauses;
         }
 
-        @Restricted(DoNotUse.class) // used from Jelly
-        public Map<Cause, Integer> getCauseCounts() {
+        private synchronized void fillCauseBag() {
             if (causeBag == null) {
                 causeBag = new LinkedHashMap<>();
                 for (Cause c : upstreamCauses) {
                     causeBag.compute(c, (unused, cnt) -> cnt == null ? 1 : cnt + 1);
                 }
             }
+        }
+
+        @Restricted(DoNotUse.class) // used from Jelly
+        public Map<Cause, Integer> getCauseCounts() {
+            fillCauseBag();
             return Collections.unmodifiableMap(causeBag);
         }
 
