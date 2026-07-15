@@ -71,12 +71,21 @@ class LoadDetachedPluginsTest {
     @LocalData
     void upgradeFromJenkins1() throws Throwable {
         VersionNumber since = new VersionNumber("1.490");
+        // Plugins detached before this version are no longer bundled in the war, so they are only
+        // auto-installed when upgrading from a version at or after it. See the detached-plugins
+        // execution in war/pom.xml.
+        VersionNumber bundlingFloor = new VersionNumber("2.0");
         rr.then(r -> {
             List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
             assertThat("Plugins have been detached since the pre-upgrade version",
                     detachedPlugins.size(), greaterThan(4));
-            assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
-                    getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(detachedPlugins.size()));
+            List<DetachedPlugin> bundledDetachedPlugins = detachedPlugins.stream()
+                    .filter(plugin -> !plugin.getSplitWhen().isOlderThan(bundlingFloor))
+                    .collect(Collectors.toList());
+            assertThat("Plugins detached between the bundling floor and the current version should be installed",
+                    getInstalledDetachedPlugins(r, bundledDetachedPlugins).size(), equalTo(bundledDetachedPlugins.size()));
+            assertThat("Plugins detached before the bundling floor should not be installed",
+                    getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(bundledDetachedPlugins.size()));
             assertNoFailedPlugins(r);
         });
     }
