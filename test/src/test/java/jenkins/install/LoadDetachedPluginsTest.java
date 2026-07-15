@@ -71,9 +71,9 @@ class LoadDetachedPluginsTest {
     @LocalData
     void upgradeFromJenkins1() throws Throwable {
         VersionNumber since = new VersionNumber("1.490");
-        // Plugins detached before this version are no longer bundled in the war, so they are only
-        // auto-installed when upgrading from a version at or after it. See the detached-plugins
-        // execution in war/pom.xml.
+        // Plugins detached before this version are no longer bundled in the WAR, so when upgrading from
+        // older versions we only expect plugins detached on/after this version to be auto-installed.
+        // See the detached-plugins execution in war/pom.xml.
         VersionNumber bundlingFloor = new VersionNumber("2.0");
         rr.then(r -> {
             List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
