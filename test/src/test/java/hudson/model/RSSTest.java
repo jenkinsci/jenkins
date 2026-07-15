@@ -73,21 +73,29 @@ class RSSTest {
     private JenkinsRule j;
 
     private static final String RSS_CHANGELOG_MAX_ENTRIES = Job.class.getName() + ".rssChangelogMaxEntries";
+    private static final String RSS_CHANGELOG_HARD_LIMIT = Job.class.getName() + ".rssChangelogHardLimit";
 
     private String originalRssChangelogMaxEntries;
+    private String originalRssChangelogHardLimit;
 
     @BeforeEach
     void setUp(JenkinsRule rule) {
         j = rule;
         originalRssChangelogMaxEntries = System.getProperty(RSS_CHANGELOG_MAX_ENTRIES);
+        originalRssChangelogHardLimit = System.getProperty(RSS_CHANGELOG_HARD_LIMIT);
     }
 
     @AfterEach
-    void restoreRssChangelogMaxEntries() {
-        if (originalRssChangelogMaxEntries == null) {
-            System.clearProperty(RSS_CHANGELOG_MAX_ENTRIES);
+    void restoreRssChangelogSystemProperties() {
+        restoreSystemProperty(RSS_CHANGELOG_MAX_ENTRIES, originalRssChangelogMaxEntries);
+        restoreSystemProperty(RSS_CHANGELOG_HARD_LIMIT, originalRssChangelogHardLimit);
+    }
+
+    private static void restoreSystemProperty(String key, String original) {
+        if (original == null) {
+            System.clearProperty(key);
         } else {
-            System.setProperty(RSS_CHANGELOG_MAX_ENTRIES, originalRssChangelogMaxEntries);
+            System.setProperty(key, original);
         }
     }
 
@@ -374,10 +382,21 @@ class RSSTest {
     @Test
     @Issue("JENKINS-18992")
     void rssChangelogMaxParameter() throws Exception {
-        createJobWithChangelogEntries("rssChangelogMax", 15);
+        // More than the default (20) so we prove ?max= can raise the limit, not only lower it.
+        createJobWithChangelogEntries("rssChangelogMax", 25);
         JenkinsRule.WebClient wc = j.createWebClient();
         assertEquals(5, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogMax", "max=5", true), true));
-        assertEquals(15, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogMax", "max=50", true), true));
+        assertEquals(25, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogMax", "max=50", true), true));
+    }
+
+    @Test
+    @Issue("JENKINS-18992")
+    void rssChangelogMaxParameterIsHardCapped() throws Exception {
+        System.setProperty(RSS_CHANGELOG_HARD_LIMIT, "10");
+        createJobWithChangelogEntries("rssChangelogHardCap", 20);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        assertEquals(
+                10, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogHardCap", "max=1000000", true), true));
     }
 
     @Test
@@ -389,6 +408,17 @@ class RSSTest {
                 5,
                 countChangelogEntries(
                         getRssChangelogPage(j.createWebClient(), "rssChangelogProp", "", true), true));
+    }
+
+    @Test
+    @Issue("JENKINS-18992")
+    void rssChangelogSystemPropertyClampedToAtLeastOne() throws Exception {
+        System.setProperty(RSS_CHANGELOG_MAX_ENTRIES, "0");
+        createJobWithChangelogEntries("rssChangelogZeroProp", 5);
+        assertEquals(
+                1,
+                countChangelogEntries(
+                        getRssChangelogPage(j.createWebClient(), "rssChangelogZeroProp", "", true), true));
     }
 
     @Test
