@@ -74,14 +74,21 @@ class RSSTest {
 
     private static final String RSS_CHANGELOG_MAX_ENTRIES = Job.class.getName() + ".rssChangelogMaxEntries";
 
+    private String originalRssChangelogMaxEntries;
+
     @BeforeEach
     void setUp(JenkinsRule rule) {
         j = rule;
+        originalRssChangelogMaxEntries = System.getProperty(RSS_CHANGELOG_MAX_ENTRIES);
     }
 
     @AfterEach
-    void clearRssChangelogMaxEntries() {
-        System.clearProperty(RSS_CHANGELOG_MAX_ENTRIES);
+    void restoreRssChangelogMaxEntries() {
+        if (originalRssChangelogMaxEntries == null) {
+            System.clearProperty(RSS_CHANGELOG_MAX_ENTRIES);
+        } else {
+            System.setProperty(RSS_CHANGELOG_MAX_ENTRIES, originalRssChangelogMaxEntries);
+        }
     }
 
     @Test
