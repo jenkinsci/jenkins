@@ -170,7 +170,7 @@ public abstract class Cause {
         @Deprecated
         private transient Cause upstreamCause;
         private @NonNull List<Cause> upstreamCauses;
-        private transient Map<Cause, Integer> causeBag = new LinkedHashMap<>();
+        private transient Map<Cause, Integer> causeBag;
 
         /**
          * @deprecated since 2009-02-28
