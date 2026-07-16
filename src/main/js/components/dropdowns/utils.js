@@ -123,7 +123,7 @@ function generateDropdownItems(items, compact = false, context = "") {
         tippy(
           menuItem,
           Object.assign({}, Templates.dropdown(), {
-            content: generateDropdownItems(item.event.actions),
+            content: generateDropdownItems(item.subMenu.items),
             trigger: "mouseenter",
             placement: "right-start",
             offset: [-8, 0],
@@ -245,7 +245,7 @@ function mapChildrenItemsToDropdownItems(items) {
     if (item.type === "HEADER") {
       return {
         type: "HEADER",
-        label: item.displayName,
+        displayName: item.displayName,
       };
     }
 
@@ -322,7 +322,10 @@ function convertHtmlToItems(children) {
           icon: attributes.dropdownIcon,
           iconXml: attributes.dropdownIcon,
           event: {
-            actions: convertHtmlToItems(child.content.children),
+            actions: [],
+          },
+          subMenu: {
+            items: convertHtmlToItems(child.content.children),
           },
         };
       case "SEPARATOR":

@@ -141,14 +141,19 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
   );
 
   const label = xmlEscape(itemOptions.displayName);
+  const description = itemOptions.description
+    ? `<span class="jenkins-dropdown__item__description">${xmlEscape(itemOptions.description)}</span>`
+    : "";
 
-  let clazz =
-    type +
-    " " +
-    itemOptions.clazz +
-    (itemOptions.semantic
+  const clazz = [
+    type,
+    itemOptions.clazz,
+    itemOptions.semantic
       ? " jenkins-!-" + itemOptions.semantic.toLowerCase() + "-color"
-      : "");
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   // If submenu
   if (itemOptions.event && itemOptions.event.event) {
@@ -164,7 +169,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
     );
 
     const button = createElementFromHtml(
-      `<button class="${clazz}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M112 184l144 144 144-144"/></svg></button>`,
+      `<button type="button" class="${clazz}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M112 184l144 144 144-144"/></svg></button>`,
     );
     Utils.generateDropdown(
       button,
@@ -186,33 +191,42 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
 
   const tag =
     itemOptions.event && itemOptions.event.type === "GET" ? "a" : "button";
+
+  // Do not prepend the context path for root-relative or absolute URLs
+  if (tag === "a") {
+    if (
+      itemOptions.event.url.startsWith("/") ||
+      itemOptions.event.url.startsWith("http")
+    ) {
+      context = "";
+    }
+  }
+
   const url = tag === "a" ? context + xmlEscape(itemOptions.event.url) : null;
 
   const item = createElementFromHtml(`
-      <${tag} role="menuitem" class="jenkins-dropdown__item ${itemOptions.clazz ? xmlEscape(itemOptions.clazz) : ""}"
-        ${itemOptions.url ? `href="${xmlEscape(itemOptions.url)}"` : ""} ${itemOptions.id ? `id="${xmlEscape(itemOptions.id)}"` : ""}
-        ${itemOptions.tooltip ? `data-html-tooltip="${xmlEscape(itemOptions.tooltip)}"` : ""}>
-          ${
-            itemOptions.icon
-              ? `<div class="jenkins-dropdown__item__icon">${
-                  itemOptions.iconXml
-                    ? itemOptions.iconXml
-                    : `<img alt="${label}" src="${itemOptions.icon}" />`
-                }</div>`
-              : ``
-          }
-          ${label}
-          ${badge(itemOptions)}
-          ${
-            itemOptions.event &&
-            itemOptions.event.actions &&
-            type === "jenkins-dropdown__item"
-              ? `<span class="jenkins-dropdown__item__chevron"></span>`
-              : ``
-          }
-      </${tag}>
-    `);
-
+    <${tag}
+      ${optionalVals({
+        class: clazz,
+        href: url,
+        id: itemOptions.id,
+        "data-html-tooltip": itemOptions.tooltip,
+        type: tag === "button" ? "button" : null,
+        role: "menuitem",
+      })}>
+        ${icon(itemOptions)}
+        ${label}
+        ${description}
+        ${badge(itemOptions)}
+        ${
+          itemOptions.event &&
+          itemOptions.event.actions &&
+          type === "jenkins-dropdown__item"
+            ? `<span class="jenkins-dropdown__item__chevron"></span>`
+            : ``
+        }
+    </${tag}>
+  `);
   // Handle special cases
   tryOnClickEvent(item, dropdownItem);
   tryLoadScripts(item, dropdownItem, context);
@@ -245,7 +259,11 @@ function tryLoadScripts(element, opt, context) {
     element.dataset[kebabToCamelCase(key)] =
       opt.event.attributes[key].toString();
   }
-  element.dataset["baseUrl"] = context;
+
+  element.dataset.baseUrl = context;
+
+  // Dialog URLs should open relative to the context path, not the base URL
+  element.dataset.dialogUrl = context + element.dataset.dialogUrl;
 
   loadScriptIfNotLoaded(opt.event.javascriptUrl, element);
 }
@@ -262,13 +280,17 @@ function tryConfirmationPost(element, opt, context) {
     dialog
       .confirm(opt.event.title, {
         message: opt.event.description,
-        type: opt.semantic.toLowerCase() ?? "default",
+        type: opt.semantic?.toLowerCase() ?? "default",
       })
       .then(
         () => {
           const form = document.createElement("form");
           form.setAttribute("method", "POST");
-          form.setAttribute("action", context + xmlEscape(opt.event.postTo));
+          if (opt.event.postTo.startsWith("/")) {
+            form.setAttribute("action", xmlEscape(opt.event.postTo));
+          } else {
+            form.setAttribute("action", context + xmlEscape(opt.event.postTo));
+          }
           crumb.appendToForm(form);
           document.body.appendChild(form);
           form.submit();
@@ -286,13 +308,17 @@ function tryPost(element, opt, context) {
     return;
   }
 
+  // Do not prepend the context path for root-relative URLs
+  if (opt.event.url.startsWith("/")) {
+    context = "";
+  }
+
   element.addEventListener("click", () => {
-    const form = document.createElement("form");
-    form.setAttribute("method", "POST");
-    form.setAttribute("action", context + xmlEscape(opt.event.url));
-    crumb.appendToForm(form);
-    document.body.appendChild(form);
-    form.submit();
+    fetch(context + xmlEscape(opt.event.url), {
+      method: "post",
+      headers: crumb.wrap({}),
+    });
+    window.location.href = ".";
   });
 }
 

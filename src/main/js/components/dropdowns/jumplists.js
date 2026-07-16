@@ -95,7 +95,13 @@ function generateDropdowns() {
           return;
         }
 
-        fetch(Path.combinePath(href, jumplistType))
+        // If requested, only return menu actions rather than top-level app bar actions
+        let query = "";
+        if (element.dataset.jumplistType === "menu") {
+          query = "?menu-only=true";
+        }
+
+        fetch(Path.combinePath(href, jumplistType) + query)
           .then((response) => response.json())
           .then((json) =>
             instance.setContent(
@@ -127,10 +133,12 @@ function createDropdownContent(element, hasModelLink, hasChildrenLink, href) {
       return fetch(Path.combinePath(href, urlSuffix))
         .then((response) => response.json())
         .then((json) => {
-          const items = Utils.generateDropdownItems(
-            mapChildrenItemsToDropdownItems(json.items),
+          const items = Utils.mapChildrenItemsToDropdownItems(json.items);
+          return Utils.generateDropdownItems(
+            items,
+            false,
+            element.dataset.href,
           );
-          return items;
         });
     };
 
@@ -190,75 +198,6 @@ function createDropdownContent(element, hasModelLink, hasChildrenLink, href) {
         instance.loaded = true;
       });
   };
-}
-
-/*
- * Generates the contents for the dropdown
- */
-function mapChildrenItemsToDropdownItems(items) {
-  return items.map((item) => {
-    if (item.type === "HEADER") {
-      return {
-        type: "HEADER",
-        label: item.displayName,
-      };
-    }
-
-    if (item.type === "SEPARATOR") {
-      return {
-        type: "SEPARATOR",
-      };
-    }
-
-    return {
-      icon: item.icon,
-      iconXml: item.iconXml,
-      displayName: item.displayName,
-      url: item.url,
-      type: item.post || item.requiresConfirmation ? "button" : "link",
-      badge: item.badge,
-      onClick: () => {
-        if (item.post || item.requiresConfirmation) {
-          if (item.requiresConfirmation) {
-            dialog
-              .confirm(item.displayName, { message: item.message })
-              .then(() => {
-                const form = document.createElement("form");
-                form.setAttribute("method", item.post ? "POST" : "GET");
-                form.setAttribute("action", item.url);
-                if (item.post) {
-                  crumb.appendToForm(form);
-                }
-                document.body.appendChild(form);
-                form.submit();
-              });
-          } else {
-            fetch(item.url, {
-              method: "post",
-              headers: crumb.wrap({}),
-            }).then((rsp) => {
-              if (rsp.ok) {
-                notificationBar.show(
-                  item.displayName + ": Done.",
-                  notificationBar.SUCCESS,
-                );
-              } else {
-                notificationBar.show(
-                  item.displayName + ": Failed.",
-                  notificationBar.ERROR,
-                );
-              }
-            });
-          }
-        }
-      },
-      subMenu: item.subMenu
-        ? () => {
-            return mapChildrenItemsToDropdownItems(item.subMenu.items);
-          }
-        : null,
-    };
-  });
 }
 
 export default { init };

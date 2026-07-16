@@ -16,7 +16,10 @@ function init() {
         ),
       ).map((section) => {
         section.id = toId(section.textContent);
-        return { displayName: section.textContent, url: "#" + section.id };
+        return {
+          displayName: section.textContent,
+          event: { url: "#" + section.id, type: "GET" },
+        };
       });
     });
   }
