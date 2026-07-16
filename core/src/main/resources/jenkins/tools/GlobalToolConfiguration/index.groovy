@@ -2,10 +2,12 @@ package jenkins.tools.GlobalToolConfiguration
 
 import hudson.Functions
 import hudson.model.Descriptor
+import jenkins.model.experimentalflags.UserExperimentalFlag
 
 def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
+def newManageJenkins = UserExperimentalFlag.getFlagValueForCurrentUser("jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag")
 
 l.'settings-subpage'(permission: app.SYSTEM_READ) {
     set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
@@ -22,14 +24,11 @@ l.'settings-subpage'(permission: app.SYSTEM_READ) {
         }
 
         l.isAdmin() {
-            f.bottomButtonBar {
-                f.submit(value: _("Save"))
-                f.apply(value: _("Apply"))
+            if (newManageJenkins) {
+                f.saveBar()
+            } else {
+                f.saveApplyBar()
             }
         }
-    }
-
-    l.isAdmin() {
-        st.adjunct(includes: "lib.form.confirm")
     }
 }
