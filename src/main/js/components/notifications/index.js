@@ -79,15 +79,15 @@ function init() {
 
 function tryShowPageLoadNotification() {
   const { notificationMessage, notificationType } = document.body.dataset;
+
   if (!notificationMessage) {
     return;
   }
 
-  const options =
-    (notificationType && window.notificationBar[notificationType]) || undefined;
-  window.notificationBar.show(notificationMessage, options);
-  delete document.body.dataset.notificationMessage;
-  delete document.body.dataset.notificationType;
+  window.notificationBar.show(
+    notificationMessage,
+    window.notificationBar[notificationType],
+  );
 }
 
 export default { init };

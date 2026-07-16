@@ -154,11 +154,7 @@ public class FormApply {
             return null;
         }
 
-        try {
-            return new Notification(message, NotificationType.valueOf(notificationType));
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
+        return new Notification(message, NotificationType.valueOf(notificationType));
     }
 
     public static final class Notification {
