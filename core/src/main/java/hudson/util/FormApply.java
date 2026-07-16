@@ -175,7 +175,6 @@ public class FormApply {
         }
     }
 
-
     /**
      * Corresponds to types declared in <a href="https://github.com/jenkinsci/jenkins/blob/74610e024a6b8fd8feccdc51b8f7741aa6c30e3b/war/src/main/js/components/notifications/index.js#L13-L25">index.js</a>
      */
