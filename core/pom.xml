@@ -652,19 +652,22 @@ THE SOFTWARE.
         <executions>
           <execution>
             <!--
-              License headers make up the majority of the bytes of the localization files (the license
-              is retained in the source files and in the LICENSE.txt shipped in the war, just as it is
-              not retained in compiled class files), so strip comments from the packaged jar.
+              License headers make up the majority of the bytes of the localization and Jelly view files
+              (the license is retained in the source files and in the LICENSE.txt shipped in the war, just
+              as it is not retained in compiled class files), so strip comments from the packaged jar.
             -->
-            <id>strip-properties-comments</id>
+            <id>strip-license-comments</id>
             <goals>
               <goal>run</goal>
             </goals>
             <phase>process-resources</phase>
             <configuration>
               <target>
-                <replaceregexp match="^[ \t]*#.*(\r?\n)?" replace="" flags="gm" encoding="UTF-8">
+                <replaceregexp encoding="UTF-8" flags="gm" match="^[ \t]*#.*(\r?\n)?" replace="">
                   <fileset dir="${project.build.outputDirectory}" includes="**/*.properties" />
+                </replaceregexp>
+                <replaceregexp encoding="UTF-8" flags="gs" match="&lt;!--.*?--&gt;" replace="">
+                  <fileset dir="${project.build.outputDirectory}" includes="**/*.jelly" />
                 </replaceregexp>
               </target>
             </configuration>
