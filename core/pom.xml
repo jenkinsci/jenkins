@@ -660,7 +660,7 @@ THE SOFTWARE.
             <goals>
               <goal>run</goal>
             </goals>
-            <phase>process-resources</phase>
+            <phase>prepare-package</phase>
             <configuration>
               <target>
                 <!-- Only the leading comment block, to leave any semantically interesting comments elsewhere in the file untouched -->
