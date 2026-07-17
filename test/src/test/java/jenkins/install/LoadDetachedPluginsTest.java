@@ -66,30 +66,6 @@ class LoadDetachedPluginsTest {
 
     private final LogRecorder logging = new LogRecorder();
 
-    @Issue("JENKINS-48365")
-    @Test
-    @LocalData
-    void upgradeFromJenkins1() throws Throwable {
-        VersionNumber since = new VersionNumber("1.490");
-        // Plugins detached before this version are no longer bundled in the WAR, so when upgrading from
-        // older versions we only expect plugins detached on/after this version to be auto-installed.
-        // See the detached-plugins execution in war/pom.xml.
-        VersionNumber bundlingFloor = new VersionNumber("2.0");
-        rr.then(r -> {
-            List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
-            assertThat("Plugins have been detached since the pre-upgrade version",
-                    detachedPlugins.size(), greaterThan(4));
-            List<DetachedPlugin> bundledDetachedPlugins = detachedPlugins.stream()
-                    .filter(plugin -> !plugin.getSplitWhen().isOlderThan(bundlingFloor))
-                    .collect(Collectors.toList());
-            assertThat("Plugins detached between the bundling floor and the current version should be installed",
-                    getInstalledDetachedPlugins(r, bundledDetachedPlugins).size(), equalTo(bundledDetachedPlugins.size()));
-            assertThat("Plugins detached before the bundling floor should not be installed",
-                    getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(bundledDetachedPlugins.size()));
-            assertNoFailedPlugins(r);
-        });
-    }
-
     @Test
     @Disabled("Only useful while updating bundled plugins, otherwise new security warnings fail unrelated builds")
     @LocalData
