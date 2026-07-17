@@ -4,9 +4,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -90,17 +90,12 @@ class BasicPasswordComplexityRuleTest {
         BasicPasswordComplexityRule rule = new BasicPasswordComplexityRule(8, true, true, true, true);
 
         PasswordComplexityException e = assertThrows(PasswordComplexityException.class, () -> rule.validate("bad"));
-        // Violations list should have one entry per rule that was violated
-        assertTrue(e.getViolations().stream().anyMatch(v -> v.contains("at least 8 characters")),
-                "violations list should contain length error");
-        assertTrue(e.getViolations().stream().anyMatch(v -> v.contains("uppercase letter")),
-                "violations list should contain uppercase error");
-        assertTrue(e.getViolations().stream().anyMatch(v -> v.contains("digit")),
-                "violations list should contain digit error");
-        assertTrue(e.getViolations().stream().anyMatch(v -> v.contains("special character")),
-                "violations list should contain special character error");
-        assertThat("violations list should contain exactly one entry per violated rule",
-                   e.getViolations().size(), is(4));
+        // Violations list should have exactly these 4 violations in any order
+        assertThat(e.getViolations(),
+                   containsInAnyOrder("Password must be at least 8 characters long.",
+                                      "Password must contain at least one uppercase letter (A-Z).",
+                                      "Password must contain at least one digit (0-9).",
+                                      "Password must contain at least one special character (e.g. !@#$%^&*)."));
     }
 
     @Test
