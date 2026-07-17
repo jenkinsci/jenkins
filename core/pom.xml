@@ -663,10 +663,12 @@ THE SOFTWARE.
             <phase>process-resources</phase>
             <configuration>
               <target>
-                <replaceregexp encoding="UTF-8" flags="gm" match="^[ \t]*#.*(\r?\n)?" replace="">
+                <!-- Only the leading comment block, to leave any semantically interesting comments elsewhere in the file untouched -->
+                <replaceregexp encoding="UTF-8" match="\A(?:[ \t]*(?:[#!].*)?\r?\n)+" replace="">
                   <fileset dir="${project.build.outputDirectory}" includes="**/*.properties" />
                 </replaceregexp>
-                <replaceregexp encoding="UTF-8" flags="gs" match="&lt;!--.*?--&gt;" replace="">
+                <!-- Only license comments, to leave any semantically interesting comments untouched -->
+                <replaceregexp encoding="UTF-8" flags="g" match="&lt;!--(?:(?!--&gt;)[\s\S])*?The MIT License[\s\S]*?--&gt;" replace="">
                   <fileset dir="${project.build.outputDirectory}" includes="**/*.jelly" />
                 </replaceregexp>
               </target>
