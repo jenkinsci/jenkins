@@ -170,7 +170,7 @@ public abstract class Cause {
         @Deprecated
         private transient Cause upstreamCause;
         private @NonNull List<Cause> upstreamCauses;
-        private transient Map<Cause, Integer> causeBag = new LinkedHashMap<>();
+        private transient Map<Cause, Integer> causeBag;
 
         /**
          * @deprecated since 2009-02-28
@@ -194,7 +194,6 @@ public abstract class Cause {
                 }
                 upstreamCauses.add(trim(c, MAX_DEPTH, traversed));
             }
-            fillCauseBag();
         }
 
         private UpstreamCause(String upstreamProject, int upstreamBuild, String upstreamUrl, @NonNull List<Cause> upstreamCauses) {
@@ -202,20 +201,20 @@ public abstract class Cause {
             this.upstreamBuild = upstreamBuild;
             this.upstreamUrl = upstreamUrl;
             this.upstreamCauses = upstreamCauses;
-            fillCauseBag();
         }
 
-        private void fillCauseBag() {
+        private synchronized void fillCauseBag() {
             if (causeBag == null) {
                 causeBag = new LinkedHashMap<>();
-            }
-            for (Cause c : upstreamCauses) {
-                causeBag.compute(c, (unused, cnt) -> cnt == null ? 1 : cnt + 1);
+                for (Cause c : upstreamCauses) {
+                    causeBag.compute(c, (unused, cnt) -> cnt == null ? 1 : cnt + 1);
+                }
             }
         }
 
         @Restricted(DoNotUse.class) // used from Jelly
         public Map<Cause, Integer> getCauseCounts() {
+            fillCauseBag();
             return Collections.unmodifiableMap(causeBag);
         }
 
@@ -371,7 +370,6 @@ public abstract class Cause {
                     uc.upstreamCause = null;
                     OldDataMonitor.report(context, "1.288");
                 }
-                uc.fillCauseBag();
             }
         }
 
