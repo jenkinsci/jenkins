@@ -9,11 +9,11 @@
   border-radius: var(--form-input-border-radius);
   overflow: hidden;
 
-  --top: color-mix(in sRGB, white 1%, var(--card-background));
+  --top: color-mix(in oklch, white 1.5%, var(--card-background));
   --background: var(--card-background);
 
   background-color: var(--card-background);
-  background-image: linear-gradient(var(--top), var(--background));
+  background-image: linear-gradient(in oklch, var(--top), var(--background));
   background-size: 100% 90vh;
   background-repeat: no-repeat;
   isolation: isolate;

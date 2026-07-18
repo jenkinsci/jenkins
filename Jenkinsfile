@@ -14,8 +14,8 @@ properties([
 ])
 
 def axes = [
-  platforms: ['linux', 'windows'],
-  jdks: [21, 25],
+  platforms: ['linux'],
+  jdks: [25],
 ]
 
 stage('Record build') {

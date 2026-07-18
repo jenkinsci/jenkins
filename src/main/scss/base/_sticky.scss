@@ -7,6 +7,7 @@
   // containers, so flatten the app shell in test mode.
   html {
     overscroll-behavior: auto;
+    scroll-padding-top: calc(var(--header-height) + var(--section-padding));
   }
 
   .app-page-body {
