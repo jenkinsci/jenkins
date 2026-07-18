@@ -5,6 +5,10 @@
 :root[data-disable-sticky="true"] {
   // ATH is more reliable with browser-level scrolling than nested scroll
   // containers, so flatten the app shell in test mode.
+  html {
+    overscroll-behavior: auto;
+  }
+
   .app-page-body {
     height: auto !important;
     overflow: visible !important;
