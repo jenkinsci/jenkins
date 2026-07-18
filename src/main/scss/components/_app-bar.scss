@@ -82,9 +82,9 @@
     }
 
     &::before {
-      background: var(--background);
+      background: var(--top);
       mask-image: linear-gradient(black 70%, transparent);
-      opacity: 0.55;
+      opacity: 0.6;
     }
 
     &::after {
