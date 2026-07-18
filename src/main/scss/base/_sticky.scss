@@ -17,7 +17,7 @@
 
   .app-page-body > .app-page-body__sidebar,
   .app-page-body > .app-page-body__contents {
-    overflow: visible !important;
+    overflow-y: visible !important;
   }
 
   .jenkins-app-bar--sticky,
