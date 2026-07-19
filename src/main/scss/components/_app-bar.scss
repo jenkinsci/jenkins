@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 0.875rem;
-  min-height: 2.875rem;
+  min-height: 2.5rem;
   gap: var(--section-padding);
   flex-wrap: wrap;
 
@@ -106,7 +106,8 @@
   h1,
   h2 {
     margin: 0;
-    font-size: 1.3125rem;
+    font-size: 1.1875rem;
+    font-weight: 550;
   }
 
   &__subtitle {
