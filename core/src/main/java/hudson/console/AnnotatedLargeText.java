@@ -41,7 +41,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
@@ -184,7 +183,7 @@ public class AnnotatedLargeText<T> extends LargeText {
                 Cipher sym = PASSING_ANNOTATOR.decrypt();
 
                 try (ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(
-                        new CipherInputStream(new ByteArrayInputStream(Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8))), sym)),
+                        new CipherInputStream(new ByteArrayInputStream(Base64.getDecoder().decode(base64)), sym)),
                         Jenkins.get().pluginManager.uberClassLoader)) {
                     long timestamp = ois.readLong();
                     if (TimeUnit.HOURS.toMillis(1) > abs(System.currentTimeMillis() - timestamp))
