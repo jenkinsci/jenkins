@@ -32,7 +32,6 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -61,11 +60,11 @@ class UpdateCenterTest {
     }
 
     private void doData(String location) throws Exception {
-        URL url = new URI(location).toURL();
+        URI url = new URI(location);
         String jsonp = DownloadService.loadJSON(url);
         JSONObject json = JSONObject.fromObject(jsonp);
 
-        UpdateSite us = new UpdateSite("default", url.toExternalForm());
+        UpdateSite us = new UpdateSite("default", url.toString());
         UpdateSite.Data data = us.new Data(json);
         assertThat(requireNonNull(data.core).url, startsWith("https://updates.jenkins.io/"));
         assertTrue(data.plugins.containsKey("rake"));

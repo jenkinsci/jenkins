@@ -2878,7 +2878,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         for (UpdateSite site : Jenkins.get().getUpdateCenter().getSites()) {
             try {
                 site.updateDirectlyNow();
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 LOGGER.log(WARNING, MessageFormat.format("Failed to update the update site ''{0}''. " +
                         "Plugin upgrades may fail.", site.getId()), e);
             }

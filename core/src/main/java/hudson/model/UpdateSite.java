@@ -225,14 +225,15 @@ public class UpdateSite {
      * @return A {@code FormValidation} indicating the if the update metadata was successfully downloaded from the configured update site
      * @since 2.222
      * @throws IOException if there was an error downloading or saving the file.
+     * @throws InterruptedException if request aborted
      */
-    public @NonNull FormValidation updateDirectlyNow() throws IOException {
+    public @NonNull FormValidation updateDirectlyNow() throws IOException, InterruptedException {
         return updateDirectlyNow(DownloadService.signatureCheck);
     }
 
     @Restricted(NoExternalUse.class)
-    public @NonNull FormValidation updateDirectlyNow(boolean signatureCheck) throws IOException {
-        return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8))), signatureCheck);
+    public @NonNull FormValidation updateDirectlyNow(boolean signatureCheck) throws IOException, InterruptedException {
+        return updateData(DownloadService.loadJSON(URI.create(getUrl() + "?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8))), signatureCheck);
     }
 
     protected FormValidation updateData(String json, boolean signatureCheck)
