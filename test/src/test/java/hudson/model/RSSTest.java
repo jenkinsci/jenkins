@@ -397,6 +397,11 @@ class RSSTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         assertEquals(
                 10, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogHardCap", "max=1000000", true), true));
+        // Values outside 32-bit int range should clamp to the hard limit, not fall back to default.
+        assertEquals(
+                10,
+                countChangelogEntries(
+                        getRssChangelogPage(wc, "rssChangelogHardCap", "max=999999999999", true), true));
     }
 
     @Test
