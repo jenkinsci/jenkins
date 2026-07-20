@@ -1156,8 +1156,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
         }
 
-        // Default 20 entries (JENKINS-18992). Overridable via system property or ?max=,
-        // but always hard-capped so callers cannot reintroduce unbounded feeds.
+        // Default 20 entries (JENKINS-18992).
+        // hudson.model.Job.rssChangelogMaxEntries — default feed size (min 1)
+        // hudson.model.Job.rssChangelogHardLimit — absolute ceiling (default 1000)
+        // ?max=N overrides the default size but cannot exceed the hard limit.
         int hardLimit =
                 Math.max(1, SystemProperties.getInteger(Job.class.getName() + ".rssChangelogHardLimit", 1000));
         int maxEntries = Math.min(
@@ -1166,7 +1168,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         String maxParam = req.getParameter("max");
         if (maxParam != null) {
             try {
-                maxEntries = Math.min(hardLimit, Math.max(1, Integer.parseInt(maxParam)));
+                // Parse as long so values outside int range clamp to the hard limit
+                // instead of being treated as invalid.
+                long requested = Long.parseLong(maxParam.trim());
+                maxEntries = (int) Math.min(hardLimit, Math.max(1L, requested));
             } catch (NumberFormatException e) {
                 // keep default
             }
