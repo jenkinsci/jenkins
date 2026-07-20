@@ -273,143 +273,10 @@ THE SOFTWARE.
                   Detached plugins and their dependencies - detached plugins that used to be bundled plugins
                 -->
                 <artifactItem>
-                  <!-- dependency of checks-api, junit, and mailer -->
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>display-url-api</artifactId>
-                  <version>2.217.va_6b_de84cc74b_</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- detached after 1.493 -->
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>mailer</artifactId>
-                  <version>534.v1b_36f5864073</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- detached after 1.535 -->
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>matrix-auth</artifactId>
-                  <version>3.3</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- detached after 1.553 -->
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>antisamy-markup-formatter</artifactId>
-                  <version>173.v680e3a_b_69ff3</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- detached after 1.561 -->
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>matrix-project</artifactId>
-                  <version>870.v9db_fcfc2f45b_</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
+                  <!-- dependency of command-launcher -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
                   <version>1402.1405.vc96e74964250</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- detached after 1.577 -->
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>junit</artifactId>
-                  <version>1415.vcb_3245e24402</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- dependency of junit, plugin-util-api, and workflow-support -->
-                  <groupId>org.jenkins-ci.plugins.workflow</groupId>
-                  <artifactId>workflow-api</artifactId>
-                  <version>1413.v2ff1a_5e720fa_</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- dependency of checks-api, echarts-api, font-awesome-api, and junit -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>plugin-util-api</artifactId>
-                  <version>7.1341.v039f146993d9</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- dependency of echarts-api and junit -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.8-1048.va_c299057e35c</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- dependency of junit -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>checks-api</artifactId>
-                  <version>415.vf022234a_931d</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- dependency of junit -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>prism-api</artifactId>
-                  <version>1.30.0-741.v034eb_0b_0a_a_fa_</version>
-                  <type>hpi</type>
-                </artifactItem>
-
-                <artifactItem>
-                  <!-- dependency of checks-api and plugin-util-api -->
-                  <groupId>org.jenkins-ci.plugins.workflow</groupId>
-                  <artifactId>workflow-support</artifactId>
-                  <version>1015.v785e5a_b_b_8b_22</version>
-                  <type>hpi</type>
-                </artifactItem>
-
-                <artifactItem>
-                  <!-- dependency of echarts-api -->
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>jackson2-api</artifactId>
-                  <version>2.22.0-439.vb_b_43658d6176</version>
-                  <type>hpi</type>
-                </artifactItem>
-
-                <artifactItem>
-                  <!-- dependency of junit -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>jackson3-api</artifactId>
-                  <version>3.2.1-92.vd25c2e23c180</version>
-                  <type>hpi</type>
-                </artifactItem>
-
-                <artifactItem>
-                  <!-- dependency of jackson2-api and jackson3-api -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>jackson-annotations2-api</artifactId>
-                  <version>2.22-19.v10a_a_582ea_26e</version>
-                  <type>hpi</type>
-                </artifactItem>
-
-                <artifactItem>
-                  <!-- dependency of jackson3-api -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>snakeyaml-engine-api</artifactId>
-                  <version>3.0.1-5.vd98ea_ff3b_92e</version>
-                  <type>hpi</type>
-                </artifactItem>
-
-                <artifactItem>
-                  <!-- dependency of jackson2-api and jackson3-api -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>woodstox-core-api</artifactId>
-                  <version>7.2.1-6.v3718a_a_11f5c4</version>
-                  <type>hpi</type>
-                </artifactItem>
-
-                <artifactItem>
-                  <!-- dependency of junit -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>echarts-api</artifactId>
-                  <version>6.0.0-1287.vfd24c22a_3d00</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -420,63 +287,10 @@ THE SOFTWARE.
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
-                  <!-- dependency of jackson2-api -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>snakeyaml-api</artifactId>
-                  <version>2.5-149.v72471e9c6371</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- dependency of jackson2-api -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>jakarta-xml-bind-api</artifactId>
-                  <version>4.0.9-19.v2b_a_5b_44d9a_1c</version>
-                  <type>hpi</type>
-                </artifactItem>
-
-                <artifactItem>
-                  <!-- dependency of script-security and workflow-support -->
+                  <!-- dependency of script-security -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>caffeine-api</artifactId>
                   <version>3.2.4-208.v7e2da_a_7db_82b_</version>
-                  <type>hpi</type>
-                </artifactItem>
-
-                <artifactItem>
-                  <!-- dependency of echarts-api -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>jquery3-api</artifactId>
-                  <version>3.7.1-687.v68d468e40b_30</version>
-                  <type>hpi</type>
-                </artifactItem>
-
-                <artifactItem>
-                  <!-- dependency of bootstrap5-api and echarts-api -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>font-awesome-api</artifactId>
-                  <version>7.2.0-990.vf220b_2a_496f9</version>
-                  <type>hpi</type>
-                </artifactItem>
-
-                <artifactItem>
-                  <!-- dependency of checks-api, junit, plugin-util-api, workflow-api, and workflow-support -->
-                  <groupId>org.jenkins-ci.plugins.workflow</groupId>
-                  <artifactId>workflow-step-api</artifactId>
-                  <version>724.v538c2362b_dfb_</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- dependency of workflow-api and workflow-support -->
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>scm-api</artifactId>
-                  <version>728.vc30dcf7a_0df5</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- dependency of scm-api and workflow-step-api -->
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>structs</artifactId>
-                  <version>362.va_b_695ef4fdf9</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -550,59 +364,10 @@ THE SOFTWARE.
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
-                  <!-- dependency of scm-api -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>asm-api</artifactId>
-                  <version>9.10.1-216.va_9256d3b_844b_</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- dependency of bootstrap5-api, checks-api, commons-text-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>commons-lang3-api</artifactId>
-                  <version>3.20.0-109.ve43756e2d2b_4</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- dependency of bootstrap5-api, checks-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>commons-text-api</artifactId>
-                  <version>1.15.0-218.va_61573470393</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
                   <!-- dependency of trilead-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>gson-api</artifactId>
                   <version>2.14.0-201.v8eefe5515533</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- dependency of junit and matrix-auth -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>ionicons-api</artifactId>
-                  <version>94.vcc3065403257</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- dependency of jakarta-mail-api -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>jakarta-activation-api</artifactId>
-                  <version>2.1.4-1</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- dependency of mailer -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>jakarta-mail-api</artifactId>
-                  <version>2.1.5-1</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- dependency of jackson2-api -->
-                  <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>json-api</artifactId>
-                  <version>20250517-173.v596efb_962a_31</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

@@ -66,21 +66,6 @@ class LoadDetachedPluginsTest {
 
     private final LogRecorder logging = new LogRecorder();
 
-    @Issue("JENKINS-48365")
-    @Test
-    @LocalData
-    void upgradeFromJenkins1() throws Throwable {
-        VersionNumber since = new VersionNumber("1.490");
-        rr.then(r -> {
-            List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
-            assertThat("Plugins have been detached since the pre-upgrade version",
-                    detachedPlugins.size(), greaterThan(4));
-            assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
-                    getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(detachedPlugins.size()));
-            assertNoFailedPlugins(r);
-        });
-    }
-
     @Test
     @Disabled("Only useful while updating bundled plugins, otherwise new security warnings fail unrelated builds")
     @LocalData
