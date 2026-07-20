@@ -48,9 +48,8 @@ import hudson.util.VersionNumber;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -205,8 +204,8 @@ public class UpdateSite {
      * @return A {@code URLConnection} for the given src URL
      * @since 2.499
      */
-    public URLConnection connect(URL src) throws IOException {
-        return ProxyConfiguration.open(src);
+    public HttpRequest.Builder connect(URI src) throws IOException {
+        return ProxyConfiguration.newHttpRequestBuilder(src);
     }
 
     /**
@@ -216,7 +215,7 @@ public class UpdateSite {
      * @throws IOException if the validation fails
      * @since 2.499
      */
-    public void preValidate(URL src) throws IOException {
+    public void preValidate(URI src) throws IOException {
         // no validation needed in the default setup
     }
 

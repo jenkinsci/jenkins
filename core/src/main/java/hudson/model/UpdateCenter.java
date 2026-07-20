@@ -68,12 +68,13 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Constructor;
 import java.net.HttpRetryException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
@@ -83,6 +84,7 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -101,7 +103,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -120,8 +121,7 @@ import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.CountingInputStream;
+import org.apache.commons.io.input.BoundedInputStream;
 import org.jenkinsci.Symbol;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
@@ -170,7 +170,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
     /**
      * Read timeout when downloading plugins, defaults to 1 minute
      */
-    private static final int PLUGIN_DOWNLOAD_READ_TIMEOUT = (int) TimeUnit.SECONDS.toMillis(SystemProperties.getInteger(UpdateCenter.class.getName() + ".pluginDownloadReadTimeoutSeconds", 60));
+    private static final Duration PLUGIN_DOWNLOAD_READ_TIMEOUT = Duration.ofSeconds(SystemProperties.getInteger(UpdateCenter.class.getName() + ".pluginDownloadReadTimeoutSeconds", 60));
 
     public static final String PREDEFINED_UPDATE_SITE_ID = "default";
 
@@ -1243,9 +1243,10 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
          * @param connectionCheckUrl A string containing the URL of a domain
          *          that is assumed to be always available.
          * @throws IOException if a connection can't be established
+         * @throws InterruptedException if request aborted
          */
-        public void checkConnection(ConnectionCheckJob job, String connectionCheckUrl) throws IOException {
-            testConnection(new URL(connectionCheckUrl));
+        public void checkConnection(ConnectionCheckJob job, String connectionCheckUrl) throws IOException, InterruptedException {
+            testConnection(URI.create(connectionCheckUrl));
         }
 
         /**
@@ -1254,8 +1255,9 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
          * @param job The connection checker that is invoking this strategy.
          * @param updateCenterUrl A sting containing the URL of the update center host.
          * @throws IOException if a connection to the update center server can't be established.
+         * @throws InterruptedException if request aborted
          */
-        public void checkUpdateCenter(ConnectionCheckJob job, String updateCenterUrl) throws IOException {
+        public void checkUpdateCenter(ConnectionCheckJob job, String updateCenterUrl) throws IOException, InterruptedException {
             testConnection(toUpdateCenterCheckUrl(updateCenterUrl));
         }
 
@@ -1265,12 +1267,12 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
          * @return the converted URL.
          * @throws MalformedURLException if the supplied URL is malformed.
          */
-        static URL toUpdateCenterCheckUrl(String updateCenterUrl) throws MalformedURLException {
-            URL url;
+        static URI toUpdateCenterCheckUrl(String updateCenterUrl) throws MalformedURLException {
+            URI url;
             if (updateCenterUrl.startsWith("http://") || updateCenterUrl.startsWith("https://")) {
-                url = new URL(updateCenterUrl + (updateCenterUrl.indexOf('?') == -1 ? "?uctest" : "&uctest"));
+                url = URI.create(updateCenterUrl + (updateCenterUrl.indexOf('?') == -1 ? "?uctest" : "&uctest"));
             } else {
-                url = new URL(updateCenterUrl);
+                url = URI.create(updateCenterUrl);
             }
             return url;
         }
@@ -1283,7 +1285,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
          * @param src The location of the resource on the network
          * @throws IOException if the validation fails
          */
-        public void preValidate(DownloadJob job, URL src) throws IOException {
+        public void preValidate(DownloadJob job, URI src) throws IOException {
             if (job.site != null) {
                 job.site.preValidate(src);
             }
@@ -1315,7 +1317,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
          * @see DownloadJob
          */
         @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_SHA1", justification = "SHA-1 is only used as a fallback if SHA-256/SHA-512 are not available")
-        public File download(DownloadJob job, URL src) throws IOException {
+        public File download(DownloadJob job, URI src) throws IOException {
             MessageDigest sha1 = null;
             MessageDigest sha256 = null;
             MessageDigest sha512 = null;
@@ -1328,19 +1330,21 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
                 LOGGER.log(Level.WARNING, "Failed to instantiate message digest algorithm, may only have weak or no verification of downloaded file", nsa);
             }
 
-            URLConnection con = null;
+            HttpClient client = ProxyConfiguration.newHttpClient();
+            java.net.http.HttpResponse<byte[]> httpResponse = null;
             try {
-                con = connect(job, src);
+                HttpRequest.Builder builder = connect(job, src);
                 //JENKINS-34174 - set timeout for downloads, may hang indefinitely
                 // particularly noticeable during 2.0 install when downloading
                 // many plugins
-                con.setReadTimeout(PLUGIN_DOWNLOAD_READ_TIMEOUT);
+                builder.timeout(PLUGIN_DOWNLOAD_READ_TIMEOUT);
+                httpResponse = client.send(builder.build(), BodyHandlers.ofByteArray());
 
                 long total;
                 final long sizeFromMetadata = job.getContentLength();
                 if (sizeFromMetadata == -1) {
                     // Update site does not advertise a file size, so fall back to download file size, if any
-                    total = con.getContentLength();
+                    total = httpResponse.headers().firstValueAsLong("Content-Length").orElse(-1);
                 } else {
                     total = sizeFromMetadata;
                 }
@@ -1359,15 +1363,14 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
                              sha1 != null ? new DigestOutputStream(
                                      sha256 != null ? new DigestOutputStream(
                                              sha512 != null ? new DigestOutputStream(_out, sha512) : _out, sha256) : _out, sha1) : _out;
-                     InputStream in = con.getInputStream();
-                     CountingInputStream cin = new CountingInputStream(in)) {
+                     BoundedInputStream cin = BoundedInputStream.builder().setByteArray(httpResponse.body()).get()) {
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        var sourceUrlString = getSourceUrl(src, con);
+                        var sourceUrlString = getSourceUrl(src, httpResponse);
                         LOGGER.fine(() -> "Downloading " + job.getName() + " from " + sourceUrlString);
                     }
                     while ((len = cin.read(buf)) >= 0) {
                         out.write(buf, 0, len);
-                        final int count = cin.getCount();
+                        final long count = cin.getCount();
                         job.status = job.new Installing(total == -1 ? -1 : ((int) (count * 100 / total)));
                         if (total != -1 && total < count) {
                             throw new IOException("Received more data than expected. Expected " + total + " bytes but got " + count + " bytes (so far), aborting download.");
@@ -1399,18 +1402,18 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
                     job.computedSHA512 = Base64.getEncoder().encodeToString(digest);
                 }
                 return tmp;
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 // assist troubleshooting in case of e.g. "too many redirects" by printing actual URL
-                throw new IOException("Failed to download from " + getSourceUrl(src, con), e);
+                throw new IOException("Failed to download from " + getSourceUrl(src, httpResponse), e);
             }
         }
 
-        private static String getSourceUrl(@NonNull URL src, @CheckForNull URLConnection connection) {
-            var sourceUrlString = src.toExternalForm();
-            if (connection != null) {
-                var connectionURL = connection.getURL();
+        private static String getSourceUrl(@NonNull URI src, @CheckForNull java.net.http.HttpResponse<?> response) {
+            var sourceUrlString = src.toString();
+            if (response != null) {
+                var connectionURL = response.uri();
                 if (connectionURL != null) {
-                    var finalUrlString = connectionURL.toExternalForm();
+                    var finalUrlString = connectionURL.toString();
                     if (!sourceUrlString.equals(finalUrlString)) {
                         return sourceUrlString + " → " + finalUrlString;
                     }
@@ -1423,12 +1426,12 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
          * Connects to the given URL for downloading the binary. Useful for tweaking
          * how the connection gets established.
          */
-        protected URLConnection connect(DownloadJob job, URL src) throws IOException {
+        protected HttpRequest.Builder connect(DownloadJob job, URI src) throws IOException {
             if (job.site != null) {
                 return job.site.connect(src);
             }
             // fall back to just using the normal ProxyConfiguration if the site is null
-            return ProxyConfiguration.open(src);
+            return ProxyConfiguration.newHttpRequestBuilder(src);
         }
 
         /**
@@ -1498,19 +1501,15 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         }
 
 
-        private void testConnection(URL url) throws IOException {
+        private void testConnection(URI url) throws IOException, InterruptedException {
             try {
-                URLConnection connection = ProxyConfiguration.open(url);
+                HttpClient client = ProxyConfiguration.newHttpClient();
+                HttpRequest.Builder builder = ProxyConfiguration.newHttpRequestBuilder(url);
+                java.net.http.HttpResponse<Void> response = client.send(builder.build(), BodyHandlers.discarding());
 
-                if (connection instanceof HttpURLConnection) {
-                    int responseCode = ((HttpURLConnection) connection).getResponseCode();
-                    if (HttpURLConnection.HTTP_OK != responseCode) {
-                        throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + url, responseCode);
-                    }
-                } else {
-                    try (InputStream is = connection.getInputStream(); OutputStream os = OutputStream.nullOutputStream()) {
-                        IOUtils.copy(is, os);
-                    }
+                int responseCode = response.statusCode();
+                if (responseCode != 200) {
+                    throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + url, responseCode);
                 }
             } catch (SSLHandshakeException e) {
                 if (e.getMessage().contains("PKIX path building failed"))
@@ -1939,7 +1938,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         /**
          * Where to download the file from.
          */
-        protected abstract URL getURL() throws MalformedURLException;
+        protected abstract URI getURI();
 
         /**
          * Where to download the file to.
@@ -2045,7 +2044,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         }
 
         protected void _run() throws IOException, InstallationStatus {
-            URL src = getURL();
+            URI src = getURI();
 
             config.preValidate(this, src);
 
@@ -2322,8 +2321,8 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         }
 
         @Override
-        protected URL getURL() throws MalformedURLException {
-            return new URL(plugin.url);
+        protected URI getURI() {
+            return URI.create(plugin.url);
         }
 
         @Override
@@ -2421,18 +2420,18 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
          */
         @CheckForNull
         private File getCached(DownloadJob job) {
-            URL src;
+            URI src;
             try {
                 /*
                  * Could make PluginManager#getDetachedLocation public and consume it here, but this method is
                  * best-effort anyway.
                  */
-                src = Jenkins.get().getServletContext().getResource(String.format("/WEB-INF/detached-plugins/%s.hpi", plugin.name));
-            } catch (MalformedURLException e) {
+                src = Jenkins.get().getServletContext().getResource(String.format("/WEB-INF/detached-plugins/%s.hpi", plugin.name)).toURI();
+            } catch (MalformedURLException | URISyntaxException e) {
                 return null;
             }
 
-            if (src == null || !"file".equals(src.getProtocol())) {
+            if (src == null || !"file".equals(src.getScheme())) {
                 return null;
             }
 
@@ -2442,12 +2441,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
                 return null;
             }
 
-            File cached;
-            try {
-                cached = new File(src.toURI());
-            } catch (URISyntaxException e) {
-                return null;
-            }
+            File cached = new File(src);
 
             if (!cached.isFile()) {
                 return null;
@@ -2623,8 +2617,8 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         }
 
         @Override
-        protected URL getURL() throws MalformedURLException {
-            return new URL(plugin.url);
+        protected URI getURI() {
+            return URI.create(plugin.url);
         }
 
         @Override
@@ -2715,11 +2709,11 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         }
 
         @Override
-        protected URL getURL() throws MalformedURLException {
+        protected URI getURI() {
             if (site == null) {
-                throw new MalformedURLException("no update site defined");
+                throw new IllegalArgumentException("no update site defined");
             }
-            return new URL(site.getData().core.url);
+            return URI.create(site.getData().core.url);
         }
 
         @Override
@@ -2762,11 +2756,11 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         }
 
         @Override
-        protected URL getURL() throws MalformedURLException {
+        protected URI getURI() {
             if (site == null) {
-                throw new MalformedURLException("no update site defined");
+                throw new IllegalArgumentException("no update site defined");
             }
-            return new URL(site.getData().core.url);
+            return URI.create(site.getData().core.url);
         }
 
         @Override

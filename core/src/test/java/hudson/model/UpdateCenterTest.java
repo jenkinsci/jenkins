@@ -17,35 +17,35 @@ class UpdateCenterTest {
     @Test
     void toUpdateCenterCheckUrl_http_noQuery() throws Exception {
         assertThat(UpdateCenter.UpdateCenterConfiguration.toUpdateCenterCheckUrl(
-                "http://updates.jenkins-ci.org/update-center.json").toExternalForm(),
+                "http://updates.jenkins-ci.org/update-center.json").toString(),
                 is("http://updates.jenkins-ci.org/update-center.json?uctest"));
     }
 
     @Test
     void toUpdateCenterCheckUrl_https_noQuery() throws Exception {
         assertThat(UpdateCenter.UpdateCenterConfiguration.toUpdateCenterCheckUrl(
-                "https://updates.jenkins-ci.org/update-center.json").toExternalForm(),
+                "https://updates.jenkins-ci.org/update-center.json").toString(),
                 is("https://updates.jenkins-ci.org/update-center.json?uctest"));
     }
 
     @Test
     void toUpdateCenterCheckUrl_http_query() throws Exception {
         assertThat(UpdateCenter.UpdateCenterConfiguration.toUpdateCenterCheckUrl(
-                "http://updates.jenkins-ci.org/update-center.json?version=2.7").toExternalForm(),
+                "http://updates.jenkins-ci.org/update-center.json?version=2.7").toString(),
                 is("http://updates.jenkins-ci.org/update-center.json?version=2.7&uctest"));
     }
 
     @Test
     void toUpdateCenterCheckUrl_https_query() throws Exception {
         assertThat(UpdateCenter.UpdateCenterConfiguration.toUpdateCenterCheckUrl(
-                "https://updates.jenkins-ci.org/update-center.json?version=2.7").toExternalForm(),
+                "https://updates.jenkins-ci.org/update-center.json?version=2.7").toString(),
                 is("https://updates.jenkins-ci.org/update-center.json?version=2.7&uctest"));
     }
 
     @Test
     void toUpdateCenterCheckUrl_file() throws Exception {
         assertThat(UpdateCenter.UpdateCenterConfiguration.toUpdateCenterCheckUrl(
-                "file://./foo.jar!update-center.json").toExternalForm(),
+                "file://./foo.jar!update-center.json").toString(),
                 is("file://./foo.jar!update-center.json"));
     }
 
