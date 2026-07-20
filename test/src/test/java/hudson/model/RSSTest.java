@@ -386,7 +386,9 @@ class RSSTest {
         createJobWithChangelogEntries("rssChangelogMax", 25);
         JenkinsRule.WebClient wc = j.createWebClient();
         assertEquals(5, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogMax", "max=5", true), true));
+        assertEquals(5, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogMax", "max=5", false), false));
         assertEquals(25, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogMax", "max=50", true), true));
+        assertEquals(25, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogMax", "max=50", false), false));
     }
 
     @Test
@@ -577,10 +579,11 @@ class RSSTest {
         FreeStyleProject p = j.createFreeStyleProject(name);
         FakeChangeLogSCM scm = new FakeChangeLogSCM();
         p.setScm(scm);
+        // Batch all entries into one build — assertions only need entry count, not N builds.
         for (int i = 0; i < n; i++) {
             scm.addChange().withAuthor("u" + i);
-            j.buildAndAssertSuccess(p);
         }
+        j.buildAndAssertSuccess(p);
     }
 
     private FreeStyleProject runSuccessfulBuild() throws Exception {
