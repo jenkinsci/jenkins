@@ -152,7 +152,7 @@ public final class PackedMap<K, V> extends AbstractMap<K, V> {
         return new AbstractList<>() {
             @Override
             public V get(int index) {
-                return (V) kvpairs[index * 2];
+                return (V) kvpairs[index * 2 + 1];
             }
 
             @Override
