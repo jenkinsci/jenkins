@@ -90,7 +90,8 @@ class RunWithSCMTest {
         doReturn(false).when(run).shouldCalculateCulprits();
 
         // Simulates a non-null Set whose internal state is corrupted, mirroring what XStream can
-        // produce when unmarshalling a damaged build.xml (JENKINS-26256).
+        // produce when unmarshalling a damaged build.xml.
+        // Refer to https://github.com/jenkinsci/jenkins/issues/26256
         Set<String> corrupted = new AbstractSet<>() {
             @Override
             public Iterator<String> iterator() {
