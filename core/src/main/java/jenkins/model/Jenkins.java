@@ -245,7 +245,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TimerTask;
@@ -275,6 +278,7 @@ import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
 import jenkins.agents.CloudSet;
+import jenkins.core.CoreLibClassLoader;
 import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.install.InstallState;
 import jenkins.install.SetupWizard;
@@ -858,6 +862,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private final transient UpdateCenter updateCenter = UpdateCenter.createUpdateCenter(null);
 
     /**
+     * ClassLoader for internal Jenkins libraries isolated from plugin classpaths.
+     * @since TODO
+     */
+    private final transient CoreLibClassLoader coreLibClassLoader;
+
+    private final transient HashMap<Class<?>, Optional<?>> coreLibs = new HashMap<>();
+
+    /**
      * True if the user opted out from the statistics tracking. We'll never send anything if this is true.
      */
     private Boolean noUsageStatistics;
@@ -910,6 +922,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (theInstance != null)
                 throw new IllegalStateException("second instance");
             theInstance = this;
+
+            // Initialize CoreLibClassLoader for internal libraries isolated from plugins
+            this.coreLibClassLoader = CoreLibClassLoader.initialize(context, Jenkins.class.getClassLoader());
 
             if (!new File(root, "jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with agents
@@ -1334,6 +1349,40 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     public UpdateCenter getUpdateCenter() {
         return updateCenter;
+    }
+
+    /**
+     * Loads a service from the core library classloader.
+     * <p>
+     * Core libraries are isolated from plugin classpaths to prevent version conflicts.
+     * This allows core to use functionality of libraries without exposing them to plugins.
+     *
+     * @param clazz the service interface class
+     * @return the first available implementation, or {@code null} if none found
+     * @since TODO
+     */
+    @CheckForNull
+    @Restricted(NoExternalUse.class)
+    public <T> T getCoreLibrary(Class<T> clazz) {
+        synchronized (coreLibs) {
+            if (!coreLibs.containsKey(clazz)) {
+                Optional<T> result;
+                try {
+                    ServiceLoader<T> loader = ServiceLoader.load(clazz, coreLibClassLoader);
+                    result = loader.findFirst();
+                    if (result.isEmpty()) {
+                        LOGGER.log(Level.WARNING, "No service implementation found for: {0}", clazz.getName());
+                    }
+                } catch (ServiceConfigurationError e) {
+                    LOGGER.log(Level.WARNING, e, () -> "No service implementation found for: " + clazz.getName());
+                    result = Optional.empty();
+                }
+
+                coreLibs.put(clazz, result);
+                return result.orElse(null);
+            }
+            return clazz.cast(coreLibs.get(clazz).orElse(null));
+        }
     }
 
     /**
@@ -3654,6 +3703,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             _cleanUpPluginServletFilters(errors);
 
+            _cleanUpCoreLibClassLoader(errors);
+
             _cleanUpReleaseAllLoggers(errors);
 
             getLifecycle().onStatusUpdate("Jenkins stopped");
@@ -4004,6 +4055,25 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (calculatingFutureDependencyGraph != null && !calculatingFutureDependencyGraph.isDone()) {
                 calculatingFutureDependencyGraph.cancel(true);
             }
+        }
+    }
+
+    private void _cleanUpCoreLibClassLoader(List<Throwable> errors) {
+        LOGGER.log(Level.FINE, "Releasing " + this.coreLibClassLoader);
+        try {
+            if (this.coreLibClassLoader != null) {
+                this.coreLibClassLoader.close();
+            }
+        } catch (OutOfMemoryError e) {
+            // we should just propagate this, no point trying to log
+            throw e;
+        } catch (LinkageError e) {
+            LOGGER.log(SEVERE, "Failed to release CoreLibClassLoader", e);
+            // safe to ignore and continue for this one
+        } catch (Throwable e) {
+            LOGGER.log(SEVERE, "Failed to release CoreLibClassLoader", e);
+            // save for later
+            errors.add(e);
         }
     }
 

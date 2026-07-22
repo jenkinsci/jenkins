@@ -82,6 +82,11 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-core-libs</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
       <artifactId>websocket-jetty12-ee9</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -156,6 +161,7 @@ THE SOFTWARE.
                     <exclude>org.jenkins-ci:crypto-util</exclude>
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
+                    <exclude>org.jenkins-ci.main:jenkins-core-libs</exclude>
                     <exclude>org.jenkins-ci.main:remoting</exclude>
                     <exclude>org.jenkins-ci.main:websocket-jetty12-ee9</exclude>
                     <exclude>org.jenkins-ci.main:websocket-spi</exclude>
@@ -206,6 +212,8 @@ THE SOFTWARE.
         <!-- version specified in grandparent pom -->
         <configuration>
           <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
+          <!-- Exclude everything already in WEB-INF/core-lib from being duplicated in WEB-INF/lib -->
+          <packagingExcludes>${core-lib-packaging-excludes}</packagingExcludes>
           <!-- for putting Main-Class into war -->
           <archive>
             <manifest>
@@ -223,6 +231,34 @@ THE SOFTWARE.
           </archive>
           <!--outputFileNameMapping>@{artifactId}@.@{extension}@</outputFileNameMapping-->
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.gmavenplus</groupId>
+        <artifactId>gmavenplus-plugin</artifactId>
+        <version>4.0.1</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <version>5.0.5</version>
+            <scope>runtime</scope>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>extract-core-lib-artifact-ids</id>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <phase>initialize</phase>
+            <configuration>
+              <scripts>
+                <!-- set `core-lib-packaging-excludes` and `core-lib-artifact-ids` -->
+                <script>${project.basedir}/extract-core-lib-artifact-ids.groovy</script>
+              </scripts>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -414,6 +450,36 @@ THE SOFTWARE.
               <overWriteSnapshots>true</overWriteSnapshots>
             </configuration>
           </execution>
+          <execution>
+            <!-- Copy jenkins-core-libs JAR itself -->
+            <id>core-lib-module</id>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <includeArtifactIds>jenkins-core-libs</includeArtifactIds>
+              <excludeTransitive>true</excludeTransitive>
+              <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/core-lib</outputDirectory>
+              <stripVersion>false</stripVersion>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+          <execution>
+            <!-- Copy all compile-scope transitive dependencies from jenkins-core-libs (artifact IDs extracted from libraries list) -->
+            <id>core-lib-transitives</id>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <includeArtifactIds>${core-lib-artifact-ids}</includeArtifactIds>
+              <includeScope>compile</includeScope>
+              <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/core-lib</outputDirectory>
+              <stripVersion>false</stripVersion>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -516,6 +582,27 @@ THE SOFTWARE.
             <webInfIncludeJarPattern>.*(jenkins-core|target/classes).*</webInfIncludeJarPattern>
           </webApp>
         </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <!-- Copy core-lib JARs to src for jetty:run development mode -->
+            <id>copy-core-lib-to-src</id>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <outputDirectory>${project.basedir}/src/main/webapp/WEB-INF/core-lib</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.build.directory}/${project.build.finalName}/WEB-INF/core-lib</directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
