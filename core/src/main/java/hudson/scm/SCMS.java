@@ -31,6 +31,7 @@ import hudson.util.DescriptorList;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import java.util.List;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 
@@ -56,11 +57,24 @@ public class SCMS {
      */
     @SuppressWarnings("deprecation")
     public static SCM parseSCM(StaplerRequest2 req, AbstractProject target) throws FormException, ServletException {
-        SCM scm = SCM.all().newInstanceFromRadioList(req.getSubmittedForm().getJSONObject("scm"));
+        // Get filtered list of SCM descriptors applicable to this project
+        List<SCMDescriptor<?>> descriptors = SCM._for(target);
+
+        // Find the selected descriptor from the filtered list
+        JSONObject scmConfig = req.getSubmittedForm().getJSONObject("scm");
+        if (scmConfig.isNullObject())
+            return new NullSCM();
+
+        int selectedIndex = scmConfig.getInt("value");
+        if (selectedIndex >= descriptors.size())
+            throw new FormException("SCM index out of range", "scm");
+
+        // Create new instance using the selected descriptor
+        SCM scm = descriptors.get(selectedIndex).newInstance(req, scmConfig);
         if (scm == null) {
             scm = new NullSCM(); // JENKINS-36043 workaround for AbstractMultiBranchProject.submit
         }
-        scm.getDescriptor().incrementGeneration();
+
         return scm;
     }
 
@@ -77,8 +91,7 @@ public class SCMS {
     }
 
     /**
-     * @deprecated as of 1.294
-     *      Use {@link #parseSCM(StaplerRequest2, AbstractProject)} and pass in the caller's project type.
+     * @deprecated as of 1.294 Use {@link #parseSCM(StaplerRequest2, AbstractProject)} and pass in the caller's project type.
      */
     @Deprecated
     public static SCM parseSCM(StaplerRequest req) throws FormException, javax.servlet.ServletException {
