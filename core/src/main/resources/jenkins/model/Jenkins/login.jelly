@@ -60,6 +60,7 @@ THE SOFTWARE.
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <!-- css styling, will fallback to default implementation -->
         <st:include it="${simpleDecorator}" page="simple-head.jelly" />
+        <script src="${resURL}/jsbundles/pages/sign-in.js" type="text/javascript" defer="true" />
       </head>
       <body class="app-sign-in-register">
         <j:choose>
@@ -100,11 +101,33 @@ THE SOFTWARE.
                     <label class="app-sign-in-register__form-label" for="j_password">
                       ${%Password}
                     </label>
-                    <input id="j_password"
-                         class="jenkins-input ${inputClass}"
-                         type="password"
-                         name="j_password"
-                    />
+                    <div class="app-sign-in-register__password-wrapper">
+                      <input id="j_password"
+                           class="jenkins-input ${inputClass}"
+                           type="password"
+                           name="j_password"
+                      />
+                      <span id="capsLockWarning"
+                          class="app-sign-in-register__caps-lock-indicator"
+                          role="status"
+                          hidden="hidden">
+                        <l:icon src="symbol-caps-lock"/>
+                        <span class="jenkins-visually-hidden">${%Caps Lock is on}</span>
+                      </span>
+                      <button type="button"
+                          id="togglePassword"
+                          class="app-sign-in-register__password-toggle"
+                          aria-pressed="false"
+                          aria-label="${%Show password}"
+                          hidden="hidden">
+                        <span class="app-sign-in-register__password-toggle-icon--show">
+                          <l:icon src="symbol-eye-outline"/>
+                        </span>
+                        <span class="app-sign-in-register__password-toggle-icon--hide">
+                          <l:icon src="symbol-eye-off-outline"/>
+                        </span>
+                      </button>
+                    </div>
                   </div>
 
                   <j:if test="${app.security.name()=='SECURED' and !app.disableRememberMe}">

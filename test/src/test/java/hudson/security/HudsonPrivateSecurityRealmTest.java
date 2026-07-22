@@ -223,6 +223,27 @@ class HudsonPrivateSecurityRealmTest {
 
     }
 
+    @Test
+    void signupPageHasPasswordVisibilityToggleAndCapsLockIndicator() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage signup = wc.goTo("signup");
+        assertNotNull(signup.getElementById("togglePassword"));
+        assertNotNull(signup.getElementById("capsLockWarning"));
+        assertNull(signup.getElementById("showPassword"));
+    }
+
+    @Test
+    void loginPageHasPasswordVisibilityToggleAndCapsLockIndicator() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage login = wc.goTo("login");
+        assertNotNull(login.getElementById("togglePassword"));
+        assertNotNull(login.getElementById("capsLockWarning"));
+    }
+
     @Issue("SECURITY-166")
     @Test
     void anonymousCantSignup() throws Exception {
