@@ -62,6 +62,7 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
      * {@link OutputStream} that writes to {@link #line}.
      */
     private final WriterOutputStream lineOut;
+    private final Charset charset;
 
     /**
      *
@@ -70,6 +71,7 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
         this.out = out;
         this.ann = ConsoleAnnotator.cast(ann);
         this.context = context;
+        this.charset = charset;
         this.lineOut = new WriterOutputStream(line, charset);
     }
 
@@ -122,7 +124,7 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
                     }
                 } catch (IOException | ClassNotFoundException e) {
                     // if we failed to resurrect an annotation, ignore it.
-                    LOGGER.log(Level.FINE, "Failed to resurrect annotation from \"" + SourceCodeEscapers.javaCharEscaper().escape(new String(in, next, rest, Charset.defaultCharset())) + "\"", e);
+                    LOGGER.log(Level.FINE, "Failed to resurrect annotation from \"" + SourceCodeEscapers.javaCharEscaper().escape(new String(in, next, rest, charset)) + "\"", e);
                 }
 
                 int bytesUsed = rest - b.available(); // bytes consumed by annotations
