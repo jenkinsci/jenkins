@@ -327,6 +327,10 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             return parameters;
         }
 
+        if (!this.run.isBuilding()) {
+            return parameters;
+        }
+
         if (this.parameterDefinitionNames == null) {
             return parameters;
         }
