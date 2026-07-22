@@ -24,6 +24,7 @@
 
 package hudson;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -59,6 +60,28 @@ class PluginManagerInstalledGUITest {
 
     @RegisterExtension
     private final JenkinsSessionExtension session = new CustomPluginManagerExtension();
+
+    @Issue("JENKINS-60117")
+    @Test
+    void test_enabled_column_sort_keys() throws Throwable {
+        session.then(j -> {
+            InstalledPlugins installedPlugins = new InstalledPlugins(j);
+
+            // enabled, no mandatory dependents → sort key "2"
+            installedPlugins.get("mandatory-depender").assertEnabledCellSortKey("2");
+            // enabled, has mandatory dependents (checkbox disabled) → sort key "1"
+            installedPlugins.get("dependee").assertEnabledCellSortKey("1");
+            // enabled, no mandatory dependents → sort key "2"
+            installedPlugins.get("depender").assertEnabledCellSortKey("2");
+            // detached plugin, enabled, no mandatory dependents → sort key "2"
+            installedPlugins.get("matrix-auth").assertEnabledCellSortKey("2");
+
+            // disable a plugin and reload to verify disabled state → sort key "0"
+            installedPlugins.get("matrix-auth").clickEnabledWidget();
+            InstalledPlugins reloaded = new InstalledPlugins(j);
+            reloaded.get("matrix-auth").assertEnabledCellSortKey("0");
+        });
+    }
 
     @Issue("JENKINS-33843")
     @Test
@@ -199,6 +222,16 @@ class PluginManagerInstalledGUITest {
         public void clickEnabledWidget() throws IOException {
             HtmlInput enableWidget = getEnableWidget();
             HtmlElementUtil.click(enableWidget);
+        }
+
+        public String getEnabledCellSortKey() {
+            DomElement enabledCell = pluginRow.getCells().get(hasHealth ? 2 : 1);
+            return enabledCell.getAttribute("data");
+        }
+
+        public void assertEnabledCellSortKey(String expected) {
+            assertEquals(expected, getEnabledCellSortKey(),
+                    "Unexpected sort key for plugin '" + getId() + "'.");
         }
 
         public void assertEnabledStateChangeable() {

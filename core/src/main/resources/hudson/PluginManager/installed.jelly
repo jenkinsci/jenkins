@@ -186,7 +186,8 @@ THE SOFTWARE.
                     </td>
                   </j:if>
                   <j:set var="state" value="${p.enabled?'true':null}"/>
-                  <td class="jenkins-table__cell--tight enable" data="${state}">
+                  <j:set var="sortKey" value="${p.enabled ? (p.hasMandatoryDependents() ? '1' : '2') : '0'}"/>
+                  <td class="jenkins-table__cell--tight enable" data="${sortKey}">
                     <div class="jenkins-table__cell__button-wrapper">
                       <span class="jenkins-toggle-switch">
                         <input type="checkbox" checked="${state}"
