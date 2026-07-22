@@ -4,13 +4,13 @@
   padding: 0;
   margin: 0;
   border-radius: var(--form-input-border-radius);
-  border: var(--card-border-width) solid var(--card-border-color);
+  border: var(--jenkins-border);
   background: var(--card-background);
 
   &__heading {
     font-size: 1rem;
     padding: 0.875rem;
-    border-bottom: var(--card-border-width) solid var(--card-border-color);
+    border-bottom: var(--jenkins-border);
 
     & > * {
       margin: 0;
@@ -39,7 +39,7 @@
     cursor: pointer;
 
     &:not(:last-of-type) {
-      border-bottom: var(--card-border-width) solid var(--card-border-color);
+      border-bottom: var(--jenkins-border);
     }
 
     &::before {

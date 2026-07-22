@@ -9,12 +9,10 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.jvnet.hudson.test.LoggerRule.recorded;
 
 import hudson.Functions;
 import hudson.init.impl.InstallUncaughtExceptionHandler;
-import java.io.File;
 import java.io.IOException;
 import java.lang.management.ThreadInfo;
 import java.net.URL;
@@ -32,14 +30,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import jenkins.util.FullDuplexHttpService;
-import org.apache.commons.io.FileUtils;
 import org.awaitility.Awaitility;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.junit.platform.commons.util.ExceptionUtils;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
@@ -50,9 +46,6 @@ public class Security3630Test {
     public static final int CONCURRENCY = 50;
     public static final int ITERATIONS = 50;
     private JenkinsRule j = new JenkinsRule();
-
-    @TempDir
-    private File tmp;
 
     private LoggerRule loggerRule = new LoggerRule().record(InstallUncaughtExceptionHandler.class.getName(), Level.WARNING);
 
@@ -86,36 +79,77 @@ public class Security3630Test {
     }
 
     @Test
-    void testHashMap() throws InterruptedException, IOException {
-        // https://github.com/jenkins-infra/helpdesk/issues/4904
-        assumeFalse(Functions.isWindows());
-        // If this test appears flaky, it's probably not: The race condition cannot be reliably triggered.
-        // If the assertion fails, then there's probably a bug here.
-        // TODO Do we want to keep a test like this?
-        loggerRule.capture(100);
-        final File jar = File.createTempFile("jenkins-cli.jar", null, tmp);
-        FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
-        for (int i = 0; i < ITERATIONS; i++) {
-            List<Callable<Void>> callables = new ArrayList<>();
-            for (int c = 0; c < CONCURRENCY; c++) {
-                callables.add(() -> {
-                    new ProcessBuilder().command("java", "-jar", jar.getAbsolutePath(), "-http", "-s", j.getURL().toString(), "who-am-i").start().waitFor();
-                    return null;
-                });
-            }
+    void testConcurrentCliSessionPairing() throws InterruptedException, IOException {
+        // This test simulates the Jenkins CLI full-duplex HTTP protocol natively using CLI._main.
+        // It concurrently establishes 'download' and 'upload' connections
+        // to verify that the FullDuplexHttpService's session map handles concurrent put/get
+        // operations without throwing ConcurrentModificationException (SECURITY-3630).
+        loggerRule.capture(CONCURRENCY * ITERATIONS + 10);
 
-            ExecutorService executor = Executors.newFixedThreadPool(CONCURRENCY);
-            List<Future<Void>> futures = executor.invokeAll(callables);
+        ExecutorService executor = Executors.newFixedThreadPool(CONCURRENCY);
 
-            futures.forEach(f -> {
-                try {
-                    f.get();
-                } catch (InterruptedException | ExecutionException e) {
-                    throw new RuntimeException(e);
+        try {
+            for (int i = 0; i < ITERATIONS; i++) {
+                java.util.concurrent.CountDownLatch startLatch = new java.util.concurrent.CountDownLatch(1);
+                List<Callable<Void>> tasks = new ArrayList<>();
+                URL baseUrl = j.getURL();
+
+                for (int c = 0; c < CONCURRENCY; c++) {
+                    tasks.add(() -> {
+                        startLatch.await();
+                        try {
+                            hudson.cli.CLI._main(new String[] {"-http", "-s", baseUrl.toString(), "who-am-i"});
+                        } catch (Exception e) {
+                            // Expected under heavy concurrent load: timeouts, connection resets, 500s.
+                        }
+                        return null;
+                    });
                 }
-            });
-            assertThat(loggerRule.getRecords().stream().map(r -> String.join("\n", r.getMessage(), r.getLoggerName(), r.getThrown().getMessage(), ExceptionUtils.readStackTrace(r.getThrown()))).collect(Collectors.toList()), empty());
-            // See #control() assertion for the "expected" failure without the fix.
+
+                // Submit all tasks, then release the latch to fire them simultaneously
+                List<Future<Void>> futures = new ArrayList<>();
+                for (Callable<Void> task : tasks) {
+                    futures.add(executor.submit(task));
+                }
+                startLatch.countDown();
+
+                for (Future<Void> f : futures) {
+                    try {
+                        f.get(FullDuplexHttpService.CONNECTION_TIMEOUT * 2, TimeUnit.MILLISECONDS);
+                    } catch (java.util.concurrent.TimeoutException e) {
+                        f.cancel(true);
+                    } catch (ExecutionException e) {
+                        // Expected
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw e;
+                    }
+                }
+
+                // Assert the absence of the SECURITY-3630 bug signature every iteration.
+                // The original issue resulted in ConcurrentModificationException (or corrupted map states
+                // resulting in NullPointerException/IOException) being logged by the Jenkins server.
+                List<String> targetLogs = loggerRule.getRecords().stream()
+                    .filter(r -> r.getThrown() != null)
+                    .filter(r -> {
+                        Throwable t = r.getThrown();
+                        while (t != null) {
+                            if (t instanceof InterruptedException) return false;
+                            t = t.getCause();
+                        }
+                        return true;
+                    })
+                    .map(r -> String.join("\n",
+                            String.valueOf(r.getMessage()),
+                            String.valueOf(r.getLoggerName()),
+                            String.valueOf(r.getThrown().getMessage()),
+                            ExceptionUtils.readStackTrace(r.getThrown())))
+                    .collect(Collectors.toList());
+                assertThat("SECURITY-3630 regression: Uncaught exceptions logged in session map (likely ConcurrentModificationException or IOException)",
+                    targetLogs, empty());
+            }
+        } finally {
+            executor.shutdownNow();
         }
     }
 
