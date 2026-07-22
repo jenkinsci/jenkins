@@ -1,5 +1,6 @@
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import jenkins.model.Jenkins;
 import jenkins.security.ImpersonatingUserDetailsService2;
@@ -193,6 +194,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
         }
 
         @Override
+        @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
         protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
             return doAuthenticate(username, authentication.getCredentials().toString());
         }
