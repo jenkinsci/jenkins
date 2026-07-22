@@ -26,25 +26,15 @@ package jenkins.install;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import hudson.ClassicPluginStrategy;
 import hudson.ExtensionList;
 import hudson.PluginManager;
 import hudson.PluginManagerUtil;
 import hudson.PluginWrapper;
-import hudson.util.VersionNumber;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.plugins.DetachedPluginsUtil.DetachedPlugin;
 import jenkins.security.UpdateSiteWarningsMonitor;
@@ -52,9 +42,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -64,8 +52,6 @@ class LoadDetachedPluginsTest {
     @RegisterExtension
     private final JenkinsSessionExtension rr = PluginManagerUtil.newJenkinsSessionExtension();
 
-    private final LogRecorder logging = new LogRecorder();
-
     @Test
     @Disabled("Only useful while updating bundled plugins, otherwise new security warnings fail unrelated builds")
     @LocalData
@@ -74,21 +60,6 @@ class LoadDetachedPluginsTest {
             r.jenkins.getUpdateCenter().updateAllSites();
             final UpdateSiteWarningsMonitor monitor = ExtensionList.lookupSingleton(UpdateSiteWarningsMonitor.class);
             assertThat("There should be no active plugin security warnings", monitor.getActivePluginWarningsByPlugin().keySet(), empty());
-        });
-    }
-
-    @Issue("JENKINS-48365")
-    @Test
-    @LocalData
-    void upgradeFromJenkins2() throws Throwable {
-        VersionNumber since = new VersionNumber("2.0");
-        rr.then(r -> {
-            List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
-            assertThat("Plugins have been detached since the pre-upgrade version",
-                    detachedPlugins.size(), greaterThan(1));
-            assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
-                    getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(detachedPlugins.size()));
-            assertNoFailedPlugins(r);
         });
     }
 
@@ -107,44 +78,6 @@ class LoadDetachedPluginsTest {
             assertThat("Detached plugins should not be installed after restarting",
                     getInstalledDetachedPlugins(r, detachedPlugins), empty());
             assertNoFailedPlugins(r);
-        });
-    }
-
-    @Issue("JENKINS-55582")
-    @LocalData
-    @Test
-    void installDetachedDependencies() throws Throwable {
-        logging.record(PluginManager.class, Level.FINE).record(ClassicPluginStrategy.class, Level.FINE);
-        rr.then(r -> {
-            List<String> activePlugins = r.jenkins.getPluginManager().getPlugins().stream().filter(PluginWrapper::isActive).map(PluginWrapper::getShortName).collect(Collectors.toList());
-            assertThat("we precreated $JENKINS_HOME/plugins/example.jpi so it had better be loaded", activePlugins, hasItem("example"));
-            { // Check that it links correctly against an implied dependency from a detached plugin:
-                Class<?> callerC = r.jenkins.pluginManager.uberClassLoader.loadClass("io.jenkins.plugins.example.Caller");
-                assertLoader(callerC, "example", r);
-                Object jdkInstaller = callerC.getMethod("use").invoke(null);
-                assertLoader(jdkInstaller.getClass(), "jdk-tool", r);
-            }
-            assertThat("it had various implicit detached dependencies so those should have been loaded too", activePlugins, hasSize(greaterThan(1)));
-        });
-    }
-
-    private void assertLoader(Class<?> c, String expectedPlugin, JenkinsRule r) {
-        PluginWrapper pw = r.jenkins.pluginManager.whichPlugin(c);
-        assertNotNull(pw, "did not expect to be loading " + c + " from " + c.getClassLoader());
-        assertEquals(expectedPlugin, pw.getShortName());
-    }
-
-    @Issue("JENKINS-55582")
-    @LocalData
-    @Test
-    void nonstandardFilenames() throws Throwable {
-        logging.record(PluginManager.class, Level.FINE).record(ClassicPluginStrategy.class, Level.FINE);
-        rr.then(r -> {
-            assertTrue(r.jenkins.pluginManager.getPlugin("build-token-root").isActive());
-            assertEquals("1.2", r.jenkins.pluginManager.getPlugin("jdk-tool").getVersion());
-            /* TODO currently still loads the detached 1.0, since we only skip $shortName.[jh]pi not $shortName-$version.[jh]pi; during PLUGINS_LISTED there is a list of known filenames but not short names
-            assertEquals("1.3", r.jenkins.pluginManager.getPlugin("command-launcher").getVersion());
-            */
         });
     }
 

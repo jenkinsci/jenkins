@@ -29,13 +29,19 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
+import jakarta.servlet.ServletContext;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -44,15 +50,20 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import jenkins.model.Jenkins;
+import jenkins.plugins.DetachedPluginsUtil;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
+import org.mockito.MockedStatic;
 import org.xml.sax.SAXException;
 
 /**
@@ -70,6 +81,41 @@ class PluginManagerTest {
         );
         assertEquals("{other=2.0, stuff=1.2}", new LocalPluginManager(output.getParent().toFile())
                 .parseRequestedPlugins(new ByteArrayInputStream("<root><stuff plugin='stuff@1.0'><more plugin='other@2.0'><things plugin='stuff@1.2'/></more></stuff></root>".getBytes(StandardCharsets.UTF_8))).toString());
+    }
+
+    /**
+     * No war build bundles a real detached plugin, so this exercises
+     * {@link PluginManager#considerDetachedPlugin} against a mocked {@link ServletContext} and a
+     * test-only {@code .hpi} fixture instead. Uses the name "jdk-tool" because it's a real entry in
+     * {@code split-plugins.txt}, so {@link DetachedPluginsUtil#isDetachedPlugin} recognizes it; the
+     * fixture itself is not the real plugin.
+     */
+    @Issue("JENKINS-55582")
+    @Test
+    void considerDetachedPluginCopiesAndRegistersBundledPlugin() throws Exception {
+        assertTrue(DetachedPluginsUtil.isDetachedPlugin("jdk-tool"), "test assumes jdk-tool stays a real split-plugins.txt entry");
+
+        File home = Files.createDirectory(tmp.resolve("home")).toFile();
+        LocalPluginManager pluginManager = new LocalPluginManager(home);
+
+        URL hpiUrl = PluginManagerTest.class.getResource("PluginManagerTest/jdk-tool.hpi");
+        assertThat(hpiUrl, notNullValue());
+
+        ServletContext servletContext = mock(ServletContext.class);
+        when(servletContext.getResourcePaths("/WEB-INF/detached-plugins")).thenReturn(Set.of("/WEB-INF/detached-plugins/jdk-tool.hpi"));
+        when(servletContext.getResource("/WEB-INF/detached-plugins/jdk-tool.hpi")).thenReturn(hpiUrl);
+
+        Jenkins jenkins = mock(Jenkins.class);
+        when(jenkins.getServletContext()).thenReturn(servletContext);
+
+        try (MockedStatic<Jenkins> mockedJenkins = mockStatic(Jenkins.class)) {
+            mockedJenkins.when(Jenkins::get).thenReturn(jenkins);
+            pluginManager.considerDetachedPlugin("jdk-tool", "test-caller");
+        }
+
+        assertTrue(new File(home, "plugins/jdk-tool.jpi").isFile(), "considerDetachedPlugin should have copied the bundled hpi into the home plugins directory");
+        List<PluginWrapper> registered = pluginManager.plugins.stream().filter(p -> p.getShortName().equals("jdk-tool")).toList();
+        assertThat(registered, hasSize(1));
     }
 
     @Issue("SECURITY-167")

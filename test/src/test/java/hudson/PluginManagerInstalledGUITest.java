@@ -28,15 +28,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import jenkins.plugins.detachedtest.Marker;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlElementUtil;
@@ -44,12 +42,10 @@ import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTableRow;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestPluginManager;
-import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 import org.xml.sax.SAXException;
 
 /**
@@ -58,21 +54,23 @@ import org.xml.sax.SAXException;
 class PluginManagerInstalledGUITest {
 
     @RegisterExtension
-    private final JenkinsSessionExtension session = new CustomPluginManagerExtension();
+    private final RealJenkinsExtension rjr = new RealJenkinsExtension()
+            .addPlugins("plugins/dependee-0.0.2.hpi", "plugins/depender-0.0.2.hpi", "plugins/mandatory-depender-0.0.2.hpi")
+            .addSyntheticPlugin(new RealJenkinsExtension.SyntheticPlugin(Marker.class.getPackage()).shortName("detached-test"));
 
     @Issue("JENKINS-33843")
     @Test
     void test_enable_disable_uninstall() throws Throwable {
-        session.then(j -> {
+        rjr.then(j -> {
             InstalledPlugins installedPlugins = new InstalledPlugins(j);
 
-            InstalledPlugin commandLauncherPlugin = installedPlugins.get("command-launcher");
+            InstalledPlugin detachedTestPlugin = installedPlugins.get("detached-test");
             InstalledPlugin dependeePlugin = installedPlugins.get("dependee");
             InstalledPlugin dependerPlugin = installedPlugins.get("depender");
             InstalledPlugin mandatoryDependerPlugin = installedPlugins.get("mandatory-depender");
 
-            // As a detached plugin, it is an optional dependency of others built against a newer baseline.
-            commandLauncherPlugin.assertHasNoDependents();
+            // No other installed plugin depends on it.
+            detachedTestPlugin.assertHasNoDependents();
             // Has a mandatory dependency:
             dependeePlugin.assertHasDependents();
             // Leaf plugins:
@@ -118,14 +116,14 @@ class PluginManagerInstalledGUITest {
             mandatoryDependerPlugin.assertUninstallable();
             dependerPlugin.assertEnabled();
 
-            // You can disable a detached plugin if there is no explicit dependency on it.
-            commandLauncherPlugin.assertEnabled();
-            commandLauncherPlugin.assertEnabledStateChangeable();
-            commandLauncherPlugin.assertUninstallable();
-            commandLauncherPlugin.clickEnabledWidget();
-            commandLauncherPlugin.assertNotEnabled();
-            commandLauncherPlugin.assertEnabledStateChangeable();
-            commandLauncherPlugin.assertUninstallable();
+            // You can disable a plugin if nothing depends on it.
+            detachedTestPlugin.assertEnabled();
+            detachedTestPlugin.assertEnabledStateChangeable();
+            detachedTestPlugin.assertUninstallable();
+            detachedTestPlugin.clickEnabledWidget();
+            detachedTestPlugin.assertNotEnabled();
+            detachedTestPlugin.assertEnabledStateChangeable();
+            detachedTestPlugin.assertUninstallable();
         });
     }
 
@@ -255,69 +253,6 @@ class PluginManagerInstalledGUITest {
 
         private boolean hasDependents() {
             return hasClassName("has-dependents");
-        }
-    }
-
-    private static final class CustomPluginManagerExtension extends JenkinsSessionExtension {
-
-        private int port;
-        private org.junit.runner.Description description;
-
-        @Override
-        public void beforeEach(ExtensionContext context) {
-            super.beforeEach(context);
-            description = org.junit.runner.Description.createTestDescription(
-                    context.getTestClass().map(Class::getName).orElse(null),
-                    context.getTestMethod().map(Method::getName).orElse(null),
-                    context.getTestMethod().map(Method::getAnnotations).orElse(null));
-        }
-
-        @Override
-        public void then(Step s) throws Throwable {
-            CustomJenkinsRule r = new CustomJenkinsRule(getHome(), port);
-            r.apply(
-                    new org.junit.runners.model.Statement() {
-                        @Override
-                        public void evaluate() throws Throwable {
-                            port = r.getPort();
-                            s.run(r);
-                        }
-                    },
-                    description
-            ).evaluate();
-        }
-
-        private static final class CustomJenkinsRule extends JenkinsRule {
-
-            CustomJenkinsRule(File home, int port) {
-                with(() -> home);
-                localPort = port;
-            }
-
-            int getPort() {
-                return localPort;
-            }
-
-            @Override
-            public PluginManager getPluginManager() {
-                try {
-                    return new TestPluginManager() {
-                        @Override
-                        protected Collection<String> loadBundledPlugins() throws Exception {
-                            try {
-                                return super.loadBundledPlugins();
-                            } finally {
-                                copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/WEB-INF/detached-plugins/command-launcher.hpi"), "command-launcher.jpi"); // cannot use installDetachedPlugin at this point
-                                copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/plugins/dependee-0.0.2.hpi"), "dependee.jpi");
-                                copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/plugins/depender-0.0.2.hpi"), "depender.jpi");
-                                copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/plugins/mandatory-depender-0.0.2.hpi"), "mandatory-depender.jpi");
-                            }
-                        }
-                    };
-                } catch (IOException e) {
-                    return fail(e.getMessage());
-                }
-            }
         }
     }
 }
