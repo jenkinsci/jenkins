@@ -26,6 +26,7 @@ package jenkins.model.menu.action;
 
 import hudson.Extension;
 import hudson.model.Action;
+import hudson.model.Computer;
 import hudson.model.Job;
 import hudson.model.Run;
 import java.util.Collection;
@@ -152,6 +153,30 @@ public final class DeleteAction implements Action {
             }
 
             return Set.of(new DeleteAction("Build", target.getDisplayName()));
+        }
+    }
+
+    /**
+     * Factory that contributes a {@link DeleteAction} to every {@link Run} the current
+     * user has {@link Run#DELETE} permission on when the new run page experimental flag
+     * is enabled.
+     */
+    @Extension(ordinal = 80)
+    @Restricted(Beta.class)
+    public static final class AgentFactory extends TransientActionFactory<Computer> {
+
+        @Override
+        public Class<Computer> type() {
+            return Computer.class;
+        }
+
+        @Override
+        public Collection<? extends Action> createFor(Computer target) {
+            if (!target.hasPermission(Computer.DELETE)) {
+                return Set.of();
+            }
+
+            return Set.of(new DeleteAction("Agent", target.getDisplayName()));
         }
     }
 }
