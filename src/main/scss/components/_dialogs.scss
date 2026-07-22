@@ -43,6 +43,10 @@ $jenkins-dialog-padding: 1.25rem;
     overflow-wrap: anywhere;
     text-box: cap alphabetic;
 
+    & > span {
+      transition: var(--standard-transition);
+    }
+
     &__button {
       padding: 0;
       width: 2rem;
