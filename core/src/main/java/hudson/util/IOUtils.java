@@ -2,6 +2,7 @@ package hudson.util;
 
 import static hudson.Util.fileToPath;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import hudson.Util;
 import java.io.BufferedReader;
@@ -107,6 +108,7 @@ public class IOUtils {
      * @return new File(name) if name represents an absolute path, new File(base, name) otherwise
      * @see hudson.FilePath#absolutize()
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     public static File absolutize(File base, String path) {
         if (isAbsolute(path))
             return new File(path);

@@ -1,5 +1,6 @@
 package jenkins.util.io;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,7 @@ public class FileBoolean {
         this.file = file;
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     public FileBoolean(Class owner, String name) {
         this(new File(Jenkins.get().getRootDir(), owner.getName().replace('$', '.') + '/' + name));
     }
