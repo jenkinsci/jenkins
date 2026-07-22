@@ -367,4 +367,18 @@ class ComputerTest {
         assertThat(computer.isConnected(), is(false));
         assertThat(computer.isOffline(), is(true));
     }
+
+    @Test
+    void testRecordTerminationWithoutRequest() throws Exception {
+        DumbSlave agent = j.createSlave();
+        Computer computer = agent.toComputer();
+
+        computer.recordTermination();
+
+        assertThat(computer.getTerminatedBy().size(), is(1));
+        assertThat(computer.getTerminatedBy().get(0).getMessage(),
+                containsString(Thread.currentThread().getName()));
+        assertThat(computer.getTerminatedBy().get(0).getMessage(),
+                not(containsString("http")));
+    }
 }
