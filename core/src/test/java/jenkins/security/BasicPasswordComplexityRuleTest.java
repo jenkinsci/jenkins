@@ -2,6 +2,7 @@ package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -81,6 +82,46 @@ class BasicPasswordComplexityRuleTest {
                 containsString("digit"),
                 containsString("special character")
         ));
+    }
+
+    @Test
+    void violationsListContainsIndividualMessages() {
+        BasicPasswordComplexityRule rule = new BasicPasswordComplexityRule(8, true, true, true, true);
+
+        PasswordComplexityException e = assertThrows(PasswordComplexityException.class, () -> rule.validate("bad"));
+        // Violations list should have exactly these 4 violations in any order
+        assertThat(e.getViolations(),
+                   containsInAnyOrder("Password must be at least 8 characters long.",
+                                      "Password must contain at least one uppercase letter (A-Z).",
+                                      "Password must contain at least one digit (0-9).",
+                                      "Password must contain at least one special character (e.g. !@#$%^&*)."));
+    }
+
+    @Test
+    void zeroMinimumLengthDoesNotEnforceLength() {
+        BasicPasswordComplexityRule rule = new BasicPasswordComplexityRule(0, false, false, false, false);
+
+        // A zero minimum length should accept any-length password, including empty string
+        assertDoesNotThrow(() -> rule.validate(""));
+        assertDoesNotThrow(() -> rule.validate("a"));
+    }
+
+    @Test
+    void negativeLengthTreatedAsZero() {
+        // Negative minimum length values must be clamped to zero (Math.max(0, minimumLength))
+        BasicPasswordComplexityRule rule = new BasicPasswordComplexityRule(-5, false, false, false, false);
+
+        assertDoesNotThrow(() -> rule.validate(""));
+        assertDoesNotThrow(() -> rule.validate("short"));
+    }
+
+    @Test
+    void exactBoundaryLengthPassesValidation() {
+        BasicPasswordComplexityRule rule = new BasicPasswordComplexityRule(5, false, false, false, false);
+
+        // Exactly 5 characters should pass; 4 characters should fail
+        assertDoesNotThrow(() -> rule.validate("12345"));
+        assertThrows(PasswordComplexityException.class, () -> rule.validate("1234"));
     }
 
     @Test
