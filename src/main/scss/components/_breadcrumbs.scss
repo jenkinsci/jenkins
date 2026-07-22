@@ -234,12 +234,15 @@
       background: var(--text-color);
     }
 
+    &.model-link--open,
     &:hover {
       z-index: 10;
+      margin-right: calc(2ch + 14px) !important;
 
       @media (hover: hover) {
         &::before,
         &::after {
+          left: -4px;
           right: calc((2ch + 14px) * -1);
         }
       }
@@ -255,7 +258,6 @@
       .jenkins-menu-dropdown-chevron {
         &::after {
           opacity: 0.5;
-          display: none;
         }
       }
     }
