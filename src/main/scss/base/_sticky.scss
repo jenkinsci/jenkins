@@ -3,13 +3,23 @@
 // clicks.
 // Keep this list in sync with the `position: sticky` rules across the SCSS sources.
 :root[data-disable-sticky="true"] {
-  .jenkins-header,
+  scroll-margin-bottom: var(--section-padding);
+
+  .app-page-body {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .app-page-body > .app-page-body__sidebar,
+  .app-page-body > .app-page-body__contents {
+    overflow-y: visible !important;
+  }
+
   .jenkins-app-bar--sticky,
   .jenkins-bottom-app-bar__shadow,
+  .app-build-bar,
   .bottom-sticker,
-  #bottom-sticker,
-  .app-page-body__sidebar--sticky,
-  .app-plugin-manager__sidebar {
+  #bottom-sticker {
     position: relative !important;
 
     // Reset the sticky offsets too — with relative positioning these would otherwise

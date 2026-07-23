@@ -2018,6 +2018,14 @@ function AutoScroller(scrollContainer) {
     return null;
   }
 
+  function isViewportScroller(scrollDiv) {
+    return (
+      scrollDiv === document.body ||
+      scrollDiv === document.documentElement ||
+      scrollDiv === document.scrollingElement
+    );
+  }
+
   return {
     bottomThreshold: 25,
     scrollContainer: scrollContainer,
@@ -2041,14 +2049,13 @@ function AutoScroller(scrollContainer) {
 
       // when used with the BODY tag, the height needs to be the viewport height, instead of
       // the element height.
-      //var height = ((scrollDiv.style.pixelHeight) ? scrollDiv.style.pixelHeight : scrollDiv.offsetHeight);
-      var height = getViewportHeight();
-      var scrollPos = Math.max(
-        scrollDiv.scrollTop,
-        document.documentElement.scrollTop,
-      );
-      var diff = currentHeight - scrollPos - height;
-      // window.alert("currentHeight=" + currentHeight + ",scrollTop=" + scrollDiv.scrollTop + ",height=" + height);
+      const height = isViewportScroller(scrollDiv)
+        ? getViewportHeight()
+        : scrollDiv.clientHeight;
+      const scrollPos = isViewportScroller(scrollDiv)
+        ? Math.max(scrollDiv.scrollTop, document.documentElement.scrollTop)
+        : scrollDiv.scrollTop;
+      const diff = currentHeight - scrollPos - height;
 
       return diff < this.bottomThreshold;
     },
@@ -2057,7 +2064,7 @@ function AutoScroller(scrollContainer) {
       var scrollDiv = this.scrollContainer;
       var currentHeight = this.getCurrentHeight();
 
-      if (scrollDiv === document.body) {
+      if (isViewportScroller(scrollDiv)) {
         window.scrollTo({
           top: currentHeight,
         });

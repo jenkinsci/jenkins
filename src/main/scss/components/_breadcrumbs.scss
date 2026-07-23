@@ -9,6 +9,7 @@
 
   &__list {
     display: flex;
+    margin: 0;
 
     & > * {
       z-index: 1;
