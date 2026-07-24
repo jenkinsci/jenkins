@@ -31,12 +31,20 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import hudson.model.Hudson;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -90,10 +98,17 @@ class ClassicPluginStrategyTest {
      * Test finding resources via DependencyClassLoader.
      * Check transitive dependency exclude disabled plugins
      */
-    @LocalData
     @Issue("JENKINS-18654")
     @Test
     void testDisabledDependencyClassLoader() throws Throwable {
+        File plugins = new File(session.getHome(), "plugins");
+        Files.createDirectories(plugins.toPath());
+        // foo4 has an optional dependency on foo5, which is disabled: foo4 must still load, but must
+        // not see foo5's resources through its DependencyClassLoader.
+        writeSyntheticPlugin(new File(plugins, "foo5.jpi"), "foo5", "0.5", null, "test-resource for FOO5\n");
+        assertTrue(new File(plugins, "foo5.jpi.disabled").createNewFile());
+        writeSyntheticPlugin(new File(plugins, "foo4.jpi"), "foo4", "0.4", "foo5:0.5;resolution:=optional", "test-resource for FOO4\n");
+
         session.then(j -> {
             PluginWrapper p = j.jenkins.getPluginManager().getPlugin("foo4");
 
@@ -106,6 +121,30 @@ class ClassicPluginStrategyTest {
                     fail("disabled dependency should not be included");
             }
         });
+    }
+
+    /**
+     * Builds a minimal synthetic plugin jar directly into a JenkinsRule home's {@code plugins}
+     * directory, so tests don't need to check in binary {@code .hpi}/{@code .jpi} fixtures.
+     */
+    private static void writeSyntheticPlugin(File dest, String shortName, String version, String pluginDependencies, String testResourceContent) throws IOException {
+        Manifest manifest = new Manifest();
+        Attributes attr = manifest.getMainAttributes();
+        attr.put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        attr.putValue("Short-Name", shortName);
+        attr.putValue("Long-Name", shortName);
+        attr.putValue("Plugin-Version", version);
+        attr.putValue("Hudson-Version", "1.450");
+        if (pluginDependencies != null) {
+            attr.putValue("Plugin-Dependencies", pluginDependencies);
+        }
+        try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(dest), manifest)) {
+            if (testResourceContent != null) {
+                jos.putNextEntry(new JarEntry("WEB-INF/classes/test-resource"));
+                jos.write(testResourceContent.getBytes(StandardCharsets.UTF_8));
+                jos.closeEntry();
+            }
+        }
     }
 
     /**
