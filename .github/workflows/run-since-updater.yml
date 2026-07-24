@@ -5,12 +5,13 @@ on:
     - cron: "0 16 * * THU"
   workflow_dispatch:
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   since_updater:
+    permissions:
+      contents: write
+      pull-requests: write
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'jenkinsci' }}
     steps:
