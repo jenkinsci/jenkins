@@ -66,13 +66,13 @@ class PluginManagerInstalledGUITest {
         session.then(j -> {
             InstalledPlugins installedPlugins = new InstalledPlugins(j);
 
-            InstalledPlugin matrixAuthPlugin = installedPlugins.get("matrix-auth");
+            InstalledPlugin commandLauncherPlugin = installedPlugins.get("command-launcher");
             InstalledPlugin dependeePlugin = installedPlugins.get("dependee");
             InstalledPlugin dependerPlugin = installedPlugins.get("depender");
             InstalledPlugin mandatoryDependerPlugin = installedPlugins.get("mandatory-depender");
 
             // As a detached plugin, it is an optional dependency of others built against a newer baseline.
-            matrixAuthPlugin.assertHasNoDependents();
+            commandLauncherPlugin.assertHasNoDependents();
             // Has a mandatory dependency:
             dependeePlugin.assertHasDependents();
             // Leaf plugins:
@@ -119,13 +119,13 @@ class PluginManagerInstalledGUITest {
             dependerPlugin.assertEnabled();
 
             // You can disable a detached plugin if there is no explicit dependency on it.
-            matrixAuthPlugin.assertEnabled();
-            matrixAuthPlugin.assertEnabledStateChangeable();
-            matrixAuthPlugin.assertUninstallable();
-            matrixAuthPlugin.clickEnabledWidget();
-            matrixAuthPlugin.assertNotEnabled();
-            matrixAuthPlugin.assertEnabledStateChangeable();
-            matrixAuthPlugin.assertUninstallable();
+            commandLauncherPlugin.assertEnabled();
+            commandLauncherPlugin.assertEnabledStateChangeable();
+            commandLauncherPlugin.assertUninstallable();
+            commandLauncherPlugin.clickEnabledWidget();
+            commandLauncherPlugin.assertNotEnabled();
+            commandLauncherPlugin.assertEnabledStateChangeable();
+            commandLauncherPlugin.assertUninstallable();
         });
     }
 
@@ -307,7 +307,7 @@ class PluginManagerInstalledGUITest {
                             try {
                                 return super.loadBundledPlugins();
                             } finally {
-                                copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/WEB-INF/detached-plugins/matrix-auth.hpi"), "matrix-auth.jpi"); // cannot use installDetachedPlugin at this point
+                                copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/WEB-INF/detached-plugins/command-launcher.hpi"), "command-launcher.jpi"); // cannot use installDetachedPlugin at this point
                                 copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/plugins/dependee-0.0.2.hpi"), "dependee.jpi");
                                 copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/plugins/depender-0.0.2.hpi"), "depender.jpi");
                                 copyBundledPlugin(PluginManagerInstalledGUITest.class.getResource("/plugins/mandatory-depender-0.0.2.hpi"), "mandatory-depender.jpi");

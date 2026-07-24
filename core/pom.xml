@@ -647,6 +647,36 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
+        <executions>
+          <execution>
+            <!--
+              License headers make up the majority of the bytes of the localization and Jelly view files
+              (the license is retained in the source files and in the LICENSE.txt shipped in the war, just
+              as it is not retained in compiled class files), so strip comments from the packaged jar.
+            -->
+            <id>strip-license-comments</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <target>
+                <!-- Only the leading comment block, to leave any semantically interesting comments elsewhere in the file untouched -->
+                <replaceregexp encoding="UTF-8" match="\A(?:[ \t]*(?:[#!].*)?\r?\n)+" replace="">
+                  <fileset dir="${project.build.outputDirectory}" includes="**/*.properties" />
+                </replaceregexp>
+                <!-- Only license comments, to leave any semantically interesting comments untouched -->
+                <replaceregexp encoding="UTF-8" flags="g" match="&lt;!--(?:(?!--&gt;)[\s\S])*?The MIT License[\s\S]*?--&gt;" replace="">
+                  <fileset dir="${project.build.outputDirectory}" includes="**/*.jelly" />
+                </replaceregexp>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <configuration>
