@@ -68,6 +68,6 @@ exec docker-compose \
 		run.sh "remote-webdriver-${BROWSER}" /jenkins.war \
 			-Dmaven.test.failure.ignore \
 			-DforkCount=1 \
-			-Dgroups=org.jenkinsci.test.acceptance.junit.SmokeTest
+			-Dtest=plugins.ExternalWorkspaceManagerPluginTest#shareWorkspaceTwoJobsTwoNodes
 		cp --verbose target/surefire-reports/TEST-*.xml /reports
 	INSIDE
