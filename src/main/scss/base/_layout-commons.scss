@@ -1,18 +1,3 @@
-.app-main-panel {
-  margin-bottom: var(--section-padding);
-
-  &--narrow {
-    max-width: 900px;
-    margin-inline: auto;
-  }
-
-  &--wide {
-    width: 70vw;
-    max-width: 1700px;
-    margin-inline: auto;
-  }
-}
-
 .app-full-screen-page-body {
   .app-main-panel {
     display: flex;
