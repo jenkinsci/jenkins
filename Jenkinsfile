@@ -14,8 +14,8 @@ properties([
 ])
 
 def axes = [
-  platforms: ['linux'],
-  jdks: [25],
+  platforms: ['linux', 'windows'],
+  jdks: [21, 25],
 ]
 
 stage('Record build') {
@@ -97,7 +97,6 @@ axes.values().combinations {
               '-Penable-jacoco',
               '--update-snapshots',
               "-Dmaven.repo.local=$m2repo",
-              '-Dtest=ManagementLinkTest#links',
               '-Dmaven.test.failure.ignore',
               '-DforkCount=2',
               '-Dspotbugs.failOnError=false',
