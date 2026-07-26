@@ -442,8 +442,11 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
         List<Target> descendantTargets = new ArrayList<>();
         for (LogRecorder recorder : recorders) {
             for (Target target : recorder.loggers) {
-                if (changedTargetNames.stream().anyMatch(name -> isDescendant(name, target.name))) {
-                    descendantTargets.add(target);
+                for (String name : changedTargetNames) {
+                    if (isDescendant(name, target.name)) {
+                        descendantTargets.add(target);
+                        break;
+                    }
                 }
             }
         }
