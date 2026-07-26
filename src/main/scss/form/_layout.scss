@@ -1,9 +1,5 @@
 @use "../abstracts/mixins";
 
-.jenkins-form {
-  max-width: var(--form-item-max-width);
-}
-
 .jenkins-page-description {
   color: var(--text-color-secondary);
   margin: 0 0 var(--section-padding) 0;
@@ -26,7 +22,6 @@
 }
 
 .jenkins-form-item {
-  max-width: var(--form-item-max-width);
   margin-bottom: var(--section-padding);
 
   // Workaround for float:right button controls
