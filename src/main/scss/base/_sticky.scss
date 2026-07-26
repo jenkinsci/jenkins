@@ -2,7 +2,7 @@
 // acceptance tests), neutralise every sticky element so it cannot float over and intercept
 // clicks.
 // Keep this list in sync with the `position: sticky` rules across the SCSS sources.
-:root[data-disable-sticky="true"] {
+html {
   .app-page-body {
     height: auto !important;
     overflow: visible !important;
