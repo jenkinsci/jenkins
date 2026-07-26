@@ -117,23 +117,34 @@ public class Search implements StaplerProxy {
             Ancestor a = l.get(i);
             if (a.getObject() instanceof SearchableModelObject smo) {
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(String.format("smo.displayName=%s, searchName=%s", smo.getDisplayName(), smo.getSearchName()));
+                    LOGGER.fine(String.format(
+                            "smo.displayName=%s, searchName=%s",
+                            smo.getDisplayName(),
+                            smo.getSearchName()));
                 }
 
                 SearchIndex index = smo.getSearchIndex();
                 String query = req.getParameter("q");
+
                 if (query != null) {
                     SuggestedItem target = find(index, query, smo);
+
                     if (target != null) {
-                        // found
                         rsp.sendRedirect2(req.getContextPath() + target.getUrl());
+                        return;
+                    }
+
+                    List<SuggestedItem> suggestions = suggest(index, query, smo);
+
+                    if (suggestions.size() == 1) {
+                        rsp.sendRedirect2(req.getContextPath() + suggestions.get(0).getUrl());
                         return;
                     }
                 }
             }
         }
 
-        // no exact match. show the suggestions
+        // No exact match and no single suggestion.
         rsp.setStatus(SC_NOT_FOUND);
         req.getView(this, "search-failed.jelly").forward(req, rsp);
     }
