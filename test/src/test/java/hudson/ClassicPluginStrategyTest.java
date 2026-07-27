@@ -31,20 +31,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import hudson.model.Hudson;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -53,6 +45,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRecipe;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -61,8 +54,21 @@ import org.jvnet.hudson.test.recipes.LocalData;
 @Tag("SmokeTest")
 class ClassicPluginStrategyTest {
 
+    private static final String DISABLED_DEPENDENCY_TEST_PACKAGE = "hudson.classicpluginstrategydisableddep";
+    private static final String DISABLED_DEPENDENCY_TEST_RESOURCE = "hudson/classicpluginstrategydisableddep/test-resource";
+
     @RegisterExtension
     private final JenkinsSessionExtension session = new CustomPluginManagerExtension();
+
+    @RegisterExtension
+    private final RealJenkinsExtension rjr = new RealJenkinsExtension()
+            .addSyntheticPlugin(new RealJenkinsExtension.SyntheticPlugin(DISABLED_DEPENDENCY_TEST_PACKAGE)
+                    .shortName("foo5")
+                    .version("0.5"))
+            .addSyntheticPlugin(new RealJenkinsExtension.SyntheticPlugin(DISABLED_DEPENDENCY_TEST_PACKAGE)
+                    .shortName("foo4")
+                    .version("0.4")
+                    .header("Plugin-Dependencies", "foo5:0.5;resolution:=optional"));
 
     /**
      * Test finding resources via DependencyClassLoader.
@@ -101,18 +107,14 @@ class ClassicPluginStrategyTest {
     @Issue("JENKINS-18654")
     @Test
     void testDisabledDependencyClassLoader() throws Throwable {
-        File plugins = new File(session.getHome(), "plugins");
-        Files.createDirectories(plugins.toPath());
-        // foo4 has an optional dependency on foo5, which is disabled: foo4 must still load, but must
-        // not see foo5's resources through its DependencyClassLoader.
-        writeSyntheticPlugin(new File(plugins, "foo5.jpi"), "foo5", "0.5", null, "test-resource for FOO5\n");
-        assertTrue(new File(plugins, "foo5.jpi.disabled").createNewFile());
-        writeSyntheticPlugin(new File(plugins, "foo4.jpi"), "foo4", "0.4", "foo5:0.5;resolution:=optional", "test-resource for FOO4\n");
+        // foo4 has an optional dependency on foo5; disable foo5 before Jenkins starts so foo4 must
+        // still load, but must not see foo5's resources through its DependencyClassLoader.
+        assertTrue(new File(rjr.getHome(), "plugins/foo5.jpi.disabled").createNewFile());
 
-        session.then(j -> {
+        rjr.then(j -> {
             PluginWrapper p = j.jenkins.getPluginManager().getPlugin("foo4");
 
-            Enumeration<URL> en = p.classLoader.getResources("test-resource");
+            Enumeration<URL> en = p.classLoader.getResources(DISABLED_DEPENDENCY_TEST_RESOURCE);
             for (int i = 0; en.hasMoreElements(); i++) {
                 String res = en.nextElement().toString();
                 if (i == 0)
@@ -121,30 +123,6 @@ class ClassicPluginStrategyTest {
                     fail("disabled dependency should not be included");
             }
         });
-    }
-
-    /**
-     * Builds a minimal synthetic plugin jar directly into a JenkinsRule home's {@code plugins}
-     * directory, so tests don't need to check in binary {@code .hpi}/{@code .jpi} fixtures.
-     */
-    private static void writeSyntheticPlugin(File dest, String shortName, String version, String pluginDependencies, String testResourceContent) throws IOException {
-        Manifest manifest = new Manifest();
-        Attributes attr = manifest.getMainAttributes();
-        attr.put(Attributes.Name.MANIFEST_VERSION, "1.0");
-        attr.putValue("Short-Name", shortName);
-        attr.putValue("Long-Name", shortName);
-        attr.putValue("Plugin-Version", version);
-        attr.putValue("Hudson-Version", "1.450");
-        if (pluginDependencies != null) {
-            attr.putValue("Plugin-Dependencies", pluginDependencies);
-        }
-        try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(dest), manifest)) {
-            if (testResourceContent != null) {
-                jos.putNextEntry(new JarEntry("WEB-INF/classes/test-resource"));
-                jos.write(testResourceContent.getBytes(StandardCharsets.UTF_8));
-                jos.closeEntry();
-            }
-        }
     }
 
     /**
