@@ -5003,7 +5003,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         // good view name?
         try {
-            checkGoodName(name);
+            View.checkViewName(name);
         } catch (Failure e) {
             return FormValidation.error(e.getMessage());
         }

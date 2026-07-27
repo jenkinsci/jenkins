@@ -220,6 +220,13 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
 
         String view = Util.fixEmpty(value);
         if (view == null) return FormValidation.ok();
+        // good view name? (parity with Jenkins.doCheckViewName — surfaces length and
+        // unsafe-character errors inline on the "My Views" form before submit)
+        try {
+            View.checkViewName(view);
+        } catch (Failure e) {
+            return FormValidation.error(e.getMessage());
+        }
         if (exists) {
             return getView(view) != null ?
                     FormValidation.ok() :

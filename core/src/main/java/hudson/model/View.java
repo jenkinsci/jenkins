@@ -252,12 +252,32 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public void rename(String newName) throws Failure, FormException {
         if (name.equals(newName))    return; // noop
-        Jenkins.checkGoodName(newName);
+        checkViewName(newName);
         if (owner.getView(newName) != null)
             throw new FormException(Messages.Hudson_ViewAlreadyExists(newName), "name");
         String oldName = name;
         name = newName;
         owner.onViewRenamed(this, oldName, newName);
+    }
+
+    /**
+     * Checks that the given name is a valid view name.
+     * <p>
+     * In addition to the generic name rules enforced by
+     * {@link Jenkins#checkGoodName(String)} (non-empty, no unsafe characters, etc.),
+     * this enforces {@link #MAX_VIEW_NAME_LENGTH} so that the view's URL does not
+     * exceed typical servlet container / reverse proxy limits.
+     *
+     * @param name the proposed view name.
+     * @throws Failure if the name is empty, contains unsafe characters, or is too long.
+     * @since 2.576
+     * @see #MAX_VIEW_NAME_LENGTH
+     */
+    public static void checkViewName(String name) throws Failure {
+        Jenkins.checkGoodName(name);
+        if (name.length() > MAX_VIEW_NAME_LENGTH) {
+            throw new Failure(Messages.View_NameTooLong(MAX_VIEW_NAME_LENGTH));
+        }
     }
 
     /**
@@ -1131,6 +1151,18 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static final Permission CONFIGURE = new Permission(PERMISSIONS, "Configure", Messages._View_ConfigurePermission_Description(), Permission.CONFIGURE, PermissionScope.ITEM_GROUP);
     public static final Permission READ = new Permission(PERMISSIONS, "Read", Messages._View_ReadPermission_Description(), Permission.READ, PermissionScope.ITEM_GROUP);
 
+    /**
+     * Maximum number of characters allowed in a view name.
+     * <p>
+     * A view's URL is built from its name ({@link #getViewUrl()}), so an overly long
+     * name produces an URL that exceeds typical servlet container / reverse proxy
+     * limits, resulting in HTTP 414 (URI Too Long) or HTTP 500 ("Response Header
+     * Fields Too Large") when the view is later opened.
+     *
+     * @since 2.576
+     */
+    public static final int MAX_VIEW_NAME_LENGTH = 255;
+
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", justification = "to guard against potential future compiler optimizations")
     @Initializer(before = InitMilestone.SYSTEM_CONFIG_LOADED)
     @Restricted(DoNotUse.class)
@@ -1166,7 +1198,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         || requestContentType.startsWith("text/xml"));
 
         String name = req.getParameter("name");
-        Jenkins.checkGoodName(name);
+        checkViewName(name);
         if (owner.getView(name) != null)
             throw new Failure(Messages.Hudson_ViewAlreadyExists(name));
 
@@ -1243,7 +1275,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         try (InputStream in = new BufferedInputStream(xml)) {
             View v = (View) Jenkins.XSTREAM.fromXML(in);
             if (name != null) v.name = name;
-            Jenkins.checkGoodName(v.name);
+            checkViewName(v.name);
             return v;
         } catch (StreamException | ConversionException | Error e) { // mostly reflection errors
             throw new IOException("Unable to read", e);

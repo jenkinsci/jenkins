@@ -267,6 +267,21 @@ class ViewTest {
                 "\"..\" should not be allowed.");
     }
 
+    @Issue("JENKINS-26800")
+    @Test
+    void nameTooLong() throws Exception {
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
+        HtmlForm form = wc.goTo("newView").getFormByName("createItem");
+        form.getInputByName("name").setValue("a".repeat(View.MAX_VIEW_NAME_LENGTH + 1));
+        form.getRadioButtonsByName("mode").getFirst().setChecked(true);
+
+        HtmlPage page = j.submit(form);
+        assertEquals(HttpURLConnection.HTTP_BAD_REQUEST,
+                page.getWebResponse().getStatusCode(),
+                "A view name longer than the maximum should not be allowed.");
+    }
+
     @Disabled("verified manually in Winstone but org.mortbay.JettyResponse.sendRedirect (6.1.26) seems to mangle the location")
     @Issue("JENKINS-18373")
     @Test
