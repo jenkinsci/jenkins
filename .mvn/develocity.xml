@@ -1,0 +1,7 @@
+<develocity>
+  <buildCache>
+    <local>
+      <enabled>#{isFalse(env['CI'])}</enabled>
+    </local>
+  </buildCache>
+</develocity>

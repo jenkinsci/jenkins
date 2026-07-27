@@ -4,4 +4,9 @@
     <artifactId>git-changelist-maven-extension</artifactId>
     <version>1.13</version>
   </extension>
+  <extension>
+    <groupId>com.gradle</groupId>
+    <artifactId>develocity-maven-extension</artifactId>
+    <version>2.5.0</version>
+  </extension>
 </extensions>
