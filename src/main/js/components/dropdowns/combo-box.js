@@ -78,9 +78,19 @@ function init() {
 
           // otherwise menu won't hide on tab with nothing selected
           // needs delay as without that it blocks click selection of an item
-          e.addEventListener("focusout", () =>
-            setTimeout(() => e.dropdown.hide(), 200),
-          );
+          e.addEventListener("focusout", (event) => {
+            // Keep the dropdown open while focus moves into the suggestion popper.
+            // On touch devices the synthesized click lands after this 200ms hide
+            // timer and would otherwise be lost (see #26919).
+            if (
+              event.relatedTarget &&
+              e.dropdown &&
+              e.dropdown.popper.contains(event.relatedTarget)
+            ) {
+              return;
+            }
+            setTimeout(() => e.dropdown && e.dropdown.hide(), 200);
+          });
 
           e.addEventListener(
             "input",
