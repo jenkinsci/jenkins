@@ -42,6 +42,8 @@ THE SOFTWARE.
     <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
+    <!-- Must match the JMH version jenkins-test-harness brings in; see annotationProcessorPaths -->
+    <jmh.version>1.37</jmh.version>
     <!--
       Filled in by maven-hpi-plugin from the MANIFEST.MF entry in jenkins.war, but we provide a default value for the benefit of IDEs.
       Make sure to keep the directives in core/pom.xml and war/pom.xml in sync with these.
@@ -291,6 +293,41 @@ THE SOFTWARE.
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <!-- Version specified in parent POM -->
+        <configuration>
+          <annotationProcessorPaths>
+            <!-- Indexes @Extension, @TestExtension, @OptionalExtension, @Symbol, @Restricted,
+                 @Initializer, @ExportedBean and @JmhBenchmark under META-INF -->
+            <path>
+              <groupId>org.jenkins-ci</groupId>
+              <artifactId>annotation-indexer</artifactId>
+            </path>
+            <!-- Writes the binary META-INF/annotations indexes -->
+            <path>
+              <groupId>net.java.sezpoz</groupId>
+              <artifactId>sezpoz</artifactId>
+            </path>
+            <!-- Emits the *.stapler constructor-parameter files -->
+            <path>
+              <groupId>org.kohsuke.stapler</groupId>
+              <artifactId>stapler</artifactId>
+            </path>
+            <!--
+              Generates META-INF/BenchmarkList and META-INF/CompilerHints for the JMH benchmarks.
+              Not managed by jenkins-bom: JMH arrives transitively via jenkins-test-harness, so keep
+              this in step with the jmh-core version that harness pulls in.
+            -->
+            <path>
+              <groupId>org.openjdk.jmh</groupId>
+              <artifactId>jmh-generator-annprocess</artifactId>
+              <version>${jmh.version}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
