@@ -315,8 +315,6 @@ THE SOFTWARE.
             </path>
             <!--
               Generates META-INF/BenchmarkList and META-INF/CompilerHints for the JMH benchmarks.
-              Not managed by jenkins-bom: JMH arrives transitively via jenkins-test-harness, so keep
-              this in step with the jmh-core version that harness pulls in.
             -->
             <path>
               <groupId>org.openjdk.jmh</groupId>
