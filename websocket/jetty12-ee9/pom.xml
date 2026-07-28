@@ -76,9 +76,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <!-- Version specified in parent POM -->
         <configuration>
-          <!-- Versions resolve from dependencyManagement (jenkins-bom), as for the dependencies. -->
           <annotationProcessorPaths>
             <!-- Indexes @Restricted -->
             <path>

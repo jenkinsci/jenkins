@@ -106,7 +106,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <!-- Version specified in parent POM -->
         <configuration>
           <annotationProcessorPaths>
             <!-- Indexes @Restricted; version resolves from dependencyManagement (jenkins-bom) -->

@@ -477,13 +477,10 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <!-- Version specified in parent POM -->
         <configuration>
           <!--
             Declare the annotation processors explicitly rather than letting javac discover them by
-            scanning the whole compile classpath. Versions are omitted deliberately: they resolve
-            from the same dependencyManagement (jenkins-bom) as the dependencies below, so there is
-            nothing to keep in sync.
+            scanning the whole compile classpath.
           -->
           <annotationProcessorPaths>
             <path>
