@@ -42,8 +42,6 @@ THE SOFTWARE.
     <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
-    <!-- Must match the JMH version jenkins-test-harness brings in; see annotationProcessorPaths -->
-    <jmh.version>1.37</jmh.version>
     <!--
       Filled in by maven-hpi-plugin from the MANIFEST.MF entry in jenkins.war, but we provide a default value for the benefit of IDEs.
       Make sure to keep the directives in core/pom.xml and war/pom.xml in sync with these.
@@ -323,7 +321,6 @@ THE SOFTWARE.
             <path>
               <groupId>org.openjdk.jmh</groupId>
               <artifactId>jmh-generator-annprocess</artifactId>
-              <version>${jmh.version}</version>
             </path>
           </annotationProcessorPaths>
         </configuration>
