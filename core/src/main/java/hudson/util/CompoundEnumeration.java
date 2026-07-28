@@ -31,14 +31,31 @@ public class CompoundEnumeration<T> implements Enumeration<T> {
 
     @Override
     public boolean hasMoreElements() {
-        while (!cur.hasMoreElements() && base.hasNext()) {
-            cur = base.next();
-        }
-        return cur.hasMoreElements();
+        return advanceToNonEmpty();
     }
 
     @Override
     public T nextElement() throws NoSuchElementException {
+        // Advance here as well, not only in hasMoreElements. Enumeration does not require a
+        // caller to consult hasMoreElements first, so a caller that knows an element is there
+        // would otherwise get NoSuchElementException whenever an earlier enumeration in the
+        // chain is exhausted or was empty to begin with -- as the first one is in
+        // PluginFirstClassLoader2#getResources for every resource the plugin does not itself
+        // contain. This matches java.lang.ClassLoader's own compound enumeration, which
+        // advances in both methods.
+        advanceToNonEmpty();
         return cur.nextElement();
+    }
+
+    /**
+     * Advances {@link #cur} past any exhausted enumerations.
+     *
+     * @return true if {@link #cur} has an element left to return.
+     */
+    private boolean advanceToNonEmpty() {
+        while (!cur.hasMoreElements() && base.hasNext()) {
+            cur = base.next();
+        }
+        return cur.hasMoreElements();
     }
 }
