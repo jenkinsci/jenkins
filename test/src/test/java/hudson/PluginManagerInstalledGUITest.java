@@ -55,6 +55,7 @@ class PluginManagerInstalledGUITest {
 
     @RegisterExtension
     private final RealJenkinsExtension rjr = new RealJenkinsExtension()
+            .includeTestClasspathPlugins(false)
             .addPlugins("plugins/dependee-0.0.2.hpi", "plugins/depender-0.0.2.hpi", "plugins/mandatory-depender-0.0.2.hpi")
             .addSyntheticPlugin(new RealJenkinsExtension.SyntheticPlugin(Marker.class.getPackage()).shortName("detached-test"));
 
