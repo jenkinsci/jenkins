@@ -4,4 +4,10 @@
       <enabled>#{isFalse(env['CI'])}</enabled>
     </local>
   </buildCache>
+  <buildScan>
+    <publishing>
+      <!-- if you want a build scan, pass -Dscan on the command line -->
+      <onlyIf>false</onlyIf>
+    </publishing>
+  </buildScan>
 </develocity>
