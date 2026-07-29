@@ -229,6 +229,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
 
   // Handle special cases
   tryOnClickEvent(item, dropdownItem);
+  tryOnKeyPressEvent(item, dropdownItem);
   tryLoadScripts(item, dropdownItem, context);
   tryPost(item, dropdownItem, context);
   tryConfirmationPost(item, dropdownItem, context);
@@ -245,6 +246,17 @@ function tryOnClickEvent(element, opt) {
   }
 
   element.addEventListener("click", opt.onClick);
+}
+
+/**
+ * If the menu item has a custom onKeyPress event, add it to the element
+ */
+function tryOnKeyPressEvent(element, opt) {
+  if (!opt.onKeyPress) {
+    return;
+  }
+
+  element.onkeypress = opt.onKeyPress;
 }
 
 /**
