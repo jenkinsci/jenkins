@@ -15,7 +15,7 @@
   <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
-    <mina-sshd.version>2.18.0</mina-sshd.version>
+    <mina-sshd.version>2.19.0</mina-sshd.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
   </properties>
@@ -53,7 +53,7 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk18on</artifactId>
-      <version>1.84</version>
+      <version>1.85</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -157,6 +157,12 @@
                     <exclude>META-INF/*.SF</exclude>
                     <exclude>META-INF/*.DSA</exclude>
                     <exclude>META-INF/*.RSA</exclude>
+                    <!--
+                      Multi-release variants are dead code in this uber jar: the shaded manifest does not declare
+                      Multi-Release: true and the versioned classes are not relocated, so the JVM can never load
+                      them. BouncyCastle et al. run on their base classes.
+                    -->
+                    <exclude>META-INF/versions/**</exclude>
                   </excludes>
                 </filter>
               </filters>
