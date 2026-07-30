@@ -22,12 +22,12 @@ l.'settings-subpage'(permission: app.SYSTEM_READ) {
             f.entry(help: '/descriptor/hudson.security.GlobalSecurityConfiguration/help/disableRememberMe') {
                 f.checkbox(title:_("Disable remember me"), field: "disableRememberMe")
             }
-            f.dropdownDescriptorSelector(title: _("Security Realm"), field: 'securityRealm', descriptors: h.filterDescriptors(app, SecurityRealm.all()))
-            f.dropdownDescriptorSelector(title: _("Authorization"), field: 'authorizationStrategy', descriptors: h.filterDescriptors(app, AuthorizationStrategy.all()))
+            f.dropdownDescriptorSelector(title: _("Security Realm"), field: 'securityRealm', descriptors: h.filterDescriptors(app, SecurityRealm.all()), capture: "readOnlyMode")
+            f.dropdownDescriptorSelector(title: _("Authorization"), field: 'authorizationStrategy', descriptors: h.filterDescriptors(app, AuthorizationStrategy.all()), capture: "readOnlyMode")
         }
 
         f.section(title: _("Markup Formatter")) {
-            f.dropdownDescriptorSelector(title:_("Markup Formatter"), descriptors: MarkupFormatterDescriptor.all(), field: 'markupFormatter')
+            f.dropdownDescriptorSelector(title:_("Markup Formatter"), descriptors: MarkupFormatterDescriptor.all(), field: 'markupFormatter', capture: "readOnlyMode")
         }
 
         f.section(title: _("Agents")) {
