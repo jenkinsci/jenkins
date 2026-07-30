@@ -3,5 +3,5 @@
     <f:description>
         ${%blurb}
     </f:description>
-    <f:dropdownDescriptorSelector field="discarder" title="${%Strategy}"/>
+    <f:dropdownDescriptorSelector field="discarder" title="${%Strategy}" capture="readOnlyMode"/>
 </j:jelly>

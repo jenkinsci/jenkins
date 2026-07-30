@@ -50,12 +50,12 @@ THE SOFTWARE.
 
   <!-- TODO: should be packaged as a tag -->
   <j:set var="computerLauncherDescriptors" value="${descriptor.computerLauncherDescriptors(it)}"/>
-  <f:dropdownDescriptorSelector title="${%Launch method}" field="launcher" descriptors="${computerLauncherDescriptors}"/>
+  <f:dropdownDescriptorSelector title="${%Launch method}" field="launcher" descriptors="${computerLauncherDescriptors}" capture="readOnlyMode"/>
 
   <!-- pointless to show this if there's only one option, which is the default -->
   <j:set var="retentionStrategies" value="${descriptor.retentionStrategyDescriptors(it)}"/>
   <j:if test="${retentionStrategies.size() gt 1}">
-    <f:dropdownDescriptorSelector title="${%Availability}" field="retentionStrategy" descriptors="${retentionStrategies}"/>
+    <f:dropdownDescriptorSelector title="${%Availability}" field="retentionStrategy" descriptors="${retentionStrategies}" capture="readOnlyMode"/>
   </j:if>
 
   <f:descriptorList title="${%Node Properties}"

@@ -24,7 +24,8 @@ if (showCsrfConfig) {
             f.dropdownDescriptorSelector(
                 title: _("Crumb Issuer"),
                 descriptors: all,
-                field: 'crumbIssuer'
+                field: 'crumbIssuer',
+                capture: "readOnlyMode"
             )
         }
     }
