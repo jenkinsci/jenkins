@@ -28,14 +28,14 @@ THE SOFTWARE.
     <l:view>
       <l:app-bar title="${%Users}" subtitle="${it.allUsers.size()}">
         <l:isAdmin>
-          <a href="addUser" class="jenkins-button jenkins-button--primary">
+          <button class="jenkins-button jenkins-button--primary"
+                  data-type="dialog-opener"
+                  data-dialog-url="addUserDialog">
             <l:icon src="symbol-add" />
             ${%Create User}
-          </a>
+          </button>
         </l:isAdmin>
       </l:app-bar>
-
-      <p class="jenkins-page-description">${%blurb}</p>
     </l:view>
   </j:set>
 
@@ -44,8 +44,8 @@ THE SOFTWARE.
       <thead>
         <tr>
           <th class="jenkins-table__cell--tight" data-sort-disable="true" />
-          <th initialSortDir="down">${%User ID}</th>
-          <th>${%Name}</th>
+          <th initialSortDir="down">${%Username}</th>
+          <th>${%Full name}</th>
           <th class="jenkins-table__cell--tight" data-sort-disable="true" />
           <th class="jenkins-table__cell--tight" data-sort-disable="true" />
         </tr>
@@ -59,14 +59,14 @@ THE SOFTWARE.
               </div>
             </td>
             <td>
-              <a href="${user.url}/" class="jenkins-table__link model-link inside">${user.id}</a>
+              <a href="${user.url}/">${user.id}</a>
             </td>
             <td>
               ${user.fullName}
             </td>
             <td>
               <div class="jenkins-table__cell__button-wrapper">
-                <a href="${user.url}/" class="jenkins-button jenkins-button--tertiary">
+                <a href="${user.url}/account" class="jenkins-button jenkins-button--tertiary">
                   <l:icon src="symbol-settings" />
                 </a>
               </div>
@@ -74,8 +74,12 @@ THE SOFTWARE.
             <td>
               <j:if test="${user.canDelete()}">
                 <div class="jenkins-table__cell__button-wrapper">
-                  <l:confirmationLink href="${user.url}/doDelete" class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color"
-                                      post="true" message="${%delete.user(user.displayName)}">
+                  <l:confirmationLink href="${user.url}/doDelete"
+                                      class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color"
+                                      post="true"
+                                      title="${%delete.user(user.displayName)}"
+                                      okText="${%Delete}"
+                                      destructive="true">
                     <l:icon src="symbol-trash" />
                   </l:confirmationLink>
                 </div>

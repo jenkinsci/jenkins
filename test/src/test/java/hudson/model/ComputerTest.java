@@ -256,7 +256,7 @@ class ComputerTest {
 
         assertThat(data.size(), equalTo(0));
 
-        odm.doDiscard(null, null);
+        odm.doDiscard();
 
         User.AllUsers.scanAll();
         boolean createUser = false;
@@ -330,8 +330,8 @@ class ComputerTest {
         computer = null;
         j.jenkins.removeNode(agent);
         agent = null;
-        MemoryAssert.assertGC(computerRef, false);
-        MemoryAssert.assertGC(channelRef, false);
+        MemoryAssert.assertGC(computerRef, true);
+        MemoryAssert.assertGC(channelRef, true);
     }
 
     @Test

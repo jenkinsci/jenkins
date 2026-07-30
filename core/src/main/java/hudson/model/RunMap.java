@@ -25,8 +25,6 @@
 package hudson.model;
 
 import static java.util.logging.Level.FINEST;
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -40,7 +38,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.SortedMap;
 import java.util.function.IntPredicate;
@@ -120,32 +117,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      */
     @Override
     public Iterator<R> iterator() {
-        return new Iterator<>() {
-            R last = null;
-            R next = newestBuild();
-
-            @Override
-            public boolean hasNext() {
-                return next != null;
-            }
-
-            @Override
-            public R next() {
-                last = next;
-                if (last != null)
-                    next = last.getPreviousBuild();
-                else
-                    throw new NoSuchElementException();
-                return last;
-            }
-
-            @Override
-            public void remove() {
-                if (last == null)
-                    throw new UnsupportedOperationException();
-                removeValue(last);
-            }
-        };
+        return values().iterator();
     }
 
     @Override
@@ -165,14 +137,14 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      * This is the newest build (with the biggest build number)
      */
     public R newestValue() {
-        return search(Integer.MAX_VALUE, DESC);
+        return newestBuild();
     }
 
     /**
      * This is the oldest build (with the smallest build number)
      */
     public R oldestValue() {
-        return search(Integer.MIN_VALUE, ASC);
+        return oldestBuild();
     }
 
     /**

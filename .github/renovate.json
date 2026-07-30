@@ -99,7 +99,8 @@
   ],
   "lockFileMaintenance": {
     "enabled": true,
-    "automerge": false
+    "automerge": false,
+    "schedule": ["on the first day of the month"]
   },
   "labels": ["dependencies", "skip-changelog"]
 }

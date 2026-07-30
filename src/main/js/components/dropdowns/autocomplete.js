@@ -19,7 +19,7 @@ function init() {
       e.focus();
     };
     return {
-      label: suggestion.name,
+      displayName: suggestion.name,
       onClick: confirm,
       onKeyPress: (evt) => {
         if (evt.key === "Tab") {
@@ -44,7 +44,7 @@ function init() {
         },
         true,
         {
-          appendTo: "parent",
+          appendTo: (ref) => ref.closest("dialog") || document.body,
         },
       );
     }

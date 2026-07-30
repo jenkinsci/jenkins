@@ -279,7 +279,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Enable a {@link Computer} to inform its node when it is taken
      * temporarily offline.
      */
-    void setTemporaryOfflineCause(OfflineCause cause) {
+    @Restricted(NoExternalUse.class)
+    public void setTemporaryOfflineCause(OfflineCause cause) {
         try {
             if (temporaryOfflineCause != cause) {
                 temporaryOfflineCause = cause;

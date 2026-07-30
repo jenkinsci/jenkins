@@ -36,8 +36,11 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.util.XStream2;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import jenkins.model.Jenkins;
@@ -167,6 +170,7 @@ public abstract class Cause {
         @Deprecated
         private transient Cause upstreamCause;
         private @NonNull List<Cause> upstreamCauses;
+        private transient Map<Cause, Integer> causeBag;
 
         /**
          * @deprecated since 2009-02-28
@@ -197,6 +201,21 @@ public abstract class Cause {
             this.upstreamBuild = upstreamBuild;
             this.upstreamUrl = upstreamUrl;
             this.upstreamCauses = upstreamCauses;
+        }
+
+        private synchronized void fillCauseBag() {
+            if (causeBag == null) {
+                causeBag = new LinkedHashMap<>();
+                for (Cause c : upstreamCauses) {
+                    causeBag.compute(c, (unused, cnt) -> cnt == null ? 1 : cnt + 1);
+                }
+            }
+        }
+
+        @Restricted(DoNotUse.class) // used from Jelly
+        public Map<Cause, Integer> getCauseCounts() {
+            fillCauseBag();
+            return Collections.unmodifiableMap(causeBag);
         }
 
         @Override
@@ -357,6 +376,16 @@ public abstract class Cause {
         public static class DeeplyNestedUpstreamCause extends Cause {
             @Override public String getShortDescription() {
                 return "(deeply nested causes)";
+            }
+
+            @Override
+            public int hashCode() {
+                return 11;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                return obj instanceof DeeplyNestedUpstreamCause;
             }
 
             @Override public String toString() {

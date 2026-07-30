@@ -16,6 +16,7 @@
 
   & > * {
     height: 350px;
+    min-width: 0;
   }
 
   // Legacy card shouldn't have a fixed height
@@ -176,8 +177,9 @@ body:has(.app-settings-container) {
     display: flex;
     flex-direction: column;
 
-    &:has(.jenkins-app-bar--sticky) {
-      max-width: 1200px;
+    &--wide {
+      width: 70vw;
+      max-width: 1700px;
     }
 
     // TODO - this can be moved to app-bar.scss when Manage Jenkins flag is removed
@@ -330,6 +332,6 @@ body:has(.app-settings-container) {
   margin-inline: calc(var(--section-padding) * -1);
 
   .jenkins-app-bar {
-    margin-block: 1.0625rem;
+    margin-block: 0.875rem;
   }
 }
