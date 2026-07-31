@@ -19,7 +19,7 @@ function init() {
       e.focus();
     };
     return {
-      label: suggestion.name,
+      displayName: suggestion.name,
       onClick: confirm,
       onKeyPress: (evt) => {
         if (evt.key === "Tab") {
@@ -43,6 +43,9 @@ function init() {
           instance.popper.style.minWidth = e.offsetWidth + "px";
         },
         true,
+        {
+          appendTo: (ref) => ref.closest("dialog") || document.body,
+        },
       );
     }
     e.dropdown.setContent(Utils.generateDropdownItems(items, true));

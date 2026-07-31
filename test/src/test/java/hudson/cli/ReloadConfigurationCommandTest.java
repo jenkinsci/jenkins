@@ -168,7 +168,7 @@ class ReloadConfigurationCommandTest {
     @Disabled // Until fixed JENKINS-8217
     @Test
     void reloadDescriptorConfig() {
-        Mailer.DescriptorImpl desc = j.jenkins.getExtensionList(Mailer.DescriptorImpl.class).get(0);
+        Mailer.DescriptorImpl desc = j.jenkins.getExtensionList(Mailer.DescriptorImpl.class).getFirst();
         desc.setDefaultSuffix("@oldSuffix");
         desc.save();
 

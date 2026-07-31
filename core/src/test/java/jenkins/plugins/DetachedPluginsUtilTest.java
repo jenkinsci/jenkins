@@ -24,7 +24,7 @@ class DetachedPluginsUtilTest {
                         .toList();
         assertEquals(1, plugins.size());
 
-        DetachedPluginsUtil.DetachedPlugin jaxb = plugins.get(0);
+        DetachedPluginsUtil.DetachedPlugin jaxb = plugins.getFirst();
 
         final List<String> detachedPlugins = mapToPluginShortName(DetachedPluginsUtil.getDetachedPlugins());
         assertThat(detachedPlugins, hasItem("jaxb"));

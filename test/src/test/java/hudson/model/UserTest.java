@@ -215,7 +215,7 @@ class UserTest {
         User user3 = User.get("John Smith");
         user3.setFullName("Alice Smith");
         assertEquals("John Smith", user3.getId(), "What was this asserting exactly?");
-        User user4 = User.get("Marie", false, Collections.EMPTY_MAP);
+        User user4 = User.get("Marie", false, Collections.emptyMap());
         assertNull(user4, "User should not be created because Marie does not exists.");
         }
     }

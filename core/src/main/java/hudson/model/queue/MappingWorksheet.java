@@ -128,7 +128,7 @@ public class MappingWorksheet {
             super(base);
             this.index = index;
             assert !base.isEmpty();
-            computer = base.get(0).getExecutor().getOwner();
+            computer = base.getFirst().getExecutor().getOwner();
             node = computer.getNode();
             nodeAcl = node.getACL();
         }
@@ -206,10 +206,10 @@ public class MappingWorksheet {
             super(base);
             assert !base.isEmpty();
             this.index = index;
-            this.assignedLabel = getAssignedLabel(base.get(0));
+            this.assignedLabel = getAssignedLabel(base.getFirst());
 
             @SuppressWarnings("deprecation")
-            Node lbo = base.get(0).getLastBuiltOn();
+            Node lbo = base.getFirst().getLastBuiltOn();
             for (ExecutorChunk ec : executors) {
                 if (ec.node == lbo) {
                     lastBuiltOn = ec;

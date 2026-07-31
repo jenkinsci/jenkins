@@ -1,0 +1,13 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <j:set var="controls">
+    <l:isAdmin>
+      <a href="${rootURL}/configure" class="jenkins-button jenkins-button--primary">
+        ${%Configure resource root URL}
+      </a>
+    </l:isAdmin>
+  </j:set>
+  <l:adminMonitor severity="info" controls="${controls}">
+    ${%blurb}
+  </l:adminMonitor>
+</j:jelly>

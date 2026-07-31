@@ -76,29 +76,30 @@ public abstract class AuthenticationException extends AcegiSecurityException {
      * @return either an {@link AuthenticationException} or a {@link DataAccessException}
      */
     public static RuntimeException fromSpring(org.springframework.security.core.AuthenticationException x) {
-        if (x instanceof org.springframework.security.authentication.BadCredentialsException) {
-            return BadCredentialsException.fromSpring((org.springframework.security.authentication.BadCredentialsException) x);
-        } else if (x instanceof org.springframework.security.authentication.AuthenticationServiceException) {
-            return AuthenticationServiceException.fromSpring((org.springframework.security.authentication.AuthenticationServiceException) x);
-        } else if (x instanceof org.springframework.security.authentication.AccountExpiredException) {
-            return AccountExpiredException.fromSpring((org.springframework.security.authentication.AccountExpiredException) x);
-        } else if (x instanceof org.springframework.security.authentication.CredentialsExpiredException) {
-            return CredentialsExpiredException.fromSpring((org.springframework.security.authentication.CredentialsExpiredException) x);
-        } else if (x instanceof org.springframework.security.authentication.DisabledException) {
-            return DisabledException.fromSpring((org.springframework.security.authentication.DisabledException) x);
-        } else if (x instanceof org.springframework.security.authentication.InsufficientAuthenticationException) {
-            return InsufficientAuthenticationException.fromSpring((org.springframework.security.authentication.InsufficientAuthenticationException) x);
-        } else if (x instanceof org.springframework.security.authentication.LockedException) {
-            return LockedException.fromSpring((org.springframework.security.authentication.LockedException) x);
-        } else if (x instanceof org.springframework.security.authentication.ProviderNotFoundException) {
-            return ProviderNotFoundException.fromSpring((org.springframework.security.authentication.ProviderNotFoundException) x);
-        } else if (x instanceof UserMayOrMayNotExistException2 && x.getCause() instanceof DataAccessException) {
-            return (DataAccessException) x.getCause();
-        } else if (x instanceof org.springframework.security.core.userdetails.UsernameNotFoundException) {
-            return UsernameNotFoundException.fromSpring((org.springframework.security.core.userdetails.UsernameNotFoundException) x);
-        } else {
-            return new AuthenticationException(x.toString(), x) {};
-        }
+        return switch (x) {
+            case org.springframework.security.authentication.BadCredentialsException badCredentialsException ->
+                    BadCredentialsException.fromSpring(badCredentialsException);
+            case org.springframework.security.authentication.AuthenticationServiceException authenticationServiceException ->
+                    AuthenticationServiceException.fromSpring(authenticationServiceException);
+            case org.springframework.security.authentication.AccountExpiredException accountExpiredException ->
+                    AccountExpiredException.fromSpring(accountExpiredException);
+            case org.springframework.security.authentication.CredentialsExpiredException credentialsExpiredException ->
+                    CredentialsExpiredException.fromSpring(credentialsExpiredException);
+            case org.springframework.security.authentication.DisabledException disabledException ->
+                    DisabledException.fromSpring(disabledException);
+            case org.springframework.security.authentication.InsufficientAuthenticationException insufficientAuthenticationException ->
+                    InsufficientAuthenticationException.fromSpring(insufficientAuthenticationException);
+            case org.springframework.security.authentication.LockedException lockedException ->
+                    LockedException.fromSpring(lockedException);
+            case org.springframework.security.authentication.ProviderNotFoundException providerNotFoundException ->
+                    ProviderNotFoundException.fromSpring(providerNotFoundException);
+            case UserMayOrMayNotExistException2 userMayOrMayNotExistException2 when x.getCause() instanceof DataAccessException ->
+                    (DataAccessException) x.getCause();
+            case org.springframework.security.core.userdetails.UsernameNotFoundException usernameNotFoundException ->
+                    UsernameNotFoundException.fromSpring(usernameNotFoundException);
+            default -> new AuthenticationException(x.toString(), x) {
+            };
+        };
     }
 
 }

@@ -61,8 +61,7 @@ public class UnwrapSecurityExceptionFilter implements CompatibleFilter {
                     t = t.getCause();
                 }
             }
-            if (t instanceof JellyTagException) {
-                JellyTagException jte = (JellyTagException) t;
+            if (t instanceof JellyTagException jte) {
                 Throwable cause = jte.getCause();
                 if (cause instanceof AccessDeniedException || cause instanceof AuthenticationException) {
                     throw new ServletException(cause);
