@@ -10,4 +10,20 @@
       this document
     </a>
   </p>
+
+  <p>
+    The schedule is evaluated in the time zone of the Jenkins controller by
+    default. To use a different time zone, specify it on the first line of the
+    schedule field using
+    <code>TZ=</code>
+    followed by a time zone ID, for example:
+  </p>
+  <pre>
+TZ=Europe/London
+H/15 * * * *
+</pre>
+  <p>
+    See the help for the "Build periodically" trigger for the full schedule
+    syntax and the list of supported time zone IDs.
+  </p>
 </div>

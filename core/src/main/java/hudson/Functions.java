@@ -2378,6 +2378,13 @@ public class Functions {
     }
 
     /**
+     * Returns true if we are in development mode.
+     */
+    public static boolean isDevelopmentMode() {
+        return Main.isDevelopmentMode;
+    }
+
+    /**
      * Returns {@code true} if the {@link Run#ARTIFACTS} permission is enabled,
      * {@code false} otherwise.
      *
@@ -2405,6 +2412,17 @@ public class Functions {
      */
     public static boolean isWipeOutPermissionEnabled() {
         return SystemProperties.getBoolean("hudson.security.WipeOutPermission");
+    }
+
+    /**
+     * Returns whether sticky positioning of UI elements should be disabled via the
+     * {@code disableStickyPositioning} cookie (primarily for UI acceptance tests).
+     * Sticky elements can otherwise float over the element under test and intercept clicks.
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean isStickyPositioningDisabled() {
+        String cookieValue = Functions.getCookie(Stapler.getCurrentRequest2(), "disableStickyPositioning", null);
+        return Boolean.valueOf(cookieValue);
     }
 
     @Deprecated

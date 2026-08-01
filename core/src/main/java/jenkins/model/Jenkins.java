@@ -4340,8 +4340,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // TODO fire something in SecurityListener?
 
         String from = req.getParameter("from");
-        if (from != null && from.startsWith("/") && !from.equals("/loginError")) {
-            rsp.sendRedirect2(from);    // I'm bit uncomfortable letting users redirected to other sites, make sure the URL falls into this domain
+        if (from != null && Util.isSafeToRedirectTo(from)) {
+            rsp.sendRedirect2(from);
             return;
         }
 

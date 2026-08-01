@@ -3,7 +3,7 @@
   <st:documentation> <![CDATA[
     Displays an administrative monitor alert.
 
-    @since TODO
+    @since 2.558
     ]]>
     <st:attribute name="severity" use="optional" >
       Severity of the alert, one of info, warning, danger or success. Defaults to warning if not specified.

@@ -725,7 +725,7 @@ class ViewTest {
 
         assertThat(data.size(), equalTo(0));
 
-        odm.doDiscard(null, null);
+        odm.doDiscard();
 
         View view = j.getInstance().getView("nonexistent");
 
@@ -769,7 +769,7 @@ class ViewTest {
 
         assertThat(data.size(), equalTo(0));
 
-        odm.doDiscard(null, null);
+        odm.doDiscard();
 
         View view = j.getInstance().getView("nonexistent");
 
@@ -806,7 +806,7 @@ class ViewTest {
 
         assertThat(data.size(), equalTo(0));
 
-        odm.doDiscard(null, null);
+        odm.doDiscard();
 
         User.AllUsers.scanAll();
         boolean createUser = false;
