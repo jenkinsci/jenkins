@@ -222,17 +222,18 @@ var FormChecker = {
    *      HTTP method. GET or POST. I haven't confirmed specifics, but some browsers seem to cache GET requests.
    * @param target
    *      HTML element whose innerHTML will be overwritten when the check is completed.
-   * @param abortController
-   *      Optional AbortController or AbortSignal used to cancel queued and running checks.
+   * @param abort
+   *      Optional AbortController, or the AbortSignal of one, used to cancel the check
+   *      while it is queued or in flight.
    */
-  delayedCheck: function (url, method, target, abortController) {
+  delayedCheck: function (url, method, target, abort) {
     if (url == null || method == null || target == null) {
       // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
       return;
     }
     var signal = null;
-    if (abortController != null) {
-      signal = abortController.signal || abortController;
+    if (abort != null) {
+      signal = abort.signal || abort;
       if (typeof signal.aborted !== "boolean") {
         signal = null;
       }
