@@ -274,8 +274,9 @@ class ArgumentListBuilderTest {
         builder.add("clone");
 
         // This output goes to a build log, so a masked argument must not survive in it.
-        assertThat(builder.toStringWithQuote(), is("hg --config ****** clone"));
-        assertThat(builder.toStringWithQuote(), not(containsString("s3cr3t")));
+        String rendered = builder.toStringWithQuote();
+        assertThat(rendered, is("hg --config ****** clone"));
+        assertThat(rendered, not(containsString("s3cr3t")));
     }
 
     @Test
@@ -287,7 +288,8 @@ class ArgumentListBuilderTest {
         builder.addMasked("secret value");
         builder.add("plain");
 
-        assertThat(builder.toStringWithQuote(), is(builder.toString()));
-        assertThat(builder.toStringWithQuote(), is("cmd \"has space\" \"\" ****** plain"));
+        String rendered = builder.toStringWithQuote();
+        assertThat(rendered, is(builder.toString()));
+        assertThat(rendered, is("cmd \"has space\" \"\" ****** plain"));
     }
 }
