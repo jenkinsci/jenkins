@@ -2,6 +2,8 @@ package hudson.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.junit.jupiter.api.Test;
@@ -51,5 +53,17 @@ class PackedMapTest {
                 xml);
 
         xs.fromXML(xml);
+    }
+
+    @Test
+    void values() {
+        Map<String, String> o = new TreeMap<>();
+        o.put("a", "b");
+        o.put("c", "d");
+
+        PackedMap<String, String> p = PackedMap.of(o);
+        assertEquals(List.of("b", "d"), new ArrayList<>(p.values()));
+        assertEquals("b", p.values().stream().findFirst().orElseThrow());
+        assertEquals(2, p.values().size());
     }
 }
