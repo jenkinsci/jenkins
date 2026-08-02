@@ -117,19 +117,15 @@ public class Search implements StaplerProxy {
             Ancestor a = l.get(i);
             if (a.getObject() instanceof SearchableModelObject smo) {
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(String.format(
-                            "smo.displayName=%s, searchName=%s",
-                            smo.getDisplayName(),
-                            smo.getSearchName()));
+                    LOGGER.fine(String.format("smo.displayName=%s, searchName=%s", smo.getDisplayName(), smo.getSearchName()));
                 }
 
                 SearchIndex index = smo.getSearchIndex();
                 String query = req.getParameter("q");
-
                 if (query != null) {
                     SuggestedItem target = find(index, query, smo);
-
                     if (target != null) {
+                        // found
                         rsp.sendRedirect2(req.getContextPath() + target.getUrl());
                         return;
                     }
