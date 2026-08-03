@@ -6,5 +6,5 @@ def f=namespace(lib.FormTagLib)
 
 def all = ViewsTabBar.all()
 if (all.size()>1) {
-    f.dropdownDescriptorSelector(title:_("Views Tab Bar"),field:"viewsTabBar",capture:"readOnlyMode")
+    f.dropdownDescriptorSelector(title:_("Views Tab Bar"),field:"viewsTabBar")
 }

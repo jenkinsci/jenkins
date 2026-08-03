@@ -28,7 +28,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * {@link jenkins.scm.SCMCheckoutStrategyReadOnlyModeTest}: the "Authorization"
  * {@code f.dropdownDescriptorSelector} lazily loads non-selected
  * {@link AuthorizationStrategy} fragments via {@code l:renderOnDemand}, which
- * only forwards variables named in its {@code capture} attribute.
+ * only forwards variables named in its {@code capture} attribute. Fixed once,
+ * for every caller, in {@code lib/form/dropdownDescriptorSelector.jelly}
+ * itself rather than on this page individually.
  */
 @WithJenkins
 class GlobalSecurityConfigurationReadOnlyModeTest {

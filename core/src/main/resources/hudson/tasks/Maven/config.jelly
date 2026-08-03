@@ -54,7 +54,7 @@ THE SOFTWARE.
       <f:checkbox title="${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html" checked="${it.usesPrivateRepository()}" />
     </f:entry>
 
-    <f:dropdownDescriptorSelector title="${%Settings file}"  field="settings" default="${descriptor.defaultSettingsProvider}" capture="readOnlyMode"/>
-	<f:dropdownDescriptorSelector title="${%Global Settings file}" field="globalSettings"  default="${descriptor.defaultGlobalSettingsProvider}" capture="readOnlyMode"/>
+    <f:dropdownDescriptorSelector title="${%Settings file}"  field="settings" default="${descriptor.defaultSettingsProvider}"/>
+	<f:dropdownDescriptorSelector title="${%Global Settings file}" field="globalSettings"  default="${descriptor.defaultGlobalSettingsProvider}"/>
   </f:advanced>
 </j:jelly>

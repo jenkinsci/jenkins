@@ -23,9 +23,12 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * Reproduces JENKINS-12548: the SCM Checkout Strategy dropdown in
  * {@code config-scm.jelly} renders non-selected descriptors lazily via
  * {@code l:renderOnDemand}, which only forwards variables named in its
- * {@code capture} attribute. Without {@code capture="readOnlyMode"}, a
- * viewer with {@link Item#EXTENDED_READ} but not {@link Item#CONFIGURE}
- * gets an editable field once that fragment is loaded.
+ * {@code capture} attribute. Before the fix in
+ * {@code lib/form/dropdownDescriptorSelector.jelly} (which now always
+ * captures {@code readOnlyMode}, alongside the already-always-captured
+ * {@code descriptor}/{@code it}), a viewer with {@link Item#EXTENDED_READ}
+ * but not {@link Item#CONFIGURE} got an editable field once that fragment
+ * was lazily loaded.
  */
 @WithJenkins
 class SCMCheckoutStrategyReadOnlyModeTest {
