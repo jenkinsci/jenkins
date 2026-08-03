@@ -25,7 +25,9 @@
 package hudson.util;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
@@ -91,5 +93,67 @@ class QuotedStringTokenizerTest {
         String[] r = QuotedStringTokenizer.tokenize(src);
         System.out.println(Arrays.asList(r));
         assertArrayEquals(expected, r);
+    }
+
+    @Test
+    void quoteSimpleString() {
+        assertEquals("abc", QuotedStringTokenizer.quote("abc"));
+    }
+
+    @Test
+    void quoteStringWithSpace() {
+        assertEquals("\"abc def\"", QuotedStringTokenizer.quote("abc def"));
+    }
+
+    @Test
+    void quoteStringWithQuote() {
+        assertEquals("\"a\\\"b\"", QuotedStringTokenizer.quote("a\"b"));
+    }
+
+    @Test
+    void quoteStringWithBackslash() {
+        assertEquals("\"a\\\\b\"", QuotedStringTokenizer.quote("a\\b"));
+    }
+
+    @Test
+    void quoteEmptyString() {
+        assertEquals("\"\"", QuotedStringTokenizer.quote(""));
+    }
+
+    @Test
+    void quoteNull() {
+        assertNull(QuotedStringTokenizer.quote(null));
+    }
+
+    @Test
+    void quoteStringWithTab() {
+        assertEquals("\"a\tb\"", QuotedStringTokenizer.quote("a\tb"));
+    }
+
+    @Test
+    void quoteStringWithNewline() {
+        assertEquals("\"a\nb\"", QuotedStringTokenizer.quote("a\nb"));
+    }
+
+    @Test
+    void quoteStringWithSingleQuote() {
+        assertEquals("\"a'b\"", QuotedStringTokenizer.quote("a'b"));
+    }
+
+    @Test
+    void quoteWithCustomDelimiter() {
+        assertEquals("abc", QuotedStringTokenizer.quote("abc", ""));
+        assertEquals("\"abc,def\"", QuotedStringTokenizer.quote("abc,def", ","));
+    }
+
+    @Test
+    void quoteRoundTrip() {
+        String[] inputs = {"hello world", "abc", "with\"quote", "with\\backslash", "with\ttab"};
+        for (String input : inputs) {
+            String quoted = QuotedStringTokenizer.quote(input);
+            String[] tokens = QuotedStringTokenizer.tokenize(quoted);
+            assertEquals(1, tokens.length);
+            assertEquals(input, tokens[0]);
+        }
     }
 }
