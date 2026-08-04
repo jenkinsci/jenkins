@@ -40,10 +40,6 @@ THE SOFTWARE.
           </div>
         </div>
       </div>
-
-      <div class="app-temp-list__item__actions">
-        <div style="width: 2rem; height: 2rem;" class="skeleee" />
-      </div>
     </div>
   </div>
 </j:jelly>
