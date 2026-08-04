@@ -73,15 +73,6 @@ THE SOFTWARE.
         </div>
       </div>
 
-      <j:set var="entryDecorators" value="${it.widget.getEntryDecorators(pageEntry)}" />
-      <div class="app-build-item__supplementary">
-        <j:if test="${!empty(entryDecorators)}">
-          <j:forEach var="entryDecorator" items="${entryDecorators}">
-            <st:include from="${entryDecorator.decorator}" it="${entryDecorator}" page="entry.jelly" optional="true" />
-          </j:forEach>
-        </j:if>
-      </div>
-
       <div class="app-temp-list__item__actions">
         <l:actions it="${build}" url="${rootURL}/${build.url}" compact="true" />
       </div>

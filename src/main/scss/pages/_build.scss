@@ -13,7 +13,7 @@
   flex-direction: column;
   border-radius: var(--form-input-border-radius);
   background: var(--card-background);
-  border: var(--card-border-width) solid var(--card-border-color);
+  border: var(--jenkins-border);
   margin-bottom: var(--section-padding);
 
   &__item {
@@ -28,7 +28,7 @@
             0 0 0 0.5rem transparent;
 
     &:not(:last-of-type) {
-      border-bottom: var(--card-border-width) solid var(--card-border-color);
+      border-bottom: var(--jenkins-border);
     }
 
     &:hover {
@@ -178,8 +178,6 @@
       margin: 3px 0 0;
 
       .jenkins-details {
-        display: grid;
-        grid-template-columns: 160px 120px 170px;
         gap: 0.75rem;
       }
 
@@ -220,7 +218,7 @@
 
 .app-build-item {
   display: grid;
-  grid-template-columns: auto 600px 1fr auto;
+  grid-template-columns: auto 1fr auto;
 
   & > * {
     overflow: hidden;
@@ -232,16 +230,6 @@
     svg {
       width: 1.375rem;
       height: 1.375rem;
-    }
-  }
-
-  &__supplementary {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-
-    & > * {
-      width: 100%;
     }
   }
 
@@ -483,7 +471,7 @@ body:has(.app-settings-container) {
     position: absolute;
     inset: -1000px calc(var(--section-padding) * -1) 0;
     background-color: var(--background);
-    border-bottom: var(--jenkins-border-width) solid var(--card-border-color);
+    border-bottom: var(--jenkins-border);
     z-index: -1;
   }
 
