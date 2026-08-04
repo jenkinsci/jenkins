@@ -54,6 +54,9 @@ module.exports = (env, argv) => ({
     "pages/project/builds-card": [
       path.join(__dirname, "src/main/js/pages/project/builds-card.js"),
     ],
+    "pages/project/builds-card-new": [
+      path.join(__dirname, "src/main/js/pages/project/builds-card-new.js"),
+    ],
     "pages/project/build": [
       path.join(__dirname, "src/main/js/pages/project/build.js"),
     ],

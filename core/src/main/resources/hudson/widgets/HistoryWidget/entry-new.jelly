@@ -1,0 +1,90 @@
+<!--
+The MIT License
+
+Copyright (c) 2025, Jan Faracik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Render a single build history entry indicated by ${build} (jenkins.model.HistoricalBuild)
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
+  <j:set var="build" value="${pageEntry.entry}" />
+  <j:set var="firstTransientBuildKey" value="${it.widget.firstTransientBuildKey}" />
+  <j:set var="transitive" value="${(firstTransientBuildKey!=null and (it.widget.adapter.compare(build,firstTransientBuildKey) ge 0)) ? 'transitive' : null}" />
+  <j:set var="link" value="${it.widget.baseUrl}/${build.number}/" />
+  <j:if test="${h.isUserTimeZoneOverride()}">
+    <i:setTimeZone value="${h.getUserTimeZone()}" />
+   </j:if>
+  
+  <div class="app-temp-list__item" page-entry-id="${pageEntry.entryId}">
+    <div class="app-build-item">
+      <a href="${h.getConsoleUrl(build)}"
+         class="app-build-item__icon"
+         tooltip="${build.iconColor.description}"
+         data-tooltip-append-to-parent="true">
+        <l:icon src="symbol-status-${build.iconColor.iconName}" />
+      </a>
+
+      <div class="app-temp-list__item__details" href="${link}">
+        <div class="app-temp-list__item__details__text">
+          <a class="app-temp-list__item__label" href="${rootURL}/${build.url}">${build.displayName}</a>
+          <div class="app-temp-list__item__description">
+            <l:details-bar it="${build}" shorthand="true" />
+          </div>
+
+          <j:set var="badges" value="${build.badgeActions}"/>
+          <j:if test="${!empty(badges)}">
+            <div class="app-temp-list__item__description">
+              <j:forEach var="badge" items="${badges}">
+                <st:include it="${badge}" page="badge.jelly" />
+              </j:forEach>
+            </div>
+          </j:if>
+
+          <j:if test="${!empty build.truncatedDescription}">
+            <div class="app-temp-list__item__description">
+              <div class="jenkins-details__item">
+                <div class="jenkins-details__item__icon">
+                  <l:icon src="symbol-description" />
+                </div>
+                ${app.markupFormatter.translate(build.truncatedDescription)}
+              </div>
+            </div>
+          </j:if>
+        </div>
+      </div>
+
+      <j:set var="entryDecorators" value="${it.widget.getEntryDecorators(pageEntry)}" />
+      <div class="app-build-item__supplementary">
+        <j:if test="${!empty(entryDecorators)}">
+          <j:forEach var="entryDecorator" items="${entryDecorators}">
+            <st:include from="${entryDecorator.decorator}" it="${entryDecorator}" page="entry.jelly" optional="true" />
+          </j:forEach>
+        </j:if>
+      </div>
+
+      <div class="app-temp-list__item__actions">
+        <l:actions it="${build}" url="${rootURL}/${build.url}" compact="true" />
+      </div>
+    </div>
+  </div>
+</j:jelly>

@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2025, Jan Faracik
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,29 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<!--
+  Render build histories. 
+-->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <l:job-subpage>
-    <j:set var="it" value="${it.object}" />
-
-    <l:app-bar title="Builds">
-      <l:details-bar it="${it}">
-        <t:editDescriptionButton permission="${it.CONFIGURE}" compact="true" />
-      </l:details-bar>
-    </l:app-bar>
-
-    <t:editableDescription permission="${it.CONFIGURE}" hideButton="true"/>
-
-    <j:forEach var="w" items="${it.widgets}">
-      <st:include it="${w}" page="index-new.jelly" />
-    </j:forEach>
-
-    <l:card title="${%Legacy}">
-      <div>
-        <st:include page="jobpropertysummaries.jelly" />
-
-        <st:include page="main.jelly" />
-      </div>
-    </l:card>
-  </l:job-subpage>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <j:set target="${it}" property="nextBuildNumberToFetch" value="${it.nextBuildNumber}" />
+  <j:forEach var="pageEntry" items="${it.runs}">
+    <st:include page="/hudson/widgets/HistoryWidget/entry-new.jelly" />
+  </j:forEach>
 </j:jelly>
