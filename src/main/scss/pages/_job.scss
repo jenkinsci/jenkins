@@ -215,6 +215,7 @@
   &__item {
     --tertiary-color: var(--text-color-secondary);
 
+    position: relative;
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
@@ -231,17 +232,18 @@
       background: var(--card-background--hover);
     }
 
-    &:has(.app-temp-list__item__details:active, .app-temp-list__item__details:focus) {
+    &:has(.app-temp-list__item__label:active, .app-temp-list__item__label:focus) {
       border-bottom-color: transparent;
       border-radius: calc(var(--form-input-border-radius) / 2);
     }
 
     &:hover {
       --tertiary-color: var(--text-color);
+      background: var(--button-background);
     }
 
-    &:has(.app-temp-list__item__details:active) {
-      background: var(--card-background--active);
+    &:has(.app-temp-list__item__label:active) {
+      background: var(--button-background--hover);
       box-shadow:
               0 0 0 0.09375rem
               color-mix(
@@ -262,8 +264,8 @@
               );
     }
 
-    &:has(.app-temp-list__item__details:focus) {
-      background: var(--card-background--active);
+    &:has(.app-temp-list__item__label:focus) {
+      background: var(--button-background--hover);
       box-shadow: 0 0 0 0.2rem var(--text-color) !important;
     }
 
@@ -308,19 +310,6 @@
       gap: var(--jenkins-border-width);
       padding-inline: 0.875rem;
 
-      & > .jenkins-split-button {
-        gap: 1px;
-
-        & > :first-child {
-          padding: 0 0 0 0.375rem;
-          width: 32px;
-        }
-
-        & > :last-child {
-          padding: 0 0.375rem 0 2px;
-        }
-      }
-
       & > .jenkins-button {
         padding: 0;
         aspect-ratio: 1;
@@ -344,6 +333,13 @@
        font-variant-numeric: tabular-nums;
        color: var(--text-color) !important;
        text-decoration: none !important;
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: transparent;
+      }
      }
 
     &__description {
