@@ -11,7 +11,6 @@ function init() {
     "-dropdowns-",
     1000,
     (element) => {
-      const compact = element.dataset.compact === "true";
       const template = JSON.parse(element.nextSibling.content.textContent);
       const topLevelActions = Utils.mapChildrenItemsToDropdownItems(
         template.items,
@@ -20,13 +19,9 @@ function init() {
       // Append top-level items next to the overflow menu
       topLevelActions.forEach((item, index) => {
         // Only the first button in an app bar should have an icon
-        if (!compact) {
-          if (index > 0) {
-            item.icon = null;
-            item.iconXml = null;
-          }
-        } else {
-          item.compact = true;
+        if (index > 0) {
+          item.icon = null;
+          item.iconXml = null;
         }
         const button = Templates.menuItem(item, "jenkins-button", template.url);
         element.parentNode.insertBefore(button, element);

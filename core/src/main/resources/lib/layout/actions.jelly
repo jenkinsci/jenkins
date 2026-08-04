@@ -34,7 +34,7 @@ THE SOFTWARE.
       todo.
     </st:attribute>
     <st:attribute name="compact">
-      The object to display actions for.
+      todo.
     </st:attribute>
   </st:documentation>
 
