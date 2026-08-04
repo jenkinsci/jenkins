@@ -284,19 +284,7 @@
               var(--form-input-border-radius) - var(--jenkins-border-width)
       ) !important;
     }
-
-    &__icons {
-      pointer-events: none;
-      color: var(--text-color);
-      width: 1.375rem;
-      height: 1.375rem;
-
-      svg {
-        width: 1.375rem;
-        height: 1.375rem;
-      }
-    }
-
+    
     &__details {
       display: grid;
       grid-template-columns: auto 1fr;
