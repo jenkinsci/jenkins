@@ -31,10 +31,10 @@ THE SOFTWARE.
       The object to display actions for.
     </st:attribute>
     <st:attribute name="url">
-      todo.
+      The base URL to resolve action links against. Defaults to the nearest ancestor URL.
     </st:attribute>
     <st:attribute name="compact">
-      todo.
+      If true, renders buttons in a compact manner. For use in dense contexts such as list rows rather than the app bar.
     </st:attribute>
   </st:documentation>
 
