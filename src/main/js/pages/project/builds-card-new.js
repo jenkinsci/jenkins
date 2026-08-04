@@ -1,7 +1,7 @@
 import debounce from "lodash/debounce";
 import BehaviorShim from "@/util/behavior-shim";
 
-BehaviorShim.specify(
+aBehaviorShim.specify(
   "#buildHistoryPage",
   "build-history-page",
   1000,
@@ -59,7 +59,7 @@ BehaviorShim.specify(
       fetch(ajaxUrl + toQueryString(params)).then((rsp) => {
         if (rsp.ok) {
           rsp.text().then((responseText) => {
-            container.classList.remove("app-builds-container--loading");
+            container.classList.remove("app-temp-list--loading");
             pageSearch.classList.remove("jenkins-search--loading");
 
             // Show the 'No builds' text if there are no builds
@@ -122,11 +122,11 @@ BehaviorShim.specify(
         !parameters.pageHasUp && !parameters.pageHasDown,
       );
       paginationPrevious.classList.toggle(
-        "app-builds-container__button--disabled",
+        "app-temp-list__button--disabled",
         !parameters.pageHasUp,
       );
       paginationNext.classList.toggle(
-        "app-builds-container__button--disabled",
+        "app-temp-list__button--disabled",
         !parameters.pageHasDown,
       );
 
@@ -163,12 +163,12 @@ BehaviorShim.specify(
     }, 150);
 
     pageSearchInput.addEventListener("input", function () {
-      container.classList.add("app-builds-container--loading");
+      container.classList.add("app-temp-list--loading");
       pageSearch.classList.add("jenkins-search--loading");
       debouncedLoad();
     });
 
-    container.classList.add("app-builds-container--loading");
+    container.classList.add("app-temp-list--loading");
     load();
 
     window.addEventListener("focus", function () {

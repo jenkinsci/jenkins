@@ -1,0 +1,49 @@
+<!--
+The MIT License
+
+Copyright (c) 2026, Jan Faracik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  <div class="app-temp-list__item">
+    <div class="app-build-item">
+      <div class="app-build-item__icon">
+        <div style="width: 1.25rem; height: 1.25rem; border-radius: 100px" class="skeleee" />
+      </div>
+
+      <div class="app-temp-list__item__details">
+        <div class="app-temp-list__item__details__text">
+          <div class="app-temp-list__item__label">
+            <div style="width: 3rem; height: 1rem;" class="skeleee" />
+          </div>
+          <div class="app-temp-list__item__description" style="gap: 0.25rem">
+            <div style="width: 20rem; height: 1rem;" class="skeleee" />
+          </div>
+        </div>
+      </div>
+
+      <div class="app-temp-list__item__actions">
+        <div style="width: 2rem; height: 2rem;" class="skeleee" />
+      </div>
+    </div>
+  </div>
+</j:jelly>

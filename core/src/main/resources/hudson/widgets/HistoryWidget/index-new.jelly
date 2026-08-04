@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
   <script src="${resURL}/jsbundles/pages/project/builds-card-new.js" type="text/javascript" async="true" />
 
   <j:set var="page" value="${it.historyPageFilter}" />
@@ -49,8 +49,11 @@ THE SOFTWARE.
 
       <div class="app-temp-list">
         <div id="loading-builds" class="app-temp-list__placeholder">
-          <l:spinner text="${%Loading builds...}"/>
+          <j:forEach begin="1" end="10" var="i">
+            <st:include page="/hudson/widgets/HistoryWidget/entry-skeleton.jelly" />
+          </j:forEach>
         </div>
+
         <div id="no-builds" style="display:none" class="app-temp-list__placeholder">
           ${%No builds}
         </div>

@@ -197,6 +197,13 @@
 
 // Experimental UI
 
+.skeleee {
+  background: var(--button-background);
+  border: var(--jenkins-border--subtle);
+  border-radius: var(--form-input-border-radius);
+  animation: pulse-skeleton 2s both ease-in-out infinite;
+}
+
 .app-temp-list {
   display: flex;
   flex-direction: column;
@@ -401,6 +408,21 @@
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
+    }
+  }
+
+  &__placeholder {
+    display: flex;
+    flex-direction: column;
+
+    .app-temp-list__item {
+      height: 71px;
+
+      .placeholdericon {
+        width: 10px;
+        height: 10px;
+        background: red;
+      }
     }
   }
 
