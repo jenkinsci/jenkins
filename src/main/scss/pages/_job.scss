@@ -284,7 +284,7 @@
               var(--form-input-border-radius) - var(--jenkins-border-width)
       ) !important;
     }
-    
+
     &__details {
       display: grid;
       grid-template-columns: auto 1fr;
@@ -337,18 +337,14 @@
     }
 
     &__label {
-      display: flex;
-      gap: 0.5rem;
-      font-weight: var(--font-bold-weight);
-      margin: 0;
-      font-variant-numeric: tabular-nums;
-      color: var(--text-color) !important;
-      text-decoration: none !important;
-
-      .jenkins-badge {
-        padding: 0 0.5rem;
-      }
-    }
+       display: flex;
+       gap: 0.5rem;
+       font-weight: var(--font-bold-weight);
+       margin: 0;
+       font-variant-numeric: tabular-nums;
+       color: var(--text-color) !important;
+       text-decoration: none !important;
+     }
 
     &__description {
       display: flex;
@@ -389,13 +385,6 @@
       &:empty {
         display: none;
       }
-    }
-
-    &__compact-column {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
     }
   }
 
