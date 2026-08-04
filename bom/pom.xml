@@ -149,7 +149,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>net.java.sezpoz</groupId>
         <artifactId>sezpoz</artifactId>
-        <version>1.13</version>
+        <version>1.17</version>
       </dependency>
       <dependency>
         <groupId>net.jcip</groupId>
