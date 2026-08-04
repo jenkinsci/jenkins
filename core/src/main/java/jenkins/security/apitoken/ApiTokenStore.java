@@ -35,6 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -43,6 +44,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -168,10 +170,18 @@ public class ApiTokenStore {
     }
 
     /**
-     * Create a new token with the given name and return it id and secret value.
+     * Create a new token with the given name and return its id and secret value.
      * Result meant to be sent / displayed and then discarded.
      */
     public synchronized @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name) {
+        return generateNewToken(name, null);
+    }
+
+    /**
+     * Create a new token with the given name and expiration and return its id and secret value.
+     * Result meant to be sent / displayed and then discarded.
+     */
+    public synchronized @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate) {
         // 16x8=128bit worth of randomness, using brute-force you need on average 2^127 tries (~10^37)
         byte[] random = new byte[16];
         RANDOM.nextBytes(random);
@@ -180,9 +190,9 @@ public class ApiTokenStore {
         String tokenTheUserWillUse = HASH_VERSION + secretValue;
         assert tokenTheUserWillUse.length() == 2 + 32;
 
-        HashedToken token = prepareAndStoreToken(name, secretValue);
+        HashedToken token = prepareAndStoreToken(name, secretValue, expirationDate);
 
-        return new TokenUuidAndPlainValue(token.uuid, tokenTheUserWillUse);
+        return new TokenUuidAndPlainValue(token.uuid, tokenTheUserWillUse, expirationDate, token.isAboutToExpire());
     }
 
     private static final int VERSION_LENGTH = 2;
@@ -194,7 +204,7 @@ public class ApiTokenStore {
      * it could be a good idea to generate a new token randomly and revoke this one.
      */
     @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "Comparison only validates version of the specified token")
-    public synchronized @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue) {
+    public synchronized @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate) {
         if (tokenPlainValue.length() != VERSION_LENGTH + HEX_CHAR_LENGTH) {
             LOGGER.log(Level.INFO, "addFixedNewToken, length received: {0}" + tokenPlainValue.length());
             throw new IllegalArgumentException("The token must consist of 2 characters for the version and 32 hex-characters for the secret");
@@ -211,16 +221,16 @@ public class ApiTokenStore {
             throw new IllegalArgumentException("The secret part of the token must consist of 32 hex-characters");
         }
 
-        HashedToken token = prepareAndStoreToken(name, tokenPlainHexValue);
+        HashedToken token = prepareAndStoreToken(name, tokenPlainHexValue, expirationDate);
 
         return token.uuid;
     }
 
-    private @NonNull HashedToken prepareAndStoreToken(@NonNull String name, @NonNull String tokenPlainValue) {
+    private @NonNull HashedToken prepareAndStoreToken(@NonNull String name, @NonNull String tokenPlainValue, LocalDate expirationDate) {
         String secretValueHashed = this.plainSecretToHashInHex(tokenPlainValue);
 
         HashValue hashValue = new HashValue(HASH_VERSION, secretValueHashed);
-        HashedToken token = HashedToken.buildNew(name, hashValue);
+        HashedToken token = HashedToken.buildNew(name, hashValue, expirationDate);
 
         this.addToken(token);
         return token;
@@ -369,6 +379,7 @@ public class ApiTokenStore {
         private String uuid;
         private String name;
         private Date creationDate;
+        private LocalDate expirationDate;
 
         private HashValue value;
 
@@ -387,14 +398,19 @@ public class ApiTokenStore {
             }
         }
 
-        public static @NonNull HashedToken buildNew(@NonNull String name, @NonNull HashValue value) {
+        public static @NonNull HashedToken buildNew(@NonNull String name, @NonNull HashValue value, LocalDate expirationDate) {
             HashedToken result = new HashedToken();
             result.name = name;
             result.creationDate = new Date();
 
             result.value = value;
+            result.expirationDate = expirationDate;
 
             return result;
+        }
+
+        public static @NonNull HashedToken buildNew(@NonNull String name, @NonNull HashValue value) {
+            return buildNew(name, value, null);
         }
 
         public static @NonNull HashedToken buildNewFromLegacy(@NonNull HashValue value, boolean migrationFromExistingLegacy) {
@@ -417,6 +433,20 @@ public class ApiTokenStore {
             this.name = newName;
         }
 
+        public boolean isAboutToExpire() {
+            if (expirationDate == null) {
+                return false;
+            }
+            LocalDate warnLimit = LocalDate.now().plusDays(7);
+            return expirationDate.isBefore(warnLimit);
+        }
+
+        public boolean isExpired() {
+            LocalDate now = LocalDate.now();
+            LocalDate expiration = Objects.requireNonNullElseGet(expirationDate, LocalDate::now);
+            return expiration.isBefore(now);
+        }
+
         public boolean match(byte[] hashedBytes) {
             byte[] hashFromHex;
             try {
@@ -426,8 +456,9 @@ public class ApiTokenStore {
                 return false;
             }
 
+            boolean expired = isExpired();
             // String.equals() is not constant-time but this method is. No link between correctness and time spent
-            return MessageDigest.isEqual(hashFromHex, hashedBytes);
+            return MessageDigest.isEqual(hashFromHex, hashedBytes) && !expired;
         }
 
         // used by Jelly view
@@ -438,6 +469,10 @@ public class ApiTokenStore {
         // used by Jelly view
         public Date getCreationDate() {
             return creationDate;
+        }
+
+        public LocalDate getExpirationDate() {
+            return expirationDate;
         }
 
         // used by Jelly view

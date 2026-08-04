@@ -1503,7 +1503,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             throw new FormException(Messages.Slave_InvalidConfig_Executors(nodeName), "numExecutors");
         }
 
+        OfflineCause offlineCause = node.getTemporaryOfflineCause();
         Node result = node.reconfigure(req, req.getSubmittedForm());
+        result.setTemporaryOfflineCause(offlineCause);
         Jenkins.get().getNodesObject().replaceNode(this.getNode(), result);
 
         if (result.getNodeProperty(DiskSpaceMonitorNodeProperty.class) != null) {

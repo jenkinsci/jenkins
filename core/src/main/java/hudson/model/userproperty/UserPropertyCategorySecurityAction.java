@@ -34,7 +34,9 @@ import hudson.model.UserPropertyDescriptor;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import jenkins.management.Badge;
 import jenkins.model.Jenkins;
+import jenkins.security.ApiTokenProperty;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -62,6 +64,14 @@ public class UserPropertyCategorySecurityAction extends UserPropertyCategoryActi
 
     public @NonNull List<UserPropertyDescriptor> getMyCategoryDescriptors() {
         return UserProperty.allByCategoryClass(UserPropertyCategory.Security.class);
+    }
+
+    public Badge getBadge() {
+        ApiTokenProperty apiTokenProperty = getTargetUser().getProperty(ApiTokenProperty.class);
+        if (apiTokenProperty != null) {
+            return apiTokenProperty.getBadge();
+        }
+        return null;
     }
 
     /**

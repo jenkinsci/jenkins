@@ -179,7 +179,7 @@ public class Api extends AbstractModelObject {
                     rsp.getWriter().print(Messages.Api_MultipleMatch(xpath, list.size()));
                     return;
                 } else {
-                    result = list.get(0);
+                    result = list.getFirst();
                 }
             }
 

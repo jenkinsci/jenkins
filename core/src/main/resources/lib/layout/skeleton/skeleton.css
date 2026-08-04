@@ -1,5 +1,6 @@
 .jenkins-side-panel-skeleton,
-.jenkins-form-skeleton {
+.jenkins-form-skeleton,
+.jenkins-form-skeleton-2 {
   position: relative;
   display: flex;
   flex-direction: column;

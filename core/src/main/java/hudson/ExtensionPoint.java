@@ -29,7 +29,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import jenkins.model.Jenkins;
 
 /**
  * Marker interface that designates extensible components
@@ -47,10 +46,9 @@ import jenkins.model.Jenkins;
  */
 public interface ExtensionPoint {
     /**
-     * Used by designers of extension points (direct subtypes of {@link ExtensionPoint}) to indicate that
-     * the legacy instances are scoped to {@link Jenkins} instance. By default, legacy instances are
-     * static scope.
+     * @deprecated No longer has any effect.
      */
+    @Deprecated
     @Target(TYPE)
     @Retention(RUNTIME)
     @interface LegacyInstancesAreScopedToHudson {}

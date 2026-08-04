@@ -253,7 +253,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     @Deprecated
     public void setOptionalDependants(@NonNull Set<String> optionalDependents) {
-        setOptionalDependents(dependents);
+        setOptionalDependents(optionalDependents);
     }
 
     /**
@@ -522,6 +522,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         this.archive = archive;
     }
 
+    @Exported(visibility = 2)
     @Override
     public String getDisplayName() {
         String displayName = getLongName();
@@ -595,7 +596,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Returns the short name suitable for URL.
      */
-    @Exported
+    @Exported(visibility = 2)
     public String getShortName() {
         return shortName;
     }
@@ -627,13 +628,13 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      *      null if this information is unavailable.
      * @since 1.283
      */
-    @Exported
+    @Exported(visibility = 2)
     public String getUrl() {
         // first look in update center metadata
         List<UpdateSite.Plugin> siteMetadataList = getInfoFromAllSites();
         String firstSiteUrl = null;
         if (!siteMetadataList.isEmpty()) {
-            firstSiteUrl = siteMetadataList.get(0).wiki;
+            firstSiteUrl = siteMetadataList.getFirst().wiki;
             if (allUrlsMatch(firstSiteUrl, siteMetadataList)) {
                 return firstSiteUrl;
             }
@@ -683,7 +684,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Returns the version number of this plugin
      */
-    @Exported
+    @Exported(visibility = 2)
     public String getVersion() {
         return getVersionOf(manifest);
     }
@@ -878,25 +879,23 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     private Set<String> dependentsToCheck(PluginDisableStrategy strategy) {
-        Set<String> dependentsToCheck;
-        switch (strategy) {
-            case ALL:
+        Set<String> dependentsToCheck = switch (strategy) {
+            case ALL ->
                 // getDependents returns all the dependent plugins, mandatory or optional.
-                dependentsToCheck = this.getDependents();
-                break;
-            default:
+                this.getDependents();
+            default ->
                 // It includes MANDATORY, NONE:
                 // with NONE, the process only fail if mandatory dependent plugins exists
                 // As of getDependents has all the dependents, we get the difference between them and only the optionals
-                dependentsToCheck = Sets.difference(this.getDependents(), this.getOptionalDependents());
-        }
+                Sets.difference(this.getDependents(), this.getOptionalDependents());
+        };
         return dependentsToCheck;
     }
 
     /**
      * Returns true if this plugin is enabled for this session.
      */
-    @Exported
+    @Exported(visibility = 2)
     public boolean isActive() {
         return active && !hasCycleDependency();
     }
@@ -923,7 +922,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * If true, the plugin is going to be activated next time
      * Jenkins runs.
      */
-    @Exported
+    @Exported(visibility = 2)
     public boolean isEnabled() {
         return !disableFile.exists();
     }
@@ -1082,7 +1081,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * This method is conservative in the sense that if the version number is incomprehensible,
      * it always returns false.
      */
-    @Exported
+    @Exported(visibility = 2)
     public boolean hasUpdate() {
         return getUpdateInfo() != null;
     }
@@ -1431,6 +1430,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             }
         }
         return null;
+    }
+
+    private Object readResolve() {
+        LOGGER.log(Level.WARNING, "Blocked deserialization of PluginWrapper for security reasons", new Exception("stack trace"));
+        throw new SecurityException("Blocked deserialization of PluginWrapper for security reasons");
     }
 
     private static final Logger LOGGER = Logger.getLogger(PluginWrapper.class.getName());

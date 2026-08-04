@@ -6,6 +6,7 @@ function registerConfirmationLink(element) {
   const message = element.getAttribute("data-message");
   const title = element.getAttribute("data-title");
   const destructive = element.getAttribute("data-destructive");
+  const okText = element.getAttribute("data-ok-text");
   let type = "default";
   if (destructive === "true") {
     type = "destructive";
@@ -13,7 +14,13 @@ function registerConfirmationLink(element) {
 
   element.addEventListener("click", function (e) {
     e.preventDefault();
-    dialog.confirm(title, { message: message, type: type }).then(
+
+    const options = { message: message, type: type };
+    if (okText) {
+      options.okText = okText;
+    }
+
+    dialog.confirm(title, options).then(
       () => {
         var form = document.createElement("form");
         form.setAttribute("method", post ? "POST" : "GET");

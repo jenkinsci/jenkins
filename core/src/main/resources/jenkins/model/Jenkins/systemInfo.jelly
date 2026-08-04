@@ -27,85 +27,79 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%System Information}" type="one-column">
-    <l:header>
-      <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
-      <script src="${resURL}/jsbundles/pages/manage-jenkins/system-information.js" type="text/javascript" defer="true" />
-    </l:header>
-    
-    <l:breadcrumb title="${%System Information}"/>
-    <l:main-panel>
-      <l:app-bar title="${%System Information}" />
+  <j:new className="jenkins.management.SystemInfoLink" var="it" />
 
-      <l:hasPermission permission="${app.SYSTEM_READ}">
-        <l:tabPane title="${%System Properties}">
-          <t:propertyTable items="${h.systemProperties}" sensitive="true" />
-        </l:tabPane>
-      </l:hasPermission>
+  <l:settings-subpage permissions="${app.MANAGE_AND_SYSTEM_READ}" includeBreadcrumb="true">
+    <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
+    <script src="${resURL}/jsbundles/pages/manage-jenkins/system-information.js" type="text/javascript" defer="true" />
 
-      <l:hasPermission permission="${app.SYSTEM_READ}">
-        <l:tabPane title="${%Environment Variables}">
-          <t:propertyTable items="${h.envVars}" sensitive="true" />
-        </l:tabPane>
-      </l:hasPermission>
+    <l:hasPermission permission="${app.SYSTEM_READ}">
+      <l:tabPane title="${%System Properties}">
+        <t:propertyTable items="${h.systemProperties}" sensitive="true" />
+      </l:tabPane>
+    </l:hasPermission>
 
-      <l:tabPane title="${%Plugins}">
+    <l:hasPermission permission="${app.SYSTEM_READ}">
+      <l:tabPane title="${%Environment Variables}">
+        <t:propertyTable items="${h.envVars}" sensitive="true" />
+      </l:tabPane>
+    </l:hasPermission>
 
-        <j:choose>
-          <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
-            <l:notice icon="symbol-plugins" title="${%No plugins installed}" />
-          </j:when>
-          <j:otherwise>
-            <table class="jenkins-table sortable">
-              <thead>
+    <l:tabPane title="${%Plugins}">
+      <j:choose>
+        <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
+          <l:notice icon="symbol-plugins" title="${%No plugins installed}" />
+        </j:when>
+        <j:otherwise>
+          <table class="jenkins-table sortable">
+            <thead>
+              <tr>
+                <th initialSortDir="down">${%Name}</th>
+                <th>${%Version}</th>
+                <th>${%Enabled}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <j:forEach var="p" items="${app.pluginManager.plugins}">
+                <j:set var="state" value="${p.enabled?'true':'false'}"/>
                 <tr>
-                  <th initialSortDir="down">${%Name}</th>
-                  <th>${%Version}</th>
-                  <th>${%Enabled}</th>
+                  <td>
+                    <a class="jenkins-table__link" href="${p.url}" target="_blank" rel="noopener noreferrer">
+                      <st:out value="${p.displayName}"/>
+                    </a>
+                  </td>
+                  <td>
+                    <st:out value="${p.version}"/>
+                  </td>
+                  <td>
+                    <st:out value="${state}"/>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                <j:forEach var="p" items="${app.pluginManager.plugins}">
-                  <j:set var="state" value="${p.enabled?'true':'false'}"/>
-                  <tr>
-                    <td>
-                      <a class="jenkins-table__link" href="${p.url}" target="_blank" rel="noopener noreferrer">
-                        <st:out value="${p.displayName}"/>
-                      </a>
-                    </td>
-                    <td>
-                      <st:out value="${p.version}"/>
-                    </td>
-                    <td>
-                      <st:out value="${state}"/>
-                    </td>
-                  </tr>
-                </j:forEach>
-              </tbody>
-            </table>
-          </j:otherwise>
-        </j:choose>
+              </j:forEach>
+            </tbody>
+          </table>
+        </j:otherwise>
+      </j:choose>
+    </l:tabPane>
+
+    <l:tabPane title="${%Memory Usage}">
+      <f:entry title="${%Timespan}" class="jenkins-form-item--small">
+        <div class="jenkins-select">
+          <select id="timespan-select" class="jenkins-select__input">
+            <option value="sec10">${%Short}</option>
+            <option value="min" selected="true">${%Medium}</option>
+            <option value="hour">${%Long}</option>
+          </select>
+        </div>
+      </f:entry>
+
+      <div id="graph-host" />
+    </l:tabPane>
+
+    <l:isAdmin>
+      <l:tabPane title="${%Thread Dumps}">
+        <p>${%threadDump_blurb('threadDump')}</p>
       </l:tabPane>
-
-      <l:tabPane title="${%Memory Usage}">
-        <f:entry title="${%Timespan}" class="jenkins-form-item--small">
-          <div class="jenkins-select">
-            <select id="timespan-select" class="jenkins-select__input">
-              <option value="sec10">${%Short}</option>
-              <option value="min" selected="true">${%Medium}</option>
-              <option value="hour">${%Long}</option>
-            </select>
-          </div>
-        </f:entry>
-
-        <div id="graph-host" />
-      </l:tabPane>
-
-      <l:isAdmin>
-        <l:tabPane title="${%Thread Dumps}">
-          <p>${%threadDump_blurb('threadDump')}</p>
-        </l:tabPane>
-      </l:isAdmin>
-    </l:main-panel>
-  </l:layout>
+    </l:isAdmin>
+  </l:settings-subpage>
 </j:jelly>

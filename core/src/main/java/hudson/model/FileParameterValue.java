@@ -310,12 +310,10 @@ public class FileParameterValue extends ParameterValue {
         public void onLeft(Queue.LeftItem li) {
             if (li.isCancelled()) {
                 List<ParametersAction> actions = li.getActions(ParametersAction.class);
-                actions.forEach(a -> {
-                    a.getAllParameters().stream()
-                            .filter(p -> p instanceof FileParameterValue)
-                            .map(p -> (FileParameterValue) p)
-                            .forEach(this::deleteTmpFile);
-                });
+                actions.forEach(a -> a.getAllParameters().stream()
+                        .filter(p -> p instanceof FileParameterValue)
+                        .map(p -> (FileParameterValue) p)
+                        .forEach(this::deleteTmpFile));
             }
         }
 

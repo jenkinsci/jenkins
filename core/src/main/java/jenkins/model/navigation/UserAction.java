@@ -32,6 +32,8 @@ import hudson.model.RootAction;
 import hudson.model.User;
 import java.util.ArrayList;
 import java.util.List;
+import jenkins.management.Badge;
+import jenkins.security.ApiTokenProperty;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -42,6 +44,9 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Extension(ordinal = -1)
 public class UserAction implements RootAction {
 
+    @Restricted(NoExternalUse.class)
+    public static final String AVATAR_SIZE = "96x96";
+
     @Override
     public String getIconFileName() {
         User current = User.current();
@@ -50,7 +55,7 @@ public class UserAction implements RootAction {
             return null;
         }
 
-        return getAvatar(current, "96x96");
+        return getAvatar(current, AVATAR_SIZE);
     }
 
     @Override
@@ -78,6 +83,20 @@ public class UserAction implements RootAction {
     @Restricted(NoExternalUse.class)
     public User getUser() {
         return User.current();
+    }
+
+    @Override
+    public Badge getBadge() {
+        User current = User.current();
+
+        if (User.current() == null) {
+            return null;
+        }
+        ApiTokenProperty apiTokenProperty = current.getProperty(ApiTokenProperty.class);
+        if (apiTokenProperty != null) {
+            return apiTokenProperty.getBadge();
+        }
+        return null;
     }
 
     @Override

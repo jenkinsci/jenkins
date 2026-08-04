@@ -224,7 +224,7 @@ class MyViewsPropertyTest {
         user.addProperty(property);
         HtmlForm form = rule.createWebClient().goTo(property.getUrl() + "/newView").getFormByName("createItem");
         form.getInputByName("name").setValue("foo");
-        form.getRadioButtonsByName("mode").get(0).setChecked(true);
+        form.getRadioButtonsByName("mode").getFirst().setChecked(true);
         rule.submit(form);
         assertNotNull(property.getView("foo"), "Property should contain view foo");
         }

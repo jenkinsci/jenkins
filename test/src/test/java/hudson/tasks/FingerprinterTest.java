@@ -244,7 +244,7 @@ class FingerprinterTest {
 
         RunList<FreeStyleBuild> builds = freestyleProject.getBuilds();
         assertEquals(1, builds.size(), "There should only be one FreestyleBuild");
-        FreeStyleBuild build = builds.iterator().next();
+        FreeStyleBuild build = builds.getFirst();
         assertEquals(Result.SUCCESS, build.getResult());
         List<AbstractProject> downstream = j.jenkins.getDependencyGraph().getDownstream(matrixProject);
         assertTrue(downstream.contains(freestyleProject));

@@ -142,8 +142,15 @@ public abstract class FullDuplexHttpService {
         notify();
 
         // wait until we are done
-        while (!completed) {
-            wait();
+        long end = System.currentTimeMillis() + CONNECTION_TIMEOUT;
+        while (!completed && System.currentTimeMillis() < end) {
+            LOGGER.log(Level.FINE, "Waiting for upload stream {0} for {1}: {2}", new Object[] {upload, uuid, this});
+            wait(1000);
+        }
+
+        if (!completed) {
+            LOGGER.log(Level.FINE, "Timeout reached for {0} for {1}: {2}", new Object[] {upload, uuid, this});
+            throw new IOException("CLI timeout");
         }
     }
 

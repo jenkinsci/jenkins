@@ -92,7 +92,7 @@ public class SimplePageDecorator extends Descriptor<SimplePageDecorator> impleme
      */
     public static SimplePageDecorator first() {
         List<SimplePageDecorator> decorators = all();
-        return decorators.isEmpty() ? null : decorators.get(0);
+        return decorators.isEmpty() ? null : decorators.getFirst();
     }
 
 }

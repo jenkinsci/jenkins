@@ -93,7 +93,7 @@ class SecretCompatTest {
         //It should be unchanged on disk
         assertThat(oldxml, containsString("<defaultValue>z/Dd3qrHdQ6/C5lR7uEafM/jD3nQDrGprw3XsfZ/0vo=</defaultValue>"));
         ParametersDefinitionProperty property = project.getProperty(ParametersDefinitionProperty.class);
-        ParameterDefinition definition = property.getParameterDefinitions().get(0);
+        ParameterDefinition definition = property.getParameterDefinitions().getFirst();
         assertThat(definition, instanceOf(PasswordParameterDefinition.class));
         Secret secret = ((PasswordParameterDefinition) definition).getDefaultValueAsSecret();
         assertEquals("theSecret", secret.getPlainText());
