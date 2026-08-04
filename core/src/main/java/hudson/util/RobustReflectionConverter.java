@@ -50,6 +50,7 @@ import hudson.security.ACL;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,6 +85,22 @@ public class RobustReflectionConverter implements Converter {
 
     static /* non-final for Groovy */ boolean RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = SystemProperties.getBoolean(RobustReflectionConverter.class.getName() + ".recordFailuresForAllAuthentications", false);
     private static /* non-final for Groovy */ boolean RECORD_FAILURES_FOR_ADMINS = SystemProperties.getBoolean(RobustReflectionConverter.class.getName() + ".recordFailuresForAdmins", false);
+
+    static final Set<String> SAFE_TYPES_WITH_OBJECT_FIELDS = new HashSet<>();
+    static boolean ALLOW_ALL_OBJECT_FIELDS = SystemProperties.getBoolean(RobustReflectionConverter.class.getName() + ".ALLOW_ALL_OBJECT_FIELDS", false);
+
+    static {
+        final String classNames = SystemProperties.getString(RobustReflectionConverter.class.getName() + ".SAFE_TYPES_WITH_OBJECT_FIELDS");
+        if (classNames != null) {
+            for (String className : classNames.split(",")) {
+                SAFE_TYPES_WITH_OBJECT_FIELDS.add(className.trim());
+            }
+        }
+        // `ModelASTValue` is a known instance of a class with Object-type field (`value`) that gets deserialized from XML.
+        // It doesn't route requests to its `value` field, so this is not a problem.
+        // TODO Remove this compatibility hack once the plugin has been updated to be compatible
+        SAFE_TYPES_WITH_OBJECT_FIELDS.add("org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue");
+    }
 
     protected final ReflectionProvider reflectionProvider;
     protected final Mapper mapper;
@@ -451,6 +468,20 @@ public class RobustReflectionConverter implements Converter {
     }
 
     protected Object unmarshalField(final UnmarshallingContext context, final Object result, Class type, Field field) {
+        if (!ALLOW_ALL_OBJECT_FIELDS
+                && field.getType().equals(Object.class)
+                // To allow plugins to declare fields safe to deserialize without needing a new core dependency immediately, only check the simple class name
+                && Arrays.stream(field.getAnnotations()).noneMatch(a -> "XstreamSafeObjectField".equals(a.annotationType().getSimpleName()))
+                && !SAFE_TYPES_WITH_OBJECT_FIELDS.contains(field.getDeclaringClass().getName())) {
+            final String declaringClassName = field.getDeclaringClass().getName();
+            final String msg = "Refusing to unmarshal type '" + type.getName() + "' to Object typed field '" + field.getName() + "' in '" + declaringClassName +
+                    "'. Update the plugin defining this class to a compatible release, set the Java system property '" + RobustReflectionConverter.class.getName() +
+                    ".SAFE_TYPES_WITH_OBJECT_FIELDS' to add known safe types (add '" + declaringClassName +
+                    "' to the comma-separated list for this occurrence), or disable this protection entirely by setting the Java system property '" + RobustReflectionConverter.class.getName() +
+                    ".ALLOW_ALL_OBJECT_FIELDS' to 'true'. Learn more: https://www.jenkins.io/redirect/safe-object-field/";
+            LOGGER.log(Level.WARNING, msg);
+            throw new CriticalXStreamException(new XStreamException(msg));
+        }
         Converter converter = mapper.getLocalConverter(field.getDeclaringClass(), field.getName());
         if (converter == null) {
             if (new RobustCollectionConverter(mapper, reflectionProvider).canConvert(type)) {
@@ -460,6 +491,12 @@ public class RobustReflectionConverter implements Converter {
             } else if (DescribableList.ConverterImpl.canConvertRobust(type)) {
                 Class<?> elementType = extractElementType(field.getGenericType(), DescribableList.class);
                 converter = new DescribableList.ConverterImpl(mapper, elementType);
+            } else if (PersistedList.ConverterImpl.canConvertRobust(type)) {
+                Class<?> elementType = extractElementType(field.getGenericType(), PersistedList.class);
+                converter = new PersistedList.ConverterImpl(mapper, elementType);
+            } else if (CopyOnWriteList.ConverterImpl.canConvertRobust(type)) {
+                Class<?> elementType = extractElementType(field.getGenericType(), CopyOnWriteList.class);
+                converter = new CopyOnWriteList.ConverterImpl(mapper, elementType);
             }
         }
         return context.convertAnother(result, type, converter);
