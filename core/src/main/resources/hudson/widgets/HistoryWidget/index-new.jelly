@@ -48,17 +48,17 @@ THE SOFTWARE.
       </div>
 
       <div class="app-temp-list">
-        <div id="loading-builds" class="app-builds-container__placeholder">
+        <div id="loading-builds" class="app-temp-list__placeholder">
           <l:spinner text="${%Loading builds...}"/>
         </div>
-        <div id="no-builds" style="display:none" class="app-builds-container__placeholder">
+        <div id="no-builds" style="display:none" class="app-temp-list__placeholder">
           ${%No builds}
         </div>
 
         <div id="jenkins-build-history">
         </div>
 
-        <div class="app-builds-container__controls app-builds-container__controls-new jenkins-hidden" id="controls">
+        <div class="app-temp-list__controls jenkins-hidden" id="controls">
           <button class="jenkins-button jenkins-button--tertiary jenkins-card__unveil" id="up">
             <l:icon src="symbol-arrow-left" />
             <span class="jenkins-visually-hidden">${%Newer builds}</span>

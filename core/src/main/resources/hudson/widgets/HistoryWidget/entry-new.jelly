@@ -26,7 +26,7 @@ THE SOFTWARE.
   Render a single build history entry indicated by ${build} (jenkins.model.HistoricalBuild)
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:i="jelly:fmt">
   <j:set var="build" value="${pageEntry.entry}" />
   <j:set var="firstTransientBuildKey" value="${it.widget.firstTransientBuildKey}" />
   <j:set var="transitive" value="${(firstTransientBuildKey!=null and (it.widget.adapter.compare(build,firstTransientBuildKey) ge 0)) ? 'transitive' : null}" />
@@ -48,7 +48,7 @@ THE SOFTWARE.
         <div class="app-temp-list__item__details__text">
           <a class="app-temp-list__item__label" href="${rootURL}/${build.url}">${build.displayName}</a>
           <div class="app-temp-list__item__description">
-            <l:details-bar it="${build}" shorthand="true" />
+            <l:details-bar it="${build}" />
           </div>
 
           <j:set var="badges" value="${build.badgeActions}"/>
