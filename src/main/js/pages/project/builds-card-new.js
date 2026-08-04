@@ -1,7 +1,7 @@
 import debounce from "lodash/debounce";
 import BehaviorShim from "@/util/behavior-shim";
 
-aBehaviorShim.specify(
+BehaviorShim.specify(
   "#buildHistoryPage",
   "build-history-page",
   1000,
