@@ -47,23 +47,23 @@
   gap: calc(var(--section-padding) / 2);
 
   @media (1024px < width <= 1430px) {
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-flow: row wrap;
     width: 100%;
   }
 
   @media (max-width: breakpoints.$tablet-breakpoint) {
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-flow: row wrap;
     width: 100%;
   }
 
   & > div.pane-frame {
     min-width: 275px;
     margin-bottom: 0;
+
     @media (width <= 1430px) {
       flex-grow: 1;
     }
+
     @media (width > 1430px) {
       max-width: 330px;
     }
