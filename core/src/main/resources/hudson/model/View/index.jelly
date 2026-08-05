@@ -39,9 +39,6 @@ THE SOFTWARE.
           <st:include page="view-index-top.jelly" it="${it.owner}" optional="true">
             <!-- allow the owner to take over the top section, but we also need the default to be backward compatible -->
             <div id="view-message">
-              <div id="systemmessage">
-                <j:out value="${app.systemMessage!=null ? app.markupFormatter.translate(app.systemMessage) : ''}" />
-              </div>
               <t:editableDescription permission="${it.CONFIGURE}"/>
             </div>
           </st:include>
