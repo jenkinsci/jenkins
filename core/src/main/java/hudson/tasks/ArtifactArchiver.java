@@ -44,10 +44,11 @@ import hudson.util.FormValidation;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
@@ -252,9 +253,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 artifacts = environment.expand(artifacts);
             }
 
-            Map<String, String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive, followSymlinks));
+            Set<String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive, followSymlinks));
             if (!files.isEmpty()) {
-                build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
+                build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files.stream().collect(Collectors.toMap(f -> f, f -> f)));
                 if (fingerprint) {
                     Fingerprinter f = new Fingerprinter(artifacts);
                     f.setExcludes(excludes);
@@ -292,7 +293,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
     }
 
-    private static final class ListFiles extends MasterToSlaveFileCallable<Map<String, String>> {
+    private static final class ListFiles extends MasterToSlaveFileCallable<Set<String>> {
         private static final long serialVersionUID = 1;
         private final String includes, excludes;
         private final boolean defaultExcludes;
@@ -307,8 +308,8 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             this.followSymlinks = followSymlinks;
         }
 
-        @Override public Map<String, String> invoke(File basedir, VirtualChannel channel) throws IOException, InterruptedException {
-            Map<String, String> r = new HashMap<>();
+        @Override public Set<String> invoke(File basedir, VirtualChannel channel) {
+            Set<String> r = new HashSet<>();
 
             FileSet fileSet = Util.createFileSet(basedir, includes, excludes);
             fileSet.setDefaultexcludes(defaultExcludes);
@@ -317,7 +318,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
             for (String f : fileSet.getDirectoryScanner().getIncludedFiles()) {
                 f = f.replace(File.separatorChar, '/');
-                r.put(f, f);
+                r.add(f);
             }
             return r;
         }
