@@ -37,9 +37,15 @@ THE SOFTWARE.
   
   <div class="app-temporary-list__item" page-entry-id="${pageEntry.entryId}">
     <div class="app-build-item">
+      <j:set var="iconTooltip">
+        <div>${build.iconColor.description}</div>
+        <div class="jenkins-!-text-color-secondary">Click to jump to ${h.getConsoleProviderFor(build).descriptor.displayName}</div>
+      </j:set>
+
       <a href="${h.getConsoleUrl(build)}"
          class="app-build-item__icon"
-         tooltip="${build.iconColor.description}"
+         data-html-tooltip="${iconTooltip}"
+         data-tooltip-delay="400"
          data-tooltip-append-to-parent="true">
         <l:icon src="symbol-status-${build.iconColor.iconName}" />
       </a>
