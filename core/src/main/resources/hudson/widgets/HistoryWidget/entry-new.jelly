@@ -45,8 +45,7 @@ THE SOFTWARE.
       <a href="${h.getConsoleUrl(build)}"
          class="app-build-item__icon"
          data-html-tooltip="${iconTooltip}"
-         data-tooltip-delay="500"
-         data-tooltip-append-to-parent="true">
+         data-tooltip-delay="500">
         <l:icon src="symbol-status-${build.iconColor.iconName}" />
       </a>
 
