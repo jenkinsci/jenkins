@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2025, Jenkins project contributors
+ * Copyright (c) 2026, Jenkins project contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,21 +22,24 @@
  * THE SOFTWARE.
  */
 
-package hudson.security;
+package jenkins.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import java.util.ArrayList;
 import java.util.List;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Built-in {@link PasswordComplexityRule} that checks minimum length
  * and character type requirements.
  *
- * @since 2.572
+ * @since 2.572 (moved from hudson.security to jenkins.security in 2.TODO)
  */
+@Restricted(NoExternalUse.class)
 public class BasicPasswordComplexityRule extends PasswordComplexityRule {
 
     private final int minimumLength;
@@ -83,26 +86,27 @@ public class BasicPasswordComplexityRule extends PasswordComplexityRule {
     public void validate(@NonNull String password) throws PasswordComplexityException {
         List<String> errors = new ArrayList<>();
         if (minimumLength > 0 && password.length() < minimumLength) {
-            errors.add(Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordTooShort(minimumLength));
+            errors.add(Messages.BasicPasswordComplexityRule_PasswordTooShort(minimumLength));
         }
         if (requireUppercase && !password.matches(".*[A-Z].*")) {
-            errors.add(Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequiresUppercase());
+            errors.add(Messages.BasicPasswordComplexityRule_PasswordRequiresUppercase());
         }
         if (requireLowercase && !password.matches(".*[a-z].*")) {
-            errors.add(Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequiresLowercase());
+            errors.add(Messages.BasicPasswordComplexityRule_PasswordRequiresLowercase());
         }
         if (requireDigit && !password.matches(".*[0-9].*")) {
-            errors.add(Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequiresDigit());
+            errors.add(Messages.BasicPasswordComplexityRule_PasswordRequiresDigit());
         }
-        if (requireSpecialCharacter && !password.matches(".*[^a-zA-Z0-9].*")) {
-            errors.add(Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequiresSpecialCharacter());
+        if (requireSpecialCharacter && !password.matches(".*\\p{Punct}.*")) {
+            errors.add(Messages.BasicPasswordComplexityRule_PasswordRequiresSpecialCharacter());
         }
         if (!errors.isEmpty()) {
-            throw new PasswordComplexityException(String.join(" ", errors));
+            throw new PasswordComplexityException(errors);
         }
     }
 
-    @Extension @Symbol("basicPasswordComplexity")
+    @Extension
+    @Symbol("basicPasswordComplexity")
     public static final class DescriptorImpl extends PasswordComplexityRuleDescriptor {
         @NonNull
         @Override

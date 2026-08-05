@@ -200,14 +200,14 @@
   position: absolute;
   width: 100%;
   border-radius: 1rem;
-  box-shadow: var(--dropdown-box-shadow);
+  box-shadow: var(--overlay-surface-box-shadow);
   overflow: hidden;
   z-index: 10;
   height: 1px; // Setting to 0 caused the items not to render initially in Chrome
   opacity: 0;
   transition: var(--standard-transition);
   background: color-mix(in sRGB, var(--card-background) 85%, transparent);
-  backdrop-filter: var(--dropdown-backdrop-filter);
+  backdrop-filter: contrast(1.1) saturate(2.5) blur(20px);
   visibility: collapse;
   scale: 95%;
   translate: 0 -0.3125rem;
