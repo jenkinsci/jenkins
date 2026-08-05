@@ -465,7 +465,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
             <executions>
               <execution>
                 <id>install node and corepack</id>
@@ -542,7 +542,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
             <executions>
               <execution>
                 <id>yarn lint:ci</id>
@@ -587,7 +587,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
             <executions>
               <execution>
                 <id>yarn lint</id>
