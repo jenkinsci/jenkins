@@ -228,10 +228,6 @@
       border-bottom: var(--jenkins-border);
     }
 
-    &:hover {
-      background: var(--card-background--hover);
-    }
-
     &:has(
       .app-temp-list__item__label:active,
       .app-temp-list__item__label:focus
@@ -385,21 +381,6 @@
 
       &:empty {
         display: none;
-      }
-    }
-  }
-
-  &__placeholder {
-    display: flex;
-    flex-direction: column;
-
-    .app-temp-list__item {
-      height: 71px;
-
-      .placeholdericon {
-        width: 10px;
-        height: 10px;
-        background: red;
       }
     }
   }
