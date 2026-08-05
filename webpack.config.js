@@ -38,6 +38,7 @@ module.exports = (env, argv) => ({
       path.join(__dirname, "src/main/js/pages/manage-jenkins"),
     ],
     "pages/register": [path.join(__dirname, "src/main/js/pages/register")],
+    "pages/sign-in": [path.join(__dirname, "src/main/js/pages/sign-in")],
     "keyboard-shortcuts": [
       path.join(__dirname, "src/main/js/keyboard-shortcuts.js"),
     ],
@@ -53,6 +54,9 @@ module.exports = (env, argv) => ({
     ],
     "pages/project/builds-card": [
       path.join(__dirname, "src/main/js/pages/project/builds-card.js"),
+    ],
+    "pages/project/build": [
+      path.join(__dirname, "src/main/js/pages/project/build.js"),
     ],
     "simple-page": [path.join(__dirname, "src/main/scss/simple-page.scss")],
     styles: [path.join(__dirname, "src/main/scss/styles.scss")],

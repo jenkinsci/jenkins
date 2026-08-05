@@ -151,6 +151,7 @@ import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
+import hudson.search.UserSearchProperty;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
@@ -243,6 +244,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -2456,6 +2458,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     protected Iterable<TopLevelItem> allAsIterable() {
                         return allItems(TopLevelItem.class);
                     }
+
+                    @Override
+                    public void suggest(String token, List<SearchItem> result) {
+                        boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
+                        String searchToken = caseInsensitive ? token.toLowerCase(Locale.ROOT) : token;
+                        for (TopLevelItem item : allAsIterable()) {
+                            if (item != null && (contains(item.getName(), searchToken, caseInsensitive)
+                                    || contains(item.getDisplayName(), searchToken, caseInsensitive))) {
+                                result.add(item);
+                            }
+                        }
+                    }
+
+                    private boolean contains(String value, String token, boolean caseInsensitive) {
+                        if (value == null) {
+                            return false;
+                        }
+                        if (caseInsensitive) {
+                            value = value.toLowerCase(Locale.ROOT);
+                        }
+                        return value.contains(token);
+                    }
                 })
                 .add(getPrimaryView().makeSearchIndex())
                 .add(new CollectionSearchIndex() { // for computers
@@ -4410,8 +4434,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // TODO fire something in SecurityListener?
 
         String from = req.getParameter("from");
-        if (from != null && from.startsWith("/") && !from.equals("/loginError")) {
-            rsp.sendRedirect2(from);    // I'm bit uncomfortable letting users redirected to other sites, make sure the URL falls into this domain
+        if (from != null && Util.isSafeToRedirectTo(from)) {
+            rsp.sendRedirect2(from);
             return;
         }
 

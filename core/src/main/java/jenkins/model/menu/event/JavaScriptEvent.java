@@ -4,6 +4,8 @@ import java.util.Map;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -31,8 +33,9 @@ public final class JavaScriptEvent implements Event {
      * @return the event
      */
     public static JavaScriptEvent of(Map<String, String> attributes, String javascriptUrl) {
-        Jenkins jenkins = Jenkins.get();
-        return new JavaScriptEvent(attributes, jenkins.getRootUrl() + javascriptUrl);
+        StaplerRequest2 req = Stapler.getCurrentRequest2();
+        String prefix = (req != null ? req.getContextPath() : "") + Jenkins.RESOURCE_PATH + "/";
+        return new JavaScriptEvent(attributes, prefix + javascriptUrl);
     }
 
     /**

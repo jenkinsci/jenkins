@@ -69,6 +69,9 @@ THE SOFTWARE.
       Optional, includes the sidepanel for if the Experimental Manage Jenkins is disabled.
       Defaults to false if not set.
     </st:attribute>
+    <st:attribute name="width">
+      Optional, sets the width of the page. Available options are 'narrow' or 'wide'.
+    </st:attribute>
   </st:documentation>
 
   <j:new className="hudson.model.ManageJenkinsAction" var="manageJenkinsAction" />
@@ -80,8 +83,7 @@ THE SOFTWARE.
 
   <l:layout title="${pageTitle} - ${manageJenkinsAction.displayName}"
             permission="${attrs.permission}"
-            permissions="${attrs.permissions}"
-            type="${(newManageJenkins or attrs.includeSidepanel) ? 'two-column' : 'one-column'}">
+            permissions="${attrs.permissions}">
 
     <j:if test="${attrs.includeBreadcrumb}">
       <!-- Hacky - this will be improved in subsequent PRs -->
@@ -122,44 +124,40 @@ THE SOFTWARE.
             </j:forEach>
           </l:tasks>
         </l:side-panel>
-        <l:main-panel>
-          <div class="app-settings-container">
-            <div class="app-settings-container__inner">
-              <j:if test="${!attrs.containsKey('header')}">
-                <l:app-bar title="${pageTitle}" />
-                <j:if test="${!empty(description)}">
-                  <div class="jenkins-page-description">
-                    ${description}
-                  </div>
-                </j:if>
-              </j:if>
+        <l:main-panel width="${attrs.width ?: 'narrow'}">
+          <j:if test="${!attrs.containsKey('header')}">
+            <l:app-bar title="${pageTitle}" />
+            <j:if test="${!empty(description)}">
+              <div class="jenkins-page-description">
+                ${description}
+              </div>
+            </j:if>
+          </j:if>
 
-              <j:out value="${attrs.header}" />
+          <j:out value="${attrs.header}" />
 
-              <j:choose>
-                <j:when test="${!attrs.noDefer}">
-                  <l:defer>
-                    <l:defer.placeholder>
-                      <j:choose>
-                        <j:when test="${attrs.containsKey('placeholder')}">
-                          <j:out value="${attrs.placeholder}" />
-                        </j:when>
-                        <j:otherwise>
-                          <l:skeleton type="form" />
-                        </j:otherwise>
-                      </j:choose>
-                    </l:defer.placeholder>
-                    <l:defer.children>
-                      <d:invokeBody />
-                    </l:defer.children>
-                  </l:defer>
-                </j:when>
-                <j:otherwise>
+          <j:choose>
+            <j:when test="${!attrs.noDefer}">
+              <l:defer>
+                <l:defer.placeholder>
+                  <j:choose>
+                    <j:when test="${attrs.containsKey('placeholder')}">
+                      <j:out value="${attrs.placeholder}" />
+                    </j:when>
+                    <j:otherwise>
+                      <l:skeleton type="form" />
+                    </j:otherwise>
+                  </j:choose>
+                </l:defer.placeholder>
+                <l:defer.children>
                   <d:invokeBody />
-                </j:otherwise>
-              </j:choose>
-            </div>
-          </div>
+                </l:defer.children>
+              </l:defer>
+            </j:when>
+            <j:otherwise>
+              <d:invokeBody />
+            </j:otherwise>
+          </j:choose>
         </l:main-panel>
       </j:when>
       <j:otherwise>
@@ -167,7 +165,7 @@ THE SOFTWARE.
           <st:include page="sidepanel" />
         </j:if>
 
-        <l:main-panel>
+        <l:main-panel width="${attrs.width ?: 'narrow'}">
           <j:if test="${!attrs.containsKey('header')}">
             <l:app-bar title="${pageTitle}" />
             <j:if test="${!empty(description)}">
