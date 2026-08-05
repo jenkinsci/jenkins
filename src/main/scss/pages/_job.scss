@@ -196,15 +196,17 @@
 }
 
 // Experimental UI
+// Temporary classes will be adjusted and renamed in the future
+// Not for external use
 
-.skeleee {
+.app-temporary-skeleton {
   background: var(--button-background);
   border: var(--jenkins-border--subtle);
   border-radius: var(--form-input-border-radius);
   animation: pulse-skeleton 2s both ease-in-out infinite;
 }
 
-.app-temp-list {
+.app-temporary-list {
   display: flex;
   flex-direction: column;
   border-radius: var(--form-input-border-radius);
@@ -229,8 +231,8 @@
     }
 
     &:has(
-      .app-temp-list__item__label:active,
-      .app-temp-list__item__label:focus
+      .app-temporary-list__item__label:active,
+      .app-temporary-list__item__label:focus
     ) {
       border-bottom-color: transparent;
       border-radius: calc(var(--form-input-border-radius) / 2);
@@ -242,7 +244,7 @@
       background: var(--button-background);
     }
 
-    &:has(.app-temp-list__item__label:active) {
+    &:has(.app-temporary-list__item__label:active) {
       background: var(--button-background--hover);
       box-shadow:
         0 0 0 0.09375rem
@@ -264,7 +266,7 @@
           );
     }
 
-    &:has(.app-temp-list__item__label:focus) {
+    &:has(.app-temporary-list__item__label:focus) {
       background: var(--button-background--hover);
       box-shadow: 0 0 0 0.2rem var(--text-color) !important;
     }

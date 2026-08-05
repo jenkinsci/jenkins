@@ -12,7 +12,7 @@ BehaviorShim.specify(
     const ajaxUrl = buildHistoryPage.getAttribute("page-ajax");
     const card = document.querySelector("#jenkins-builds");
     const contents = card.querySelector("#jenkins-build-history");
-    const container = card.querySelector(".app-temp-list");
+    const container = card.querySelector(".app-temporary-list");
     const loadingBuilds = card.querySelector("#loading-builds");
     const noBuilds = card.querySelector("#no-builds");
     const noBuildsYet = document.querySelector("#no-builds-yet");
@@ -59,7 +59,7 @@ BehaviorShim.specify(
       fetch(ajaxUrl + toQueryString(params)).then((rsp) => {
         if (rsp.ok) {
           rsp.text().then((responseText) => {
-            container.classList.remove("app-temp-list--loading");
+            container.classList.remove("app-temporary-list--loading");
             pageSearch.classList.remove("jenkins-search--loading");
 
             // Show the 'No builds' text if there are no builds
@@ -122,11 +122,11 @@ BehaviorShim.specify(
         !parameters.pageHasUp && !parameters.pageHasDown,
       );
       paginationPrevious.classList.toggle(
-        "app-temp-list__button--disabled",
+        "app-temporary-list__button--disabled",
         !parameters.pageHasUp,
       );
       paginationNext.classList.toggle(
-        "app-temp-list__button--disabled",
+        "app-temporary-list__button--disabled",
         !parameters.pageHasDown,
       );
 
@@ -163,12 +163,12 @@ BehaviorShim.specify(
     }, 150);
 
     pageSearchInput.addEventListener("input", function () {
-      container.classList.add("app-temp-list--loading");
+      container.classList.add("app-temporary-list--loading");
       pageSearch.classList.add("jenkins-search--loading");
       debouncedLoad();
     });
 
-    container.classList.add("app-temp-list--loading");
+    container.classList.add("app-temporary-list--loading");
     load();
 
     window.addEventListener("focus", function () {
