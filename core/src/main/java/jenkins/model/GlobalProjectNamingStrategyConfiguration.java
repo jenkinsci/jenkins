@@ -48,11 +48,13 @@ public class GlobalProjectNamingStrategyConfiguration extends GlobalConfiguratio
             final JSONObject strategyObject = optJSONObject.getJSONObject("namingStrategy");
             final String className = strategyObject.getString("$class");
             try {
-                Class clazz = Class.forName(className, true, j.getPluginManager().uberClassLoader);
-                final ProjectNamingStrategy strategy = (ProjectNamingStrategy) req.bindJSON(clazz, strategyObject);
+                Class<? extends ProjectNamingStrategy> clazz = Class.forName(className, true, j.getPluginManager().uberClassLoader).asSubclass(ProjectNamingStrategy.class);
+                final ProjectNamingStrategy strategy = req.bindJSON(clazz, strategyObject);
                 j.setProjectNamingStrategy(strategy);
             } catch (ClassNotFoundException e) {
                 throw new FormException(e, "namingStrategy");
+            } catch (ClassCastException e) {
+                throw new FormException(className + " is not a " + ProjectNamingStrategy.class.getName(), e, "namingStrategy");
             }
         }
         if (j.getProjectNamingStrategy() == null) {
