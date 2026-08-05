@@ -221,8 +221,8 @@
     align-items: center;
     transition: var(--standard-transition);
     box-shadow:
-            0 0 0 0 transparent,
-            0 0 0 0.5rem transparent;
+      0 0 0 0 transparent,
+      0 0 0 0.5rem transparent;
 
     &:not(:last-of-type) {
       border-bottom: var(--jenkins-border);
@@ -232,36 +232,40 @@
       background: var(--card-background--hover);
     }
 
-    &:has(.app-temp-list__item__label:active, .app-temp-list__item__label:focus) {
+    &:has(
+      .app-temp-list__item__label:active,
+      .app-temp-list__item__label:focus
+    ) {
       border-bottom-color: transparent;
       border-radius: calc(var(--form-input-border-radius) / 2);
     }
 
     &:hover {
       --tertiary-color: var(--text-color);
+
       background: var(--button-background);
     }
 
     &:has(.app-temp-list__item__label:active) {
       background: var(--button-background--hover);
       box-shadow:
-              0 0 0 0.09375rem
-              color-mix(
-                      in sRGB,
-                      var(--text-color-secondary) 20%,
-                      var(--card-background)
-              ),
-              0 0 0 0.34375rem
-              color-mix(
-                      in sRGB,
-                      color-mix(
-                              in sRGB,
-                              var(--text-color-secondary) 15%,
-                              var(--card-background)
-                      )
-                      65%,
-                      transparent
-              );
+        0 0 0 0.09375rem
+          color-mix(
+            in sRGB,
+            var(--text-color-secondary) 20%,
+            var(--card-background)
+          ),
+        0 0 0 0.34375rem
+          color-mix(
+            in sRGB,
+            color-mix(
+                in sRGB,
+                var(--text-color-secondary) 15%,
+                var(--card-background)
+              )
+              65%,
+            transparent
+          );
     }
 
     &:has(.app-temp-list__item__label:focus) {
@@ -271,19 +275,19 @@
 
     &:first-of-type {
       border-top-left-radius: calc(
-              var(--form-input-border-radius) - var(--jenkins-border-width)
+        var(--form-input-border-radius) - var(--jenkins-border-width)
       ) !important;
       border-top-right-radius: calc(
-              var(--form-input-border-radius) - var(--jenkins-border-width)
+        var(--form-input-border-radius) - var(--jenkins-border-width)
       ) !important;
     }
 
     &:last-of-type {
       border-bottom-left-radius: calc(
-              var(--form-input-border-radius) - var(--jenkins-border-width)
+        var(--form-input-border-radius) - var(--jenkins-border-width)
       ) !important;
       border-bottom-right-radius: calc(
-              var(--form-input-border-radius) - var(--jenkins-border-width)
+        var(--form-input-border-radius) - var(--jenkins-border-width)
       ) !important;
     }
 
@@ -315,7 +319,7 @@
         aspect-ratio: 1;
         transition: color var(--standard-transition);
 
-        &.jenkins-button--tertiary:not([class*="color"]):not(:focus, [aria-expanded="true"]) {
+        &.jenkins-button--tertiary:not([class*="color"], :focus, [aria-expanded="true"]) {
           color: var(--tertiary-color) !important;
         }
       }
@@ -326,13 +330,13 @@
     }
 
     &__label {
-       display: flex;
-       gap: 0.5rem;
-       font-weight: var(--font-bold-weight);
-       margin: 0;
-       font-variant-numeric: tabular-nums;
-       color: var(--text-color) !important;
-       text-decoration: none !important;
+      display: flex;
+      gap: 0.5rem;
+      font-weight: var(--font-bold-weight);
+      margin: 0;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-color) !important;
+      text-decoration: none !important;
 
       &::before {
         content: "";
@@ -340,7 +344,7 @@
         inset: 0;
         background: transparent;
       }
-     }
+    }
 
     &__description {
       display: flex;
@@ -366,7 +370,8 @@
         .jenkins-details__item__icon {
           height: 1rem !important;
 
-          svg, img {
+          svg,
+          img {
             width: 1rem !important;
             height: 1rem !important;
           }
