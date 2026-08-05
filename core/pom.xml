@@ -662,6 +662,7 @@ THE SOFTWARE.
             </goals>
             <phase>prepare-package</phase>
             <configuration>
+              <skip>${strip.license.comments.skip}</skip>
               <target>
                 <!-- Only the leading comment block, to leave any semantically interesting comments elsewhere in the file untouched -->
                 <replaceregexp encoding="UTF-8" match="\A(?:[ \t]*(?:[#!].*)?\r?\n)+" replace="">
