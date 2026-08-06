@@ -288,8 +288,10 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 }
             }
         } catch (AccessDeniedException e) {
-            LOG.log(Level.FINE, "Diagnosing anticipated Exception", e);
-            throw new AbortException(e.toString()); // Message is not enough as that is the filename only
+            String deniedPath = e.getFile() != null ? e.getFile() : e.toString();
+            String message = Messages.ArtifactArchiver_AccessDenied(deniedPath, ws.getRemote());
+            LOG.log(Level.FINE, message, e);
+            throw new AbortException(message);
         }
     }
 

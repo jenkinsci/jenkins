@@ -491,7 +491,7 @@ class ArtifactArchiverTest {
     }
 
     @Test
-    @Issue("JENKINS-21905")
+    @Issue({"JENKINS-21905", "JENKINS-27188"})
     void archiveNotReadable() throws Exception {
         assumeFalse(Functions.isWindows()); // No permission support
 
@@ -513,7 +513,8 @@ class ArtifactArchiverTest {
         FreeStyleBuild build = j.buildAndAssertStatus(Result.FAILURE, p);
         assumeFalse(new File(build.getWorkspace().child(FILENAME).getRemote()).canRead(), FILENAME + " should not be readable by " + System.getProperty("user.name"));
         String expectedPath = build.getWorkspace().child(FILENAME).getRemote();
-        j.assertLogContains("ERROR: Step ‘Archive the artifacts’ failed: java.nio.file.AccessDeniedException: " + expectedPath, build);
+        String expectedMessage = Messages.ArtifactArchiver_AccessDenied(expectedPath, build.getWorkspace().getRemote());
+        j.assertLogContains("ERROR: Step ‘Archive the artifacts’ failed: " + expectedMessage, build);
         assertThat("No stacktrace shown", build.getLog(31), Matchers.iterableWithSize(lessThan(30)));
     }
 
