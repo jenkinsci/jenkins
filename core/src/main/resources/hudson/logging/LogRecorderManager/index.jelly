@@ -31,10 +31,12 @@ THE SOFTWARE.
     <l:view>
       <l:app-bar title="${it.managementLink.displayName}">
         <l:isAdmin>
-          <a href="new" class="jenkins-button jenkins-button--primary">
+          <button class="jenkins-button jenkins-button--primary"
+            data-type="dialog-opener"
+            data-dialog-url="newDialog">
             <l:icon src="symbol-add" />
             ${%Add recorder}
-          </a>
+          </button>
         </l:isAdmin>
         <a href="levels" class="jenkins-button">
           ${%Log levels}

@@ -59,11 +59,11 @@ THE SOFTWARE.
 
         <div class="app-build-bar__tabs">
           <j:choose>
-            <j:when test="${view.class.name eq 'hudson.model.MyViewsProperty'}">
-              <st:include page="viewTabs" it="${view.owner.userViewsTabBar}" />
+            <j:when test="${view.isMyViewsProperty()}">
+              <st:include page="viewTabs" it="${view.owner.viewsTabBar}" />
             </j:when>
             <j:otherwise>
-              <st:include page="viewTabs" it="${view.owner.viewsTabBar}" />
+              <st:include page="viewTabs" it="${view.owner.userViewsTabBar}" />
             </j:otherwise>
           </j:choose>
         </div>

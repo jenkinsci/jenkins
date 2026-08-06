@@ -71,7 +71,7 @@ public class ContentSecurityPolicy extends Telemetry {
     @NonNull
     @Override
     public LocalDate getEnd() {
-        return LocalDate.of(2026, 6, 1);
+        return LocalDate.of(2026, 12, 1);
     }
 
     @Override
