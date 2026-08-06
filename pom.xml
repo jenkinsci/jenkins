@@ -104,7 +104,7 @@ THE SOFTWARE.
          war/src/main/webapp/jsbundles is already populated from an earlier build. -->
     <skip.frontend>false</skip.frontend>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>8.1044.v8e30078854c2</winstone.version>
+    <winstone.version>8.1047.v331d3186f463</winstone.version>
     <node.version>24.19.0</node.version>
   </properties>
 
