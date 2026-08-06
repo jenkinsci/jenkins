@@ -262,7 +262,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>870.v9db_fcfc2f45b_</version>
+      <version>905.vcc6831e8760a_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -291,6 +291,37 @@ THE SOFTWARE.
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+            <!-- Indexes @Extension, @TestExtension, @OptionalExtension, @Symbol, @Restricted,
+                 @Initializer, @ExportedBean and @JmhBenchmark under META-INF -->
+            <path>
+              <groupId>org.jenkins-ci</groupId>
+              <artifactId>annotation-indexer</artifactId>
+            </path>
+            <!-- Writes the binary META-INF/annotations indexes -->
+            <path>
+              <groupId>net.java.sezpoz</groupId>
+              <artifactId>sezpoz</artifactId>
+            </path>
+            <!-- Emits the *.stapler constructor-parameter files -->
+            <path>
+              <groupId>org.kohsuke.stapler</groupId>
+              <artifactId>stapler</artifactId>
+            </path>
+            <!--
+              Generates META-INF/BenchmarkList and META-INF/CompilerHints for the JMH benchmarks.
+            -->
+            <path>
+              <groupId>org.openjdk.jmh</groupId>
+              <artifactId>jmh-generator-annprocess</artifactId>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
