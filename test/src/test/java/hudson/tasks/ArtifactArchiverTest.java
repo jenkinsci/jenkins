@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -569,7 +570,7 @@ class ArtifactArchiverTest {
     private static class RemoveReadPermission extends MasterToSlaveFileCallable<Object> {
         @Override
         public Object invoke(File f, VirtualChannel channel) throws IOException {
-            assertTrue(f.createNewFile());
+            Files.writeString(f.toPath(), "contents");
             assertTrue(f.setReadable(false));
             return null;
         }
