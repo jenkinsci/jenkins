@@ -35,6 +35,20 @@ mvn -am -pl war,bom -Pquick-build clean install
 ```
 
 The WAR file will be created in `war/target/jenkins.war`.
+
+> [!NOTE]
+> `quick-build` sets `maven.test.skip`, so test classes are not compiled and are not present
+> afterwards. To build something you can then run tests against, drop the profile or pass
+> `-Dmaven.test.skip=false`.
+
+`clean` deliberately leaves `node/`, `node_modules/` and `.yarn/` in place, so the node
+toolchain and the downloaded packages survive between builds. Pass `-Dclean.node` to delete
+those as well.
+
+If you are only changing backend code and `war/src/main/webapp/jsbundles` is already populated
+from an earlier build, `-Dskip.frontend=true` skips the node installation, `yarn install` and
+`yarn build`.
+
 After that, you can start Jenkins using Java CLI ([guide](https://www.jenkins.io/doc/book/installing/war-file/#run-the-war-file)).
 If you want to debug the WAR file without using Maven plugins,
 You can run the executable with [Remote Debug Flags](https://stackoverflow.com/questions/975271/remote-debugging-a-java-application)
@@ -74,7 +88,7 @@ To work on the `war` module frontend assets, two processes are needed at the sam
 On one terminal, start a development server that will not process frontend assets:
 
 ```sh
-MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED' mvn -pl war jetty:run -Dskip.yarn
+MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED' mvn -pl war jetty:run -Dskip.frontend
 ```
 
 Open another terminal and start a [webpack](https://webpack.js.org/) dev server, after [optionally adding Node and Yarn to your path](#running-the-yarn-frontend-build):
