@@ -105,7 +105,7 @@ THE SOFTWARE.
     <skip.frontend>false</skip.frontend>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
     <winstone.version>8.1044.v8e30078854c2</winstone.version>
-    <node.version>24.18.0</node.version>
+    <node.version>24.19.0</node.version>
   </properties>
 
   <!--
@@ -465,7 +465,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
             <executions>
               <execution>
                 <id>install node and corepack</id>
@@ -542,7 +542,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
             <executions>
               <execution>
                 <id>yarn lint:ci</id>
@@ -587,7 +587,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
             <executions>
               <execution>
                 <id>yarn lint</id>
