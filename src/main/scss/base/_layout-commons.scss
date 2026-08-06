@@ -44,6 +44,9 @@
   & > .app-page-body__contents {
     padding: var(--section-padding);
     padding-bottom: 0;
+
+    // Prevent wide content from inflating the grid track
+    min-width: 0;
   }
 
   @media (width >= 740px) {
@@ -91,6 +94,11 @@
     max-width: 1700px;
     margin-inline: auto;
   }
+}
+
+.app-project-status-table {
+  width: 100%;
+  overflow-x: auto;
 }
 
 .app-full-screen-page-body {
