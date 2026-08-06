@@ -46,6 +46,8 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
+    <!-- executable/Main is a plain bootstrap class; nothing here needs annotation processing. -->
+    <maven.compiler.proc>none</maven.compiler.proc>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
     <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
 
