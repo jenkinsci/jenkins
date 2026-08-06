@@ -133,7 +133,7 @@ class TarArchiverTest {
         }
     }
 
-    @Issue("JENKINS-27188")
+    @Issue("https://github.com/jenkinsci/jenkins/issues/27188")
     @Test
     void unreadableFileDoesNotLeaveIncompleteEntry() throws Exception {
         assumeFalse(Functions.isWindows());

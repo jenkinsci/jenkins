@@ -492,7 +492,7 @@ class ArtifactArchiverTest {
     }
 
     @Test
-    @Issue({"JENKINS-21905", "JENKINS-27188"})
+    @Issue({"JENKINS-21905", "https://github.com/jenkinsci/jenkins/issues/27188"})
     void archiveNotReadable() throws Exception {
         assumeFalse(Functions.isWindows()); // No permission support
 
