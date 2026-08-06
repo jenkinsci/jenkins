@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -288,7 +289,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 }
             }
         } catch (AccessDeniedException e) {
-            String deniedPath = e.getFile() != null ? e.getFile() : e.toString();
+            String deniedPath = e.getFile() != null
+                    ? e.getFile()
+                    : Objects.toString(e.getMessage(), e.getClass().getName());
             String message = Messages.ArtifactArchiver_AccessDenied(deniedPath, ws.getRemote());
             LOG.log(Level.FINE, message, e);
             throw new AbortException(message);
