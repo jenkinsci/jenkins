@@ -360,11 +360,15 @@
       }
 
       .jenkins-details__item {
+        --item-background--hover: transparent !important;
+        --item-background--active: transparent !important;
+
         min-height: 0 !important;
         padding: 0 !important;
         gap: 0.25rem;
 
         .jenkins-details__item__icon {
+          align-self: center;
           height: 1rem !important;
 
           svg,
@@ -372,6 +376,14 @@
             width: 1rem !important;
             height: 1rem !important;
           }
+        }
+
+        &::before,
+        &::after {
+          inset: -0.25rem !important;
+          border-radius: 100px !important;
+          border: none !important;
+          box-shadow: none !important;
         }
       }
 
