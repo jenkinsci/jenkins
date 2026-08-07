@@ -29,6 +29,7 @@ THE SOFTWARE.
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
       <l:app-bar title="${it.caption}">
+        <t:editDescriptionButton permission="${it.CONFIGURE}"/>
         <j:if test="${it.manualLaunchAllowed}">
           <st:include from="${it.launcher}" page="app-bar-controls.jelly" optional="true"/>
         </j:if>
@@ -69,7 +70,19 @@ THE SOFTWARE.
         <p>${%title.no_manual_launch(it.retentionStrategy.descriptor.displayName)}</p>
       </j:if>
 
-        <j:if test="${it.node.assignedLabels.size() gt 1}">
+      <f:advanced title="${%Monitoring Data}">
+        <table class="jenkins-table jenkins-table--small jenkins-table--auto-width">
+          <j:forEach var="m" items="${it.monitoringData}">
+            <tr>
+              <td>${m.key.columnCaption}</td>
+              <j:set var="data" value="${m.value}"/>
+              <st:include page="column.jelly" from="${m.key}" />
+            </tr>
+          </j:forEach>
+        </table>
+      </f:advanced>
+
+      <j:if test="${it.node.assignedLabels.size() gt 1}">
         <div class="jenkins-!-margin-bottom-3">
           <h2>${%Labels}</h2>
           <j:forEach var="entry" items="${it.node.labelCloud}">

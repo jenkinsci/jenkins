@@ -24,7 +24,7 @@
 
 package hudson.tools;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.Functions;
 import hudson.model.FreeStyleBuild;
@@ -41,18 +41,26 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class InstallerTranslatorTest {
+@WithJenkins
+class InstallerTranslatorTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue("JENKINS-23517")
-    @Test public void offlineNodeForJDK() throws Exception {
-        Node slave = new DumbSlave("disconnected-slave", null, "/wherever", "1", Node.Mode.NORMAL, null, new JNLPLauncher(true), RetentionStrategy.NOOP, Collections.emptyList());
+    @Test
+    void offlineNodeForJDK() throws Exception {
+        Node slave = new DumbSlave("disconnected-slave", null, "/wherever", "1", Node.Mode.NORMAL, null, new JNLPLauncher(), RetentionStrategy.NOOP, Collections.emptyList());
         String globalDefaultLocation = "/usr/lib/jdk";
         JDK jdk = new JDK("my-jdk", globalDefaultLocation, List.of(new InstallSourceProperty(List.of(new CommandInstaller(null, "irrelevant", "/opt/jdk")))));
         r.jenkins.getJDKs().add(jdk);
@@ -67,7 +75,8 @@ public class InstallerTranslatorTest {
     }
 
     @Issue("JENKINS-17667")
-    @Test public void multipleSlavesAndTools() throws Exception {
+    @Test
+    void multipleSlavesAndTools() throws Exception {
         String jdk1Path = Functions.isWindows() ? "C:\\jdk1" : "/opt/jdk1";
         String jdk2Path = Functions.isWindows() ? "C:\\jdk2" : "/opt/jdk2";
         JDK jdk1 = new JDK(
@@ -116,7 +125,7 @@ public class InstallerTranslatorTest {
 
     @Issue("JENKINS-26940")
     @Test
-    public void testMessageLoggedWhenNoInstallerFound() throws Exception {
+    void testMessageLoggedWhenNoInstallerFound() throws Exception {
         final CommandInstaller ci = new CommandInstaller("wrong1", "echo hello", "/opt/jdk");
         final BatchCommandInstaller bci = new BatchCommandInstaller("wrong2", "echo hello", "/opt/jdk2");
         InstallSourceProperty isp = new InstallSourceProperty(Arrays.asList(ci, bci));
@@ -135,7 +144,7 @@ public class InstallerTranslatorTest {
 
     @Issue("JENKINS-26940")
     @Test
-    public void testNoMessageLoggedWhenAnyInstallerFound() throws Exception {
+    void testNoMessageLoggedWhenAnyInstallerFound() throws Exception {
         final AbstractCommandInstaller ci = Functions.isWindows()
                 ? new BatchCommandInstaller("wrong1", "echo hello", "C:\\jdk")
                 : new CommandInstaller("wrong1", "echo hello", "/opt/jdk");

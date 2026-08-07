@@ -1,0 +1,90 @@
+@use "../abstracts/mixins";
+
+.jenkins-notification {
+  @include mixins.overlay-surface($opacity: 75%);
+
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  margin: calc(var(--section-padding) + var(--page-inset));
+  width: min(100%, 300px);
+  max-width: 600px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--form-input-border-radius);
+  font-weight: var(--font-bold-weight);
+  color: var(--text-color);
+  z-index: 999;
+  cursor: pointer;
+  transition: filter var(--standard-transition);
+  transform-origin: bottom right;
+
+  svg {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+
+  &:hover {
+    filter: brightness(0.95);
+  }
+
+  &:active {
+    filter: brightness(0.9);
+  }
+}
+
+.jenkins-notification[class*="color"] {
+  background-color: var(--color);
+  color: var(--background) !important;
+
+  // We can't rely on the border from the mixin as on light backgrounds the border looks fuzzy
+  &::after {
+    border: 1px solid color-mix(in sRGB, var(--text-color) 10%, transparent);
+  }
+}
+
+.jenkins-notification--visible {
+  animation: show-notification var(--elastic-transition) 1 normal forwards;
+
+  & > * {
+    animation: show-notification-icon var(--elastic-transition) 1 normal
+      forwards;
+  }
+}
+
+.jenkins-notification--hidden {
+  animation: hide-notification 150ms ease-in 1 normal forwards;
+}
+
+@keyframes show-notification {
+  from {
+    opacity: 0;
+    transform: translateY(var(--section-padding)) scale(0.95);
+  }
+
+  to {
+    visibility: visible;
+  }
+}
+
+@keyframes show-notification-icon {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+@keyframes hide-notification {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+    visibility: hidden;
+  }
+}

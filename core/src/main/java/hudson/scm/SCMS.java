@@ -28,9 +28,11 @@ import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor.FormException;
 import hudson.util.DescriptorList;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
 import java.util.List;
-import javax.servlet.ServletException;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * List of all installed SCMs.
@@ -53,7 +55,7 @@ public class SCMS {
      *      The project for which this SCM is configured to.
      */
     @SuppressWarnings("deprecation")
-    public static SCM parseSCM(StaplerRequest req, AbstractProject target) throws FormException, ServletException {
+    public static SCM parseSCM(StaplerRequest2 req, AbstractProject target) throws FormException, ServletException {
         SCM scm = SCM.all().newInstanceFromRadioList(req.getSubmittedForm().getJSONObject("scm"));
         if (scm == null) {
             scm = new NullSCM(); // JENKINS-36043 workaround for AbstractMultiBranchProject.submit
@@ -63,11 +65,23 @@ public class SCMS {
     }
 
     /**
-     * @deprecated as of 1.294
-     *      Use {@link #parseSCM(StaplerRequest, AbstractProject)} and pass in the caller's project type.
+     * @deprecated use {@link #parseSCM(StaplerRequest2, AbstractProject)}
      */
     @Deprecated
-    public static SCM parseSCM(StaplerRequest req) throws FormException, ServletException {
+    public static SCM parseSCM(StaplerRequest req, AbstractProject target) throws FormException, javax.servlet.ServletException {
+        try {
+            return parseSCM(StaplerRequest.toStaplerRequest2(req), target);
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    /**
+     * @deprecated as of 1.294
+     *      Use {@link #parseSCM(StaplerRequest2, AbstractProject)} and pass in the caller's project type.
+     */
+    @Deprecated
+    public static SCM parseSCM(StaplerRequest req) throws FormException, javax.servlet.ServletException {
         return parseSCM(req, null);
     }
 

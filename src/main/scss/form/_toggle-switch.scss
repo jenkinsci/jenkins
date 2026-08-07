@@ -1,0 +1,178 @@
+.jenkins-toggle-switch {
+  position: relative;
+  display: inline-block;
+
+  &--invert-label {
+    input {
+      &:checked {
+        & + label {
+          &::after {
+            left: unset !important;
+            right: 5px !important;
+          }
+        }
+      }
+    }
+
+    label {
+      flex-direction: row-reverse;
+
+      &::before {
+        margin-left: 1rem;
+        margin-right: 0 !important;
+      }
+
+      &::after {
+        left: unset !important;
+        right: 25px;
+      }
+
+      &:active,
+      &:focus {
+        &::after {
+          right: 20px !important;
+        }
+      }
+
+      .jenkins-toggle-switch__label__checked-title,
+      .jenkins-toggle-switch__label__unchecked-title {
+        left: unset !important;
+        right: calc(50px + 1rem) !important;
+      }
+    }
+  }
+}
+
+.jenkins-toggle-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+
+  // If margin is set to a negative value it can cause text to be announced in
+  // the wrong order in VoiceOver for OSX
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+
+  &:checked + label::before {
+    background-color: var(--focus-input-border);
+  }
+
+  &:checked {
+    & + label {
+      &::after {
+        left: 25px;
+        mask-image: url("../images/svgs/mask-toggle-switch__checked.svg");
+      }
+
+      &:active,
+      &:focus {
+        &::before {
+          box-shadow:
+            inset 0 0 0 1.5px
+              color-mix(in sRGB, var(--text-color-secondary) 9%, transparent),
+            var(--form-input-glow--focus);
+        }
+
+        &::after {
+          left: 20px;
+          width: 25px;
+        }
+      }
+
+      .jenkins-toggle-switch__label__checked-title {
+        opacity: 1;
+      }
+
+      .jenkins-toggle-switch__label__unchecked-title {
+        opacity: 0;
+      }
+    }
+  }
+
+  &:disabled {
+    & + label {
+      cursor: not-allowed;
+    }
+  }
+}
+
+.jenkins-toggle-switch label {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin: 0;
+  cursor: pointer;
+  line-height: 30px;
+  font-weight: var(--form-label-font-weight);
+  user-select: none;
+
+  &::before {
+    display: inline-block;
+    content: "";
+    position: relative;
+    min-width: 50px;
+    min-height: 30px;
+    background: var(--input-border);
+    border-radius: 19px;
+    transition: var(--standard-transition);
+    margin-right: 1rem;
+    box-shadow:
+      inset 0 0 0 1.5px
+        color-mix(in sRGB, var(--text-color-secondary) 9%, transparent),
+      var(--form-input-glow);
+  }
+
+  &::after {
+    content: "";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 20px;
+    height: 20px;
+    background: var(--background);
+    mask-size: 60px 60px;
+    mask-position: center;
+    border-radius: 100px;
+    transition: var(--standard-transition);
+    box-shadow: 0 0 0 1.5px
+      color-mix(in sRGB, var(--text-color-secondary) 9%, transparent);
+  }
+
+  &:hover::before {
+    background-color: var(--input-border-hover);
+  }
+
+  &:active,
+  &:focus {
+    &::before {
+      box-shadow:
+        inset 0 0 0 1.5px
+          color-mix(in sRGB, var(--text-color-secondary) 9%, transparent),
+        0 0 0 4px
+          color-mix(in sRGB, var(--text-color-secondary) 25%, transparent);
+    }
+
+    &::after {
+      left: 5px;
+      width: 25px;
+    }
+  }
+
+  .jenkins-toggle-switch__label__checked-title {
+    opacity: 0;
+  }
+
+  .jenkins-toggle-switch__label__checked-title,
+  .jenkins-toggle-switch__label__unchecked-title {
+    position: absolute;
+    left: calc(50px + 1rem);
+    transition: opacity 0.4s;
+    user-select: none;
+  }
+}

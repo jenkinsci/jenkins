@@ -1,0 +1,85 @@
+.validation-error-area {
+  transition: var(--standard-transition);
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.validation-error-area--visible {
+  margin-top: 0.75rem;
+  opacity: 1;
+
+  & > * {
+    animation: animate-validation-error-area var(--standard-transition);
+  }
+}
+
+@keyframes animate-validation-error-area {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.error,
+.warning,
+.info {
+  position: relative;
+  padding-left: calc(22px + 0.4rem);
+  font-weight: var(--font-bold-weight);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 22px;
+    height: 22px;
+    background-color: currentColor;
+    mask-position: top center;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+  }
+}
+
+.ok {
+  color: var(--text-color-secondary);
+}
+
+.error {
+  color: var(--red);
+
+  &::before {
+    mask-image: url("../images/svgs/mask-validation__error.svg");
+  }
+}
+
+.error-inline {
+  color: var(--red);
+  font-weight: var(--font-bold-weight);
+}
+
+.warning {
+  color: var(--orange);
+
+  &::before {
+    mask-image: url("../images/svgs/mask-validation__warning.svg");
+  }
+}
+
+.warning-inline {
+  color: var(--orange);
+  font-weight: var(--font-bold-weight);
+}
+
+.info {
+  color: var(--text-color);
+
+  &::before {
+    mask-image: url("../images/svgs/mask-validation__info.svg");
+  }
+}

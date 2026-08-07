@@ -2,6 +2,7 @@ package hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import hudson.model.DownloadService;
 import hudson.model.RootAction;
@@ -9,37 +10,42 @@ import hudson.model.UpdateSite;
 import hudson.model.UpdateSiteTest;
 import hudson.util.HttpResponses;
 import hudson.util.Retrier;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.htmlunit.Page;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.xml.sax.SAXException;
 
-public class PluginManagerCheckUpdateCenterTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class PluginManagerCheckUpdateCenterTest {
 
-    @Rule
-    public LoggerRule logging = new LoggerRule();
+    private final LogRecorder logging = new LogRecorder();
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Check if the page contains the right message after checking an update site with an url that returns a 502 error code.
      * @throws Exception If there are errors managing the web elements.
      */
     @Test
-    public void updateSiteReturn502Test() throws Exception {
+    void updateSiteReturn502Test() throws Exception {
         checkUpdateSite(Jenkins.get().getRootUrl() + "updateSite502/getJson", "IOException: Server returned HTTP response code: 502 for URL", false);
     }
 
@@ -48,7 +54,7 @@ public class PluginManagerCheckUpdateCenterTest {
      * @throws Exception If there are errors managing the web elements.
      */
     @Test
-    public void updateSiteWrongJsonTest() throws Exception {
+    void updateSiteWrongJsonTest() throws Exception {
         checkUpdateSite(Jenkins.get().getRootUrl() + "updateSiteWrongJson/getJson", "JSONException: Unquotted string 'wrongjson'", false);
     }
 
@@ -57,7 +63,7 @@ public class PluginManagerCheckUpdateCenterTest {
      * @throws Exception If there are errors managing the web elements.
      */
     @Test
-    public void updateSiteRightJsonTest() throws Exception {
+    void updateSiteRightJsonTest() throws Exception {
         // Save the actual value to leave it so, when the test finish, just in case it is needed for other tests
         boolean oldValueSignatureCheck = DownloadService.signatureCheck;
         try {
@@ -76,7 +82,7 @@ public class PluginManagerCheckUpdateCenterTest {
      * @throws Exception See {@link #updateSiteWrongJsonTest()}
      */
     @Test
-    public void changeLogLevelInLog() throws Exception {
+    void changeLogLevelInLog() throws Exception {
         Logger pmLogger = Logger.getLogger(PluginManager.class.getName());
         Logger rLogger = Logger.getLogger(Retrier.class.getName());
 
@@ -94,7 +100,7 @@ public class PluginManagerCheckUpdateCenterTest {
             updateSiteWrongJsonTest();
 
             // the messages has been recorded in the log
-            assertThat(logging, LoggerRule.recorded(is(Messages.PluginManager_UpdateSiteChangeLogLevel(Retrier.class.getName()))));
+            assertThat(logging, LogRecorder.recorded(is(Messages.PluginManager_UpdateSiteChangeLogLevel(Retrier.class.getName()))));
         } finally {
             // restore level
             pmLogger.setLevel(pmLevel);
@@ -128,10 +134,10 @@ public class PluginManagerCheckUpdateCenterTest {
         String page = pageAfterClick.getWebResponse().getContentAsString();
 
         // Check what is shown in the web page
-        Assert.assertNotEquals(isSuccess, page.contains(Messages.PluginManager_CheckUpdateServerError(message)));
+        assertNotEquals(isSuccess, page.contains(Messages.PluginManager_CheckUpdateServerError(message)));
 
         // Check the logs (attempted CHECK_UPDATE_ATTEMPTS times). The second argument, the exception does't matter to test the message in the log
-        Assert.assertNotEquals(isSuccess, logging.getMessages().stream().anyMatch(m -> m.contains(Messages.PluginManager_UpdateSiteError(PluginManager.CHECK_UPDATE_ATTEMPTS, ""))));
+        assertNotEquals(isSuccess, logging.getMessages().stream().anyMatch(m -> m.contains(Messages.PluginManager_UpdateSiteError(PluginManager.CHECK_UPDATE_ATTEMPTS, ""))));
     }
 
     @TestExtension("updateSiteReturn502Test")
@@ -152,7 +158,7 @@ public class PluginManagerCheckUpdateCenterTest {
             return "updateSite502";
         }
 
-        public HttpResponse doGetJson(StaplerRequest request) {
+        public HttpResponse doGetJson(StaplerRequest2 request) {
             return HttpResponses.error(502, "Gateway error");
         }
     }
@@ -175,7 +181,7 @@ public class PluginManagerCheckUpdateCenterTest {
             return "updateSiteWrongJson";
         }
 
-        public void doGetJson(StaplerRequest request, StaplerResponse response) throws IOException {
+        public void doGetJson(StaplerRequest2 request, StaplerResponse2 response) throws IOException {
             response.setContentType("text/json");
             response.setStatus(200);
             response.getWriter().append("{wrongjson}");
@@ -201,7 +207,7 @@ public class PluginManagerCheckUpdateCenterTest {
         }
 
         // The url has to end in update-center.json. See: UpdateSite#getMetadataUrlForDownloadable
-        public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
+        public void doDynamic(StaplerRequest2 staplerRequest, StaplerResponse2 staplerResponse) throws ServletException, IOException {
             staplerResponse.setContentType("text/json");
             staplerResponse.setStatus(200);
             staplerResponse.serveFile(staplerRequest,  UpdateSiteTest.extract("update-center.json"));

@@ -32,6 +32,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
+import hudson.Util;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 import hudson.model.UsageStatistics;
@@ -51,7 +52,6 @@ import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -128,6 +128,11 @@ public abstract class Telemetry implements ExtensionPoint {
 
     public static ExtensionList<Telemetry> all() {
         return ExtensionList.lookup(Telemetry.class);
+    }
+
+    @Restricted(NoExternalUse.class) // called by jelly
+    public static boolean isAnyTrialActive() {
+        return all().stream().anyMatch(Telemetry::isActivePeriod);
     }
 
     /**
@@ -216,7 +221,7 @@ public abstract class Telemetry implements ExtensionPoint {
                 wrappedData.put("type", telemetry.getId());
                 wrappedData.put("payload", data);
                 String correlationId = ExtensionList.lookupSingleton(Correlator.class).getCorrelationId();
-                wrappedData.put("correlator", DigestUtils.sha256Hex(correlationId + telemetry.getId()));
+                wrappedData.put("correlator", Util.getHexOfSHA256DigestOf(correlationId + telemetry.getId()));
 
                 String body = wrappedData.toString();
                 if (LOGGER.isLoggable(Level.FINEST)) {

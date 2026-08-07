@@ -35,8 +35,6 @@ THE SOFTWARE.
         <em>${%disclaimer}</em>
       </p>
 
-      <st:include page="control.jelly" it="${it.timeline}" />
-
       <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>
   </l:layout>

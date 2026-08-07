@@ -26,9 +26,9 @@ package jenkins.widgets;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
@@ -51,21 +51,27 @@ import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomNodeList;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTable;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-public class BuildTimeTrendTest {
+@WithJenkins
+class BuildTimeTrendTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void withAbstractJob_OnBuiltInNode() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+    void withAbstractJob_OnBuiltInNode() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         FreeStyleProject p = j.createFreeStyleProject();
         j.buildAndAssertSuccess(p);
 
@@ -74,13 +80,13 @@ public class BuildTimeTrendTest {
         wc.withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "buildTimeTrend");
 
-        HtmlTable table = page.getDocumentElement().querySelector("table[data-is-distributed-build-enabled=false]");
+        HtmlTable table = page.getDocumentElement().querySelector("table[data-show-agent=false]");
         assertNotNull(table);
     }
 
     @Test
-    public void withAbstractJob_OnAgentNode() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+    void withAbstractJob_OnAgentNode() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         DumbSlave agent = j.createSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
@@ -91,7 +97,7 @@ public class BuildTimeTrendTest {
 
         wc.withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "buildTimeTrend");
-        DomNodeList<DomNode> anchors = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=true] td a");
+        DomNodeList<DomNode> anchors = page.getDocumentElement().querySelectorAll("table[data-show-agent=true] td a");
         Optional<DomNode> anchor = anchors.stream()
                 .filter(a -> a.getTextContent().equals(agent.getNodeName()))
                 .findFirst();
@@ -99,8 +105,8 @@ public class BuildTimeTrendTest {
     }
 
     @Test
-    public void withAbstractJob_OnBoth() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+    void withAbstractJob_OnBoth() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         DumbSlave agent = j.createSlave();
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -115,7 +121,7 @@ public class BuildTimeTrendTest {
         wc.withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "buildTimeTrend");
 
-        DomNodeList<DomNode> anchors = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=true] td a");
+        DomNodeList<DomNode> anchors = page.getDocumentElement().querySelectorAll("table[data-show-agent=true] td a");
         Optional<DomNode> anchor = anchors.stream()
                 .filter(a -> a.getTextContent().equals(agent.getNodeName()))
                 .findFirst();
@@ -123,7 +129,7 @@ public class BuildTimeTrendTest {
         assertTrue(anchor.isPresent());
 
         String builtInNode = hudson.model.Messages.Hudson_Computer_DisplayName();
-        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=true] td");
+        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-show-agent=true] td");
         Optional<DomNode> td = tds.stream()
                 .filter(t -> t.getTextContent().equals(builtInNode))
                 .findFirst();
@@ -133,8 +139,8 @@ public class BuildTimeTrendTest {
 
     @Test
     @LocalData("localDataNonAbstractJob")
-    public void withNonAbstractJob_withoutAgents() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+    void withNonAbstractJob_withoutAgents() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         JenkinsRule.WebClient wc = j.createWebClient();
         TopLevelItem p = j.jenkins.getItem("job0");
         assertThat(p, instanceOf(NonAbstractJob.class));
@@ -142,7 +148,7 @@ public class BuildTimeTrendTest {
         wc.withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "buildTimeTrend");
 
-        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=false] td");
+        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-show-agent=false] td");
         Optional<DomNode> td = tds.stream()
                 .filter(t -> t.getTextContent().equals("#1"))
                 .findFirst();
@@ -153,8 +159,8 @@ public class BuildTimeTrendTest {
     @Test
     @LocalData("localDataNonAbstractJob")
     @Issue("JENKINS-63232")
-    public void withNonAbstractJob_withAgents() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+    void withNonAbstractJob_withAgents() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         // just to trigger data-is-distributed-build-enabled = true
         j.createSlave();
 
@@ -168,7 +174,7 @@ public class BuildTimeTrendTest {
         wc.withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "buildTimeTrend");
 
-        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=true] td");
+        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-show-agent=false] td");
         Optional<DomNode> td = tds.stream()
                 .filter(t -> t.getTextContent().equals("#1"))
                 .findFirst();
@@ -186,6 +192,7 @@ public class BuildTimeTrendTest {
     }
 
     public static class NonAbstractJob extends Job<NonAbstractJob, NonAbstractBuild> implements TopLevelItem {
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public NonAbstractJob(ItemGroup parent, String name) {
             super(parent, name);
         }
@@ -200,7 +207,17 @@ public class BuildTimeTrendTest {
         @Override
         protected SortedMap<Integer, NonAbstractBuild> _getRuns() {
             if (runMap == null) {
-                runMap = new RunMap<>(this.getBuildDir(), this::createBuildFromDir);
+                runMap = new RunMap<>(this.getBuildDir(), new RunMap.Constructor<NonAbstractBuild>() {
+                    @Override
+                    public NonAbstractBuild create(File dir) throws IOException {
+                        return createBuildFromDir(dir);
+                    }
+
+                    @Override
+                    public Class<NonAbstractBuild> getBuildClass() {
+                        return NonAbstractBuild.class;
+                    }
+                });
             }
             return runMap;
         }

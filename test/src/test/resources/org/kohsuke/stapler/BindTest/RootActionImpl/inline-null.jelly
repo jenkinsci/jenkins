@@ -1,0 +1,11 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
+    <l:layout title="The Root">
+        <l:main-panel>
+            <h1>Root Action</h1>
+            <script>
+                var inline = <st:bind value="${null}"/>
+            </script>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

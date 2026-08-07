@@ -89,8 +89,6 @@ public class SHELLEXECUTEINFO extends Structure {
                 "hProcess");
     }
 
-    @SuppressFBWarnings(value = {"UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"},
-            justification = "JNA Data Structure")
     public static class DUMMYUNIONNAME_union extends Union {
         public Pointer hIcon;
         public Pointer hMonitor;

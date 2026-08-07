@@ -31,13 +31,15 @@ import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataAccessException;
 
-public class AuthenticationExceptionTest {
+class AuthenticationExceptionTest {
 
-    @Test public void usernameNotFoundException() {
+    @Test
+    void usernameNotFoundException() {
         assertThat(AuthenticationException.fromSpring(new UsernameNotFoundException("foo").toSpring()), instanceOf(UsernameNotFoundException.class));
     }
 
-    @Test public void dataAccessException() {
+    @Test
+    void dataAccessException() {
         assertThat(AuthenticationException.fromSpring(new DataAccessException("foo").toSpring()), instanceOf(DataAccessException.class));
     }
 

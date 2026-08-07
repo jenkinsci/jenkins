@@ -24,9 +24,9 @@
 
 package jenkins.security;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
@@ -98,13 +98,13 @@ public abstract class SpySecurityListener extends SecurityListener {
                 fail("event list is empty");
             }
 
-            T t = eventList.remove(eventList.size() - 1);
+            T t = eventList.removeLast();
             assertTrue(predicate.test(t));
             eventList.clear();
         }
 
         public void assertNoNewEvents() {
-            assertEquals("list of event should be empty", 0, eventList.size());
+            assertEquals(0, eventList.size(), "list of event should be empty");
         }
 
         public void clear() {

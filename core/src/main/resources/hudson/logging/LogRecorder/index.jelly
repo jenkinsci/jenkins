@@ -26,10 +26,9 @@ THE SOFTWARE.
   Log view
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="Log" permission="${app.SYSTEM_READ}" type="one-column">
-  <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-  <l:main-panel>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:dd="/lib/layout/dropdowns">
+  <l:settings-subpage title="${it.displayName}" permission="${app.SYSTEM_READ}" header="${null}" width="wide">
+    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <j:set var="noLogs" value="${it.logRecords.isEmpty() and it.slaveLogRecords.isEmpty()}" />
 
     <l:app-bar title="${it.displayName}">
@@ -38,33 +37,38 @@ THE SOFTWARE.
           <form method="post" id='clear-logrecorder' action="clear">
             <f:submit icon="symbol-close-circle"
                       value="${%Clear This Log}"
-                      primary="false" />
+                      primary="false"
+                      clazz="jenkins-!-destructive-color" />
           </form>
         </j:if>
         <a class="jenkins-button" href="configure">
-          Configure
+          ${%Configure}
         </a>
       </l:isAdmin>
       <l:overflowButton>
-        <span class="jenkins-dropdown__heading">${%Atom feed}</span>
+        <dd:header text="${%Atom feed}" />
         <st:include it="${it.parent}" page="feeds.jelly" />
         <l:isAdmin>
-          <div class="jenkins-dropdown__separator"></div>
-          <l:confirmationLink class="jenkins-dropdown__item jenkins-!-destructive-color"
-                              href="doDelete"
-                              message="${%delete.logrecorder(it.displayName)}"
-                              post="true">
-            <div class="jenkins-dropdown__item__icon">
-              <l:icon src="symbol-trash" />
-            </div>
-            ${%Delete log recorder}
-          </l:confirmationLink>
+          <dd:separator />
+          <dd:custom>
+            <l:confirmationLink class="jenkins-dropdown__item jenkins-!-destructive-color"
+                                href="doDelete"
+                                title="${%delete.logrecorder(it.displayName)}"
+                                post="true"
+                                destructive="true"
+                                okText="${%Delete}">
+              <div class="jenkins-dropdown__item__icon">
+                <l:icon src="symbol-trash" />
+              </div>
+              ${%Delete log recorder}
+            </l:confirmationLink>
+          </dd:custom>
         </l:isAdmin>
       </l:overflowButton>
     </l:app-bar>
 
     <j:if test="${noLogs}">
-      <l:notice text="${%No logs available}" icon="symbol-journal" />
+      <l:notice title="${%No logs available}" icon="symbol-journal" />
     </j:if>
 
     <t:logRecords logRecords="${it.logRecords}"/>
@@ -72,6 +76,5 @@ THE SOFTWARE.
       <h2><a href="${rootURL}/${entry.key.url}" class="model-link">${entry.key.displayName}</a></h2>
       <t:logRecords logRecords="${entry.value}"/>
     </j:forEach>
-  </l:main-panel>
-</l:layout>
+  </l:settings-subpage>
 </j:jelly>

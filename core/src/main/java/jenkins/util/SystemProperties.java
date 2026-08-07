@@ -26,6 +26,7 @@ package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -34,7 +35,12 @@ import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.slaves.ComputerListener;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,12 +48,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.io.OnMaster;
-import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.remoting.util.DurationStyle;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -102,7 +105,7 @@ public class SystemProperties {
         public void contextInitialized(ServletContextEvent event) {
             ServletContext theContext = event.getServletContext();
             handler = key -> {
-                if (StringUtils.isNotBlank(key)) {
+                if (key != null && !key.isBlank()) {
                     try {
                         return theContext.getInitParameter(key);
                     } catch (SecurityException ex) {
@@ -307,6 +310,63 @@ public class SystemProperties {
     public static Boolean optBoolean(String name) {
         String v = getString(name);
         return v == null ? null : Boolean.parseBoolean(v);
+    }
+
+    /**
+     * Determines the duration value of the system property with the specified name.
+     * @param name property name.
+     * @return the property value as a duration.
+     * @since 2.516
+     */
+    @CheckForNull
+    public static Duration getDuration(@NonNull String name) {
+        return getDuration(name, (Duration) null);
+    }
+
+    /**
+     * Determines the duration value of the system property with the specified name.
+     * @param name property name.
+     * @param unit the duration unit to use if the value doesn't specify one (defaults to `ms`)
+     * @return the property value as a duration.
+     * @since 2.516
+     */
+    @CheckForNull
+    public static Duration getDuration(@NonNull String name, @CheckForNull ChronoUnit unit) {
+        return getDuration(name, unit, null);
+    }
+
+    /**
+     * Determines the duration value of the system property with the specified name, or a default value.
+     * @param name property name.
+     * @param defaultValue a default value
+     * @return the property value as a duration.
+     * @since 2.516
+     */
+    @Nullable
+    public static Duration getDuration(@NonNull String name, @CheckForNull Duration defaultValue) {
+        return getDuration(name, null, defaultValue);
+    }
+
+    /**
+     * Determines the duration value of the system property with the specified name, or a default value.
+     *
+     * @param name         property name.
+     * @param unit         the duration unit to use if the value doesn't specify one (defaults to `ms`)
+     * @param defaultValue a default value
+     * @return the property value as a duration.
+     * @since 2.516
+     */
+    @Nullable
+    public static Duration getDuration(@NonNull String name, @CheckForNull ChronoUnit unit, @CheckForNull Duration defaultValue) {
+        String v = getString(name);
+        if (v != null) {
+            try {
+                return DurationStyle.detectAndParse(v, unit);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, e, () -> "Failed to convert \"%s\" to a valid duration for property \"%s\", falling back to default \"%s\"".formatted(v, name, defaultValue));
+            }
+        }
+        return defaultValue;
     }
 
     /**

@@ -36,24 +36,28 @@ import hudson.model.ListView;
 import hudson.model.MyView;
 import hudson.model.View;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class UpdateViewCommandTest {
+@WithJenkins
+class UpdateViewCommandTest {
 
     private CLICommandInvoker command;
 
-    @Rule public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before public void setUp() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         command = new CLICommandInvoker(j, new UpdateViewCommand()).asUser("user");
     }
 
-    @Test public void updateViewShouldFailWithoutViewConfigurePermission() throws Exception {
+    @Test
+    void updateViewShouldFailWithoutViewConfigurePermission() throws Exception {
 
         j.jenkins.addView(new ListView("aView"));
 
@@ -72,7 +76,8 @@ public class UpdateViewCommandTest {
      * This test shows that updating a view using an XML that will be
      * converted by XStream via an alias will rightfully succeed.
      */
-    @Test public void updateViewWithRenamedClass() throws Exception {
+    @Test
+    void updateViewWithRenamedClass() throws Exception {
         ListView tv  = new ListView("tView");
         j.jenkins.addView(tv);
         Jenkins.XSTREAM2.addCompatibilityAlias("org.acme.old.Foo", ListView.class);
@@ -84,7 +89,8 @@ public class UpdateViewCommandTest {
         assertThat(result, succeededSilently());
     }
 
-    @Test public void updateViewWithWrongViewTypeShouldFail() throws Exception {
+    @Test
+    void updateViewWithWrongViewTypeShouldFail() throws Exception {
         MyView myView = new MyView("aView");
         j.jenkins.addView(myView);
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.CONFIGURE, Jenkins.READ).everywhere().toAuthenticated());
@@ -98,7 +104,8 @@ public class UpdateViewCommandTest {
                 + " but got: class hudson.model.ListView instead."));
     }
 
-    @Test public void updateViewShouldModifyViewConfiguration() throws Exception {
+    @Test
+    void updateViewShouldModifyViewConfiguration() throws Exception {
 
         j.jenkins.addView(new ListView("aView"));
 
@@ -118,7 +125,8 @@ public class UpdateViewCommandTest {
         assertThat(updatedView.isFilterQueue(), equalTo(false));
     }
 
-    @Test public void updateViewShouldFailIfViewDoesNotExist() {
+    @Test
+    void updateViewShouldFailIfViewDoesNotExist() {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.CONFIGURE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .withStdin(this.getClass().getResourceAsStream("/hudson/cli/view.xml"))

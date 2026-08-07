@@ -247,16 +247,11 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * @see <a href="https://issues.jenkins.io/browse/JENKINS-10539">JENKINS-10539</a>
      */
     private static VariableResolver<String> propertiesGeneratingResolver(final VariableResolver<String> original) {
-
-        return new VariableResolver<>() {
-
-            @Override
-            public String resolve(String name) {
-                final String value = original.resolve(name);
-                if (value == null) return null;
-                // Substitute one backslash with two
-                return value.replaceAll("\\\\", "\\\\\\\\");
-            }
+        return name -> {
+            final String value = original.resolve(name);
+            if (value == null) return null;
+            // Substitute one backslash with two
+            return value.replaceAll("\\\\", "\\\\\\\\");
         };
     }
 
@@ -295,7 +290,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     public String toStringWithQuote() {
         StringBuilder buf = new StringBuilder();
         for (String arg : args) {
-            if (buf.length() > 0)  buf.append(' ');
+            if (!buf.isEmpty())  buf.append(' ');
 
             if (arg.indexOf(' ') >= 0 || arg.isEmpty())
                 buf.append('"').append(arg).append('"');
@@ -400,7 +395,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * @return true if there are any masked arguments; false otherwise
      */
     public boolean hasMaskedArguments() {
-        return mask.length() > 0;
+        return !mask.isEmpty();
     }
 
     /**
@@ -437,7 +432,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
             if (mask.get(i))
                 arg = "******";
 
-            if (buf.length() > 0)  buf.append(' ');
+            if (!buf.isEmpty())  buf.append(' ');
 
             if (arg.indexOf(' ') >= 0 || arg.isEmpty())
                 buf.append('"').append(arg).append('"');

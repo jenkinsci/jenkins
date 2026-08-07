@@ -30,8 +30,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.XmlFile;
 import hudson.model.Saveable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import jenkins.util.Listeners;
 
 /**
  * Receives notifications about save actions on {@link Saveable} objects in Hudson.
@@ -53,6 +52,17 @@ public abstract class SaveableListener implements ExtensionPoint {
      *      The {@link XmlFile} for this saveable object.
      */
     public void onChange(Saveable o, XmlFile file) {}
+
+    /**
+     * Called when a {@link Saveable} object gets deleted.
+     *
+     * @param o
+     *      The saveable object.
+     * @param file
+     *      The {@link XmlFile} for this saveable object.
+     * @since 2.480
+     */
+    public void onDeleted(Saveable o, XmlFile file) {}
 
     /**
      * Registers this object as an active listener so that it can start getting
@@ -77,13 +87,15 @@ public abstract class SaveableListener implements ExtensionPoint {
      * Fires the {@link #onChange} event.
      */
     public static void fireOnChange(Saveable o, XmlFile file) {
-        for (SaveableListener l : all()) {
-            try {
-                l.onChange(o, file);
-            } catch (Throwable t) {
-                Logger.getLogger(SaveableListener.class.getName()).log(Level.WARNING, null, t);
-            }
-        }
+        Listeners.notify(SaveableListener.class, false, l -> l.onChange(o, file));
+    }
+
+    /**
+     * Fires the {@link #onDeleted} event.
+     * @since 2.480
+     */
+    public static void fireOnDeleted(Saveable o, XmlFile file) {
+        Listeners.notify(SaveableListener.class, false, l -> l.onDeleted(o, file));
     }
 
     /**

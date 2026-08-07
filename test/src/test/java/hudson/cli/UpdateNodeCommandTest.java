@@ -31,31 +31,34 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.Computer;
 import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.Slave;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class UpdateNodeCommandTest {
+@WithJenkins
+class UpdateNodeCommandTest {
 
     private CLICommandInvoker command;
 
-    @Rule public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before public void setUp() {
-
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         command = new CLICommandInvoker(j, new UpdateNodeCommand());
     }
 
-    @Test public void updateNodeShouldFailWithoutComputerConfigurePermission() throws Exception {
+    @Test
+    void updateNodeShouldFailWithoutComputerConfigurePermission() throws Exception {
 
         j.createSlave("MyAgent", null, null);
 
@@ -69,7 +72,8 @@ public class UpdateNodeCommandTest {
         assertThat(result, hasNoStandardOutput());
     }
 
-    @Test public void updateNodeShouldModifyNodeConfiguration() throws Exception {
+    @Test
+    void updateNodeShouldModifyNodeConfiguration() throws Exception {
 
         j.createSlave("MyAgent", null, null);
 
@@ -88,7 +92,8 @@ public class UpdateNodeCommandTest {
         assertThat(updatedSlave.getNumExecutors(), equalTo(42));
     }
 
-    @Test public void updateNodeShouldFailIfNodeDoesNotExist() {
+    @Test
+    void updateNodeShouldFailIfNodeDoesNotExist() {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONFIGURE, Jenkins.READ)
@@ -103,7 +108,7 @@ public class UpdateNodeCommandTest {
 
     @Issue("SECURITY-281")
     @Test
-    public void updateNodeShouldFailForMaster() {
+    void updateNodeShouldFailForMaster() {
         CLICommandInvoker.Result result = command.authorizedTo(Computer.CONFIGURE, Jenkins.READ).withStdin(Computer.class.getResourceAsStream("node.xml")).invokeWithArgs("");
         assertThat(result.stderr(), containsString("No such node ''"));
         assertThat(result, failedWith(3));
@@ -124,7 +129,7 @@ public class UpdateNodeCommandTest {
 
     @Test
     @Issue("SECURITY-2021")
-    public void updateNodeShouldFailForDotDot() throws Exception {
+    void updateNodeShouldFailForDotDot() throws Exception {
         String okName = "MyNode";
         Slave node = j.createSlave(okName, null, null);
         // currently <dummy>, but doing so will be a bit more future-proof

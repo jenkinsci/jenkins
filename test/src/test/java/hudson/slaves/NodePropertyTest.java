@@ -1,10 +1,10 @@
 package hudson.slaves;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.Descriptor;
 import hudson.model.Slave;
@@ -13,27 +13,32 @@ import net.sf.json.JSONObject;
 import org.htmlunit.html.DomNodeUtil;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlLabel;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class NodePropertyTest {
+@WithJenkins
+class NodePropertyTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private final LogRecorder logs = new LogRecorder();
 
-    @Rule
-    public LoggerRule logs = new LoggerRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void invisibleProperty() throws Exception {
+    void invisibleProperty() throws Exception {
         logs.record(Descriptor.class, Level.ALL);
         DumbSlave s = j.createSlave();
         InvisibleProperty before = new InvisibleProperty();
@@ -52,7 +57,7 @@ public class NodePropertyTest {
         boolean reconfigured = false;
 
         @Override
-        public NodeProperty<?> reconfigure(StaplerRequest req, JSONObject form) {
+        public NodeProperty<?> reconfigure(StaplerRequest2 req, JSONObject form) {
             reconfigured = true;
             return this;
         }
@@ -62,7 +67,7 @@ public class NodePropertyTest {
     }
 
     @Test
-    public void basicConfigRoundtrip() throws Exception {
+    void basicConfigRoundtrip() throws Exception {
         DumbSlave s = j.createSlave();
         HtmlForm f = j.createWebClient().goTo("computer/" + s.getNodeName() + "/configure").getFormByName("config");
         ((HtmlLabel) DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='PropertyImpl']")).click();
@@ -81,6 +86,7 @@ public class NodePropertyTest {
     public static class PropertyImpl extends NodeProperty<Slave> {
         public String name;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public PropertyImpl(String name) {
             this.name = name;

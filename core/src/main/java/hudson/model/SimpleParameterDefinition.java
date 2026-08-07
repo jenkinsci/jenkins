@@ -5,7 +5,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.cli.CLICommand;
 import java.io.IOException;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Convenient base class for {@link ParameterDefinition} whose value can be represented in a context-independent single string token.
@@ -31,7 +31,7 @@ public abstract class SimpleParameterDefinition extends ParameterDefinition {
     public abstract ParameterValue createValue(String value);
 
     @Override
-    public final ParameterValue createValue(StaplerRequest req) {
+    public final ParameterValue createValue(StaplerRequest2 req) {
         String[] value = req.getParameterValues(getName());
         if (value == null) {
             return getDefaultParameterValue();

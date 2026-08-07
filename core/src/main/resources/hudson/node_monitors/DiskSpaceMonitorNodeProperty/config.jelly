@@ -1,0 +1,15 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:entry field="freeDiskSpaceThreshold" title="${%Free Disk Space Threshold}">
+    <f:textbox default="1GiB"/>
+  </f:entry>
+  <f:entry field="freeDiskSpaceWarningThreshold" title="${%Free Disk Space Warning Threshold}">
+    <f:textbox default="2GiB"/>
+  </f:entry>
+  <f:entry field="freeTempSpaceThreshold" title="${%Free Temp Space Threshold}">
+    <f:textbox default="1GiB"/>
+  </f:entry>
+  <f:entry field="freeTempSpaceWarningThreshold" title="${%Free Temp Space Warning Threshold}">
+    <f:textbox default="2GiB"/>
+  </f:entry>
+</j:jelly>

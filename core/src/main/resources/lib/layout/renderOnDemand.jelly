@@ -36,8 +36,12 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
+  <j:set var="parameters" value="${h.createRenderOnDemandProxyParameters(context,attrs.capture)}"/>
   <x:element name="${attrs.tag?:'div'}">
     <x:attribute name="class">render-on-demand ${attrs.clazz}</x:attribute>
-    <x:attribute name="proxy">${h.createRenderOnDemandProxy(context,attrs.capture)}</x:attribute>
+    <x:attribute name="data-proxy-method">${parameters.proxyMethod}</x:attribute>
+    <x:attribute name="data-proxy-url">${parameters.url}</x:attribute>
+    <x:attribute name="data-proxy-crumb">${parameters.crumb}</x:attribute>
+    <x:attribute name="data-proxy-url-names">${parameters.urlNames}</x:attribute>
   </x:element>
 </j:jelly>

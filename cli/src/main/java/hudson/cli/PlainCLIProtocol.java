@@ -153,15 +153,14 @@ class PlainCLIProtocol {
                 }
             } catch (ClosedChannelException x) {
                 LOGGER.log(Level.FINE, null, x);
-                side.handleClose();
             } catch (IOException x) {
                 LOGGER.log(Level.WARNING, null, flightRecorder.analyzeCrash(x, "broken stream"));
             } catch (ReadPendingException x) {
                 // in case trick in CLIAction does not work
                 LOGGER.log(Level.FINE, null, x);
-                side.handleClose();
             } catch (RuntimeException x) {
                 LOGGER.log(Level.WARNING, null, x);
+            } finally {
                 side.handleClose();
             }
         }
@@ -263,28 +262,33 @@ class PlainCLIProtocol {
         @Override
         protected final boolean handle(Op op, DataInputStream dis) throws IOException {
             assert op.clientSide;
-            switch (op) {
-            case ARG:
-                onArg(dis.readUTF());
-                return true;
-            case LOCALE:
-                onLocale(dis.readUTF());
-                return true;
-            case ENCODING:
-                onEncoding(dis.readUTF());
-                return true;
-            case START:
-                onStart();
-                return true;
-            case STDIN:
-                onStdin(dis.readAllBytes());
-                return true;
-            case END_STDIN:
-                onEndStdin();
-                return true;
-            default:
-                return false;
-            }
+            return switch (op) {
+                case ARG -> {
+                    onArg(dis.readUTF());
+                    yield true;
+                }
+                case LOCALE -> {
+                    onLocale(dis.readUTF());
+                    yield true;
+                }
+                case ENCODING -> {
+                    onEncoding(dis.readUTF());
+                    yield true;
+                }
+                case START -> {
+                    onStart();
+                    yield true;
+                }
+                case STDIN -> {
+                    onStdin(dis.readAllBytes());
+                    yield true;
+                }
+                case END_STDIN -> {
+                    onEndStdin();
+                    yield true;
+                }
+                default -> false;
+            };
         }
 
         protected abstract void onArg(String text);
@@ -322,19 +326,21 @@ class PlainCLIProtocol {
         @Override
         protected boolean handle(Op op, DataInputStream dis) throws IOException {
             assert !op.clientSide;
-            switch (op) {
-            case EXIT:
-                onExit(dis.readInt());
-                return true;
-            case STDOUT:
-                onStdout(dis.readAllBytes());
-                return true;
-            case STDERR:
-                onStderr(dis.readAllBytes());
-                return true;
-            default:
-                return false;
-            }
+            return switch (op) {
+                case EXIT -> {
+                    onExit(dis.readInt());
+                    yield true;
+                }
+                case STDOUT -> {
+                    onStdout(dis.readAllBytes());
+                    yield true;
+                }
+                case STDERR -> {
+                    onStderr(dis.readAllBytes());
+                    yield true;
+                }
+                default -> false;
+            };
         }
 
         protected abstract void onExit(int code);

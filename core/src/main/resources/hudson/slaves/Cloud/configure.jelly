@@ -37,16 +37,8 @@ THE SOFTWARE.
         <!-- main body of the configuration -->
         <st:include it="${instance}" page="config.jelly" optional="true"/>
 
-        <l:isAdmin>
-          <f:bottomButtonBar>
-            <f:submit value="${%Save}"/>
-            <f:apply />
-          </f:bottomButtonBar>
-        </l:isAdmin>
+        <f:saveApplyBar/>
       </f:form>
-      <l:isAdmin>
-        <st:adjunct includes="lib.form.confirm"/>
-      </l:isAdmin>
     </l:main-panel>
   </l:layout>
 </j:jelly>

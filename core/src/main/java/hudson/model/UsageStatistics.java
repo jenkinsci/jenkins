@@ -26,7 +26,6 @@ package hudson.model;
 
 import static java.util.concurrent.TimeUnit.DAYS;
 
-import com.jcraft.jzlib.GZIPOutputStream;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
@@ -56,6 +55,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPOutputStream;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
@@ -67,7 +67,9 @@ import jenkins.model.Jenkins;
 import jenkins.security.FIPS140;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -103,8 +105,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
      * Returns true if it's time for us to check for new version.
      */
     public boolean isDue() {
-        // user opted out (explicitly or FIPS is requested). no data collection
-        if (!Jenkins.get().isUsageStatisticsCollected() || DISABLED || FIPS140.useCompliantAlgorithms()) {
+        if (!isEnabled()) {
             return false;
         }
 
@@ -114,6 +115,19 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
             return true;
         }
         return false;
+    }
+
+    /**
+     * Returns whether between UI configuration, system property, and environment,
+     * usage statistics should be submitted.
+     *
+     * @return true if and only if usage stats should be submitted
+     * @since 2.539
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean isEnabled() {
+        // user opted out (explicitly or FIPS is requested). no data collection
+        return Jenkins.get().isUsageStatisticsCollected() && !DISABLED && !FIPS140.useCompliantAlgorithms();
     }
 
     private RSAPublicKey getKey() {
@@ -138,7 +152,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
         JSONObject o = new JSONObject();
         o.put("stat", 1);
         o.put("install", j.getLegacyInstanceId());
-        o.put("servletContainer", j.servletContext.getServerInfo());
+        o.put("servletContainer", j.getServletContext().getServerInfo());
         o.put("version", Jenkins.VERSION);
 
         List<JSONObject> nodes = new ArrayList<>();
@@ -212,7 +226,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
     }
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         try {
             // for backward compatibility reasons, this configuration is stored in Jenkins
             if (DISABLED) {
@@ -233,6 +247,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
      * with the asymmetric cipher. The rest of the stream will be encrypted by a symmetric cipher.
      */
     public static final class CombinedCipherOutputStream extends FilterOutputStream {
+        @SuppressFBWarnings(value = "STATIC_IV", justification = "TODO needs triage")
         public CombinedCipherOutputStream(OutputStream out, Cipher asym, String algorithm) throws IOException, GeneralSecurityException {
             super(out);
 

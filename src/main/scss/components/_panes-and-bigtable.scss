@@ -1,0 +1,158 @@
+/* pane */
+
+.pane-frame {
+  border: var(--pane-border-width) solid var(--pane-border-color);
+  border-radius: var(--table-border-radius);
+}
+
+.pane-header,
+.pane-footer {
+  padding: 8px 0;
+  color: var(--pane-header-text-color);
+  background: var(--pane-header-bg);
+}
+
+.pane {
+  color: var(--pane-text-color);
+}
+
+.pane-header {
+  border-top: none;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.pane-footer {
+  border-bottom: none;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.pane td {
+  padding: 0.25rem;
+  vertical-align: middle;
+}
+
+table.pane {
+  width: 100%;
+  border-collapse: collapse;
+  border: var(--pane-border-width) solid var(--pane-border-color);
+}
+
+td.pane {
+  padding: 0.25rem;
+  vertical-align: middle;
+}
+
+table.stripped tr:nth-of-type(even) {
+  background: var(--even-row-color);
+}
+
+table.stripped-even tr:nth-child(even) {
+  background: var(--even-row-color);
+}
+
+table.stripped-odd tr:nth-child(odd) {
+  background: var(--even-row-color);
+}
+
+table.stripped tr:hover,
+table.stripped-even tr:hover,
+table.stripped-odd tr:hover {
+  background: var(--table-striped-bg--hover) !important;
+}
+
+div.pane-header {
+  font-weight: var(--pane-header-font-weight);
+  padding-right: 24px;
+}
+
+div.pane-header .collapse {
+  float: right;
+  margin-left: 3px;
+}
+
+th.pane {
+  font-weight: var(--pane-header-font-weight);
+}
+
+/* Bigtable */
+
+table.bigtable {
+  border: none; // Needs to be set AFTER the table.pane declaration
+}
+
+/* For non-full screen table */
+
+.bigtable.width-auto {
+  width: auto;
+}
+
+// Keep this for tables still wrapped by .pane-frame
+.pane-frame table:not(.jenkins-table),
+.pane-frame .bigtable tr {
+  border: none; /* Border will be provided by the pane-frame */
+}
+
+// Avoid overriding .pane-header cells inside .bigtables with wrong styles
+.bigtable .pane-header,
+.bigtable th {
+  font-weight: var(--bigtable-header-font-weight);
+  color: var(--bigtable-header-text-color);
+  background: var(--bigtable-header-bg);
+}
+
+.bigtable th {
+  white-space: nowrap;
+  border-top: var(--bigtable-border-width) solid var(--bigtable-header-bg);
+  text-align: left;
+
+  &.minimum-width {
+    width: 1px;
+  }
+
+  &[align="right"] {
+    text-align: right;
+  }
+}
+
+.bigtable tfoot th,
+.bigtable .sortbottom th {
+  color: var(--text-color);
+  background-color: var(--background);
+}
+
+.bigtable td {
+  border-top: var(--bigtable-border-width) solid
+    var(--bigtable-row-border-color);
+  vertical-align: middle;
+}
+
+.bigtable tr:last-child td {
+  border-bottom: var(--bigtable-border-width) solid
+    var(--bigtable-row-border-color);
+}
+
+.bigtable td,
+.bigtable th {
+  padding: var(--bigtable-cell-padding-y) var(--bigtable-cell-padding-x);
+}
+
+.bigtable .pane-header,
+.bigtable .pane-footer {
+  border-radius: 0;
+}
+
+/* ========================= sortable table ========================= */
+table.bigtable.sortable a.sortheader,
+table.bigtable.sortable span.sortarrow {
+  color: var(--bigtable-header-text-color);
+}
+
+/* ========================= Bigtable variants ========================= */
+
+.bigtable--compact th,
+.bigtable--compact td {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}

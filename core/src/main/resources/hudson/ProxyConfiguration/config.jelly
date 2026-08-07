@@ -1,0 +1,48 @@
+<!--
+The MIT License
+Copyright (c) 2025, Stefan Spieker
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout">
+    <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
+    <f:entry title="${%Server}">
+        <f:textbox field="name"/>
+    </f:entry>
+    <f:entry title="${%Port}">
+        <f:number field="port" min="0" max="65535" step="1"/>
+    </f:entry>
+    <f:entry title="${%User name}">
+        <f:textbox field="userName"/>
+    </f:entry>
+    <f:entry title="${%Password}">
+        <f:password field="secretPassword"/>
+    </f:entry>
+    <f:entry title="${%No Proxy Host}">
+        <f:textarea field="noProxyHost"/>
+    </f:entry>
+
+    <l:isAdmin>
+        <f:advanced>
+            <f:entry title="${%Test URL}">
+                <f:textbox field="testUrl"/>
+            </f:entry>
+            <f:validateButton title="${%Validate Proxy}" method="validateProxy" with="testUrl,name,port,userName,secretPassword,noProxyHost"/>
+        </f:advanced>
+    </l:isAdmin>
+</j:jelly>

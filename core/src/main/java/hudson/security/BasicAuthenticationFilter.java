@@ -26,25 +26,27 @@ package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.User;
-import hudson.util.Scrambler;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.security.BasicApiTokenHelper;
 import jenkins.security.SecurityListener;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.CompatibleFilter;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -68,7 +70,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  * This causes the container to perform authentication, but there's no way
  * to find out whether the user has been successfully authenticated or not.
  * So to find this out, we then redirect the user to
- * {@link jenkins.model.Jenkins#doSecured(StaplerRequest, StaplerResponse) /secured/... page}.
+ * {@link jenkins.model.Jenkins#doSecured(StaplerRequest2, StaplerResponse2) /secured/... page}.
  *
  * <p>
  * The handler of the above URL checks if the user is authenticated,
@@ -91,7 +93,8 @@ import org.springframework.security.core.userdetails.UserDetails;
  *
  * @author Kohsuke Kawaguchi
  */
-public class BasicAuthenticationFilter implements Filter {
+public class BasicAuthenticationFilter implements CompatibleFilter {
+    private static final Logger LOGGER = Logger.getLogger(BasicAuthenticationFilter.class.getName());
     private ServletContext servletContext;
 
     @Override
@@ -127,7 +130,13 @@ public class BasicAuthenticationFilter implements Filter {
         // authenticate the user
         String username = null;
         String password = null;
-        String uidpassword = Scrambler.descramble(authorization.substring(6));
+        String uidpassword = null;
+        try {
+            uidpassword = new String(Base64.getDecoder().decode(authorization.substring(6).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException ex) {
+            LOGGER.log(Level.FINE, ex, () -> "Failed to decode authentication from: " + authorization);
+            uidpassword = "";
+        }
         int idx = uidpassword.indexOf(':');
         if (idx >= 0) {
             username = uidpassword.substring(0, idx);
@@ -173,7 +182,7 @@ public class BasicAuthenticationFilter implements Filter {
         d.include(req, rsp);
     }
 
-    @SuppressFBWarnings(value = "UNVALIDATED_REDIRECT", justification = "Redirect is validated as processed.")
+    @SuppressFBWarnings(value = "UNVALIDATED_REDIRECT", justification = "Authenticated by the container")
     private void prepareRedirect(HttpServletResponse rsp, String path) {
         rsp.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
         rsp.setHeader("Location", path);

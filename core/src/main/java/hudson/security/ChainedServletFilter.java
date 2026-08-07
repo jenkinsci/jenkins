@@ -43,7 +43,9 @@ import javax.servlet.http.HttpServletResponse;
  * Servlet {@link Filter} that chains multiple {@link Filter}s.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated use {@link ChainedServletFilter2}
  */
+@Deprecated
 public class ChainedServletFilter implements Filter {
     // array is assumed to be immutable once set
     protected volatile Filter[] filters;

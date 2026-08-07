@@ -41,14 +41,9 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
- * Defines settings of the Remoting work directory.
- *
- * This class contains Remoting Work Directory settings, which can be used when starting Jenkins agents.
- * See <a href="https://github.com/jenkinsci/remoting/blob/master/docs/workDir.md">Remoting Work Dir Documentation</a>.
- *
- * @author Oleg Nenashev
- * @since 2.72
+ * @deprecated only used with deprecated {@code -jnlpUrl} mode
  */
+@Deprecated
 public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSettings> {
 
     private static final String DEFAULT_INTERNAL_DIR = "remoting";
@@ -79,6 +74,12 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
         this(false, null, DEFAULT_INTERNAL_DIR, false);
     }
 
+    /** if this is not {@link #ENABLED_DEFAULT} */
+    @Restricted(NoExternalUse.class)
+    public boolean isConfigured() {
+        return disabled || workDirPath != null || !DEFAULT_INTERNAL_DIR.equals(internalDir) || failIfWorkDirIsMissing;
+    }
+
     /**
      * Check if workdir is disabled.
      *
@@ -101,7 +102,7 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
     /**
      * Check if startup should fail if the workdir is missing.
      *
-     * @return {@code true} if Remoting should fail if the the work directory is missing instead of creating it
+     * @return {@code true} if Remoting should fail if the work directory is missing instead of creating it
      */
     public boolean isFailIfWorkDirIsMissing() {
         return failIfWorkDirIsMissing;

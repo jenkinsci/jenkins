@@ -1,34 +1,34 @@
 package jenkins.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class MarkFindingOutputStreamTest {
+class MarkFindingOutputStreamTest {
 
-    String mark = MarkFindingOutputStream.MARK;
-    String markHead = mark.substring(0, 5);
-    String markTail = mark.substring(5);
+    private String mark = MarkFindingOutputStream.MARK;
+    private String markHead = mark.substring(0, 5);
+    private String markTail = mark.substring(5);
 
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    MarkCountingOutputStream m = new MarkCountingOutputStream(baos);
+    private ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    private MarkCountingOutputStream m = new MarkCountingOutputStream(baos);
 
     @Test
-    public void findTwice() throws IOException {
+    void findTwice() throws IOException {
         write("foo" + mark + "bar" + mark);
         assertCount(2);
         assertOutput("foobar");
     }
 
     @Test
-    public void partialMatchTurnsOutToBeWrongIn2ndWrite() throws IOException {
+    void partialMatchTurnsOutToBeWrongIn2ndWrite() throws IOException {
         write("bar" + markHead);
         assertOutput("bar"); // at this point we should just see 'bar'
 
@@ -41,7 +41,7 @@ public class MarkFindingOutputStreamTest {
      * If a stream closes without completing a match, the partial match should be sent to the output.
      */
     @Test
-    public void closeInTheMiddle() throws IOException {
+    void closeInTheMiddle() throws IOException {
         write("foo" + markHead);
         m.close();
         assertCount(0);
@@ -49,7 +49,7 @@ public class MarkFindingOutputStreamTest {
     }
 
     @Test
-    public void oneByOne() throws IOException {
+    void oneByOne() throws IOException {
         m.write('1');
         writeOneByOne(mark);
         m.write('2');
@@ -58,7 +58,7 @@ public class MarkFindingOutputStreamTest {
     }
 
     @Test
-    public void writeOneHoldOff() throws IOException {
+    void writeOneHoldOff() throws IOException {
         writeOneByOne(markHead);
         assertOutput("");
         writeOneByOne("x");
@@ -66,7 +66,7 @@ public class MarkFindingOutputStreamTest {
         assertCount(0);
     }
 
-    private void assertOutput(String s) throws IOException {
+    private void assertOutput(String s) {
         assertEquals(s, baos.toString(StandardCharsets.UTF_8));
     }
 

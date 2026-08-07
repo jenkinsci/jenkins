@@ -26,20 +26,26 @@ package jenkins.security;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
+import hudson.model.userproperty.UserPropertyCategory;
 import hudson.security.ACL;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -48,6 +54,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStats;
@@ -57,7 +64,6 @@ import jenkins.util.SystemProperties;
 import net.jcip.annotations.Immutable;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -66,7 +72,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -89,7 +95,6 @@ public class ApiTokenProperty extends UserProperty {
      *
      * @since 1.638
      */
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     private static /* not final */ boolean SHOW_LEGACY_TOKEN_TO_ADMINS =
             SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".showTokenToAdmins");
 
@@ -102,7 +107,6 @@ public class ApiTokenProperty extends UserProperty {
      *
      * @since 2.129
      */
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     private static /* not final */ boolean ADMIN_CAN_GENERATE_NEW_TOKENS =
             SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".adminCanGenerateNewTokens");
 
@@ -175,7 +179,6 @@ public class ApiTokenProperty extends UserProperty {
 
     @NonNull
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "Used to prevent use of pre-2013 API tokens, then returning the API token value")
     /*package*/ String getApiTokenInsecure() {
         if (apiToken == null) {
             return Messages.ApiTokenProperty_NoLegacyToken();
@@ -191,7 +194,7 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     public boolean matchesPassword(String token) {
-        if (StringUtils.isBlank(token)) {
+        if (token == null || token.isBlank()) {
             return false;
         }
 
@@ -256,6 +259,9 @@ public class ApiTokenProperty extends UserProperty {
         public final int useCounter;
         public final Date lastUseDate;
         public final long numDaysUse;
+        public final String expirationDate;
+        public final boolean expired;
+        public final boolean aboutToExpire;
 
         public TokenInfoAndStats(@NonNull ApiTokenStore.HashedToken token, @NonNull ApiTokenStats.SingleTokenStats stats) {
             this.uuid = token.getUuid();
@@ -263,10 +269,82 @@ public class ApiTokenProperty extends UserProperty {
             this.creationDate = token.getCreationDate();
             this.numDaysCreation = token.getNumDaysCreation();
             this.isLegacy = token.isLegacy();
+            this.expired = token.isExpired();
+            this.aboutToExpire = token.isAboutToExpire();
+
+            LocalDate expirationDate = token.getExpirationDate();
+            if (expirationDate == null) {
+                this.expirationDate = "never";
+            } else {
+                this.expirationDate = expirationDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+                        .withLocale(Functions.getCurrentLocale()));
+            }
 
             this.useCounter = stats.getUseCounter();
             this.lastUseDate = stats.getLastUseDate();
             this.numDaysUse = stats.getNumDaysUse();
+        }
+
+        public String createdDaysAgo() {
+            LocalDate c = creationDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate now = LocalDate.now(ZoneId.systemDefault());
+            Period period = Period.between(c, now);
+            if (period.getYears() > 1) {
+                return Messages.ApiTokenProperty_createdYearsAgo(period.getYears());
+            }
+            if (period.getYears() == 1) {
+                return Messages.ApiTokenProperty_createdAYearAgo();
+            }
+            if (period.getMonths() > 1) {
+                return Messages.ApiTokenProperty_createdMonthsAgo(period.getMonths());
+            }
+            if (period.getMonths() == 1) {
+                return Messages.ApiTokenProperty_createdAMonthAgo();
+            }
+            if (period.getDays() > 14) {
+                return Messages.ApiTokenProperty_createdWeeksAgo(period.getDays() / 7);
+            }
+            if (period.getDays() >= 7) {
+                return Messages.ApiTokenProperty_createdAWeekAgo();
+            }
+            if (period.getDays() == 0) {
+                return Messages.ApiTokenProperty_createdToday();
+            }
+            if (period.getDays() == 1) {
+                return Messages.ApiTokenProperty_createdYesterday();
+            }
+            return Messages.ApiTokenProperty_createdDaysAgo(period.getDays());
+        }
+
+        public String lastUsedDaysAgo() {
+            LocalDate lu = lastUseDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate now = LocalDate.now(ZoneId.systemDefault());
+            Period period = Period.between(lu, now);
+            if (period.getYears() > 1) {
+                return Messages.ApiTokenProperty_lastUsedYearsAgo(period.getYears());
+            }
+            if (period.getYears() == 1) {
+                return Messages.ApiTokenProperty_lastUsedAYearAgo();
+            }
+            if (period.getMonths() > 1) {
+                return Messages.ApiTokenProperty_lastUsedMonthsAgo(period.getMonths());
+            }
+            if (period.getMonths() == 1) {
+                return Messages.ApiTokenProperty_lastUsedAMonthAgo();
+            }
+            if (period.getDays() > 14) {
+                return Messages.ApiTokenProperty_lastUsedWeeksAgo(period.getDays() / 7);
+            }
+            if (period.getDays() >= 7) {
+                return Messages.ApiTokenProperty_lastUsedAWeekAgo();
+            }
+            if (period.getDays() == 0) {
+                return Messages.ApiTokenProperty_lastUsedToday();
+            }
+            if (period.getDays() == 1) {
+                return Messages.ApiTokenProperty_lastUsedYesterday();
+            }
+            return Messages.ApiTokenProperty_lastUsedDaysAgo(period.getDays());
         }
     }
 
@@ -274,7 +352,7 @@ public class ApiTokenProperty extends UserProperty {
      * Allow user to rename tokens
      */
     @Override
-    public UserProperty reconfigure(StaplerRequest req, @CheckForNull JSONObject form) throws FormException {
+    public UserProperty reconfigure(StaplerRequest2 req, @CheckForNull JSONObject form) throws FormException {
         if (form == null) {
             return this;
         }
@@ -286,27 +364,30 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     private Map<String, JSONObject> convertToTokenMap(Object tokenStoreData) {
-        if (tokenStoreData == null) {
-            // in case there are no token
-            return Collections.emptyMap();
-        } else if (tokenStoreData instanceof JSONObject) {
-            // in case there is only one token
-            JSONObject singleTokenData = (JSONObject) tokenStoreData;
-            Map<String, JSONObject> result = new HashMap<>();
-            addJSONTokenIntoMap(result, singleTokenData);
-            return result;
-        } else if (tokenStoreData instanceof JSONArray) {
-            // in case there are multiple tokens
-            JSONArray tokenArray = (JSONArray) tokenStoreData;
-            Map<String, JSONObject> result = new HashMap<>();
-            for (int i = 0; i < tokenArray.size(); i++) {
-                JSONObject tokenData = tokenArray.getJSONObject(i);
-                addJSONTokenIntoMap(result, tokenData);
+        switch (tokenStoreData) {
+            case null -> {
+                // in case there are no token
+                return Collections.emptyMap();
             }
-            return result;
+            case JSONObject singleTokenData -> {
+                // in case there is only one token
+                Map<String, JSONObject> result = new HashMap<>();
+                addJSONTokenIntoMap(result, singleTokenData);
+                return result;
+            }
+            case JSONArray tokenArray -> {
+                // in case there are multiple tokens
+                Map<String, JSONObject> result = new HashMap<>();
+                for (int i = 0; i < tokenArray.size(); i++) {
+                    JSONObject tokenData = tokenArray.getJSONObject(i);
+                    addJSONTokenIntoMap(result, tokenData);
+                }
+                return result;
+            }
+            default -> {
+                throw HttpResponses.error(400, "Unexpected class received for the token store information");
+            }
         }
-
-        throw HttpResponses.error(400, "Unexpected class received for the token store information");
     }
 
     private void addJSONTokenIntoMap(Map<String, JSONObject> tokenMap, JSONObject tokenData) {
@@ -363,7 +444,13 @@ public class ApiTokenProperty extends UserProperty {
     // essentially meant for scripting
     @Restricted(Beta.class)
     public @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue) throws IOException {
-        String tokenUuid = this.tokenStore.addFixedNewToken(name, tokenPlainValue);
+        return addFixedNewToken(name, tokenPlainValue, null);
+    }
+
+    // essentially meant for scripting
+    @Restricted(Beta.class)
+    public @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate) throws IOException {
+        String tokenUuid = this.tokenStore.addFixedNewToken(name, tokenPlainValue, expirationDate);
         user.save();
         return tokenUuid;
     }
@@ -371,7 +458,13 @@ public class ApiTokenProperty extends UserProperty {
     // essentially meant for scripting
     @Restricted(Beta.class)
     public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name) throws IOException {
-        TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name);
+        return generateNewToken(name, null);
+    }
+
+    // essentially meant for scripting
+    @Restricted(Beta.class)
+    public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate) throws IOException {
+        TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name, expirationDate);
         user.save();
         return tokenUuidAndPlainValue;
     }
@@ -474,7 +567,7 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         /**
-         * @deprecated use {@link #doGenerateNewToken(User, String)} instead
+         * @deprecated use {@link #doGenerateNewToken(User, String, String, String)} instead
          */
         @Deprecated
         @RequirePOST
@@ -499,24 +592,27 @@ public class ApiTokenProperty extends UserProperty {
                 p.changeApiToken();
             }
 
-            rsp.setHeader("script", "document.getElementById('apiToken').value='" + p.getApiToken() + "'");
+            rsp.setHeader("X-Jenkins-ValidateButton-Callback", "{\"callback\":\"changeTokenCallback\",\"arguments\":[\"" + p.getApiTokenInsecure() + "\"]}");
             return HttpResponses.html(p.hasPermissionToSeeToken()
                     ? Messages.ApiTokenProperty_ChangeToken_Success()
                     : Messages.ApiTokenProperty_ChangeToken_SuccessHidden());
         }
 
         @RequirePOST
-        public HttpResponse doGenerateNewToken(@AncestorInPath User u, @QueryParameter String newTokenName) throws IOException {
+        public HttpResponse doGenerateNewToken(@AncestorInPath User u, @QueryParameter String newTokenName,
+                                               @QueryParameter String tokenExpiration, @QueryParameter String expirationDuration) throws IOException {
             if (!hasCurrentUserRightToGenerateNewToken(u)) {
                 return HttpResponses.forbidden();
             }
 
             final String tokenName;
-            if (StringUtils.isBlank(newTokenName)) {
+            if (newTokenName == null || newTokenName.isBlank()) {
                 tokenName = Messages.Token_Created_on(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
             } else {
                 tokenName = newTokenName;
             }
+
+            LocalDate expirationDate = getExpirationDate(tokenExpiration, expirationDuration);
 
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
@@ -524,13 +620,47 @@ public class ApiTokenProperty extends UserProperty {
                 u.addProperty(p);
             }
 
-            TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName);
+            String expirationDateString = "never";
+            if (expirationDate != null) {
+                expirationDateString = expirationDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+                        .withLocale(Functions.getCurrentLocale()));
+            }
 
-            Map<String, String> data = new HashMap<>();
+            Map<String, Object> data = new HashMap<>();
+            if (expirationDate != null && LocalDate.now().isAfter(expirationDate)) {
+                return HttpResponses.errorJSON(Messages.ApiTokenProperty_expirationInPast());
+            }
+
+            TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName, expirationDate);
+
             data.put("tokenUuid", tokenUuidAndPlainValue.tokenUuid);
             data.put("tokenName", tokenName);
             data.put("tokenValue", tokenUuidAndPlainValue.plainValue);
+            data.put("expirationDate", expirationDateString);
+            data.put("aboutToExpire", tokenUuidAndPlainValue.aboutToExpire);
             return HttpResponses.okJSON(data);
+        }
+
+        private LocalDate getExpirationDate(String tokenExpiration, String expirationDuration) {
+            if (expirationDuration == null) {
+                expirationDuration = "";
+            }
+            expirationDuration = expirationDuration.trim();
+
+            return switch (expirationDuration) {
+                case "", "never" -> {
+                    yield null;
+                }
+                case "custom" -> {
+                    yield LocalDate.parse(tokenExpiration);
+                }
+                default -> {
+                    LocalDate now = LocalDate.now();
+                    int days = Integer.parseInt(expirationDuration);
+                    yield now.plusDays(days);
+                }
+            };
+
         }
 
         /**
@@ -542,17 +672,21 @@ public class ApiTokenProperty extends UserProperty {
         @Restricted(NoExternalUse.class)
         public HttpResponse doAddFixedToken(@AncestorInPath User u,
                                             @QueryParameter String newTokenName,
-                                            @QueryParameter String newTokenPlainValue) throws IOException {
+                                            @QueryParameter String newTokenPlainValue,
+                                            @QueryParameter String tokenExpiration,
+                                            @QueryParameter String expirationDuration) throws IOException {
             if (!hasCurrentUserRightToGenerateNewToken(u)) {
                 return HttpResponses.forbidden();
             }
 
             final String tokenName;
-            if (StringUtils.isBlank(newTokenName)) {
+            if (newTokenName == null || newTokenName.isBlank()) {
                 tokenName = String.format("Token created on %s", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
             } else {
                 tokenName = newTokenName;
             }
+
+            LocalDate expirationDate = getExpirationDate(tokenExpiration, expirationDuration);
 
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
@@ -560,7 +694,7 @@ public class ApiTokenProperty extends UserProperty {
                 u.addProperty(p);
             }
 
-            String tokenUuid = p.tokenStore.addFixedNewToken(tokenName, newTokenPlainValue);
+            String tokenUuid = p.tokenStore.addFixedNewToken(tokenName, newTokenPlainValue, expirationDate);
             u.save();
 
             Map<String, String> data = new HashMap<>();
@@ -575,17 +709,17 @@ public class ApiTokenProperty extends UserProperty {
             // only current user + administrator can rename token
             u.checkPermission(Jenkins.ADMINISTER);
 
-            if (StringUtils.isBlank(newName)) {
+            if (newName == null || newName.isBlank()) {
                 return HttpResponses.errorJSON("The name cannot be empty");
             }
-            if (StringUtils.isBlank(tokenUuid)) {
+            if (tokenUuid == null || tokenUuid.isBlank()) {
                 // using the web UI this should not occur
-                return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
+                return HttpResponses.errorJSON("The tokenUuid cannot be empty");
             }
 
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
-                return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
+                return HttpResponses.errorJSON("The user does not have any ApiToken yet, try generating one before.");
             }
 
             boolean renameOk = p.tokenStore.renameToken(tokenUuid, newName);
@@ -597,7 +731,7 @@ public class ApiTokenProperty extends UserProperty {
 
             u.save();
 
-            return HttpResponses.ok();
+            return HttpResponses.okJSON();
         }
 
         @RequirePOST
@@ -606,7 +740,7 @@ public class ApiTokenProperty extends UserProperty {
             // only current user + administrator can revoke token
             u.checkPermission(Jenkins.ADMINISTER);
 
-            if (StringUtils.isBlank(tokenUuid)) {
+            if (tokenUuid == null || tokenUuid.isBlank()) {
                 // using the web UI this should not occur
                 return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
             }
@@ -644,7 +778,7 @@ public class ApiTokenProperty extends UserProperty {
             // only current user + administrator can revoke token
             u.checkPermission(Jenkins.ADMINISTER);
 
-            if (StringUtils.isBlank(tokenUuid)) {
+            if (tokenUuid == null || tokenUuid.isBlank()) {
                 // using the web UI this should not occur
                 return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
             }
@@ -657,6 +791,11 @@ public class ApiTokenProperty extends UserProperty {
             p.revokeAllTokensExceptOne(tokenUuid);
 
             return HttpResponses.ok();
+        }
+
+        @Override
+        public @NonNull UserPropertyCategory getUserPropertyCategory() {
+            return UserPropertyCategory.get(UserPropertyCategory.Security.class);
         }
     }
 
@@ -673,4 +812,25 @@ public class ApiTokenProperty extends UserProperty {
     @Deprecated
     @Restricted(NoExternalUse.class)
     public static final HMACConfidentialKey API_KEY_SEED = new HMACConfidentialKey(ApiTokenProperty.class, "seed", 16);
+
+    @Restricted(NoExternalUse.class)
+    public Badge getBadge() {
+        long expiringTokenCount = getTokenList().stream().filter(t -> t.aboutToExpire && !t.expired).count();
+        long expiredTokenCount = getTokenList().stream().filter(t -> t.expired).count();
+        StringBuilder tooltip = new StringBuilder();
+        if (expiringTokenCount > 0) {
+            tooltip.append(Messages.ApiTokenProperty_aboutToExpireTokens(expiringTokenCount));
+        }
+        if (expiredTokenCount > 0) {
+            if (expiringTokenCount > 0) {
+                tooltip.append("\n");
+            }
+            tooltip.append(Messages.ApiTokenProperty_expiredTokens(expiredTokenCount));
+        }
+        if (expiredTokenCount + expiringTokenCount > 0) {
+            return new Badge(Long.toString(expiringTokenCount + expiredTokenCount), tooltip.toString(), Badge.Severity.WARNING);
+        } else {
+            return null;
+        }
+    }
 }

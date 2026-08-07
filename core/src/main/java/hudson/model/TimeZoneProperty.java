@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
+import hudson.model.userproperty.UserPropertyCategory;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;
@@ -12,6 +13,7 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -62,6 +64,11 @@ public class TimeZoneProperty extends UserProperty {
         }
 
         @Override
+        public String getDescription() {
+            return Messages.TimeZoneProperty_Description();
+        }
+
+        @Override
         public UserProperty newInstance(User user) {
             return new TimeZoneProperty();
         }
@@ -82,6 +89,9 @@ public class TimeZoneProperty extends UserProperty {
         }
 
         public ListBoxModel doFillTimeZoneNameItems(@AncestorInPath User user) {
+            if (user != null) {
+                user.checkPermission(Jenkins.ADMINISTER);
+            }
             String userTimezone = user != null ? forUser(user) : forCurrentUser();
             ListBoxModel items = new ListBoxModel();
             items.add(Messages.TimeZoneProperty_DisplayDefaultTimeZone(), "");
@@ -106,6 +116,10 @@ public class TimeZoneProperty extends UserProperty {
             }
         }
 
+        @Override
+        public @NonNull UserPropertyCategory getUserPropertyCategory() {
+            return UserPropertyCategory.get(UserPropertyCategory.Preferences.class);
+        }
     }
 
     @CheckForNull

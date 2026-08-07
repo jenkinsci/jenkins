@@ -22,15 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  <%@ attribute name="job" use="required" type="hudson.model.Job" %>
-  <%@ attribute name="iconSizeClass" type="java.lang.String" %>
-  <%@ attribute name="iconSize" type="java.lang.String" %>
-  <%@ attribute name="td" required="false" type="java.lang.String" %>
-  <%@ attribute name="link" required="false" type="java.lang.String" %>
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    <st:attribute name="job" use="required" type="hudson.model.Job">Job to display the health report.</st:attribute>
+    <st:attribute name="td" type="java.lang.Boolean">If `td` should be used instead of `div` to wrap the health reports.</st:attribute>
+    <st:attribute name="link" type="java.lang.String">href of the link.</st:attribute>
+    <st:attribute name="style" type="java.lang.String">link style.</st:attribute>
+  </st:documentation>
   <j:set var="healthReports" value="${job.buildHealthReports}"/>
   <j:new var="emptyHealthReport" className="hudson.model.HealthReport"/>
   <j:set var="buildHealth" value="${empty(healthReports) ? emptyHealthReport : healthReports[0]}"/>
@@ -70,7 +69,7 @@ THE SOFTWARE.
       <div class="jenkins-table__cell__button-wrapper">
         <j:choose>
           <j:when test="${!empty(healthReports)}">
-            <a class="build-health-link jenkins-table__button" href="${empty(link)?'#':link}" style="${attrs.style}">
+            <a class="build-health-link jenkins-button jenkins-button--tertiary" href="${empty(link)?'#':link}" style="${attrs.style}">
               <l:icon src="symbol-weather-${buildHealth.iconClassName}" />
             </a>
           </j:when>

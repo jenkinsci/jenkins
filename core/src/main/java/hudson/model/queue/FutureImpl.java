@@ -95,4 +95,8 @@ public final class FutureImpl extends AsyncFutureImpl<Executable> implements Que
     synchronized void addExecutor(@NonNull Executor executor) {
         this.executors.add(executor);
     }
+
+    synchronized void finished() {
+        executors.clear();
+    }
 }

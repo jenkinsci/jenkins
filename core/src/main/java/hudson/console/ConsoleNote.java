@@ -24,8 +24,6 @@
 
 package hudson.console;
 
-import com.jcraft.jzlib.GZIPInputStream;
-import com.jcraft.jzlib.GZIPOutputStream;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionPoint;
 import hudson.Functions;
@@ -50,6 +48,8 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
 import jenkins.util.JenkinsJVM;

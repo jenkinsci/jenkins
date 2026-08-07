@@ -28,12 +28,13 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
-      <h1>
-        ${it.name}
-      </h1>
-
+      <l:app-bar title="${it.name}">
+        <j:if test="${it.atom}">
+          <t:editDescriptionButton permission="${app.ADMINISTER}"/>
+        </j:if>
+      </l:app-bar>
       <j:if test="${it.atom}">
-        <t:editableDescription permission="${app.ADMINISTER}"/>
+        <t:editableDescription permission="${app.ADMINISTER}" hideButton="true"/>
       </j:if>
 
       <j:forEach var="a" items="${it.allActions}">
@@ -42,8 +43,7 @@ THE SOFTWARE.
 
       <div>
         <h2>${%Nodes}</h2>
-        <j:forEach var="n" items="${it.sortedNodes}">
-          <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
+        <j:forEach var="c" items="${it.computers}">
           <j:set var="url" value="${rootURL}/${c.url}"/>
           <nobr>
             <a href="${url}" class="jenkins-link--with-icon"><l:icon src="${c.iconClassName}" /></a>

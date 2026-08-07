@@ -34,7 +34,7 @@ import java.nio.file.Files;
  */
 public class FakeMap extends AbstractLazyLoadRunMap<Build> {
     public FakeMap(File dir) {
-        super(dir);
+        initBaseDir(dir);
     }
 
     @Override
@@ -47,5 +47,10 @@ public class FakeMap extends AbstractLazyLoadRunMap<Build> {
         String n = Files.readString(dir.toPath().resolve("n"), Charset.defaultCharset()).trim();
         //new Exception("loading #" + n).printStackTrace();
         return new Build(Integer.parseInt(n));
+    }
+
+    @Override
+    protected Class<Build> getBuildClass() {
+        return Build.class;
     }
 }

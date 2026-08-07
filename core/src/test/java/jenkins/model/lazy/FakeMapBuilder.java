@@ -24,28 +24,33 @@
 
 package jenkins.model.lazy;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import org.apache.commons.io.FileUtils;
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 
 /**
  * Builder for creating a {@link FakeMap}
  *
  * @author Kohsuke Kawaguchi
  */
-public class FakeMapBuilder implements TestRule {
+public class FakeMapBuilder {
     private File dir;
+
+    public FakeMapBuilder() {
+        try {
+            dir = File.createTempFile("lazyload", "test");
+            dir.delete();
+            dir.mkdirs();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     protected File getDir() {
         return dir;
-    }
-
-    public FakeMapBuilder() {
     }
 
     public FakeMapBuilder add(int n) throws IOException {
@@ -66,24 +71,7 @@ public class FakeMapBuilder implements TestRule {
     }
 
     public FakeMap make() {
-        assert dir != null;
+        assertNotNull(dir);
         return new FakeMap(dir);
-    }
-
-    @Override
-    public Statement apply(final Statement base, Description description) {
-        return new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                dir = File.createTempFile("lazyload", "test");
-                dir.delete();
-                dir.mkdirs();
-                try {
-                    base.evaluate();
-                } finally {
-                    FileUtils.deleteDirectory(dir);
-                }
-            }
-        };
     }
 }

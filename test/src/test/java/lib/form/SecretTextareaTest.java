@@ -24,9 +24,9 @@
 
 package lib.form;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AbstractProject;
@@ -37,46 +37,48 @@ import hudson.util.Secret;
 import java.io.IOException;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlForm;
-import org.htmlunit.html.HtmlHiddenInput;
+import org.htmlunit.html.HtmlTextArea;
 import org.htmlunit.html.HtmlTextInput;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.xml.sax.SAXException;
 
-public class SecretTextareaTest {
+@WithJenkins
+class SecretTextareaTest {
 
     private Project<?, ?> project;
     private WebClient wc;
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before
-    public void setUp() throws IOException {
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Exception {
+        j = rule;
         project = j.createFreeStyleProject();
         project.getBuildersList().add(TestBuilder.newDefault());
         wc = j.createWebClient();
     }
 
     @Test
-    public void addEmptySecret() throws Exception {
+    void addEmptySecret() throws Exception {
         j.configRoundtrip(project);
         assertTestBuilderDataBoundEqual(TestBuilder.newDefault());
     }
 
     @Test
-    public void addSecret() throws Exception {
+    void addSecret() throws Exception {
         setProjectSecret("testValue");
         assertTestBuilderDataBoundEqual(TestBuilder.fromString("testValue"));
     }
 
     @Test
-    public void addSecretAndUpdateDescription() throws Exception {
+    void addSecretAndUpdateDescription() throws Exception {
         setProjectSecret("Original Value");
         assertTestBuilderDataBoundEqual(TestBuilder.fromString("Original Value"));
         HtmlForm configForm = goToConfigForm();
@@ -87,7 +89,7 @@ public class SecretTextareaTest {
     }
 
     @Test
-    public void addSecretAndUpdateSecretWithEmptyValue() throws Exception {
+    void addSecretAndUpdateSecretWithEmptyValue() throws Exception {
         setProjectSecret("First");
         assertTestBuilderDataBoundEqual(TestBuilder.fromString("First"));
         HtmlForm configForm = goToConfigForm();
@@ -120,8 +122,8 @@ public class SecretTextareaTest {
     }
 
     private static String getHiddenSecretValue(HtmlForm configForm) {
-        HtmlHiddenInput hiddenSecret = configForm.getInputByName("_.secret");
-        return hiddenSecret == null ? null : hiddenSecret.getValue();
+        HtmlTextArea hiddenSecret = configForm.getTextAreaByName("_.secret");
+        return hiddenSecret == null ? null : hiddenSecret.getTextContent();
     }
 
     public static class TestBuilder extends Builder {
@@ -142,9 +144,10 @@ public class SecretTextareaTest {
             return b;
         }
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public TestBuilder(Secret secret) {
-            this.secret = secret;
+            this.secret = fixEmptySecret(secret);
         }
 
         public Secret getSecret() {
@@ -158,6 +161,13 @@ public class SecretTextareaTest {
         @DataBoundSetter
         public void setDescription(String description) {
             this.description = description;
+        }
+
+        private static Secret fixEmptySecret(Secret possiblyEmpty) {
+            if (possiblyEmpty == null || possiblyEmpty.getPlainText().isEmpty()) {
+                return null;
+            }
+            return possiblyEmpty;
         }
 
         @TestExtension

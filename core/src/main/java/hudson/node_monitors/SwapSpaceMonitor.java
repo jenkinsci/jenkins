@@ -33,11 +33,10 @@ import hudson.model.Computer;
 import java.io.IOException;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
-import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.jvnet.hudson.MemoryMonitor;
 import org.jvnet.hudson.MemoryUsage;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -48,6 +47,11 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @since 1.233
  */
 public class SwapSpaceMonitor extends NodeMonitor {
+
+    @DataBoundConstructor
+    public SwapSpaceMonitor() {
+    }
+
     /**
      * Returns the HTML representation of the space.
      */
@@ -98,6 +102,11 @@ public class SwapSpaceMonitor extends NodeMonitor {
         }
 
         @Override
+        public boolean canTakeOffline() {
+            return false;
+        }
+
+        @Override
         protected MonitorTask createCallable(Computer c) {
             return new MonitorTask();
         }
@@ -106,11 +115,6 @@ public class SwapSpaceMonitor extends NodeMonitor {
         @Override
         public String getDisplayName() {
             return Messages.SwapSpaceMonitor_DisplayName();
-        }
-
-        @Override
-        public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new SwapSpaceMonitor();
         }
     }
 

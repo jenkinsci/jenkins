@@ -31,6 +31,8 @@ import hudson.model.Node;
 import java.util.List;
 import java.util.logging.Logger;
 import jenkins.util.Listeners;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
 /**
  * Listen to {@link Node} CRUD operations.
@@ -41,6 +43,16 @@ import jenkins.util.Listeners;
 public abstract class NodeListener implements ExtensionPoint {
 
     private static final Logger LOGGER = Logger.getLogger(NodeListener.class.getName());
+
+    /**
+     * Allows to veto node loading.
+     * @param node the node being loaded. Not yet attached to Jenkins.
+     * @return false to veto node loading.
+     */
+    @Restricted(Beta.class)
+    protected boolean allowLoad(@NonNull Node node) {
+        return true;
+    }
 
     /**
      * Node is being created.

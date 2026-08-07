@@ -25,9 +25,12 @@
 package jenkins.widgets;
 
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BallColor;
+import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.Run;
+import jenkins.console.ConsoleUrlProvider;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
@@ -35,6 +38,10 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 
 @Restricted(DoNotUse.class) // only for buildTimeTrend.jelly
 public class BuildTimeTrend extends RunListProgressiveRendering {
+
+    public boolean isAbstractProject(Job<?, ?> job) {
+        return job instanceof AbstractProject;
+    }
 
     @Override protected void calculate(Run<?, ?> build, JSONObject element) {
         BallColor iconColor = build.getIconColor();
@@ -45,6 +52,9 @@ public class BuildTimeTrend extends RunListProgressiveRendering {
         element.put("displayName", build.getDisplayName());
         element.put("duration", build.getDuration());
         element.put("durationString", build.getDurationString());
+        element.put("timestampString", build.getTimestampString());
+        element.put("timestampString2", build.getTimestampString2());
+        element.put("consoleUrl", ConsoleUrlProvider.getRedirectUrl(build));
         if (build instanceof AbstractBuild) {
             AbstractBuild<?, ?> b = (AbstractBuild) build;
             Node n = b.getBuiltOn();

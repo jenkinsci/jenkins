@@ -118,7 +118,7 @@ public final class WorkUnitContext {
     }
 
     public WorkUnit getPrimaryWorkUnit() {
-        return workUnits.get(0);
+        return workUnits.getFirst();
     }
 
     /**
@@ -190,6 +190,7 @@ public final class WorkUnitContext {
                         }
                     }
                 }
+                future.finished();
             }
         }
     }

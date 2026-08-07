@@ -37,10 +37,6 @@ THE SOFTWARE.
         </div>
       </div>
 
-      <j:if test="${!request.getParameter('suppressTimelineControl')}"> <!-- cf. BuildListTableTest; breaks HtmlUnit -->
-        <st:include page="control.jelly" it="${it.timeline}"/>
-      </j:if>
-
       <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>
   </l:layout>

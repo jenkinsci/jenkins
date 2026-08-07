@@ -26,8 +26,8 @@ package hudson.model;
 
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
-import javax.servlet.ServletException;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;

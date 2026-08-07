@@ -52,7 +52,7 @@ THE SOFTWARE.
         </j:when>
         <j:otherwise>
           <a href="${attrs.href ?: rootURL+'/'+r.url}" class="model-link">
-          <l:icon alt="${r.iconColor.description}" class="${r.buildStatusIconClassName} icon-sm" style="margin-left: 0; position: relative; top: -0.1rem;"/><span class="jenkins-icon-adjacent">${jobName_}#<!-- -->${number}</span></a>
+          <l:icon alt="${r.iconColor.description}" src="symbol-status-${r.iconColor.iconName}" class="icon-sm" style="margin-left: 0; position: relative; top: -0.1rem;"/><span class="jenkins-icon-adjacent">${jobName_}#<!-- -->${number}</span></a>
         </j:otherwise>
       </j:choose>
     </j:otherwise>

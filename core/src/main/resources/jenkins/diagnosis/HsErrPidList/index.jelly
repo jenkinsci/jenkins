@@ -31,32 +31,36 @@ THE SOFTWARE.
 
       <p>${%blurb}</p>
 
-      <table class="bigtable sortable pane">
-        <tr>
-          <th>${%Name}</th>
-          <th>${%Date}</th>
-          <th/>
-        </tr>
-        <j:forEach var="f" items="${it.files}" varStatus="idx">
+      <table class="jenkins-table sortable">
+        <thead>
           <tr>
-            <td style="padding-right:3em">
-              <l:icon class="icon-clipboard icon-lg" style="margin-right:1em"/>
-              <a href="files/${idx.index}/download/${f.name}">
-                ${f.path}
-              </a>
-            </td>
-            <td data="${f.lastModified}">
-              <i:formatDate value="${f.lastModifiedDate}" type="both" dateStyle="medium" timeStyle="medium"/>
-              <st:nbsp />
-              (${%ago(f.timeSpanString)})
-            </td>
-            <td>
-              <form method="post" action="files/${idx.index}/delete" name="${idx}">
-                <f:submit value="${%Delete}"/>
-              </form>
-            </td>
+            <th>${%Name}</th>
+            <th>${%Date}</th>
+            <th/>
           </tr>
-        </j:forEach>
+        </thead>
+        <tbody>
+          <j:forEach var="f" items="${it.files}" varStatus="idx">
+            <tr>
+              <td style="padding-right:3em">
+                <l:icon class="icon-clipboard icon-lg" style="margin-right:1em"/>
+                <a href="files/${idx.index}/download/${f.name}">
+                  ${f.path}
+                </a>
+              </td>
+              <td data="${f.lastModified}">
+                <i:formatDate value="${f.lastModifiedDate}" type="both" dateStyle="medium" timeStyle="medium"/>
+                <st:nbsp />
+                (${%ago(f.timeSpanString)})
+              </td>
+              <td>
+                <form method="post" action="files/${idx.index}/delete" name="${idx}">
+                  <f:submit value="${%Delete}"/>
+                </form>
+              </td>
+            </tr>
+          </j:forEach>
+        </tbody>
       </table>
     </l:main-panel>
   </l:layout>

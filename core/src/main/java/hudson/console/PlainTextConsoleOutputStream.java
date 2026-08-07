@@ -31,7 +31,7 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.lang.StringEscapeUtils;
+import jenkins.util.SourceCodeEscapers;
 
 /**
  * Filters out console notes.
@@ -73,7 +73,7 @@ public class PlainTextConsoleOutputStream extends LineTransformationOutputStream
             try {
                 ConsoleNote.skip(new DataInputStream(b));
             } catch (IOException x) {
-                LOGGER.log(Level.FINE, "Failed to skip annotation from \"" + StringEscapeUtils.escapeJava(new String(in, next, rest, Charset.defaultCharset())) + "\"", x);
+                LOGGER.log(Level.FINE, "Failed to skip annotation from \"" + SourceCodeEscapers.javaCharEscaper().escape(new String(in, next, rest, Charset.defaultCharset())) + "\"", x);
             }
 
             int bytesUsed = rest - b.available(); // bytes consumed by annotations

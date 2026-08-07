@@ -29,7 +29,8 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:if test="${mode=='side-panel'}">
-    <d:invokeBody />
+    <div id="side-panel" class="app-page-body__sidebar">
+      <d:invokeBody />
+    </div>
   </j:if>
-
 </j:jelly>

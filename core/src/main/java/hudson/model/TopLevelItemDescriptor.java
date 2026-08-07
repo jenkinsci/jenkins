@@ -27,6 +27,7 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import hudson.util.FormValidation;
 import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,11 +35,14 @@ import jenkins.model.Jenkins;
 import jenkins.model.item_category.ItemCategory;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
-import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.MetaClass;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.WebApp;
@@ -160,7 +164,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
                 DefaultScriptInvoker dsi = new DefaultScriptInvoker();
                 StringWriter sw = new StringWriter();
                 XMLOutput xml = dsi.createXMLOutput(sw, true);
-                dsi.invokeScript(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), s, this, xml);
+                dsi.invokeScript(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2(), s, this, xml);
                 return sw.toString();
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, null, e);
@@ -215,8 +219,9 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
     @CheckForNull
     @Deprecated
     public String getIconFilePath(String size) {
-        if (!StringUtils.isBlank(getIconFilePathPattern())) {
-            return getIconFilePathPattern().replace(":size", size);
+        String iconFilePathPattern = getIconFilePathPattern();
+        if (iconFilePathPattern != null && !iconFilePathPattern.isBlank()) {
+            return iconFilePathPattern.replace(":size", size);
         }
         return null;
     }
@@ -239,7 +244,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
                 // this one is easy... too easy... also will never happen
                 return IconSet.toNormalizedIconNameClass(path);
             }
-            if (Jenkins.RESOURCE_PATH.length() > 0 && path.startsWith(Jenkins.RESOURCE_PATH)) {
+            if (!Jenkins.RESOURCE_PATH.isEmpty() && path.startsWith(Jenkins.RESOURCE_PATH)) {
                 // will to live falling
                 path = path.substring(Jenkins.RESOURCE_PATH.length());
             }
@@ -286,4 +291,8 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
         return Items.all();
     }
 
+    @Restricted(NoExternalUse.class)
+    public FormValidation doCheckDisplayNameOrNull(@AncestorInPath TopLevelItem item, @QueryParameter String value) {
+        return Jenkins.get().checkDisplayName(value, item);
+    }
 }

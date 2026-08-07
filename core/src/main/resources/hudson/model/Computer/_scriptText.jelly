@@ -26,8 +26,8 @@ THE SOFTWARE.
   Called from doScriptText() to display the execution result.
 -->
 <?jelly escape-by-default='true'?>
-<st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
     <l:view contentType="text/plain;charset=UTF-8">
         <j:out value="${output}"/>
     </l:view>
-</st:compress>
+</j:jelly>

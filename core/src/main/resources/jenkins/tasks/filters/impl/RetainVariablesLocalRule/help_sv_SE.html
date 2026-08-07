@@ -1,0 +1,57 @@
+<div>
+  <p>Begränsa vilka miljövariabler som skickas till ett byggsteg.</p>
+
+  <p>
+    Miljövariabler som skickas till byggsteget filtreras, såvida de inte anges
+    nedan.
+  </p>
+
+  <p>
+    Beteendet för detta filter beror på om miljövariabeln ursprungligen har
+    definierats utanför Jenkins:
+  </p>
+  <ul>
+    <li>
+      Om miljövariabeln härstammar från Jenkins-konfigurationen, som
+      <code>JOB_URL</code>
+      , kommer den inte att skickas till byggsteget såvida det inte anges här.
+    </li>
+    <li>
+      Om miljövariabeln härstammar utanför Jenkins, som
+      <code>PATH</code>
+      , beror beteendet på alternativet
+      <em>Hantering av processmiljövariabler</em>
+      : Om alternativet har konfigurerats till
+      <em>Behåll</em>
+      kommer det ursprungliga värdet att skickas till byggsteget, vilket
+      kasserar alla förändringar i Jenkins. Om alternativet har konfigurerats
+      till
+      <em>Ta bort</em>
+      kommer variabeln inte att skickas till byggsteget.
+    </li>
+  </ul>
+  <p>Följande tabell visar effekten av filtrering på en miljövariabel:</p>
+  <table width="100%">
+    <tr>
+      <th>Beteende</th>
+      <th>Ursprungligen definierad utanför Jenkins</th>
+      <th>Ursprungligen definierad inuti Jenkins</th>
+    </tr>
+    <tr>
+      <th>
+        <em>Hantering av processmiljövariabler:</em>
+        reset
+      </th>
+      <td>Variabeln återställs till originalvärdet</td>
+      <td>Variabeln tas bort</td>
+    </tr>
+    <tr>
+      <th>
+        <em>Hantering av processmiljövariabler:</em>
+        removed
+      </th>
+      <td>Variabeln tas bort</td>
+      <td>Variabeln tas bort</td>
+    </tr>
+  </table>
+</div>

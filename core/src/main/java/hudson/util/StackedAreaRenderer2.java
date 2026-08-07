@@ -109,7 +109,7 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
 
         double value = dataValue.doubleValue();
 
-        // leave the y values (y1, y0) untranslated as it is going to be be
+        // leave the y values (y1, y0) untranslated as it is going to be
         // stacked up later by previous series values, after this it will be
         // translated.
         double xx1 = domainAxis.getCategoryMiddle(column, getColumnCount(),

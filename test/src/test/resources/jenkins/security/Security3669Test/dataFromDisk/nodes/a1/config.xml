@@ -1,0 +1,33 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<slave>
+  <temporaryOfflineCause class="hudson.slaves.OfflineCause$UserCause">
+    <timestamp>1770000000000</timestamp>
+    <description>
+      <holder>
+        <owner>hudson.slaves.Messages</owner>
+      </holder>
+      <key>SlaveComputer.DisconnectedBy</key>
+      <args>
+        <string>anonymous</string>
+        <string> : &lt;img src=x onerror=alert(1)&gt;</string>
+      </args>
+    </description>
+    <message>&lt;img src=x onerror=alert(1)&gt;</message>
+  </temporaryOfflineCause>
+  <name>a1</name>
+  <description></description>
+  <remoteFS>/tmp/a1</remoteFS>
+  <numExecutors>1</numExecutors>
+  <mode>NORMAL</mode>
+  <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+  <launcher class="hudson.slaves.JNLPLauncher">
+    <workDirSettings>
+      <disabled>false</disabled>
+      <internalDir>remoting</internalDir>
+      <failIfWorkDirIsMissing>false</failIfWorkDirIsMissing>
+    </workDirSettings>
+    <webSocket>false</webSocket>
+  </launcher>
+  <label></label>
+  <nodeProperties/>
+</slave>

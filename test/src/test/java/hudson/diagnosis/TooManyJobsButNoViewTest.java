@@ -4,79 +4,79 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import hudson.model.AdministrativeMonitor;
 import hudson.model.Item;
 import hudson.model.ListView;
 import hudson.model.View;
 import java.io.IOException;
 import java.net.URL;
 import jenkins.model.Jenkins;
-import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.html.DomElement;
-import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class TooManyJobsButNoViewTest {
+@WithJenkins
+class TooManyJobsButNoViewTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
     private TooManyJobsButNoView mon;
 
-    @Before public void setUp() {
-        mon = AdministrativeMonitor.all().get(TooManyJobsButNoView.class);
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
     }
 
     /**
      * Shouldn't be active at the beginning
      */
-    @Test public void initialState() throws Exception {
-        verifyNoForm();
-    }
-
-    private void verifyNoForm() throws IOException, SAXException {
-        HtmlPage p = r.createWebClient().goTo("manage");
-        assertThrows(ElementNotFoundException.class, () -> p.getFormByName(mon.id));
+    @Test
+    void initialState() throws Exception {
+        try (JenkinsRule.WebClient wc = r.createWebClient()) {
+            verifyNoMonitor(wc);
+        }
     }
 
     /**
      * Once we have enough jobs, it should kick in
      */
-    @Test public void activated() throws Exception {
+    @Test
+    void activated() throws Exception {
         for (int i = 0; i <= TooManyJobsButNoView.THRESHOLD; i++)
             r.createFreeStyleProject();
 
-        HtmlPage p = r.createWebClient().goTo("manage");
-        HtmlForm f = p.getFormByName(mon.id);
-        assertNotNull(f);
+        try (JenkinsRule.WebClient wc = r.createWebClient()) {
+            HtmlPage p = wc.goTo("manage");
+            HtmlAnchor link = p.querySelector("div[data-monitor-id=\"hudson.diagnosis.TooManyJobsButNoView\"] a");
+            assertNotNull(link);
 
-        // this should take us to the new view page
-        URL url = r.submit(f, "yes").getUrl();
-        assertTrue(url.toExternalForm(), url.toExternalForm().endsWith("/newView"));
+            // this should take us to the new view page
+            URL url = link.click().getUrl();
+            assertTrue(url.toExternalForm().endsWith("/newView"), url.toExternalForm());
 
-        // since we didn't create a view, if we go back, we should see the warning again
-        p = r.createWebClient().goTo("manage");
-        assertNotNull(p.getFormByName(mon.id));
+            // since we didn't create a view, if we go back, we should see the warning again
+            verifyMonitor(wc);
 
-        // once we create a view, the message should disappear
-        r.jenkins.addView(new ListView("test"));
+            // once we create a view, the message should disappear
+            r.jenkins.addView(new ListView("test"));
 
-        verifyNoForm();
+            verifyNoMonitor(wc);
+        }
     }
 
     @Test
-    public void systemReadNoViewAccessVerifyNoForm() throws Exception {
+    void systemReadNoViewAccessVerifyNoForm() throws Exception {
         final String READONLY = "readonly";
 
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
@@ -96,12 +96,12 @@ public class TooManyJobsButNoViewTest {
 
     private void verifyNoMonitor(JenkinsRule.WebClient wc) throws IOException, SAXException {
         HtmlPage p = wc.goTo("manage");
-        DomElement adminMonitorDiv = p.getElementById("tooManyJobsButNoView");
+        DomElement adminMonitorDiv = p.querySelector("div[data-monitor-id=\"hudson.diagnosis.TooManyJobsButNoView\"]");
         assertThat(adminMonitorDiv, is(nullValue()));
     }
 
     @Test
-    public void systemReadVerifyForm() throws Exception {
+    void systemReadVerifyForm() throws Exception {
         final String READONLY = "readonly";
 
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
@@ -123,9 +123,8 @@ public class TooManyJobsButNoViewTest {
 
     private void verifyMonitor(JenkinsRule.WebClient wc) throws IOException, SAXException {
         HtmlPage p = wc.goTo("manage");
-        DomElement adminMonitorDiv = p.getElementById("tooManyJobsButNoView");
+        DomElement adminMonitorDiv = p.querySelector("div[data-monitor-id=\"hudson.diagnosis.TooManyJobsButNoView\"]");
         assertThat(adminMonitorDiv, is(notNullValue()));
         assertThat(adminMonitorDiv.getTextContent(), is(notNullValue()));
     }
-
 }

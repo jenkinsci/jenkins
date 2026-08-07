@@ -1,0 +1,8 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <j:if test="${descriptor.enabled}">
+        <f:section title="${%Console URL Provider}" description="${%description}">
+            <f:repeatableHeteroProperty field="providers" hasHeader="true" oneEach="true" header="${%Providers}" />
+        </f:section>
+    </j:if>
+</j:jelly>

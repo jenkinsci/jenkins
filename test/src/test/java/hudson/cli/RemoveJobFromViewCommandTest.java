@@ -34,20 +34,23 @@ import hudson.model.Item;
 import hudson.model.ListView;
 import hudson.model.View;
 import jenkins.model.Jenkins;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author pjanouse
  */
-public class RemoveJobFromViewCommandTest extends ViewManipulationTestBase {
+@WithJenkins
+class RemoveJobFromViewCommandTest extends ViewManipulationTestBase {
 
     @Override
-    public CLICommandInvoker getCommand() {
+    protected CLICommandInvoker getCommand() {
         return new CLICommandInvoker(j, "remove-job-from-view");
     }
 
-    @Test public void removeJobShouldSucceed() throws Exception {
+    @Test
+    void removeJobShouldSucceed() throws Exception {
 
         j.jenkins.addView(new ListView("aView"));
         FreeStyleProject project = j.createFreeStyleProject("aProject");
@@ -65,7 +68,8 @@ public class RemoveJobFromViewCommandTest extends ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project), equalTo(false));
     }
 
-    @Test public void removeJobManyShouldSucceed() throws Exception {
+    @Test
+    void removeJobManyShouldSucceed() throws Exception {
 
         j.jenkins.addView(new ListView("aView"));
         FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
@@ -87,7 +91,8 @@ public class RemoveJobFromViewCommandTest extends ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project2), equalTo(false));
     }
 
-    @Test public void removeJobManyShouldSucceedEvenAJobIsSpecifiedTwice() throws Exception {
+    @Test
+    void removeJobManyShouldSucceedEvenAJobIsSpecifiedTwice() throws Exception {
 
         j.jenkins.addView(new ListView("aView"));
         FreeStyleProject project = j.createFreeStyleProject("aProject");

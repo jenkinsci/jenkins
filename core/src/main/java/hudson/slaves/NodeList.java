@@ -31,6 +31,7 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Node;
 import hudson.util.RobustCollectionConverter;
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS", justification = "TODO needs triage")
 public final class NodeList extends ArrayList<Node> {
 
     private Map<String, Node> map = new HashMap<>();

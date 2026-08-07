@@ -25,16 +25,16 @@
 package org.kohsuke.stapler;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.mockito.Mockito;
 
 /**
- * Mocked version of {@link StaplerRequest}.
+ * Mocked version of {@link StaplerRequest2}.
  * @author Oleg Nenashev
  */
 public class MockStaplerRequestBuilder {
@@ -66,7 +66,7 @@ public class MockStaplerRequestBuilder {
         return this;
     }
 
-    public StaplerRequest build() {
+    public StaplerRequest2 build() {
         HttpServletRequest rawRequest = Mockito.mock(HttpServletRequest.class);
         return new RequestImpl(stapler != null ? stapler : new Stapler(), rawRequest, ancestors, tokens);
     }

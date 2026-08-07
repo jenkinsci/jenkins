@@ -24,9 +24,9 @@
 
 package hudson.cli.handlers;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -40,9 +40,9 @@ import hudson.model.ViewGroup;
 import hudson.security.ACL;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
@@ -52,7 +52,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 
-public class ViewOptionHandlerTest {
+class ViewOptionHandlerTest {
 
     @Mock private Setter<View> setter;
     private ViewOptionHandler handler;
@@ -65,12 +65,13 @@ public class ViewOptionHandlerTest {
 
     private AutoCloseable mocks;
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         mocks.close();
     }
 
-    @Before public void setUp() {
+    @BeforeEach
+    void setUp() {
 
         mocks = MockitoAnnotations.openMocks(this);
 
@@ -88,7 +89,8 @@ public class ViewOptionHandlerTest {
         when(outer.getView("nested")).thenReturn(nested);
     }
 
-    @Test public void resolveTopLevelView() throws Exception {
+    @Test
+    void resolveTopLevelView() throws Exception {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
@@ -110,7 +112,8 @@ public class ViewOptionHandlerTest {
         });
     }
 
-    @Test public void resolveNestedView() throws Exception {
+    @Test
+    void resolveNestedView() throws Exception {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
@@ -120,7 +123,8 @@ public class ViewOptionHandlerTest {
         }
     }
 
-    @Test public void resolveOuterView() throws Exception {
+    @Test
+    void resolveOuterView() throws Exception {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
@@ -130,7 +134,8 @@ public class ViewOptionHandlerTest {
         }
     }
 
-    @Test public void ignoreLeadingAndTrailingSlashes() throws Exception {
+    @Test
+    void ignoreLeadingAndTrailingSlashes() throws Exception {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
@@ -140,7 +145,8 @@ public class ViewOptionHandlerTest {
         }
     }
 
-    @Test public void reportNonexistentTopLevelView() throws Exception {
+    @Test
+    void reportNonexistentTopLevelView() {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
@@ -154,7 +160,8 @@ public class ViewOptionHandlerTest {
         }
     }
 
-    @Test public void reportNonexistentNestedView() throws Exception {
+    @Test
+    void reportNonexistentNestedView() {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
@@ -168,7 +175,8 @@ public class ViewOptionHandlerTest {
         }
     }
 
-    @Test public void reportNonexistentInnerView() throws Exception {
+    @Test
+    void reportNonexistentInnerView() {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
@@ -182,7 +190,8 @@ public class ViewOptionHandlerTest {
         }
     }
 
-    @Test public void reportTraversingViewThatIsNotAViewGroup() throws Exception {
+    @Test
+    void reportTraversingViewThatIsNotAViewGroup() {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
@@ -196,7 +205,8 @@ public class ViewOptionHandlerTest {
         }
     }
 
-    @Test public void reportEmptyViewNameRequestAsNull() {
+    @Test
+    void reportEmptyViewNameRequestAsNull() {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
@@ -205,18 +215,19 @@ public class ViewOptionHandlerTest {
         }
     }
 
-    @Test public void reportViewSpaceNameRequestAsIAE() {
+    @Test
+    void reportViewSpaceNameRequestAsIAE() {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
-            final IllegalArgumentException e = assertThrows("No exception thrown. Expected IllegalArgumentException",
-                    IllegalArgumentException.class, () -> assertNull(handler.getView(" ")));
+            final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> assertNull(handler.getView(" ")), "No exception thrown. Expected IllegalArgumentException");
             assertEquals("No view named   inside view Jenkins", e.getMessage());
             verifyNoInteractions(setter);
         }
     }
 
-    @Test public void reportNullViewAsNPE() {
+    @Test
+    void reportNullViewAsNPE() {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
@@ -225,7 +236,8 @@ public class ViewOptionHandlerTest {
         }
     }
 
-    @Test public void refuseToReadOuterView() throws Exception {
+    @Test
+    void refuseToReadOuterView() {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
@@ -245,7 +257,8 @@ public class ViewOptionHandlerTest {
         }
     }
 
-    @Test public void refuseToReadNestedView() throws Exception {
+    @Test
+    void refuseToReadNestedView() {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
@@ -264,7 +277,8 @@ public class ViewOptionHandlerTest {
         }
     }
 
-    @Test public void refuseToReadInnerView() throws Exception {
+    @Test
+    void refuseToReadInnerView() {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);

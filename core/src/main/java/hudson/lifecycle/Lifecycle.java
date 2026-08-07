@@ -26,11 +26,13 @@ package hudson.lifecycle;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.ExtensionPoint;
 import hudson.Functions;
+import hudson.PluginManager;
 import hudson.Util;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
+import hudson.util.BootFailure;
+import hudson.util.JenkinsReloadFailed;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -39,10 +41,12 @@ import java.nio.file.Files;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.RestartRequiredException;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
@@ -57,7 +61,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Kohsuke Kawaguchi
  * @since 1.254
  */
-public abstract class Lifecycle implements ExtensionPoint {
+public abstract class Lifecycle {
     private static Lifecycle INSTANCE = null;
 
     /**
@@ -89,16 +93,12 @@ public abstract class Lifecycle implements ExtensionPoint {
                     instance = new PlaceholderLifecycle();
                 } catch (InvocationTargetException e) {
                     Throwable t = e.getCause();
-                    if (t instanceof RuntimeException) {
-                        throw (RuntimeException) t;
-                    } else if (t instanceof IOException) {
-                        throw new UncheckedIOException((IOException) t);
-                    } else if (t instanceof Exception) {
-                        throw new RuntimeException(t);
-                    } else if (t instanceof Error) {
-                        throw (Error) t;
-                    } else {
-                        throw new Error(e);
+                    switch (t) {
+                        case RuntimeException runtimeException -> throw runtimeException;
+                        case IOException ioException -> throw new UncheckedIOException(ioException);
+                        case Exception exception -> throw new RuntimeException(t);
+                        case Error error -> throw error;
+                        case null, default -> throw new Error(e);
                     }
                 }
             } else {
@@ -120,13 +120,13 @@ public abstract class Lifecycle implements ExtensionPoint {
                     // if run on Unix, we can do restart
                     try {
                         instance = new UnixLifecycle();
-                    } catch (final IOException e) {
-                        LOGGER.log(Level.WARNING, "Failed to install embedded lifecycle implementation", e);
+                    } catch (final Throwable t) {
+                        LOGGER.log(Level.WARNING, "Failed to install embedded lifecycle implementation", t);
                         instance = new Lifecycle() {
                             @Override
                             public void verifyRestartable() throws RestartNotSupportedException {
                                 throw new RestartNotSupportedException(
-                                        "Failed to install embedded lifecycle implementation, so cannot restart: " + e, e);
+                                        "Failed to install embedded lifecycle implementation, so cannot restart: " + t, t);
                             }
                         };
                     }
@@ -308,6 +308,25 @@ public abstract class Lifecycle implements ExtensionPoint {
      */
     public void onStatusUpdate(String status) {
         LOGGER.log(Level.INFO, status);
+    }
+
+    /**
+     * Whether {@link PluginManager#dynamicLoad(File)} should be supported at all.
+     * If not, {@link RestartRequiredException} will always be thrown.
+     * @return true by default
+     * @since 2.449
+     */
+    @Restricted(Beta.class)
+    public boolean supportsDynamicLoad() {
+        return true;
+    }
+
+    /**
+     * Called when Jenkins has failed to boot.
+     * @param problem a boot failure (could be {@link JenkinsReloadFailed})
+     * @since 2.469
+     */
+    public void onBootFailure(BootFailure problem) {
     }
 
     @Restricted(NoExternalUse.class)

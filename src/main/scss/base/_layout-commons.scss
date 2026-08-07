@@ -1,0 +1,158 @@
+@use "../base/breakpoints";
+
+.app-page-body {
+  position: relative;
+  display: grid;
+  border: var(--jenkins-border);
+  margin-inline: var(--page-inset);
+  height: calc(100vh - var(--header-height) - var(--page-inset));
+  border-radius: var(--form-input-border-radius);
+  overflow: hidden;
+
+  --top: color-mix(in oklch, white 1.5%, var(--card-background));
+  --background: var(--card-background);
+
+  background-color: var(--card-background);
+  background-image: linear-gradient(in oklch, var(--top), var(--background));
+  background-size: 100% 90vh;
+  background-repeat: no-repeat;
+  isolation: isolate;
+
+  &:has(> .app-page-body__sidebar) {
+    grid-template-columns: auto 1fr;
+  }
+
+  @media (width < 740px) {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  & > .app-page-body__sidebar {
+    padding: var(--section-padding);
+
+    @media (width >= 740px) {
+      width: 280px;
+      min-height: calc(100vh - var(--header-height) - var(--page-inset));
+    }
+
+    @media (width > breakpoints.$tablet-breakpoint) {
+      width: 320px;
+    }
+  }
+
+  & > .app-page-body__contents {
+    padding: var(--section-padding);
+    padding-bottom: 0;
+  }
+
+  @media (width >= 740px) {
+    &:not(:has(#side-panel .pane, #side-panel .jenkins-card)) {
+      & > .app-page-body__sidebar {
+        overflow-y: auto;
+        border-right: var(--jenkins-border);
+      }
+
+      & > .app-page-body__contents {
+        overflow-y: auto;
+      }
+    }
+  }
+
+  // Remove this when sidepanels no longer contain widgets
+  &:has(#side-panel .pane, #side-panel .jenkins-card) {
+    overflow-y: auto;
+
+    & > .app-page-body__sidebar {
+      padding-right: 0;
+
+      #tasks {
+        margin-bottom: 1rem;
+      }
+
+      .jenkins-card,
+      .pane-frame {
+        margin-inline: -0.5rem;
+      }
+    }
+  }
+}
+
+.app-main-panel {
+  margin-bottom: var(--section-padding);
+
+  &--narrow {
+    max-width: 900px;
+    margin-inline: auto;
+  }
+
+  &--wide {
+    width: 70vw;
+    max-width: 1700px;
+    margin-inline: auto;
+  }
+}
+
+.app-full-screen-page-body {
+  .app-main-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+}
+
+#page-body.clear::after {
+  clear: both;
+  content: "";
+  display: table;
+}
+
+// Clearfixes extracted from responsive-grid.css as they essential
+.clearfix::before,
+.clearfix::after,
+.container::before,
+.container::after,
+.container-fluid::before,
+.container-fluid::after,
+.row::before,
+.row::after,
+.form-horizontal .form-group::before,
+.form-horizontal .form-group::after,
+.btn-toolbar::before,
+.btn-toolbar::after,
+.btn-group-vertical > .btn-group::before,
+.btn-group-vertical > .btn-group::after,
+.nav::before,
+.nav::after,
+.navbar::before,
+.navbar::after,
+.navbar-header::before,
+.navbar-header::after,
+.navbar-collapse::before,
+.navbar-collapse::after,
+.pager::before,
+.pager::after,
+.panel-body::before,
+.panel-body::after,
+.modal-footer::before,
+.modal-footer::after {
+  display: table;
+  content: " ";
+}
+
+.clearfix::after,
+.container::after,
+.container-fluid::after,
+.row::after,
+.form-horizontal .form-group::after,
+.btn-toolbar::after,
+.btn-group-vertical > .btn-group::after,
+.nav::after,
+.navbar::after,
+.navbar-header::after,
+.navbar-collapse::after,
+.pager::after,
+.panel-body::after,
+.modal-footer::after {
+  clear: both;
+}

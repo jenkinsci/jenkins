@@ -26,8 +26,8 @@ package hudson.slaves;
 
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.Computer;
+import hudson.model.Describable;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.util.DescriptorList;
@@ -57,7 +57,7 @@ import java.util.regex.Pattern;
  * @since 1.216-ish
  * @see ComputerConnector
  */
-public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerLauncher> implements ExtensionPoint {
+public abstract class ComputerLauncher implements Describable<ComputerLauncher>, ExtensionPoint {
     /**
      * Returns true if this {@link ComputerLauncher} supports
      * programmatic launch of the agent in the target {@link Computer}.

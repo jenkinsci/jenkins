@@ -37,7 +37,7 @@ public class CloudSlaveRetentionStrategy<T extends Computer> extends RetentionSt
                 }
             }
         }
-        return checkCycle();
+        return TimeUnit.MILLISECONDS.toMinutes(checkCycle());
     }
 
     /**

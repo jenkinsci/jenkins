@@ -1,0 +1,27 @@
+<div>
+  Tillhandahåller en funktion som liknar
+  <a href="https://en.wikipedia.org/wiki/cron">cron</a>
+  för att regelbundet köra detta projekt.
+
+  <p>
+    Denna funktion är främst till för att använda Jenkins som en ersättning av
+    cron och är
+    <b>inte idealisk för att kontinuerligt bygga programvaruprojekt</b>
+    . När folk börjar använda kontinuerlig integration ("continuous
+    integration") är de oftast vana vid tanken på regelbundet schemalagda byggen
+    som natt-/veckokörningar att de använder denna funktion. Men poängen med
+    kontinuerlig integration är att starta ett bygge så fort en förändring görs
+    för att ge en snabb återkoppling av förändringen. För att göra detta måste
+    du
+    <a href="https://www.jenkins.io/redirect/scm-change-trigger">
+      konfigurera en hook för förändringsmeddelanden i versionskontrollen till
+      Jenkins
+    </a>
+    .
+  </p>
+
+  <p>
+    Innan du använder denna funktion bör du stanna upp och fråga dig själv om
+    detta verkligen är vad du vill ha.
+  </p>
+</div>

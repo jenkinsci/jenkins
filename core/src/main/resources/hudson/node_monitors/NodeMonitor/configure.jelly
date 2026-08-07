@@ -1,0 +1,24 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <j:set var="help" value="${descriptor.helpFile}"/>
+  <div class="jenkins-form-label help-sibling tr">
+    ${descriptor.displayName}
+    <f:helpLink url="${help}" featureName="${descriptor.displayName}"/>
+  </div>
+  <f:helpArea />
+  <div class="optionalBlock-container jenkins-form-item">
+    <div class="form-container">
+      <j:if test="${descriptor.canTakeOffline()}">
+        <f:entry title="${%Don't mark agents temporarily offline}" field="ignored">
+          <f:checkbox checked="${instance.ignored}" />
+        </f:entry>
+      </j:if>
+      <j:if test="${!descriptor.canTakeOffline()}">
+        <f:invisibleEntry>
+          <f:checkbox name="ignored" checked="false" />
+        </f:invisibleEntry>
+      </j:if>
+      <st:include page="config.jelly" class="${descriptor.clazz}" optional="true"/>
+    </div>
+  </div>
+</j:jelly>

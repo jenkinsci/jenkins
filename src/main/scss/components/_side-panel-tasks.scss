@@ -1,0 +1,113 @@
+@use "../abstracts/mixins";
+@use "../base/breakpoints";
+
+$inset: 0.6875rem;
+
+#tasks,
+.tasks,
+.subtasks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.subtasks {
+  margin-top: 5px;
+  margin-bottom: 0;
+
+  &:empty {
+    display: none;
+  }
+}
+
+#side-panel {
+  .jenkins-app-bar {
+    margin-inline: $inset;
+  }
+
+  & > #tasks > .jenkins-search-container {
+    margin: 0 0 1rem;
+
+    .jenkins-search__icon {
+      width: 2.625rem;
+      aspect-ratio: unset;
+    }
+
+    .jenkins-search__input {
+      padding-left: 2.5rem;
+    }
+  }
+}
+
+#tasks,
+.tasks {
+  .task .task-link {
+    @include mixins.item;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0.5rem $inset;
+    gap: 0.625rem;
+    width: 100%;
+    font-size: var(--font-size-sm);
+    color: var(--text-color);
+    margin: 0;
+    transition: opacity var(--standard-transition);
+    min-height: 2.375rem;
+
+    .task-icon-link {
+      display: inline-flex;
+
+      svg,
+      img {
+        width: 1.25rem !important;
+        height: 1.25rem !important;
+        color: var(--text-color);
+
+        * {
+          transition: stroke-width var(--standard-transition);
+        }
+      }
+    }
+
+    .task-icon-badge {
+      margin-left: auto;
+    }
+
+    .task-link-text {
+      display: contents;
+      word-break: word-break;
+    }
+
+    &--active {
+      font-weight: var(--font-bold-weight);
+      cursor: default;
+
+      &::before {
+        background-color: var(--item-background--active) !important;
+      }
+
+      &::after {
+        box-shadow: none !important;
+      }
+    }
+
+    &:not(:hover, &:active, &:focus, &--active) {
+      &::before {
+        border-color: transparent;
+      }
+    }
+  }
+}
+
+.jenkins-side-nav__heading {
+  font-size: var(--font-size-sm);
+  color: var(--text-color-secondary);
+  font-weight: var(--font-bold-weight);
+  margin: 1rem 0 0.375rem $inset;
+
+  &:first-of-type {
+    margin-top: 0.375rem;
+  }
+}

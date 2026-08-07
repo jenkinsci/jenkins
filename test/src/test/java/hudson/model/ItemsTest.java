@@ -26,11 +26,11 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.AbortException;
 import hudson.cli.CLICommand;
@@ -49,22 +49,32 @@ import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-public class ItemsTest {
+@WithJenkins
+class ItemsTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
-    @Rule public TemporaryFolder tmpRule = new TemporaryFolder();
+    @TempDir
+    private File tmpRule;
 
-    @Test public void getAllItems() throws Exception {
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
+
+    @Test
+    void getAllItems() throws Exception {
         MockFolder d = r.createFolder("d");
         MockFolder sub2 = d.createProject(MockFolder.class, "sub2");
         MockFolder sub2a = sub2.createProject(MockFolder.class, "a");
@@ -85,7 +95,8 @@ public class ItemsTest {
         assertEquals(Arrays.<Item>asList(sub2a, sub2ap, sub2alpha, sub2b, sub2bp, sub2BRAVO, sub2c, sub2cp, sub2charlie), sub2.getAllItems(Item.class));
     }
 
-    @Test public void getAllItemsPredicate() throws Exception {
+    @Test
+    void getAllItemsPredicate() throws Exception {
         MockFolder d = r.createFolder("d");
         MockFolder sub2 = d.createProject(MockFolder.class, "sub2");
         MockFolder sub2a = sub2.createProject(MockFolder.class, "a");
@@ -108,7 +119,7 @@ public class ItemsTest {
 
     @Issue("JENKINS-40252")
     @Test
-    public void allItems() throws Exception {
+    void allItems() throws Exception {
         MockFolder d = r.createFolder("d");
         MockFolder sub2 = d.createProject(MockFolder.class, "sub2");
         MockFolder sub2a = sub2.createProject(MockFolder.class, "a");
@@ -127,11 +138,12 @@ public class ItemsTest {
         FreeStyleProject sub2charlie = sub2.createProject(FreeStyleProject.class, "charlie");
         assertThat(d.allItems(FreeStyleProject.class), containsInAnyOrder(dp, sub1p, sub1q, sub2ap, sub2alpha,
                 sub2bp, sub2BRAVO, sub2cp, sub2charlie));
-        assertThat(sub2.allItems(Item.class), containsInAnyOrder((Item) sub2a, sub2ap, sub2alpha, sub2b, sub2bp,
+        assertThat(sub2.allItems(Item.class), containsInAnyOrder(sub2a, sub2ap, sub2alpha, sub2b, sub2bp,
                 sub2BRAVO, sub2c, sub2cp, sub2charlie));
     }
 
-    @Test public void allItemsPredicate() throws Exception {
+    @Test
+    void allItemsPredicate() throws Exception {
         MockFolder d = r.createFolder("d");
         MockFolder sub2 = d.createProject(MockFolder.class, "sub2");
         MockFolder sub2a = sub2.createProject(MockFolder.class, "a");
@@ -153,8 +165,9 @@ public class ItemsTest {
     }
 
     @Issue("JENKINS-24825")
-    @Test public void moveItem() throws Exception {
-        File tmp = tmpRule.getRoot();
+    @Test
+    void moveItem() throws Exception {
+        File tmp = tmpRule;
         r.jenkins.setRawBuildsDir(tmp.getAbsolutePath() + "/${ITEM_FULL_NAME}");
         MockFolder foo = r.createFolder("foo");
         MockFolder bar = r.createFolder("bar");
@@ -186,7 +199,8 @@ public class ItemsTest {
     }
 
     /** Control cases: if there is no such item yet, nothing is stopping you. */
-    @Test public void overwriteNonexistentTarget() throws Exception {
+    @Test
+    void overwriteNonexistentTarget() throws Exception {
         overwriteTargetSetUp();
         for (OverwriteTactic tactic : OverwriteTactic.values()) {
             tactic.run(r, "nonexistent");
@@ -198,24 +212,27 @@ public class ItemsTest {
     private void cannotOverwrite(String target) throws Exception {
         overwriteTargetSetUp();
         for (OverwriteTactic tactic : OverwriteTactic.values()) {
-            assertThrows(tactic + " was not supposed to work against " + target, Exception.class, () -> tactic.run(r, target));
-            assertEquals(tactic + " still overwrote " + target, target, r.jenkins.getItemByFullName(target, FreeStyleProject.class).getDescription());
+            assertThrows(Exception.class, () -> tactic.run(r, target), tactic + " was not supposed to work against " + target);
+            assertEquals(target, r.jenkins.getItemByFullName(target, FreeStyleProject.class).getDescription(), tactic + " still overwrote " + target);
         }
     }
 
     /** More control cases: for non-security-sensitive scenarios, we prevent you from overwriting existing items. */
-    @Test public void overwriteVisibleTarget() throws Exception {
+    @Test
+    void overwriteVisibleTarget() throws Exception {
         cannotOverwrite("visible");
     }
 
     /** You may not overwrite an item you know is there even if you cannot see it. */
-    @Test public void overwriteKnownTarget() throws Exception {
+    @Test
+    void overwriteKnownTarget() throws Exception {
         cannotOverwrite("known");
     }
 
     /** You are somehow prevented from overwriting an item even if you did not previously know it was there. */
     @Issue("SECURITY-321")
-    @Test public void overwriteHiddenTarget() throws Exception {
+    @Test
+    void overwriteHiddenTarget() throws Exception {
         cannotOverwrite("secret");
     }
 

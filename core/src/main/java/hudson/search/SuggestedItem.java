@@ -62,7 +62,7 @@ public class SuggestedItem {
             buf.append(item.getSearchName());
         else {
             parent.getPath(buf);
-            buf.append(' ').append(item.getSearchName());
+            buf.append(" » ").append(item.getSearchName());
         }
     }
 
@@ -82,8 +82,7 @@ public class SuggestedItem {
 
     private static SuggestedItem build(SearchableModelObject searchContext, Item top) {
         ItemGroup<? extends Item> parent = top.getParent();
-        if (parent instanceof Item) {
-            Item parentItem = (Item) parent;
+        if (parent instanceof Item parentItem) {
             return new SuggestedItem(build(searchContext, parentItem), top);
         }
         return new SuggestedItem(top);
@@ -111,7 +110,7 @@ public class SuggestedItem {
             buf.setLength(0);
             buf.append(f);
         } else {
-            if (buf.length() == 0 || buf.charAt(buf.length() - 1) != '/')
+            if (buf.isEmpty() || buf.charAt(buf.length() - 1) != '/')
                 buf.append('/');
             buf.append(f);
         }

@@ -1,0 +1,26 @@
+html {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  color: var(--text-color);
+  overscroll-behavior: none;
+  scrollbar-color: oklch(from var(--text-color-secondary) l c h / 0.35)
+    oklch(from var(--text-color-secondary) l c h / 0.05);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--header-background);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+::selection {
+  background: var(--selection-color);
+}

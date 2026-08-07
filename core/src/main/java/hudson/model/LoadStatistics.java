@@ -36,8 +36,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
@@ -74,12 +72,6 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public abstract class LoadStatistics {
-    /**
-     * {@code true} if and only if the new way of building statistics has been implemented by this class.
-     * @since 1.607
-     */
-    private final boolean modern;
-
     /**
      * Number of executors defined for Jenkins and how it changes over time.
      * @since 1.607
@@ -154,35 +146,6 @@ public abstract class LoadStatistics {
         this.queueLength = new MultiStageTimeSeries(
                 Messages._LoadStatistics_Legends_QueueLength(), ColorPalette.GREY, 0, DECAY);
         this.totalExecutors = onlineExecutors;
-        modern = isModern(getClass());
-    }
-
-    /*package*/ static boolean isModern(Class<? extends LoadStatistics> clazz) {
-        // cannot use Util.isOverridden as these are protected methods.
-        boolean hasGetNodes = false;
-        boolean hasMatches = false;
-        while (clazz != LoadStatistics.class && clazz != null && !(hasGetNodes && hasMatches)) {
-            if (!hasGetNodes) {
-                try {
-                    final Method getNodes = clazz.getDeclaredMethod("getNodes");
-                    hasGetNodes = !Modifier.isAbstract(getNodes.getModifiers());
-                } catch (NoSuchMethodException e) {
-                    // ignore
-                }
-            }
-            if (!hasMatches) {
-                try {
-                    final Method getNodes = clazz.getDeclaredMethod("matches", Queue.Item.class, SubTask.class);
-                    hasMatches = !Modifier.isAbstract(getNodes.getModifiers());
-                } catch (NoSuchMethodException e) {
-                    // ignore
-                }
-            }
-            if (!(hasGetNodes && hasMatches) && LoadStatistics.class.isAssignableFrom(clazz.getSuperclass())) {
-                clazz = (Class<? extends LoadStatistics>) clazz.getSuperclass();
-            }
-        }
-        return hasGetNodes && hasMatches;
     }
 
     /**
@@ -198,21 +161,27 @@ public abstract class LoadStatistics {
      * @deprecated use {@link #computeSnapshot()} and then {@link LoadStatisticsSnapshot#getIdleExecutors()}
      */
     @Deprecated
-    public abstract int computeIdleExecutors();
+    public int computeIdleExecutors() {
+        return computeSnapshot().getIdleExecutors();
+    }
 
     /**
      * Computes the # of total executors right now and obtains the snapshot value.
      * @deprecated use {@link #computeSnapshot()} and then {@link LoadStatisticsSnapshot#getOnlineExecutors()}
      */
     @Deprecated
-    public abstract int computeTotalExecutors();
+    public int computeTotalExecutors() {
+        return computeSnapshot().getOnlineExecutors();
+    }
 
     /**
      * Computes the # of queue length right now and obtains the snapshot value.
      * @deprecated use {@link #computeSnapshot()} and then {@link LoadStatisticsSnapshot#getQueueLength()}
      */
     @Deprecated
-    public abstract int computeQueueLength();
+    public int computeQueueLength() {
+        return computeSnapshot().getQueueLength();
+    }
 
     /**
      * Creates a trend chart.
@@ -333,13 +302,7 @@ public abstract class LoadStatistics {
      * @since 1.607
      */
     public LoadStatisticsSnapshot computeSnapshot() {
-        if (modern) {
-            return computeSnapshot(Jenkins.get().getQueue().getBuildableItems());
-        } else {
-            int t = computeTotalExecutors();
-            int i = computeIdleExecutors();
-            return new LoadStatisticsSnapshot(t, t, Math.max(i - t, 0), Math.max(t - i, 0), i, i, computeQueueLength());
-        }
+        return computeSnapshot(Jenkins.get().getQueue().getBuildableItems());
     }
 
     /**

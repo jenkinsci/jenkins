@@ -24,6 +24,13 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <a href="${rootURL}/${app.securityRealm.loginUrl}?from=${app.securityRealm.from}"><b>${%login}</b></a>
+<j:jelly xmlns:j="jelly:core">
+  <a class="jenkins-button"
+     data-type="header-action"
+     data-testid="login"
+     href="${rootURL}/${app.securityRealm.loginUrl}?from=${app.securityRealm.from}"
+     style="aspect-ratio: unset; padding: 0.5rem 1rem"
+     tooltip="${%signInTooltip}">
+    ${%signIn}
+  </a>
 </j:jelly>

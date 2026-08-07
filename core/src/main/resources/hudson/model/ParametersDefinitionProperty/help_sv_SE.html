@@ -1,0 +1,67 @@
+<div>
+  Parametrar låter dig uppmana användare att ange en eller flera inmatningar att
+  skicka till en bygge. Till exempel kan du ha ett projekt som kör tester på
+  begäran genom att låta användare ladda upp en zip-fil med binärer som ska
+  testas. Detta kan göras genom att lägga till en
+  <i>filparameter</i>
+  här.
+  <br />
+  Eller så kanske du har ett projekt som levererar en viss programvara och du
+  vill att användare ska tillhandahålla information att laddas upp tillsammans
+  med programvaran. Detta kan göras genom att lägga till en
+  <i>strängparameter med flera rader</i>
+  här.
+  <p>
+    Varje parameter har ett
+    <i>namn</i>
+    och något slags
+    <i>värde</i>
+    , beroende på parametertypen. Dessa namn-värdepar kommer att exporteras som
+    miljövariabler när bygget startar, vilket gör att efterföljande delar av
+    byggkonfigurationen (som byggsteg) kan komma åt dessa värden, t.ex. genom
+    att använda syntaxen
+    <code>${PARAMETERNS_NAMN}</code>
+    (eller
+    <code>%PARAMETERNS_NAMN%</code>
+    i Windows).
+    <br />
+    Detta innebär också att varje parameter som definieras här bör ha ett unikt
+    <i>namn</i>
+    .
+  </p>
+
+  <p>
+    När ett projekt får parametrar kommer den vanliga länken
+    <i>Starta bygge nu</i>
+    ersättas med länken
+    <i>Starta bygge med parametrar</i>
+    , där användare uppmanas att ange värden för varje definierad parameter. Om
+    de väljer att inte ange något kommer bygget att startas med standardvärdet
+    för varje parameter.
+  </p>
+
+  <p>
+    Om en bygge startas automatiskt, t.ex. om det startas av en utlösare i
+    versionskontrollen, kommer standardvärdet för varje parameter att användas.
+  </p>
+
+  <p>
+    När en parameteriserat bygge finns i kön kommer ett försök att starta ett
+    annat bygge av samma projekt endast att lyckas om parametervärden är olika
+    eller om alternativet
+    <i>Kör parallella byggen om nödvändigt</i>
+    har aktiverats.
+  </p>
+
+  <p>
+    Mer information om denna funktion finns i
+    <a
+      href="https://www.jenkins.io/redirect/parameterized-builds"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      dokumentationen för parametriserade byggen
+    </a>
+    .
+  </p>
+</div>

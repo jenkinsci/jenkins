@@ -24,14 +24,18 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <t:summary icon="symbol-trigger">
-    <j:forEach var="entry" items="${it.causeCounts.entrySet()}">
-      <p>
-        <st:include page="description.jelly" it="${entry.key}"/>
-        <j:if test="${entry.value > 1}">
-          <st:nbsp/>${%Ntimes(entry.value)}
-        </j:if>
-      </p>
-    </j:forEach>
-  </t:summary>
+  <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
+
+  <j:if test="${!newBuildPage}">
+    <t:summary icon="symbol-trigger">
+      <j:forEach var="entry" items="${it.causeCounts.entrySet()}">
+        <p>
+          <st:include page="description.jelly" it="${entry.key}"/>
+          <j:if test="${entry.value > 1}">
+            <st:nbsp/>${%Ntimes(entry.value)}
+          </j:if>
+        </p>
+      </j:forEach>
+    </t:summary>
+  </j:if>
 </j:jelly>

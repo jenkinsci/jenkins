@@ -25,7 +25,11 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Util;
 import hudson.model.Descriptor.FormException;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
+import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -33,11 +37,12 @@ import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * {@link Job} that monitors activities that happen outside Hudson,
@@ -62,7 +67,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT, RunT>, RunT extends Run
     /**
      * All {@link Run}s. Copy-on-write semantics.
      */
-    protected transient volatile /*almost final*/ RunMap<RunT> runs = new RunMap<>(null, null);
+    protected transient volatile /*almost final*/ RunMap<RunT> runs = new RunMap<>((File) null, null);
 
     private transient volatile boolean notLoaded = true;
 
@@ -164,8 +169,30 @@ public abstract class ViewJob<JobT extends ViewJob<JobT, RunT>, RunT extends Run
     protected abstract void reload();
 
     @Override
-    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+    protected void submit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
+        if (Util.isOverridden(ViewJob.class, getClass(), "submit", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                submit(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        } else {
+            super.submit(req, rsp);
+            submitImpl();
+        }
+    }
+
+    /**
+     * @deprecated use {@link #submit(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @Override
+    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException, FormException {
         super.submit(req, rsp);
+        submitImpl();
+    }
+
+    private void submitImpl() {
         // make sure to reload to reflect this config change.
         nextUpdate = 0;
     }
@@ -209,14 +236,23 @@ public abstract class ViewJob<JobT extends ViewJob<JobT, RunT>, RunT extends Run
         @Override
         public void run() {
             while (!terminating()) {
+                String jobName = null;
                 try {
-                    getNext()._reload();
+                    var next = getNext();
+                    jobName = next.getFullName();
+                    next._reload();
+                    jobName = null;
                 } catch (InterruptedException e) {
                     // treat this as a death signal
                     return;
-                } catch (Throwable t) {
+                } catch (Exception e) {
                     // otherwise ignore any error
-                    t.printStackTrace();
+                    if (jobName != null) {
+                        var finalJobName = jobName;
+                        LOGGER.log(Level.WARNING, e, () -> "Failed to reload job " + finalJobName);
+                    } else {
+                        LOGGER.log(Level.WARNING, e, () -> "Failed to obtain next job in the reload queue");
+                    }
                 }
             }
         }

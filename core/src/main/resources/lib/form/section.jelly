@@ -32,6 +32,9 @@ THE SOFTWARE.
       If null is given, the entire <f:section> tag becomes no-op.
       ]]>
     </st:attribute>
+    <st:attribute name="description" since="TODO">
+      Optional attribute to set a description for the section
+    </st:attribute>
     <st:attribute name="icon">
       Optional attribute to set an icon for the section, this is only visible when using section-to-sidebar-items.js
     </st:attribute>
@@ -48,6 +51,11 @@ THE SOFTWARE.
             <l:icon src="${attrs.icon ?: 'symbol-settings'}" />
           </div>
           ${attrs.title}
+        </div>
+      </j:if>
+      <j:if test="${attrs.description != null}">
+        <div class="jenkins-section__description">
+          ${attrs.description}
         </div>
       </j:if>
       <d:invokeBody />

@@ -1,0 +1,33 @@
+<div>
+  CSRF (eller XSRF) är ett exploatering som gör det möjligt för en obehörig
+  tredje part att vidta åtgärder på en webbplats i ditt ställe. I Jenkins kan
+  detta låta någon att radera jobb, byggen eller ändra Jenkins-konfigurationen.
+  <p>
+    När detta alternativ aktiveras kommer Jenkins att leta efter ett genererat
+    nonce-värde, eller "crumb", i varje begäran som kan orsaka en förändring på
+    Jenkins-servern. Detta inkluderar alla formulärinlämningar och anrop till
+    fjärr-API:et.
+  </p>
+
+  <p>Detta alternativ kan orsaka följande problem när det aktiveras:</p>
+
+  <ul>
+    <li>
+      Vissa Jenkins-funktioner (som fjärr-API:et) blir svårare att använda när
+      alternativet aktiveras.
+    </li>
+    <li>
+      Vissa funktioner, särskilt insticksprogram som inte testats med detta
+      alternativ aktiverat, kanske inte fungerar alls.
+    </li>
+    <li>
+      Om du kommer åt Jenkins via en omvänd proxy kan den ta bort CSRF
+      HTTP-huvudet vilket resulterar i att vissa skyddade åtgärder misslyckas.
+    </li>
+  </ul>
+  <p>
+    Mer information om CSRF-exploateringar finns
+    <a href="https://owasp.org/www-community/attacks/csrf">här</a>
+    .
+  </p>
+</div>

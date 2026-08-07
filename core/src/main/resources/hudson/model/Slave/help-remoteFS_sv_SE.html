@@ -1,0 +1,50 @@
+<div>
+  <p>
+    En agent måste ha en dedikerad katalog till Jenkins. Ange sökvägen till
+    denna katalog på agenten. Det är bäst att använda en absolut sökväg, t.ex.
+    <code>/var/jenkins</code>
+    eller
+    <code>c:\jenkins</code>
+    . Detta bör vara en lokal sökväg till agentdatorn. Det finns inget krav på
+    att denna sökväg ska vara synlig från styrenheten.
+  </p>
+
+  <p>
+    Agenter bevarar inte viktig data; alla jobbkonfigurationer, byggloggar och
+    artefakter lagras på styrenheten, så det skulle vara möjligt att använda en
+    temporär katalog som agentens rotkatalog.
+    <br />
+    Men genom att ge agenten en katalog som till exempel inte raderas efter
+    datorn startar om kan agenten cachelagra data som verktygsinstallationer
+    eller byggarbetsytor. Detta förhindrar att verktyg laddas ned i onödan eller
+    källkod checkas ut igen när byggen startas på agenten igen efter en omstart.
+  </p>
+
+  <p>
+    Om du använder en relativ sökväg, t.ex.
+    <code>./jenkins-agent</code>
+    , kommer sökvägen att vara relativ till arbetskatalogen som tillhandahålls
+    av
+    <i>Startmetoden</i>
+    .
+  </p>
+
+  <ul>
+    <li>
+      För programstartare där Jenkins styr när agentprocessen startas, t.ex.
+      SSH, kommer den aktuella arbetskatalogen vanligtvis att vara konsekvent,
+      t.ex. användarens hemkatalog.
+    </li>
+    <li>
+      För programstartare där Jenkins saknar kontroll över att starta
+      agentprocessen, t.ex. inkommande agenter som startas från kommandoraden,
+      kan den aktuella arbetskatalogen ändras mellan starter av agenten och
+      användningen av en relativ sökväg kan visa sig vara problematisk.
+      <br />
+      Det huvudsakliga problemet som förekommer när man använder relativa
+      sökvägar med inkommande startprogram är hur inaktuella arbetsytor och
+      verktygsinstallation på agentmaskinen sprids. Detta kan orsaka problem med
+      diskutrymmet.
+    </li>
+  </ul>
+</div>

@@ -404,7 +404,7 @@ public class DownloadService {
                 }
                 jsonList.add(o);
             }
-            if (jsonList.size() == 0 && toolInstallerMetadataExists) {
+            if (jsonList.isEmpty() && toolInstallerMetadataExists) {
                 return FormValidation.warning("None of the tool installer metadata passed the signature check");
             } else if (!toolInstallerMetadataExists) {
                 LOGGER.log(Level.WARNING, "No tool installer metadata found for " + id);
@@ -420,7 +420,7 @@ public class DownloadService {
          * @return a single JSONObject
          */
         public JSONObject reduce(List<JSONObject> jsonList) {
-            return jsonList.get(0);
+            return jsonList.getFirst();
         }
 
         /**
@@ -436,9 +436,9 @@ public class DownloadService {
             }
             Field field;
             try {
-                field = genericList.get(0).getClass().getDeclaredField(comparator);
+                field = genericList.getFirst().getClass().getDeclaredField(comparator);
             } catch (NoSuchFieldException e) {
-                LOGGER.warning("comparator: " + comparator + "does not exist for " + genericList.get(0).getClass() + ", " + e);
+                LOGGER.warning("comparator: " + comparator + " does not exist for " + genericList.getFirst().getClass() + ", " + e);
                 return false;
             }
             for (int i = 0; i < genericList.size(); i++) {

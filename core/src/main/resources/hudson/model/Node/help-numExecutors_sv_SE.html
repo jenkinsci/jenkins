@@ -1,0 +1,19 @@
+<div>
+  Det maximala antalet samtidiga byggen som Jenkins kan utföra på den här noden.
+  <p>
+  Ett bra värde att börja med skulle kunna vara antalet processorkärnor på datorn.
+  Att ändra till ett högre värde skulle göra att varje bygge tar längre
+  tid, men kan öka det totala dataflödet. Till exempel kan ett bygge
+  vara processorbundet medan ett andra bygge som körs samtidigt kan vara I/O-bundet
+  &mdash; så det andra bygget kan dra nytta av den extra I/O-kapaciteten i
+  detta ögonblick.
+  <p>
+  Agenter (noder som inte är den inbyggda noden) måste ha minst en exekverare.
+  Använd knappen <i>Markera noden tillfälligt som frånkopplad</i> på agentens
+  sida för att tillfälligt förhindra att några byggen körs på en agent.
+  <p>
+  För den inbyggda noden konfigurerar du antalet exekverare till noll för att
+  förhindra att den kör byggen lokalt på styrenheten.
+  <i>OBS:<i> Den inbyggda noden kommer alltid att kunna köra enklare uppgifter
+  som uppgifter på högsta nivån i pipelines.
+</div>

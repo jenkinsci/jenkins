@@ -28,8 +28,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.xml.HasXPath.hasXPath;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import hudson.ExtensionComponent;
 import hudson.model.User;
@@ -45,21 +45,22 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTextInput;
 import org.htmlunit.xml.XmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.JenkinsSessionRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
-public class BasicHeaderApiTokenAuthenticatorTest {
-    @Rule
-    public JenkinsSessionRule sessions = new JenkinsSessionRule();
+class BasicHeaderApiTokenAuthenticatorTest {
+
+    @RegisterExtension
+    private final JenkinsSessionExtension sessions = new JenkinsSessionExtension();
 
     @Test
     @Issue("SECURITY-896")
-    public void legacyToken_regularCase() throws Throwable {
+    void legacyToken_regularCase() throws Throwable {
         AtomicReference<String> token = new AtomicReference<>();
         sessions.then(j -> {
                 enableLegacyTokenGenerationOnUserCreation();
@@ -70,7 +71,7 @@ public class BasicHeaderApiTokenAuthenticatorTest {
                     // default SecurityListener will save the user when adding the LastGrantedAuthoritiesProperty
                     // and so the user is persisted
                     wc.login("user1");
-                    HtmlPage page = wc.goTo("user/user1/configure");
+                    HtmlPage page = wc.goTo("user/user1/security/");
                     String tokenValue = ((HtmlTextInput) page.getDocumentElement().querySelector("#apiToken")).getText();
                     token.set(tokenValue);
                 }
@@ -109,7 +110,7 @@ public class BasicHeaderApiTokenAuthenticatorTest {
      */
     @Test
     @Issue("SECURITY-896")
-    public void legacyToken_withoutLastGrantedAuthorities() throws Throwable {
+    void legacyToken_withoutLastGrantedAuthorities() throws Throwable {
         AtomicReference<String> token = new AtomicReference<>();
         sessions.then(j -> {
                 enableLegacyTokenGenerationOnUserCreation();
@@ -118,7 +119,7 @@ public class BasicHeaderApiTokenAuthenticatorTest {
                 {
                     JenkinsRule.WebClient wc = j.createWebClient();
                     wc.login("user1");
-                    HtmlPage page = wc.goTo("user/user1/configure");
+                    HtmlPage page = wc.goTo("user/user1/security/");
                     String tokenValue = ((HtmlTextInput) page.getDocumentElement().querySelector("#apiToken")).getText();
                     token.set(tokenValue);
                 }

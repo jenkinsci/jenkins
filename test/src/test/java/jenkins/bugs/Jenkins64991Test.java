@@ -27,54 +27,53 @@ package jenkins.bugs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.hamcrest.Matchers.endsWithIgnoringCase;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.FreeStyleProject;
 import hudson.security.Messages;
 import hudson.security.Permission;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import jenkins.model.Jenkins;
 import org.htmlunit.Page;
 import org.htmlunit.html.HtmlFormUtil;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPasswordInput;
 import org.htmlunit.html.HtmlTextInput;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.xml.sax.SAXException;
 
-@RunWith(Parameterized.class)
-public class Jenkins64991Test {
-    @Parameterized.Parameters
-    public static List<String> contexts() {
-        return Arrays.asList("/jenkins", "");
-    }
+@ParameterizedClass
+@ValueSource(strings = { "/jenkins", "" })
+@WithJenkins
+class Jenkins64991Test {
 
-    public Jenkins64991Test(String context) {
-        j.contextPath = context;
-    }
+    @Parameter
+    private String contextPath;
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Throwable {
+        j = rule;
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Permission.READ).everywhere().toEveryone().grant(Jenkins.ADMINISTER).everywhere().to("alice"));
         j.createFreeStyleProject("foo bar");
+
+        j.contextPath = contextPath;
+        j.restart();
     }
 
     @Test
-    public void test403Redirect() throws Exception {
+    void test403Redirect() throws Exception {
         final JenkinsRule.WebClient webClient = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
         final HtmlPage loginPage = webClient.goTo("manage");
 
@@ -90,9 +89,8 @@ public class Jenkins64991Test {
         assertThat(redirectedPage.getWebResponse().getContentAsString(), containsStringIgnoringCase(Messages.GlobalSecurityConfiguration_DisplayName()));
     }
 
-
     @Test
-    public void testRedirect() throws Exception {
+    void testRedirect() throws Exception {
         final JenkinsRule.WebClient webClient = j.createWebClient();
         final HtmlPage indexPage = webClient.goTo("");
 
@@ -114,7 +112,7 @@ public class Jenkins64991Test {
     }
 
     @Test
-    public void withoutFrom() throws Exception {
+    void withoutFrom() throws Exception {
         final JenkinsRule.WebClient webClient = j.createWebClient();
         final HtmlPage loginPage = webClient.goTo("login");
 
@@ -129,7 +127,7 @@ public class Jenkins64991Test {
     }
 
     @Test
-    public void emptyFrom() throws Exception {
+    void emptyFrom() throws Exception {
         final JenkinsRule.WebClient webClient = j.createWebClient();
         final HtmlPage loginPage = webClient.goTo("login?from=");
 
@@ -144,7 +142,7 @@ public class Jenkins64991Test {
     }
 
     @Test
-    public void testRedirectToProject() throws Exception {
+    void testRedirectToProject() throws Exception {
         FreeStyleProject freeStyleProject = j.jenkins.getItemByFullName("foo bar", FreeStyleProject.class);
         assertNotNull(freeStyleProject);
         final JenkinsRule.WebClient webClient = j.createWebClient();
@@ -169,24 +167,24 @@ public class Jenkins64991Test {
     }
 
     @Test
-    public void absoluteRedirect() throws Exception {
+    void absoluteRedirect() throws Exception {
         assertNoOpenRedirect("login?from=https:%2F%2Fjenkins.io");
     }
 
     @Test
-    public void protocolRelativeRedirect() throws Exception {
+    void protocolRelativeRedirect() throws Exception {
         String loginUrl = "login?from=%2F%2Fjenkins.io";
         assertNoOpenRedirect(loginUrl);
     }
 
     @Test
-    public void hostRelativeRedirect() throws Exception {
+    void hostRelativeRedirect() throws Exception {
         String loginUrl = "login?from=%2Fjenkins.io";
         assertNoOpenRedirect(loginUrl);
     }
 
     @Test
-    public void relativeRedirect() throws Exception {
+    void relativeRedirect() throws Exception {
         String loginUrl = "login?from=jenkins.io";
         assertNoOpenRedirect(loginUrl);
     }

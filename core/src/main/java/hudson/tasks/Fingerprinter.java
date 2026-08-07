@@ -76,7 +76,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -182,7 +182,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
             Map<String, String> record = new HashMap<>();
 
-            if (targets.length() != 0) {
+            if (!targets.isEmpty()) {
                 String expandedTargets = targets;
                 if (build instanceof AbstractBuild) { // no expansion for pipelines
                     expandedTargets = environment.expand(expandedTargets);
@@ -351,7 +351,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         }
 
         @Override
-        public Publisher newInstance(StaplerRequest req, JSONObject formData) {
+        public Publisher newInstance(StaplerRequest2 req, JSONObject formData) {
             return req.bindJSON(Fingerprinter.class, formData);
         }
 
@@ -485,6 +485,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
          *  the result, even if it doesn't exist
          * @since 1.430
          */
+        @SuppressFBWarnings(value = "EC_UNRELATED_TYPES_USING_POINTER_EQUALITY", justification = "TODO needs triage")
         public Map<AbstractProject, Integer> getDependencies(boolean includeMissing) {
             Map<AbstractProject, Integer> r = new HashMap<>();
 

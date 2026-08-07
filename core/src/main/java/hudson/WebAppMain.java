@@ -45,9 +45,16 @@ import hudson.util.InsufficientPermissionDetected;
 import hudson.util.NoHomeDir;
 import hudson.util.NoTempDir;
 import hudson.util.RingBufferLogHandler;
+import io.jenkins.servlet.ServletContextEventWrapper;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.SessionTrackingMode;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
@@ -64,11 +71,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletResponse;
-import javax.servlet.SessionTrackingMode;
 import jenkins.model.Jenkins;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
@@ -261,12 +263,35 @@ public class WebAppMain implements ServletContextListener {
                         new HudsonFailedToLoad(e).publish(context, _home);
                         throw e;
                     } catch (Exception e) {
-                        new HudsonFailedToLoad(e).publish(context, _home);
+                        // Allow plugins to override error page on boot with custom BootFailure subclass thrown
+                        Throwable error = unwrapException(e);
+                        if (error instanceof InvocationTargetException) {
+                            Throwable targetException = ((InvocationTargetException) error).getTargetException();
+
+                            if (targetException instanceof BootFailure) {
+                                ((BootFailure) targetException).publish(context, _home);
+                            } else {
+                                new HudsonFailedToLoad(e).publish(context, _home);
+                            }
+                        } else {
+                            new HudsonFailedToLoad(e).publish(context, _home);
+                        }
                     } finally {
                         Jenkins instance = Jenkins.getInstanceOrNull();
                         if (!success && instance != null)
                             instance.cleanUp();
                     }
+                }
+
+                private Throwable unwrapException(Exception e) {
+                    Throwable error = e;
+                    while (error.getCause() != null) {
+                        if (error.getCause() instanceof InvocationTargetException) {
+                            return error.getCause();
+                        }
+                        error = error.getCause();
+                    }
+                    return error;
                 }
             };
             initThread.start();
@@ -296,8 +321,19 @@ public class WebAppMain implements ServletContextListener {
         }
     }
 
+    /**
+     * @since 2.475
+     */
     public static void installExpressionFactory(ServletContextEvent event) {
         JellyFacet.setExpressionFactory(event, new ExpressionFactory2());
+    }
+
+    /**
+     * @deprecated use {@link #installExpressionFactory(ServletContextEvent)}
+     */
+    @Deprecated
+    public static void installExpressionFactory(javax.servlet.ServletContextEvent event) {
+        installExpressionFactory(ServletContextEventWrapper.toJakartaServletContextEvent(event));
     }
 
     /**

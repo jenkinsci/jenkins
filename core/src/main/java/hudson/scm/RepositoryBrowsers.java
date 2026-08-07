@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * List of all installed {@link RepositoryBrowsers}.
@@ -63,7 +64,7 @@ public class RepositoryBrowsers {
      * Creates an instance of {@link RepositoryBrowser} from a form submission.
      *
      * @deprecated since 2008-06-19.
-     *      Use {@link #createInstance(Class, StaplerRequest, JSONObject, String)}.
+     *      Use {@link #createInstance(Class, StaplerRequest2, JSONObject, String)}.
      */
     @Deprecated
     public static <T extends RepositoryBrowser>
@@ -82,13 +83,23 @@ public class RepositoryBrowsers {
     /**
      * Creates an instance of {@link RepositoryBrowser} from a form submission.
      *
-     * @since 1.227
+     * @since 2.475
      */
     public static <T extends RepositoryBrowser>
-    T createInstance(Class<T> type, StaplerRequest req, JSONObject parent, String fieldName) throws FormException {
+    T createInstance(Class<T> type, StaplerRequest2 req, JSONObject parent, String fieldName) throws FormException {
         JSONObject o = (JSONObject) parent.get(fieldName);
         if (o == null) return null;
 
         return req.bindJSON(type, o);
+    }
+
+    /**
+     * @deprecated use {@link #createInstance(Class, StaplerRequest2, JSONObject, String)}
+     * @since 1.227
+     */
+    @Deprecated
+    public static <T extends RepositoryBrowser>
+    T createInstance(Class<T> type, StaplerRequest req, JSONObject parent, String fieldName) throws FormException {
+        return createInstance(type, StaplerRequest.toStaplerRequest2(req), parent, fieldName);
     }
 }

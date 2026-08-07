@@ -33,12 +33,11 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.util.FormValidation;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import javax.servlet.ServletException;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -172,7 +171,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
 
         @Override
         public void checkName(String name) {
-            if (StringUtils.isNotBlank(namePattern) && StringUtils.isNotBlank(name)) {
+            if ((namePattern != null && !namePattern.isBlank()) && (name != null && !name.isBlank())) {
                 if (!Pattern.matches(namePattern, name)) {
                     throw new Failure(description == null || description.isEmpty() ?
                         Messages.Hudson_JobNameConventionNotApplyed(name, namePattern) :

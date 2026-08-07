@@ -27,15 +27,6 @@ THE SOFTWARE.
   <l:ajax>
     <div>
       ${%Controls how Jenkins starts this agent.}
-
-      <dl>
-        <j:forEach var="d" items="${h.getComputerLauncherDescriptors()}">
-          <dt><b>${d.displayName}</b></dt>
-          <dd>
-            <st:include class="${d.clazz}" page="help.jelly" optional="true"/>
-          </dd>
-        </j:forEach>
-      </dl>
     </div>
   </l:ajax>
 </j:jelly>

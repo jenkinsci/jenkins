@@ -33,7 +33,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
   <l:layout title="${%New node}" permission="${createPermission}" type="one-column">
-    <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${%New node}" />
     <l:main-panel>
       <j:invokeStatic var="slaves" className="hudson.slaves.NodeDescriptor" method="allInstantiable" />

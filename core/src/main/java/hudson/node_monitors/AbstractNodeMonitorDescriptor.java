@@ -66,6 +66,25 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     }
 
     /**
+     * Indicates if this monitor is capable to take agents offline in case it detects a problem.
+     * If true, this will enable the configuration option to ignore the monitor.
+     * Defaults to {@code true} so plugins that do not override this method behave as before.
+     * Plugins that do implement a monitor that will not take agents offline should override this
+     * method and return false.
+     *
+     * @return true if this monitor might take agents offline
+     * @since 2.437
+     */
+    public boolean canTakeOffline() {
+        return true;
+    }
+
+    @Override
+    public String getConfigPage() {
+        return getViewPage(clazz, "configure.jelly");
+    }
+
+    /**
      * @deprecated as of 1.522
      *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
      */
@@ -214,7 +233,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      */
     protected boolean markOnline(Computer c) {
         if (isIgnored() || c.isOnline()) return false; // noop
-        c.setTemporarilyOffline(false, null);
+        c.setTemporaryOfflineCause(null);
         return true;
     }
 
@@ -228,7 +247,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     protected boolean markOffline(Computer c, OfflineCause oc) {
         if (isIgnored() || c.isTemporarilyOffline()) return false; // noop
 
-        c.setTemporarilyOffline(true, oc);
+        c.setTemporaryOfflineCause(oc);
 
         // notify the admin
         MonitorMarkedNodeOffline no = AdministrativeMonitor.all().get(MonitorMarkedNodeOffline.class);

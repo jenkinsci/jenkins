@@ -65,7 +65,7 @@ public class DoActionFilter implements FunctionList.Filter {
 
         // check whitelist
         ExtensionList<RoutingDecisionProvider> whitelistProviders = ExtensionList.lookup(RoutingDecisionProvider.class);
-        if (whitelistProviders.size() > 0) {
+        if (!whitelistProviders.isEmpty()) {
             for (RoutingDecisionProvider provider : whitelistProviders) {
                 RoutingDecisionProvider.Decision methodDecision = provider.decide(signature);
                 if (methodDecision == RoutingDecisionProvider.Decision.ACCEPTED) {
