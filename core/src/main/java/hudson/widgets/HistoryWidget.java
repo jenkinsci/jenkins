@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import jenkins.model.HistoricalBuild;
+import jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag;
 import jenkins.util.SystemProperties;
 import jenkins.widgets.HistoryPageEntry;
 import jenkins.widgets.HistoryPageFilter;
@@ -206,7 +207,8 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     }
 
     protected HistoryPageFilter<T> newPageFilter() {
-        HistoryPageFilter<T> historyPageFilter = new HistoryPageFilter<>(THRESHOLD);
+        int maxEntries = new NewJobPageUserExperimentalFlag().getFlagValue() ? NEW_JOB_PAGE_THRESHOLD : THRESHOLD;
+        HistoryPageFilter<T> historyPageFilter = new HistoryPageFilter<>(maxEntries);
         historyPageFilter.widget = this;
 
         if (newerThan != null) {
@@ -279,6 +281,11 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     }
 
     static final int THRESHOLD = SystemProperties.getInteger(HistoryWidget.class.getName() + ".threshold", 30);
+
+    /**
+     * Maximum number of builds shown in the builds list when the experimental new job page is enabled.
+     */
+    static final int NEW_JOB_PAGE_THRESHOLD = 10;
 
     public String getNextBuildNumberToFetch() {
         return nextBuildNumberToFetch;

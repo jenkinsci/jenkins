@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2025, Jan Faracik
+Copyright (c) 2026, Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,23 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <l:job-subpage>
-    <j:set var="it" value="${it.object}" />
-
-    <l:app-bar title="Builds">
-      <l:details-bar it="${it}">
-        <t:editDescriptionButton permission="${it.CONFIGURE}" compact="true" />
-      </l:details-bar>
-    </l:app-bar>
-
-    <t:editableDescription permission="${it.CONFIGURE}" hideButton="true"/>
-
-    <j:forEach var="w" items="${it.widgets}">
-      <st:include it="${w}" page="index-new.jelly" />
-    </j:forEach>
-
-    <l:card title="${%Legacy}">
-      <div>
-        <st:include page="jobpropertysummaries.jelly" />
-
-        <st:include page="main.jelly" />
+<j:jelly xmlns:j="jelly:core">
+  <div class="app-temporary-list__item" style="height: 71px">
+    <div class="app-build-item">
+      <div class="app-build-item__icon">
+        <div style="width: 1.25rem; height: 1.25rem; border-radius: 100px" class="app-temporary-skeleton" />
       </div>
-    </l:card>
-  </l:job-subpage>
+
+      <div class="app-temporary-list__item__details">
+        <div class="app-temporary-list__item__details__text">
+          <div class="app-temporary-list__item__label">
+            <div style="width: 3rem; height: 1rem;" class="app-temporary-skeleton" />
+          </div>
+          <div class="app-temporary-list__item__description" style="gap: 0.25rem">
+            <div style="width: 20rem; height: 1rem;" class="app-temporary-skeleton" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </j:jelly>
