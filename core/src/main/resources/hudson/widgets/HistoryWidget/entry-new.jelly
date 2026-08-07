@@ -79,7 +79,9 @@ THE SOFTWARE.
       </div>
 
       <div class="app-temporary-list__item__actions">
-        <l:actions it="${build}" url="${rootURL}/${build.url}" compact="true" />
+        <button class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link" data-href="${link}">
+          <l:icon src="symbol-menu" />
+        </button>
       </div>
     </div>
   </div>

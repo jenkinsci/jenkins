@@ -232,37 +232,39 @@
       border-radius: calc(var(--form-input-border-radius) / 2);
     }
 
-    &:hover {
-      --tertiary-color: var(--text-color);
+    &:has(a.app-temporary-list__item__label) {
+      &:hover {
+        --tertiary-color: var(--text-color);
 
-      background: var(--button-background);
-    }
+        background: var(--button-background);
+      }
 
-    &:has(.app-temporary-list__item__label:active) {
-      background: var(--button-background--hover);
-      box-shadow:
-        0 0 0 var(--jenkins-border-width)
-          color-mix(
-            in sRGB,
-            var(--text-color-secondary) 20%,
-            var(--card-background)
-          ),
-        0 0 0 0.34375rem
-          color-mix(
-            in sRGB,
+      &:has(.app-temporary-list__item__label:active) {
+        background: var(--button-background--hover);
+        box-shadow:
+          0 0 0 var(--jenkins-border-width)
             color-mix(
-                in sRGB,
-                var(--text-color-secondary) 15%,
-                var(--card-background)
-              )
-              65%,
-            transparent
-          );
-    }
+              in sRGB,
+              var(--text-color-secondary) 20%,
+              var(--card-background)
+            ),
+          0 0 0 0.34375rem
+            color-mix(
+              in sRGB,
+              color-mix(
+                  in sRGB,
+                  var(--text-color-secondary) 15%,
+                  var(--card-background)
+                )
+                65%,
+              transparent
+            );
+      }
 
-    &:has(.app-temporary-list__item__label:focus-visible) {
-      background: var(--button-background--hover);
-      box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+      &:has(.app-temporary-list__item__label:focus-visible) {
+        background: var(--button-background--hover);
+        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+      }
     }
 
     &:first-of-type {
@@ -362,7 +364,6 @@
         min-height: 0 !important;
         padding: 0 !important;
         gap: 0.25rem;
-        overflow: hidden;
 
         .jenkins-details__item__icon {
           height: 1rem !important;
