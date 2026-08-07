@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>2.1376.vb_7813a_893286</version>
+    <version>2.1391.vb_93f2a_83691d</version>
     <relativePath />
   </parent>
 
@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.576</revision>
+    <revision>2.577</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2026-07-28T06:06:21Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-08-03T16:48:08Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3384.v60d89463d9e0</remoting.version>
+    <remoting.version>3385.vf1123fb_515da_</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
@@ -97,9 +97,15 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.32</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
+    <!-- Opt-out switches for steps that only matter when producing a release artifact.
+         Set to true by the quick-build profile below; see CONTRIBUTING.md. -->
+    <strip.license.comments.skip>false</strip.license.comments.skip>
+    <!-- Skips node installation, "yarn install" and "yarn build". Only safe when
+         war/src/main/webapp/jsbundles is already populated from an earlier build. -->
+    <skip.frontend>false</skip.frontend>
     <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
     <winstone.version>8.1044.v8e30078854c2</winstone.version>
-    <node.version>24.18.0</node.version>
+    <node.version>24.19.0</node.version>
   </properties>
 
   <!--
@@ -269,7 +275,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>13.8.0</version>
+              <version>13.9.0</version>
             </dependency>
           </dependencies>
           <executions>
@@ -405,6 +411,49 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
+      <!--
+        Merged by id with the quick-build profile in the parent POM, which already skips the
+        linters and static analysis. These additions turn off work that only matters when
+        producing a release artifact, so a development build spends its time compiling.
+      -->
+      <id>quick-build</id>
+      <properties>
+        <!-- Only shrinks the packaged jar. -->
+        <strip.license.comments.skip>true</strip.license.comments.skip>
+        <remoteresources.skip>true</remoteresources.skip>
+        <!--
+          The parent POM cannot set this because a plugin may be producing a test jar, but
+          nothing in this repository consumes one, so there is nothing to compile tests for.
+          Note that this means test classes are absent afterwards: drop the profile (or pass
+          -Dmaven.test.skip=false) before running tests against the build output.
+        -->
+        <maven.test.skip>true</maven.test.skip>
+      </properties>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>io.jenkins.tools.maven</groupId>
+              <artifactId>license-maven-plugin</artifactId>
+              <!-- Version specified in parent POM -->
+              <executions>
+                <execution>
+                  <!--
+                    This plugin has no skip parameter, so unbind it instead. It resolves and
+                    builds the POM of every transitive dependency to produce META-INF/licenses.xml,
+                    which is only read by the "About Jenkins" page; AboutJenkins#getLicensesURL
+                    returns null when it is absent and the view already handles that.
+                  -->
+                  <id>default</id>
+                  <phase>none</phase>
+                </execution>
+              </executions>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+    <profile>
       <id>yarn-execution</id>
       <activation>
         <file>
@@ -416,7 +465,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
             <executions>
               <execution>
                 <id>install node and corepack</id>
@@ -427,6 +476,7 @@ THE SOFTWARE.
                 <configuration>
                   <nodeVersion>v${node.version}</nodeVersion>
                   <nodeDownloadRoot>https://repo.jenkins-ci.org/nodejs-dist/</nodeDownloadRoot>
+                  <skip>${skip.frontend}</skip>
                 </configuration>
               </execution>
               <execution>
@@ -437,6 +487,7 @@ THE SOFTWARE.
                 <phase>initialize</phase>
                 <configuration>
                   <arguments>yarn install</arguments>
+                  <skip>${skip.frontend}</skip>
                 </configuration>
               </execution>
               <execution>
@@ -447,6 +498,7 @@ THE SOFTWARE.
                 <phase>generate-sources</phase>
                 <configuration>
                   <arguments>yarn build</arguments>
+                  <skip>${skip.frontend}</skip>
                 </configuration>
               </execution>
             </executions>
@@ -456,19 +508,15 @@ THE SOFTWARE.
             <artifactId>maven-clean-plugin</artifactId>
             <!-- Version specified in grandparent POM -->
             <configuration>
+              <!--
+                The node toolchain and the downloaded packages are deliberately left alone:
+                deleting them costs several seconds of its own and then forces the node install
+                and "yarn install" to start from nothing on every build, and since .yarnrc.yml
+                sets enableGlobalCache: false, .yarn holds the only copy of the package cache.
+                "yarn install" runs at initialize on every build, so stale dependencies still
+                heal themselves. Use -Dclean.node to delete them anyway.
+              -->
               <filesets>
-                <fileset>
-                  <directory>.yarn</directory>
-                  <followSymlinks>false</followSymlinks>
-                </fileset>
-                <fileset>
-                  <directory>node</directory>
-                  <followSymlinks>false</followSymlinks>
-                </fileset>
-                <fileset>
-                  <directory>node_modules</directory>
-                  <followSymlinks>false</followSymlinks>
-                </fileset>
                 <fileset>
                   <directory>war/src/main/webapp/jsbundles</directory>
                   <followSymlinks>false</followSymlinks>
@@ -494,7 +542,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
             <executions>
               <execution>
                 <id>yarn lint:ci</id>
@@ -539,7 +587,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
             <executions>
               <execution>
                 <id>yarn lint</id>
@@ -553,6 +601,46 @@ THE SOFTWARE.
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!-- When changing branches that touch frontend assets this can be a good idea but not for every fresh build. -->
+      <id>clean-node</id>
+      <activation>
+        <property>
+          <name>clean.node</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <!-- Version specified in grandparent POM -->
+            <configuration>
+              <!-- Replaced rather than appended, because merging repeated <fileset> elements
+                   across profiles is not well defined. -->
+              <filesets combine.self="override">
+                <fileset>
+                  <directory>war/src/main/webapp/jsbundles</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
+                  <directory>.yarn</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
+                  <directory>node</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
+                  <directory>node_modules</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+              </filesets>
+            </configuration>
           </plugin>
         </plugins>
       </build>

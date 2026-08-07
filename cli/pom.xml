@@ -104,6 +104,19 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+            <!-- Indexes @Restricted; version resolves from dependencyManagement (jenkins-bom) -->
+            <path>
+              <groupId>org.jenkins-ci</groupId>
+              <artifactId>annotation-indexer</artifactId>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <configuration>
@@ -163,6 +176,14 @@
                       them. BouncyCastle et al. run on their base classes.
                     -->
                     <exclude>META-INF/versions/**</exclude>
+                    <!--
+                      annotation-indexer declares an annotation processor. Relocating it leaves this
+                      uber jar advertising io.jenkins.cli.shaded...AnnotationProcessorImpl, so javac
+                      runs it in every module that compiles against the CLI. It can never match
+                      anything, since the annotations it looks for are relocated too, but it does
+                      defeat compile avoidance. A runtime CLI jar has no compile-time processor.
+                    -->
+                    <exclude>META-INF/services/javax.annotation.processing.Processor</exclude>
                   </excludes>
                 </filter>
               </filters>
