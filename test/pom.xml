@@ -84,7 +84,7 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>7.2.0-990.vf220b_2a_496f9</version>
+        <version>7.3.1-1013.v0835a_879ec6d</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -192,7 +192,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2573.vd91b_8a_43e019</version>
+      <version>2578.v44660312fd37</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -232,19 +232,19 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.1100.ve9eed61d16c4</version>
+      <version>6.1106.v3a_d9a_6d2465e</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1502.v5c95e620ddfe</version>
+      <version>1506.v948b_b_b_7dec44</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1413.v736fa_5b_61d80</version>
+      <version>1418.v67a_81935603c</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -256,13 +256,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.2.10</version>
+      <version>3.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>870.v9db_fcfc2f45b_</version>
+      <version>905.vcc6831e8760a_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -291,6 +291,37 @@ THE SOFTWARE.
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+            <!-- Indexes @Extension, @TestExtension, @OptionalExtension, @Symbol, @Restricted,
+                 @Initializer, @ExportedBean and @JmhBenchmark under META-INF -->
+            <path>
+              <groupId>org.jenkins-ci</groupId>
+              <artifactId>annotation-indexer</artifactId>
+            </path>
+            <!-- Writes the binary META-INF/annotations indexes -->
+            <path>
+              <groupId>net.java.sezpoz</groupId>
+              <artifactId>sezpoz</artifactId>
+            </path>
+            <!-- Emits the *.stapler constructor-parameter files -->
+            <path>
+              <groupId>org.kohsuke.stapler</groupId>
+              <artifactId>stapler</artifactId>
+            </path>
+            <!--
+              Generates META-INF/BenchmarkList and META-INF/CompilerHints for the JMH benchmarks.
+            -->
+            <path>
+              <groupId>org.openjdk.jmh</groupId>
+              <artifactId>jmh-generator-annprocess</artifactId>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
@@ -353,7 +384,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>434.v01b_a_5a_27a_53c</version>
+                  <version>444.v568b_174ece88</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>

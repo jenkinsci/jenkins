@@ -203,6 +203,10 @@ public class CopyOnWriteList<E> implements Iterable<E> {
 
         @Override
         public boolean canConvert(Class type) {
+            return canConvertRobust(type);
+        }
+
+        static boolean canConvertRobust(Class<?> type) {
             return type == CopyOnWriteList.class;
         }
 
