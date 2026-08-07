@@ -77,3 +77,6 @@ node_modules/
 
 # Generated JavaScript Bundles
 war/src/main/webapp/jsbundles/
+
+# Generated core-libs to ensure correct classpath in jetty:run, see `copy-core-lib-to-src` in `war/pom.xml`.
+war/src/main/webapp/WEB-INF/core-lib
