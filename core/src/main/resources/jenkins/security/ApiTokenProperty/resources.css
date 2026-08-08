@@ -161,3 +161,61 @@
 .token-use-counter {
   display: none;
 }
+
+.token-scope-mode {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.token-scope-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 40vh;
+  overflow-y: auto;
+  padding: 0.5rem;
+  border: var(--card-border-width) solid var(--card-border-color);
+  border-radius: var(--form-input-border-radius);
+}
+
+.token-scope-group {
+  padding: 0.25rem 0;
+}
+
+.token-scope-group__title {
+  font-weight: var(--font-bold-weight);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+
+.token-scope-group__items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.25rem 0 0.25rem 1rem;
+}
+
+.token-scope-chip {
+  font-size: var(--font-size-xs);
+  font-weight: normal;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--background-elevated);
+  color: var(--text-color-secondary);
+  border: 1px solid var(--card-border-color);
+  margin-left: 0.5rem;
+}
+
+.token-scope-chip--scoped {
+  background: var(--success-color-alpha);
+  color: var(--success-color);
+  border-color: var(--success-color);
+}
+
+.token-scope-chip--unscoped {
+  background: var(--warning-color-alpha);
+  color: var(--warning-color);
+  border-color: var(--warning-color);
+}
