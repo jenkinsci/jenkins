@@ -2,6 +2,8 @@ package hudson.init.impl;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.init.Initializer;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,6 +12,7 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.ErrorAttributeFilter;
 import jenkins.model.Jenkins;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
@@ -20,6 +23,7 @@ import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.UncaughtExceptionFilter;
 import org.kohsuke.stapler.WebApp;
+import org.springframework.security.core.Authentication;
 
 /**
  * Deals with exceptions that get thrown all the way up to the Stapler rendering layer.
@@ -56,7 +60,14 @@ public class InstallUncaughtExceptionHandler {
         req.setAttribute("jakarta.servlet.error.exception", e);
         rsp.setStatus(code);
         try {
-            WebApp.get(j.getServletContext()).getSomeStapler().invoke(req, rsp, j, "/oops");
+            final Object attribute = req.getAttribute(ErrorAttributeFilter.USER_ATTRIBUTE);
+            if (attribute instanceof Authentication) {
+                try (ACLContext unused = ACL.as2((Authentication) attribute)) {
+                    WebApp.get(j.getServletContext()).getSomeStapler().invoke(req, rsp, j, "/oops");
+                }
+            } else {
+                WebApp.get(j.getServletContext()).getSomeStapler().invoke(req, rsp, j, "/oops");
+            }
         } catch (ServletException | IOException x) {
             if (!Stapler.isSocketException(x)) {
                 throw x;
