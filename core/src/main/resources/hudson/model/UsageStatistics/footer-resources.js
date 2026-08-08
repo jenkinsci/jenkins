@@ -1,5 +1,2 @@
-Behaviour.addLoadEvent(function () {
-  var targetDiv = document.querySelector("#usage-stats-div");
-  var statData = targetDiv.getAttribute("data-inserted-from-java");
-  loadScript("https://usage.jenkins.io/usage-stats.js?" + statData);
-});
+// Usage statistics are now submitted from the controller, not the browser.
+// This file is kept for compatibility but no longer contains any code.
