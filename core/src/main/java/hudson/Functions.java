@@ -2757,4 +2757,9 @@ public class Functions {
 
         return MessageFormat.format(format, args);
     }
+
+    @Restricted(NoExternalUse.class)
+    public static String getActionEventType(Action action) {
+        return action.getEvent().getClass().getSimpleName();
+    }
 }
