@@ -43,6 +43,8 @@ THE SOFTWARE.
     <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
+    <!-- Not managed by jenkins-bom, so referenced from annotationProcessorPaths via this property -->
+    <core-annotation-processors.version>59.ve181f58722c6</core-annotation-processors.version>
   </properties>
 
   <dependencyManagement>
@@ -416,10 +418,12 @@ THE SOFTWARE.
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <!-- working around MCOMPILER-97 -->
+      <!-- Also listed in annotationProcessorPaths above; kept as a dependency so that
+           jenkins-core continues to ship META-INF/services/javax.annotation.processing.Processor
+           for plugin builds. -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>core-annotation-processors</artifactId>
-      <version>59.ve181f58722c6</version>
+      <version>${core-annotation-processors.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
@@ -470,6 +474,43 @@ THE SOFTWARE.
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <!--
+            Declare the annotation processors explicitly rather than letting javac discover them by
+            scanning the whole compile classpath.
+          -->
+          <annotationProcessorPaths>
+            <path>
+              <groupId>net.java.sezpoz</groupId>
+              <artifactId>sezpoz</artifactId>
+            </path>
+            <path>
+              <groupId>org.jenkins-ci</groupId>
+              <artifactId>annotation-indexer</artifactId>
+            </path>
+            <path>
+              <groupId>org.jenkins-ci</groupId>
+              <artifactId>core-annotation-processors</artifactId>
+              <version>${core-annotation-processors.version}</version>
+            </path>
+            <path>
+              <groupId>org.kohsuke</groupId>
+              <artifactId>windows-package-checker</artifactId>
+            </path>
+            <path>
+              <groupId>org.kohsuke.metainf-services</groupId>
+              <artifactId>metainf-services</artifactId>
+            </path>
+            <path>
+              <groupId>org.kohsuke.stapler</groupId>
+              <artifactId>stapler</artifactId>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
