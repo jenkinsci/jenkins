@@ -285,7 +285,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         var clouds = new ArrayList<>(Jenkins.get().clouds);
         clouds.sort(Comparator.comparingInt(c -> getIndexOf(namesList, c)));
         Jenkins.get().clouds.replaceBy(clouds);
-        FormApply.success(req.getContextPath() + "/manage").generateResponse(req, rsp, null);
+        FormApply.success(req.getContextPath() + "/manage/" + getUrlName()).generateResponse(req, rsp, null);
     }
 
     private static int getIndexOf(List<String> namesList, Cloud cloud) {

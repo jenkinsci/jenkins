@@ -46,6 +46,7 @@ THE SOFTWARE.
 
   <l:settings-subpage header="${header}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}"/>
+    <l:userExperimentalFlag var="newManageJenkins" flagClassName="jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag" />
     <j:set var="pluginsUrl" value="${rootURL}/manage/pluginManager/available?filter=UI Themes" />
     <j:set var="hasPlugins" value="${it.hasPlugins()}" />
 
@@ -71,12 +72,15 @@ THE SOFTWARE.
             </f:rowSet>
           </j:forEach>
 
-          <f:saveApplyBar/>
+          <j:choose>
+            <j:when test="${newManageJenkins}">
+              <f:saveBar/>
+            </j:when>
+            <j:otherwise>
+              <f:saveApplyBar/>
+            </j:otherwise>
+          </j:choose>
         </f:form>
-
-        <l:hasAdministerOrManage>
-          <st:adjunct includes="lib.form.confirm" />
-        </l:hasAdministerOrManage>
       </j:otherwise>
     </j:choose>
   </l:settings-subpage>
