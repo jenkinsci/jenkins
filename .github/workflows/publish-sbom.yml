@@ -1,0 +1,55 @@
+name: Publish SBOM
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  determine-version:
+    if: ${{ github.repository_owner == 'jenkinsci' }}
+    runs-on: ubuntu-latest
+    outputs:
+      is-rc: ${{ steps.set-version.outputs.is-rc }}
+    steps:
+      - name: Setup Maven
+        uses: s4u/setup-maven-action@ba34de01b7f4ba2ab8e2860df8993a29f4477056 # v1.20.0
+        with:
+          java-version: 21
+          java-distribution: temurin
+      - name: Set version
+        id: set-version
+        run: |
+          version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          is_rc=false
+          if [[ ${version} == *"-SNAPSHOT" ]]; then
+            is_rc=true
+          fi
+          echo "is-rc=${is_rc}" >> $GITHUB_OUTPUT
+
+  sbom:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    needs: determine-version
+    if: ${{ needs.determine-version.outputs.is-rc == 'false' }}
+    steps:
+      - name: Setup Maven
+        uses: s4u/setup-maven-action@ba34de01b7f4ba2ab8e2860df8993a29f4477056 # v1.20.0
+        with:
+          java-version: 21
+          java-distribution: temurin
+      - name: Generate SBOM
+        run: |
+          mvn org.cyclonedx:cyclonedx-maven-plugin:makeBom -pl core
+          mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom -pl war
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            core/target/jenkins-core-*-cyclonedx.json
+            war/target/jenkins-war-*-cyclonedx.json
