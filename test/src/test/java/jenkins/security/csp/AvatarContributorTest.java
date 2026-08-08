@@ -150,4 +150,23 @@ public class AvatarContributorTest {
         assertThat(loggerRule, recorded(Level.CONFIG, is("Adding domain 'https://avatars.example.com' from avatar URL: hTTps://AVATARS.example.com/user/avatar.png")));
         assertThat(loggerRule, recorded(Level.FINEST, is("Skipped adding duplicate domain 'https://avatars.example.com' from avatar URL: HttPS://avatars.EXAMPLE.com/user/avatar.png")));
     }
+
+    @Test
+    void testAllowUrlWithDefaults_ValidUrl(JenkinsRule j) {
+        AvatarContributor.allowUrl("https://avatars.example.com/user/avatar.png");
+
+        String csp = new CspBuilder().withDefaultContributions().build();
+
+        assertThat(csp, containsString("https://avatars.example.com/user/avatar.png"));
+    }
+
+    @Test
+    void testAllowUrlWithDefaults_InvalidUrl(JenkinsRule j) {
+        AvatarContributor.allowUrl("javascript:alert(1)");
+
+        String csp = new CspBuilder().withDefaultContributions().build();
+
+        assertThat(csp, not(containsString("javascript:alert(1)")));
+    }
+
 }
