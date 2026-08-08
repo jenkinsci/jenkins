@@ -68,7 +68,7 @@ class DownloadService2Test {
     private static void assertRoots(String expected, String file) throws Exception {
         URL resource = DownloadService2Test.class.getResource(file);
         assertNotNull(resource, file);
-        JSONObject json = JSONObject.fromObject(DownloadService.loadJSONHTML(resource));
+        JSONObject json = JSONObject.fromObject(DownloadService.loadJSONHTML(resource.toURI()));
         Set<String> keySet = json.keySet();
         assertEquals(expected, new TreeSet<>(keySet).toString());
     }
