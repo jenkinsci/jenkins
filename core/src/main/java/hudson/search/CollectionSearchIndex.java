@@ -25,10 +25,14 @@
 package hudson.search;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.User;
+import hudson.security.ACL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
 
 /**
  * {@link SearchIndex} built on a {@link Map}.
@@ -66,16 +70,43 @@ public abstract class CollectionSearchIndex<SMT extends SearchableModelObject> i
         if (isCaseSensitive) {
           token = token.toLowerCase();
         }
+
+        // Determine if the current user should be restricted from seeing other users names
+        boolean restrictUserNames = isUserNameRestrictionRequired();
+
         for (SMT o : allAsIterable()) {
             String name = getName(o);
             if (isCaseSensitive)
                 name = name.toLowerCase();
-            if (o != null && name.contains(token))
+
+            if (name.contains(token) && (!restrictUserNames ||  ( !isUserItem(o))))
                 result.add(o);
         }
     }
 
     protected String getName(SMT o) {
         return o.getDisplayName();
+    }
+
+    protected boolean isUserItem(SMT o) {
+        if (o instanceof User) {
+            return true;
+        }
+        return false;
+    }
+
+
+    private boolean isUserNameRestrictionRequired() {
+        // Get the current user's authentication
+        Authentication authentication = Jenkins.getAuthentication();
+
+        // Retrieve ACL and check for RESTRICTED_READ permission
+        ACL acl = Jenkins.get().getACL();
+        boolean hasRestrictedReadPermission = acl.hasPermission(authentication, Jenkins.RESTRICTED_READ);
+        boolean hasReadPermission = acl.hasPermission(authentication, Jenkins.READ);
+        boolean hasAdminPermission = acl.hasPermission(authentication, Jenkins.ADMINISTER);
+
+        // Restrict only if the user has RESTRICTED_READ and does not have READ or ADMINISTER
+        return hasRestrictedReadPermission && !hasReadPermission && !hasAdminPermission;
     }
 }
