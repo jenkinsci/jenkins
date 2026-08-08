@@ -21,7 +21,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
     <l:view contentType="text/html">
-        <html>
+        <html lang="${request2.locale.toLanguageTag()}">
             <body>
                 <j:choose>
                     <j:if test="${parentPath.size() ne 0}">
