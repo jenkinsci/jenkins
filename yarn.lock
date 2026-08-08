@@ -2768,7 +2768,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"browserslist@npm:^4.0.0, browserslist@npm:^4.24.0, browserslist@npm:^4.28.1, browserslist@npm:^4.28.2, browserslist@npm:^4.28.6":
+"browserslist@npm:^4.0.0, browserslist@npm:^4.24.0, browserslist@npm:^4.28.1, browserslist@npm:^4.28.2, browserslist@npm:^4.28.6, browserslist@npm:^4.28.7":
   version: 4.28.7
   resolution: "browserslist@npm:4.28.7"
   dependencies:
@@ -2950,11 +2950,11 @@ __metadata:
   linkType: hard
 
 "core-js-compat@npm:^3.48.0":
-  version: 3.49.0
-  resolution: "core-js-compat@npm:3.49.0"
+  version: 3.50.0
+  resolution: "core-js-compat@npm:3.50.0"
   dependencies:
-    browserslist: "npm:^4.28.1"
-  checksum: 10c0/546e64b7ce45f724825bc13c1347f35c0459a6e71c0dcccff3ec21fbff463f5b0b97fc1220e6d90302153863489301793276fe2bf96f46001ff555ead4140308
+    browserslist: "npm:^4.28.7"
+  checksum: 10c0/1ccfe07f47f7d8a14e615c5e7adb3b9d8b3dcb2f228fd0d00a59723dbf9b944a4a3f4ceb96c1861cb9fb9838d486163ceebaec3323d15c6d456b45d2a2a03583
   languageName: node
   linkType: hard
 
@@ -3294,9 +3294,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.5.393":
-  version: 1.5.400
-  resolution: "electron-to-chromium@npm:1.5.400"
-  checksum: 10c0/542f30d1aa44d3c6e287e402aeb1636aa134d87222a57d7e6c2a1b4c1279859ed4c425b842cb7e8d09a33f6e4139b7cfa99b2ec8cb18b112f85ce1e76cd26f60
+  version: 1.5.401
+  resolution: "electron-to-chromium@npm:1.5.401"
+  checksum: 10c0/96dc4e94b9cae49dc36541bc9fdd51ae605b02a09b0e224da648af9fdd7985e841dbec35137098c35f90199f57a311a0e13f76bc765404ed237b8aa4a8c3a5f4
   languageName: node
   linkType: hard
 
@@ -6424,8 +6424,8 @@ __metadata:
   linkType: hard
 
 "terser@npm:^5.31.1":
-  version: 5.49.1
-  resolution: "terser@npm:5.49.1"
+  version: 5.49.2
+  resolution: "terser@npm:5.49.2"
   dependencies:
     "@jridgewell/source-map": "npm:^0.3.3"
     acorn: "npm:^8.15.0"
@@ -6433,7 +6433,7 @@ __metadata:
     source-map-support: "npm:~0.5.20"
   bin:
     terser: bin/terser
-  checksum: 10c0/f76db3659f7f3391b7e2330a1c1d9247878ef0d8a545e244e1758cb3a915b39f0225916e370b473a9eddaf60743ae806efa24b20d58d70a4af8237878d2c1140
+  checksum: 10c0/9f2d61c21ad259af2cdc8dc3120dc27678fc660d043ededffbdb062ac54e2f7b0da19e0975502dbfbe0aa9f0c091f87d6037781e4089770569698103d33df0fa
   languageName: node
   linkType: hard
 
