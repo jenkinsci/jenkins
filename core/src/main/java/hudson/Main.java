@@ -211,6 +211,7 @@ public class Main {
     /**
      * Connects to the given HTTP URL and configure time out, to avoid infinite hang.
      */
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Helper that connects to the Jenkins URL configured for the build, used to report build status back; opening the connection is the intended behavior.")
     private static HttpURLConnection open(URL url) throws IOException {
         HttpURLConnection c = (HttpURLConnection) url.openConnection();
         c.setReadTimeout(TIMEOUT);

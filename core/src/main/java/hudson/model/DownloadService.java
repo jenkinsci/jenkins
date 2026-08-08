@@ -332,6 +332,7 @@ public class DownloadService {
         /**
          * This is where the retrieved file will be stored.
          */
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         public TextFile getDataFile() {
             return new TextFile(new File(Jenkins.get().getRootDir(), "updates/" + id));
         }

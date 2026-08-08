@@ -292,6 +292,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         }
 
         @Override
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         public List<Record> invoke(File baseDir, VirtualChannel channel) throws IOException {
             List<Record> results = new ArrayList<>();
 
