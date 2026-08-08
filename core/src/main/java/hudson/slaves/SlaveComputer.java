@@ -125,6 +125,19 @@ public class SlaveComputer extends Computer {
     private ComputerLauncher launcher;
 
     /**
+     * Lock used to synchronize the execution of {@link ComputerLauncher#afterDisconnect(SlaveComputer, TaskListener)}.
+     * This ensures the disconnect logic is only executed once per connection cycle, and that
+     * concurrent attempts to disconnect block until the first execution completes.
+     * Blocking is critical to prevent file-lock race conditions during teardown on Windows.
+     */
+    private final Object disconnectLock = new Object();
+    /**
+     * Guard flag protected by {@link #disconnectLock} to track if the launcher's afterDisconnect
+     * has already been called for the current channel lifecycle.
+     */
+    private boolean afterDisconnectCalled = false;
+
+    /**
      * Perpetually writable log file.
      */
     private final RewindableFileOutputStream log;
@@ -431,8 +444,8 @@ public class SlaveComputer extends Computer {
                            @CheckForNull OutputStream launchLog,
                            @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         ChannelBuilder cb = new ChannelBuilder(nodeName, threadPoolForRemoting)
-            .withMode(Channel.Mode.NEGOTIATE)
-            .withHeaderStream(launchLog);
+                .withMode(Channel.Mode.NEGOTIATE)
+                .withHeaderStream(launchLog);
 
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
             cc.onChannelBuilding(cb, this);
@@ -651,7 +664,7 @@ public class SlaveComputer extends Computer {
                 }
                 closeChannel();
                 try {
-                    launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                    runAfterDisconnectOnce();
                 } catch (Throwable t) {
                     LogRecord lr = new LogRecord(Level.SEVERE,
                             "Launcher {0}'s afterDisconnect method propagated an exception when {1}'s connection was closed: {2}");
@@ -671,17 +684,17 @@ public class SlaveComputer extends Computer {
             if (!ALLOW_UNSUPPORTED_REMOTING_VERSIONS) {
                 taskListener.fatalError(
                         "Rejecting the connection because the Remoting version is older than the"
-                            + " minimum required version (%s). To allow the connection anyway, set"
-                            + " the hudson.slaves.SlaveComputer.allowUnsupportedRemotingVersions"
-                            + " system property to true.",
+                                + " minimum required version (%s). To allow the connection anyway, set"
+                                + " the hudson.slaves.SlaveComputer.allowUnsupportedRemotingVersions"
+                                + " system property to true.",
                         RemotingVersionInfo.getMinimumSupportedVersion());
                 disconnect(new OfflineCause.LaunchFailed());
                 return;
             } else {
                 taskListener.error(
                         "The Remoting version is older than the minimum required version (%s)."
-                            + " The connection will be allowed, but compatibility is NOT"
-                            + " guaranteed.",
+                                + " The connection will be allowed, but compatibility is NOT"
+                                + " guaranteed.",
                         RemotingVersionInfo.getMinimumSupportedVersion());
             }
         }
@@ -742,6 +755,12 @@ public class SlaveComputer extends Computer {
             isUnix = _isUnix;
             numRetryAttempt = 0;
             this.channel = channel;
+
+            // Reset the disconnect guard for the new connection lifecycle
+            synchronized (disconnectLock) {
+                this.afterDisconnectCalled = false;
+            }
+
             this.absoluteRemoteFs = remoteFS;
             defaultCharset = Charset.forName(defaultCharsetName);
 
@@ -823,8 +842,17 @@ public class SlaveComputer extends Computer {
             // (which could be typical) won't block UI thread.
             launcher.beforeDisconnect(SlaveComputer.this, taskListener);
             closeChannel();
-            launcher.afterDisconnect(SlaveComputer.this, taskListener);
+            runAfterDisconnectOnce();
         });
+    }
+
+    private void runAfterDisconnectOnce() {
+        synchronized (disconnectLock) {
+            if (!afterDisconnectCalled) {
+                afterDisconnectCalled = true;
+                launcher.afterDisconnect(SlaveComputer.this, taskListener);
+            }
+        }
     }
 
     @RequirePOST
