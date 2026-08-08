@@ -23,14 +23,13 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:dd="/lib/layout/dropdowns"
-         xmlns:st="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
   <st:documentation>
     A reusable container for subpages relating to Runs in Jenkins.
     Renders a tabbed layout for runs, including build status and actions.
   </st:documentation>
 
-  <l:layout title="${it.object.fullDisplayName} ${it.displayName}">
+  <l:layout title="${it.displayName} - ${it.object.fullDisplayName}">
     <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
 
     <j:choose>
@@ -38,7 +37,10 @@ THE SOFTWARE.
         <l:main-panel>
           <j:set var="buildUrl" value="${h.decompose(request2)}" />
 
-          <div class="app-build-bar">
+          <div class="app-build-bar"
+               data-progress="${it.object.executor.progress}"
+               data-status-url="${rootURL}/${it.object.url}statusIcon"
+               data-actions-url="${rootURL}/${it.object.url}app-bar-actions">
             <div class="app-build-bar__content">
               <a class="app-build-bar__content__headline" href="${rootURL}/${it.object.url}" tabindex="-1">
                 <l:icon alt="${it.iconColor.description}"
@@ -70,6 +72,10 @@ THE SOFTWARE.
             <div class="app-build-bar__controls">
               <l:actions it="${it.object}" />
             </div>
+
+            <j:if test="${it.object.building}">
+              <st:adjunct includes="lib.hudson.build-caption" />
+            </j:if>
           </div>
 
           <div class="app-build-content">
