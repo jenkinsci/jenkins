@@ -9,6 +9,9 @@
     <file url="file://$PROJECT_DIR$/cli/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cli/src/test/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cli/src/test/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/core-libs/src/filter/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/core-libs/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/core-libs/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/core/src/filter/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/core/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/core/src/main/resources" charset="UTF-8" />
