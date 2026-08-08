@@ -71,6 +71,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
+import jenkins.model.experimentalflags.UserExperimentalFlagsProperty;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.FormEncodingType;
@@ -135,6 +136,27 @@ class ViewTest {
         assertEquals("Some description", view.getDescription());
         assertTrue(view.isFilterExecutors());
         assertTrue(view.isFilterQueue());
+    }
+
+    @Issue("JENKINS-76289")
+    @Test
+    void newDashboardShowsIconSizeControl() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
+        User user = User.getOrCreateByIdOrFullName("new-dashboard-user");
+        Map<String, String> flags = new HashMap<>();
+        flags.put("new-dashboard-page.flag", "true");
+        user.addProperty(new UserExperimentalFlagsProperty(flags));
+
+        j.createFreeStyleProject("p");
+
+        WebClient webClient = j.createWebClient().withBasicCredentials(user.getId());
+        HtmlPage page = webClient.goTo("view/all/");
+
+        assertNotNull(page.getFirstByXPath("//div[contains(@class,'app-build-bar')]"));
+        assertNotNull(page.getFirstByXPath("//div[contains(@class,'jenkins-icon-size')]"));
+        assertNotNull(page.getFirstByXPath("//a[contains(@href,'iconSize?16x16')]"));
+        assertNotNull(page.getFirstByXPath("//a[contains(@href,'iconSize?24x24')]"));
     }
 
     @Issue("JENKINS-7100")
