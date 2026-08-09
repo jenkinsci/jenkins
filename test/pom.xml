@@ -232,7 +232,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.1100.ve9eed61d16c4</version>
+      <version>6.1106.v3a_d9a_6d2465e</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -244,7 +244,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1416.vd753e036de5e</version>
+      <version>1418.v67a_81935603c</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -291,6 +291,37 @@ THE SOFTWARE.
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+            <!-- Indexes @Extension, @TestExtension, @OptionalExtension, @Symbol, @Restricted,
+                 @Initializer, @ExportedBean and @JmhBenchmark under META-INF -->
+            <path>
+              <groupId>org.jenkins-ci</groupId>
+              <artifactId>annotation-indexer</artifactId>
+            </path>
+            <!-- Writes the binary META-INF/annotations indexes -->
+            <path>
+              <groupId>net.java.sezpoz</groupId>
+              <artifactId>sezpoz</artifactId>
+            </path>
+            <!-- Emits the *.stapler constructor-parameter files -->
+            <path>
+              <groupId>org.kohsuke.stapler</groupId>
+              <artifactId>stapler</artifactId>
+            </path>
+            <!--
+              Generates META-INF/BenchmarkList and META-INF/CompilerHints for the JMH benchmarks.
+            -->
+            <path>
+              <groupId>org.openjdk.jmh</groupId>
+              <artifactId>jmh-generator-annprocess</artifactId>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
