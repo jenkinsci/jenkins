@@ -6,13 +6,13 @@ package hudson;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.os.WindowsUtil;
 import java.io.File;
 import java.io.IOException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
@@ -24,13 +24,9 @@ class RemoveWindowsDirectoryJunctionTest {
     @TempDir
     private File tmp;
 
-    @BeforeEach
-    void windowsOnly() {
-       assumeTrue(Functions.isWindows());
-    }
-
     @Test
     @Issue("JENKINS-2995")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Uses Windows-specific features")
     void testJunctionIsRemovedButNotContents() throws Exception {
         File subdir1 = newFolder(tmp, "notJunction");
         File f1 = new File(subdir1, "testfile1.txt");
