@@ -1,7 +1,6 @@
 package hudson.util.io;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.FilePath;
 import java.io.File;
@@ -62,7 +61,7 @@ class ZipArchiverTest {
             largeFile.setLength(length);
         } catch (IOException e) {
             // We probably don't have enough free disk space. That's ok, we'll skip this test...
-            assumeTrue(false, e.toString());
+            return;
         }
 
         // a file to store the zip archive in
