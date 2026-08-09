@@ -1558,4 +1558,39 @@ class DirectoryBrowserSupportTest {
         }
     }
 
+    @TestExtension({"directoryBrowserSupportFilterTest", "directoryBrowserSupportNonViewFilterTest"})
+    public static class TestGzipFilter extends DirectoryBrowserSupportFilter {
+        @Override
+        public Context filter(Context context) throws IOException {
+            if (context.getFile().getName().endsWith(".custom")) {
+                String modified = "MODIFIED: " + new String(context.getInputStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                byte[] bytes = modified.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                context.setInputStream(new java.io.ByteArrayInputStream(bytes));
+                context.setLength(bytes.length);
+            }
+            return context;
+        }
+    }
+
+    @Test
+    public void directoryBrowserSupportFilterTest() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScm(new SingleFileSCM("test.custom", "hello world"));
+        p.getPublishersList().add(new ArtifactArchiver("test.custom"));
+        j.buildAndAssertSuccess(p);
+
+        org.htmlunit.Page page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.custom/*view*/", "text/plain");
+        assertEquals("MODIFIED: hello world", page.getWebResponse().getContentAsString());
+    }
+
+    @Test
+    public void directoryBrowserSupportNonViewFilterTest() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScm(new SingleFileSCM("test.custom", "hello world"));
+        p.getPublishersList().add(new ArtifactArchiver("test.custom"));
+        j.buildAndAssertSuccess(p);
+
+        org.htmlunit.Page page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.custom", "text/plain");
+        assertEquals("MODIFIED: hello world", page.getWebResponse().getContentAsString());
+    }
 }
