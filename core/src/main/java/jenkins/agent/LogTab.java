@@ -43,6 +43,7 @@ public class LogTab extends Tab {
         return "symbol-logs";
     }
 
+    @Override
     public String getUrlName() {
         return "log";
     }

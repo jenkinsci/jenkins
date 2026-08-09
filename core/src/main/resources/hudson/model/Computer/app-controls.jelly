@@ -24,60 +24,105 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:st="jelly:stapler" xmlns:dd="/lib/layout/dropdowns">
   <j:if test="${it.manualLaunchAllowed}">
     <st:include from="${it.launcher}" page="app-bar-controls.jelly" optional="true"/>
   </j:if>
   <!-- temporarily offline switch -->
   <j:choose>
     <j:when test="${it.temporarilyOffline}">
-      <l:hasPermission permission="${it.CONNECT}">
-        <form method="post" action="toggleOffline">
-          <f:submit value="${%submit.temporarilyOffline}"  />
-        </form>
-        <l:hasPermission permission="${it.DISCONNECT}">
-          <l:dialog title="${%Set Offline Reason}">
-            <f:form method="post" action="changeOfflineCause" name="changeOfflineCause">
-              <div class="jenkins-!-margin-bottom-1">
-              ${%blurb}
-              </div>
-              <f:textarea name="offlineMessage" value="${it.temporaryOfflineCauseReason}" class="jenkins-form-item"/>
+      <j:if test="${h.hasPermission(it, it.CONNECT) or h.hasPermission(it, it.DISCONNECT)}">
+        <div class="${h.hasPermission(it, it.DISCONNECT) ? 'jenkins-split-button' : ''}">
+          <l:hasPermission permission="${it.CONNECT}">
+            <form id="toggleForm" method="post" action="toggleOffline" class="jenkins-hidden">
+            </form>
+            <button form="toggleForm" type="submit" class="jenkins-button jenkins-button--primary">
+              ${%submit.temporarilyOffline}
+            </button>
+            <l:hasPermission permission="${it.DISCONNECT}">
+              <l:overflowButton icon="symbol-chevron-down"
+                clazz="jenkins-button--primary">
+                <dd:custom>
+                  <l:dialog title="${%Set Offline Reason}">
+                    <f:form method="post" action="changeOfflineCause" name="changeOfflineCause">
+                      <div class="jenkins-!-margin-bottom-1">
+                      ${%blurb}
+                      </div>
+                      <f:textarea name="offlineMessage" value="${it.temporaryOfflineCauseReason}" class="jenkins-form-item"/>
+                      <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request2)}" />
+                      <f:bottomButtonBar borderless="true">
+                        <button data-id="cancel" type="button" class="jenkins-button">${%Cancel}</button>
+                        <f:submit value="${%submit}"/>
+                      </f:bottomButtonBar>
+                    </f:form>
+
+                  </l:dialog>
+                  <button class="jenkins-dropdown__item"
+                          data-type="dialog-opener"
+                          data-dialog-id="${dialogId}">
+                    ${%submit.updateOfflineCause}
+                  </button>
+                </dd:custom>
+                <j:if test="${it.isConnected()}">
+                  <dd:custom>
+                    <button class="jenkins-dropdown__item jenkins-!-destructive-color"
+                            data-type="dialog-opener"
+                            data-dialog-url="disconnectDialog">
+                      <div class="jenkins-dropdown__item__icon">
+                        <l:icon src="symbol-disconnect" />
+                      </div>
+                      ${%Disconnect}
+                    </button>
+                  </dd:custom>
+                </j:if>
+              </l:overflowButton>
+            </l:hasPermission>
+          </l:hasPermission>
+        </div>
+      </j:if>
+    </j:when>
+    <j:otherwise>
+      <l:hasPermission permission="${it.DISCONNECT}">
+        <div class="${it.isConnected() ? 'jenkins-split-button' : ''}">
+          <l:dialog title="${%Take Offline}">
+            <f:form method="post" action="toggleOffline" name="toggleOffline">
+              <f:textarea name="offlineMessage" class="jenkins-form-item"/>
               <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request2)}" />
               <f:bottomButtonBar borderless="true">
                 <button data-id="cancel" type="button" class="jenkins-button">${%Cancel}</button>
-                <f:submit value="${%submit}"/>
+                <f:submit value="${%Mark temporarily offline}"/>
               </f:bottomButtonBar>
             </f:form>
-
           </l:dialog>
           <button class="jenkins-button"
                   data-type="dialog-opener"
                   data-dialog-id="${dialogId}">
-            ${%submit.updateOfflineCause}
+              ${%submit.not.temporarilyOffline}
           </button>
 
-        </l:hasPermission>
-      </l:hasPermission>
-    </j:when>
-    <j:otherwise>
-      <l:hasPermission permission="${it.DISCONNECT}">
-        <l:dialog title="${%Take Offline}">
-          <f:form method="post" action="toggleOffline" name="toggleOffline">
-            <f:textarea name="offlineMessage" class="jenkins-form-item"/>
-            <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request2)}" />
-            <f:bottomButtonBar borderless="true">
-              <button data-id="cancel" type="button" class="jenkins-button">${%Cancel}</button>
-              <f:submit value="${%Mark temporarily offline}"/>
-            </f:bottomButtonBar>
-          </f:form>
-        </l:dialog>
-        <button class="jenkins-button"
-                data-type="dialog-opener"
-                data-dialog-id="${dialogId}">
-            ${%submit.not.temporarilyOffline}
-        </button>
+          <j:if test="${it.isConnected()}">
+            <l:overflowButton icon="symbol-chevron-down"
+              clazz="jenkins-button">
+              <dd:custom>
+                <button class="jenkins-dropdown__item jenkins-!-destructive-color"
+                        data-type="dialog-opener"
+                        data-dialog-url="disconnectDialog">
+                  <div class="jenkins-dropdown__item__icon">
+                    <l:icon src="symbol-disconnect" />
+                  </div>
+                  ${%Disconnect}
+                </button>
+              </dd:custom>
+            </l:overflowButton>
+          </j:if>
+        </div>
 
       </l:hasPermission>
     </j:otherwise>
   </j:choose>
+  <j:if test="${it.hasPermission(it.CONFIGURE)}">
+    <a class="jenkins-button" href="configure">
+      ${%Configure}
+    </a>
+  </j:if>
 </j:jelly>

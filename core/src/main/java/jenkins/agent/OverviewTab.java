@@ -43,6 +43,7 @@ public class OverviewTab extends Tab {
         return "symbol-overview";
     }
 
+    @Override
     public String getUrlName() {
         return null;
     }
