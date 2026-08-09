@@ -120,9 +120,9 @@ THE SOFTWARE.
       </l:hasPermission>
     </j:otherwise>
   </j:choose>
-  <j:if test="${it.hasPermission(it.CONFIGURE)}">
+  <j:if test="${it.hasPermission(it.EXTENDED_READ)}">
     <a class="jenkins-button" href="configure">
-      ${%Configure}
+      ${it.hasPermission(it.CONFIGURE) ? '%Configure' : '%View Configuration'}
     </a>
   </j:if>
 </j:jelly>
