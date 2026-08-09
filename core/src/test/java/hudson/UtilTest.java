@@ -47,7 +47,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -63,6 +62,10 @@ import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 
@@ -716,20 +719,34 @@ class UtilTest {
         assertEquals(a1.resolve("new6"), Util.createDirectories(b.resolve("a2").resolve("new6")).toRealPath());
     }
 
+    private boolean runningAsRoot() throws Exception {
+        if (Functions.isWindows()) {
+            // Don't run tests on Windows that require root access on Linux
+            return false;
+        }
+        Path rootProbe = Paths.get("/new-dir-in-root-2");
+        Path created = rootProbe.resolve("new2");
+        try {
+            Util.createDirectories(created);
+        } catch (IOException e) {
+            return false; // Not running as root
+        } finally {
+            Files.deleteIfExists(created);
+            Files.deleteIfExists(rootProbe);
+        }
+        return true;
+    }
+
     @Test
     @Issue("JENKINS-67372")
+    @EnabledIf(value = "runningAsRoot", disabledReason = "Insufficient operating system permissions for this test")
     void createDirectoriesInRoot() throws Exception {
-        assumeFalse(Functions.isWindows());
         Path newDirInRoot = Paths.get("/new-dir-in-root");
         Path newSymlinkInRoot = Paths.get("/new-symlink-in-root");
-        try {
-            assertEquals(newDirInRoot.resolve("new1"), Util.createDirectories(newDirInRoot.resolve("new1")).toRealPath());
-            Util.createSymlink(newSymlinkInRoot.getParent().toFile(), newDirInRoot.getFileName().toString(), newSymlinkInRoot.getFileName().toString(), TaskListener.NULL);
-            assertEquals(newDirInRoot.resolve("new2"), Util.createDirectories(newSymlinkInRoot.resolve("new2")).toRealPath());
-        } catch (FileSystemException e) {
-            // Not running as root
-            assumeTrue(false, e.toString());
-        }
+        Path new1DirInRoot = Util.createDirectories(newDirInRoot.resolve("new1"));;
+        assertEquals(newDirInRoot.resolve("new1"), Util.createDirectories(newDirInRoot.resolve("new1")).toRealPath());
+        Util.createSymlink(newSymlinkInRoot.getParent().toFile(), newDirInRoot.getFileName().toString(), newSymlinkInRoot.getFileName().toString(), TaskListener.NULL);
+        assertEquals(newDirInRoot.resolve("new2"), Util.createDirectories(newSymlinkInRoot.resolve("new2")).toRealPath());
     }
 
     @Test
