@@ -20,9 +20,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import jenkins.security.MasterToSlaveCallable;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -72,10 +72,13 @@ class ProcessTreeTest {
         private static final long serialVersionUID = 1L;
     }
 
-    @Test
-    void remoting() throws Exception {
-        Assumptions.assumeFalse(ProcessTree.get() == ProcessTree.DEFAULT, "on some platforms where we fail to list any processes");
+    private boolean usesDefaultProcessTree() {
+        return ProcessTree.get() == ProcessTree.DEFAULT;
+    }
 
+    @Test
+    @DisabledIf(value = "usesDefaultProcessTree", disabledReason = "on some platforms where we fail to list any processes")
+    void remoting() throws Exception {
         Tag t = french.call(new MyCallable());
 
         // make sure the serialization preserved the reference graph

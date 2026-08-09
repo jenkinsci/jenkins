@@ -2,15 +2,15 @@ package hudson.tasks;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import hudson.Functions;
 import hudson.Launcher.ProcStarter;
 import hudson.Proc;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.FakeLauncher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -78,8 +78,8 @@ class BatchFileTest {
 
     @Test
     @Issue("JENKINS-23786")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void windowsNonZeroErrorlevelsShouldMakeBuildUnstable() throws Exception {
-        assumeTrue(Functions.isWindows());
         for (int exitCode : new int [] {Integer.MIN_VALUE, -1, 1, Integer.MAX_VALUE}) {
             nonZeroErrorlevelShouldMakeBuildUnstable(exitCode);
         }
@@ -103,8 +103,8 @@ class BatchFileTest {
 
     @Test
     @Issue("JENKINS-23786")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void windowsNonZeroErrorlevelsShouldBreakTheBuildByDefault() throws Exception {
-        assumeTrue(Functions.isWindows());
         for (int exitCode : new int [] {Integer.MIN_VALUE, -1, 1, Integer.MAX_VALUE}) {
             nonZeroErrorlevelShouldBreakTheBuildByDefault(exitCode);
         }
@@ -123,8 +123,8 @@ class BatchFileTest {
 
     @Test
     @Issue("JENKINS-23786")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void windowsErrorlevelsShouldBreakTheBuildIfNotMatching() throws Exception {
-        assumeTrue(Functions.isWindows());
         for (int exitCode : new int [] {Integer.MIN_VALUE, -1, 1, Integer.MAX_VALUE}) {
             nonZeroErrorlevelShouldBreakTheBuildIfNotMatching(exitCode);
         }
@@ -132,9 +132,8 @@ class BatchFileTest {
 
     @Test
     @Issue("JENKINS-23786")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void windowsErrorlevel0ShouldNeverMakeTheBuildUnstable() throws Exception {
-        assumeTrue(Functions.isWindows());
-
         PretendSlave slave = rule.createPretendSlave(new BatchFileTest.ReturnCodeFakeLauncher(0));
         for (Integer unstableReturn : new Integer [] {null, 0, 1}) {
             FreeStyleProject p = rule.createFreeStyleProject();
@@ -146,9 +145,8 @@ class BatchFileTest {
 
     @Issue("JENKINS-23786")
     @Test
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void windowsUnstableCodeZeroIsSameAsUnset() {
-        assumeTrue(Functions.isWindows());
-
         /* Creating unstable=0 produces unstable=null */
         assertNull(createNewBatchTask("", 0).getUnstableReturn());
     }

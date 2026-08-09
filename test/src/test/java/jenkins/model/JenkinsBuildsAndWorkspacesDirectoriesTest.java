@@ -7,9 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import hudson.Functions;
 import hudson.init.InitMilestone;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -27,6 +25,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.reactor.ReactorException;
@@ -224,9 +224,8 @@ class JenkinsBuildsAndWorkspacesDirectoriesTest {
     @Issue("JENKINS-50164")
     @LocalData
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Default Windows lifecycle does not support restart.")
     void fromPreviousCustomSetup() throws Throwable {
-        assumeFalse(Functions.isWindows(), "Default Windows lifecycle does not support restart.");
-
         // check starting point and change config for next run
         final String newBuildsDirValueBySysprop = "/tmp/${ITEM_ROOTDIR}/bluh";
         story.then(j -> {

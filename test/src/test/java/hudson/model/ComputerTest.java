@@ -40,10 +40,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.ExtensionList;
-import hudson.Functions;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.remoting.Channel;
 import hudson.slaves.DumbSlave;
@@ -68,6 +66,7 @@ import org.htmlunit.xml.XmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
@@ -317,8 +316,10 @@ class ComputerTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Seems to crash the test JVM at least in CI")
     void computersCollected() throws Exception {
-        assumeFalse(Functions.isWindows(), "Seems to crash the test JVM at least in CI");
         DumbSlave agent = j.createOnlineSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);

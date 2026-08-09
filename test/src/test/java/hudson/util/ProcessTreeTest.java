@@ -3,8 +3,6 @@ package hudson.util;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
@@ -26,6 +24,9 @@ import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -81,10 +82,9 @@ class ProcessTreeTest {
 
     @Test
     @Issue("JENKINS-22641")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "This test does not involve windows")
     void processProperlyKilledUnix() throws Exception {
         ProcessTree.enabled = true;
-        assumeFalse(Functions.isWindows(), "This test does not involve windows");
-
         FreeStyleProject sleepProject = j.createFreeStyleProject();
         FreeStyleProject processJob = j.createFreeStyleProject();
 
@@ -130,13 +130,14 @@ class ProcessTreeTest {
         }
     }
 
+    private boolean usesDefaultProcessTree() {
+        return ProcessTree.get() == ProcessTree.DEFAULT;
+    }
+
     @Test
     @Issue("JENKINS-9104")
+    @DisabledIf(value = "usesDefaultProcessTree", disabledReason = "on some platforms where we fail to list any processes, this test will just not work")
     void considersKillingVetos() throws Exception {
-        // on some platforms where we fail to list any processes, this test will
-        // just not work
-        assumeTrue(ProcessTree.get() != ProcessTree.DEFAULT);
-
         // kick off a process we (shouldn't) kill
         ProcessBuilder pb = new ProcessBuilder();
         pb.environment().put("cookie", "testKeepDaemonsAlive");
@@ -156,11 +157,8 @@ class ProcessTreeTest {
 
     @Test
     @Issue("JENKINS-9104")
+    @DisabledIf(value = "usesDefaultProcessTree", disabledReason = "on some platforms where we fail to list any processes, this test will just not work")
     void considersKillingVetosOnSlave() throws Exception {
-        // on some platforms where we fail to list any processes, this test will
-        // just not work
-        assumeTrue(ProcessTree.get() != ProcessTree.DEFAULT);
-
         // Define a process we (shouldn't) kill
         ProcessBuilder pb = new ProcessBuilder();
         pb.environment().put("cookie", "testKeepDaemonsAlive");

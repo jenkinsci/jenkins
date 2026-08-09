@@ -30,8 +30,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyArray;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.model.Node;
 import java.io.File;
@@ -40,6 +38,9 @@ import java.lang.reflect.Method;
 import org.apache.tools.ant.DirectoryScanner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -76,8 +77,8 @@ class FilePathTest {
     @Test
     @Issue("JENKINS-32778")
     @LocalData("zip_with_relative")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void zipRelativePathHandledCorrectly() throws Exception {
-        assumeTrue(Functions.isWindows());
         FilePath zipFile = r.jenkins.getRootPath().child("zip-with-folder.zip");
         FilePath targetLocation = r.jenkins.getRootPath().child("unzip-target");
 
@@ -96,9 +97,8 @@ class FilePathTest {
     @Test
     @Issue("JENKINS-32778")
     @LocalData("zip_with_relative")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void zipAbsolutePathHandledCorrectly_win() throws Exception {
-        assumeTrue(Functions.isWindows());
-
         // this special zip contains a ..\..\ [..] \..\Temp\evil.txt
         FilePath zipFile = r.jenkins.getRootPath().child("zip-slip-win.zip");
 
@@ -120,9 +120,8 @@ class FilePathTest {
     @Test
     @Issue("JENKINS-32778")
     @LocalData("zip_with_relative")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void zipAbsolutePathHandledCorrectly_unix() throws Exception {
-        assumeFalse(Functions.isWindows());
-
         // this special zip contains a ../../../ [..] /../tmp/evil.txt
         FilePath zipFile = r.jenkins.getRootPath().child("zip-slip.zip");
 
@@ -165,8 +164,8 @@ class FilePathTest {
     @Test
     @Issue("XXX")
     @LocalData("zip_with_relative")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void zipTarget_regular() throws Exception {
-        assumeTrue(Functions.isWindows());
         File zipFile = new File(r.jenkins.getRootDir(), "zip-with-folder.zip");
         File targetLocation = new File(r.jenkins.getRootDir(), "unzip-target");
         FilePath targetLocationFP = r.jenkins.getRootPath().child("unzip-target");
@@ -191,8 +190,8 @@ class FilePathTest {
     @Test
     @Issue("XXX")
     @LocalData("zip_with_relative")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void zipTarget_relative() throws Exception {
-        assumeTrue(Functions.isWindows());
         File zipFile = new File(r.jenkins.getRootDir(), "zip-with-folder.zip");
         // the main difference is here, the ./
         File targetLocation = new File(r.jenkins.getRootDir(), "./unzip-target");
@@ -218,9 +217,8 @@ class FilePathTest {
     @Test
     @Issue("JENKINS-66094")
     @LocalData("ZipSlipSamePathPrefix")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void zipSlipSamePathPrefix() throws Exception {
-        assumeFalse(Functions.isWindows());
-
         // > unzip -l evil.zip
         // good.txt
         //  ../foo_evil.txt
@@ -243,9 +241,8 @@ class FilePathTest {
     @Test
     @Issue("JENKINS-66094")
     @LocalData("ZipSlipSamePathPrefix")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void zipSlipSamePathPrefixWin() throws Exception {
-        assumeTrue(Functions.isWindows());
-
         // > unzip -l evil-win.zip
         // good.txt
         //  ..\foo_evil.txt

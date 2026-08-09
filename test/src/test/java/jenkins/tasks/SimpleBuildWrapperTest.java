@@ -27,11 +27,9 @@ package jenkins.tasks;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.EnvVars;
 import hudson.FilePath;
-import hudson.Functions;
 import hudson.Launcher;
 import hudson.console.ConsoleLogFilter;
 import hudson.console.LineTransformationOutputStream;
@@ -65,6 +63,8 @@ import java.util.Collections;
 import java.util.Locale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.FailureBuilder;
@@ -111,8 +111,8 @@ class SimpleBuildWrapperTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void envOverrideExpand() throws Exception {
-        assumeFalse(Functions.isWindows());
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildWrappersList().add(new WrapperWithEnvOverrideExpand());
         SpecialEnvSlave slave = new SpecialEnvSlave(tmp, r.createComputerLauncher(null));

@@ -34,7 +34,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
@@ -73,6 +72,9 @@ import org.htmlunit.html.HtmlFormUtil;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -465,39 +467,39 @@ class JobTest {
 
     @Issue("JENKINS-30502")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Unix-only test.")
     void testAllowTrimmingByUser() throws Exception {
-        assumeFalse(Functions.isWindows(), "Unix-only test.");
         tryRename("myJob3 ", "myJob3", "myJob3");
     }
 
     @Issue("JENKINS-30502")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Unix-only test.")
     void testRenameWithLeadingSpaceTrimsLeadingSpace() throws Exception {
-        assumeFalse(Functions.isWindows(), "Unix-only test.");
         tryRename(" myJob4", " foo", "foo");
     }
 
     @Issue("JENKINS-30502")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Unix-only test.")
     void testRenameWithLeadingSpaceTrimsTrailingSpace()
             throws Exception {
-        assumeFalse(Functions.isWindows(), "Unix-only test.");
         tryRename(" myJob5", "foo ", "foo");
     }
 
     @Issue("JENKINS-30502")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Unix-only test.")
     void testRenameWithTrailingSpaceTrimsTrailingSpace()
             throws Exception {
-        assumeFalse(Functions.isWindows(), "Unix-only test.");
         tryRename("myJob6 ", "foo ", "foo");
     }
 
     @Issue("JENKINS-30502")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Unix-only test.")
     void testRenameWithTrailingSpaceTrimsLeadingSpace()
             throws Exception {
-        assumeFalse(Functions.isWindows(), "Unix-only test.");
         tryRename("myJob7 ", " foo", "foo");
     }
 
@@ -514,8 +516,10 @@ class JobTest {
 
     @Issue("JENKINS-35160")
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Windows CI agents do not have enough resources to run this test")
     void interruptOnDelete() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         j.jenkins.setNumExecutors(2);
         Queue.getInstance().maintain();
         final FreeStyleProject p = j.createFreeStyleProject();
@@ -537,8 +541,10 @@ class JobTest {
 
     @Issue("SECURITY-1868")
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Windows CI agents do not have enough resources to run this test")
     void noXssPossible() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         String desiredNodeName = "agent is a better name2 <script>alert(123)</script>";
         String initialNodeName = "agent is a better name";
 

@@ -24,9 +24,6 @@
 
 package hudson.model;
 
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-
-import hudson.Functions;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.queue.SubTask;
 import java.awt.image.BufferedImage;
@@ -38,6 +35,8 @@ import java.nio.file.StandardOpenOption;
 import javax.imageio.ImageIO;
 import org.jfree.chart.JFreeChart;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -45,8 +44,8 @@ import org.junit.jupiter.api.Test;
 class LoadStatisticsTest {
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "TODO: Implement this test on Windows")
     void graph() throws IOException {
-        assumeFalse(Functions.isWindows(), "TODO: Implement this test on Windows");
         LoadStatistics ls = new LoadStatistics(0, 0) {
             @Override
             protected Iterable<Node> getNodes() {

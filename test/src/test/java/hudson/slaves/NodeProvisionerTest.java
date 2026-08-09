@@ -29,10 +29,8 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.BulkChange;
-import hudson.Functions;
 import hudson.Launcher;
 import hudson.matrix.Axis;
 import hudson.matrix.AxisList;
@@ -68,6 +66,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -130,8 +129,10 @@ class NodeProvisionerTest {
      */
     // TODO fragile
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "TODO: Windows agents do not have enough resources to run this test")
     void autoProvision() throws Throwable {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         rr.then(NodeProvisionerTest::_autoProvision);
     }
 
@@ -154,8 +155,10 @@ class NodeProvisionerTest {
      */
     // TODO fragile
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "TODO: Windows agents do not have enough resources to run this test")
     void loadSpike() throws Throwable {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         rr.then(NodeProvisionerTest::_loadSpike);
     }
 
@@ -177,8 +180,10 @@ class NodeProvisionerTest {
      */
     // TODO fragile
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "TODO: Windows agents do not have enough resources to run this test")
     void baselineSlaveUsage() throws Throwable {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         rr.then(NodeProvisionerTest::_baselineSlaveUsage);
     }
 
@@ -202,8 +207,10 @@ class NodeProvisionerTest {
      */
     // TODO fragile
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "TODO: Windows agents do not have enough resources to run this test")
     void labels() throws Throwable {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         rr.then(NodeProvisionerTest::_labels);
     }
 
@@ -240,8 +247,10 @@ class NodeProvisionerTest {
 
     @Issue("JENKINS-7291")
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "TODO: Windows agents do not have enough resources to run this test")
     void flyweightTasksWithoutMasterExecutors() throws Throwable {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         rr.then(NodeProvisionerTest::_flyweightTasksWithoutMasterExecutors);
     }
 
@@ -272,8 +281,10 @@ class NodeProvisionerTest {
      */
     @Issue("JENKINS-30084")
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "TODO: Windows agents do not have enough resources to run this test")
     void shouldRunFlyweightTaskOnProvisionedNodeWhenNodeRestricted() throws Throwable {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         rr.then(NodeProvisionerTest::_shouldRunFlyweightTaskOnProvisionedNodeWhenNodeRestricted);
     }
 
@@ -291,8 +302,10 @@ class NodeProvisionerTest {
 
     @Issue("JENKINS-67635")
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "TODO: Windows agents do not have enough resources to run this test")
     void testJobWithCloudLabelExpressionProvisionsOnlyOneAgent() throws Throwable {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         rr.then(NodeProvisionerTest::_testJobWithCloudLabelExpressionProvisionsOnlyOneAgent);
     }
 
