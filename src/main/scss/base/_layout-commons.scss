@@ -87,9 +87,7 @@
   }
 
   &--wide {
-    @media (width >= 1650px) {
-      width: 70vw;
-    }
+    width: 70vw;
     max-width: 1700px;
     margin-inline: auto;
   }

@@ -34,11 +34,11 @@ THE SOFTWARE.
       <j:if test="${h.hasPermission(it, it.CONNECT) or h.hasPermission(it, it.DISCONNECT)}">
         <div class="${h.hasPermission(it, it.DISCONNECT) ? 'jenkins-split-button' : ''}">
           <l:hasPermission permission="${it.CONNECT}">
-            <form id="toggleForm" method="post" action="toggleOffline" class="jenkins-hidden">
-            </form>
             <button form="toggleForm" type="submit" class="jenkins-button jenkins-button--primary">
               ${%submit.temporarilyOffline}
             </button>
+            <form id="toggleForm" method="post" action="toggleOffline" class="jenkins-hidden">
+            </form>
             <l:hasPermission permission="${it.DISCONNECT}">
               <l:overflowButton icon="symbol-chevron-down"
                 clazz="jenkins-button--primary">
@@ -83,17 +83,17 @@ THE SOFTWARE.
     </j:when>
     <j:otherwise>
       <l:hasPermission permission="${it.DISCONNECT}">
+        <l:dialog title="${%Take Offline}">
+          <f:form method="post" action="toggleOffline" name="toggleOffline">
+            <f:textarea name="offlineMessage" class="jenkins-form-item"/>
+            <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request2)}" />
+            <f:bottomButtonBar borderless="true">
+              <button data-id="cancel" type="button" class="jenkins-button">${%Cancel}</button>
+              <f:submit value="${%Mark temporarily offline}"/>
+            </f:bottomButtonBar>
+          </f:form>
+        </l:dialog>
         <div class="${it.isConnected() ? 'jenkins-split-button' : ''}">
-          <l:dialog title="${%Take Offline}">
-            <f:form method="post" action="toggleOffline" name="toggleOffline">
-              <f:textarea name="offlineMessage" class="jenkins-form-item"/>
-              <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request2)}" />
-              <f:bottomButtonBar borderless="true">
-                <button data-id="cancel" type="button" class="jenkins-button">${%Cancel}</button>
-                <f:submit value="${%Mark temporarily offline}"/>
-              </f:bottomButtonBar>
-            </f:form>
-          </l:dialog>
           <button class="jenkins-button"
                   data-type="dialog-opener"
                   data-dialog-id="${dialogId}">
