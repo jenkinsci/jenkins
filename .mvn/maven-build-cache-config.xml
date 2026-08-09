@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<cache xmlns="http://maven.apache.org/BUILD-CACHE-CONFIG/1.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://maven.apache.org/BUILD-CACHE-CONFIG/1.2.0 https://maven.apache.org/xsd/build-cache-config-1.2.0.xsd">
+
+  <configuration>
+    <attachedOutputs>
+      <!--
+        Cache the folders on disk, not just the packaged jar, so a cache hit leaves the same files a fresh
+        build would.
+
+        jetty:run reads jenkins-core straight from core/target/classes and the web UI from
+        war/src/main/webapp/jsbundles. Both are wiped by "mvn clean" and, by default, a cache hit wouldn't put
+        them back (the jar is restored, but not the exploded classes, and jsbundles isn't even under target/).
+        So without this, jetty:run starts with no core classes and a UI missing its JS/CSS. Caching these
+        folders lets a cache hit restore them. (dirName is relative to target/, so ".." reaches the jsbundles
+        folder in the war module.)
+      -->
+      <dirNames>
+        <dirName>classes</dirName>
+        <dirName>test-classes</dirName>
+        <dirName>../war/src/main/webapp/jsbundles</dirName>
+      </dirNames>
+    </attachedOutputs>
+  </configuration>
+
+  <input>
+    <global>
+      <!--
+        Don't let generated files count toward the root (jenkins-parent) module's cache key.
+
+        The parent sits at the repo root, so its input scan reaches build output that changes every time — the
+        files under test/target (e.g. unpacked Maven distros) and the bundles "yarn build" writes into
+        war/src/main/webapp/jsbundles. That gave the parent a different key on every build, so it never hit the
+        cache and the frontend kept rebuilding. Ignoring these two folders keeps the key stable.
+      -->
+      <excludes>
+        <exclude glob="target" matcherType="FILENAME" entryType="DIRECTORY">test</exclude>
+        <exclude matcherType="PATH" entryType="DIRECTORY">war/src/main/webapp/jsbundles</exclude>
+      </excludes>
+    </global>
+  </input>
+
+  <executionControl>
+    <runAlways>
+      <executions>
+        <!--
+          jetty:run puts war/target/support-log-formatter.jar on its classpath, and this
+          maven-dependency-plugin execution is what copies that jar there. A cache hit skips the execution, so
+          after a "mvn clean" the jar is gone and jetty:run fails with "File not resolvable". Always run it so
+          the jar is there.
+        -->
+        <execution artifactId="maven-dependency-plugin">
+          <execIds>
+            <execId>support-log-formatter</execId>
+          </execIds>
+        </execution>
+      </executions>
+    </runAlways>
+  </executionControl>
+
+</cache>
