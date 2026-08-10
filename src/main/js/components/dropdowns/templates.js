@@ -202,7 +202,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
     }
   }
 
-  const url = tag === "a" ? context + xmlEscape(itemOptions.event.url) : null;
+  const url = tag === "a" ? context + itemOptions.event.url : null;
 
   const item = createElementFromHtml(`
       <${tag}
@@ -314,7 +314,7 @@ function tryPost(element, opt, context) {
   }
 
   element.addEventListener("click", () => {
-    fetch(context + xmlEscape(opt.event.url), {
+    fetch(context + opt.event.url, {
       method: "post",
       headers: crumb.wrap({}),
     });
