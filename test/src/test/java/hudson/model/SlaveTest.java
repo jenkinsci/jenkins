@@ -47,6 +47,7 @@ import hudson.slaves.JNLPLauncher;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.RetentionStrategy;
+import hudson.slaves.SlaveComputer;
 import hudson.util.FormValidation;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -55,6 +56,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
+import jenkins.slaves.JnlpAgentReceiver;
 import org.apache.commons.io.IOUtils;
 import org.htmlunit.Page;
 import org.junit.jupiter.api.BeforeEach;
@@ -259,14 +261,95 @@ class SlaveTest {
         String initialSalt = s.getInboundAgentSecretSalt();
         assertNotNull(initialSalt, "Salt should be generated on creation");
 
-        String initialMac = ((hudson.slaves.SlaveComputer) s.toComputer()).getJnlpMac();
+        String initialMac = ((SlaveComputer) s.toComputer()).getJnlpMac();
 
         s.generateInboundAgentSecretSalt();
         String newSalt = s.getInboundAgentSecretSalt();
         assertNotNull(newSalt);
         assertNotEquals(initialSalt, newSalt, "Salt should change upon rotation");
 
-        String newMac = ((hudson.slaves.SlaveComputer) s.toComputer()).getJnlpMac();
+        String newMac = ((SlaveComputer) s.toComputer()).getJnlpMac();
         assertNotEquals(initialMac, newMac, "MAC should change upon rotation");
+    }
+
+    /**
+     * Two independently created agents must have different salts (tests randomness of generation).
+     */
+    @Test
+    @Issue("JENKINS-27192")
+    void inboundAgentSecretSaltIsUniquePerAgent() throws Exception {
+        DumbSlave s1 = j.createSlave();
+        DumbSlave s2 = j.createSlave();
+
+        String salt1 = s1.getInboundAgentSecretSalt();
+        String salt2 = s2.getInboundAgentSecretSalt();
+
+        assertNotNull(salt1, "Agent 1 salt must not be null");
+        assertNotNull(salt2, "Agent 2 salt must not be null");
+        assertNotEquals(salt1, salt2, "Each agent must receive a unique salt");
+
+        // MACs must also differ even though names differ — but salt is the extra entropy
+        String mac1 = ((SlaveComputer) s1.toComputer()).getJnlpMac();
+        String mac2 = ((SlaveComputer) s2.toComputer()).getJnlpMac();
+        assertNotEquals(mac1, mac2, "MAC of two agents must differ");
+    }
+
+    /**
+     * Verifies that the HTTP doRevokeInboundSecret endpoint rotates the salt and
+     * persists the node, causing the MAC to change.
+     */
+    @Test
+    @Issue("JENKINS-27192")
+    void revokeInboundSecretEndpointRotatesSalt() throws Exception {
+        DumbSlave s = j.createSlave();
+        SlaveComputer sc = (SlaveComputer) s.toComputer();
+
+        // Capture state before revocation — final so Checkstyle allows the advance declaration
+        final String saltBefore = s.getInboundAgentSecretSalt();
+        final String macBefore = sc.getJnlpMac();
+        assertNotNull(saltBefore, "Salt must exist before revoke");
+
+        // POST to the revoke endpoint
+        URL revokeUrl = new URL(j.getURL(), "computer/" + s.getNodeName() + "/revokeInboundSecret");
+        HttpURLConnection con = (HttpURLConnection) revokeUrl.openConnection();
+        con.setRequestMethod("POST");
+        con.setRequestProperty(CrumbIssuer.DEFAULT_CRUMB_NAME, "test");
+        con.setDoOutput(true);
+        con.getOutputStream().close();
+        int status = con.getResponseCode();
+        // Accept redirect (302) or success (200) — endpoint calls redirectToDot()
+        assertNotEquals(403, status, "Revoke must not be forbidden for admin");
+
+        // Re-fetch the node and verify salt and MAC both changed
+        DumbSlave updated = (DumbSlave) j.jenkins.getNode(s.getNodeName());
+        assertNotNull(updated);
+        assertNotEquals(saltBefore, updated.getInboundAgentSecretSalt(), "Salt must change after revoke");
+        String macAfter = ((SlaveComputer) updated.toComputer()).getJnlpMac();
+        assertNotEquals(macBefore, macAfter, "MAC must change after revoke");
+    }
+
+    /**
+     * Backward compatibility: an agent that has no salt (e.g. loaded from old XML)
+     * must fall back to the legacy MAC formula (HMAC of name only).
+     */
+    @Test
+    @Issue("JENKINS-27192")
+    void inboundAgentSecretFallbackWhenNoSalt() throws Exception {
+        DumbSlave s = j.createSlave();
+        SlaveComputer sc = (SlaveComputer) s.toComputer();
+
+        // Simulate a pre-existing agent that was saved without a salt field
+        // by forcibly setting the internal field to null via reflection.
+        java.lang.reflect.Field saltField = Slave.class.getDeclaredField("inboundAgentSecretSalt");
+        saltField.setAccessible(true);
+        saltField.set(s, null);
+
+        assertNotNull(s, "Agent must still be reachable");
+
+        // MAC must fall back to legacy formula: SLAVE_SECRET.mac(name)
+        String mac = sc.getJnlpMac();
+        String expectedLegacyMac = JnlpAgentReceiver.SLAVE_SECRET.mac(s.getNodeName());
+        assertEquals(expectedLegacyMac, mac,
+                "Without a salt, MAC must equal the legacy HMAC(name) formula");
     }
 }

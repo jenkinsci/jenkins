@@ -162,13 +162,15 @@ public abstract class Slave extends Node implements Serializable {
      */
     private String inboundAgentSecretSalt;
 
+    private static final java.security.SecureRandom SECURE_RANDOM = new java.security.SecureRandom();
+
     public String getInboundAgentSecretSalt() {
         return inboundAgentSecretSalt;
     }
 
     public void generateInboundAgentSecretSalt() {
         byte[] salt = new byte[32];
-        new java.security.SecureRandom().nextBytes(salt);
+        SECURE_RANDOM.nextBytes(salt);
         this.inboundAgentSecretSalt = hudson.Util.toHexString(salt);
     }
 

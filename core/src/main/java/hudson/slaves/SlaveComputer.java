@@ -186,9 +186,9 @@ public class SlaveComputer extends Computer {
      * @since 1.498
      */
     public String getJnlpMac() {
-        Node node = getNode();
-        if (node instanceof Slave) {
-            String salt = ((Slave) node).getInboundAgentSecretSalt();
+        Slave slave = getNode();
+        if (slave != null) {
+            String salt = slave.getInboundAgentSecretSalt();
             if (salt != null) {
                 return JnlpAgentReceiver.SLAVE_SECRET.mac(getName() + salt);
             }
@@ -200,9 +200,8 @@ public class SlaveComputer extends Computer {
     @Restricted(NoExternalUse.class)
     public HttpResponse doRevokeInboundSecret() throws IOException {
         checkPermission(CONFIGURE);
-        Node node = getNode();
-        if (node instanceof Slave) {
-            Slave slave = (Slave) node;
+        Slave slave = getNode();
+        if (slave != null) {
             slave.generateInboundAgentSecretSalt();
             Jenkins.get().updateNode(slave);
         }
