@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import jenkins.model.Jenkins;
 import org.htmlunit.FailingHttpStatusCodeException;
-import org.htmlunit.util.Cookie;
+import org.htmlunit.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

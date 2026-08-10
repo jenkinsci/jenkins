@@ -27,11 +27,6 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:header />
-  <l:side-panel>
-    <l:tasks>
-      <l:task href="${rootURL}/manage/pluginManager/" icon="symbol-plugins" title="${%Plugin Manager}"/>
-      <l:task href="${rootURL}/manage/updateCenter/" icon="symbol-download" title="${%Update Center}"/>
-    </l:tasks>
-  </l:side-panel>
+  <!-- TODO - this file and its translations can be removed when Manage Jenkins flag is removed -->
+  <st:include page="sidepanel.jelly" it="${app.pluginManager}" />
 </j:jelly>

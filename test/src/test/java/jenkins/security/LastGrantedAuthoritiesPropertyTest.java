@@ -18,6 +18,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.FactorGrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -80,7 +81,7 @@ class LastGrantedAuthoritiesPropertyTest {
     }
 
     private void _assertAuthorities(Collection<? extends GrantedAuthority> grantedAuthorities, String expected) {
-        List<String> authorities = grantedAuthorities.stream().map(GrantedAuthority::getAuthority).sorted().collect(Collectors.toList());
+        List<String> authorities = grantedAuthorities.stream().map(GrantedAuthority::getAuthority).filter(authority -> !authority.equals(FactorGrantedAuthority.PASSWORD_AUTHORITY)).sorted().collect(Collectors.toList());
 
         assertEquals(expected, String.join(":", authorities));
     }

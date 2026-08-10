@@ -291,7 +291,7 @@ class OptionTest {
             DomNodeList<HtmlElement> elements = document.getElementsByTagName("option");
             assertEquals(1, elements.size());
 
-            HtmlOption option = (HtmlOption) elements.get(0);
+            HtmlOption option = (HtmlOption) elements.getFirst();
 
             // without that check, the getValue could return getText if the value is not present
             assertNotEquals(DomElement.ATTRIBUTE_NOT_DEFINED, option.getAttribute("value"));

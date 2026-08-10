@@ -28,16 +28,19 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag;
 import org.apache.commons.jelly.JellyException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -74,6 +77,21 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
     @Override
     public boolean isPrimaryAction() {
         return true;
+    }
+
+    public HttpRedirect doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        try {
+            var newUiEnabled = new NewManageJenkinsUserExperimentalFlag().getFlagValue();
+
+            if (newUiEnabled) {
+                return new HttpRedirect("configure");
+            }
+
+            req.getView(this, "index.jelly").forward(req, rsp);
+        } catch (ServletException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
     @Override

@@ -121,6 +121,7 @@ public class Nodes implements PersistenceRoot {
                 node.onLoad(Nodes.this, name);
                 var oldNode = toRemove.get(name);
                 if (oldNode != null) {
+                    node.setTemporaryOfflineCause(oldNode.getTemporaryOfflineCause());
                     NodeListener.fireOnUpdated(oldNode, node);
                     toRemove.remove(name);
                 } else {

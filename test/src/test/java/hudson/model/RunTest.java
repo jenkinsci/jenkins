@@ -26,6 +26,8 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.not;
@@ -55,6 +57,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import jenkins.model.ArtifactManager;
@@ -62,6 +65,7 @@ import jenkins.model.ArtifactManagerConfiguration;
 import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.ArtifactManagerFactoryDescriptor;
 import jenkins.model.Jenkins;
+import jenkins.model.Tab;
 import jenkins.util.VirtualFile;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.html.HtmlPage;
@@ -122,7 +126,7 @@ class RunTest  {
         b.keepLog();
         List<BuildBadgeAction> badgeActions = b.getBadgeActions();
         assertEquals(1, badgeActions.size());
-        assertEquals(Run.KeepLogBuildBadge.class, badgeActions.get(0).getClass());
+        assertEquals(Run.KeepLogBuildBadge.class, badgeActions.getFirst().getClass());
     }
 
     @Issue("JENKINS-51819")
@@ -248,11 +252,7 @@ class RunTest  {
         @NonNull
         @Override
         public String getName() {
-            if (virtualName != null) {
-                return virtualName;
-            } else {
-                return super.getName();
-            }
+            return Objects.requireNonNullElseGet(virtualName, super::getName);
         }
 
         @Override
@@ -313,6 +313,52 @@ class RunTest  {
         wc.getOptions().setJavaScriptEnabled(false);
         wc.getPage(b);
         wc.getPage(p);
+    }
+
+    /**
+     * Only tabs with icons should appear
+     */
+    @Test
+    void getRunTabs() throws Exception {
+        var project = j.createFreeStyleProject();
+        var run = project.scheduleBuild2(0).get();
+        run.addAction(new Tab(run) {
+            @Override
+            public String getIconFileName() {
+                return "test";
+            }
+
+            @Override
+            public String getDisplayName() {
+                return "Test";
+            }
+
+            @Override
+            public String getUrlName() {
+                return "test";
+            }
+        });
+        run.addAction(new Tab(run) {
+            @Override
+            public String getIconFileName() {
+                return null;
+            }
+
+            @Override
+            public String getDisplayName() {
+                return "I do not appear";
+            }
+
+            @Override
+            public String getUrlName() {
+                return "doNotAppear";
+            }
+        });
+
+        var response = run.getRunTabs();
+
+        assertThat(response, hasSize(1));
+        assertThat(response.getFirst().getDisplayName(), equalTo("Test"));
     }
 
     public static final class SlowMgr extends ArtifactManager {

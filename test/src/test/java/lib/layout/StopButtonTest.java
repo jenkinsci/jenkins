@@ -124,7 +124,7 @@ class StopButtonTest {
     private HtmlAnchor getStopLink(HtmlPage page) {
         DomNodeList<HtmlElement> anchors = page.getElementById("test-panel").getElementsByTagName("a");
         assertEquals(1, anchors.size());
-        return (HtmlAnchor) anchors.get(0);
+        return (HtmlAnchor) anchors.getFirst();
     }
 
     @TestExtension("noInjectionArePossible")

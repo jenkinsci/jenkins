@@ -57,7 +57,7 @@ class CSRFAdministrativeMonitorTest {
     @Test
     @Issue("JENKINS-47372")
     void testWithIssuer() {
-        j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
+        j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer());
 
         CSRFAdministrativeMonitor monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(CSRFAdministrativeMonitor.class);
         assertFalse(monitor.isActivated(), "Monitor must be activated");

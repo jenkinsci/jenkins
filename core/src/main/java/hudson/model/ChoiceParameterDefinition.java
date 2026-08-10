@@ -116,8 +116,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
 
     @Override
     public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
-        if (defaultValue instanceof StringParameterValue) {
-            StringParameterValue value = (StringParameterValue) defaultValue;
+        if (defaultValue instanceof StringParameterValue value) {
             return new ChoiceParameterDefinition(getName(), choices, value.value, getDescription());
         } else {
             return this;
@@ -141,7 +140,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
             if (choices.isEmpty()) {
                 return null;
             }
-            return new StringParameterValue(getName(), choices.get(0), getDescription());
+            return new StringParameterValue(getName(), choices.getFirst(), getDescription());
         }
         return new StringParameterValue(getName(), defaultValue, getDescription());
     }

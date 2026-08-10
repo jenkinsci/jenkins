@@ -130,7 +130,7 @@ class ExpandableTextboxTest {
     private HtmlButton getExpandButton(HtmlPage page) {
         DomNodeList<HtmlElement> buttons = page.getElementById("test-panel").getElementsByTagName("button");
         assertEquals(1, buttons.size());
-        return (HtmlButton) buttons.get(0);
+        return (HtmlButton) buttons.getFirst();
     }
 
     @TestExtension("noInjectionArePossible")

@@ -118,7 +118,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
 
     /**
      * Gets the self-signed {@link X509Certificate} that is associated with this identity. The certificate
-     * will must be currently valid. Repeated calls to this method may result in new certificates being generated.
+     * must be currently valid. Repeated calls to this method may result in new certificates being generated.
      *
      * @return the certificate. {@code null} if {@link #getKeyPair()} is {@code null}.
      */
@@ -288,7 +288,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
 
         /**
          * Gets the self-signed {@link X509Certificate} that is associated with this identity. The certificate
-         * will must be currently valid. Repeated calls to this method may result in new certificates being generated.
+         * must be currently valid. Repeated calls to this method may result in new certificates being generated.
          *
          * @return the certificate. {@code null} if {@link #getKeyPair()} is {@code null}.
          */

@@ -40,6 +40,7 @@ import hudson.model.BuildableItem;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.Items;
 import hudson.model.Job;
 import hudson.model.ParameterDefinition;
@@ -562,8 +563,17 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             return null;
         }
 
+        @Override
         default boolean isBuildable() {
-            return !isDisabled() && !((Job) this).isHoldOffBuildUntilSave();
+            if (isDisabled() || ((Job) this).isHoldOffBuildUntilSave()) {
+                return false;
+            }
+            // If parent is disabled, child jobs (e.g., branch jobs) should not be buildable
+            ItemGroup<? extends Item> parentGroup = ((Job) this).getParent();
+            if (parentGroup instanceof BuildableItem bi) {
+                return bi.isBuildable();
+            }
+            return true;
         }
 
         @Extension

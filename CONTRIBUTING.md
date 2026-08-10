@@ -9,8 +9,8 @@ This page provides information about contributing code to the Jenkins core codeb
 1. Fork the repository on GitHub
 2. Clone the forked repository to your machine
 3. Install the necessary development tools. In order to develop Jenkins, you need the following:
-   - Java Development Kit (JDK) 17 or 21.
-     In the Jenkins project we usually use [Eclipse Temurin](https://adoptium.net/) or [OpenJDK](https://openjdk.java.net/), but you can use other JDKs as well.
+   - Java Development Kit (JDK) 21 or 25.
+     In the Jenkins project we usually use [Eclipse Temurin](https://adoptium.net/) or [OpenJDK](https://openjdk.org/), but you can use other JDKs as well.
    - Apache Maven 3.9.6 or above. You can [download Maven here](https://maven.apache.org/download.cgi).
      In the Jenkins project we usually use the most recent Maven release.
    - Any IDE which supports importing Maven projects.
@@ -18,8 +18,8 @@ This page provides information about contributing code to the Jenkins core codeb
 
 If you want to contribute to Jenkins, or just learn about the project,
 you can start by fixing some easier issues.
-In the Jenkins issue tracker we mark such issues as `newbie-friendly`.
-You can find them by using this query (check the link) for [newbie friendly issues](<https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)>).
+In the Jenkins issue tracker we mark such issues as `good first issue`.
+You can find them by using this query (check the link) for [good first issues](https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20label%3A%22good%20first%20issue%22).
 
 ## Building and Debugging
 
@@ -35,6 +35,20 @@ mvn -am -pl war,bom -Pquick-build clean install
 ```
 
 The WAR file will be created in `war/target/jenkins.war`.
+
+> [!NOTE]
+> `quick-build` sets `maven.test.skip`, so test classes are not compiled and are not present
+> afterwards. To build something you can then run tests against, drop the profile or pass
+> `-Dmaven.test.skip=false`.
+
+`clean` deliberately leaves `node/`, `node_modules/` and `.yarn/` in place, so the node
+toolchain and the downloaded packages survive between builds. Pass `-Dclean.node` to delete
+those as well.
+
+If you are only changing backend code and `war/src/main/webapp/jsbundles` is already populated
+from an earlier build, `-Dskip.frontend=true` skips the node installation, `yarn install` and
+`yarn build`.
+
 After that, you can start Jenkins using Java CLI ([guide](https://www.jenkins.io/doc/book/installing/war-file/#run-the-war-file)).
 If you want to debug the WAR file without using Maven plugins,
 You can run the executable with [Remote Debug Flags](https://stackoverflow.com/questions/975271/remote-debugging-a-java-application)
@@ -74,7 +88,7 @@ To work on the `war` module frontend assets, two processes are needed at the sam
 On one terminal, start a development server that will not process frontend assets:
 
 ```sh
-MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED' mvn -pl war jetty:run -Dskip.yarn
+MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED' mvn -pl war jetty:run -Dskip.frontend
 ```
 
 Open another terminal and start a [webpack](https://webpack.js.org/) dev server, after [optionally adding Node and Yarn to your path](#running-the-yarn-frontend-build):
@@ -82,16 +96,6 @@ Open another terminal and start a [webpack](https://webpack.js.org/) dev server,
 ```sh
 yarn start
 ```
-
-### Gitpod
-
-You can open this project as a [Gitpod workspace](https://www.gitpod.io/) which comes pre-configured with all the tools you will need.
-You can use IntelliJ IDEA (preferred) or VS Code (alternate) in the browser.
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/jenkinsci/jenkins)
-
-If you prefer using IntelliJ IDEA, you can setup Gitpod integration with JetBrains Gateway using the instructions on [gitpod.io](https://www.gitpod.io/docs/ides-and-editors/intellij),
-which will open the workspace in IntelliJ IDEA using JetBrains Gateway.
 
 ### Linting
 
@@ -261,4 +265,4 @@ just submit a pull request.
 - [Jenkins Contribution Landing Page](https://www.jenkins.io/participate/)
 - [Jenkins Chat Channels](https://www.jenkins.io/chat/)
 - [Beginners Guide To Contributing](https://www.jenkins.io/participate/)
-- [List of newbie-friendly issues in the core](<https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)>)
+- [List of good first issues in core](https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20label%3A%22good%20first%20issue%22)

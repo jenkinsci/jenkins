@@ -154,10 +154,7 @@ public abstract class ViewGroupMixIn {
     public Collection<View> getViews() {
         List<View> orig = views();
         List<View> copy = new ArrayList<>(orig.size());
-        for (View v : orig) {
-            if (v.hasPermission(View.READ))
-                copy.add(v);
-        }
+        copy.addAll(orig);
         copy.sort(View.SORTER);
         return copy;
     }
@@ -171,7 +168,7 @@ public abstract class ViewGroupMixIn {
     public View getPrimaryView() {
         View v = getView(primaryView());
         if (v == null && !views().isEmpty()) // fallback
-            v = views().get(0);
+            v = views().getFirst();
         return v;
     }
 

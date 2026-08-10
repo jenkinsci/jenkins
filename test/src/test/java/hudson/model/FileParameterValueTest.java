@@ -33,6 +33,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.FilePath;
 import hudson.Functions;
@@ -58,6 +59,10 @@ import org.jvnet.hudson.test.recipes.LocalData;
 
 @WithJenkins
 class FileParameterValueTest {
+
+    private static final String LINE_SEPARATOR = String.valueOf((char) 0x2028);
+    private static final String PARAGRAPH_SEPARATOR = String.valueOf((char) 0x2029);
+    private static final String NEXT_LINE = String.valueOf((char) 0x0085);
 
     @TempDir
     private File tmp;
@@ -170,6 +175,57 @@ class FileParameterValueTest {
         // ensure also the file is not reachable by request
         JenkinsRule.WebClient wc = getWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+    }
+
+    @Test
+    @Issue("SECURITY-3927")
+    void fileParameter_cannotCreateFile_outsideOfBuildFolder_oddCharPrefix() throws Exception {
+        List<String> oddChars = List.of(LINE_SEPARATOR, PARAGRAPH_SEPARATOR, NEXT_LINE, "\r", "\n");
+
+        FilePath root = j.jenkins.getRootPath();
+
+        for (String oddChar : oddChars) {
+            String location = oddChar + "../../../../../root-level.txt";
+
+            FreeStyleProject p = j.createFreeStyleProject();
+            p.addProperty(new ParametersDefinitionProperty(List.of(
+                    new FileParameterDefinition(location, null)
+            )));
+
+            assertThat(root.child("root-level.txt").exists(), equalTo(false));
+
+            File uploadedFile = File.createTempFile("junit", null, tmp);
+            Files.writeString(uploadedFile.toPath(), "test-content", StandardCharsets.UTF_8);
+
+            j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
+                    new FileParameterValue(location, uploadedFile, "uploaded-file.txt")
+            )));
+            assertThat(root.child("root-level.txt").exists(), equalTo(false));
+        }
+    }
+
+    @Test
+    @Issue("SECURITY-3927")
+    void fileParameter_cannotCreateFile_outsideOfBuildFolder_backslashOnUnixAgent() throws Exception {
+        assumeFalse(Functions.isWindows(), "Backslash is only an ordinary filename character on non-Windows");
+        String location = "..\\..\\..\\..\\..\\root-level.txt";
+
+        FilePath root = j.jenkins.getRootPath();
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(List.of(
+                new FileParameterDefinition(location, null)
+        )));
+
+        assertThat(root.child("root-level.txt").exists(), equalTo(false));
+
+        File uploadedFile = File.createTempFile("junit", null, tmp);
+        Files.writeString(uploadedFile.toPath(), "test-content", StandardCharsets.UTF_8);
+
+        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
+                new FileParameterValue(location, uploadedFile, "uploaded-file.txt")
+        )));
+        assertThat(root.child("root-level.txt").exists(), equalTo(false));
     }
 
     private void checkUrlNot200AndNotContains(JenkinsRule.WebClient wc, String url, String contentNotPresent) throws Exception {
@@ -409,9 +465,7 @@ class FileParameterValueTest {
 
         var wc = getWebClient();
         HtmlPage page = wc.goTo("job/" + p.getName() + "/lastSuccessfulBuild/parameters/parameter/html.html/html.html");
-        for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-            assertEquals(DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue(header), "Header set: " + header);
-        }
+        assertEquals(DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue("Content-Security-Policy"));
 
         String propName = DirectoryBrowserSupport.class.getName() + ".CSP";
         String initialValue = System.getProperty(propName);
@@ -419,9 +473,7 @@ class FileParameterValueTest {
             System.setProperty(propName, "");
             page = wc.goTo("job/" + p.getName() + "/lastSuccessfulBuild/parameters/parameter/html.html/html.html");
             List<String> headers = page.getWebResponse().getResponseHeaders().stream().map(NameValuePair::getName).collect(Collectors.toList());
-            for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-                assertThat(headers, not(hasItem(header)));
-            }
+            assertThat(headers, not(hasItem("Content-Security-Policy")));
         } finally {
             if (initialValue == null) {
                 System.clearProperty(DirectoryBrowserSupport.class.getName() + ".CSP");
