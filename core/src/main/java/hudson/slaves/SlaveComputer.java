@@ -97,6 +97,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
@@ -185,7 +186,27 @@ public class SlaveComputer extends Computer {
      * @since 1.498
      */
     public String getJnlpMac() {
+        Node node = getNode();
+        if (node instanceof Slave) {
+            String salt = ((Slave) node).getInboundAgentSecretSalt();
+            if (salt != null) {
+                return JnlpAgentReceiver.SLAVE_SECRET.mac(getName() + salt);
+            }
+        }
         return JnlpAgentReceiver.SLAVE_SECRET.mac(getName());
+    }
+
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doRevokeInboundSecret() throws IOException {
+        checkPermission(CONFIGURE);
+        Node node = getNode();
+        if (node instanceof Slave) {
+            Slave slave = (Slave) node;
+            slave.generateInboundAgentSecretSalt();
+            Jenkins.get().updateNode(slave);
+        }
+        return HttpResponses.redirectToDot();
     }
 
     /**

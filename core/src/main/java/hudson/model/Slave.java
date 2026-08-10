@@ -157,6 +157,22 @@ public abstract class Slave extends Node implements Serializable {
             new DescribableList<>(this);
 
     /**
+     * Optional secret salt for inbound agents to allow individual secret rotation.
+     * Generated upon node creation.
+     */
+    private String inboundAgentSecretSalt;
+
+    public String getInboundAgentSecretSalt() {
+        return inboundAgentSecretSalt;
+    }
+
+    public void generateInboundAgentSecretSalt() {
+        byte[] salt = new byte[32];
+        new java.security.SecureRandom().nextBytes(salt);
+        this.inboundAgentSecretSalt = hudson.Util.toHexString(salt);
+    }
+
+    /**
      * @deprecated Removed with no replacement.
      */
     @Deprecated
@@ -186,6 +202,7 @@ public abstract class Slave extends Node implements Serializable {
         this.remoteFS = remoteFS;
         this.launcher = launcher;
         this.labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
+        generateInboundAgentSecretSalt();
     }
 
     /**
@@ -212,6 +229,8 @@ public abstract class Slave extends Node implements Serializable {
 
         if (this.numExecutors <= 0)
             throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
+
+        generateInboundAgentSecretSalt();
     }
 
     /**

@@ -101,6 +101,11 @@ ${copy_java_cmd_secret2_windows}
           <p>
             ${%powerShell.cli.curl}
           </p>
+          <j:if test="${h.hasPermission(it, it.CONFIGURE)}">
+            <form method="post" action="revokeInboundSecret" class="jenkins-!-margin-top-3">
+              <f:submit primary="false" value="${%Revoke inbound agent secret}" />
+            </form>
+          </j:if>
       </j:if>
     </j:when>
     <j:when test="${!it.offline}">

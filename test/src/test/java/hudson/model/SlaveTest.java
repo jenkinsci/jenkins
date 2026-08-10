@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -251,4 +252,21 @@ class SlaveTest {
         }
     }
 
+    @Test
+    @Issue("JENKINS-27192")
+    void inboundAgentSecretRotation() throws Exception {
+        DumbSlave s = j.createSlave();
+        String initialSalt = s.getInboundAgentSecretSalt();
+        assertNotNull(initialSalt, "Salt should be generated on creation");
+
+        String initialMac = ((hudson.slaves.SlaveComputer) s.toComputer()).getJnlpMac();
+
+        s.generateInboundAgentSecretSalt();
+        String newSalt = s.getInboundAgentSecretSalt();
+        assertNotNull(newSalt);
+        assertNotEquals(initialSalt, newSalt, "Salt should change upon rotation");
+
+        String newMac = ((hudson.slaves.SlaveComputer) s.toComputer()).getJnlpMac();
+        assertNotEquals(initialMac, newMac, "MAC should change upon rotation");
+    }
 }
