@@ -27,9 +27,6 @@ THE SOFTWARE.
   <l:agent-subpage title="${it.displayName}" agent="${it.object}">
     <l:app-bar title="${it.displayName}" headingLevel="h2">
       <l:details-bar it="${it.object}">
-        <a href="https://www.jenkins.io/doc/book/using/using-agents/" class="jenkins-button jenkins-details__button" tooltip="${%Help}" target="_blank" rel="noopener noreferrer">
-          <l:icon src="symbol-help-circle" />
-        </a>
         <t:editDescriptionButton permission="${it.CONFIGURE}"
                                  compact="true" />
       </l:details-bar>

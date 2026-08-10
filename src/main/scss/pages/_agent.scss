@@ -12,15 +12,17 @@
     align-items: start !important;
     padding-block: var(--section-padding) !important;
   }
-}
 
-.app-main-panel--wide .app-agent-bar {
-  @media (width < 1140px) {
-    position: relative !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: start !important;
-    padding-block: var(--section-padding) !important;
+  &--with-side-panel {
+    border-bottom: none !important;
+
+    @media (width < 1140px) {
+      position: relative !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: start !important;
+      padding-block: var(--section-padding) !important;
+    }
   }
 }
 
@@ -109,6 +111,7 @@
     .jenkins-notice {
       margin-bottom: 0;
       min-height: revert;
+      width: 100%;
     }
   }
 }

@@ -30,12 +30,12 @@ import hudson.model.Action;
 import hudson.model.Computer;
 import java.util.Collection;
 import java.util.Set;
-import jenkins.model.Jenkins;
 import jenkins.model.TransientActionFactory;
+import jenkins.model.experimentalflags.NewAgentPageUserExperimentalFlag;
 import jenkins.model.menu.Group;
 
 @Extension
-public class ScriptConsoleAction extends TransientActionFactory<Computer> {
+public class HelpAction extends TransientActionFactory<Computer> {
 
     @Override
     public Class<Computer> type() {
@@ -45,29 +45,30 @@ public class ScriptConsoleAction extends TransientActionFactory<Computer> {
     @NonNull
     @Override
     public Collection<? extends Action> createFor(@NonNull Computer target) {
-        if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+        boolean newAgentPage = new NewAgentPageUserExperimentalFlag().getFlagValue();
+        if (!newAgentPage) {
             return Set.of();
         }
 
         return Set.of(new Action() {
             @Override
             public String getIconFileName() {
-                return target.getChannel() != null ? "symbol-code-working" : null;
+                return "symbol-help-circle";
             }
 
             @Override
             public String getDisplayName() {
-                return Messages.ScriptConsoleAction_Title();
+                return Messages.HelpAction_Title();
             }
 
             @Override
             public String getUrlName() {
-                return "script";
+                return "https://www.jenkins.io/doc/book/using/using-agents/";
             }
 
             @Override
             public Group getGroup() {
-                return Group.FIRST_IN_MENU;
+                return Group.of(1000);
             }
         });
     }

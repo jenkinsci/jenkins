@@ -81,8 +81,8 @@ THE SOFTWARE.
           </l:side-panel>
         </j:if>
         <l:main-panel width="${withSidePanel ? 'wide' : null}">
-          <div class="app-build-bar app-agent-bar">
-            <div class="app-build-bar__content">
+          <div class="app-build-bar app-agent-bar ${withSidePanel ? 'app-agent-bar--with-side-panel' : ''}">
+            <div class="app-build-bar__content ">
               <div>
                 <l:icon alt="${attrs.agent.description}"
                         src="${attrs.agent.iconClassName}" class="icon-lg" />
@@ -100,13 +100,9 @@ THE SOFTWARE.
               <l:actions it="${attrs.agent}" />
             </div>
           </div>
-          <div class="app-settings-container">
-            <div class="app-settings-container__inner" >
 
-              <div class="app-build-content app-agent-content">
-                <d:invokeBody />
-              </div>
-            </div>
+          <div class="app-build-content app-agent-content">
+            <d:invokeBody />
           </div>
         </l:main-panel>
       </j:when>

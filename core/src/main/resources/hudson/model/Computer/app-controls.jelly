@@ -60,10 +60,14 @@ THE SOFTWARE.
                   <button class="jenkins-dropdown__item"
                           data-type="dialog-opener"
                           data-dialog-id="${dialogId}">
+                    <div class="jenkins-dropdown__item__icon">
+                      <l:icon src="symbol-edit" />
+                    </div>
                     ${%submit.updateOfflineCause}
                   </button>
                 </dd:custom>
                 <j:if test="${it.isConnected()}">
+                  <dd:separator/>
                   <dd:custom>
                     <button class="jenkins-dropdown__item jenkins-!-destructive-color"
                             data-type="dialog-opener"
@@ -93,14 +97,14 @@ THE SOFTWARE.
             </f:bottomButtonBar>
           </f:form>
         </l:dialog>
-        <div class="${it.isConnected() ? 'jenkins-split-button' : ''}">
+        <div class="${it.isConnected() and it.class.name != 'hudson.model.Hudson$MasterComputer' ? 'jenkins-split-button' : ''}">
           <button class="jenkins-button"
                   data-type="dialog-opener"
                   data-dialog-id="${dialogId}">
               ${%submit.not.temporarilyOffline}
           </button>
 
-          <j:if test="${it.isConnected()}">
+          <j:if test="${it.isConnected() and it.class.name != 'hudson.model.Hudson$MasterComputer'}">
             <l:overflowButton icon="symbol-chevron-down"
               clazz="jenkins-button">
               <dd:custom>
