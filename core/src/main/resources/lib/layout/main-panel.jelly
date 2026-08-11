@@ -26,40 +26,47 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
   <st:documentation>
     Generates the body as the main content part of a Jenkins page.
+    <st:attribute name="width">
+      Optional, sets the width of the page. Available options are 'default', 'narrow', or 'wide'.
+    </st:attribute>
   </st:documentation>
 
   <j:if test="${mode=='main-panel'}">
-    <j:if test="${app.isQuietingDown()}">
-      <j:choose>
-        <j:when test="${app.isPreparingSafeRestart()}">
-          <div id='safe-restart-msg'>
-            <j:choose>
-              <j:when test="${!app.getQuietDownReason().trim().isEmpty()}">
-                ${app.getQuietDownReason()}
-              </j:when>
-              <j:otherwise>
-                ${%saferestart}
-              </j:otherwise>
-            </j:choose>
-          </div>
-        </j:when>
-        <j:otherwise>
-          <div id='shutdown-msg'>
-            <j:choose>
-              <j:when test="${app.getQuietDownReason() != null}">
-                ${app.getQuietDownReason()}
-              </j:when>
-              <j:otherwise>
-                ${%shutdown}
-              </j:otherwise>
-            </j:choose>
-          </div>
-        </j:otherwise>
-      </j:choose>
-    </j:if>
-    <a id="skip2content" />
-    <x:comment>&#10;start of main content ⇒&#10;</x:comment>
-    <d:invokeBody />
-    <x:comment>&#10;⇐ end of main content&#10;</x:comment>
+    <div id="main-panel" class="app-main-panel
+              ${attrs.width eq 'wide' ? 'app-main-panel--wide' : ''}
+              ${attrs.width eq 'narrow' ? 'app-main-panel--narrow' : ''}">
+      <j:if test="${app.isQuietingDown()}">
+        <j:choose>
+          <j:when test="${app.isPreparingSafeRestart()}">
+            <div id='safe-restart-msg'>
+              <j:choose>
+                <j:when test="${!app.getQuietDownReason().trim().isEmpty()}">
+                  ${app.getQuietDownReason()}
+                </j:when>
+                <j:otherwise>
+                  ${%saferestart}
+                </j:otherwise>
+              </j:choose>
+            </div>
+          </j:when>
+          <j:otherwise>
+            <div id='shutdown-msg'>
+              <j:choose>
+                <j:when test="${app.getQuietDownReason() != null}">
+                  ${app.getQuietDownReason()}
+                </j:when>
+                <j:otherwise>
+                  ${%shutdown}
+                </j:otherwise>
+              </j:choose>
+            </div>
+          </j:otherwise>
+        </j:choose>
+      </j:if>
+      <a id="skip2content" />
+      <x:comment>&#10;start of main content ⇒&#10;</x:comment>
+      <d:invokeBody />
+      <x:comment>&#10;⇐ end of main content&#10;</x:comment>
+    </div>
   </j:if>
 </j:jelly>

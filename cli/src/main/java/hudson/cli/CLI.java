@@ -535,7 +535,7 @@ public class CLI {
     }
 
     /**
-     * Loads RSA/DSA private key in a PEM format into {@link KeyPair}.
+     * Loads an SSH private key (RSA, DSA, ECDSA or Ed25519) into a {@link KeyPair}.
      */
     public static KeyPair loadKey(File f, String passwd) throws IOException, GeneralSecurityException {
         return PrivateKeyProvider.loadKey(f, passwd);
@@ -546,7 +546,7 @@ public class CLI {
     }
 
     /**
-     * Loads RSA/DSA private key in a PEM format into {@link KeyPair}.
+     * Loads an SSH private key (RSA, DSA, ECDSA or Ed25519) into a {@link KeyPair}.
      */
     public static KeyPair loadKey(String pemString, String passwd) throws IOException, GeneralSecurityException {
         return PrivateKeyProvider.loadKey(pemString, passwd);
