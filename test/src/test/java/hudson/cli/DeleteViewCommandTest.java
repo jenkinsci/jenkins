@@ -65,7 +65,7 @@ class DeleteViewCommandTest {
 
         j.jenkins.addView(new ListView("aView"));
 
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().toAuthenticated());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs("aView")
         ;
@@ -76,7 +76,7 @@ class DeleteViewCommandTest {
     }
 
     @Test
-    void deleteViewShouldSucceedWithoutViewReadPermission() throws IOException {
+    void deleteViewShouldFailWithoutViewReadPermission() throws IOException {
 
         j.jenkins.addView(new ListView("aView"));
 
@@ -85,8 +85,9 @@ class DeleteViewCommandTest {
                 .invokeWithArgs("aView")
                 ;
 
-        assertThat(result, succeededSilently());
-        assertThat(j.jenkins.getView("aView"), nullValue());
+        assertThat(result, failedWith(6));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("ERROR: user is missing the View/Read permission"));
     }
 
     @Test
@@ -94,7 +95,7 @@ class DeleteViewCommandTest {
 
         j.jenkins.addView(new ListView("aView"));
 
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs("aView")
         ;
@@ -105,7 +106,7 @@ class DeleteViewCommandTest {
 
     @Test
     void deleteViewShouldFailIfViewDoesNotExist() {
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs("never_created")
         ;
@@ -118,7 +119,7 @@ class DeleteViewCommandTest {
     // ViewGroup.canDelete()
     @Test
     void deleteViewShouldFailIfViewGroupDoesNotAllowDeletion() {
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs(AllView.DEFAULT_VIEW_NAME)
         ;
@@ -131,7 +132,7 @@ class DeleteViewCommandTest {
 
     @Test
     void deleteViewShouldFailIfViewNameIsEmpty() {
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs("")
                 ;
@@ -143,7 +144,7 @@ class DeleteViewCommandTest {
 
     @Test
     void deleteViewShouldFailIfViewNameIsSpace() {
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs(" ")
                 ;
@@ -160,7 +161,7 @@ class DeleteViewCommandTest {
         j.jenkins.addView(new ListView("aView2"));
         j.jenkins.addView(new ListView("aView3"));
 
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs("aView1", "aView2", "aView3");
 
@@ -176,7 +177,7 @@ class DeleteViewCommandTest {
         j.jenkins.addView(new ListView("aView1"));
         j.jenkins.addView(new ListView("aView2"));
 
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs("never_created", "aView1", "aView2");
 
@@ -196,7 +197,7 @@ class DeleteViewCommandTest {
         j.jenkins.addView(new ListView("aView1"));
         j.jenkins.addView(new ListView("aView2"));
 
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs("aView1", "never_created", "aView2");
 
@@ -216,7 +217,7 @@ class DeleteViewCommandTest {
         j.jenkins.addView(new ListView("aView1"));
         j.jenkins.addView(new ListView("aView2"));
 
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs("aView1", "aView2", "never_created");
 
@@ -236,7 +237,7 @@ class DeleteViewCommandTest {
         j.jenkins.addView(new ListView("aView1"));
         j.jenkins.addView(new ListView("aView2"));
 
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs("aView1", "never_created1", "never_created2", "aView2");
 
@@ -258,7 +259,7 @@ class DeleteViewCommandTest {
         j.jenkins.addView(new ListView("aView1"));
         j.jenkins.addView(new ListView("aView2"));
 
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs("aView1", "aView2", "aView1");
 
@@ -273,7 +274,7 @@ class DeleteViewCommandTest {
         j.jenkins.addView(new ListView("aView1"));
         j.jenkins.addView(new ListView("aView2"));
 
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(View.READ, View.DELETE, Jenkins.READ).everywhere().toAuthenticated());
         final CLICommandInvoker.Result result = command
                 .invokeWithArgs("aView1", "aView2", AllView.DEFAULT_VIEW_NAME);
 

@@ -33,6 +33,7 @@ import static org.jvnet.hudson.test.QueryUtils.waitUntilStringIsPresent;
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
 import hudson.model.User;
+import hudson.model.View;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
@@ -40,6 +41,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
@@ -379,13 +381,14 @@ public class SearchTest {
         assertEquals(1, results.size(), "nonempty results list");
 
 
-        // So can alice
+        // Alice can't
+        assertFalse(j.jenkins.getView("foo").hasPermission2(User.get("alice").impersonate2(), View.READ), "no permission");
         ACL.impersonate2(User.get("alice").impersonate2(), () -> {
-            assertEquals(2, Jenkins.get().getViews().size(), "two views exist");
+            assertEquals(0, Jenkins.get().getViews().size(), "no visible views");
 
             List<SearchItem> results1 = new ArrayList<>();
             j.jenkins.getSearchIndex().suggest("foo", results1);
-            assertEquals(1, results1.size(), "nonempty results list");
+            assertEquals(Collections.emptyList(), results1, "empty results list");
         });
     }
 

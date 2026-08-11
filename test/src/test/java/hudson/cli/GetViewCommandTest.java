@@ -55,32 +55,18 @@ class GetViewCommandTest {
     }
 
     @Test
-    void getViewShouldFailWithoutViewExtendedReadPermission() throws IOException {
+    void getViewShouldFailWithoutViewReadPermission() throws IOException {
 
         j.jenkins.addView(new ListView("aView"));
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
-                .invokeWithArgs("aView");
-
-        assertThat(result, failedWith(6));
-        assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: user is missing the View/ExtendedRead permission"));
-    }
-
-    @Test
-    void getViewShouldFailWithOnlyViewReadPermission() throws IOException {
-
-        j.jenkins.addView(new ListView("aView"));
-
-        final CLICommandInvoker.Result result = command
-                .authorizedTo(View.READ, Jenkins.READ) // keeping deprecated View.READ to show lack of effect
                 .invokeWithArgs("aView")
-                ;
+        ;
 
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: user is missing the View/ExtendedRead permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the View/Read permission"));
     }
 
     @Test
@@ -89,7 +75,7 @@ class GetViewCommandTest {
         j.jenkins.addView(new ListView("aView"));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(View.EXTENDED_READ, Jenkins.READ)
+                .authorizedTo(View.READ, Jenkins.READ)
                 .invokeWithArgs("aView")
         ;
 
@@ -103,7 +89,7 @@ class GetViewCommandTest {
     void getViewShouldFailIfViewDoesNotExist() {
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ)
+                .authorizedTo(View.READ, Jenkins.READ)
                 .invokeWithArgs("never_created")
         ;
 

@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.Item;
 import hudson.model.ListView;
+import hudson.model.View;
 import java.io.IOException;
 import java.net.URL;
 import jenkins.model.Jenkins;
@@ -108,6 +109,7 @@ class TooManyJobsButNoViewTest {
                 .grant(Jenkins.READ).everywhere().to(READONLY)
                 .grant(Jenkins.SYSTEM_READ).everywhere().to(READONLY)
                 .grant(Item.READ).everywhere().to(READONLY)
+                .grant(View.READ).everywhere().to(READONLY)
         );
 
         for (int i = 0; i <= TooManyJobsButNoView.THRESHOLD; i++)
