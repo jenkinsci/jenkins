@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
+import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Slave;
 import java.security.SecureRandom;
@@ -75,11 +76,14 @@ public abstract class JnlpAgentReceiver extends JnlpConnectionStateListener impl
 
         @Override
         public String getSecretOf(@NonNull String clientName) {
-            Node node = Jenkins.get().getNode(clientName);
-            if (node instanceof Slave) {
-                String salt = ((Slave) node).getInboundAgentSecretSalt();
-                if (salt != null) {
-                    return SLAVE_SECRET.mac(clientName + salt);
+            Computer computer = Jenkins.get().getComputer(clientName);
+            if (computer != null) {
+                Node node = computer.getNode();
+                if (node instanceof Slave) {
+                    String salt = ((Slave) node).getInboundAgentSecretSalt();
+                    if (salt != null) {
+                        return SLAVE_SECRET.mac(clientName + salt);
+                    }
                 }
             }
             return SLAVE_SECRET.mac(clientName);
