@@ -31,11 +31,16 @@
         The parent sits at the repo root, so its input scan reaches build output that changes every time — the
         files under test/target (e.g. unpacked Maven distros) and the bundles "yarn build" writes into
         war/src/main/webapp/jsbundles. That gave the parent a different key on every build, so it never hit the
-        cache and the frontend kept rebuilding. Ignoring these two folders keeps the key stable.
+        cache and the frontend kept rebuilding. Ignoring these folders keeps the key stable.
+
+        test/jmh-report.json is a generated (untracked) JMH benchmark report living directly under test/ (not
+        under test/target/). Its contents change on every run, so it likewise gave the parent a new key every
+        build. Exclude the exact file so it is not treated as a cache input.
       -->
       <excludes>
         <exclude glob="target" matcherType="FILENAME" entryType="DIRECTORY">test</exclude>
         <exclude matcherType="PATH" entryType="DIRECTORY">war/src/main/webapp/jsbundles</exclude>
+        <exclude matcherType="PATH" entryType="FILE">test/jmh-report.json</exclude>
       </excludes>
     </global>
   </input>
