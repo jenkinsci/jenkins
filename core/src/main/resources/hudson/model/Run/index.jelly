@@ -69,15 +69,74 @@ THE SOFTWARE.
           <table>
             <t:artifactList build="${it}" caption="${%Build Artifacts}"/>
 
-            <!-- give actions a chance to contribute summary item -->
+            <!-- 1. Test failures / failed tests -->
             <j:forEach var="a" items="${it.allActions}">
-              <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
+              <j:if test="${a.class.name.contains('TestResultAction') || a.urlName == 'testReport' || a.urlName == 'testngreports'}">
+                <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
+              </j:if>
+            </j:forEach>
+          </table>
+
+          <!-- 2. Changelog -->
+          <st:include page="main.jelly" optional="true" />
+
+          <table>
+            <!-- 3. SVN revisions -->
+            <tbody id="svn-revisions-container">
+              <j:forEach var="a" items="${it.allActions}">
+                <j:if test="${a.class.name.contains('SubversionTagAction') || a.class.name.contains('MultipleScmRevisionState')}">
+                  <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
+                </j:if>
+              </j:forEach>
+            </tbody>
+
+            <!-- 4. Other less-critical build information -->
+            <j:forEach var="a" items="${it.allActions}">
+              <j:if test="${!a.class.name.contains('TestResultAction') and a.urlName != 'testReport' and a.urlName != 'testngreports' and !a.class.name.contains('SubversionTagAction') and !a.class.name.contains('MultipleScmRevisionState')}">
+                <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
+              </j:if>
             </j:forEach>
 
             <st:include page="summary.jelly" optional="true" />
           </table>
 
-          <st:include page="main.jelly" optional="true" />
+          <script>
+            (function() {
+              var svnContainer = document.getElementById('svn-revisions-container');
+              if (svnContainer) {
+                var lists = svnContainer.querySelectorAll('ul, ol');
+                for (var i = 0; i &lt; lists.length; i++) {
+                  var list = lists[i];
+                  var items = list.querySelectorAll('li');
+                  if (items.length > 5) {
+                    var toggle = document.createElement('a');
+                    toggle.href = '#';
+                    toggle.innerHTML = '&#x25B6; SVN Revisions (' + items.length + ')';
+                    toggle.style.fontWeight = 'bold';
+                    toggle.style.display = 'block';
+                    toggle.style.marginBottom = '5px';
+                    
+                    var wrapper = document.createElement('div');
+                    wrapper.style.display = 'none';
+                    list.parentNode.insertBefore(toggle, list);
+                    list.parentNode.insertBefore(wrapper, list);
+                    wrapper.appendChild(list);
+                    
+                    toggle.onclick = function(e) {
+                      e.preventDefault();
+                      if (wrapper.style.display === 'none') {
+                        wrapper.style.display = 'block';
+                        this.innerHTML = '&#x25BC; SVN Revisions (' + items.length + ')';
+                      } else {
+                        wrapper.style.display = 'none';
+                        this.innerHTML = '&#x25B6; SVN Revisions (' + items.length + ')';
+                      }
+                    };
+                  }
+                }
+              }
+            })();
+          </script>
         </l:main-panel>
       </l:layout>
     </j:otherwise>
