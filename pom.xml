@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.577</revision>
+    <revision>2.578</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2026-08-03T16:48:08Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-08-11T06:10:43Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3385.vf1123fb_515da_</remoting.version>
+    <remoting.version>3386.v353e57a_1b_ea_0</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
@@ -275,7 +275,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>13.9.0</version>
+              <version>13.10.0</version>
             </dependency>
           </dependencies>
           <executions>
