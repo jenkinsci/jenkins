@@ -125,6 +125,15 @@ class BasicPasswordComplexityRuleTest {
     }
 
     @Test
+    void lineTerminatorsRetainExistingCharacterRuleBehavior() {
+        BasicPasswordComplexityRule rule = new BasicPasswordComplexityRule(0, true, false, false, false);
+
+        // String.matches(".*[A-Z].*") rejected line terminators even when the password contained an uppercase letter.
+        assertThrows(PasswordComplexityException.class, () -> rule.validate("A\n"));
+        assertDoesNotThrow(() -> rule.validate("A"));
+    }
+
+    @Test
     void noneRuleAcceptsAnyPassword() {
         NonePasswordComplexityRule rule = new NonePasswordComplexityRule();
         assertDoesNotThrow(() -> rule.validate("a"));

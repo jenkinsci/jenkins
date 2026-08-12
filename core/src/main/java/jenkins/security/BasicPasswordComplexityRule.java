@@ -43,10 +43,11 @@ import org.kohsuke.stapler.DataBoundConstructor;
 @Restricted(NoExternalUse.class)
 public class BasicPasswordComplexityRule extends PasswordComplexityRule {
 
-    private static final Pattern UPPERCASE_PATTERN = Pattern.compile(".*[A-Z].*");
-    private static final Pattern LOWERCASE_PATTERN = Pattern.compile(".*[a-z].*");
-    private static final Pattern DIGIT_PATTERN = Pattern.compile(".*[0-9].*");
-    private static final Pattern SPECIAL_CHAR_PATTERN = Pattern.compile(".*\\p{Punct}.*");
+    private static final Pattern UPPERCASE_PATTERN = Pattern.compile("[A-Z]");
+    private static final Pattern LOWERCASE_PATTERN = Pattern.compile("[a-z]");
+    private static final Pattern DIGIT_PATTERN = Pattern.compile("[0-9]");
+    private static final Pattern SPECIAL_CHAR_PATTERN = Pattern.compile("\\p{Punct}");
+    private static final Pattern LINE_TERMINATOR_PATTERN = Pattern.compile("[\\n\\r\\u0085\\u2028\\u2029]");
 
     private final int minimumLength;
     private final boolean requireUppercase;
@@ -94,16 +95,17 @@ public class BasicPasswordComplexityRule extends PasswordComplexityRule {
         if (minimumLength > 0 && password.length() < minimumLength) {
             errors.add(Messages.BasicPasswordComplexityRule_PasswordTooShort(minimumLength));
         }
-        if (requireUppercase && !UPPERCASE_PATTERN.matcher(password).matches()) {
+        boolean containsLineTerminator = LINE_TERMINATOR_PATTERN.matcher(password).find();
+        if (requireUppercase && (containsLineTerminator || !UPPERCASE_PATTERN.matcher(password).find())) {
             errors.add(Messages.BasicPasswordComplexityRule_PasswordRequiresUppercase());
         }
-        if (requireLowercase && !LOWERCASE_PATTERN.matcher(password).matches()) {
+        if (requireLowercase && (containsLineTerminator || !LOWERCASE_PATTERN.matcher(password).find())) {
             errors.add(Messages.BasicPasswordComplexityRule_PasswordRequiresLowercase());
         }
-        if (requireDigit && !DIGIT_PATTERN.matcher(password).matches()) {
+        if (requireDigit && (containsLineTerminator || !DIGIT_PATTERN.matcher(password).find())) {
             errors.add(Messages.BasicPasswordComplexityRule_PasswordRequiresDigit());
         }
-        if (requireSpecialCharacter && !SPECIAL_CHAR_PATTERN.matcher(password).matches()) {
+        if (requireSpecialCharacter && (containsLineTerminator || !SPECIAL_CHAR_PATTERN.matcher(password).find())) {
             errors.add(Messages.BasicPasswordComplexityRule_PasswordRequiresSpecialCharacter());
         }
         if (!errors.isEmpty()) {
