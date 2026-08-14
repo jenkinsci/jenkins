@@ -73,7 +73,10 @@ public class CspDecorator extends PageDecorator {
     @CheckForNull
     /* package */ static String getReportingEndpoint(HttpServletRequest req) {
         Class<?> modelObjectClass = null;
-        String restOfPath = req.getRequestURI().replaceFirst("^" + req.getContextPath(), "");
+        String restOfPath = req.getRequestURI()
+        if (restOfPath.startsWith(req.getContextPath()) {
+            restOfPath = restOfPath.substring(req.getContextPath().length())
+        }
         final StaplerRequest2 staplerRequest2 = Stapler.getCurrentRequest2();
         if (staplerRequest2 != null) {
             final List<Ancestor> ancestors = staplerRequest2.getAncestors();
