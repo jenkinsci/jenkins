@@ -2030,8 +2030,15 @@ function AutoScroller(scrollContainer) {
     bottomThreshold: 25,
     scrollContainer: scrollContainer,
 
+    // May be a function so that a container which varies with the layout can be re-resolved.
+    resolveScrollContainer: function () {
+      return typeof this.scrollContainer === "function"
+        ? this.scrollContainer()
+        : this.scrollContainer;
+    },
+
     getCurrentHeight: function () {
-      var scrollDiv = this.scrollContainer;
+      var scrollDiv = this.resolveScrollContainer();
 
       if (scrollDiv.scrollHeight > 0) {
         return scrollDiv.scrollHeight;
@@ -2044,7 +2051,7 @@ function AutoScroller(scrollContainer) {
 
     // return true if we are in the "stick to bottom" mode
     isSticking: function () {
-      var scrollDiv = this.scrollContainer;
+      var scrollDiv = this.resolveScrollContainer();
       var currentHeight = this.getCurrentHeight();
 
       // when used with the BODY tag, the height needs to be the viewport height, instead of
@@ -2061,7 +2068,7 @@ function AutoScroller(scrollContainer) {
     },
 
     scrollToBottom: function () {
-      var scrollDiv = this.scrollContainer;
+      var scrollDiv = this.resolveScrollContainer();
       var currentHeight = this.getCurrentHeight();
 
       if (isViewportScroller(scrollDiv)) {
