@@ -26,6 +26,7 @@ package jenkins.management;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.model.AdministrativeMonitor;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
@@ -67,5 +68,20 @@ public class ConfigureLink extends ManagementLink {
     @Override
     public Category getCategory() {
         return Category.CONFIGURATION;
+    }
+
+    @Override
+    public Badge getBadge() {
+        long activeMonitorsCount = AdministrativeMonitor.all().stream()
+                .filter(AdministrativeMonitor::isActivated)
+                .count();
+
+        if (activeMonitorsCount > 0) {
+            String tooltip = activeMonitorsCount == 1 ?
+                    Messages.ConfigureLink_notificationAvailable() :
+                    Messages.ConfigureLink_notificationsAvailable(activeMonitorsCount);
+            return new Badge(String.valueOf(activeMonitorsCount), tooltip, Badge.Severity.WARNING);
+        }
+        return null;
     }
 }
