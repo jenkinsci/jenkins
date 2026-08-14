@@ -66,8 +66,10 @@ This forks a JVM that serves `war/target/jenkins` under Winstone, the same way `
 served in production. Jenkins is available on <http://localhost:8080/jenkins/> and uses
 `war/work` as its `JENKINS_HOME`; pass `-Dport=`, `-Dhost=` or `-DjenkinsHome=` to change that.
 
-Edits to `war/src/main/webapp` and to views and message bundles under `core/src/main/resources`
-are picked up without restarting. Changes to Java code still need a rebuild.
+Edits to `war/src/main/webapp`, and to Jelly views and their sibling `.properties` files under
+`core/src/main/resources`, are picked up on the next page load. Edits to a `Messages.properties`
+take effect when you restart the development instance — no repackaging needed, but the bundle is
+cached for the life of the JVM. Changes to Java code still need a rebuild.
 
 Because Jenkins now runs in its own JVM, starting Maven under a debugger no longer attaches to
 Jenkins. Pass `-Dmaven.hpi.debug=true` to have the forked JVM suspend and wait for a debugger, or

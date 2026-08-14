@@ -323,12 +323,18 @@ THE SOFTWARE.
           <!--
             Serve these from the source tree rather than from the copies in the exploded WAR, so that
             editing them (or running "yarn start", which writes to src/main/webapp/jsbundles) takes
-            effect without repackaging. Core views and message bundles need no link: stapler.resourcePath
-            below already makes Stapler resolve them from source.
+            effect without repackaging.
 
-            Do not link WEB-INF/classes as a whole. It is real build output holding the symbol SVGs that
+            Never link WEB-INF/classes as a whole: it is real build output holding the symbol SVGs that
             Symbol.loadSymbol reads off the class path as images/symbols/*.svg, and replacing it makes
-            every icon render as the placeholder cross.
+            every icon render as the placeholder cross. Link the individual roots instead. A miss in
+            WEB-INF/classes falls through to jenkins-core.jar, so the generated .stapler and .javadoc
+            resources under these packages still resolve.
+
+            Putting the core roots in front of jenkins-core.jar is what lets an edited Messages.properties
+            be picked up on the next restart rather than needing "mvn -pl core install" and a repackage.
+            Only on restart: ResourceBundleHolder caches each bundle for the life of the JVM. Views and
+            their sibling .properties are live, via stapler.resourcePath below.
           -->
           <webrootLinks>
             <webrootLink>
@@ -354,6 +360,18 @@ THE SOFTWARE.
             <webrootLink>
               <path>WEB-INF/classes/images</path>
               <target>${project.basedir}/src/main/resources/images</target>
+            </webrootLink>
+            <webrootLink>
+              <path>WEB-INF/classes/hudson</path>
+              <target>${project.basedir}/../core/src/main/resources/hudson</target>
+            </webrootLink>
+            <webrootLink>
+              <path>WEB-INF/classes/jenkins</path>
+              <target>${project.basedir}/../core/src/main/resources/jenkins</target>
+            </webrootLink>
+            <webrootLink>
+              <path>WEB-INF/classes/lib</path>
+              <target>${project.basedir}/../core/src/main/resources/lib</target>
             </webrootLink>
           </webrootLinks>
           <systemProperties>
