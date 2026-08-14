@@ -323,8 +323,12 @@ THE SOFTWARE.
           <!--
             Serve these from the source tree rather than from the copies in the exploded WAR, so that
             editing them (or running "yarn start", which writes to src/main/webapp/jsbundles) takes
-            effect without repackaging. WEB-INF/classes precedes WEB-INF/lib on the webapp class path,
-            so linking it at the core resources makes views and message bundles reload as well.
+            effect without repackaging. Core views and message bundles need no link: stapler.resourcePath
+            below already makes Stapler resolve them from source.
+
+            Do not link WEB-INF/classes as a whole. It is real build output holding the symbol SVGs that
+            Symbol.loadSymbol reads off the class path as images/symbols/*.svg, and replacing it makes
+            every icon render as the placeholder cross.
           -->
           <webrootLinks>
             <webrootLink>
@@ -348,8 +352,8 @@ THE SOFTWARE.
               <target>${project.basedir}/src/main/webapp/help</target>
             </webrootLink>
             <webrootLink>
-              <path>WEB-INF/classes</path>
-              <target>${project.basedir}/../core/src/main/resources</target>
+              <path>WEB-INF/classes/images</path>
+              <target>${project.basedir}/src/main/resources/images</target>
             </webrootLink>
           </webrootLinks>
           <systemProperties>
