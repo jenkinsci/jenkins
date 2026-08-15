@@ -30,7 +30,7 @@ THE SOFTWARE.
 
   <l:notice id="no-builds-yet"
             icon="symbol-play"
-            title="No builds yet"
+            title="${%No builds yet}"
             clazz="jenkins-hidden">
     Start the first build to see run history here.
   </l:notice>
