@@ -71,7 +71,7 @@ THE SOFTWARE.
                 <div class="jenkins-details__item__icon">
                   <l:icon src="symbol-description" />
                 </div>
-                ${app.markupFormatter.translate(build.truncatedDescription)}
+                <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}"/>
               </div>
             </div>
           </j:if>

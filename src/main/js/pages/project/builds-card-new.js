@@ -84,7 +84,7 @@ BehaviorShim.specify(
             // Show the refreshed builds list
             contents.innerHTML = responseText;
             if (params.search) {
-              noBuilds.style.display = "hidden";
+              noBuilds.style.display = "none";
             } else {
               noBuildsYet.classList.add("jenkins-hidden");
               card.classList.remove("jenkins-hidden");

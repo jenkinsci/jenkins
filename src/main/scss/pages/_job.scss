@@ -225,8 +225,8 @@
     }
 
     &:has(
-      .app-temporary-list__item__label:active,
-      .app-temporary-list__item__label:focus-visible
+      a.app-temporary-list__item__label:active,
+      a.app-temporary-list__item__label:focus-visible
     ) {
       border-bottom-color: transparent;
       border-radius: calc(var(--form-input-border-radius) / 2);

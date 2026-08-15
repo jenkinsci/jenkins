@@ -44,7 +44,6 @@ THE SOFTWARE.
       <div style="display: none">
         <l:search-bar placeholder="${%find}"
                       clazz="${page.runs.isEmpty() and page.queueItems.isEmpty() ? 'jenkins-hidden' : ''}"/>
-        <button>Only successful</button>
       </div>
 
       <div class="app-temporary-list">
@@ -58,8 +57,7 @@ THE SOFTWARE.
           ${%No builds}
         </div>
 
-        <div id="jenkins-build-history">
-        </div>
+        <div id="jenkins-build-history" />
 
         <div class="app-temporary-list__controls jenkins-hidden" id="controls">
           <button class="jenkins-button jenkins-button--tertiary jenkins-card__unveil" id="up">
