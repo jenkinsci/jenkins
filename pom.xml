@@ -106,7 +106,6 @@ THE SOFTWARE.
     <winstone.version>8.1047.v331d3186f463</winstone.version>
     <!-- Provides hpi:run, the development instance; see CONTRIBUTING.md.
          TODO replace with the maven-hpi-plugin release containing explodedWar/webrootLinks before merging. -->
-    <hpi-plugin.version>3.999999-SNAPSHOT</hpi-plugin.version>
     <node.version>24.19.0</node.version>
   </properties>
 
