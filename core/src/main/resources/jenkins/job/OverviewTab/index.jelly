@@ -27,7 +27,7 @@ THE SOFTWARE.
   <l:job-subpage>
     <j:set var="it" value="${it.object}" />
 
-    <l:app-bar title="Builds">
+    <l:app-bar title="${%Builds}">
       <l:details-bar it="${it}">
         <t:editDescriptionButton permission="${it.CONFIGURE}" compact="true" />
       </l:details-bar>
