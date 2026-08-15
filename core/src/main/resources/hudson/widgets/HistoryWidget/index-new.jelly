@@ -32,7 +32,7 @@ THE SOFTWARE.
             icon="symbol-play"
             title="${%No builds yet}"
             clazz="jenkins-hidden">
-    Start the first build to see run history here.
+    ${%Start the first build to see run history here.}
   </l:notice>
 
   <div id="buildHistoryPage" page-ajax="${it.baseUrl}/buildHistory/ajax"
