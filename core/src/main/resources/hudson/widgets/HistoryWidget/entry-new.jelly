@@ -39,7 +39,7 @@ THE SOFTWARE.
     <div class="app-build-item">
       <j:set var="iconTooltip">
         <div>${build.iconColor.description}</div>
-        <div class="jenkins-!-text-color-secondary">Click to jump to ${h.getConsoleProviderFor(build).descriptor.displayName}</div>
+        <div class="jenkins-!-text-color-secondary">${%JumpToConsole(h.getConsoleProviderFor(build).descriptor.displayName)}</div>
       </j:set>
 
       <a href="${h.getConsoleUrl(build)}"
