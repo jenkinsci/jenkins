@@ -36,7 +36,14 @@ THE SOFTWARE.
     <t:editableDescription permission="${it.CONFIGURE}" hideButton="true"/>
 
     <j:forEach var="w" items="${it.widgets}">
-      <st:include it="${w}" page="index-new.jelly" />
+      <j:choose>
+        <j:when test="${w.class.name == 'hudson.widgets.BuildHistoryWidget'}">
+          <st:include it="${w}" page="index-new.jelly" />
+        </j:when>
+        <j:otherwise>
+          <st:include it="${w}" page="index.jelly" />
+        </j:otherwise>
+      </j:choose>
     </j:forEach>
 
     <l:card title="${%Legacy}">
