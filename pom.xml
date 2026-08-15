@@ -104,7 +104,6 @@ THE SOFTWARE.
          war/src/main/webapp/jsbundles is already populated from an earlier build. -->
     <skip.frontend>false</skip.frontend>
     <winstone.version>8.1047.v331d3186f463</winstone.version>
-    <!-- Provides hpi:run, the development instance; see CONTRIBUTING.md. -->
     <node.version>24.19.0</node.version>
   </properties>
 
