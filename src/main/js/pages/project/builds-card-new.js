@@ -24,7 +24,7 @@ BehaviorShim.specify(
 
     // Refresh variables
     let buildRefreshTimeout;
-    const updateBuildsRefreshInterval = 50000;
+    const updateBuildsRefreshInterval = 5000;
 
     /**
      * Refresh the 'Builds' card
