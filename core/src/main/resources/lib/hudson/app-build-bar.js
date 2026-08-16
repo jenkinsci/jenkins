@@ -4,14 +4,12 @@
     return;
   }
 
-  const statusIconSelector = ".app-build-bar__content__headline svg, svg";
+  const statusIconSelector = ".app-build-bar__content__headline svg";
   const progressRingSelector = "[data-build-caption-progress-ring]";
   const progressRingPercentageAttribute =
     "data-build-caption-progress-ring-percentage";
   const svgNamespace = "http://www.w3.org/2000/svg";
-  const progress =
-    buildCaption.dataset.progress ||
-    document.querySelector(".app-progress-bar span")?.style.width;
+  const progress = buildCaption.dataset.progress;
   const url = buildCaption.dataset.statusUrl;
   const actionsUrl = buildCaption.dataset.actionsUrl;
   const title = document.title;
@@ -23,36 +21,8 @@
         let progress = rsp.headers.get("X-Progress");
         if (isBuilding === "true") {
           setTimeout(updateBuildCaptionIcon, 5000);
-          let runtime = rsp.headers.get("X-Executor-Runtime");
-          let remaining = rsp.headers.get("X-Executor-Remaining");
-          let stuck = rsp.headers.get("X-Executor-Stuck");
-          let progressBar = document.querySelector(".app-progress-bar");
-          let progressBarDone = document.querySelector(
-            ".app-progress-bar span",
-          );
-          if (progressBar) {
-            let tooltip = progressBar.dataset.tooltipTemplate;
-            tooltip = tooltip.replace("%0", runtime).replace("%1", remaining);
-            progressBar.setAttribute("tooltip", tooltip);
-            progressBar.setAttribute("title", tooltip);
-            Behaviour.applySubtree(progressBar, true);
-            if (stuck === "true") {
-              progressBar.classList.add("app-progress-bar--error");
-            } else {
-              progressBar.classList.remove("app-progress-bar--error");
-            }
-          }
-          if (progressBarDone) {
-            progressBarDone.style.width = `${progress}%`;
-          }
           setTitle(progress);
         } else {
-          let progressBar = document.querySelector(
-            ".build-caption-progress-container",
-          );
-          if (progressBar) {
-            progressBar.style.display = "none";
-          }
           document.title = title;
 
           // Once the build is complete, refresh the build's actions
