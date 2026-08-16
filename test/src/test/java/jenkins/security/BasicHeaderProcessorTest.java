@@ -1,7 +1,12 @@
 package jenkins.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.jvnet.hudson.test.LoggerRule.recorded;
 
 import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
@@ -11,6 +16,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.logging.Level;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.Page;
@@ -19,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.HttpResponse;
@@ -144,6 +151,20 @@ class BasicHeaderProcessorTest {
             String authCode4 = encode(prefix, "foo:bar");
             makeRequestWithAuthCodeAndFail(authCode4);
             spySecurityListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
+        }
+    }
+
+    @Test
+    void malformedBase64HeaderDoesNotLeakCredentialsInLogs() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        wc = j.createWebClient();
+
+        LoggerRule logging = new LoggerRule().record(BasicHeaderProcessor.class, Level.FINE).capture(100);
+        try {
+            makeRequestWithAuthCodeAndFail("Basic secretpasswordnotvalidbase64!!!");
+        } finally {
+            assertThat(logging, recorded(Level.FINE, is("Failed to decode Basic authentication header")));
+            assertThat(logging, not(recorded(containsString("secretpasswordnotvalidbase64"))));
         }
     }
 
