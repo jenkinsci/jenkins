@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import jenkins.util.VirtualFile;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -45,6 +46,21 @@ import org.kohsuke.stapler.StaplerRequest2;
  *   <li>Decompressing gzipped files on the fly when requested by a user.</li>
  *   <li>Decrypting encrypted artifact contents.</li>
  * </ul>
+ *
+ * <p>Registered filters are invoked, in {@link ExtensionList} order, for <em>every</em> file served through any
+ * {@link DirectoryBrowserSupport} on the instance (all jobs' artifacts and workspaces), not just files an
+ * implementation intends to handle. Implementations must check {@link Context#getFile()} (e.g., by name or
+ * extension) before acting, and leave the {@link Context} untouched for files they don't recognize. A single
+ * extension instance may be invoked concurrently for many simultaneous requests, so implementations must be
+ * stateless/thread-safe and must not mutate any state outside of the given {@link Context}.
+ *
+ * <p>Filters that expand or decode content (for example, decompression) should treat the input as untrusted and
+ * guard against decompression-bomb style resource exhaustion by enforcing a reasonable output size limit, and
+ * should prefer wrapping the stream (e.g., with {@link java.util.zip.GZIPInputStream}) over buffering the entire
+ * file into memory. A filter that determines a file does not actually match the format it expects (for example,
+ * a {@code .gz}-named file with an invalid gzip header) should typically catch that failure internally and leave
+ * the {@link Context} unmodified so the original content is served, rather than throwing and turning it into a
+ * generic server error for the requester.
  *
  * @since TODO
  */
@@ -66,9 +82,9 @@ public abstract class DirectoryBrowserSupportFilter implements ExtensionPoint {
         private String fileName;
 
         public Context(@NonNull VirtualFile file, @Nullable StaplerRequest2 request, @NonNull InputStream inputStream, long length, boolean view) {
-            this.file = file;
+            this.file = Objects.requireNonNull(file, "file");
             this.request = request;
-            this.inputStream = inputStream;
+            this.inputStream = Objects.requireNonNull(inputStream, "inputStream");
             this.length = length;
             this.view = view;
             this.fileName = file.getName();
@@ -115,11 +131,16 @@ public abstract class DirectoryBrowserSupportFilter implements ExtensionPoint {
          * <p>If a previous stream is replaced by an independent stream (for example, reading all bytes into a new
          * {@link java.io.ByteArrayInputStream}), the previous stream is marked as superseded and will be closed
          * when this context is closed.
+         *
+         * <p>Replacing the stream resets the length to {@code -1} (unknown), since a transformed stream typically
+         * has a different size than the original. Call {@link #setLength(long)} afterward if the new size is known.
          */
         public void setInputStream(@NonNull InputStream inputStream) {
+            Objects.requireNonNull(inputStream, "inputStream");
             if (this.inputStream != inputStream) {
                 this.supersededStreams.add(this.inputStream);
                 this.inputStream = inputStream;
+                this.length = -1;
             }
         }
 
@@ -147,13 +168,26 @@ public abstract class DirectoryBrowserSupportFilter implements ExtensionPoint {
 
         /**
          * Sets a new filename for the served content.
+         *
+         * <p>The filename is used verbatim in the {@code Content-Disposition} response header, so it must not
+         * contain control characters (in particular {@code CR}/{@code LF}) that could be used to inject or
+         * corrupt HTTP response headers.
+         *
+         * @throws IllegalArgumentException if {@code fileName} contains a control character
          */
         public void setFileName(@NonNull String fileName) {
+            Objects.requireNonNull(fileName, "fileName");
+            for (int i = 0; i < fileName.length(); i++) {
+                if (Character.isISOControl(fileName.charAt(i))) {
+                    throw new IllegalArgumentException("fileName must not contain control characters");
+                }
+            }
             this.fileName = fileName;
         }
 
         @Override
         public void close() {
+            IOUtils.closeQuietly(inputStream);
             for (InputStream s : supersededStreams) {
                 IOUtils.closeQuietly(s);
             }
@@ -163,12 +197,14 @@ public abstract class DirectoryBrowserSupportFilter implements ExtensionPoint {
     /**
      * Filters or transforms the given file serving context.
      *
+     * <p>Implementations mutate the given {@link Context} in place (for example via {@link Context#setInputStream}
+     * or {@link Context#setFileName}); the context is owned by the caller and tracks stream lifecycle for cleanup,
+     * so implementations must not retain or return a different {@link Context} instance.
+     *
      * @param context the current file serving context
-     * @return the transformed context (or the same context), or {@code null} if no changes are made
      * @throws IOException if an I/O error occurs during filtering
      */
-    @Nullable
-    public abstract Context filter(@NonNull Context context) throws IOException;
+    public abstract void filter(@NonNull Context context) throws IOException;
 
     /**
      * All registered {@link DirectoryBrowserSupportFilter} instances.

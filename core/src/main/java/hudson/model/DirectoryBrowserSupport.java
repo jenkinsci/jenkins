@@ -379,7 +379,15 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 return;
             }
 
-            try (DirectoryBrowserSupportFilter.Context context = applyFilters(req, baseFile, in, length, true)) {
+            DirectoryBrowserSupportFilter.Context context;
+            try {
+                context = applyFilters(req, baseFile, in, length, true);
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, "Failed to filter stream for " + baseFile, ioe);
+                rsp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                return;
+            }
+            try (context) {
                 in = context.getInputStream();
                 length = context.getLength();
                 String fileName = context.getFileName();
@@ -389,9 +397,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
                 // pseudo file name to let Stapler set text/plain; ensure charset for non-ASCII text
                 rsp.serveFile(req, in, lastModified, -1, length, "mime-type:text/plain;charset=UTF-8");
-            } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, "Failed to serve file for " + baseFile, ioe);
-                rsp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
         } else {
             if (resourceToken != null) {
@@ -417,7 +422,15 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                     return;
                 }
 
-                try (DirectoryBrowserSupportFilter.Context context = applyFilters(req, baseFile, in, length, false)) {
+                DirectoryBrowserSupportFilter.Context context;
+                try {
+                    context = applyFilters(req, baseFile, in, length, false);
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.WARNING, "Failed to filter stream for " + baseFile, ioe);
+                    rsp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    return;
+                }
+                try (context) {
                     in = context.getInputStream();
                     length = context.getLength();
                     String fileName = context.getFileName();
@@ -429,9 +442,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                     } else {
                         rsp.serveFile(req, in, lastModified, -1, length, fileName);
                     }
-                } catch (IOException ioe) {
-                    LOGGER.log(Level.WARNING, "Failed to serve file for " + baseFile, ioe);
-                    rsp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 }
             }
         }
@@ -441,10 +451,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         DirectoryBrowserSupportFilter.Context context = new DirectoryBrowserSupportFilter.Context(baseFile, req, in, length, view);
         for (DirectoryBrowserSupportFilter filter : DirectoryBrowserSupportFilter.all()) {
             try {
-                DirectoryBrowserSupportFilter.Context next = filter.filter(context);
-                if (next != null) {
-                    context = next;
-                }
+                filter.filter(context);
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Failed to filter stream for " + baseFile + " using " + filter, e);
                 context.close();
