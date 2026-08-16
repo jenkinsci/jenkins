@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.FilePath;
 import hudson.remoting.VirtualChannel;
@@ -266,7 +265,7 @@ class WorkspaceCleanupThreadTest {
         }
 
         @Override public Void invoke(File f, VirtualChannel channel) {
-            assumeTrue(f.setLastModified(time), "failed to reset lastModified on " + f);
+            assertTrue(f.setLastModified(time), "failed to reset lastModified on " + f);
             return null;
         }
     }
