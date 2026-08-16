@@ -27,9 +27,7 @@ package hudson.util;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Proc;
@@ -43,6 +41,8 @@ import jenkins.util.SystemProperties;
 import org.apache.tools.ant.util.JavaEnvUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LogRecorder;
@@ -84,9 +84,8 @@ class ArgumentListBuilder2Test {
     }
 
     @Test
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void ensureArgumentsArePassedViaCmdExeUnmodified() throws Exception {
-        assumeTrue(Functions.isWindows());
-
         String[] specials = new String[] {
                 "~",
                 "!",
@@ -150,7 +149,7 @@ class ArgumentListBuilder2Test {
         int code = p.join();
         listener.close();
 
-        assumeTrue(code == 0, "Failed to run " + args);
+        assertEquals(0, code, "Failed to run " + args);
         return out.toString(Charset.defaultCharset());
     }
 }
