@@ -87,9 +87,13 @@
   }
 
   &--wide {
-    width: 70vw;
+    width: 100%;
     max-width: 1700px;
     margin-inline: auto;
+
+    @media (width > 1240px) {
+      width: 70vw;
+    }
   }
 }
 

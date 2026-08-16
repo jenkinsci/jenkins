@@ -1,3 +1,6 @@
+$agent-widget-breakpoint: 770px;
+$agent-widget-breakpoint-side-panel: 1090px;
+
 .app-agent-bar::before {
   content: "";
   background-color: unset !important;
@@ -56,8 +59,16 @@
     gap: calc(var(--section-padding) / 2);
     display: flex;
 
-    @media (width <= 1430px) {
-      flex-direction: column;
+    &:not(.with-side-panel) {
+      @media (width <= $agent-widget-breakpoint) {
+        flex-direction: column;
+      }
+    }
+
+    &.with-side-panel {
+      @media (width <= $agent-widget-breakpoint-side-panel) {
+        flex-direction: column;
+      }
     }
   }
 
@@ -66,20 +77,41 @@
     flex-direction: column;
     gap: calc(var(--section-padding) / 2);
 
-    @media (width <= 1430px) {
-      flex-flow: row wrap;
-      width: 100%;
+    &:not(.with-side-panel) {
+      @media (width <= $agent-widget-breakpoint) {
+        flex-flow: row wrap;
+        width: 100%;
+      }
+    }
+
+    &.with-side-panel {
+      @media (width <= $agent-widget-breakpoint-side-panel) {
+        flex-flow: row wrap;
+        width: 100%;
+      }
     }
 
     & > div.pane-frame {
       min-width: 275px;
       margin-bottom: 0;
+    }
 
-      @media (width <= 1430px) {
+    &:not(.with-side-panel) > div.pane-frame {
+      @media (width <= $agent-widget-breakpoint) {
         flex-grow: 1;
       }
 
-      @media (width > 1430px) {
+      @media (width > $agent-widget-breakpoint) {
+        max-width: 330px;
+      }
+    }
+
+    &.with-side-panel > div.pane-frame {
+      @media (width <= $agent-widget-breakpoint-side-panel) {
+        flex-grow: 1;
+      }
+
+      @media (width > $agent-widget-breakpoint-side-panel) {
         max-width: 330px;
       }
     }
