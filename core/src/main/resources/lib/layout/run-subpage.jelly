@@ -74,7 +74,7 @@ THE SOFTWARE.
             </div>
 
             <j:if test="${it.object.building}">
-              <st:adjunct includes="lib.hudson.build-caption" />
+              <st:adjunct includes="lib.hudson.app-build-bar" />
             </j:if>
           </div>
 
