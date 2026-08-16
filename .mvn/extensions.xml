@@ -5,7 +5,7 @@
     <version>1.13</version>
   </extension>
   <!-- Speeds up local builds by caching module outputs. Tuned in .mvn/maven-build-cache-config.xml,
-       which also keeps "mvn jetty:run" working from a cached build. -->
+       which also keeps "mvn -pl war hpi:run" working from a cached build. -->
   <extension>
     <groupId>org.apache.maven.extensions</groupId>
     <artifactId>maven-build-cache-extension</artifactId>
