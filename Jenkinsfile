@@ -110,7 +110,8 @@ axes.values().combinations {
             ]
             if (env.CHANGE_ID && !pullRequest.labels.contains('full-test')) {
               def excludesFile
-              def target = platform == 'windows' ? '30%' : '100%'
+              /* TODO: Restore Windows to 30% before moving this pull request out of draft */
+              def target = platform == 'windows' ? '100%' : '100%'
               withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
                 if (isUnix()) {
                   excludesFile = "${tmpDir}/excludes.txt"
