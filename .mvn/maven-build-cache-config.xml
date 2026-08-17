@@ -16,19 +16,26 @@
 
     <attachedOutputs>
       <!--
-        Cache the folders on disk, not just the packaged jar, so a cache hit leaves the same files a fresh
-        build would.
+        Cache the folders on disk, not just the packaged artifact, so a cache hit leaves the same files a
+        fresh build would.
 
-        jetty:run reads jenkins-core straight from core/target/classes and the web UI from
-        war/src/main/webapp/jsbundles. Both are wiped by "mvn clean" and, by default, a cache hit wouldn't put
-        them back (the jar is restored, but not the exploded classes, and jsbundles isn't even under target/).
-        So without this, jetty:run starts with no core classes and a UI missing its JS/CSS. Caching these
-        folders lets a cache hit restore them. (dirName is relative to target/, so ".." reaches the jsbundles
-        folder in the war module.)
+        A cache hit restores the artifact (jenkins-core.jar, jenkins.war) and nothing else, while "mvn clean"
+        has already wiped the rest, so anything reading build output straight off disk is left empty handed.
+        "mvn -pl war hpi:run" is the case that matters: it serves war/target/jenkins, the exploded WAR that
+        war:war leaves behind, and links war/src/main/webapp/jsbundles into it for the web UI. Without the
+        exploded WAR it fails outright ("not an exploded web application"), and without jsbundles — which
+        isn't even under target/, so nothing about the restored .war covers it — the UI comes up with no
+        JS or CSS. classes and test-classes are cached so that the rest of the tree also looks like a real
+        build afterwards, for IDEs and for ad hoc test runs against a cached module.
+
+        (dirName is relative to target/, so "jenkins" is war/target/jenkins, from <finalName>jenkins</finalName>
+        in war/pom.xml, and ".." reaches the jsbundles folder in the war module. Names that a module doesn't
+        have are simply skipped.)
       -->
       <dirNames>
         <dirName>classes</dirName>
         <dirName>test-classes</dirName>
+        <dirName>jenkins</dirName>
         <dirName>../war/src/main/webapp/jsbundles</dirName>
       </dirNames>
     </attachedOutputs>
@@ -60,23 +67,5 @@
       </plugin>
     </plugins>
   </input>
-
-  <executionControl>
-    <runAlways>
-      <executions>
-        <!--
-          jetty:run puts war/target/support-log-formatter.jar on its classpath, and this
-          maven-dependency-plugin execution is what copies that jar there. A cache hit skips the execution, so
-          after a "mvn clean" the jar is gone and jetty:run fails with "File not resolvable". Always run it so
-          the jar is there.
-        -->
-        <execution artifactId="maven-dependency-plugin">
-          <execIds>
-            <execId>support-log-formatter</execId>
-          </execIds>
-        </execution>
-      </executions>
-    </runAlways>
-  </executionControl>
 
 </cache>
