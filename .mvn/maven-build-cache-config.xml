@@ -3,6 +3,17 @@
        xsi:schemaLocation="http://maven.apache.org/BUILD-CACHE-CONFIG/1.2.0 https://maven.apache.org/xsd/build-cache-config-1.2.0.xsd">
 
   <configuration>
+    <!--
+      Let "mvn -pl war hpi:run" reuse a cache entry saved by a full "mvn install".
+      Otherwise the war gets a different key in each case: in a full build the sibling modules
+      (core, cli, remoting, ...) are reactor projects, so their versions are normalized and they are
+      hashed from source; in a "-pl war" build they are plain jar dependencies, so the key differs and
+      hpi:run misses.
+    -->
+    <multiModule>
+      <discovery/>
+    </multiModule>
+
     <attachedOutputs>
       <!--
         Cache the folders on disk, not just the packaged jar, so a cache hit leaves the same files a fresh
@@ -43,6 +54,11 @@
         <exclude matcherType="PATH" entryType="FILE">test/jmh-report.json</exclude>
       </excludes>
     </global>
+    <plugins>
+      <plugin groupId="org.jenkins-ci.tools" artifactId="maven-hpi-plugin">
+        <dirScan mode="skip"/>
+      </plugin>
+    </plugins>
   </input>
 
   <executionControl>
