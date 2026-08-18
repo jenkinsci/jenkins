@@ -25,6 +25,7 @@
 package hudson.util;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -85,6 +86,18 @@ class QuotedStringTokenizerTest {
         assertFalse(tokenizer.hasMoreTokens());
         tokenizer = new QuotedStringTokenizer("one");
         assertTrue(tokenizer.hasMoreTokens());
+    }
+
+    // Pins the differing contracts of the two quote overloads: the single-argument
+    // quote(String) always quotes, while quote(String, String) quotes only when required.
+    @Test
+    void quoteSingleArgAlwaysQuotes() {
+        assertEquals("\"abc\"", QuotedStringTokenizer.quote("abc"));
+    }
+
+    @Test
+    void quoteTwoArgReturnsInputWhenQuotingNotRequired() {
+        assertEquals("abc", QuotedStringTokenizer.quote("abc", ""));
     }
 
     private void check(String src, String... expected) {

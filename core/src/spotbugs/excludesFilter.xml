@@ -247,4 +247,22 @@
       </And>
     </Or>
   </Match>
+  <Match>
+    <!-- added in spotbugs 4.10.3 -->
+    <Bug pattern="NP_NULL_PARAM_DEREF"/>
+    <Class name="hudson.model.RunMap"/>
+    <Method name="~lambda[$]createLoadAllower[$].*"/>
+  </Match>
+  <Match>
+    <!-- added in spotbugs 4.10.3 -->
+    <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
+    <Class name="hudson.util.RunList"/>
+    <Method name="~lambda[$]overThresholdOnly[$].*"/>
+  </Match>
+  <Match>
+    <!-- added in spotbugs 4.10.3 -->
+    <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
+    <Class name="hudson.util.XStream2"/>
+    <Method name="~lambda[$]unmarshal[$].*"/>
+  </Match>
 </FindBugsFilter>
