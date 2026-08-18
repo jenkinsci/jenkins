@@ -8,6 +8,7 @@
   height: calc(100vh - var(--header-height) - var(--page-inset));
   border-radius: var(--form-input-border-radius);
   overflow: hidden;
+  scroll-padding-top: var(--section-padding);
 
   --top: color-mix(in oklch, white 1.5%, var(--card-background));
   --background: var(--card-background);
@@ -44,6 +45,7 @@
   & > .app-page-body__contents {
     padding: var(--section-padding);
     padding-bottom: 0;
+    scroll-padding-top: var(--section-padding);
   }
 
   @media (width >= 740px) {
