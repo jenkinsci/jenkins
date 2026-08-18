@@ -320,8 +320,8 @@ THE SOFTWARE.
         <!-- Version specified in parent POM -->
         <configuration>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
-          <preparationGoals>-Dspotless.check.skip clean install</preparationGoals>
-          <goals>-DskipTests -Dspotbugs.skip -Dmaven.checkstyle.skip -Dspotless.check.skip generate-resources javadoc:javadoc deploy</goals>
+          <preparationGoals>-Dmaven.build.cache.enabled=false -Dspotless.check.skip clean install</preparationGoals>
+          <goals>-Dmaven.build.cache.enabled=false -DskipTests -Dspotbugs.skip -Dmaven.checkstyle.skip -Dspotless.check.skip generate-resources javadoc:javadoc deploy</goals>
           <pushChanges>false</pushChanges>
           <localCheckout>true</localCheckout>
           <tagNameFormat>jenkins-@{project.version}</tagNameFormat>
@@ -643,6 +643,17 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>disable-build-cache</id>
+      <activation>
+        <property>
+          <name>env.CI</name>
+        </property>
+      </activation>
+      <properties>
+        <maven.build.cache.enabled>false</maven.build.cache.enabled>
+      </properties>
     </profile>
     <profile>
       <id>disable-symlink-tests</id>

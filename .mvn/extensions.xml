@@ -4,9 +4,11 @@
     <artifactId>git-changelist-maven-extension</artifactId>
     <version>1.13</version>
   </extension>
+  <!-- Speeds up local builds by caching module outputs. Tuned in .mvn/maven-build-cache-config.xml,
+       which also keeps "mvn -pl war hpi:run" working from a cached build. -->
   <extension>
-    <groupId>com.gradle</groupId>
-    <artifactId>develocity-maven-extension</artifactId>
-    <version>2.5.0</version>
+    <groupId>org.apache.maven.extensions</groupId>
+    <artifactId>maven-build-cache-extension</artifactId>
+    <version>1.3.0</version>
   </extension>
 </extensions>
