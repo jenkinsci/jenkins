@@ -238,7 +238,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1506.v948b_b_b_7dec44</version>
+      <version>1511.v2e3cb_0008ef0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -384,7 +384,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>444.v568b_174ece88</version>
+                  <version>460.ve2a_a_b_066e678</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>
