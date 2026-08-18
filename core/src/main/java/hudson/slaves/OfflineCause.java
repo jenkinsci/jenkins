@@ -118,6 +118,19 @@ public abstract class OfflineCause implements IOfflineCause {
             return cause.toString();
         }
 
+        /**
+         * Exposes {@link #cause} to the remote API, but only when its runtime type is itself
+         * annotated {@link ExportedBean}. Most exceptions are not, and attempting to export one
+         * of those throws {@code NotExportableException} and breaks the whole
+         * {@code computer/api/json} response for that agent.
+         *
+         * @since TODO
+         */
+        @Exported
+        public Exception getCause() {
+            return cause.getClass().isAnnotationPresent(ExportedBean.class) ? cause : null;
+        }
+
         @Override public String toString() {
             return Messages.OfflineCause_connection_was_broken_simple();
         }
