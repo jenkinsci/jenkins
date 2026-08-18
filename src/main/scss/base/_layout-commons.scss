@@ -4,7 +4,8 @@
   position: relative;
   display: grid;
   border: var(--jenkins-border);
-  margin-inline: var(--page-inset);
+  margin-inline-start: var(--page-inset);
+  margin-inline-end: 0;
   height: calc(100vh - var(--header-height) - var(--page-inset));
   border-radius: var(--form-input-border-radius);
   overflow: hidden;
