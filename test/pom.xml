@@ -244,7 +244,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1418.v67a_81935603c</version>
+      <version>1420.vcffa_f990a_d63</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -384,7 +384,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>444.v568b_174ece88</version>
+                  <version>460.ve2a_a_b_066e678</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>
