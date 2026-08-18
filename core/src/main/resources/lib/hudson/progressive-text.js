@@ -10,11 +10,26 @@ Behaviour.specify(
     let onFinishEvent = holder.getAttribute("data-on-finish-event");
     let errorMessage = holder.getAttribute("data-error-message");
 
-    var scroller = new AutoScroller(
-      holder.closest(".progressive-text-container, #main-panel, #page-body") ||
-        document.scrollingElement ||
-        document.documentElement,
-    );
+    // The scrolling element depends on the layout, so resolve it on demand.
+    function resolveScrollContainer() {
+      const container = holder.closest(".progressive-text-container");
+      if (container) {
+        return container;
+      }
+      for (let node = holder.parentElement; node; node = node.parentElement) {
+        const overflowY = getComputedStyle(node).overflowY;
+        if (
+          overflowY === "auto" ||
+          overflowY === "scroll" ||
+          overflowY === "overlay"
+        ) {
+          return node;
+        }
+      }
+      return document.scrollingElement || document.documentElement;
+    }
+
+    var scroller = new AutoScroller(resolveScrollContainer);
     /*
   fetches the latest update from the server
   @param e
