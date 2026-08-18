@@ -431,7 +431,7 @@ class FilePathTest {
         final File tarFile = new File(tmpDir, filePrefix + ".tar");
 
         file.setLength(fileSize);
-        assumeTrue(fileSize == file.length());
+        assertEquals(fileSize, file.length(), "fileSize != file.length() for '" + filePrefix + "'");
         file.close();
 
         // Compress archive
