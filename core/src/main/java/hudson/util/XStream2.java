@@ -363,7 +363,7 @@ public class XStream2 extends XStream {
     }
 
     /**
-     * @deprecated Uses default encoding yet fails to write an encoding header. Prefer {@link #toXMLUTF8}.
+     * @deprecated Uses UTF-8 (default encoding) yet fails to write an encoding header. Prefer {@link #toXMLUTF8}.
      */
     @Deprecated
     @Override public void toXML(Object obj, OutputStream out) {
