@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<cache xmlns="http://maven.apache.org/BUILD-CACHE-CONFIG/1.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://maven.apache.org/BUILD-CACHE-CONFIG/1.2.0 https://maven.apache.org/xsd/build-cache-config-1.2.0.xsd">
+
+  <configuration>
+    <!--
+      Let "mvn -pl war hpi:run" reuse a cache entry saved by a full "mvn install".
+      Otherwise the war gets a different key in each case: in a full build the sibling modules
+      (core, cli, remoting, ...) are reactor projects, so their versions are normalized and they are
+      hashed from source; in a "-pl war" build they are plain jar dependencies, so the key differs and
+      hpi:run misses.
+    -->
+    <multiModule>
+      <discovery/>
+    </multiModule>
+
+    <attachedOutputs>
+      <!--
+        Cache the folders on disk, not just the packaged artifact, so a cache hit leaves the same files a
+        fresh build would.
+
+        A cache hit restores the artifact (jenkins-core.jar, jenkins.war) and nothing else, while "mvn clean"
+        has already wiped the rest, so anything reading build output straight off disk is left empty handed.
+        "mvn -pl war hpi:run" is the case that matters: it serves war/target/jenkins, the exploded WAR that
+        war:war leaves behind, and links war/src/main/webapp/jsbundles into it for the web UI. Without the
+        exploded WAR it fails outright ("not an exploded web application"), and without jsbundles — which
+        isn't even under target/, so nothing about the restored .war covers it — the UI comes up with no
+        JS or CSS. classes and test-classes are cached so that the rest of the tree also looks like a real
+        build afterwards, for IDEs and for ad hoc test runs against a cached module.
+
+        (dirName is relative to target/, so "jenkins" is war/target/jenkins, from <finalName>jenkins</finalName>
+        in war/pom.xml, and ".." reaches the jsbundles folder in the war module. Names that a module doesn't
+        have are simply skipped.)
+      -->
+      <dirNames>
+        <dirName>classes</dirName>
+        <dirName>test-classes</dirName>
+        <dirName>jenkins</dirName>
+        <dirName>../war/src/main/webapp/jsbundles</dirName>
+      </dirNames>
+    </attachedOutputs>
+  </configuration>
+
+  <input>
+    <global>
+      <!--
+        Don't let generated files count toward the root (jenkins-parent) module's cache key.
+
+        The parent sits at the repo root, so its input scan reaches build output that changes every time — the
+        files under test/target (e.g. unpacked Maven distros) and the bundles "yarn build" writes into
+        war/src/main/webapp/jsbundles. That gave the parent a different key on every build, so it never hit the
+        cache and the frontend kept rebuilding. Ignoring these folders keeps the key stable.
+
+        test/jmh-report.json is a generated (untracked) JMH benchmark report living directly under test/ (not
+        under test/target/). Its contents change on every run, so it likewise gave the parent a new key every
+        build. Exclude the exact file so it is not treated as a cache input.
+      -->
+      <excludes>
+        <exclude glob="target" matcherType="FILENAME" entryType="DIRECTORY">test</exclude>
+        <exclude matcherType="PATH" entryType="DIRECTORY">war/src/main/webapp/jsbundles</exclude>
+        <exclude matcherType="PATH" entryType="FILE">test/jmh-report.json</exclude>
+      </excludes>
+    </global>
+    <plugins>
+      <plugin groupId="org.jenkins-ci.tools" artifactId="maven-hpi-plugin">
+        <dirScan mode="skip"/>
+      </plugin>
+    </plugins>
+  </input>
+
+</cache>
