@@ -500,6 +500,16 @@ THE SOFTWARE.
                   <skip>${skip.frontend}</skip>
                 </configuration>
               </execution>
+              <execution>
+                <id>yarn test</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <arguments>yarn test</arguments>
+                </configuration>
+              </execution>
             </executions>
           </plugin>
           <plugin>
