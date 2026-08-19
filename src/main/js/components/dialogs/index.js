@@ -391,7 +391,10 @@ function resolveWizardFormAction(form, baseUrl) {
     !formAction.startsWith("/") &&
     !formAction.startsWith("http")
   ) {
-    form.action = new URL(formAction, baseUrl).toString();
+    // This might be flaky in the future
+    // Couldn't use new URL(...) as HTMLUnit didn't like it
+    form.action =
+      baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + formAction;
   }
 }
 
@@ -487,9 +490,20 @@ function renderWizardForm({
     dialogContents.appendChild(form);
   }
 
+  focusAutofocusField(form);
   wireCancelButton(form);
 
   return form;
+}
+
+function focusAutofocusField(form) {
+  const autofocusField = form.querySelector(
+    "input[autofocus]:not([disabled]), textarea[autofocus]:not([disabled]), select[autofocus]:not([disabled])",
+  );
+
+  if (autofocusField != null) {
+    autofocusField.focus();
+  }
 }
 
 function wireCancelButton(form) {

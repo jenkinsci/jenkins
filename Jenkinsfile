@@ -6,9 +6,10 @@
  */
 
 def failFast = false
+def numBuildToKeep = env.CHANGE_ID ? '10' : '50'
 
 properties([
-  buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')),
+  buildDiscarder(logRotator(numToKeepStr: numBuildToKeep, artifactNumToKeepStr: '3')),
   disableConcurrentBuilds(abortPrevious: true)
 ])
 
@@ -122,7 +123,7 @@ axes.values().combinations {
               mavenOptions.add(0, "-Dsurefire.excludesFile=${excludesFile}")
             }
             withChecks(name: 'Tests', includeStage: true) {
-              realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
+              realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,target/vitest-reports/*.xml') {
                 infra.runMaven(mavenOptions, jdk)
                 if (isUnix()) {
                   sh 'git add . && git diff --exit-code HEAD'

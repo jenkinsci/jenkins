@@ -3100,6 +3100,14 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     throw new IOException("Tar " + name + " contains entry that escapes destination directory: " + entryName);
                 }
 
+                if (f.toPath().normalize().equals(normalizedAbsoluteBaseDir)) {
+                    if (te.isDirectory()) {
+                        continue;
+                    }
+                    // tar entry resolves to extraction base dir, so reject unless it's a directory
+                    throw new IOException("Tar " + name + " contains non-directory entry that resolves to base directory: " + entryName);
+                }
+
                 if (requireReadFromTarPathTraversalValidation(ALLOW_UNTAR_SYMLINK_RESOLUTION)) {
                     // getCanonicalFile doesn't follow symlinks on Windows, so do this the hard way: Check each ancestor up to the base dir for whether it's a symlink
                     File current = parent;

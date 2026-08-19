@@ -2378,6 +2378,13 @@ public class Functions {
     }
 
     /**
+     * Returns true if we are in development mode.
+     */
+    public static boolean isDevelopmentMode() {
+        return Main.isDevelopmentMode;
+    }
+
+    /**
      * Returns {@code true} if the {@link Run#ARTIFACTS} permission is enabled,
      * {@code false} otherwise.
      *

@@ -241,7 +241,7 @@ public class AnnotatedLargeText<T> extends LargeText {
 
     /**
      * Extension point for intercepting writes from {@link #writeHtmlTo(long, Writer)} and directly inserting content into the output.
-     * @since TODO
+     * @since 2.569
      */
     protected long writeHtmlToFilter(long start, Writer w, ConsoleAnnotationOutputStream<T> caos) throws IOException {
         return super.writeLogTo(start, caos);
