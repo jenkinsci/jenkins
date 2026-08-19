@@ -10,3 +10,15 @@ export function toId(string) {
     .map((c) => c.codePointAt(0).toString(16))
     .join("-");
 }
+
+const SCROLLABLE_OVERFLOW = ["auto", "scroll", "overlay"];
+
+// The page body scrolls in a nested container rather than the document
+export function getScrollContainer(element) {
+  for (let node = element.parentElement; node; node = node.parentElement) {
+    if (SCROLLABLE_OVERFLOW.includes(getComputedStyle(node).overflowY)) {
+      return node;
+    }
+  }
+  return document.scrollingElement || document.documentElement;
+}
