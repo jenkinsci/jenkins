@@ -229,6 +229,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
 
   // Handle special cases
   tryOnClickEvent(item, dropdownItem);
+  tryOnKeyPressEvent(item, dropdownItem);
   tryLoadScripts(item, dropdownItem, context);
   tryPost(item, dropdownItem, context);
   tryConfirmationPost(item, dropdownItem, context);
@@ -245,6 +246,21 @@ function tryOnClickEvent(element, opt) {
   }
 
   element.addEventListener("click", opt.onClick);
+}
+
+/**
+ * If the menu item has a custom onKeyPress handler, assign it to the element.
+ * Set as a DOM property (not a listener) so it is invoked as
+ * selectedItem.onkeypress(evt) by the dropdown keyboard-navigation callback
+ * registered in utils.js, which makeKeyboardNavigable (util/keyboard.js)
+ * dispatches to.
+ */
+function tryOnKeyPressEvent(element, opt) {
+  if (!opt.onKeyPress) {
+    return;
+  }
+
+  element.onkeypress = opt.onKeyPress;
 }
 
 /**
