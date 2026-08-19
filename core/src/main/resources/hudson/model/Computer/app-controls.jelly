@@ -41,7 +41,8 @@ THE SOFTWARE.
             </form>
             <l:hasPermission permission="${it.DISCONNECT}">
               <l:overflowButton icon="symbol-chevron-down"
-                clazz="jenkins-button--primary">
+                                clazz="jenkins-button--primary"
+                                id="agent-offline-overflow-button">
                 <dd:custom>
                   <l:dialog title="${%Set Offline Reason}">
                     <f:form method="post" action="changeOfflineCause" name="changeOfflineCause">
@@ -106,7 +107,8 @@ THE SOFTWARE.
 
           <j:if test="${it.isConnected() and it.class.name != 'hudson.model.Hudson$MasterComputer'}">
             <l:overflowButton icon="symbol-chevron-down"
-              clazz="jenkins-button">
+                              clazz="jenkins-button"
+                              id="agent-offline-overflow-button">
               <dd:custom>
                 <button class="jenkins-dropdown__item jenkins-!-destructive-color"
                         data-type="dialog-opener"
