@@ -84,6 +84,24 @@ describe("FormChecker.delayedCheck", () => {
     expect(FormChecker.inProgress).toBe(0);
   });
 
+  it("shows a concise message instead of the error page when a check fails", async () => {
+    const target = validationArea();
+
+    FormChecker.delayedCheck("/check", "post", target);
+
+    await respondWith(
+      requests[0],
+      "<html><body><h1>Oops!</h1></body></html>",
+      500,
+    );
+
+    expect(target.textContent).toContain(
+      "An internal error occurred during form field validation (HTTP 500)",
+    );
+    expect(target.textContent).not.toContain("Oops!");
+    expect(FormChecker.inProgress).toBe(0);
+  });
+
   it("never sends a queued check that was aborted while waiting", async () => {
     const inFlight = validationArea();
     const outdated = validationArea();
