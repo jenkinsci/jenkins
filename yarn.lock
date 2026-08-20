@@ -1191,7 +1191,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@csstools/css-color-parser@npm:^4.2.0":
+"@csstools/css-color-parser@npm:^4.1.10, @csstools/css-color-parser@npm:^4.2.0":
   version: 4.2.0
   resolution: "@csstools/css-color-parser@npm:4.2.0"
   dependencies:
