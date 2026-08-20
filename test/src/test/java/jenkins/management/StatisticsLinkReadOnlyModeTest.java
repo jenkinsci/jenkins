@@ -24,6 +24,7 @@
 
 package jenkins.management;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -68,15 +69,33 @@ class StatisticsLinkReadOnlyModeTest {
     void systemReadViewerCanAccessPage() throws Exception {
         realm.createAccount("viewer", "viewer");
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.ADMINISTER).everywhere().to("admin")
                 .grant(Jenkins.READ, Jenkins.SYSTEM_READ).everywhere().to("viewer"));
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.login("viewer", "viewer");
         HtmlPage page = wc.goTo("manage/load-statistics");
+        wc.waitForBackgroundJavaScript(2000);
 
-        assertTrue(page.asNormalizedText().contains("Load Statistics"),
-                "a SYSTEM_READ-only viewer should be able to reach the Load Statistics page");
+        assertTrue(page.asNormalizedText().contains("Timespan"),
+                "a SYSTEM_READ-only viewer should see the deferred load statistics content, not just the page shell");
+    }
+
+    @Issue("JENKINS-62431")
+    @Test
+    void systemReadViewerCanAccessPageViaBareUrl() throws Exception {
+        // jenkins/model/Jenkins/load-statistics.jelly also resolves off the bare root URL,
+        // not just under manage/ - both paths must honor the same permission gate.
+        realm.createAccount("viewer", "viewer");
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ, Jenkins.SYSTEM_READ).everywhere().to("viewer"));
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.login("viewer", "viewer");
+        HtmlPage page = wc.goTo("load-statistics");
+        wc.waitForBackgroundJavaScript(2000);
+
+        assertTrue(page.asNormalizedText().contains("Timespan"),
+                "a SYSTEM_READ-only viewer should be able to reach the Load Statistics page via the bare URL too");
     }
 
     @Issue("JENKINS-62431")
@@ -84,14 +103,14 @@ class StatisticsLinkReadOnlyModeTest {
     void manageViewerCanStillAccessPage() throws Exception {
         realm.createAccount("manager", "manager");
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.ADMINISTER).everywhere().to("admin")
                 .grant(Jenkins.READ, Jenkins.MANAGE).everywhere().to("manager"));
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.login("manager", "manager");
         HtmlPage page = wc.goTo("manage/load-statistics");
+        wc.waitForBackgroundJavaScript(2000);
 
-        assertTrue(page.asNormalizedText().contains("Load Statistics"),
+        assertTrue(page.asNormalizedText().contains("Timespan"),
                 "a MANAGE-only viewer must keep the access it already had before this change");
     }
 
@@ -100,7 +119,6 @@ class StatisticsLinkReadOnlyModeTest {
     void viewerWithoutRequiredPermissionIsDenied() throws Exception {
         realm.createAccount("nobody", "nobody");
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.ADMINISTER).everywhere().to("admin")
                 .grant(Jenkins.READ).everywhere().to("nobody"));
 
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -108,6 +126,6 @@ class StatisticsLinkReadOnlyModeTest {
 
         FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class,
                 () -> wc.goTo("manage/load-statistics"));
-        assertTrue(ex.getStatusCode() == 403, "expected 403 for a viewer without MANAGE or SYSTEM_READ");
+        assertEquals(403, ex.getStatusCode(), "expected 403 for a viewer without MANAGE or SYSTEM_READ");
     }
 }
