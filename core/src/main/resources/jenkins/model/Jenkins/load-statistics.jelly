@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:new className="jenkins.management.StatisticsLink" var="it" />
 
-  <l:settings-subpage includeBreadcrumb="true">
+  <l:settings-subpage includeBreadcrumb="true" permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <j:set var="it" value="${app}" />
 
     <j:set var="prefix" value="overallLoad" />
