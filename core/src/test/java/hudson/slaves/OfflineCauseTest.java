@@ -25,9 +25,12 @@ class OfflineCauseTest {
     }
 
     /**
-     * Most exceptions, like a plain {@link RuntimeException}, are not {@link ExportedBean}. Exporting
-     * one anyway throws {@code NotExportableException} and breaks the whole {@code computer/api/json}
-     * response for that agent, so {@link OfflineCause.ChannelTermination#getCause()} must not return it.
+     * Most exceptions, like a plain {@link RuntimeException}, are not {@link ExportedBean}, so
+     * {@link OfflineCause.ChannelTermination#getCause()} must not return them: exporting one
+     * unconditionally would throw {@code NotExportableException} and break the whole
+     * {@code computer/api/json} response for that agent, which is why the field was previously
+     * left unannotated (and therefore simply absent from the response) rather than exported
+     * unconditionally.
      */
     @Test
     void testChannelTermination_getCause_notExportable() {
