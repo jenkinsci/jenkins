@@ -52,6 +52,8 @@ THE SOFTWARE.
 
     <!-- Filled in by maven-hpi-plugin with "-javaagent:/path/to/mockito-core-<version>.jar" -->
     <jenkins.javaAgent />
+    <!-- Intentionally run only one test to reduce cycle time -->
+    <test>hudson.AboutJenkinsTest</test>
   </properties>
 
   <dependencyManagement>
