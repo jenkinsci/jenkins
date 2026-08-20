@@ -361,9 +361,9 @@ public class QuotedStringTokenizer
 
     /* ------------------------------------------------------------ */
     /** Quote a string.
-     * The string is quoted only if quoting is required due to
-     * embedded delimiters, quote characters or the
-     * empty string.
+     * The string is always quoted, even when quoting is not required.
+     * Use {@link #quote(String, String)} to quote only when required due to
+     * embedded delimiters, quote characters or the empty string.
      * @param s The string to quote.
      * @return quoted string
      */

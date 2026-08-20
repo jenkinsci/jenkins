@@ -113,6 +113,18 @@ class QuotedStringTokenizerTest {
         assertThrows(IllegalArgumentException.class, () -> QuotedStringTokenizer.unquote(src));
     }
 
+    // Pins the differing contracts of the two quote overloads: the single-argument
+    // quote(String) always quotes, while quote(String, String) quotes only when required.
+    @Test
+    void quoteSingleArgAlwaysQuotes() {
+        assertEquals("\"abc\"", QuotedStringTokenizer.quote("abc"));
+    }
+
+    @Test
+    void quoteTwoArgReturnsInputWhenQuotingNotRequired() {
+        assertEquals("abc", QuotedStringTokenizer.quote("abc", ""));
+    }
+
     private void check(String src, String... expected) {
         String[] r = QuotedStringTokenizer.tokenize(src);
         System.out.println(Arrays.asList(r));

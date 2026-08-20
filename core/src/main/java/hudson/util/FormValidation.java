@@ -678,8 +678,10 @@ public abstract class FormValidation extends IOException implements HttpResponse
          *
          * This method computes JavaScript expression, which evaluates to the URL that the client should request
          * the validation to.
-         * A modern version depends on {@link #toStemUrl()} and {@link #getDependsOn()}
+         *
+         * @deprecated Use {@link #toStemUrl()} and {@link #getDependsOn()} instead.
          */
+        @Deprecated
         public String toCheckUrl() {
             if (names == null)    return null;
 

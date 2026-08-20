@@ -22,8 +22,14 @@ public class StopRunAction extends TransientActionFactory<Run> {
 
     @Override
     public Collection<? extends Action> createFor(Run target) {
-        var flag = new NewBuildPageUserExperimentalFlag();
-        if (!target.isBuilding() || !flag.getFlagValue()) {
+        Boolean newBuildPageEnabled = new NewBuildPageUserExperimentalFlag().getFlagValue();
+
+        // This condition can be removed when the flag has been removed
+        if (!newBuildPageEnabled) {
+            return Set.of();
+        }
+
+        if (!target.isBuilding()) {
             return Set.of();
         }
 
