@@ -55,7 +55,8 @@ public class StatisticsLink extends ManagementLink {
     @NonNull
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.MANAGE;
+        //This link is displayed to any user with permission to access the management menu
+        return Jenkins.READ;
     }
 
     @Override
