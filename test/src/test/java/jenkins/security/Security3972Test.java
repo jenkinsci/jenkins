@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.jvnet.hudson.test.LogRecorder.recorded;
 
 import hudson.model.FreeStyleProject;
@@ -14,11 +15,13 @@ import hudson.model.Item;
 import hudson.model.Items;
 import hudson.model.JobProperty;
 import hudson.model.Run;
+import hudson.model.User;
 import hudson.util.RobustReflectionConverter;
 import java.net.URI;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
+import jenkins.util.xstream.CriticalXStreamException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
@@ -104,6 +107,24 @@ class Security3972Test {
     }
 
     @Test
+    @Issue("SECURITY-3908")
+    void userReplacerSurvivesRoundTrip(JenkinsRule j) throws Exception {
+        User user = User.getById("replacer-test-user", true);
+
+        // This is the XML form produced by User.writeReplace() when a User is a field in another object.
+        String xml = "<?xml version='1.1' encoding='UTF-8'?>\n"
+                + "<jenkins.security.Security3972Test_-UserHolder>\n"
+                + "  <user resolves-to=\"hudson.model.User$Replacer\">\n"
+                + "    <id>" + user.getId() + "</id>\n"
+                + "  </user>\n"
+                + "</jenkins.security.Security3972Test_-UserHolder>";
+
+        UserHolder holder = (UserHolder) Items.XSTREAM2.fromXML(xml);
+
+        assertThat(holder.user, sameInstance(user));
+    }
+
+    @Test
     void referenceWithClassOnlyLooksAtReference(JenkinsRule j) throws Exception {
         // XML where the <run> element has BOTH class= naming a PersistenceRoot AND reference=.
         // The reference path "../.." points back to the root Holder element.
@@ -124,8 +145,26 @@ class Security3972Test {
                 holder.run, nullValue());
     }
 
+    @Test
+    @Issue("SECURITY-3908")
+    void userCauseReadResolveGadgetMustNotCreateUser(JenkinsRule j) throws Exception {
+        String username = "security3908user";
+        String xml = "<hudson.slaves.OfflineCause_-UserCause>"
+                + "<user><fullName>" + username + "</fullName></user>"
+                + "</hudson.slaves.OfflineCause_-UserCause>";
+
+        final CriticalXStreamException ex = assertThrows(CriticalXStreamException.class, () -> Jenkins.XSTREAM2.fromXML(xml));
+        assertThat(ex.getMessage(), containsString(
+                "Refusing to unmarshal PersistenceRoot subtype 'hudson.model.User' into field 'user' in 'hudson.slaves.OfflineCause$UserCause'. PersistenceRoot objects are document roots and must not appear as nested field values."));
+        assertThat(User.get(username, false), nullValue());
+    }
+
     static class Holder {
         public Run<?, ?> run;
+    }
+
+    static class UserHolder {
+        public User user;
     }
 
     @Test
