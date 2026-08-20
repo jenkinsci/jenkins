@@ -45,6 +45,8 @@ THE SOFTWARE.
     <jacocoSurefireArgs />
     <!-- Not managed by jenkins-bom, so referenced from annotationProcessorPaths via this property -->
     <core-annotation-processors.version>59.ve181f58722c6</core-annotation-processors.version>
+    <!-- Intentionally run only one test to reduce cycle time -->
+    <test>EnvVarsTest</test>
   </properties>
 
   <dependencyManagement>
