@@ -76,6 +76,7 @@ import javax.crypto.spec.PBEKeySpec;
 import jenkins.model.Jenkins;
 import jenkins.security.FIPS140;
 import jenkins.security.SecurityListener;
+import jenkins.security.XStreamDeserializable;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
@@ -665,6 +666,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          * but now marked transient so field is no longer saved.
          */
         @Deprecated
+        @XStreamDeserializable
         private transient String password;
 
         private Details(String passwordHash) {
