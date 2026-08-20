@@ -80,7 +80,7 @@ THE SOFTWARE.
             </l:tasks>
           </l:side-panel>
         </j:if>
-        <l:main-panel width="${withSidePanel ? 'wide' : null}">
+        <l:main-panel>
           <div class="app-build-bar app-agent-bar ${withSidePanel ? 'app-agent-bar--with-side-panel' : ''}">
             <div class="app-build-bar__content ">
               <div>

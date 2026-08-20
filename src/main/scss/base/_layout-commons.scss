@@ -88,16 +88,6 @@ body.two-column #side-panel {
     border-right: none;
   }
 
-  &--wide {
-    width: 100%;
-    max-width: 1700px;
-    margin-inline: auto;
-
-    @media (width > 1240px) {
-      width: 70vw;
-    }
-  }
-
   body.two-column #main-panel {
     margin-left: 0;
     width: 100%;
