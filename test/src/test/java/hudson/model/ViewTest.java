@@ -33,6 +33,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -223,9 +224,14 @@ class ViewTest {
     @Issue("JENKINS-9367")
     @Test
     void persistence() throws Exception {
-        ListView view = listView("foo");
+        final String viewName = "foo";
+        ListView view = listView(viewName);
 
-        ListView v = (ListView) Jenkins.XSTREAM.fromXML(Jenkins.XSTREAM.toXML(view));
+        j.jenkins.save();
+        assertThat(view, sameInstance(j.jenkins.getView(viewName)));
+        j.jenkins.reload();
+        final View v = j.jenkins.getView(viewName);
+        assertThat(view, not(sameInstance(v)));
         System.out.println(v.getProperties());
         assertNotNull(v.getProperties());
     }
