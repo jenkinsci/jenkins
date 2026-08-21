@@ -38,7 +38,7 @@ div {
 
                         ul(class: "empty-state-section-list") {
                             li(class: "content-block") {
-                                a(href: "computer/new", class: "content-block__link") {
+                                a(href: "${rootURL}/computer/new", class: "content-block__link") {
                                     span(_("setUpAgent"))
                                     span(class: "trailing-icon") {
                                         l.icon(src: "symbol-computer")
@@ -48,7 +48,7 @@ div {
 
                             if (hasAdministerJenkinsPermission) {
                                 li(class: "content-block") {
-                                    a(href: "cloud/", class: "content-block__link") {
+                                    a(href: "${rootURL}/cloud/", class: "content-block__link") {
                                         span(_("setUpCloud"))
                                         span(class: "trailing-icon") {
                                             l.icon(src: "symbol-cloud")
@@ -80,7 +80,7 @@ div {
 
                             ul(class: "empty-state-section-list") {
                                 li(class: "content-block") {
-                                    a(href: "computer/(built-in)/addExecutor",
+                                    a(href: "${rootURL}/computer/(built-in)/addExecutor",
                                             class: "content-block__link empty-state-add-executor",
                                             "data-notification": _("addExecutorSuccess"),
                                             "data-failure": _("addExecutorFailure")) {
@@ -111,7 +111,7 @@ div {
 
                     ul(class: "empty-state-section-list") {
                         li(class: "content-block") {
-                            a(href: "newJob", class: "content-block__link") {
+                            a(href: "${rootURL}/newJob", class: "content-block__link") {
                                 span(_("createJob"))
                                 span(class: "trailing-icon") {
                                     l.icon(src: "symbol-add")
@@ -130,7 +130,7 @@ div {
 
                 ul(class: "empty-state-section-list") {
                     li(class: "content-block") {
-                        a(href: "newJob", class: "content-block__link") {
+                        a(href: "${rootURL}/newJob", class: "content-block__link") {
                             span(_("createJob"))
                             span(class: "trailing-icon") {
                                 l.icon(src: "symbol-add")
@@ -169,7 +169,7 @@ div {
 
                     if (canSignUp) {
                         li(class: "content-block") {
-                            a(href: "signup", class: "content-block__link") {
+                            a(href: "${rootURL}/signup", class: "content-block__link") {
                                 span(_("Sign up for Jenkins"))
                                 span(class: "trailing-icon") {
                                     l.icon(
