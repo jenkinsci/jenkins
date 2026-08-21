@@ -430,7 +430,7 @@ public class QuotedStringTokenizer
     /* ------------------------------------------------------------ */
     /** Unquote a string.
      * @param s The string to unquote.
-     * @return quoted string
+     * @return unquoted string
      */
     public static String unquote(String s)
     {
