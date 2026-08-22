@@ -177,15 +177,24 @@ public class Nodes implements PersistenceRoot {
      * @throws IOException if the list of nodes could not be persisted.
      */
     public void addNode(final @NonNull Node node) throws IOException {
-        if (ENFORCE_NAME_RESTRICTIONS) {
-            Jenkins.checkGoodName(node.getNodeName());
-        }
-
-        Node old = nodes.put(node.getNodeName(), node);
-        if (node != old) {
-            handleAddedNode(node, old);
-        }
+    if (ENFORCE_NAME_RESTRICTIONS) {
+        Jenkins.checkGoodName(node.getNodeName());
     }
+
+    Node old = nodes.put(node.getNodeName(), node);
+    if (node == old) {
+        // Fixes #26692: if the exact same Node instance is re-added (e.g. after an
+        // in-place mutation), put() returns that same reference as "old", so the
+        // map itself never changes shape. handleAddedNode is for genuinely new or
+        // replaced nodes and never touches the live Computer, so without this call
+        // the running Computer keeps stale config (e.g. cached SSHLauncher params)
+        // until a manual restart. updateComputers() pushes the new config into the
+        // active Computer via Computer#setNode.
+        Jenkins.get().updateComputers(node);
+    } else {
+        handleAddedNode(node, old);
+    }
+}
 
     private void handleAddedNode(final @NonNull Node node, final Node old) throws IOException {
         node.onLoad(this, node.getNodeName());
