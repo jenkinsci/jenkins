@@ -68,7 +68,7 @@ div.repeated-chunk {
     align-items: center;
     justify-content: flex-start;
     font-weight: var(--form-label-font-weight);
-    min-height: 46px;
+    min-height: 0;
 
     &--no-handle {
       padding-left: $inset;
