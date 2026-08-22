@@ -101,7 +101,7 @@ public class AppearanceGlobalConfiguration extends ManagementLink {
     public synchronized void doConfigure(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, Descriptor.FormException {
         boolean result = configure(req, req.getSubmittedForm());
         LOGGER.log(Level.FINE, "appearance saved: " + result);
-        FormApply.success(req.getContextPath() + "/manage").generateResponse(req, rsp, null);
+        FormApply.success(req.getContextPath() + "/manage/" + getUrlName()).generateResponse(req, rsp, null);
     }
 
     private boolean configure(StaplerRequest2 req, JSONObject json) throws Descriptor.FormException, IOException {
