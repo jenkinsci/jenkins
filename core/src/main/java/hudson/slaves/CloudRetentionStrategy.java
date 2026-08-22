@@ -29,7 +29,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.logging.Level.WARNING;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.io.IOException;
+import hudson.model.Computer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.SystemProperties;
@@ -44,6 +44,7 @@ import net.jcip.annotations.GuardedBy;
  */
 public class CloudRetentionStrategy extends RetentionStrategy<AbstractCloudComputer> {
     private int idleMinutes;
+    private transient boolean terminating;
 
     public CloudRetentionStrategy(int idleMinutes) {
         this.idleMinutes = idleMinutes;
@@ -53,15 +54,22 @@ public class CloudRetentionStrategy extends RetentionStrategy<AbstractCloudCompu
     @GuardedBy("hudson.model.Queue.lock")
     public long check(final AbstractCloudComputer c) {
         final AbstractCloudSlave computerNode = c.getNode();
-        if (c.isIdle() && !disabled && computerNode != null) {
+        if (c.isIdle() && !disabled && computerNode != null && !terminating) {
             final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
             if (idleMilliseconds > MINUTES.toMillis(idleMinutes)) {
+                terminating = true;
+                c.setAcceptingTasks(false);
                 LOGGER.log(Level.INFO, "Disconnecting {0}", c.getName());
-                try {
-                    computerNode.terminate();
-                } catch (InterruptedException | IOException e) {
-                    LOGGER.log(WARNING, "Failed to terminate " + c.getName(), e);
-                }
+                Computer.threadPoolForRemoting.submit(() -> {
+                    try {
+                        computerNode.terminate();
+                    } catch (Exception e) {
+                        if (e instanceof InterruptedException) {
+                            Thread.currentThread().interrupt();
+                        }
+                        LOGGER.log(WARNING, "Failed to terminate " + c.getName(), e);
+                    }
+                });
             }
         }
         return 0;
