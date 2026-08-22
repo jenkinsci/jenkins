@@ -41,15 +41,17 @@ import hudson.util.FormValidation;
 import hudson.util.TextFile;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.URI;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -58,7 +60,6 @@ import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -111,23 +112,21 @@ public class DownloadService {
      * @param src a URL to a JSONP file (typically including {@code id} and {@code version} query parameters)
      * @return the embedded JSON text
      * @throws IOException if either downloading or processing failed
+     * @throws InterruptedException if request aborted
      */
     @Restricted(NoExternalUse.class)
-    public static String loadJSON(URL src) throws IOException {
-        URLConnection con = ProxyConfiguration.open(src);
-        if (con instanceof HttpURLConnection) {
-            // prevent problems from misbehaving plugins disabling redirects by default
-            ((HttpURLConnection) con).setInstanceFollowRedirects(true);
-        }
-        try (InputStream is = con.getInputStream()) {
-            String jsonp = IOUtils.toString(is, StandardCharsets.UTF_8);
-            int start = jsonp.indexOf('{');
-            int end = jsonp.lastIndexOf('}');
-            if (start >= 0 && end > start) {
-                return jsonp.substring(start, end + 1);
-            } else {
-                throw new IOException("Could not find JSON in " + src);
-            }
+    public static String loadJSON(URI src) throws IOException, InterruptedException {
+        HttpClient client = ProxyConfiguration.newHttpClient();
+        HttpRequest.Builder requestBuilder = ProxyConfiguration.newHttpRequestBuilder(src);
+        requestBuilder.GET().timeout(Duration.ofMinutes(5));
+        HttpResponse<String> response = client.send(requestBuilder.build(), BodyHandlers.ofString());
+        String jsonp = response.body();
+        int start = jsonp.indexOf('{');
+        int end = jsonp.lastIndexOf('}');
+        if (start >= 0 && end > start) {
+            return jsonp.substring(start, end + 1);
+        } else {
+            throw new IOException("Could not find JSON in " + src);
         }
     }
 
@@ -136,24 +135,22 @@ public class DownloadService {
      * @param src a URL to a JSON HTML file (typically including {@code id} and {@code version} query parameters)
      * @return the embedded JSON text
      * @throws IOException if either downloading or processing failed
+     * @throws InterruptedException if request aborted
      */
     @Restricted(NoExternalUse.class)
-    public static String loadJSONHTML(URL src) throws IOException {
-        URLConnection con = ProxyConfiguration.open(src);
-        if (con instanceof HttpURLConnection) {
-            // prevent problems from misbehaving plugins disabling redirects by default
-            ((HttpURLConnection) con).setInstanceFollowRedirects(true);
-        }
-        try (InputStream is = con.getInputStream()) {
-            String jsonp = IOUtils.toString(is, StandardCharsets.UTF_8);
-            String preamble = "window.parent.postMessage(JSON.stringify(";
-            int start = jsonp.indexOf(preamble);
-            int end = jsonp.lastIndexOf("),'*');");
-            if (start >= 0 && end > start) {
-                return jsonp.substring(start + preamble.length(), end).trim();
-            } else {
-                throw new IOException("Could not find JSON in " + src);
-            }
+    public static String loadJSONHTML(URI src) throws IOException, InterruptedException {
+        HttpClient client = ProxyConfiguration.newHttpClient();
+        HttpRequest.Builder requestBuilder = ProxyConfiguration.newHttpRequestBuilder(src);
+        requestBuilder.GET().timeout(Duration.ofMinutes(5));
+        HttpResponse<String> response = client.send(requestBuilder.build(), BodyHandlers.ofString());
+        String jsonp = response.body();
+        String preamble = "window.parent.postMessage(JSON.stringify(";
+        int start = jsonp.indexOf(preamble);
+        int end = jsonp.lastIndexOf("),'*');");
+        if (start >= 0 && end > start) {
+            return jsonp.substring(start + preamble.length(), end).trim();
+        } else {
+            throw new IOException("Could not find JSON in " + src);
         }
     }
 
@@ -388,7 +385,7 @@ public class DownloadService {
                 }
                 String jsonString;
                 try {
-                    jsonString = loadJSONHTML(new URL(site + ".html?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8)));
+                    jsonString = loadJSONHTML(URI.create(site + ".html?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8)));
                     toolInstallerMetadataExists = true;
                 } catch (Exception e) {
                     LOGGER.log(Level.FINE, "Could not load json from " + site, e);
