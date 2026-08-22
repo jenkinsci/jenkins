@@ -1,6 +1,6 @@
 .jenkins-select {
   position: relative;
-  width: 100%;
+  width: calc(100% - 3rem);
 
   &::after {
     content: "";
