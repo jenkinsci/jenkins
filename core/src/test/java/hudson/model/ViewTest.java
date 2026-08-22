@@ -1,7 +1,9 @@
 package hudson.model;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -114,6 +116,17 @@ public class ViewTest {
         Collection<View> allViews = rootView.getAllViews();
         //then
         assertEquals(4, allViews.size());
+    }
+
+    @Test
+    void checkViewNameAllowsMaximumLengthName() {
+        assertDoesNotThrow(() -> View.checkViewName("a".repeat(255)));
+    }
+
+    @Test
+    void checkViewNameRejectsTooLongName() {
+        Failure e = assertThrows(Failure.class, () -> View.checkViewName("a".repeat(256)));
+        assertEquals(Messages.View_NameTooLong(255), e.getMessage());
     }
 
     private TopLevelItem createJob(String jobName) {

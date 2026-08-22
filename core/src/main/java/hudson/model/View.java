@@ -252,7 +252,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public void rename(String newName) throws Failure, FormException {
         if (name.equals(newName))    return; // noop
-        Jenkins.checkGoodName(newName);
+        checkViewName(newName);
         if (owner.getView(newName) != null)
             throw new FormException(Messages.Hudson_ViewAlreadyExists(newName), "name");
         String oldName = name;
@@ -1122,6 +1122,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     public static final Comparator<View> SORTER = Comparator.comparing(View::getViewName);
 
+    /**
+     * Maximum allowed length for a view name.
+     */
+    private static final int MAX_VIEW_NAME_LENGTH = 255;
+
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(View.class, Messages._View_Permissions_Title());
     /**
      * Permission to create new views.
@@ -1150,6 +1155,19 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
+     * Checks that the given view name is valid.
+     *
+     * @param name the view name to check
+     * @throws Failure if the view name is invalid
+     */
+    static void checkViewName(String name) {
+        Jenkins.checkGoodName(name);
+        if (name.length() > MAX_VIEW_NAME_LENGTH) {
+            throw new Failure(Messages.View_NameTooLong(MAX_VIEW_NAME_LENGTH));
+        }
+    }
+
+    /**
      * @since 2.475
      */
     public static View create(StaplerRequest2 req, StaplerResponse2 rsp, ViewGroup owner)
@@ -1166,7 +1184,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         || requestContentType.startsWith("text/xml"));
 
         String name = req.getParameter("name");
-        Jenkins.checkGoodName(name);
+        checkViewName(name);
         if (owner.getView(name) != null)
             throw new Failure(Messages.Hudson_ViewAlreadyExists(name));
 
@@ -1243,7 +1261,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         try (InputStream in = new BufferedInputStream(xml)) {
             View v = (View) Jenkins.XSTREAM.fromXML(in);
             if (name != null) v.name = name;
-            Jenkins.checkGoodName(v.name);
+            checkViewName(v.name);
             return v;
         } catch (StreamException | ConversionException | Error e) { // mostly reflection errors
             throw new IOException("Unable to read", e);
