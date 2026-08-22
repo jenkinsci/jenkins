@@ -996,6 +996,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         public Category getCategory() {
             return Category.SECURITY;
         }
+
+        @Override
+        public Permission getRequiredPermission() {
+            return Jenkins.SYSTEM_READ;
+        }
     }
 
     /**
