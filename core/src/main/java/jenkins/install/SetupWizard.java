@@ -174,6 +174,10 @@ public class SetupWizard extends PageDecorator {
                     // Disable jnlp by default, but honor system properties
                     jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName() + ".slaveAgentPort", -1));
 
+                    // Do not run builds on the built-in node: Administrators need to opt in, either by setting up
+                    // agents or clouds, or by explicitly configuring executors on the built-in node.
+                    jenkins.setNumExecutors(0);
+
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer());
 
