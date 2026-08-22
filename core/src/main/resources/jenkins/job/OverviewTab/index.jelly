@@ -23,11 +23,11 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:dd="/lib/layout/dropdowns">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:job-subpage>
     <j:set var="it" value="${it.object}" />
 
-    <l:app-bar title="Overview">
+    <l:app-bar title="${%Builds}">
       <l:details-bar it="${it}">
         <t:editDescriptionButton permission="${it.CONFIGURE}" compact="true" />
       </l:details-bar>
@@ -35,11 +35,16 @@ THE SOFTWARE.
 
     <t:editableDescription permission="${it.CONFIGURE}" hideButton="true"/>
 
-    <div class="jenkins-!-margin-bottom-2">
-      <j:forEach var="w" items="${it.widgets}">
-        <st:include it="${w}" page="index.jelly" />
-      </j:forEach>
-    </div>
+    <j:forEach var="w" items="${it.widgets}">
+      <j:choose>
+        <j:when test="${w.class.name == 'hudson.widgets.BuildHistoryWidget'}">
+          <st:include it="${w}" page="index-new.jelly" />
+        </j:when>
+        <j:otherwise>
+          <st:include it="${w}" page="index.jelly" />
+        </j:otherwise>
+      </j:choose>
+    </j:forEach>
 
     <l:card title="${%Legacy}">
       <div>
