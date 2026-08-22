@@ -94,7 +94,7 @@ class AboutJenkinsTest {
             wc.login(ADMIN);
             HtmlPage page = wc.goTo("about/");
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-            assertThat(page.getWebResponse().getContentAsString(), containsString("Mavenized dependencies"));
+            assertThat(page.querySelector("body").asXml(), containsString("Mavenized dependencies"));
         }
 
         { // manager can access it

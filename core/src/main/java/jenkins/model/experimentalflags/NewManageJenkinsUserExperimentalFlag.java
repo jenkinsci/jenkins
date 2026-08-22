@@ -24,6 +24,7 @@
 
 package jenkins.model.experimentalflags;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import org.kohsuke.accmod.Restricted;
@@ -45,5 +46,10 @@ public class NewManageJenkinsUserExperimentalFlag extends BooleanUserExperimenta
     @Override
     public String getShortDescription() {
         return "Enables a sidebar for the Manage Jenkins pages for easier navigation.";
+    }
+
+    @Override
+    public @NonNull Boolean getDefaultValue() {
+        return true;
     }
 }

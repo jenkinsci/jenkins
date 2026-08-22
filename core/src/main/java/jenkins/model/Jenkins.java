@@ -4045,7 +4045,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             save();
             updateComputers(this);
             if (result)
-                FormApply.success(req.getContextPath() + '/').generateResponse(req, rsp, null);
+                FormApply.success(req.getContextPath() + "/manage/configure").generateResponse(req, rsp, null);
             else
                 FormApply.success("configure").generateResponse(req, rsp, null);    // back to config
 
