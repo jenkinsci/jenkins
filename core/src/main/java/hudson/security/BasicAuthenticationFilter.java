@@ -127,6 +127,12 @@ public class BasicAuthenticationFilter implements CompatibleFilter {
             return;
         }
 
+        if (!authorization.regionMatches(true, 0, "Basic ", 0, 6)) {
+            // Not a Basic authentication header; let the container handle it
+            chain.doFilter(request, response);
+            return;
+        }
+
         // authenticate the user
         String username = null;
         String password = null;
@@ -134,7 +140,7 @@ public class BasicAuthenticationFilter implements CompatibleFilter {
         try {
             uidpassword = new String(Base64.getDecoder().decode(authorization.substring(6).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
         } catch (IllegalArgumentException ex) {
-            LOGGER.log(Level.FINE, ex, () -> "Failed to decode authentication from: " + authorization);
+            LOGGER.log(Level.FINE, ex, () -> "Failed to decode Basic authentication header");
             uidpassword = "";
         }
         int idx = uidpassword.indexOf(':');

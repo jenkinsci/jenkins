@@ -74,7 +74,7 @@ public class BasicHeaderProcessor implements CompatibleFilter {
             try {
                 uidpassword = new String(Base64.getDecoder().decode(authorization.substring(6).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
             } catch (IllegalArgumentException ex) {
-                LOGGER.log(Level.FINE, ex, () -> "Failed to decode authentication from: " + authorization);
+                LOGGER.log(Level.FINE, ex, () -> "Failed to decode Basic authentication header");
                 uidpassword = "";
             }
             int idx = uidpassword.indexOf(':');
