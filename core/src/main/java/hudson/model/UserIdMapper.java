@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.XmlFile;
 import hudson.util.XStream2;
 import java.io.File;
@@ -56,6 +57,7 @@ public class UserIdMapper {
     }
 
     @SuppressWarnings("deprecation")
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     static void migrate() throws IOException {
         var idStrategy = User.idStrategy();
         var usersDirectory = User.getRootDir();

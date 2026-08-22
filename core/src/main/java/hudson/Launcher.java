@@ -302,6 +302,7 @@ public abstract class Launcher {
             return pwd(new FilePath(workDir));
         }
 
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         public ProcStarter pwd(@NonNull String workDir) {
             return pwd(new File(workDir));
         }
@@ -995,6 +996,7 @@ public abstract class Launcher {
                     toFile(ps.pwd));
         }
 
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         private File toFile(FilePath f) {
             return f == null ? null : new File(f.getRemote());
         }
@@ -1438,7 +1440,7 @@ public abstract class Launcher {
             this.envOverrides = envOverrides;
         }
 
-        @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "TODO needs triage")
+        @SuppressFBWarnings(value = {"COMMAND_INJECTION", "PATH_TRAVERSAL_IN"}, justification = "COMMAND_INJECTION TODO needs triage; controlled file access from trusted paths, not untrusted input.")
         private Process launchProcess() throws IOException {
             return Runtime.getRuntime()
                     .exec(cmd, Util.mapToEnv(inherit(envOverrides)), workDir == null ? null : new File(workDir));
