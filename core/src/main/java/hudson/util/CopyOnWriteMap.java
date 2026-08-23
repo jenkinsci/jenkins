@@ -172,16 +172,16 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
     }
 
     @Override public int hashCode() {
-        return copy().hashCode();
+        return core.hashCode();
     }
 
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     @Override public boolean equals(Object obj) {
-        return copy().equals(obj);
+        return core.equals(obj);
     }
 
     @Override public String toString() {
-        return copy().toString();
+        return core.toString();
     }
 
     /**
@@ -198,6 +198,11 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
         @Override
         protected Map<K, V> copy() {
             return new LinkedHashMap<>(core);
+        }
+
+        @Override
+        public synchronized void replaceBy(Map<? extends K, ? extends V> data) {
+            update(new LinkedHashMap<>(data));
         }
 
         public static class ConverterImpl extends MapConverter {
@@ -226,14 +231,14 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
      * {@link CopyOnWriteMap} backed by {@link TreeMap}.
      */
     public static final class Tree<K, V> extends CopyOnWriteMap<K, V> implements NavigableMap<K, V> {
-        private final Comparator<K> comparator;
+        private final Comparator<? super K> comparator;
 
         public Tree(Map<K, V> core, Comparator<K> comparator) {
             this(comparator);
             putAll(core);
         }
 
-        public Tree(Comparator<K> comparator) {
+        public Tree(Comparator<? super K> comparator) {
             super(new TreeMap<>(comparator));
             this.comparator = comparator;
         }
@@ -252,6 +257,13 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
         @Override
         public synchronized void clear() {
             update(new TreeMap<>(comparator));
+        }
+
+        @Override
+        public synchronized void replaceBy(Map<? extends K, ? extends V> data) {
+            TreeMap<K, V> m = new TreeMap<>(comparator);
+            m.putAll(data);
+            update(m);
         }
 
         @Override

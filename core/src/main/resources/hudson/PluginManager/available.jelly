@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:dd="/lib/layout/dropdowns">
-  <l:settings-subpage permission="${app.SYSTEM_READ}" header="${null}" noDefer="true" includeSidepanel="true">
+  <l:settings-subpage permission="${app.SYSTEM_READ}" header="${null}" noDefer="true" includeSidepanel="true" width="wide">
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
           <l:search-bar clazz="jenkins-search--app-bar"

@@ -1,6 +1,7 @@
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -68,10 +69,10 @@ public class BuildAuthorizationTokenMigrationTest {
             assertThat(authToken.getToken(), equalTo(OLDTOKEN));
             assertThat(authToken.getEncryptedToken().getPlainText(), equalTo(OLDTOKEN));
 
-            // Not redacted yet
+            // Gets redacted even though it isn't on disk
             try (JenkinsRule.WebClient wc = j.createWebClient().login(EXTENDED_READER_USERNAME)) {
                 final XmlPage xmlPage = wc.goToXml(fs.getUrl() + "config.xml");
-                assertThat(xmlPage.getWebResponse().getContentAsString(), containsString("<authToken>" + OLDTOKEN + "</authToken>"));
+                assertThat(xmlPage.getWebResponse().getContentAsString(), not(containsString("<authToken>" + OLDTOKEN + "</authToken>")));
             }
         }
 
@@ -121,7 +122,7 @@ public class BuildAuthorizationTokenMigrationTest {
     }
 
     @Test
-    void testPostConfigXmlAndClearing() throws Exception {
+    void testPostConfigXmlDoesNotTriggerMonitor() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().toEveryone().grant(Jenkins.ADMINISTER).everywhere().to(ADMIN_USERNAME));
 
@@ -140,27 +141,9 @@ public class BuildAuthorizationTokenMigrationTest {
                 final Page apiPage = wc.getPage(webRequest);
                 assertThat(apiPage.getWebResponse().getStatusCode(), equalTo(200));
             }
-
-            assertThat(j.jenkins.getAdministrativeMonitor("OldData").isActivated(), equalTo(true));
-
-            {
-                // Testing that GET config.xml does not clear the in-memory flag via ConverterImpl
-                final XmlPage xmlPage = wc.goToXml(freeStyleProject.getUrl() + "config.xml");
-                assertThat(xmlPage.getWebResponse().getContentAsString(), containsString("plain_token"));
-
-                assertThat(freeStyleProject.getConfigFile().asString(), containsString("plain_token"));
-            }
-
-            // Saving clears the admin monitor
-            freeStyleProject.save();
-            assertThat(j.jenkins.getAdministrativeMonitor("OldData").isActivated(), equalTo(false));
-
-            {
-                final XmlPage xmlPage = wc.goToXml(freeStyleProject.getUrl() + "config.xml");
-                assertThat(xmlPage.getWebResponse().getContentAsString(), not(containsString("plain_token")));
-                assertThat(freeStyleProject.getConfigFile().asString(), not(containsString("plain_token")));
-            }
-
         }
+        assertThat(j.jenkins.getAdministrativeMonitor("OldData").isActivated(), equalTo(false));
+        assertThat(freeStyleProject.getConfigFile().asString(), not(containsString("<authToken>plain_token</authToken>")));
+        assertThat(freeStyleProject.getConfigFile().asString(), allOf(containsString("<authToken>{"), containsString("}</authToken>")));
     }
 }

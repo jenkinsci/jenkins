@@ -30,6 +30,8 @@ import hudson.model.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.security.MessageDigest;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
@@ -75,6 +77,24 @@ public class TokenBasedRememberMeServices2 extends AbstractRememberMeServices {
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean SKIP_TOO_FAR_EXPIRATION_DATE_CHECK =
             SystemProperties.getBoolean(TokenBasedRememberMeServices2.class.getName() + ".skipTooFarExpirationDateCheck");
+
+    /**
+     * Duration that a remember-me cookie stays valid, overriding Spring Security's 14-day default.
+     * Configured via the system property
+     * {@code hudson.security.TokenBasedRememberMeServices2.tokenValidity}; the value is parsed as a
+     * duration (e.g. {@code 14d}, {@code 60m}, or a bare number interpreted as seconds).
+     * When unset or not a positive duration, the Spring Security default is used.
+     * Values larger than {@link #MAX_TOKEN_VALIDITY} are capped to that maximum of 1-year.
+     */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* Script Console modifiable */ Duration TOKEN_VALIDITY =
+            SystemProperties.getDuration(TokenBasedRememberMeServices2.class.getName() + ".tokenValidity", ChronoUnit.SECONDS);
+
+    /**
+     * Upper bound (1 year) for {@link #TOKEN_VALIDITY}. A configured validity larger than this
+     * is capped to this value to avoid effectively non-expiring remember-me cookies.
+     */
+    public static final Duration MAX_TOKEN_VALIDITY = Duration.ofDays(365);
 
     /**
      * Decorate {@link UserDetailsService} so that we can use information stored in
@@ -255,9 +275,20 @@ public class TokenBasedRememberMeServices2 extends AbstractRememberMeServices {
         return false;
     }
 
-    @VisibleForTesting
     @Override
     protected int getTokenValiditySeconds() {
+        Duration configured = TOKEN_VALIDITY;
+        if (configured != null) {
+            long seconds = configured.toSeconds();
+            if (seconds <= 0) {
+                LOGGER.log(Level.WARNING, "Ignoring non-positive remember-me token validity ({0}); using the default", configured);
+            } else if (seconds > MAX_TOKEN_VALIDITY.toSeconds()) {
+                LOGGER.log(Level.WARNING, "Capping remember-me token validity ({0}) to the maximum of {1}", new Object[] {configured, MAX_TOKEN_VALIDITY});
+                return (int) MAX_TOKEN_VALIDITY.toSeconds();
+            } else {
+                return (int) seconds;
+            }
+        }
         return super.getTokenValiditySeconds();
     }
 
