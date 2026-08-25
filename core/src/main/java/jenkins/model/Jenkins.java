@@ -286,6 +286,7 @@ import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.security.ResourceDomainConfiguration;
 import jenkins.security.SecurityListener;
+import jenkins.security.XStreamDeserializable;
 import jenkins.security.stapler.DoActionFilter;
 import jenkins.security.stapler.StaplerDispatchValidator;
 import jenkins.security.stapler.StaplerDispatchable;
@@ -382,6 +383,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The Jenkins instance startup type i.e. NEW, UPGRADE etc
      */
+    // TODO Mark @XStreamNotDeserializable and clean up #readResolve
     private transient String installStateName;
 
     @Deprecated
@@ -582,6 +584,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @deprecated in favour of {@link Nodes}
      */
     @Deprecated
+    @XStreamDeserializable
     protected transient volatile NodeList slaves;
 
     /**

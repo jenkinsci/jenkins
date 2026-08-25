@@ -50,6 +50,7 @@ import hudson.model.PersistenceRoot;
 import hudson.model.Saveable;
 import hudson.security.ACL;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -84,6 +85,9 @@ import org.jvnet.tiger_types.Types;
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class RobustReflectionConverter implements Converter {
+
+    static /* non-final for Groovy */ boolean DISABLE_XSTREAM_NOT_DESERIALIZABLE_CHECK = SystemProperties.getBoolean(RobustReflectionConverter.class.getName() + ".DISABLE_XSTREAM_NOT_DESERIALIZABLE_CHECK", false);
+    static /* non-final for Groovy */ boolean TRANSIENT_FIELD_STRICT_MODE = SystemProperties.getBoolean(RobustReflectionConverter.class.getName() + ".TRANSIENT_FIELD_STRICT_MODE", false);
 
     static /* non-final for Groovy */ boolean RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = SystemProperties.getBoolean(RobustReflectionConverter.class.getName() + ".recordFailuresForAllAuthentications", false);
     private static /* non-final for Groovy */ boolean RECORD_FAILURES_FOR_ADMINS = SystemProperties.getBoolean(RobustReflectionConverter.class.getName() + ".recordFailuresForAdmins", false);
@@ -539,8 +543,20 @@ public class RobustReflectionConverter implements Converter {
 
     private boolean fieldDefinedInClass(Object result, String attrName) {
         // during unmarshalling, unmarshal into transient fields like XStream 1.1.3
+        // unless @XStreamNotDeserializable is used or TRANSIENT_FIELD_STRICT_MODE is set.
         //boolean fieldExistsInClass = reflectionProvider.fieldDefinedInClass(attrName, result.getClass());
-        return reflectionProvider.getFieldOrNull(result.getClass(), attrName) != null;
+        Field field = reflectionProvider.getFieldOrNull(result.getClass(), attrName);
+        if (field == null) {
+            return false;
+        }
+        if (!Modifier.isTransient(field.getModifiers())) {
+            return true;
+        }
+        if (!DISABLE_XSTREAM_NOT_DESERIALIZABLE_CHECK
+                && Arrays.stream(field.getAnnotations()).anyMatch(a -> "XStreamNotDeserializable".equals(a.annotationType().getSimpleName()))) {
+            return false;
+        }
+        return !TRANSIENT_FIELD_STRICT_MODE || Arrays.stream(field.getAnnotations()).anyMatch(a -> "XStreamDeserializable".equals(a.annotationType().getSimpleName()));
     }
 
     protected Object unmarshalField(final UnmarshallingContext context, final Object result, Class type, Field field) {
