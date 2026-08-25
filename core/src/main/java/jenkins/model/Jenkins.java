@@ -1057,6 +1057,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressWarnings("unused")
     protected Object readResolve() {
+        Jenkins existing = Jenkins.getInstanceOrNull();
+        if (existing != null && existing != this) {
+            throw new IllegalStateException(
+                    "A Jenkins singleton already exists; refusing to deserialize a second Jenkins instance."
+                    + " This is likely an attempted exploit via a forged configuration document.");
+        }
         if (jdks == null) {
             jdks = new ArrayList<>();
         }
@@ -1074,6 +1080,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         _setLabelString(label);
 
         return this;
+    }
+
+    protected Object writeReplace() {
+        return XmlFile.replaceIfNotAtTopLevel(this, Replacer::new);
+    }
+
+    private static class Replacer {
+        private Object readResolve() {
+            return Jenkins.get();
+        }
     }
 
     /**
