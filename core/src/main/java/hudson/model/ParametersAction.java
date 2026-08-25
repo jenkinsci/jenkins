@@ -98,6 +98,16 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     private transient Run<?, ?> run;
 
+    /**
+     * Returns the {@link Run} this action is attached to, or {@code null} before being attached to a {@link Run}.
+     * Note that this can be non-{@code null} while being accessed from a {@link hudson.model.Queue.Item}.
+     */
+    @Restricted(NoExternalUse.class) // Jelly
+    @CheckForNull
+    public Run<?, ?> getRun() {
+        return run;
+    }
+
     public ParametersAction(@NonNull List<ParameterValue> parameters) {
         this.parameters = new ArrayList<>(parameters);
         String paramNames = SystemProperties.getString(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
