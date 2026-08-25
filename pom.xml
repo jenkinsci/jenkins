@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>2.1391.vb_93f2a_83691d</version>
+    <version>2.1397.v033314c396ee</version>
     <relativePath />
   </parent>
 
@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.577</revision>
+    <revision>2.580</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2026-08-03T16:48:08Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-08-25T06:14:23Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3385.vf1123fb_515da_</remoting.version>
+    <remoting.version>3386.v353e57a_1b_ea_0</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
@@ -103,7 +103,6 @@ THE SOFTWARE.
     <!-- Skips node installation, "yarn install" and "yarn build". Only safe when
          war/src/main/webapp/jsbundles is already populated from an earlier build. -->
     <skip.frontend>false</skip.frontend>
-    <!-- Make sure to keep the jetty-ee9-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
     <winstone.version>8.1047.v331d3186f463</winstone.version>
     <node.version>24.19.0</node.version>
   </properties>
@@ -275,7 +274,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>13.9.0</version>
+              <version>14.0.0</version>
             </dependency>
           </dependencies>
           <executions>
@@ -499,6 +498,16 @@ THE SOFTWARE.
                 <configuration>
                   <arguments>yarn build</arguments>
                   <skip>${skip.frontend}</skip>
+                </configuration>
+              </execution>
+              <execution>
+                <id>yarn test</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <arguments>yarn test</arguments>
                 </configuration>
               </execution>
             </executions>
