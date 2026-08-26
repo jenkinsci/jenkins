@@ -5173,7 +5173,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (link.getIconFileName() == null) {
                 continue;
             }
-            if (!Jenkins.get().hasPermission(link.getRequiredPermission())) {
+            if (!link.hasRequiredPermission()) {
                 continue;
             }
             byCategory.computeIfAbsent(link.getCategory(), c -> new ArrayList<>()).add(link);
@@ -5860,6 +5860,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             new PermissionScope[]{PermissionScope.JENKINS});
 
     @Restricted(NoExternalUse.class) // called by jelly
+    @SuppressFBWarnings(value = "MS_MUTABLE_ARRAY", justification = "Not for external use")
     public static final Permission[] MANAGE_AND_SYSTEM_READ =
             new Permission[] { MANAGE, SYSTEM_READ };
 
