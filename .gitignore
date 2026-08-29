@@ -77,4 +77,3 @@ node_modules/
 
 # Generated JavaScript Bundles
 war/src/main/webapp/jsbundles/
-.mvn/.develocity/

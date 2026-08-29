@@ -128,6 +128,19 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     }
 
     /**
+     * Checks if the current user has the minimum required permission to view this Management Link.
+     * <p>
+     * Subclasses may override this method instead of {@link #getRequiredPermission()} to perform more complex permission checks,
+     * for example, checking either {@link Jenkins#MANAGE} or {@link Jenkins#SYSTEM_READ}.
+     * </p>
+     * @see #getRequiredPermission()
+     * @since TODO
+     */
+    public boolean hasRequiredPermission() {
+        return Jenkins.get().hasPermission(getRequiredPermission());
+    }
+
+    /**
      * Define if the rendered link will use the default GET method or POST.
      * @return true if POST must be used
      * @see RequirePOST
