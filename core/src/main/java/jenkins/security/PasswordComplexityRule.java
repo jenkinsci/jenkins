@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2025, Jenkins project contributors
+ * Copyright (c) 2026, Jenkins project contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,14 @@
  * THE SOFTWARE.
  */
 
-package hudson.security;
+package jenkins.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import hudson.security.HudsonPrivateSecurityRealm;
 import jenkins.model.Jenkins;
 
 /**
@@ -39,7 +40,7 @@ import jenkins.model.Jenkins;
  * and password changes. Each implementation can have an optional {@code config.jelly}
  * to configure its validation rules.
  *
- * @since 2.572
+ * @since 2.572 (moved from hudson.security to jenkins.security in 2.TODO)
  */
 public abstract class PasswordComplexityRule implements Describable<PasswordComplexityRule>, ExtensionPoint {
 
