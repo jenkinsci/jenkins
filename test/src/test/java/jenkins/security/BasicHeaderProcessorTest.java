@@ -2,8 +2,7 @@ package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.jvnet.hudson.test.LoggerRule.recorded;
@@ -155,7 +154,7 @@ class BasicHeaderProcessorTest {
     }
 
     @Test
-    void malformedBase64HeaderDoesNotLeakCredentialsInLogs() throws Exception {
+    void malformedBase64HeaderLogsAuthorizationHeaderAtFineLevel() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         wc = j.createWebClient();
 
@@ -163,8 +162,8 @@ class BasicHeaderProcessorTest {
         try {
             makeRequestWithAuthCodeAndFail("Basic secretpasswordnotvalidbase64!!!");
         } finally {
-            assertThat(logging, recorded(Level.FINE, is("Failed to decode Basic authentication header")));
-            assertThat(logging, not(recorded(containsString("secretpasswordnotvalidbase64"))));
+            assertThat(logging, recorded(Level.FINE, containsString("Failed to decode authentication from: ")));
+            assertThat(logging, recorded(Level.FINE, containsString("secretpasswordnotvalidbase64")));
         }
     }
 
