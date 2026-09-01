@@ -222,13 +222,28 @@ var FormChecker = {
    *      HTTP method. GET or POST. I haven't confirmed specifics, but some browsers seem to cache GET requests.
    * @param target
    *      HTML element whose innerHTML will be overwritten when the check is completed.
+   * @param abort
+   *      Optional AbortController, or the AbortSignal of one, used to cancel the check
+   *      while it is queued or in flight.
    */
-  delayedCheck: function (url, method, target) {
+  delayedCheck: function (url, method, target, abort) {
     if (url == null || method == null || target == null) {
       // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
       return;
     }
-    this.queue.push({ url: url, method: method, target: target });
+    var signal = null;
+    if (abort != null) {
+      signal = abort.signal || abort;
+      if (typeof signal.aborted !== "boolean") {
+        signal = null;
+      }
+    }
+    this.queue.push({
+      url: url,
+      method: method,
+      target: target,
+      signal: signal,
+    });
     this.schedule();
   },
 
@@ -236,19 +251,38 @@ var FormChecker = {
     const method = params.method.toLowerCase();
     if (method !== "get") {
       var idx = url.indexOf("?");
-      params.parameters = url.substring(idx + 1);
-      url = url.substring(0, idx);
+      if (idx >= 0) {
+        params.parameters = url.substring(idx + 1);
+        url = url.substring(0, idx);
+      } else {
+        params.parameters = "";
+      }
     }
 
-    fetch(url, {
+    var requestParams = {
       method: params.method,
       headers: crumb.wrap({
         "Content-Type": "application/x-www-form-urlencoded",
       }),
       body: method !== "get" ? params.parameters : null,
-    }).then((response) => {
-      params.onComplete(response);
-    });
+    };
+    if (params.signal != null) {
+      requestParams.signal = params.signal;
+    }
+
+    fetch(url, requestParams)
+      .then((response) => {
+        params.onComplete(response);
+      })
+      .catch((error) => {
+        if (params.onError != null) {
+          params.onError(error);
+          return;
+        }
+        if (error && error.name !== "AbortError") {
+          console.warn(error);
+        }
+      });
   },
 
   schedule: function () {
@@ -259,19 +293,55 @@ var FormChecker = {
       return;
     }
 
-    var next = this.queue.shift();
-    this.sendRequest(next.url, {
-      method: next.method,
-      onComplete: function (x) {
-        x.text().then((responseText) => {
-          updateValidationArea(next.target, responseText);
-          FormChecker.inProgress--;
-          FormChecker.schedule();
-          layoutUpdateCallback.call();
-        });
-      },
-    });
+    var next = null;
+    while (this.queue.length > 0 && next == null) {
+      var queued = this.queue.shift();
+      if (!(queued.signal && queued.signal.aborted)) {
+        next = queued;
+      }
+    }
+    if (next == null) {
+      return;
+    }
+
     this.inProgress++;
+    var completeRequest = function () {
+      FormChecker.inProgress--;
+      FormChecker.schedule();
+    };
+
+    try {
+      this.sendRequest(next.url, {
+        method: next.method,
+        signal: next.signal,
+        onComplete: function (x) {
+          x.text()
+            .then((responseText) => {
+              if (!(next.signal && next.signal.aborted)) {
+                updateValidationArea(next.target, responseText);
+                layoutUpdateCallback.call();
+              }
+            })
+            .catch((error) => {
+              if (error && error.name !== "AbortError") {
+                console.warn(error);
+              }
+            })
+            .then(completeRequest);
+        },
+        onError: function (error) {
+          if (error && error.name !== "AbortError") {
+            console.warn(error);
+          }
+          completeRequest();
+        },
+      });
+    } catch (error) {
+      if (error && error.name !== "AbortError") {
+        console.warn(error);
+      }
+      completeRequest();
+    }
   },
 };
 
@@ -2018,14 +2088,6 @@ function AutoScroller(scrollContainer) {
     return null;
   }
 
-  function isViewportScroller(scrollDiv) {
-    return (
-      scrollDiv === document.body ||
-      scrollDiv === document.documentElement ||
-      scrollDiv === document.scrollingElement
-    );
-  }
-
   return {
     bottomThreshold: 25,
     scrollContainer: scrollContainer,
@@ -2049,13 +2111,14 @@ function AutoScroller(scrollContainer) {
 
       // when used with the BODY tag, the height needs to be the viewport height, instead of
       // the element height.
-      const height = isViewportScroller(scrollDiv)
-        ? getViewportHeight()
-        : scrollDiv.clientHeight;
-      const scrollPos = isViewportScroller(scrollDiv)
-        ? Math.max(scrollDiv.scrollTop, document.documentElement.scrollTop)
-        : scrollDiv.scrollTop;
-      const diff = currentHeight - scrollPos - height;
+      //var height = ((scrollDiv.style.pixelHeight) ? scrollDiv.style.pixelHeight : scrollDiv.offsetHeight);
+      var height = getViewportHeight();
+      var scrollPos = Math.max(
+        scrollDiv.scrollTop,
+        document.documentElement.scrollTop,
+      );
+      var diff = currentHeight - scrollPos - height;
+      // window.alert("currentHeight=" + currentHeight + ",scrollTop=" + scrollDiv.scrollTop + ",height=" + height);
 
       return diff < this.bottomThreshold;
     },
@@ -2064,7 +2127,7 @@ function AutoScroller(scrollContainer) {
       var scrollDiv = this.scrollContainer;
       var currentHeight = this.getCurrentHeight();
 
-      if (isViewportScroller(scrollDiv)) {
+      if (scrollDiv === document.body) {
         window.scrollTo({
           top: currentHeight,
         });

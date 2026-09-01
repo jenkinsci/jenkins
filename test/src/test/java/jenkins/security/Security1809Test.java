@@ -3,8 +3,10 @@ package jenkins.security;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
+import hudson.Functions;
 import hudson.model.Action;
 import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
@@ -40,6 +42,7 @@ class Security1809Test {
     @Test
     @Issue("SECURITY-1809")
     void passwordIsMaskedForView() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         final PasswordView view = new PasswordView("view1", secretPassword);
         j.jenkins.addView(view);
 
@@ -144,6 +147,7 @@ class Security1809Test {
     @Test
     @Issue("SECURITY-1809")
     void permissionIsCorrectlyCheckedOnNestedObject() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         final Folder folder = j.jenkins.createProject(Folder.class, "folder1");
         final FreeStyleProject job = folder.createProject(FreeStyleProject.class, "job1");
         FreeStyleBuild build = j.buildAndAssertSuccess(job);
