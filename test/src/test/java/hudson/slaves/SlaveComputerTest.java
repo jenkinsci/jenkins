@@ -114,6 +114,37 @@ class SlaveComputerTest {
     }
 
     @Test
+    void testGetJnlpSecret() throws Exception {
+        //default auth
+        DumbSlave nodeA = j.createOnlineSlave();
+        String secret = nodeA.getComputer().getJnlpSecret();
+        assertNotNull(secret);
+        assertEquals(getJnlpSecret(nodeA, null), secret);
+
+        //not auth
+        String userAlice = "alice";
+        MockAuthorizationStrategy authStrategy = new MockAuthorizationStrategy();
+        authStrategy.grant(Computer.CONFIGURE, Jenkins.READ).everywhere().to(userAlice);
+
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(authStrategy);
+        try (ACLContext context = ACL.as(User.getById(userAlice, true))) {
+            secret = nodeA.getComputer().getJnlpSecret();
+            assertNull(secret);
+            assertNull(getJnlpSecret(nodeA, userAlice));
+        }
+
+        //with auth
+        String userBob = "bob";
+        authStrategy.grant(Computer.CONNECT, Jenkins.READ).everywhere().to(userBob);
+        try (ACLContext context = ACL.as(User.getById(userBob, true))) {
+            secret = nodeA.getComputer().getJnlpSecret();
+            assertNotNull(secret);
+            assertEquals(secret, getJnlpSecret(nodeA, userBob));
+        }
+    }
+
+    @Test
     @Issue("JENKINS-57111")
     void startupShouldNotFailOnExceptionOnlineListener() throws Exception {
         DumbSlave nodeA = j.createOnlineSlave();
@@ -212,6 +243,21 @@ class SlaveComputerTest {
      * @throws SAXException in case of config format problem.
      */
     private String getRemoteFS(Node node, String user) throws Exception {
+        return getExportedString(node, user, "absoluteRemotePath");
+    }
+
+    /**
+     * Get the agent connection secret through the json api
+     * @param node agent node
+     * @param user the user for webClient
+     * @return the connection secret
+     * @throws Exception in case of communication problem.
+     */
+    private String getJnlpSecret(Node node, String user) throws Exception {
+        return getExportedString(node, user, "jnlpSecret");
+    }
+
+    private String getExportedString(Node node, String user, String field) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         if (user != null) {
             wc.login(user);
@@ -221,11 +267,11 @@ class SlaveComputerTest {
                 "application/json").getWebResponse();
         JSONObject json = JSONObject.fromObject(response.getContentAsString());
 
-        Object pathObj = json.get("absoluteRemotePath");
-        if (pathObj instanceof JSONNull) {
+        Object obj = json.get(field);
+        if (obj instanceof JSONNull) {
             return null; // the value is null in here
         } else {
-            return pathObj.toString();
+            return obj.toString();
         }
     }
 }

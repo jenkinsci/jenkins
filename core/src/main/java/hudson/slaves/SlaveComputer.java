@@ -576,6 +576,25 @@ public class SlaveComputer extends Computer {
         }
     }
 
+    /**
+     * Just for REST API.
+     * Returns the connection secret of the inbound (JNLP) agent so that automation can provision agents without
+     * parsing the JNLP file. Requires the same permission as the JNLP file endpoint.
+     * @see #getJnlpMac()
+     * @return the connection secret or {@code null} if the caller does not have the connect permission.
+     * @since 2.581
+     */
+    @Exported
+    @Restricted(DoNotUse.class)
+    @CheckForNull
+    public String getJnlpSecret() {
+        if (hasPermission(CONNECT)) {
+            return getJnlpMac();
+        } else {
+            return null;
+        }
+    }
+
     static class LoadingCount extends MasterToSlaveCallable<Integer, RuntimeException> {
         private final boolean resource;
 
