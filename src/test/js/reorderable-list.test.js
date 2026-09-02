@@ -1,12 +1,14 @@
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { compile } from "sass";
 import { beforeAll, describe, expect, it } from "vitest";
 
+const here = dirname(fileURLToPath(import.meta.url));
+const scssPath = resolve(here, "../../main/scss/form/_reorderable-list.scss");
+
 beforeAll(() => {
   const stylesheet = document.createElement("style");
-  stylesheet.textContent = compile(
-    resolve("src/main/scss/form/_reorderable-list.scss"),
-  ).css;
+  stylesheet.textContent = compile(scssPath).css;
   document.head.appendChild(stylesheet);
 });
 
