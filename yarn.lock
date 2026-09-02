@@ -3765,9 +3765,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:10.8.1":
-  version: 10.8.1
-  resolution: "eslint@npm:10.8.1"
+"eslint@npm:10.9.1":
+  version: 10.9.1
+  resolution: "eslint@npm:10.9.1"
   dependencies:
     "@eslint-community/eslint-utils": "npm:^4.8.0"
     "@eslint-community/regexpp": "npm:^4.12.2"
@@ -3806,7 +3806,7 @@ __metadata:
       optional: true
   bin:
     eslint: bin/eslint.js
-  checksum: 10c0/0c4720a43ef2052829db18e37aa79adb5f0a62137bdf4a4f8e9507bbbbf888ba0669fc03e4b7139d8f27b59b051bbbcd0a3988b068c30fa934a766d60a81f599
+  checksum: 10c0/11cfd118dced911d506dc752086a641b45c95996af1f7b2a1914f992bbcdca78bb56cd4dd281595c7a792e1562a49047aa65ce763e3ed809cbde84fe4a08924f
   languageName: node
   linkType: hard
 
@@ -4565,7 +4565,7 @@ __metadata:
     clean-webpack-plugin: "npm:4.0.0"
     css-loader: "npm:7.1.4"
     css-minimizer-webpack-plugin: "npm:8.0.0"
-    eslint: "npm:10.8.1"
+    eslint: "npm:10.9.1"
     eslint-config-prettier: "npm:10.1.8"
     eslint-formatter-checkstyle: "npm:9.0.1"
     globals: "npm:17.11.0"
