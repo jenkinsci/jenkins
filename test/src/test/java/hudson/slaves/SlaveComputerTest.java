@@ -27,6 +27,7 @@ package hudson.slaves;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -45,6 +46,12 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.io.IOError;
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -113,6 +120,43 @@ class SlaveComputerTest {
         }
     }
 
+    @Test
+    void fetchingTheJnlpFileDoesNotLogADeprecationWarning() throws Exception {
+        DumbSlave nodeA = j.createOnlineSlave();
+
+        List<LogRecord> records = new CopyOnWriteArrayList<>();
+        Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
+                    records.add(record);
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        Logger slaveComputerLogger = Logger.getLogger(SlaveComputer.class.getName());
+        slaveComputerLogger.addHandler(handler);
+
+        try {
+            JenkinsRule.WebClient wc = j.createWebClient();
+            WebResponse response = wc.goTo("computer/" + nodeA.getNodeName() + "/jenkins-agent.jnlp",
+                    "application/x-java-jnlp-file").getWebResponse();
+            assertEquals(200, response.getStatusCode());
+            assertThat(response.getContentAsString(), containsString(nodeA.getNodeName()));
+
+            List<String> warnings = records.stream().map(r -> r.getLevel() + ": " + r.getMessage()).toList();
+            assertThat(warnings, empty());
+        } finally {
+            slaveComputerLogger.removeHandler(handler);
+        }
+    }
     @Test
     @Issue("JENKINS-57111")
     void startupShouldNotFailOnExceptionOnlineListener() throws Exception {
