@@ -61,6 +61,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.security.XStreamNotDeserializable;
 import jenkins.triggers.TriggeredItem;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
@@ -163,6 +164,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     protected final String spec;
     protected transient CronTabList tabs;
     @CheckForNull
+    @XStreamNotDeserializable
     protected transient J job;
 
     /**
