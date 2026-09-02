@@ -27,8 +27,9 @@ package hudson.slaves;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -121,7 +122,7 @@ class SlaveComputerTest {
     }
 
     @Test
-    void fetchingTheJnlpFileDoesNotLogADeprecationWarning() throws Exception {
+    void fetchingTheJnlpFileLogsAnEndpointDeprecationWarning() throws Exception {
         DumbSlave nodeA = j.createOnlineSlave();
 
         List<LogRecord> records = new CopyOnWriteArrayList<>();
@@ -152,11 +153,16 @@ class SlaveComputerTest {
             assertThat(response.getContentAsString(), containsString(nodeA.getNodeName()));
 
             List<String> warnings = records.stream().map(r -> r.getLevel() + ": " + r.getMessage()).toList();
-            assertThat(warnings, empty());
+            assertThat(warnings, hasItem(allOf(
+                    containsString("deprecated"),
+                    containsString("jenkins-agent.jnlp"))));
+            // the warning must not blame an agent connection, which did not happen
+            assertThat(warnings, not(hasItem(containsString("is connecting"))));
         } finally {
             slaveComputerLogger.removeHandler(handler);
         }
     }
+
     @Test
     @Issue("JENKINS-57111")
     void startupShouldNotFailOnExceptionOnlineListener() throws Exception {

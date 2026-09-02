@@ -878,6 +878,12 @@ public class SlaveComputer extends Computer {
 
     @WebMethod(name = "jenkins-agent.jnlp")
     public HttpResponse doJenkinsAgentJnlp(StaplerRequest2 req, StaplerResponse2 res) {
+        LOGGER.log(
+                Level.WARNING,
+                "The JNLP file endpoint (jenkins-agent.jnlp) is deprecated."
+                        + " Launch agents with \"-url\" and \"-name\" instead, and retrieve the connection secret"
+                        + " through a supported API once available"
+                        + " (https://www.jenkins.io/doc/book/operating/agents/).");
         return new EncryptedSlaveAgentJnlpFile(this, "jenkins-agent.jnlp.jelly", getName(), CONNECT);
     }
 
