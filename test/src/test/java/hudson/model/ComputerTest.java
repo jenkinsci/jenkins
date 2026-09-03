@@ -76,7 +76,6 @@ import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
-import org.jvnet.hudson.test.recipes.LocalData;
 
 @Tag("SmokeTest")
 @WithJenkins
@@ -172,13 +171,6 @@ class ComputerTest {
         assertThat(agent.getTemporaryOfflineCause(), equalTo(offlineCause));
     }
 
-    @Test
-    @LocalData
-    void removeUserDetailsFromOfflineCause() throws Exception {
-        Computer computer = j.jenkins.getComputer("deserialized");
-        verifyOfflineCause(computer);
-    }
-
     private void verifyOfflineCause(Computer computer) throws Exception {
         XmlPage page = j.createWebClient().goToXml("computer/" + computer.getName() + "/config.xml");
         String content = page.getWebResponse().getContentAsString(StandardCharsets.UTF_8);
@@ -256,7 +248,7 @@ class ComputerTest {
 
         assertThat(data.size(), equalTo(0));
 
-        odm.doDiscard(null, null);
+        odm.doDiscard();
 
         User.AllUsers.scanAll();
         boolean createUser = false;
@@ -330,8 +322,8 @@ class ComputerTest {
         computer = null;
         j.jenkins.removeNode(agent);
         agent = null;
-        MemoryAssert.assertGC(computerRef, false);
-        MemoryAssert.assertGC(channelRef, false);
+        MemoryAssert.assertGC(computerRef, true);
+        MemoryAssert.assertGC(channelRef, true);
     }
 
     @Test

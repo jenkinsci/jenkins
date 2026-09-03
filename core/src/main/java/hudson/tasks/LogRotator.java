@@ -163,9 +163,12 @@ public class LogRotator extends BuildDiscarder {
         Run lsb = removeLastBuild ? null : job.getLastSuccessfulBuild();
         Run lstb = removeLastBuild ? null : job.getLastStableBuild();
 
+        Map<Integer, ? extends Run<?, ?>> runMap = job.getBuildsAsMap();
         if (numToKeep != -1) {
-            job.getBuildsAsMap().entrySet().stream().skip(numToKeep).map(Map.Entry::getValue)
-                    .filter(r -> !shouldKeepRun(r, lsb, lstb)).forEach(r -> {
+            // Iterate through keySet() instead of entrySet() or values() to avoid triggering lazy loading
+            // for the first `numToKeep` builds
+            runMap.keySet().stream().skip(numToKeep).map(runMap::get)
+                    .filter(r -> r != null && !shouldKeepRun(r, lsb, lstb)).forEach(r -> {
                 LOGGER.log(FINE, "{0} is to be removed", r);
                 try { r.delete(); }
                 catch (IOException ex) { exceptionMap.computeIfAbsent(r, key -> new HashSet<>()).add(ex); }
@@ -190,8 +193,10 @@ public class LogRotator extends BuildDiscarder {
         }
 
         if (artifactNumToKeep != null && artifactNumToKeep != -1) {
-            job.getBuildsAsMap().entrySet().stream().skip(artifactNumToKeep).map(Map.Entry::getValue)
-                    .filter(r -> !shouldKeepRun(r, lsb, lstb)).forEach(r -> {
+            // Iterate through keySet() instead of entrySet() or values() to avoid triggering lazy loading
+            // for the first `artifactNumToKeep` builds
+            runMap.keySet().stream().skip(artifactNumToKeep).map(runMap::get)
+                    .filter(r -> r != null && !shouldKeepRun(r, lsb, lstb)).forEach(r -> {
                 LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
                 try { r.deleteArtifacts(); }
                 catch (IOException ex) { exceptionMap.computeIfAbsent(r, key -> new HashSet<>()).add(ex); }

@@ -45,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -550,12 +551,7 @@ public class QueueTest {
         p.setAssignedLabel(label);
         p.scheduleBuild2(0);
 
-        // Wait 3 seconds if job is not already in the queue, reduce test flakes
-        if (!p.isInQueue()) {
-            Thread.sleep(3000);
-        }
-
-        assertTrue(p.isInQueue(), "Build not queued");
+        await().untilAsserted(() -> assertTrue(p.isInQueue(), "Build not queued"));
 
         JenkinsRule.WebClient webclient = r.createWebClient();
 
@@ -574,6 +570,7 @@ public class QueueTest {
     @Issue("JENKINS-28926")
     @Test
     void upstreamDownstreamCycle() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         FreeStyleProject trigger = r.createFreeStyleProject();
         FreeStyleProject chain1 = r.createFreeStyleProject();
         FreeStyleProject chain2a = r.createFreeStyleProject();
@@ -667,18 +664,15 @@ public class QueueTest {
         await().until(() -> buildFuture.getStartCondition().isCancelled());
     }
 
-    private void waitUntilWaitingListIsEmpty(Queue q) throws InterruptedException {
-        boolean waitingItemsPresent = true;
-        while (waitingItemsPresent) {
-            waitingItemsPresent = false;
+    private void waitUntilWaitingListIsEmpty(Queue q) {
+        await().until(() -> {
             for (Queue.Item i : q.getItems()) {
                 if (i instanceof WaitingItem) {
-                    waitingItemsPresent = true;
-                    break;
+                    return false;
                 }
             }
-            Thread.sleep(1000);
-        }
+            return true;
+        });
     }
 
     @Issue("JENKINS-68780")
@@ -1071,6 +1065,7 @@ public class QueueTest {
 
     @Test
     void waitForStartAndCancelBeforeStart() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         FreeStyleProject p = r.createFreeStyleProject();
 
         QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(30);
@@ -1300,7 +1295,7 @@ public class QueueTest {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.READ, Item.READ, Item.CANCEL).everywhere().to("admin")
-                .grant(Jenkins.READ).everywhere().to("user")
+                .grant(Jenkins.READ, Item.READ).everywhere().to("user")
         );
 
         // prevent execution to push stuff into the queue

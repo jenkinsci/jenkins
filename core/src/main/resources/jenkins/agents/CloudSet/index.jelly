@@ -26,121 +26,98 @@ THE SOFTWARE.
   Entrance to the configuration page
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:settings-subpage managementLink="${it.managementLink}" header="${null}" noDefer="true">
-    <l:isAdmin>
-      <script src="${resURL}/jsbundles/pages/cloud-set.js" type="text/javascript" />
-      <link rel="stylesheet" href="${resURL}/jsbundles/pages/cloud-set.css" type="text/css" />
-    </l:isAdmin>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:t="/lib/hudson">
+  <j:new var="managementLink" className="jenkins.agents.CloudsLink" />
 
-    <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
-    <j:choose>
-      <j:when test="${it.cloudAvailable and it.hasClouds()}">
-        <l:app-bar title="${%Clouds}">
+  <j:set var="header">
+    <l:view>
+      <l:app-bar title="${managementLink.displayName}">
+        <j:if test="${it.cloudAvailable and it.hasClouds()}">
           <l:isAdmin>
             <a class="jenkins-button jenkins-button--primary" href="new">
               <l:icon src="symbol-add"/>
               ${%newCloud}
             </a>
           </l:isAdmin>
-        </l:app-bar>
-        <p class="description">${%description}</p>
+        </j:if>
+        <t:help href="https://www.jenkins.io/redirect/distributed-builds" />
+      </l:app-bar>
+      <p class="jenkins-page-description">
+        <j:choose>
+          <j:when test="${it.cloudAvailable and it.hasClouds()}">
+            ${%description}
+          </j:when>
+          <j:otherwise>
+            ${managementLink.description}
+          </j:otherwise>
+        </j:choose>
+      </p>
+    </l:view>
+  </j:set>
+
+  <l:settings-subpage header="${header}" noDefer="true">
+    <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
+    <j:choose>
+      <j:when test="${it.cloudAvailable and it.hasClouds()}">
+        <l:isAdmin>
+          <script src="${resURL}/jsbundles/pages/cloud-set.js" type="text/javascript" />
+          <link rel="stylesheet" href="${resURL}/jsbundles/pages/cloud-set.css" type="text/css" />
+        </l:isAdmin>
+
         <f:form method="post" name="config" action="reorder">
-          <table id="clouds" class="jenkins-table">
-            <thead>
-              <tr>
-                <th tooltip="${%Drag and drop cells to reorder}">${%Order}</th>
-                <th>${%Name}</th>
-                <th/>
-              </tr>
-            </thead>
-            <tbody class="with-drag-drop">
-              <j:forEach var="cloud" items="${it.clouds}">
-                <tr class="repeated-chunk" id="cloud_${cloud.name}">
-                  <td data="${cloud.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
-                    <div class="jenkins-table__cell__button-wrapper dd-handle">
-                      <l:icon src="${cloud.iconClassName}" tooltip="${cloud.iconAltText}"/>
-                    </div>
-                  </td>
-                  <td>
+          <div class="with-drag-drop jenkins-!-margin-bottom-5">
+            <j:forEach var="cloud" items="${it.clouds}">
+              <div class="repeated-chunk" id="cloud_${cloud.name}">
+                <div class="app-cloud-item">
+                  <div class="dd-handle" />
+                  <l:icon src="${cloud.iconClassName}" tooltip="${cloud.iconAltText}" />
+                  <div>
                     <input type="hidden" name="name" value="${cloud.name}" />
-                    <a href="${it.getCloudUrl(request2,app,cloud)}" class="jenkins-table__link model-link inside">${cloud.name}</a>
-                  </td>
-                  <td class="jenkins-table__cell--tight">
-                    <div class="jenkins-table__cell__button-wrapper">
-                      <a href="${it.getCloudUrl(request2,app,cloud)}configure" class="jenkins-button">
-                        <l:icon src="symbol-settings"/>
-                      </a>
-                    </div>
-                  </td>
-                </tr>
-              </j:forEach>
-            </tbody>
-          </table>
+                    <a href="${it.getCloudUrl(request2,app,cloud)}">
+                      ${cloud.name}
+                    </a>
+                  </div>
+                  <div class="app-cloud-item__actions ignore-dirty-panel">
+                    <a href="${it.getCloudUrl(request2,app,cloud)}configure"
+                       class="jenkins-button jenkins-button--tertiary">
+                      <l:icon src="symbol-settings" />
+                    </a>
+                    <button type="button"
+                            data-href="${it.getCloudUrl(request2,app,cloud)}"
+                            class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link">
+                      <l:icon src="symbol-menu" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </j:forEach>
+          </div>
+
           <l:isAdmin>
-            <f:bottomButtonBar>
-              <f:submit id="saveButton" value="${%Save}" clazz="jenkins-hidden" />
+            <f:bottomButtonBar hidden="true">
+              <f:apply value="${%Save}" clazz="jenkins-button--primary" />
             </f:bottomButtonBar>
           </l:isAdmin>
         </f:form>
         <st:adjunct includes="lib.form.confirm" />
       </j:when>
       <j:otherwise>
-        <div class="empty-state-block">
-          <l:app-bar title="${%Clouds}"/>
-
-          <section class="empty-state-section">
-            <j:choose>
-              <j:when test="${it.cloudAvailable}">
-                <j:choose>
-                  <j:when test="${h.hasPermission(app.ADMINISTER)}">
-                    <p>${%noCloudAvailableCTA}</p>
-                  </j:when>
-                  <j:otherwise>
-                    <p>${%noCloudAvailable}</p>
-                  </j:otherwise>
-                </j:choose>
-              </j:when>
-              <j:otherwise>
-                <p>${%noCloudPlugin}</p>
-              </j:otherwise>
-            </j:choose>
-            <ul class="empty-state-section-list">
-              <l:isAdmin>
-                <j:if test="${it.cloudAvailable}">
-                  <li class="content-block">
-                    <a href="new"
-                       class="content-block__link">
-                      <span>${%newCloud}</span>
-                      <span class="trailing-icon">
-                        <l:icon src="symbol-add"/>
-                      </span>
-                    </a>
-                  </li>
-                </j:if>
-                <li class="content-block">
-                  <a href="${rootURL}/manage/pluginManager/available?filter=${it.cloudUpdateCenterCategoryLabel}"
-                     class="content-block__link">
-                    <span>${%installCloudPlugin}</span>
-                    <span class="trailing-icon">
-                      <l:icon src="symbol-plugins" />
-                    </span>
-                  </a>
-                </li>
-              </l:isAdmin>
-              <li class="content-block">
-                <a href="https://www.jenkins.io/redirect/distributed-builds"
-                   class="content-block__link"
-                   target="_blank" rel="noopener noreferrer">
-                  <span>${%learnMoreDistributedBuilds}</span>
-                  <span class="trailing-icon">
-                    <l:icon src="symbol-help-circle" />
-                  </span>
-                </a>
-              </li>
-            </ul>
-          </section>
-        </div>
+        <j:choose>
+          <j:when test="${it.cloudAvailable}">
+            <l:notice title="${%noCloudAvailable}" icon="symbol-cloud">
+              <a href="new">
+                ${%newCloud}
+              </a>
+            </l:notice>
+          </j:when>
+          <j:otherwise>
+            <l:notice title="${%noCloudPlugin}" icon="symbol-cloud">
+              <a href="${rootURL}/manage/pluginManager/available?filter=${it.cloudUpdateCenterCategoryLabel}">
+                ${%installCloudPlugin}
+              </a>
+            </l:notice>
+          </j:otherwise>
+        </j:choose>
       </j:otherwise>
     </j:choose>
   </l:settings-subpage>

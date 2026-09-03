@@ -222,13 +222,28 @@ var FormChecker = {
    *      HTTP method. GET or POST. I haven't confirmed specifics, but some browsers seem to cache GET requests.
    * @param target
    *      HTML element whose innerHTML will be overwritten when the check is completed.
+   * @param abort
+   *      Optional AbortController, or the AbortSignal of one, used to cancel the check
+   *      while it is queued or in flight.
    */
-  delayedCheck: function (url, method, target) {
+  delayedCheck: function (url, method, target, abort) {
     if (url == null || method == null || target == null) {
       // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
       return;
     }
-    this.queue.push({ url: url, method: method, target: target });
+    var signal = null;
+    if (abort != null) {
+      signal = abort.signal || abort;
+      if (typeof signal.aborted !== "boolean") {
+        signal = null;
+      }
+    }
+    this.queue.push({
+      url: url,
+      method: method,
+      target: target,
+      signal: signal,
+    });
     this.schedule();
   },
 
@@ -236,19 +251,38 @@ var FormChecker = {
     const method = params.method.toLowerCase();
     if (method !== "get") {
       var idx = url.indexOf("?");
-      params.parameters = url.substring(idx + 1);
-      url = url.substring(0, idx);
+      if (idx >= 0) {
+        params.parameters = url.substring(idx + 1);
+        url = url.substring(0, idx);
+      } else {
+        params.parameters = "";
+      }
     }
 
-    fetch(url, {
+    var requestParams = {
       method: params.method,
       headers: crumb.wrap({
         "Content-Type": "application/x-www-form-urlencoded",
       }),
       body: method !== "get" ? params.parameters : null,
-    }).then((response) => {
-      params.onComplete(response);
-    });
+    };
+    if (params.signal != null) {
+      requestParams.signal = params.signal;
+    }
+
+    fetch(url, requestParams)
+      .then((response) => {
+        params.onComplete(response);
+      })
+      .catch((error) => {
+        if (params.onError != null) {
+          params.onError(error);
+          return;
+        }
+        if (error && error.name !== "AbortError") {
+          console.warn(error);
+        }
+      });
   },
 
   schedule: function () {
@@ -259,19 +293,55 @@ var FormChecker = {
       return;
     }
 
-    var next = this.queue.shift();
-    this.sendRequest(next.url, {
-      method: next.method,
-      onComplete: function (x) {
-        x.text().then((responseText) => {
-          updateValidationArea(next.target, responseText);
-          FormChecker.inProgress--;
-          FormChecker.schedule();
-          layoutUpdateCallback.call();
-        });
-      },
-    });
+    var next = null;
+    while (this.queue.length > 0 && next == null) {
+      var queued = this.queue.shift();
+      if (!(queued.signal && queued.signal.aborted)) {
+        next = queued;
+      }
+    }
+    if (next == null) {
+      return;
+    }
+
     this.inProgress++;
+    var completeRequest = function () {
+      FormChecker.inProgress--;
+      FormChecker.schedule();
+    };
+
+    try {
+      this.sendRequest(next.url, {
+        method: next.method,
+        signal: next.signal,
+        onComplete: function (x) {
+          x.text()
+            .then((responseText) => {
+              if (!(next.signal && next.signal.aborted)) {
+                updateValidationArea(next.target, responseText);
+                layoutUpdateCallback.call();
+              }
+            })
+            .catch((error) => {
+              if (error && error.name !== "AbortError") {
+                console.warn(error);
+              }
+            })
+            .then(completeRequest);
+        },
+        onError: function (error) {
+          if (error && error.name !== "AbortError") {
+            console.warn(error);
+          }
+          completeRequest();
+        },
+      });
+    } catch (error) {
+      if (error && error.name !== "AbortError") {
+        console.warn(error);
+      }
+      completeRequest();
+    }
   },
 };
 
@@ -684,7 +754,9 @@ function registerValidator(e) {
 
   var url = e.targetUrl();
   try {
-    FormChecker.delayedCheck(url, method, e.targetElement);
+    if (!e.disabled) {
+      FormChecker.delayedCheck(url, method, e.targetElement);
+    }
     // eslint-disable-next-line no-unused-vars
   } catch (x) {
     // this happens if the checkUrl refers to a non-existing element.
@@ -699,6 +771,9 @@ function registerValidator(e) {
   }
 
   var checker = function () {
+    if (this.disabled) {
+      return;
+    }
     const validationArea = this.targetElement;
     FormChecker.sendRequest(this.targetUrl(), {
       method: method,
@@ -784,6 +859,7 @@ function registerRegexpValidator(e, regexp, message) {
     return set;
   };
   e.onchange.call(e);
+  /* eslint-disable-next-line no-useless-assignment */
   e = null; // avoid memory leak
 }
 
@@ -886,6 +962,7 @@ function registerMinMaxValidator(e) {
     return set;
   };
   e.onchange.call(e);
+  /* eslint-disable-next-line no-useless-assignment */
   e = null; // avoid memory leak
 }
 
@@ -1482,7 +1559,7 @@ function rowvgStartEachRow(recursive, f) {
         return buildFormTree(this);
       };
     }
-
+    /* eslint-disable-next-line no-useless-assignment */
     form = null; // memory leak prevention
   });
 
@@ -1657,6 +1734,7 @@ function rowvgStartEachRow(recursive, f) {
       event.preventDefault();
       return false;
     };
+    /* eslint-disable-next-line no-useless-assignment */
     e = null; // memory leak prevention
   });
 
@@ -1756,6 +1834,7 @@ function rowvgStartEachRow(recursive, f) {
       layoutUpdateCallback.call();
       return false;
     };
+    /* eslint-disable-next-line no-useless-assignment */
     e = null; // avoid memory leak
   });
 
@@ -1771,32 +1850,42 @@ function rowvgStartEachRow(recursive, f) {
   Behaviour.specify(
     "DIV.behavior-loading",
     "div-behavior-loading",
+    // Useless assignment retained for consistency with preceding use in
+    // Behaviour.specify("DIV.jenkins-form-skeleton" and earlier
+    /* eslint-disable-next-line no-useless-assignment */
     ++p,
     function (e) {
       console.warn(
-        ".behavior-loading is deprecated, use <l:skeleton /> instead - since TODO",
+        ".behavior-loading is deprecated, use <l:skeleton /> instead - since 2.515",
         e,
       );
       e.classList.add("behavior-loading--hidden");
     },
   );
 
-  window.addEventListener("load", function () {
-    // Add a class to the bottom bar when it's stuck to the bottom of the screen
-    const el = document.querySelector(".jenkins-bottom-app-bar__shadow");
-    if (el) {
+  // Add a class to the bottom bar when it's stuck to the bottom of the screen
+  Behaviour.specify(
+    ".jenkins-bottom-app-bar__shadow",
+    "jenkins-bottom-app-bar__shadow",
+    0,
+    function (el) {
+      const dialog = el.closest("dialog");
+
       const observer = new IntersectionObserver(
         ([e]) =>
           e.target.classList.toggle(
             "jenkins-bottom-app-bar__shadow--stuck",
             e.intersectionRatio < 1,
           ),
-        { threshold: [1] },
+        {
+          threshold: [1],
+          root: dialog || null,
+        },
       );
 
       observer.observe(el);
-    }
-  });
+    },
+  );
 
   /**
    * Function that provides compatibility to the checkboxes without title on an f:entry
@@ -1911,40 +2000,6 @@ function refillOnChange(e, onChange) {
 function xor(a, b) {
   // convert both values to boolean by '!' and then do a!=b
   return !a != !b;
-}
-
-// used by editableDescription.jelly to replace the description field with a form
-// eslint-disable-next-line no-unused-vars
-function replaceDescription(initialDescription, submissionUrl) {
-  const descriptionContent = document.getElementById("description-content");
-  const descriptionEditForm = document.getElementById("description-edit-form");
-  descriptionEditForm.innerHTML = "<div class='jenkins-spinner'></div>";
-  descriptionContent.classList.add("jenkins-hidden");
-  let parameters = {};
-  if (initialDescription !== null && initialDescription !== "") {
-    parameters["description"] = initialDescription;
-  }
-  if (submissionUrl !== null && submissionUrl !== "") {
-    parameters["submissionUrl"] = submissionUrl;
-  }
-  fetch("./descriptionForm", {
-    method: "post",
-    headers: crumb.wrap({
-      "Content-Type": "application/x-www-form-urlencoded",
-    }),
-    body: objectToUrlFormEncoded(parameters),
-  }).then((rsp) => {
-    rsp.text().then((responseText) => {
-      descriptionEditForm.innerHTML = responseText;
-      descriptionEditForm.classList.remove("jenkins-hidden");
-      evalInnerHtmlScripts(responseText, function () {
-        Behaviour.applySubtree(descriptionEditForm);
-        descriptionEditForm.getElementsByTagName("TEXTAREA")[0].focus();
-      });
-      layoutUpdateCallback.call();
-      return false;
-    });
-  });
 }
 
 /**

@@ -173,7 +173,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
         recorders.add(new LogRecorder(name));
 
         // redirect to the config screen
-        return new HttpRedirect(name + "/configure");
+        return new HttpRedirect(Util.rawEncode(name) + "/configure");
     }
 
     @Restricted(NoExternalUse.class)

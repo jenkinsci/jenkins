@@ -100,6 +100,9 @@ public class BuildCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
         job.checkPermission(Item.BUILD);
+        if (sync) {
+            job.checkPermission(Item.CANCEL);
+        }
 
         ParametersAction a = null;
         if (!parameters.isEmpty()) {
@@ -206,8 +209,9 @@ public class BuildCommand extends CLICommand {
                     if (follow) {
                         return 125;
                     } else {
-                        // if the CLI is aborted, try to abort the build as well
-                        f.cancel(true);
+                        if (job.hasPermission(Item.CANCEL)) {
+                            f.cancel(true);
+                        }
                         Exception myException = new AbortException();
                         myException.initCause(e);
                         throw myException;
@@ -221,21 +225,7 @@ public class BuildCommand extends CLICommand {
 
     @Override
     protected void printUsageSummary(PrintStream stderr) {
-        stderr.println(
-                """
-                Starts a build, and optionally waits for a completion.
-                Aside from general scripting use, this command can be
-                used to invoke another job from within a build of one job.
-                With the -s option, this command changes the exit code based on
-                the outcome of the build (exit code 0 indicates a success)
-                and interrupting the command will interrupt the job.
-                With the -f option, this command changes the exit code based on
-                the outcome of the build (exit code 0 indicates a success)
-                however, unlike -s, interrupting the command will not interrupt
-                the job (exit code 125 indicates the command was interrupted).
-                With the -c option, a build will only run if there has been
-                an SCM change."""
-        );
+        stderr.println(Messages.BuildCommand_PrintUsageSummary());
     }
 
     public static class CLICause extends UserIdCause {

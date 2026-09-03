@@ -38,7 +38,7 @@ import org.kohsuke.stapler.StaplerResponse2;
  * (which applies {@code form-action} to redirects after form submission).
  * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/form-action">MDN documentation on form-action</a>
  * @see <a href="https://github.com/w3c/webappsec-csp/issues/8">Content Security Policy issue discussing this behavior</a>
- * @since TODO
+ * @since 2.550
  */
 public record ClientHttpRedirect(String redirectUrl) implements HttpResponse {
     @Override

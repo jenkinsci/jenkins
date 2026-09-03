@@ -125,10 +125,12 @@ import jenkins.model.details.CauseDetail;
 import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DurationDetail;
+import jenkins.model.details.KeptForeverDetail;
 import jenkins.model.details.TimestampDetail;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.XStreamNotDeserializable;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
@@ -175,6 +177,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public static final long QUEUE_ID_UNKNOWN = -1;
 
+    @XStreamNotDeserializable
     protected final transient @NonNull JobT project;
 
     /**
@@ -184,6 +187,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * In earlier versions &lt; 1.24, this number is not unique nor continuous,
      * but going forward, it will, and this really replaces the build id.
      */
+    @XStreamNotDeserializable
     public transient /*final*/ int number;
 
     /**
@@ -240,6 +244,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * The current build state.
      */
+    @XStreamNotDeserializable
     private transient volatile State state;
 
     private enum State {
@@ -291,6 +296,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * If the build is in progress, remember {@link RunExecution} that's running it.
      * This field is not persisted.
      */
+    @XStreamNotDeserializable
     private transient volatile RunExecution runner;
 
     /**
@@ -302,6 +308,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * If the build is pending delete.
      */
+    @XStreamNotDeserializable
     private transient boolean isPendingDelete;
 
     /**
@@ -2684,7 +2691,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         @NonNull @Override public List<? extends Detail> createFor(@NonNull Run target) {
-            return List.of(new CauseDetail(target), new TimestampDetail(target), new DurationDetail(target));
+            return List.of(new CauseDetail(target), new TimestampDetail(target), new DurationDetail(target), new KeptForeverDetail(target));
         }
     }
 

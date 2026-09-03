@@ -7,7 +7,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3538/badge)](https://bestpractices.coreinfrastructure.org/projects/3538)
 [![Reproducible Builds](https://img.shields.io/badge/Reproducible_Builds-ok-green)](https://maven.apache.org/guides/mini/guide-reproducible-builds.html)
-[![Gitter](https://img.shields.io/gitter/room/jenkinsci/jenkins)](https://app.gitter.im/#/room/#jenkinsci_jenkins:gitter.im)
+[![Gitter](https://img.shields.io/gitter/room/jenkinsci/jenkins)](https://matrix.to/#/#jenkinsci_jenkins:gitter.im)
 
 ---
 
@@ -74,7 +74,7 @@ New to open source or Jenkins? Here’s how to get started:
 
 - Read the [Contribution Guidelines](CONTRIBUTING.md)
 - Check our [good first issues](https://github.com/jenkinsci/jenkins/issues?q=is%3Aissue%20is%3Aopen%20label%3A%22good%20first%20issue%22)
-- Join our [Gitter chat](https://app.gitter.im/#/room/#jenkinsci_newcomer-contributors:gitter.im) for questions and help
+- Join our [Gitter chat](https://matrix.to/#/#jenkinsci_newcomer-contributors:gitter.im) for questions and help
 
 For more information about participating in the community and contributing to the Jenkins project,
 see [this page](https://www.jenkins.io/participate/).

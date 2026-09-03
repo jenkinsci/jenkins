@@ -56,7 +56,7 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
      * Redirect to the given URL via a client-side JS/meta tag redirect.
      * @param url the URL to redirect to
      * @return the HttpResponse
-     * @since TODO
+     * @since 2.550
      */
     public static HttpResponse clientRedirectTo(String url) {
         return new ClientHttpRedirect(url);

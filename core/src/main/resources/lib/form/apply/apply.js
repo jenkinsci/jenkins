@@ -9,6 +9,7 @@ Behaviour.specify(
       // create a throw-away IFRAME to avoid back button from loading the POST result back
       const id = "iframe" + iota++;
       const target = document.createElement("iframe");
+      target.classList.add("jenkins-hidden");
       target.setAttribute("id", id);
       target.setAttribute("name", id);
       target.style.height = "100%";
