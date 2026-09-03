@@ -3340,9 +3340,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-loader@npm:7.1.4":
-  version: 7.1.4
-  resolution: "css-loader@npm:7.1.4"
+"css-loader@npm:7.1.5":
+  version: 7.1.5
+  resolution: "css-loader@npm:7.1.5"
   dependencies:
     icss-utils: "npm:^5.1.0"
     postcss: "npm:^8.4.40"
@@ -3360,7 +3360,7 @@ __metadata:
       optional: true
     webpack:
       optional: true
-  checksum: 10c0/a3a3a6b564d4fcf978961be8bc6ca06fb3836fc8fbd729ddae4b0b94166a0f5ccf119fb3301a6fecbe90608a8edbfd418bdc644cf053615e6271aa65b3fdc00b
+  checksum: 10c0/a75341a93542b8ad465d0a499244da9bb38c79a33be8f400b24aa102825d14a3c9ccd38522c13ab1af9b4068675ef364fe2be4d5abd516660b16b1c9d901d35a
   languageName: node
   linkType: hard
 
@@ -4564,7 +4564,7 @@ __metadata:
     "@eslint/js": "npm:10.0.1"
     babel-loader: "npm:10.1.1"
     clean-webpack-plugin: "npm:4.0.0"
-    css-loader: "npm:7.1.4"
+    css-loader: "npm:7.1.5"
     css-minimizer-webpack-plugin: "npm:8.0.0"
     eslint: "npm:10.9.1"
     eslint-config-prettier: "npm:10.1.8"

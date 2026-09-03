@@ -31,7 +31,7 @@
     "@eslint/js": "10.0.1",
     "babel-loader": "10.1.1",
     "clean-webpack-plugin": "4.0.0",
-    "css-loader": "7.1.4",
+    "css-loader": "7.1.5",
     "css-minimizer-webpack-plugin": "8.0.0",
     "eslint": "10.9.1",
     "eslint-config-prettier": "10.1.8",
