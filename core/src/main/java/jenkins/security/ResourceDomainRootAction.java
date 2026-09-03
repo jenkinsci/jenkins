@@ -272,6 +272,11 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         public String toString() {
             return "[" + super.toString() + ", authentication=" + authenticationName + "; key=" + browserUrl + "]";
         }
+
+        private Object readResolve() {
+            LOGGER.log(Level.WARNING, "Blocked deserialization of InternalResourceRequest for security reasons", new Exception("stack trace"));
+            throw new SecurityException("Blocked deserialization of InternalResourceRequest for security reasons");
+        }
     }
 
     public static class Token {

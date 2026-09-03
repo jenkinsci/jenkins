@@ -46,8 +46,6 @@ THE SOFTWARE.
         <st:include page="jobpropertysummaries.jelly" />
 
         <st:include page="main.jelly" />
-
-        <st:include page="permalinks.jelly" />
       </div>
     </l:card>
   </l:job-subpage>

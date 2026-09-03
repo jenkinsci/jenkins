@@ -1128,7 +1128,7 @@ class FilePathTest {
     @Test
     @Issue("SECURITY-904")
     void isDescendant_windowsSpecificSymlinks() throws Exception {
-        assumeTrue(Functions.isWindows());
+        assumeTrue(Functions.isWindows() && !"true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         //  root
         //      /workspace
         //          /a

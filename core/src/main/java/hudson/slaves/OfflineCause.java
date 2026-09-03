@@ -33,6 +33,7 @@ import java.io.ObjectStreamException;
 import java.util.Collections;
 import jenkins.agents.IOfflineCause;
 import jenkins.model.Jenkins;
+import jenkins.security.XStreamDeserializable;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -140,6 +141,7 @@ public abstract class OfflineCause implements IOfflineCause {
      */
     public static class UserCause extends SimpleOfflineCause {
         @Deprecated
+        @XStreamDeserializable
         private transient User user;
         // null when unknown
         private /*final*/ @CheckForNull String userId;
@@ -202,11 +204,6 @@ public abstract class OfflineCause implements IOfflineCause {
         @Override
         public String getIcon() {
             return "symbol-person";
-        }
-
-        @Override
-        public String toString() {
-            return Util.escape(super.toString());
         }
     }
 

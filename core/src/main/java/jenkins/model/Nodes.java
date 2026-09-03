@@ -32,6 +32,7 @@ import hudson.ExtensionList;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Computer;
+import hudson.model.Failure;
 import hudson.model.Node;
 import hudson.model.PersistenceRoot;
 import hudson.model.Queue;
@@ -121,6 +122,7 @@ public class Nodes implements PersistenceRoot {
                 node.onLoad(Nodes.this, name);
                 var oldNode = toRemove.get(name);
                 if (oldNode != null) {
+                    node.setTemporaryOfflineCause(oldNode.getTemporaryOfflineCause());
                     NodeListener.fireOnUpdated(oldNode, node);
                     toRemove.remove(name);
                 } else {
@@ -281,6 +283,10 @@ public class Nodes implements PersistenceRoot {
         if (oldOne == nodes.get(oldOne.getNodeName())) {
             // use the queue lock until Nodes has a way of directly modifying a single node.
             Queue.runWithLock(() -> {
+                if (!newOne.getNodeName().equals(oldOne.getNodeName())
+                        && nodes.containsKey(newOne.getNodeName())) {
+                    throw new Failure("Node already exists: " + newOne.getNodeName());
+                }
                 Nodes.this.nodes.remove(oldOne.getNodeName());
                 Nodes.this.nodes.put(newOne.getNodeName(), newOne);
                 newOne.onLoad(Nodes.this, newOne.getNodeName());
