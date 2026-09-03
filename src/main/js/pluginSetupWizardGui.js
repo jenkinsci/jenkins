@@ -610,12 +610,12 @@ var createPluginSetupWizard = function (appendTarget) {
           }
 
           // update progress bar
-          document.querySelectorAll(".progress-bar").forEach(bar => {
+          document.querySelectorAll(".progress-bar").forEach((bar) => {
             bar.style.width = `${(100.0 * complete) / total}%`;
           });
 
           // update details
-          document.querySelectorAll(".install-text").forEach(txt => {
+          document.querySelectorAll(".install-text").forEach((txt) => {
             txt.replaceChildren();
           });
 
@@ -664,7 +664,9 @@ var createPluginSetupWizard = function (appendTarget) {
               } else {
                 $div.addClass("dependent");
               }
-              $txt.append($div);
+              document.querySelectorAll(".install-text").forEach((txt) => {
+                txt.append($div);
+              });
 
               var $itemProgress = $(
                 '.selected-plugin[id="installing-' + idIfy(j.name) + '"]',
