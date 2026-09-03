@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.OptionalJobProperty;
+import jenkins.security.XStreamNotDeserializable;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -84,6 +85,7 @@ public abstract class JobProperty<J extends Job<?, ?>> implements Reconfigurable
      * This value will be set by the Hudson code.
      * Derived classes can expect this value to be always set.
      */
+    @XStreamNotDeserializable
     protected transient J owner;
 
     /**

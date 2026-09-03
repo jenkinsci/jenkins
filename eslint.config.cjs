@@ -6,6 +6,21 @@ module.exports = [
   // Global ignores
   {
     ignores: [
+      // Only scan Jenkins source areas, not arbitrary top-level work directories
+      "*/**",
+      "!.github/**",
+      "!.idea/**",
+      "!.mvn/**",
+      "!bom/**",
+      "!cli/**",
+      "!core/**",
+      "!coverage/**",
+      "!docs/**",
+      "!src/**",
+      "!test/**",
+      "!war/**",
+      "!websocket/**",
+
       "**/target/",
       "**/work/",
 

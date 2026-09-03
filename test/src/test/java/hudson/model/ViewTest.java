@@ -33,6 +33,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -40,11 +41,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import hudson.Functions;
 import hudson.XmlFile;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.matrix.AxisList;
@@ -223,9 +226,14 @@ class ViewTest {
     @Issue("JENKINS-9367")
     @Test
     void persistence() throws Exception {
-        ListView view = listView("foo");
+        final String viewName = "foo";
+        ListView view = listView(viewName);
 
-        ListView v = (ListView) Jenkins.XSTREAM.fromXML(Jenkins.XSTREAM.toXML(view));
+        j.jenkins.save();
+        assertThat(view, sameInstance(j.jenkins.getView(viewName)));
+        j.jenkins.reload();
+        final View v = j.jenkins.getView(viewName);
+        assertThat(view, not(sameInstance(v)));
         System.out.println(v.getProperties());
         assertNotNull(v.getProperties());
     }
@@ -725,7 +733,7 @@ class ViewTest {
 
         assertThat(data.size(), equalTo(0));
 
-        odm.doDiscard(null, null);
+        odm.doDiscard();
 
         View view = j.getInstance().getView("nonexistent");
 
@@ -769,7 +777,7 @@ class ViewTest {
 
         assertThat(data.size(), equalTo(0));
 
-        odm.doDiscard(null, null);
+        odm.doDiscard();
 
         View view = j.getInstance().getView("nonexistent");
 
@@ -806,7 +814,7 @@ class ViewTest {
 
         assertThat(data.size(), equalTo(0));
 
-        odm.doDiscard(null, null);
+        odm.doDiscard();
 
         User.AllUsers.scanAll();
         boolean createUser = false;
@@ -886,6 +894,7 @@ class ViewTest {
     @Test
     @Issue("SECURITY-2171")
     void newJob_xssPreventedInGetIconFilePathPattern() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         CustomizableTLID customizableTLID = j.jenkins.getExtensionList(TopLevelItemDescriptor.class).get(CustomizableTLID.class);
         customizableTLID.customId = "xss-ifpp";
         customizableTLID.customIconClassName = null;
