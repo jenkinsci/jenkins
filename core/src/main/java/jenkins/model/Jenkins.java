@@ -286,6 +286,7 @@ import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.security.ResourceDomainConfiguration;
 import jenkins.security.SecurityListener;
+import jenkins.security.XStreamDeserializable;
 import jenkins.security.stapler.DoActionFilter;
 import jenkins.security.stapler.StaplerDispatchValidator;
 import jenkins.security.stapler.StaplerDispatchable;
@@ -382,6 +383,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The Jenkins instance startup type i.e. NEW, UPGRADE etc
      */
+    // TODO Mark @XStreamNotDeserializable and clean up #readResolve
     private transient String installStateName;
 
     @Deprecated
@@ -582,6 +584,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @deprecated in favour of {@link Nodes}
      */
     @Deprecated
+    @XStreamDeserializable
     protected transient volatile NodeList slaves;
 
     /**
@@ -1057,6 +1060,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressWarnings("unused")
     protected Object readResolve() {
+        Jenkins existing = Jenkins.getInstanceOrNull();
+        if (existing != null && existing != this) {
+            throw new IllegalStateException(
+                    "A Jenkins singleton already exists; refusing to deserialize a second Jenkins instance."
+                    + " This is likely an attempted exploit via a forged configuration document.");
+        }
         if (jdks == null) {
             jdks = new ArrayList<>();
         }
@@ -1074,6 +1083,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         _setLabelString(label);
 
         return this;
+    }
+
+    protected Object writeReplace() {
+        return XmlFile.replaceIfNotAtTopLevel(this, Replacer::new);
+    }
+
+    private static class Replacer {
+        private Object readResolve() {
+            return Jenkins.get();
+        }
     }
 
     /**
@@ -4340,8 +4359,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // TODO fire something in SecurityListener?
 
         String from = req.getParameter("from");
-        if (from != null && from.startsWith("/") && !from.equals("/loginError")) {
-            rsp.sendRedirect2(from);    // I'm bit uncomfortable letting users redirected to other sites, make sure the URL falls into this domain
+        if (from != null && Util.isSafeToRedirectTo(from)) {
+            rsp.sendRedirect2(from);
             return;
         }
 
@@ -5173,7 +5192,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (link.getIconFileName() == null) {
                 continue;
             }
-            if (!Jenkins.get().hasPermission(link.getRequiredPermission())) {
+            if (!link.hasRequiredPermission()) {
                 continue;
             }
             byCategory.computeIfAbsent(link.getCategory(), c -> new ArrayList<>()).add(link);
@@ -5860,6 +5879,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             new PermissionScope[]{PermissionScope.JENKINS});
 
     @Restricted(NoExternalUse.class) // called by jelly
+    @SuppressFBWarnings(value = "MS_MUTABLE_ARRAY", justification = "Not for external use")
     public static final Permission[] MANAGE_AND_SYSTEM_READ =
             new Permission[] { MANAGE, SYSTEM_READ };
 

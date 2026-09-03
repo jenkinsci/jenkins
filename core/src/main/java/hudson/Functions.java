@@ -170,8 +170,10 @@ import jenkins.model.SimplePageDecorator;
 import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DetailGroup;
+import jenkins.model.menu.Group;
 import jenkins.telemetry.impl.PasswordMasking;
 import jenkins.util.SystemProperties;
+import net.sf.json.JSONObject;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -180,6 +182,7 @@ import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
+import org.jenkins.ui.icon.IconSpec;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -579,7 +582,8 @@ public class Functions {
         String[] oldParts = prior == null ? new String[4] : logRecordPreformat(prior);
         String[] newParts = logRecordPreformat(r);
         for (int i = 0; i < /* not 4 */3; i++) {
-            newParts[i] = "<span class='" + (newParts[i].equals(oldParts[i]) ? "logrecord-metadata-old" : "logrecord-metadata-new") + "'>" + newParts[i] + "</span>";
+            String cls = newParts[i].equals(oldParts[i]) ? "logrecord-metadata-old" : "logrecord-metadata-new";
+            newParts[i] = "<span class='" + cls + "'>" + Util.xmlEscape(newParts[i]) + "</span>";
         }
         newParts[3] = Util.xmlEscape(newParts[3]);
         return newParts;
@@ -2375,6 +2379,13 @@ public class Functions {
     }
 
     /**
+     * Returns true if we are in development mode.
+     */
+    public static boolean isDevelopmentMode() {
+        return Main.isDevelopmentMode;
+    }
+
+    /**
      * Returns {@code true} if the {@link Run#ARTIFACTS} permission is enabled,
      * {@code false} otherwise.
      *
@@ -2402,6 +2413,17 @@ public class Functions {
      */
     public static boolean isWipeOutPermissionEnabled() {
         return SystemProperties.getBoolean("hudson.security.WipeOutPermission");
+    }
+
+    /**
+     * Returns whether sticky positioning of UI elements should be disabled via the
+     * {@code disableStickyPositioning} cookie (primarily for UI acceptance tests).
+     * Sticky elements can otherwise float over the element under test and intercept clicks.
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean isStickyPositioningDisabled() {
+        String cookieValue = Functions.getCookie(Stapler.getCurrentRequest2(), "disableStickyPositioning", null);
+        return Boolean.valueOf(cookieValue);
     }
 
     @Deprecated
@@ -2658,6 +2680,24 @@ public class Functions {
     @Restricted(NoExternalUse.class)
     public static String generateItemId() {
         return String.valueOf(Math.floor(Math.random() * 3000));
+    }
+
+    /**
+     * Converts the given actions to a JSON object
+     */
+    @Restricted(NoExternalUse.class)
+    public static String convertActionsToJson(String baseUrl, List<Action> actions) {
+        ModelObjectWithContextMenu.ContextMenu contextMenu = new ModelObjectWithContextMenu.ContextMenu();
+        contextMenu.addAll(actions
+                .stream()
+                .filter(action ->
+                        action.getIconFileName() != null
+                                || (action instanceof IconSpec iconSpec && iconSpec.getIconClassName() != null)
+                ).filter(action -> action.getGroup().getOrder() < Group.FIRST_IN_MENU.getOrder())
+                .toList());
+        JSONObject jsonObject = JSONObject.fromObject(contextMenu);
+        jsonObject.put("url", Util.ensureEndsWith(baseUrl, "/"));
+        return jsonObject.toString();
     }
 
     /**

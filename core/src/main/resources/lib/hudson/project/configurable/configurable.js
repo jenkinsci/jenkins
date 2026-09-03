@@ -10,7 +10,7 @@
         method: "post",
         headers: crumb.wrap({}),
       }).then((rsp) => {
-        if (rsp.status === 201) {
+        if (rsp.ok) {
           notificationBar.show(success, notificationBar.SUCCESS);
         } else {
           notificationBar.show(failure, notificationBar.ERROR);
