@@ -29,9 +29,11 @@ import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Descriptor;
 import hudson.model.ManagementLink;
+import hudson.security.Permission;
 import hudson.util.FormApply;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,6 +65,12 @@ public class AppearanceGlobalConfiguration extends ManagementLink {
         return false;
     };
 
+    @NonNull
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.READ;
+    }
+
     @Override
     public String getIconFileName() {
         return "symbol-brush-outline";
@@ -74,6 +82,29 @@ public class AppearanceGlobalConfiguration extends ManagementLink {
     @Restricted(NoExternalUse.class)
     public boolean hasPlugins() {
         return !Functions.getSortedDescriptorsForGlobalConfigByDescriptor(FILTER).isEmpty();
+    }
+
+    /**
+     * Descriptors in the Appearance configuration form that the current user can write,
+     * i.e. they hold the permission returned by {@link Descriptor#getRequiredGlobalConfigPagePermission()}.
+     * Used by the submit path and by the Jelly template to compute per-descriptor read-only mode.
+     */
+    @Restricted(NoExternalUse.class)
+    public Collection<Descriptor> getConfigurableDescriptors() {
+        return Functions.getSortedDescriptorsForGlobalConfigByDescriptor(
+                FILTER.and(d -> Jenkins.get().hasPermission(d.getRequiredGlobalConfigPagePermission())));
+    }
+
+    /**
+     * Descriptors in the Appearance configuration form that the current user can see: writable if they
+     * hold the descriptor's required permission, read-only if they hold {@link Jenkins#SYSTEM_READ}.
+     * Used by the Jelly template to enumerate which descriptors to render.
+     */
+    @Restricted(NoExternalUse.class)
+    public Collection<Descriptor> getReadableDescriptors() {
+        return Functions.getSortedDescriptorsForGlobalConfigByDescriptor(
+                FILTER.and(d -> Jenkins.get().hasPermission(d.getRequiredGlobalConfigPagePermission())
+                        || Jenkins.get().hasPermission(Jenkins.SYSTEM_READ)));
     }
 
     @Override
@@ -109,7 +140,7 @@ public class AppearanceGlobalConfiguration extends ManagementLink {
         j.checkPermission(Jenkins.MANAGE);
 
         boolean result = true;
-        for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigByDescriptor(FILTER)) {
+        for (Descriptor<?> d : getConfigurableDescriptors()) {
             result &= configureDescriptor(req, json, d);
         }
         j.save();
