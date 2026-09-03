@@ -153,6 +153,7 @@ THE SOFTWARE.
       <artifactId>commons-codec</artifactId>
     </dependency>
     <dependency>
+      <!-- Jenkins core does not use this directly, but it remains a transitive dependency through BeanUtils, Jelly, and JSON-lib, and plugins rely on core providing it. -->
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
     </dependency>
