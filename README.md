@@ -10,7 +10,6 @@
 [![Gitter](https://img.shields.io/gitter/room/jenkinsci/jenkins)](https://matrix.to/#/#jenkinsci_jenkins:gitter.im)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/jenkinsci/jenkins/badge)](https://api.securityscorecards.dev/projects/github.com/jenkinsci/jenkins)
 
-
 ---
 
 # Table of Contents
