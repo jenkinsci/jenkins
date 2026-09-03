@@ -53,7 +53,7 @@
     "stylelint-config-standard-scss": "17.0.0",
     "vitest": "4.1.11",
     "webpack": "5.110.2",
-    "webpack-cli": "7.2.2",
+    "webpack-cli": "7.2.3",
     "webpack-remove-empty-scripts": "1.1.1"
   },
   "dependencies": {
