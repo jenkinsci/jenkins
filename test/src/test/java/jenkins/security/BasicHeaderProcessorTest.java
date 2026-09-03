@@ -158,12 +158,9 @@ class BasicHeaderProcessorTest {
         wc = j.createWebClient();
 
         LoggerRule logging = new LoggerRule().record(BasicHeaderProcessor.class, Level.FINE).capture(100);
-        try {
-            makeRequestWithAuthCodeAndFail("Basic secretpasswordnotvalidbase64!!!");
-        } finally {
-            assertThat(logging, recorded(Level.FINE, containsString("Failed to decode authentication from: ")));
-            assertThat(logging, recorded(Level.FINE, containsString("secretpasswordnotvalidbase64")));
-        }
+        makeRequestWithAuthCodeAndFail("Basic secretpasswordnotvalidbase64!!!");
+        assertThat(logging, recorded(Level.FINE, containsString("Failed to decode authentication from: ")));
+        assertThat(logging, recorded(Level.FINE, containsString("secretpasswordnotvalidbase64")));
     }
 
     private String encode(String prefix, String userAndPass) {
