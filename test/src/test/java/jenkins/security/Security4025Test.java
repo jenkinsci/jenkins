@@ -118,8 +118,9 @@ class Security4025Test {
         byte[] payload = agentXmlNamed(VICTIM_AGENT, "/OVERWRITTEN").getBytes(StandardCharsets.UTF_8);
         CLICommandInvoker.Result result = command.withStdin(new ByteArrayInputStream(payload)).invokeWithArgs(SOURCE_AGENT);
 
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(8));
         assertThat(result.stderr(), containsString("Node already exists: victim-agent"));
+        assertThat(result.stderr(), not(containsString("Unexpected exception occurred while performing")));
 
         assertNotNull(j.jenkins.getNode(SOURCE_AGENT));
 
