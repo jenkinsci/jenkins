@@ -228,7 +228,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      *      <tr><td>5</td><td>{@link AbortException} is thrown while performing the command.</td></tr>
      *      <tr><td>6</td><td>{@link AccessDeniedException} is thrown while performing the command.</td></tr>
      *      <tr><td>7</td><td>{@link BadCredentialsException} is thrown while performing the command.</td></tr>
-     *      <tr><td>8-15</td><td>are reserved for future usage.</td></tr>
+     *      <tr><td>8</td><td>{@code hudson.model.Failure} is thrown while performing the command.</td></tr>
+     *      <tr><td>9-15</td><td>are reserved for future usage.</td></tr>
      *      <tr><td>16+</td><td>a custom CLI exit error code (meaning defined by the CLI command itself)</td></tr>
      *      </table>
      *      Note: For details - see JENKINS-32273
