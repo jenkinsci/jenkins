@@ -120,6 +120,7 @@ class Security4025Test {
 
         assertThat(result, failedWith(8));
         assertThat(result.stderr(), containsString("Node already exists: victim-agent"));
+        assertThat(result.stderr(), not(containsString("Unexpected exception occurred while performing")));
 
         assertNotNull(j.jenkins.getNode(SOURCE_AGENT));
 
