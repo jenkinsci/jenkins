@@ -36,7 +36,7 @@ THE SOFTWARE.
     <j:if test="${!empty(flagConfigs)}">
         <f:entry field="experimentalFlags">
             <f:rowSet name="flags">
-                <table class="jenkins-table sortable jenkins-!-margin-0">
+                <table class="jenkins-table sortable jenkins-!-margin-0 experimental-flags-table">
                     <thead>
                         <tr>
                             <th>${%FlagDisplayName}</th>
