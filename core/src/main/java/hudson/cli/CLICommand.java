@@ -304,6 +304,10 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 printError(
                         "Bad Credentials. Search the server log for " + context.getCorrelationId() + " for more details.");
             }
+            case RuntimeException failure when failure.getClass().getName().equals("hudson.model.Failure") -> {
+                exitCode = 8;
+                printError(failure.getMessage());
+            }
             case null, default -> {
                 exitCode = 1;
                 printError("Unexpected exception occurred while performing " + getName() + " command.");
