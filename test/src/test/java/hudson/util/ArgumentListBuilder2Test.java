@@ -150,7 +150,7 @@ class ArgumentListBuilder2Test {
         int code = p.join();
         listener.close();
 
-        assumeTrue(code == 0, "Failed to run " + args);
+        assertEquals(0, code, "Failed to run " + args);
         return out.toString(Charset.defaultCharset());
     }
 }
