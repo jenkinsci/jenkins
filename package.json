@@ -51,6 +51,7 @@
     "stylelint": "17.14.1",
     "stylelint-checkstyle-reporter": "1.1.1",
     "stylelint-config-standard-scss": "17.0.0",
+    "vite": "^8.2.2",
     "vitest": "5.0.0",
     "webpack": "5.110.2",
     "webpack-cli": "7.2.2",
