@@ -51,7 +51,7 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  border: var(--card-border-width) solid var(--card-border-color);
+  border: var(--jenkins-border);
   z-index: 1;
   pointer-events: none;
 }
