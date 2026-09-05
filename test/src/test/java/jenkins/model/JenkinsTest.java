@@ -392,8 +392,7 @@ public class JenkinsTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("alice").
-            grant(Jenkins.READ).everywhere().to("bob").
-            grantWithoutImplication(Jenkins.RUN_SCRIPTS, Jenkins.READ).everywhere().to("charlie"));
+            grant(Jenkins.READ).everywhere().to("bob"));
         WebClient wc = j.createWebClient();
 
         wc.withBasicApiToken(User.getById("alice", true));
@@ -411,9 +410,6 @@ public class JenkinsTest {
         wc.withBasicApiToken(User.getById("bob", true));
         wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
 
-        //TODO: remove once RUN_SCRIPTS is finally retired
-        wc.withBasicApiToken(User.getById("charlie", true));
-        wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     @Test
