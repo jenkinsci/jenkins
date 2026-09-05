@@ -331,16 +331,10 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                 name = Util.fixEmptyAndTrim(name);
 
                 if (name != null) {
-                    if ("(built-in)".equals(name))
-                        throw new Failure(Messages.Jenkins_NotAllowedName("(built-in)"));
-                    if ("(master)".equals(name))
-                        throw new Failure(Messages.Jenkins_NotAllowedName("(master)"));
                     newNode.setNodeName(name);
                 }
 
-                if (app.getNode(newNode.getNodeName()) != null) {
-                    throw new Failure("Node '" + newNode.getNodeName() + "' already exists");
-                }
+                checkName(newNode.getNodeName());
 
                 app.addNode(newNode);
                 rsp.setStatus(HttpServletResponse.SC_OK);
@@ -384,7 +378,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
     /**
      * Makes sure that the given name is good as an agent name.
-     * @return trimmed name if valid; throws ParseException if not
+     * @return trimmed name if valid; throws Failure if not
      */
     public String checkName(String name) throws Failure {
         if (name == null)

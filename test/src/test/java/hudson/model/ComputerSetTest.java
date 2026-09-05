@@ -37,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
 import hudson.cli.CLICommandInvoker;
 import hudson.slaves.DumbSlave;
@@ -256,7 +257,7 @@ class ComputerSetTest {
 
     @Test
     void createItemFromXmlWithNameBuiltIn() throws Exception {
-        createItemTest("(built-in)");
+        createItemTest("(built-in)", true);
     }
 
     @Test
@@ -267,7 +268,7 @@ class ComputerSetTest {
 
     @Test
     void createItemFromXmlNoName() throws Exception {
-        createItemTest(null);
+        createItemTest("agent-from-xml", true);
     }
 
     @Test
@@ -275,7 +276,11 @@ class ComputerSetTest {
         createItemTest("new-name");
     }
 
-    void createItemTest(String name) throws Exception {
+    private void createItemTest(@NonNull String name) throws Exception {
+        createItemTest(name, false);
+    }
+
+    private void createItemTest(@NonNull String name, boolean embedNameInXML) throws Exception {
         String USER = "user";
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -284,9 +289,9 @@ class ComputerSetTest {
                 .grant(Computer.CREATE).everywhere().to(USER)
         );
 
-        String xml = """
+        String xml = String.format("""
                 <slave>
-                  <name>agent-from-xml</name>
+                  <name>%s</name>
                   <description></description>
                   <remoteFS>/home/jenkins</remoteFS>
                   <numExecutors>2</numExecutors>
@@ -296,11 +301,11 @@ class ComputerSetTest {
                   <label>linux</label>
                   <nodeProperties/>
                 </slave>
-                """;
+                """, embedNameInXML ? name : "unused-agent-name");
         try (JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false)) {
             wc.login(USER);
             String agentCreateUrl = "computer/createItem";
-            if (name != null) {
+            if (!embedNameInXML) {
                 agentCreateUrl += "?name=" + name;
             }
             WebRequest req = new WebRequest(wc.createCrumbedUrl(agentCreateUrl), HttpMethod.POST);
@@ -312,9 +317,6 @@ class ComputerSetTest {
                 return;
             }
             assertThat(rsp.getStatusCode(), is(200));
-            if (name == null) {
-                name = "agent-from-xml";
-            }
             Node node = j.jenkins.getNode(name);
             assertThat(node, is(notNullValue()));
             DumbSlave agent = (DumbSlave) node;
