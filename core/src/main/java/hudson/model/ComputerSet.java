@@ -334,7 +334,11 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                     newNode.setNodeName(name);
                 }
 
-                checkName(newNode.getNodeName());
+                String finalName = checkName(newNode.getNodeName());
+                if (!finalName.equals(newNode.getNodeName())) {
+                    // checkName adjusted the name, use that as the node name
+                    newNode.setNodeName(finalName);
+                }
 
                 app.addNode(newNode);
                 rsp.setStatus(HttpServletResponse.SC_OK);
