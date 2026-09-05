@@ -209,10 +209,13 @@ class ComputerSetTest {
         assertThat(f.getMessage(), allOf(containsString("(master)"), containsString("is not an allowed name")));
     }
 
+    /* Many of the tests are skipped on Windows CI because they are platform
+     * independent and would extend the already slow Windows test time on CI.
+     */
     @Test
     @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
     void checkNameAllowsCaseVariations() {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows");
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows CI");
         ComputerSet computerSet = new ComputerSet();
         // These should be allowed (case-sensitive check)
         assertThat(computerSet.checkName("(Built-in)"), is("(Built-in)"));
@@ -226,7 +229,7 @@ class ComputerSetTest {
     @Test
     @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
     void checkNameAllowsSubstrings() {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows");
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows CI");
         ComputerSet computerSet = new ComputerSet();
         // These should be allowed (not exact matches)
         assertThat(computerSet.checkName("prefix-(built-in)"), is("prefix-(built-in)"));
@@ -244,7 +247,7 @@ class ComputerSetTest {
     @Test
     @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
     void doCheckNameFormValidation() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows");
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows CI");
         ComputerSet computerSet = new ComputerSet();
         // Should return error for "(built-in)"
         FormValidation validation = computerSet.doCheckName("(built-in)");
@@ -256,19 +259,42 @@ class ComputerSetTest {
     }
 
     @Test
-    void createItemFromXmlWithNameBuiltIn() throws Exception {
-        createItemTest("(built-in)", true);
+    @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
+    void createItemFromXmlWithNameBuiltInQueryParameter() throws Exception {
+        createItemTest("(built-in)");
     }
 
     @Test
+    @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
+    void createItemFromXmlWithNameBuiltInXML() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows CI");
+        createItemTest("(built-in)", true, false);
+    }
+
+    @Test
+    @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
+    void createItemFromXmlWithEmptyNameInQueryParameter() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows CI");
+        createItemTest("");
+    }
+
+    @Test
+    @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
+    void createItemFromXmlWithEmptyNameInXML() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows CI");
+        createItemTest("", true, false);
+    }
+
+    @Test
+    @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
     void createItemFromXmlWithNameMaster() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows");
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows CI");
         createItemTest("(master)");
     }
 
     @Test
-    void createItemFromXmlNoName() throws Exception {
-        createItemTest("agent-from-xml", true);
+    void createItemFromXmlNoNameQueryParameter() throws Exception {
+        createItemTest("agent-from-xml", true, false);
     }
 
     @Test
@@ -277,10 +303,10 @@ class ComputerSetTest {
     }
 
     private void createItemTest(@NonNull String name) throws Exception {
-        createItemTest(name, false);
+        createItemTest(name, false, true);
     }
 
-    private void createItemTest(@NonNull String name, boolean embedNameInXML) throws Exception {
+    private void createItemTest(@NonNull String name, boolean embedNameInXML, boolean provideNameAsQueryParameter) throws Exception {
         String USER = "user";
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -301,25 +327,32 @@ class ComputerSetTest {
                   <label>linux</label>
                   <nodeProperties/>
                 </slave>
-                """, embedNameInXML ? name : "unused-agent-name");
+                """, embedNameInXML ? name : "");
         try (JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false)) {
             wc.login(USER);
             String agentCreateUrl = "computer/createItem";
-            if (!embedNameInXML) {
+            if (provideNameAsQueryParameter) {
                 agentCreateUrl += "?name=" + name;
             }
             WebRequest req = new WebRequest(wc.createCrumbedUrl(agentCreateUrl), HttpMethod.POST);
             req.setAdditionalHeader("Content-Type", "application/xml");
             req.setRequestBody(xml);
             WebResponse rsp = wc.getPage(req).getWebResponse();
+            if (name.isEmpty()) {
+                assertThat(rsp.getStatusCode(), is(400));
+                assertThat(rsp.getContentAsString(), containsString("Name must not be empty"));
+                return;
+            }
             if ("(built-in)".equals(name) || "(master)".equals(name)) {
                 assertThat(rsp.getStatusCode(), is(400));
+                assertThat(rsp.getContentAsString(), allOf(containsString(name), containsString("is not an allowed name")));
                 return;
             }
             assertThat(rsp.getStatusCode(), is(200));
             Node node = j.jenkins.getNode(name);
             assertThat(node, is(notNullValue()));
             DumbSlave agent = (DumbSlave) node;
+            assertThat(agent.getNodeName(), is(name));
             assertThat(agent.remoteFS, is("/home/jenkins"));
             assertThat(agent.getNumExecutors(), is(2));
             assertThat(agent.getLabelString(), is("linux"));

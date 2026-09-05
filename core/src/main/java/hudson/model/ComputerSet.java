@@ -385,14 +385,15 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * @return trimmed name if valid; throws Failure if not
      */
     public String checkName(String name) throws Failure {
+        name = Util.fixEmptyAndTrim(name);
         if (name == null)
-            throw new Failure("Query parameter 'name' is required");
+            throw new Failure("Name must not be empty");
 
-        name = name.trim();
         if ("(built-in)".equals(name))
             throw new Failure(Messages.Jenkins_NotAllowedName("(built-in)"));
         if ("(master)".equals(name))
             throw new Failure(Messages.Jenkins_NotAllowedName("(master)"));
+
         Jenkins.checkGoodName(name);
 
         if (Jenkins.get().getNode(name) != null)
