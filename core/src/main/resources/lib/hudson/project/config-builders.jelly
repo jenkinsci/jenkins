@@ -33,6 +33,7 @@ THE SOFTWARE.
     <f:hetero-list name="builder" hasHeader="true"
                    descriptors="${h.getBuilderDescriptors(it)}"
                    items="${it.builders}"
+                   enableInlineInsertion="true"
                    addCaption="${%Add build step}"/>
   </f:section>
 </j:jelly>

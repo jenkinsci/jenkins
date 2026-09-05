@@ -78,6 +78,9 @@ THE SOFTWARE.
       If true the drag and drop will not be activated. This just removes the drag and
       drop UI, it will not prevent users from manually submitting a different order.
     </st:attribute>
+    <st:attribute name="enableInlineInsertion" type="java.lang.Boolean">
+        If true, shows extra insertion buttons above and between existing items.
+    </st:attribute>
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
@@ -111,7 +114,7 @@ THE SOFTWARE.
   </d:taglib>
 
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
-  <div class="jenkins-form-item hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
+  <div class="jenkins-form-item hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''} ${attrs.enableInlineInsertion?'with-inline-insertion':''}">
     <!-- display existing items -->
     <j:forEach var="i" items="${attrs.items}"><!-- TODO consider customizedFields: how to distinguish default items from user-configured items? -->
       <j:set var="descriptor" value="${i.descriptor}" />

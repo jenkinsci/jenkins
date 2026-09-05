@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -87,6 +88,49 @@ class HeteroListTest {
         HTMLButtonElement menuItem = (HTMLButtonElement) result;
         String menuItemContent = menuItem.getInnerHTML();
         assertThat(menuItemContent, not(containsString("<img")));
+    }
+
+    @Test
+    void inlineInsertionControlsAppearForExistingItems() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        RootActionImpl rootAction = ExtensionList.lookupSingleton(RootActionImpl.class);
+        TestItemDescribable.DynamicDisplayNameDescriptor first = ExtensionList.lookupSingleton(TestItemDescribable.DynamicDisplayNameDescriptor.class);
+        AnotherTestItemDescribable.DescriptorImpl second = ExtensionList.lookupSingleton(AnotherTestItemDescribable.DescriptorImpl.class);
+        rootAction.descriptorList = List.of(first, second);
+        rootAction.items = List.of(new TestItemDescribable(), new AnotherTestItemDescribable());
+
+        HtmlPage page = wc.goTo("root");
+
+        Object result = page.executeJavaScript("document.querySelectorAll('.hetero-list-inline-insert button.hetero-list-add').length").getJavaScriptResult();
+        assertThat(result, instanceOf(Number.class));
+        assertEquals(2, ((Number) result).intValue());
+    }
+
+    @Test
+    void inlineInsertionAddsNewItemBeforeReferencedBuildStep() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        RootActionImpl rootAction = ExtensionList.lookupSingleton(RootActionImpl.class);
+        TestItemDescribable.DynamicDisplayNameDescriptor first = ExtensionList.lookupSingleton(TestItemDescribable.DynamicDisplayNameDescriptor.class);
+        AnotherTestItemDescribable.DescriptorImpl second = ExtensionList.lookupSingleton(AnotherTestItemDescribable.DescriptorImpl.class);
+        rootAction.descriptorList = List.of(first, second);
+        rootAction.items = List.of(new TestItemDescribable(), new AnotherTestItemDescribable());
+
+        HtmlPage page = wc.goTo("root");
+
+        page.executeJavaScript("document.querySelector('.hetero-list-inline-insert .hetero-list-add').click();");
+        page.executeJavaScript(
+                "Array.from(document.querySelectorAll('.jenkins-dropdown__item')).find(button => button.textContent.includes('Another')).click();"
+        );
+
+        Object result = page.executeJavaScript(
+                "Array.from(document.querySelectorAll('.repeated-chunk__header')).map(e => e.textContent.trim())"
+        ).getJavaScriptResult();
+        assertThat(result, instanceOf(List.class));
+        @SuppressWarnings("unchecked")
+        List<String> headers = (List<String>) result;
+        assertEquals(List.of("Another item", "NotYetDefined", "Another item"), headers);
     }
 
     @Test
@@ -202,9 +246,26 @@ class HeteroListTest {
         }
     }
 
+    public static class AnotherTestItemDescribable implements Describable<AnotherTestItemDescribable> {
+        @Override
+        public Descriptor<AnotherTestItemDescribable> getDescriptor() {
+            return ExtensionList.lookupSingleton(DescriptorImpl.class);
+        }
+
+        @TestExtension
+        public static class DescriptorImpl extends Descriptor<AnotherTestItemDescribable> {
+            @NonNull
+            @Override
+            public String getDisplayName() {
+                return "Another item";
+            }
+        }
+    }
+
     @TestExtension
     public static class RootActionImpl implements UnprotectedRootAction {
         public List<Descriptor<?>> descriptorList;
+        public List<Object> items = List.of();
 
         @Override
         @CheckForNull

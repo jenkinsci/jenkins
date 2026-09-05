@@ -4,10 +4,33 @@ import Utils from "@/components/dropdowns/utils";
 import * as Symbols from "@/util/symbols";
 import { createElementFromHtml } from "@/util/dom";
 import tippy from "tippy.js";
+import { attach } from "jsdom/lib/jsdom/living/helpers/svg/basic-types";
 
 function init() {
   generateButtons();
   generateHandles();
+}
+
+function createAddButton(label, options = {}) {
+  const button = document.createElement("button");
+  button.setAttribute("type", "button");
+  button.classList.add("hetero-list-add", "jenkins-button");
+
+  if (options.inline) {
+    button.classList.add("hetero-list-add--inline", "jenkins-button--tertiary");
+    button.setAttribute("tooltip", label);
+    button.setAttribute("aria-label", label);
+    button.appendChild(createElementFromHtml(Symbols.PLUS));
+  } else {
+    button.appendChild(createElementFromHtml(Symbols.PLUS));
+    button.appendChild(document.createTextNode(label));
+  }
+
+  if (options.suffix) {
+    button.setAttribute("suffix", options.suffix);
+  }
+
+  return button;
 }
 
 function generateHandles() {
@@ -24,15 +47,9 @@ function generateHandles() {
 function convertInputsToButtons(e) {
   let oldInputs = e.querySelectorAll("INPUT.hetero-list-add");
   oldInputs.forEach((oldbtn) => {
-    let btn = document.createElement("button");
-    btn.setAttribute("type", "button");
-    btn.classList.add("hetero-list-add", "jenkins-button");
-    let plus = createElementFromHtml(Symbols.PLUS);
-    btn.appendChild(plus);
-    btn.appendChild(document.createTextNode(oldbtn.getAttribute("value")));
-    if (oldbtn.hasAttribute("suffix")) {
-      btn.setAttribute("suffix", oldbtn.getAttribute("suffix"));
-    }
+    let btn = createAddButton(oldbtn.getAttribute("value"), {
+      suffix: oldbtn.getAttribute("suffix"),
+    });
     oldbtn.parentNode.appendChild(btn);
     oldbtn.remove();
   });
@@ -52,30 +69,111 @@ function generateButtons() {
       let btn = Array.from(e.querySelectorAll("BUTTON.hetero-list-add")).pop();
 
       let prototypes = e.lastElementChild;
-      while (!prototypes.classList.contains("prototypes")) {
+      while (prototypes && !prototypes.classList?.contains("prototypes")) {
         prototypes = prototypes.previousElementSibling;
+      }
+      if (!prototypes) {
+        return;
       }
       let insertionPoint = prototypes.previousElementSibling; // this is where the new item is inserted.
 
       let templates = [];
-      let children = prototypes.children;
-      for (let i = 0; i < children.length; i++) {
-        let n = children[i];
-        let name = n.getAttribute("name");
-        let descriptorId = n.getAttribute("descriptorId");
-        let title = n.getAttribute("title");
+      for (let i = 0; i < prototypes.children.length; i++) {
+        let n = prototypes.children[i];
 
         templates.push({
           html: n.innerHTML,
-          name: name,
-          descriptorId: descriptorId,
-          title: title,
+          name: n.getAttribute("name"),
+          descriptorId: n.getAttribute("descriptorId"),
+          title: n.getAttribute("title"),
         });
       }
       prototypes.remove();
       let withDragDrop = registerSortableDragDrop(e);
+      const inlineInsertionEnabled = e.classList.contains("with-inline-insertion");
+      const honorOrder = e.classList.contains("honor-order");
+      const oneEach = e.classList.contains("one-each");
 
-      function insert(instance, template) {
+      // Rebuild inline insertion controls (+ buttons between items)
+      const rebuildInlineInsertionControls = () => {
+        e.querySelectorAll(".hetero-list-inline-insert").forEach((n) =>
+          n.remove(),
+        );
+
+        if (!inlineInsertionEnabled) {
+          return;
+        }
+
+        const items = Array.from(e.children).filter((c) =>
+          c.matches("DIV.repeated-chunk"),
+        );
+
+        if (items.length === 0) {
+          return;
+        }
+
+        items.forEach((item) => {
+          const wrapper = document.createElement("div");
+          wrapper.className = "hetero-list-inline-insert";
+          wrapper.setAttribute("aria-hidden", "true");
+          const inlineButton = createAddButton(btn.textContent.trim(), {
+            suffix: btn.getAttribute("suffix"),
+            inline: true,
+          });
+          wrapper.appendChild(inlineButton);
+          wrapper.referenceNode = item;
+          e.insertBefore(wrapper, item);
+          attachAddDropdown(inlineButton);
+        });
+      };
+
+      function getCurrentItems() {
+        return Array.from(e.children).filter((child) =>
+          child.matches("DIV.repeated-chunk"),
+        );
+      }
+
+      function findInsertionPointForTemplate(template) {
+        if (!template) {
+          return insertionPoint;
+        }
+
+        function descriptorOrder(did) {
+          if (did instanceof Element) {
+            did = did.getAttribute("descriptorId");
+          }
+          for (let i =0; i < templates.lngth; i++) {
+            if (templates[i].descriptorId == did) {
+              return i;
+            }
+          }
+          return 0;
+        }
+
+        const current = getCurrentItems();
+        let bestScore = -1;
+        let bestPos = 0;
+        for (let pos = 0; i < current.length ; pos++) {
+          let count = 0;
+          for (let i = 0 ; i < current.length ; i++) {
+            if ( (i < pos) === (descriptorOrder(current[i]) <= descriptorOrder(template.descriptorId))) {
+              count++;
+            }
+          }
+
+          if (bestScore <= count) {
+            bestScore = count;
+            bestPos = pos;
+          }
+        }
+
+        if (bestPos < current.length) {
+          return current[bestPos];
+        }
+        return insertionPoint;
+      }
+      // Insert new item at specified position
+      const insert = (instance, template, referenceNode) => {
         let nc = document.createElement("div");
         nc.className = "repeated-chunk fade-in";
         nc.setAttribute("name", template.name);
@@ -87,132 +185,74 @@ function generateButtons() {
         renderOnDemand(
           nc.querySelector("div.config-page"),
           function () {
-            function findInsertionPoint() {
-              // given the element to be inserted 'prospect',
-              // and the array of existing items 'current',
-              // and preferred ordering function, return the position in the array
-              // the prospect should be inserted.
-              // (for example 0 if it should be the first item)
-              function findBestPosition(prospect, current, order) {
-                function desirability(pos) {
-                  let count = 0;
-                  for (let i = 0; i < current.length; i++) {
-                    if (i < pos == order(current[i]) <= order(prospect)) {
-                      count++;
-                    }
-                  }
-                  return count;
-                }
+            let targetRef = referenceNode || insertionPoint;
 
-                let bestScore = -1;
-                let bestPos = 0;
-                for (let i = 0; i <= current.length; i++) {
-                  let d = desirability(i);
-                  if (bestScore <= d) {
-                    // prefer to insert them toward the end
-                    bestScore = d;
-                    bestPos = i;
-                  }
-                }
-                return bestPos;
-              }
-
-              let current = Array.from(e.children).filter(function (e) {
-                return e.matches("DIV.repeated-chunk");
-              });
-
-              function o(did) {
-                if (did instanceof Element) {
-                  did = did.getAttribute("descriptorId");
-                }
-                for (let i = 0; i < templates.length; i++) {
-                  if (templates[i].descriptorId == did) {
-                    return i;
-                  }
-                }
-                return 0; // can't happen
-              }
-
-              let bestPos = findBestPosition(template.descriptorId, current, o);
-              if (bestPos < current.length) {
-                return current[bestPos];
-              } else {
-                return insertionPoint;
-              }
+            if (honorOrder && !referenceNode) {
+              targetRef = findInsertionPointForTemplate(template);
             }
-            let referenceNode = e.classList.contains("honor-order")
-              ? findInsertionPoint()
-              : insertionPoint;
-            referenceNode.parentNode.insertBefore(nc, referenceNode);
 
-            // Initialize drag & drop for this component
+            targetRef.parentNode.insertBefore(nc, targetRef);
+
             if (withDragDrop) {
               registerSortableDragDrop(nc);
             }
             Behaviour.applySubtree(nc, true);
+            rebuildInlineInsertionControls();
             ensureVisible(nc);
             layoutUpdateCallback.call();
           },
           true,
         );
-      }
-
-      function has(id) {
-        return (
-          e.querySelector('DIV.repeated-chunk[descriptorId="' + id + '"]') !=
-          null
-        );
-      }
-
-      let oneEach = e.classList.contains("one-each");
+      };
 
       /**
-       * Disable the Add button if there are no more items to add
+       * Toggle add button state
        */
-      function toggleButtonState() {
-        const templateCount = templates.length;
+      const toggleButtonState = () => {
         const selectedCount = Array.from(e.children).filter(
-          (e) =>
-            e.classList.contains("repeated-chunk") &&
-            !e.classList.contains("fade-out"),
+          (c) =>
+            c.classList.contains("repeated-chunk") &&
+            !c.classList.contains("fade-out"),
         ).length;
-
-        btn.disabled = oneEach && selectedCount >= templateCount;
+        btn.disabled = oneEach && selectedCount >= templates.length;
       }
-      const observer = new MutationObserver(() => {
-        toggleButtonState();
-      });
+
+      const observer = new MutationObserver(toggleButtonState);
       observer.observe(e, {
         childList: true,
         subtree: true,
         attributes: true,
         attributeFilter: ["class"],
       });
-      toggleButtonState();
 
-      generateDropDown(btn, (instance) => {
-        let menuItems = [];
-        for (let i = 0; i < templates.length; i++) {
-          let n = templates[i];
-          let disabled = oneEach && has(n.descriptorId);
-          let type = disabled ? "DISABLED" : "button";
-          let item = {
-            displayName: n.title,
+      toggleButtonState();
+      rebuildInlineInsertionControls();
+
+      function attachAddDropdown(button) {
+        generateDropDown(button, (instance) => {
+          const explicitReferenceNode = button.closest(".hetero-list-inline-insert",)?.referenceNode;
+
+        let menuItems = templates.map((template) => {
+          const has = e.querySelector(`DIV.repeated-chunk[descriptorId="${template.descriptorId}"]`);
+          return {
+            displayName: template.title,
             onClick: (event) => {
               event.preventDefault();
               event.stopPropagation();
-              insert(instance, n);
+              insert(instance, template, explicitReferenceNode);
             },
-            type: type,
+            type: oneEach && has ? "DISABLED" : "button",
           };
-          menuItems.push(item);
-        }
+        });
+
         const menuContainer = document.createElement("div");
         const menu = Utils.generateDropdownItems(menuItems, true);
         menuContainer.appendChild(createFilter(menu));
         menuContainer.appendChild(menu);
         instance.setContent(menuContainer);
-      });
+        })
+      }
+      attachAddDropdown(btn);
     },
   );
 }

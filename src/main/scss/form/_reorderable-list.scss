@@ -225,6 +225,39 @@ div.repeated-chunk {
   margin-bottom: 1rem;
 }
 
+.hetero-list-inline-insert {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0;
+}
+
+// Reveal the inline "+" when the gap or nearby steps are hovered
+.hetero-list-inline-insert:hover .hetero-list-add--inline,
+.hetero-list-inline-insert:focus-within .hetero-list-add--inline,
+.repeated-chunk:hover + .hetero-list-inline-insert .hetero-list-add--inline,
+.repeated-chunk:hover ~ .hetero-list-inline-insert .hetero-list-add--inline {
+    opacity: 0.75;
+}
+
+.hetero-list-add--inline {
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0;
+  border-radius: 999px;
+  opacity: 0;
+  transition: opacity var(--standard-transition);
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+  }
+}
+
 .repeated-chunk + .repeatable-insertion-point + span .hetero-list-add,
 .repeated-chunk + .repeatable-insertion-point + .repeatable-add {
   margin-top: 1rem;
