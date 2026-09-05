@@ -4123,10 +4123,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:17.11.0":
-  version: 17.11.0
-  resolution: "globals@npm:17.11.0"
-  checksum: 10c0/5e1be3d816e04d4d0d01b1cdd40e46b5fb6b5e9f15aece9a5919b060e0fb1b3f1b9e7327dce97ef19e05513a6d65872e0834999ddea251557556dddd0f5fde30
+"globals@npm:17.12.0":
+  version: 17.12.0
+  resolution: "globals@npm:17.12.0"
+  checksum: 10c0/8325cf8818c848871d17c32974c2c74e9c5f09c1b0e04421886f64f21e77c3e95f3ba25586743895a73acd860ada151132481d87d44a1f12993ae7758a694d03
   languageName: node
   linkType: hard
 
@@ -4507,7 +4507,7 @@ __metadata:
     eslint: "npm:10.9.1"
     eslint-config-prettier: "npm:10.1.8"
     eslint-formatter-checkstyle: "npm:9.0.1"
-    globals: "npm:17.11.0"
+    globals: "npm:17.12.0"
     handlebars: "npm:4.7.9"
     handlebars-loader: "npm:1.7.3"
     hotkeys-js: "npm:3.12.2"
@@ -4530,7 +4530,7 @@ __metadata:
     tippy.js: "npm:6.3.7"
     vite: "npm:^8.2.2"
     vitest: "npm:5.0.0"
-    webpack: "npm:5.110.2"
+    webpack: "npm:5.110.3"
     webpack-cli: "npm:7.2.3"
     webpack-remove-empty-scripts: "npm:1.1.1"
     window-handle: "npm:1.0.1"
@@ -7417,9 +7417,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.110.2":
-  version: 5.110.2
-  resolution: "webpack@npm:5.110.2"
+"webpack@npm:5.110.3":
+  version: 5.110.3
+  resolution: "webpack@npm:5.110.3"
   dependencies:
     "@types/estree": "npm:^1.0.8"
     "@types/json-schema": "npm:^7.0.15"
@@ -7445,7 +7445,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 10c0/1fb6eb4c454e17b9ac7beb0bd4e56fe9bda7939a91e43575f8ab2e173454f0cf69be3aecff3b3e6f205a570f49564cac1679de3355c0ce87e8afa0ae12da4063
+  checksum: 10c0/e1c86317d2d04d33f670a0ad7095e1a8d410867360c327c2dfb14f589794d8ce9b0619998e6fe66aebcfdac6d2e6c9e6f7085adfc9e44cd7d39855654fe75ed4
   languageName: node
   linkType: hard
 
