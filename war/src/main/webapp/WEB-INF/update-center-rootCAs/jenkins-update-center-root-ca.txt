@@ -1,1 +1,0 @@
-Root CA for the Jenkins community. Used to generate official update center.
