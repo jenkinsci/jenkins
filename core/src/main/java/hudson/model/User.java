@@ -387,6 +387,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
+     * Remove the property for the given class from List of User properties
+     */
+    public synchronized<T extends UserProperty> void removeProperty(@NonNull Class<T> clazz) throws IOException {
+        List<UserProperty> ps = new ArrayList<>(properties);
+        T oldProp = getProperty(clazz);
+        if (oldProp != null) {
+            ps.remove(oldProp);
+            properties = ps;
+            save();
+        }
+    }
+
+    /**
      * List of all {@link UserProperty}s exposed primarily for the remoting API.
      */
     @Exported(name = "property", inline = true)
