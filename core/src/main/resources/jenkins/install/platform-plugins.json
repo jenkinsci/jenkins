@@ -58,14 +58,11 @@
     "category": "Source Code Management",
     "plugins": [
       { "name": "bitbucket" },
-      { "name": "clearcase" },
-      { "name": "cvs" },
       { "name": "git", "suggested": true },
       { "name": "git-parameter" },
       { "name": "github" },
       { "name": "gitlab-plugin" },
       { "name": "p4" },
-      { "name": "repo" },
       { "name": "subversion" }
     ]
   },
