@@ -6322,7 +6322,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:8.5.28, postcss@npm:^8.4.40, postcss@npm:^8.5.16, postcss@npm:^8.5.25":
+"postcss@npm:8.5.28, postcss@npm:^8.4.40, postcss@npm:^8.5.16, postcss@npm:^8.5.26":
   version: 8.5.28
   resolution: "postcss@npm:8.5.28"
   dependencies:
