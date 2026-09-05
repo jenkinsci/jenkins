@@ -81,7 +81,7 @@ var Behaviour = (function () {
     },
 
     start: function () {
-      Behaviour.addLoadEvent(function () {
+      document.addEventListener("DOMContentLoaded", function () {
         Behaviour.apply();
       });
     },
