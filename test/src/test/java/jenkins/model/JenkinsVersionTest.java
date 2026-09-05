@@ -5,20 +5,26 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 
 import java.util.logging.Level;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class JenkinsVersionTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class JenkinsVersionTest {
 
-    @Rule
-    public LoggerRule logging = new LoggerRule().record(Jenkins.class, Level.INFO).capture(100);
+    private final LogRecorder logging = new LogRecorder().record(Jenkins.class, Level.INFO).capture(100);
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void printsVersion() {
+    void printsVersion() {
         assertThat(logging.getMessages(), hasItem(containsString(Jenkins.getVersion().toString())));
     }
 }

@@ -24,22 +24,24 @@
 
 package hudson;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import hudson.util.Secret;
 import java.io.File;
 import org.apache.commons.io.FileUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsSessionRule;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
-public final class ProxyConfigurationManagerGUITest {
+class ProxyConfigurationManagerGUITest {
 
-    @Rule public JenkinsSessionRule rr = new JenkinsSessionRule();
+    @RegisterExtension
+    public JenkinsSessionExtension rr = new JenkinsSessionExtension();
 
-    @Test public void configRoundtrip() throws Throwable {
+    @Test
+    void configRoundtrip() throws Throwable {
         rr.then(r -> {
             assertNull(r.jenkins.proxy);
             r.jenkins.proxy = new ProxyConfiguration("proxy.mycorp", 80);

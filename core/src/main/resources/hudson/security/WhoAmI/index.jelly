@@ -65,7 +65,7 @@ THE SOFTWARE.
 
       <h2>Request Headers</h2>
       <table>
-        <j:forEach var="n" items="${request.getHeaderNames()}">
+        <j:forEach var="n" items="${request2.getHeaderNames()}">
           <j:choose>
             <j:when test="${it.isHeaderDangerous(n)}" >
               <tr>

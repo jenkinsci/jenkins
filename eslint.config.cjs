@@ -6,6 +6,21 @@ module.exports = [
   // Global ignores
   {
     ignores: [
+      // Only scan Jenkins source areas, not arbitrary top-level work directories
+      "*/**",
+      "!.github/**",
+      "!.idea/**",
+      "!.mvn/**",
+      "!bom/**",
+      "!cli/**",
+      "!core/**",
+      "!coverage/**",
+      "!docs/**",
+      "!src/**",
+      "!test/**",
+      "!war/**",
+      "!websocket/**",
+
       "**/target/",
       "**/work/",
 
@@ -19,7 +34,6 @@ module.exports = [
       ".pnp.cjs",
       ".pnp.loader.mjs",
       "src/main/js/plugin-setup-wizard/bootstrap-detached.js",
-      "war/src/main/webapp/scripts/yui/*",
     ],
   },
   {
@@ -36,7 +50,6 @@ module.exports = [
         CodeMirror: "readonly",
         ComboBox: "readonly",
         COMBOBOX_VERSION: "writeable",
-        createSearchBox: "readonly",
         crumb: "readonly",
         dialog: "readonly",
         ensureVisible: "readonly",
@@ -61,6 +74,7 @@ module.exports = [
         object: "readonly",
         objectToUrlFormEncoded: "readonly",
         onSetupWizardInitialized: "readonly",
+        qs: "readonly",
         refillOnChange: "readonly",
         refreshPart: "readonly",
         registerSortableDragDrop: "readonly",
@@ -72,11 +86,13 @@ module.exports = [
         shortenName: "readonly",
         Sortable: "readonly",
         toQueryString: "readonly",
+        TryEach: "readonly",
         ts_refresh: "readonly",
         updateOptionalBlock: "readonly",
         Utilities: "readonly",
         UTILITIES_VERSION: "writeable",
         YAHOO: "readonly",
+        updateValidationArea: "readonly",
       },
     },
   },

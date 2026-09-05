@@ -88,8 +88,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
     @Restricted(DoNotUse.class)
     public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value, @AncestorInPath ItemGroup<?> container) {
         AutoCompletionCandidates candidates = AutoCompletionCandidates.ofJobNames(TopLevelItem.class, value, container);
-        if (container instanceof DirectlyModifiableTopLevelItemGroup) {
-            DirectlyModifiableTopLevelItemGroup modifiableContainer = (DirectlyModifiableTopLevelItemGroup) container;
+        if (container instanceof DirectlyModifiableTopLevelItemGroup modifiableContainer) {
             Iterator<String> it = candidates.getValues().iterator();
             while (it.hasNext()) {
                 TopLevelItem item = Jenkins.get().getItem(it.next(), container, TopLevelItem.class);

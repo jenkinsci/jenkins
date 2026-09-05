@@ -26,6 +26,7 @@ package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.User;
+import hudson.security.csrf.CrumbIssuer;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,15 +35,18 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import jenkins.security.SecurityListener;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 /**
  * Login filter with a change for Jenkins so that
@@ -54,15 +58,45 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Restricted(NoExternalUse.class)
 public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthenticationFilter {
 
+    /**
+     * Escape hatch to disable CSRF protection for login requests.
+     */
+    @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* non-final */ boolean SKIP_CSRF_CHECK = SystemProperties.getBoolean(AuthenticationProcessingFilter2.class.getName() + ".skipCSRFCheck");
+
     @SuppressFBWarnings(value = "HARD_CODE_PASSWORD", justification = "This is a password parameter, not a password")
     public AuthenticationProcessingFilter2(String authenticationGatewayUrl) {
-        setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/" + authenticationGatewayUrl, "POST"));
+        setRequiresAuthenticationRequestMatcher(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/" + authenticationGatewayUrl));
         // Jenkins/login.jelly & SetupWizard/authenticate-security-token.jelly
         setUsernameParameter("j_username");
         setPasswordParameter("j_password");
     }
 
-    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", justification = "request.getSession(true) does in fact have a side effect")
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+        if (!SKIP_CSRF_CHECK) {
+            Jenkins jenkins = Jenkins.get();
+            CrumbIssuer crumbIssuer = jenkins.getCrumbIssuer();
+            if (crumbIssuer != null) {
+                String crumbField = crumbIssuer.getCrumbRequestField();
+                String crumbSalt = crumbIssuer.getDescriptor().getCrumbSalt();
+
+                String crumb = request.getParameter(crumbField);
+                if (crumb == null) {
+                    crumb = request.getHeader(crumbField);
+                }
+
+                if (crumb == null || !crumbIssuer.validateCrumb(request, crumbSalt, crumb)) {
+                    LOGGER.log(Level.FINE, "No valid crumb was included in authentication request from {0}", request.getRemoteAddr());
+                    throw new InsufficientAuthenticationException("No valid crumb was included in the request");
+                }
+            }
+        }
+
+        return super.attemptAuthentication(request, response);
+    }
+
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         if (SystemProperties.getInteger(SecurityRealm.class.getName() + ".sessionFixationProtectionMode", 1) == 2) {

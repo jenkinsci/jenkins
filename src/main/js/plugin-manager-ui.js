@@ -3,15 +3,23 @@ import debounce from "lodash/debounce";
 import pluginManagerAvailable from "./templates/plugin-manager/available.hbs";
 import pluginManager from "./api/pluginManager";
 
+var latestRequestId = 0;
+
 function applyFilter(searchQuery) {
   // debounce reduces number of server side calls while typing
+  var requestId = ++latestRequestId;
   pluginManager.availablePluginsSearch(
     searchQuery.toLowerCase().trim(),
     50,
     function (plugins) {
+      // Discard stale responses so they don't overwrite results for a newer query
+      if (requestId !== latestRequestId) {
+        return;
+      }
       var pluginsTable = document.getElementById("plugins");
       var tbody = pluginsTable.querySelector("tbody");
       var admin = pluginsTable.dataset.hasadmin === "true";
+      var includeHealthScores = pluginsTable.dataset.health === "true";
       var selectedPlugins = [];
 
       var filterInput = document.getElementById("filter-box");
@@ -43,6 +51,7 @@ function applyFilter(searchQuery) {
           (plugin) => selectedPlugins.indexOf(plugin.name) === -1,
         ),
         admin,
+        includeHealthScores,
       });
 
       tbody.insertAdjacentHTML("beforeend", rows);

@@ -38,7 +38,7 @@
 
 .simple-page .safe-restarting {
   padding: 10px 30px;
-  border-radius: 10px;
+  border-radius: var(--form-input-border-radius);
   text-align: center;
   margin-top: 2rem;
   background-color: var(--alert-success-bg-color);
@@ -49,7 +49,7 @@
   }
 
   strong {
-    font-weight: 500;
+    font-weight: var(--font-bold-weight);
   }
 }
 
@@ -122,6 +122,7 @@
   flex-direction: column;
   gap: 1rem;
   animation: fade-in-jenkins-booting 0.4s both 0.2s;
+
   // Optical compensation to visually center content
   margin-top: -3rem;
 
@@ -135,7 +136,7 @@
   margin: 1rem 0 0;
 
   p {
-    font-weight: 500;
+    font-weight: var(--font-bold-weight);
     font-size: 1.125rem;
   }
 }

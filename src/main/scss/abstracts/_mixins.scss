@@ -24,8 +24,6 @@
   }
 
   @media (prefers-contrast: more) {
-    text-decoration: underline;
-
     &:hover {
       text-decoration-thickness: 3px;
     }
@@ -56,10 +54,17 @@
   }
 }
 
-@mixin item {
+@mixin item($border: true) {
   position: relative;
+  appearance: none;
   z-index: 0;
-  border-radius: 0.66rem;
+  text-decoration: none !important;
+  font-weight: normal;
+  border-radius: var(--form-input-border-radius);
+  cursor: pointer;
+  background: transparent;
+  outline: none;
+  border: none;
 
   &::before,
   &::after {
@@ -73,11 +78,12 @@
   }
 
   &::before {
-    background-color: transparent;
+    background-color: var(--item-background);
+    border: var(--jenkins-border);
   }
 
   &::after {
-    box-shadow: 0 0 0 0.66rem transparent;
+    box-shadow: 0 0 0 0.5rem transparent;
   }
 
   &:focus-visible {
@@ -86,7 +92,9 @@
 
   &:not(:disabled) {
     &:hover,
-    &:focus-visible {
+    &:focus-visible,
+    &[aria-describedby],
+    &[aria-expanded="true"] {
       &::before {
         background-color: var(--item-background--hover);
       }
@@ -101,7 +109,7 @@
       }
 
       &::after {
-        box-shadow: 0 0 0 0.33rem var(--item-box-shadow--focus);
+        box-shadow: 0 0 0 0.25rem var(--item-box-shadow--focus);
       }
     }
 
@@ -111,5 +119,43 @@
         opacity: 1 !important;
       }
     }
+  }
+
+  @if $border == false {
+    &:not(:hover, &:active, &:focus, &[aria-expanded="true"]) {
+      &::before {
+        border-color: transparent;
+      }
+    }
+  }
+}
+
+@mixin overlay-surface($opacity: 100%) {
+  position: relative;
+  background-color: color-mix(
+    in sRGB,
+    var(--overlay-surface-background) $opacity,
+    transparent
+  );
+  box-shadow: var(--overlay-surface-box-shadow);
+  border: none;
+  outline: none;
+
+  @if $opacity != 100% {
+    backdrop-filter: contrast(1.1) saturate(2.5) blur(20px);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    // Display a subtle border to elevate the dialog from its backdrop
+    border: 1px solid color-mix(in sRGB, var(--white) 10%, transparent);
+    border-radius: inherit;
+
+    // One layer above bottom app bar's z-index
+    z-index: 998;
+    pointer-events: none;
   }
 }

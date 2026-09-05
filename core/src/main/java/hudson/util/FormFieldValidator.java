@@ -231,9 +231,7 @@ public abstract class FormFieldValidator {
         } else {
             response.setContentType("text/html;charset=UTF-8");
             if (APPLY_CONTENT_SECURITY_POLICY_HEADERS) {
-                for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-                    response.setHeader(header, "sandbox; default-src 'none';");
-                }
+                response.setHeader("Content-Security-Policy", "sandbox; default-src 'none';");
             }
             response.getWriter().print("<div class=" + cssClass + ">" +
                     message + "</div>");
@@ -631,33 +629,6 @@ public abstract class FormFieldValidator {
 
         protected void fail() throws IOException, ServletException {
             error(errorMessage);
-        }
-    }
-
-    /**
-     * Verifies that the {@code value} parameter is an integer ≥ 0.
-     *
-     * @since 1.282
-     * @deprecated as of 1.294
-     *      Use {@link FormValidation#validateNonNegativeInteger(String)}
-     */
-    @Deprecated
-    public static class NonNegativeInteger extends FormFieldValidator {
-        public NonNegativeInteger() {
-            super(null);
-        }
-
-        @Override
-        protected void check() throws IOException, ServletException {
-            try {
-                String value = request.getParameter("value");
-                if (Integer.parseInt(value) < 0)
-                    error(hudson.model.Messages.Hudson_NotAPositiveNumber());
-                else
-                    ok();
-            } catch (NumberFormatException e) {
-                error(hudson.model.Messages.Hudson_NotANumber());
-            }
         }
     }
 }

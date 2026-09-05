@@ -1,11 +1,19 @@
 @use "../abstracts/mixins";
 
-#buildHistoryPage {
-  margin: 10px 0 10px 10px;
+#side-panel {
+  #buildHistoryPage {
+    margin: 10px 0 10px 10px;
+  }
+}
 
+#buildHistoryPage {
   .jenkins-search {
     margin-inline: -0.25rem;
     margin-bottom: 5px;
+  }
+
+  #jenkins-builds .jenkins-card__content {
+    overflow: visible;
   }
 }
 
@@ -36,7 +44,7 @@
     font-size: 0.75rem;
     color: var(--text-color-secondary);
     margin-top: 10px;
-    font-weight: 450;
+    font-weight: var(--font-bold-weight);
     margin-bottom: 4px;
   }
 
@@ -94,12 +102,12 @@
 }
 
 .app-builds-container__item {
-  @include mixins.item();
+  @include mixins.item($border: false);
 
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 0.5rem 0.65rem;
-  padding: 0 0 0.25rem;
+  padding: 0.25rem 0;
   margin: 0 -0.5rem;
   font-size: 0.8125rem !important;
   min-height: 2rem;
@@ -126,7 +134,7 @@
       color: var(--text-color);
       gap: 0.5rem;
       text-decoration: none;
-      font-weight: 450;
+      font-weight: var(--font-bold-weight);
       flex-grow: 1;
       padding: 0.45rem 0 0;
       word-break: normal;
@@ -162,8 +170,7 @@
   }
 
   .jenkins-jumplist-link {
-    margin-top: 0.2rem;
-    padding-right: 0.8rem;
+    align-self: center;
   }
 
   &__description {
@@ -182,7 +189,7 @@
       bottom: 6px;
       width: 2px;
       background: var(--text-color-secondary);
-      border-radius: 10px;
+      border-radius: var(--form-input-border-radius);
       opacity: 0.3;
     }
   }

@@ -9,18 +9,25 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.Builder;
 import java.io.IOException;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class Jenkins67105Test {
+@WithJenkins
+class Jenkins67105Test {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Issue("JENKINS-67105")
     @Test
-    public void arrayListMultimap() throws Exception {
+    void arrayListMultimap() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
         p.getBuildersList().add(new GuavaBuilder(new ArrayListMultimapCallable()));
@@ -29,7 +36,7 @@ public class Jenkins67105Test {
 
     @Issue("JENKINS-67105")
     @Test
-    public void hashMultimap() throws Exception {
+    void hashMultimap() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
         p.getBuildersList().add(new GuavaBuilder(new HashMultimapCallable()));
@@ -39,6 +46,7 @@ public class Jenkins67105Test {
     public static class GuavaBuilder extends Builder {
         private final MasterToSlaveCallable<?, RuntimeException> callable;
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public GuavaBuilder(MasterToSlaveCallable<?, RuntimeException> callable) {
             this.callable = callable;
         }

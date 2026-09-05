@@ -31,8 +31,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.Functions;
 import hudson.model.FreeStyleBuild;
@@ -42,29 +42,32 @@ import hudson.model.labels.LabelAtom;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Tests for CLI command {@link hudson.cli.ConsoleCommand console}
  *
  * @author pjanouse
  */
-public class ConsoleCommandTest {
+@WithJenkins
+class ConsoleCommandTest {
 
     private CLICommandInvoker command;
 
-    @Rule public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before public void setUp() {
-
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         command = new CLICommandInvoker(j, "console");
     }
 
-    @Test public void consoleShouldFailWithoutJobReadPermission() throws Exception {
+    @Test
+    void consoleShouldFailWithoutJobReadPermission() throws Exception {
 
         j.createFreeStyleProject("aProject");
 
@@ -78,7 +81,8 @@ public class ConsoleCommandTest {
     }
 
     @Issue("JENKINS-52181")
-    @Test public void consoleShouldBeAccessibleForUserWithRead() throws Exception {
+    @Test
+    void consoleShouldBeAccessibleForUserWithRead() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         if (Functions.isWindows()) {
             project.getBuildersList().add(new BatchFile("echo 1"));
@@ -95,7 +99,8 @@ public class ConsoleCommandTest {
         assertThat(result.stdout(), containsString("echo 1"));
     }
 
-    @Test public void consoleShouldFailWhenProjectDoesNotExist() {
+    @Test
+    void consoleShouldFailWhenProjectDoesNotExist() {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ, Item.BUILD)
@@ -106,7 +111,8 @@ public class ConsoleCommandTest {
         assertThat(result.stderr(), containsString("ERROR: No such job 'never_created'"));
     }
 
-    @Test public void consoleShouldFailWhenLastBuildDoesNotExist() throws Exception {
+    @Test
+    void consoleShouldFailWhenLastBuildDoesNotExist() throws Exception {
 
         j.createFreeStyleProject("aProject");
 
@@ -119,7 +125,8 @@ public class ConsoleCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Permalink lastBuild produced no build"));
     }
 
-    @Test public void consoleShouldFailWhenRequestedBuildDoesNotExist() throws Exception {
+    @Test
+    void consoleShouldFailWhenRequestedBuildDoesNotExist() throws Exception {
 
         j.createFreeStyleProject("aProject");
 
@@ -132,7 +139,8 @@ public class ConsoleCommandTest {
         assertThat(result.stderr(), containsString("ERROR: No such build #1"));
     }
 
-    @Test public void consoleShouldFailWhenRequestedInvalidBuildNumber() throws Exception {
+    @Test
+    void consoleShouldFailWhenRequestedInvalidBuildNumber() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
 
@@ -156,7 +164,8 @@ public class ConsoleCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Not sure what you meant by \"1a\". Did you mean \"lastBuild\"?"));
     }
 
-    @Test public void consoleShouldSuccessWithLastBuild() throws Exception {
+    @Test
+    void consoleShouldSuccessWithLastBuild() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         if (Functions.isWindows()) {
@@ -174,7 +183,8 @@ public class ConsoleCommandTest {
         assertThat(result.stdout(), containsString("echo 1"));
     }
 
-    @Test public void consoleShouldSuccessWithSpecifiedBuildNumber() throws Exception {
+    @Test
+    void consoleShouldSuccessWithSpecifiedBuildNumber() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         if (Functions.isWindows()) {
@@ -194,15 +204,20 @@ public class ConsoleCommandTest {
         assertThat(result.stdout(), containsString("echo 2"));
     }
 
-    @Test public void consoleShouldSuccessWithFollow() throws Exception {
+    @Test
+    void consoleShouldSuccessWithFollow() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         //TODO: do we really want to sleep for 10 seconds?
         if (Functions.isWindows()) {
-            project.getBuildersList().add(new BatchFile("echo start - %BUILD_NUMBER%\r\n"
-                    + "ping -n 10 127.0.0.1 >nul\r\necho after sleep - %BUILD_NUMBER%"));
+            project.getBuildersList().add(new BatchFile("""
+                    echo start - %BUILD_NUMBER%\r
+                    ping -n 10 127.0.0.1 >nul\r
+                    echo after sleep - %BUILD_NUMBER%"""));
         } else {
-            project.getBuildersList().add(new Shell("echo start - ${BUILD_NUMBER}\nsleep 10\n"
-                    + "echo after sleep - ${BUILD_NUMBER}"));
+            project.getBuildersList().add(new Shell("""
+                    echo start - ${BUILD_NUMBER}
+                    sleep 10
+                    echo after sleep - ${BUILD_NUMBER}"""));
         }
         FreeStyleBuild build = project.scheduleBuild2(0).waitForStart();
         j.waitForMessage("start - 1", build);
@@ -228,7 +243,8 @@ public class ConsoleCommandTest {
         j.assertLogContains("after sleep - 1", build);
     }
 
-    @Test public void consoleShouldSuccessWithLastNLines() throws Exception {
+    @Test
+    void consoleShouldSuccessWithLastNLines() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         if (Functions.isWindows()) {
@@ -249,18 +265,36 @@ public class ConsoleCommandTest {
         assertThat(result.stdout(), containsString("echo 5"));
     }
 
-    @Test public void consoleShouldSuccessWithLastNLinesAndFollow() throws Exception {
+    @Test
+    void consoleShouldSuccessWithLastNLinesAndFollow() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         //TODO: do we really want to sleep for 10 seconds?
         if (Functions.isWindows()) {
             // the ver >NUL is to reset ERRORLEVEL so we don't fail (ping causes the error)
-            project.getBuildersList().add(new BatchFile("echo 1\r\necho 2\r\necho 3\r\necho 4\r\necho 5\r\n"
-                    + "ping -n 10 127.0.0.1 >nul\r\necho 6\r\necho 7\r\necho 8\r\necho 9"));
+            project.getBuildersList().add(new BatchFile("""
+                    echo 1
+                    echo 2
+                    echo 3
+                    echo 4
+                    echo 5
+                    ping -n 10 127.0.0.1 >nul
+                    echo 6
+                    echo 7
+                    echo 8
+                    echo 9"""));
         } else {
-            project.getBuildersList().add(new Shell("echo 1\necho 2\necho 3\necho 4\necho 5\n"
-                    + "sleep 10\n"
-                    + "echo 6\necho 7\necho 8\necho 9"));
+            project.getBuildersList().add(new Shell("""
+                    echo 1
+                    echo 2
+                    echo 3
+                    echo 4
+                    echo 5
+                    sleep 10
+                    echo 6
+                    echo 7
+                    echo 8
+                    echo 9"""));
         }
 
         FreeStyleBuild build = project.scheduleBuild2(0).waitForStart();
@@ -283,7 +317,8 @@ public class ConsoleCommandTest {
         j.assertLogContains("echo 9", build);
     }
 
-    @Test public void consoleShouldFailIfTheBuildIsStuckInTheQueue() throws Exception {
+    @Test
+    void consoleShouldFailIfTheBuildIsStuckInTheQueue() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(new Shell("echo 1\nsleep 10"));

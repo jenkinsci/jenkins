@@ -36,6 +36,7 @@ import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
+import jenkins.security.XStreamDeserializable;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.SystemProperties;
 import jenkins.websocket.WebSockets;
@@ -58,12 +59,14 @@ public class JNLPLauncher extends ComputerLauncher {
      * Deprecated (only used with deprecated {@code -jnlpUrl} mode), but cannot mark it as such without breaking CasC.
      */
     @CheckForNull
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public String tunnel;
 
     /**
      * @deprecated No longer used.
      */
     @Deprecated
+    @XStreamDeserializable
     public final transient String vmargs = null;
 
     @NonNull
@@ -184,7 +187,7 @@ public class JNLPLauncher extends ComputerLauncher {
     }
 
     /**
-     * @deprecated as of 1.XXX
+     * @deprecated as of 2.2
      *      Use {@link Jenkins#getDescriptor(Class)}
      */
     @Deprecated

@@ -39,25 +39,29 @@ import hudson.tasks.Builder;
 import hudson.tasks.Shell;
 import java.io.File;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author pjanouse
  */
-public class ReloadJobCommandTest {
+@WithJenkins
+class ReloadJobCommandTest {
 
     private CLICommandInvoker command;
 
-    @Rule public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before public void setUp() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         command = new CLICommandInvoker(j, "reload-job");
     }
 
-    @Test public void reloadJobShouldFailWithoutJobConfigurePermission() throws Exception {
+    @Test
+    void reloadJobShouldFailWithoutJobConfigurePermission() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(createScriptBuilder("echo 1"));
@@ -76,7 +80,8 @@ public class ReloadJobCommandTest {
         j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
     }
 
-    @Test public void reloadJobShouldFailWithoutJobReadPermission() throws Exception {
+    @Test
+    void reloadJobShouldFailWithoutJobReadPermission() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(createScriptBuilder("echo 1"));
@@ -95,7 +100,8 @@ public class ReloadJobCommandTest {
         j.assertLogContains("echo 1", j.buildAndAssertSuccess(project));
     }
 
-    @Test public void reloadJobShouldSucceed() throws Exception {
+    @Test
+    void reloadJobShouldSucceed() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.getBuildersList().add(createScriptBuilder("echo 1"));
@@ -113,7 +119,8 @@ public class ReloadJobCommandTest {
         j.assertLogContains("echo 2", j.buildAndAssertSuccess(project));
     }
 
-    @Test public void reloadJobShouldFailIfJobDoesNotExist() {
+    @Test
+    void reloadJobShouldFailIfJobDoesNotExist() {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
@@ -123,7 +130,8 @@ public class ReloadJobCommandTest {
         assertThat(result.stderr(), containsString("ERROR: No such item ‘never_created’ exists."));
     }
 
-    @Test public void reloadJobShouldFailIfJobDoesNotExistButNearExists() throws Exception {
+    @Test
+    void reloadJobShouldFailIfJobDoesNotExistButNearExists() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("never_created");
 
@@ -135,7 +143,8 @@ public class ReloadJobCommandTest {
         assertThat(result.stderr(), containsString("ERROR: No such item ‘never_created1’ exists. Perhaps you meant ‘never_created’?"));
     }
 
-    @Test public void reloadJobManyShouldSucceed() throws Exception {
+    @Test
+    void reloadJobManyShouldSucceed() throws Exception {
         FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
         project1.getBuildersList().add(createScriptBuilder("echo 1"));
         FreeStyleProject project2 = j.createFreeStyleProject("aProject2");
@@ -162,7 +171,8 @@ public class ReloadJobCommandTest {
         j.assertLogContains("echo 2", j.buildAndAssertSuccess(project3));
     }
 
-    @Test public void reloadJobManyShouldFailIfFirstJobDoesNotExist() throws Exception {
+    @Test
+    void reloadJobManyShouldFailIfFirstJobDoesNotExist() throws Exception {
 
         FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
         project1.getBuildersList().add(createScriptBuilder("echo 1"));
@@ -188,7 +198,8 @@ public class ReloadJobCommandTest {
         j.assertLogContains("echo 2", j.buildAndAssertSuccess(project2));
     }
 
-    @Test public void reloadJobManyShouldFailIfMiddleJobDoesNotExist() throws Exception {
+    @Test
+    void reloadJobManyShouldFailIfMiddleJobDoesNotExist() throws Exception {
 
         FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
         project1.getBuildersList().add(createScriptBuilder("echo 1"));
@@ -214,7 +225,8 @@ public class ReloadJobCommandTest {
         j.assertLogContains("echo 2", j.buildAndAssertSuccess(project2));
     }
 
-    @Test public void reloadJobManyShouldFailIfLastJobDoesNotExist() throws Exception {
+    @Test
+    void reloadJobManyShouldFailIfLastJobDoesNotExist() throws Exception {
 
         FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
         project1.getBuildersList().add(createScriptBuilder("echo 1"));
@@ -240,7 +252,8 @@ public class ReloadJobCommandTest {
         j.assertLogContains("echo 2", j.buildAndAssertSuccess(project2));
     }
 
-    @Test public void reloadJobManyShouldFailIfMoreJobsDoNotExist() throws Exception {
+    @Test
+    void reloadJobManyShouldFailIfMoreJobsDoNotExist() throws Exception {
 
         FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
         project1.getBuildersList().add(createScriptBuilder("echo 1"));
@@ -267,7 +280,8 @@ public class ReloadJobCommandTest {
         j.assertLogContains("echo 2", j.buildAndAssertSuccess(project2));
     }
 
-    @Test public void reloadJobManyShouldSucceedEvenAJobIsSpecifiedTwice() throws Exception {
+    @Test
+    void reloadJobManyShouldSucceedEvenAJobIsSpecifiedTwice() throws Exception {
         FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
         project1.getBuildersList().add(createScriptBuilder("echo 1"));
         FreeStyleProject project2 = j.createFreeStyleProject("aProject2");

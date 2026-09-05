@@ -26,7 +26,6 @@ package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.Binding;
 import hudson.ExtensionPoint;
 import hudson.model.User;
@@ -141,7 +140,6 @@ public interface ScriptListener extends ExtensionPoint {
         private final String correlationId;
         private final User user;
 
-        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public ListenerWriter(Writer writer, Object feature, Object context, String correlationId, User user) {
             this.writer = writer;
             this.feature = feature;
@@ -182,7 +180,6 @@ public interface ScriptListener extends ExtensionPoint {
         private final String correlationId;
         private final User user;
 
-        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public ListenerOutputStream(OutputStream os, Charset charset, Object feature, Object context, String correlationId, User user) {
             this.os = os;
             this.charset = charset;

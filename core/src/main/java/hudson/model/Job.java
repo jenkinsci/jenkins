@@ -77,6 +77,7 @@ import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -88,6 +89,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.BuildDiscarderProperty;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
@@ -97,10 +99,16 @@ import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.PeepholePermalink;
 import jenkins.model.ProjectNamingStrategy;
-import jenkins.model.RunIdMigrator;
+import jenkins.model.Tab;
+import jenkins.model.details.Detail;
+import jenkins.model.details.DetailFactory;
+import jenkins.model.details.DownstreamProjectsDetail;
+import jenkins.model.details.ProjectNameDetail;
+import jenkins.model.details.UpstreamProjectsDetail;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.RunWithSCM;
 import jenkins.security.HexStringConfidentialKey;
+import jenkins.security.XStreamNotDeserializable;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.widgets.HasWidgets;
@@ -157,12 +165,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * In 1.28 and earlier, this field was stored in the project configuration
      * file, so even though this is marked as transient, don't move it around.
      */
+    // TODO Mark @XStreamNotDeserializable and review #onLoad
     protected transient volatile int nextBuildNumber = 1;
 
     /**
      * Newly copied jobs get this flag set, so that Hudson doesn't try to run the job until its configuration
      * is saved once.
      */
+    @XStreamNotDeserializable
     private transient volatile boolean holdOffBuildUntilSave;
 
     /**
@@ -170,6 +180,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * {@link #holdOffBuildUntilSave} prematurely. The {@link LastItemListener} is responsible for
      * clearing this flag as the last item listener.
      */
+    @XStreamNotDeserializable
     private transient volatile boolean holdOffBuildUntilUserSave;
 
     /** @deprecated Replaced by {@link BuildDiscarderProperty} */
@@ -192,9 +203,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     // this should have been DescribableList but now it's too late
     protected CopyOnWriteList<JobProperty<? super JobT>> properties = new CopyOnWriteList<>();
 
-    @Restricted(NoExternalUse.class)
-    public transient RunIdMigrator runIdMigrator;
-
     protected Job(ItemGroup parent, String name) {
         super(parent, name);
     }
@@ -205,20 +213,21 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         holdOffBuildUntilSave = holdOffBuildUntilUserSave;
     }
 
-    @Override public void onCreatedFromScratch() {
-        super.onCreatedFromScratch();
-        runIdMigrator = new RunIdMigrator();
-        runIdMigrator.created(getBuildDir());
-    }
-
     @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name)
             throws IOException {
         super.onLoad(parent, name);
 
-        File buildDir = getBuildDir();
-        runIdMigrator = new RunIdMigrator();
-        runIdMigrator.migrate(buildDir, Jenkins.get().getRootDir());
+        // see https://github.com/jenkinsci/jenkins/pull/10456#issuecomment-2748112449
+        // This code can be deleted after several Jenkins releases,
+        // when it is likely that everyone is running a version equal or higher to this version.
+        var buildDirPath = getBuildDir().toPath();
+        Path legacyIds = buildDirPath.resolve("legacyIds");
+        if (Files.exists(legacyIds)) {
+            LOGGER.info("Deleting legacyIds file in " + buildDirPath + ". See https://issues.jenkins"
+                        + ".io/browse/JENKINS-75465 for more information.");
+            Files.delete(legacyIds);
+        }
 
         TextFile f = getNextBuildNumberFile();
         if (f.exists()) {
@@ -354,10 +363,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
          * Implementation of {@link Job#assignBuildNumber}.
          */
         int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException;
+
         /**
          * Provides an externally accessible alias for {@link Job#saveNextBuildNumber}, which is {@code protected}.
          * ({@link #getNextBuildNumber} and {@link #fastUpdateNextBuildNumber} are already accessible.)
          */
+
         interface SaveNextBuildNumber {
             void call() throws IOException;
         }
@@ -520,6 +531,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Override
+    public String getSearchIcon() {
+        return "symbol-status-" +  this.getIconColor().getIconName();
+    }
+
+    @Override
     protected SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex().add(new SearchIndex() {
             @Override
@@ -541,7 +557,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             public void suggest(String token, List<SearchItem> result) {
                 find(token, result);
             }
-        }).add("configure", "config", "configure");
+        });
     }
 
     @Override
@@ -853,7 +869,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Gets the youngest build #m that satisfies {@code n&lt;=m}.
+     * Gets the oldest build #m that satisfies {@code m ≥ n}.
      *
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
@@ -868,7 +884,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Gets the latest build #m that satisfies {@code m&lt;=n}.
+     * Gets the newest build #m that satisfies {@code m ≤ n}.
      *
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
@@ -887,37 +903,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     public Object getDynamic(String token, StaplerRequest2 req,
                              StaplerResponse2 rsp) {
-        if (Util.isOverridden(Job.class, getClass(), "getDynamic", String.class, StaplerRequest.class, StaplerResponse.class)) {
-            return getDynamic(token, StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
-        }
-        try {
-            // try to interpret the token as build number
-            return getBuildByNumber(Integer.parseInt(token));
-        } catch (NumberFormatException e) {
-            // try to map that to widgets
-            for (Widget w : getWidgets()) {
-                if (w.getUrlName().equals(token))
-                    return w;
-            }
-
-            // is this a permalink?
-            for (Permalink p : getPermalinks()) {
-                if (p.getId().equals(token))
-                    return p.resolve(this);
-            }
-
-            return super.getDynamic(token, req, rsp);
-        }
-    }
-
-    /**
-     * @deprecated use {@link #getDynamic(String, StaplerRequest2, StaplerResponse2)}
-     */
-    @Deprecated
-    @Override
-    public Object getDynamic(String token, StaplerRequest req,
-            StaplerResponse rsp) {
-        // Intentionally not factoring this out into a common implementation method because it contains a call to super.
         try {
             // try to interpret the token as build number
             return getBuildByNumber(Integer.parseInt(token));
@@ -977,7 +962,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     protected abstract void removeRun(RunT run);
 
     /**
-     * Returns the last build.
+     * Returns the newest build.
      * @see LazyBuildMixIn#getLastBuild
      */
     @Exported
@@ -1072,6 +1057,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public List<RunT> getLastBuildsOverThreshold(int numberOfBuilds, Result threshold) {
         RunT r = getLastBuild();
+        if (r == null) {
+            return Collections.emptyList();
+        }
         return r.getBuildsOverThreshold(numberOfBuilds, threshold);
     }
 
@@ -1112,7 +1100,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         while (candidates.size() < 3) {
             if (fallbackCandidates.isEmpty())
                 break;
-            RunT run = fallbackCandidates.remove(0);
+            RunT run = fallbackCandidates.removeFirst();
             candidates.add(run);
         }
 
@@ -1138,12 +1126,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * @return never null
      */
+    @SuppressWarnings("deprecation")
     public PermalinkList getPermalinks() {
         PeepholePermalink.initialized();
         // TODO: shall we cache this?
         PermalinkList permalinks = new PermalinkList(Permalink.BUILTIN);
-        for (PermalinkProjectAction ppa : getActions(PermalinkProjectAction.class)) {
-            permalinks.addAll(ppa.getPermalinks());
+        for (var action : getActions()) {
+            if (action instanceof PermalinkProjectAction ppa) {
+                permalinks.addAll(ppa.getPermalinks());
+            }
         }
         return permalinks;
     }
@@ -1285,7 +1276,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public HealthReport getBuildHealth() {
         List<HealthReport> reports = getBuildHealthReports();
-        return reports.isEmpty() ? new HealthReport() : reports.get(0);
+        return reports.isEmpty() ? new HealthReport() : reports.getFirst();
     }
 
     @Exported(name = "healthReport")
@@ -1715,4 +1706,30 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     private static final HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class, "serverCookie", 16);
+
+    @Extension
+    public static final class BasicJobDetailFactory extends DetailFactory<Job> {
+
+        @Override
+        public Class<Job> type() {
+            return Job.class;
+        }
+
+        @NonNull @Override public List<? extends Detail> createFor(@NonNull Job target) {
+            return Stream.of(new UpstreamProjectsDetail(target), new DownstreamProjectsDetail(target), new ProjectNameDetail(target)).filter(e -> e.getIconClassName() != null).toList();
+        }
+    }
+
+    /**
+     * Retrieves the tabs for a given job
+     */
+    @Restricted(NoExternalUse.class)
+    public List<Tab> getJobTabs() {
+        return getActions(Tab.class).stream().filter(e -> e.getIconFileName() != null).toList();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public final ParametersDefinitionProperty getParametersDefinitionProperty() {
+        return getProperty(ParametersDefinitionProperty.class);
+    }
 }

@@ -1,8 +1,20 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header">
-    <header id="page-header" class="page-header">
-      <h:logo/>
-      <h:searchbox/>
-      <h:login/>
-    </header>
+<j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
+  <header id="page-header" class="jenkins-header">
+    <st:include page="prefix" optional="true" />
+
+    <div class="jenkins-header__main">
+      <div class="jenkins-header__navigation">
+        <st:include page="logo" />
+
+        <l:breadcrumbBar>
+          <j:out value="${breadcrumbs}" />
+        </l:breadcrumbBar>
+      </div>
+    </div>
+
+    <h:actions />
+  </header>
+
+  <script src="${resURL}/jsbundles/header.js" type="text/javascript" />
 </j:jelly>

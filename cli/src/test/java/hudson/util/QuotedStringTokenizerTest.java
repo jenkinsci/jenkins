@@ -25,7 +25,9 @@
 package hudson.util;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
@@ -34,57 +36,93 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class QuotedStringTokenizerTest {
+class QuotedStringTokenizerTest {
 
     @Test
-    public void test1() {
+    void test1() {
         check("foo bar",
               "foo", "bar");
     }
 
     @Test
-    public void test2() {
+    void test2() {
         check("foo \"bar zot\"",
               "foo", "bar zot");
     }
 
     @Test
-    public void test3() {
+    void test3() {
         check("foo bar=\"quote zot\"",
               "foo", "bar=quote zot");
     }
 
     @Test
-    public void test4() {
+    void test4() {
         check("foo\\\"",
               "foo\"");
     }
 
     @Test
-    public void test5() {
+    void test5() {
         check("foo\\ bar",
               "foo bar");
     }
 
     @Test
-    public void test6() {
+    void test6() {
         check("foo\\\\ bar",
               "foo\\", "bar");
     }
 
     // see http://www.nabble.com/Error-parsing-%22-in-msbuild-task-to20535754.html
     @Test
-    public void test7() {
+    void test7() {
         check("foo=\"bar\\zot\"",
               "foo=bar\\zot");
     }
 
     @Test
-    public void testHasMoreToken() {
+    void testHasMoreToken() {
         QuotedStringTokenizer tokenizer = new QuotedStringTokenizer("");
         assertFalse(tokenizer.hasMoreTokens());
         tokenizer = new QuotedStringTokenizer("one");
         assertTrue(tokenizer.hasMoreTokens());
+    }
+
+    @Test
+    void testUnquoteUnicodeEscapeAscii() {
+        String src = "\"" + "\\" + "u0041" + "\"";
+        assertEquals("A", QuotedStringTokenizer.unquote(src));
+    }
+
+    @Test
+    void testUnquoteUnicodeEscapeNonAscii() {
+        String src = "\"" + "\\" + "u263A" + "\"";
+        assertEquals(0x263A, QuotedStringTokenizer.unquote(src).charAt(0));
+    }
+
+    @Test
+    void testUnquoteTruncatedUnicodeEscape() {
+        String src = "\"" + "\\" + "u004" + "\"";
+        assertThrows(IllegalArgumentException.class, () -> QuotedStringTokenizer.unquote(src));
+    }
+
+    @Test
+    void testUnquoteInvalidUnicodeEscape() {
+        String src = "\"" + "\\" + "u00Q1" + "\"";
+        assertThrows(IllegalArgumentException.class, () -> QuotedStringTokenizer.unquote(src));
+    }
+
+    // Pins the differing contracts of the two quote overloads: the single-argument
+    // quote(String) always quotes, while quote(String, String) quotes only when required.
+    @Test
+    void quoteSingleArgAlwaysQuotes() {
+        assertEquals("\"abc\"", QuotedStringTokenizer.quote("abc"));
+    }
+
+    @Test
+    void quoteTwoArgReturnsInputWhenQuotingNotRequired() {
+        assertEquals("abc", QuotedStringTokenizer.quote("abc", ""));
     }
 
     private void check(String src, String... expected) {

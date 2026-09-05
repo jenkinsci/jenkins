@@ -9,6 +9,7 @@ const ajaxUrl = buildHistoryPage.getAttribute("page-ajax");
 const card = document.querySelector("#jenkins-builds");
 const contents = card.querySelector("#jenkins-build-history");
 const container = card.querySelector(".app-builds-container");
+const loadingBuilds = card.querySelector("#loading-builds");
 const noBuilds = card.querySelector("#no-builds");
 
 // Pagination controls
@@ -33,8 +34,11 @@ function load(options = {}) {
     "older-than" in params ||
     "newer-than" in params;
 
-  // Avoid fetching if the page isn't visible
-  if (document.hidden) {
+  // Avoid fetching if the page isn't visible or if auto-refresh is disabled and this isn't a forced refresh
+  if (
+    document.hidden ||
+    (buildHistoryPage.dataset.autoRefresh === "false" && !("force" in params))
+  ) {
     return;
   }
 
@@ -58,6 +62,7 @@ function load(options = {}) {
         if (responseText.trim() === "") {
           contents.innerHTML = "";
           noBuilds.style.display = "block";
+          loadingBuilds.style.display = "none";
           updateCardControls({
             pageHasUp: false,
             pageHasDown: false,
@@ -70,6 +75,7 @@ function load(options = {}) {
         // Show the refreshed builds list
         contents.innerHTML = responseText;
         noBuilds.style.display = "none";
+        loadingBuilds.style.display = "none";
         behaviorShim.applySubtree(contents);
 
         // Show the card controls
@@ -113,11 +119,11 @@ function updateCardControls(parameters) {
 }
 
 paginationPrevious.addEventListener("click", () => {
-  load({ "newer-than": buildHistoryPage.dataset.pageEntryNewest });
+  load({ "newer-than": buildHistoryPage.dataset.pageEntryNewest, force: true });
 });
 
 paginationNext.addEventListener("click", () => {
-  load({ "older-than": buildHistoryPage.dataset.pageEntryOldest });
+  load({ "older-than": buildHistoryPage.dataset.pageEntryOldest, force: true });
 });
 
 function createRefreshTimeout() {
@@ -146,6 +152,34 @@ document.addEventListener("DOMContentLoaded", function () {
     debouncedLoad();
   });
 
+  behaviorShim.specify(
+    "#pause-history-widget-updates",
+    "pause-history-widget-updates",
+    0,
+    function (pauseButton) {
+      pauseButton.addEventListener("click", function () {
+        const autoRefresh = buildHistoryPage.dataset.autoRefresh === "true";
+        buildHistoryPage.dataset.autoRefresh = autoRefresh ? "false" : "true";
+        pauseButton.childNodes[2].textContent = autoRefresh
+          ? buildHistoryPage.dataset.resumeText
+          : buildHistoryPage.dataset.pauseText;
+        const refreshButton = document.getElementById("refresh-history-widget");
+        refreshButton.classList.toggle("jenkins-hidden");
+        load();
+      });
+    },
+  );
+  behaviorShim.specify(
+    "#refresh-history-widget",
+    "refresh-builod-history-widget",
+    0,
+    function (refreshButton) {
+      refreshButton.addEventListener("click", function () {
+        load({ force: true });
+      });
+    },
+  );
+  container.classList.add("app-builds-container--loading");
   load();
 
   window.addEventListener("focus", function () {

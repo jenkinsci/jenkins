@@ -24,34 +24,68 @@
 
 package org.acegisecurity.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.lang.reflect.Field;
 
 /**
- * @deprecated use {@link org.apache.commons.lang.reflect.FieldUtils}
+ * @deprecated Add a dependency to commons-lang3-api plugin and use {@code org.apache.commons.lang3.reflect.FieldUtils}
  */
 @Deprecated
 public final class FieldUtils {
 
-    public static Object getProtectedFieldValue(String protectedField, Object object) {
+    public static Object getProtectedFieldValue(@NonNull String protectedField, @NonNull Object object) {
         try {
-            return org.apache.commons.lang.reflect.FieldUtils.readField(object, protectedField, true);
+            Field field = getField(object.getClass(), protectedField);
+            return field.get(object);
         } catch (IllegalAccessException x) {
             throw new RuntimeException(x);
         }
     }
 
-    public static void setProtectedFieldValue(String protectedField, Object object, Object newValue) {
+    public static void setProtectedFieldValue(@NonNull String protectedField, @NonNull Object object, @NonNull Object newValue) {
         try {
-            // acgegi would silently fail to write to final fields
-            // FieldUtils.writeField(Object, field, true) only sets accessible on *non* public fields
-            // and then fails with IllegalAccessException (even if you make the field accessible in the interim!
-            // for backwards compatability we need to use a few steps
-            Field field = org.apache.commons.lang.reflect.FieldUtils.getField(object.getClass(), protectedField, true);
-            field.setAccessible(true);
+            Field field = getField(object.getClass(), protectedField);
             field.set(object, newValue);
-        } catch (Exception x) {
+        } catch (IllegalAccessException x) {
             throw new RuntimeException(x);
         }
+    }
+
+    /**
+     * Return the field with the given name from the class or its superclasses.
+     * If the field is not found, an {@link IllegalArgumentException} is thrown.
+     *
+     * @param clazz the class to search for the field
+     * @param fieldName the name of the field to find
+     * @return the {@link Field} object representing the field
+     * @throws IllegalArgumentException if the field is not found
+     */
+    private static Field getField(@NonNull final Class<?> clazz, @NonNull final String fieldName) {
+        // Check class and its superclasses
+        Class<?> current = clazz;
+        while (current != null) {
+            try {
+                Field field = current.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                return field;
+            } catch (NoSuchFieldException e) {
+                // Continue to check superclass
+            }
+            current = current.getSuperclass();
+        }
+
+        // Check interfaces
+        for (Class<?> iface : clazz.getInterfaces()) {
+            try {
+                Field field = iface.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                return field;
+            } catch (NoSuchFieldException e) {
+                // Continue to check next interface
+            }
+        }
+
+        throw new IllegalArgumentException("Field '" + fieldName + "' not found in class " + clazz.getName());
     }
 
     // TODO other methods as needed

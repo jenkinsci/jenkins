@@ -1,3 +1,18 @@
+# Only scan Jenkins source areas, not arbitrary top-level work directories
+/*/
+!/.github/
+!/.idea/
+!/.mvn/
+!/bom/
+!/cli/
+!/core/
+!/coverage/
+!/docs/
+!/src/
+!/test/
+!/war/
+!/websocket/
+
 # generated / build files
 .pnp.cjs
 .pnp.loader.mjs
@@ -9,7 +24,6 @@ node/
 
 # libraries / external deps / generated files
 src/main/js/plugin-setup-wizard/bootstrap-detached.js
-war/src/main/webapp/scripts/yui
 war/src/main/webapp/jsbundles/
 src/main/scss/_bootstrap.scss
 

@@ -473,7 +473,10 @@ window.addEventListener("load", function () {
           candidate.checked = candidate.dataset.compatWarning === "false";
         }
       }
-      window.updateTableHeaderCheckbox();
+      const ev = new CustomEvent("updateIcon", {
+        bubbles: true,
+      });
+      compatibleCheckbox.dispatchEvent(ev);
     });
   }
 

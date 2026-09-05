@@ -1,23 +1,30 @@
 package jenkins.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.Node.Mode;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class MasterBuildConfigurationTest {
+@WithJenkins
+class MasterBuildConfigurationTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-23966")
-    public void retainMasterLabelWhenNoSlaveDefined() throws Exception {
+    void retainMasterLabelWhenNoSlaveDefined() throws Exception {
         Jenkins jenkins = j.getInstance();
 
-        assertEquals("Test is for controller with no agent", 1, jenkins.getComputers().length);
+        assertEquals(1, jenkins.getComputers().length, "Test is for controller with no agent");
 
         // set our own label & mode
         final String myTestLabel = "TestLabelx0123";
@@ -28,7 +35,7 @@ public class MasterBuildConfigurationTest {
         j.configRoundtrip();
 
         // make sure settings were not lost
-        assertEquals("Built in node's label is lost", myTestLabel, jenkins.getLabelString());
-        assertEquals("Built in node's mode is lost", Mode.EXCLUSIVE, jenkins.getMode());
+        assertEquals(myTestLabel, jenkins.getLabelString(), "Built in node's label is lost");
+        assertEquals(Mode.EXCLUSIVE, jenkins.getMode(), "Built in node's mode is lost");
     }
 }

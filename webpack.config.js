@@ -29,6 +29,7 @@ module.exports = (env, argv) => ({
       ),
     ],
     app: [path.join(__dirname, "src/main/js/app.js")],
+    header: [path.join(__dirname, "src/main/js/components/header/index.js")],
     "pages/cloud-set": [
       path.join(__dirname, "src/main/js/pages/cloud-set/index.js"),
       path.join(__dirname, "src/main/js/pages/cloud-set/index.scss"),
@@ -52,6 +53,9 @@ module.exports = (env, argv) => ({
     ],
     "pages/project/builds-card": [
       path.join(__dirname, "src/main/js/pages/project/builds-card.js"),
+    ],
+    "pages/project/build": [
+      path.join(__dirname, "src/main/js/pages/project/build.js"),
     ],
     "simple-page": [path.join(__dirname, "src/main/scss/simple-page.scss")],
     styles: [path.join(__dirname, "src/main/scss/styles.scss")],
@@ -88,11 +92,14 @@ module.exports = (env, argv) => ({
             loader: "css-loader",
             options: {
               sourceMap: true,
-              // ignore the URLS on the base styles as they are picked
+              // ignore the URLS on the base styles and mask images as they are picked
               // from the war/src/main/webapp/images dir
               url: {
                 filter: (url, resourcePath) => {
-                  return !resourcePath.includes("styles.scss");
+                  return (
+                    !resourcePath.includes("styles.scss") &&
+                    !url.includes("../images/svgs/")
+                  );
                 },
               },
             },

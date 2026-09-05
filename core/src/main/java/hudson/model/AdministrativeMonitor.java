@@ -27,7 +27,6 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.security.Permission;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
@@ -67,10 +66,9 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * <dd>
  * If {@link #isActivated()} returns true, Jenkins will use the {@code message.jelly}
  * view of this object to render the warning text. This happens in the
- * {@code http://SERVER/jenkins/manage} page. This view should typically render
- * a DIV box with class='alert alert-danger' or class='alert alert-warning' with a human-readable text
- * inside it. It often also contains a link to a page that provides more details
- * about the problem.<br>
+ * {@code http://SERVER/jenkins/manage} page. This view should use {@code l:adminMonitor}
+ * to display the warning text in a consistent way.
+ * <br>
  * Additionally 2 numbers are shown in the Jenkins header of administrators, one with the number or active
  * non-security relevant monitors and one with the number of active security relevant monitors.
  * </dd>
@@ -88,7 +86,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @since 1.273
  * @see Jenkins#administrativeMonitors
  */
-@LegacyInstancesAreScopedToHudson
 public abstract class AdministrativeMonitor extends AbstractModelObject implements ExtensionPoint, StaplerProxy {
     /**
      * Human-readable ID of this monitor, which needs to be unique within the system.
@@ -160,6 +157,11 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      */
     public abstract boolean isActivated();
 
+    @Restricted(NoExternalUse.class)
+    public boolean isActivationFake() {
+        return false;
+    }
+
     /**
      * Returns true if this monitor is security related.
      *
@@ -186,8 +188,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * By default {@link Jenkins#ADMINISTER}, but {@link Jenkins#SYSTEM_READ} or {@link Jenkins#MANAGE} are also supported.
      * <p>
      *     Changing this permission check to return {@link Jenkins#SYSTEM_READ} will make the active
-     *     administrative monitor appear on {@code manage.jelly} and on the globally visible
-     *     {@link jenkins.management.AdministrativeMonitorsDecorator} to users without Administer permission.
+     *     administrative monitor appear on {@link ManageJenkinsAction} to users without Administer permission.
      *     {@link #doDisable(StaplerRequest2, StaplerResponse2)} will still always require Administer permission.
      * </p>
      * <p>

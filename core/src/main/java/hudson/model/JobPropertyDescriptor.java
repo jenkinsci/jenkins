@@ -102,8 +102,7 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
      */
     public boolean isApplicable(Class<? extends Job> jobType) {
         Type parameterization = Types.getBaseClass(clazz, JobProperty.class);
-        if (parameterization instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType) parameterization;
+        if (parameterization instanceof ParameterizedType pt) {
             Class applicable = Types.erasure(Types.getTypeArgument(pt, 0));
             return applicable.isAssignableFrom(jobType);
         } else {

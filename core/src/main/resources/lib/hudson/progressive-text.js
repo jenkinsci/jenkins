@@ -10,7 +10,9 @@ Behaviour.specify(
     let onFinishEvent = holder.getAttribute("data-on-finish-event");
     let errorMessage = holder.getAttribute("data-error-message");
 
-    var scroller = new AutoScroller(document.body);
+    var scroller = new AutoScroller(
+      holder.closest(".progressive-text-container") || document.body,
+    );
     /*
   fetches the latest update from the server
   @param e
@@ -21,6 +23,7 @@ Behaviour.specify(
     function fetchNext(e, href, onFinishEvent) {
       var headers = crumb.wrap({
         "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "multipart/form-data, */*",
       });
       if (e.consoleAnnotator !== undefined) {
         headers["X-ConsoleAnnotator"] = e.consoleAnnotator;
@@ -57,9 +60,29 @@ Behaviour.specify(
           }
           return;
         }
+        let parse;
+        if (
+          rsp.headers.get("Content-Type")?.startsWith("multipart/form-data")
+        ) {
+          parse = rsp.formData().then((data) => {
+            const text = data.get("text");
+            const meta = JSON.parse(data.get("meta"));
+            return { text, ...meta };
+          });
+        } else {
+          parse = rsp.text().then((text) => {
+            return {
+              text,
+              end: rsp.headers.get("X-Text-Size"),
+              consoleAnnotator: rsp.headers.get("X-ConsoleAnnotator"),
+              completed: rsp.headers.get("X-More-Data") !== "true",
+            };
+          });
+        }
         /* append text and do autoscroll if applicable */
-        rsp.text().then((responseText) => {
-          var text = responseText;
+        parse.then(({ text, end, consoleAnnotator, completed }) => {
+          e.fetchedBytes = end;
+          e.consoleAnnotator = consoleAnnotator;
           if (text !== "") {
             var p = document.createElement("DIV");
             e.appendChild(p); // Needs to be first for IE
@@ -69,10 +92,7 @@ Behaviour.specify(
               scroller.scrollToBottom();
             }
           }
-
-          e.fetchedBytes = rsp.headers.get("X-Text-Size");
-          e.consoleAnnotator = rsp.headers.get("X-ConsoleAnnotator");
-          if (rsp.headers.get("X-More-Data") === "true") {
+          if (!completed) {
             setTimeout(function () {
               fetchNext(e, href, onFinishEvent);
             }, 1000);

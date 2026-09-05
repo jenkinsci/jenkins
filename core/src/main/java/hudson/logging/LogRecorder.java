@@ -31,7 +31,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.AbstractModelObject;
@@ -43,7 +42,6 @@ import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
-import hudson.util.CopyOnWriteList;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
@@ -104,15 +102,6 @@ import org.kohsuke.stapler.verb.POST;
 public class LogRecorder extends AbstractModelObject implements Loadable, Saveable {
     private volatile String name;
 
-    /**
-     * No longer used.
-     *
-     * @deprecated use {@link #getLoggers()}
-     */
-    @Deprecated
-    @Restricted(NoExternalUse.class)
-    @RestrictedSince("2.324")
-    public final transient CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
     private List<Target> loggers = new ArrayList<>();
     private static final TargetComparator TARGET_COMPARATOR = new TargetComparator();
 
@@ -122,22 +111,6 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
         // register it only once when constructed, and when this object dies
         // WeakLogHandler will remove it
         new WeakLogHandler(handler, Logger.getLogger(""));
-    }
-
-    private Object readResolve() {
-        if (loggers == null) {
-            loggers = new ArrayList<>();
-        }
-
-        List<Target> tempLoggers = new ArrayList<>(loggers);
-
-        if (!targets.isEmpty()) {
-            loggers.addAll(targets.getView());
-        }
-        if (!tempLoggers.isEmpty() && !targets.getView().equals(tempLoggers)) {
-            targets.addAll(tempLoggers);
-        }
-        return this;
     }
 
     public List<Target> getLoggers() {
@@ -455,7 +428,6 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
             recorders.remove(new LogRecorder(name));
             this.name = newName;
             recorders.add(this);
-            getParent().setRecorders(recorders); // ensure that legacy logRecorders field is synced on save
             redirect = "../" + Util.rawEncode(newName) + '/';
         }
 
@@ -491,29 +463,10 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
     public synchronized void save() throws IOException {
         if (BulkChange.contains(this))   return;
 
-        handlePluginUpdatingLegacyLogManagerMap();
         getConfigFile().write(this);
         loggers.forEach(Target::enable);
 
         SaveableListener.fireOnChange(this, getConfigFile());
-    }
-
-    @SuppressWarnings("deprecation") // this is for compatibility
-    private void handlePluginUpdatingLegacyLogManagerMap() {
-        if (getParent().logRecorders.size() > getParent().getRecorders().size()) {
-            for (LogRecorder logRecorder : getParent().logRecorders.values()) {
-                if (!getParent().getRecorders().contains(logRecorder)) {
-                    getParent().getRecorders().add(logRecorder);
-                }
-            }
-        }
-        if (getParent().getRecorders().size() > getParent().logRecorders.size()) {
-            for (LogRecorder logRecorder : getParent().getRecorders()) {
-                if (!getParent().logRecorders.containsKey(logRecorder.getName())) {
-                    getParent().logRecorders.put(logRecorder.getName(), logRecorder);
-                }
-            }
-        }
     }
 
     @Override

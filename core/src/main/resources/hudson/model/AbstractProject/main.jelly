@@ -38,9 +38,7 @@ THE SOFTWARE.
       </t:summary>
     </j:forEach>
 
-    <t:artifactList caption="${%Last Successful Artifacts}"
-        build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
-        permission="${it.lastSuccessfulBuild.ARTIFACTS}"/>
+    <t:artifactList build="${it.lastSuccessfulBuild}" caption="${%Last Successful Artifacts}"/>
   </table>
 
   <!-- merge fragments from the actions -->
@@ -48,5 +46,8 @@ THE SOFTWARE.
     <st:include page="jobMain.jelly" it="${a}" optional="true" />
   </j:forEach>
 
-  <p:upstream-downstream />
+  <l:userExperimentalFlag var="newJobPage" flagClassName="jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag" />
+  <j:if test="${!newJobPage}">
+    <p:upstream-downstream />
+  </j:if>
 </j:jelly>

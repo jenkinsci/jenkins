@@ -25,6 +25,7 @@
 package hudson.os;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import java.io.File;
 import java.io.IOException;
@@ -95,6 +96,7 @@ public class WindowsUtil {
      * @param argv arguments to be quoted or escaped for {@code cmd.exe /C ...}.
      * @return properly quoted and escaped arguments to {@code cmd.exe /C ...}.
      */
+    @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "TODO needs triage")
     public static @NonNull Process execCmd(String... argv) throws IOException {
         String command = Arrays.stream(argv).map(WindowsUtil::quoteArgumentForCmd).collect(Collectors.joining(" "));
         return Runtime.getRuntime().exec(new String[]{"cmd.exe", "/C", command});

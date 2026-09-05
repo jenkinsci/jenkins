@@ -3,7 +3,7 @@ package jenkins.security;
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.cli.CLICommand;
@@ -30,22 +30,28 @@ import org.hamcrest.Matchers;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.springframework.security.core.Authentication;
 
-public class Security3448Test {
+@WithJenkins
+class Security3448Test {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("SECURITY-3448")
     @Test
-    public void jobCreationFromCLI() {
+    void jobCreationFromCLI() {
         CLICommand cmd = new CreateJobCommand();
         CLICommandInvoker invoker = new CLICommandInvoker(j, cmd);
 
@@ -66,7 +72,7 @@ public class Security3448Test {
 
     @Test
     @Issue("SECURITY-3448")
-    public void jobCreationFromREST() throws Exception {
+    void jobCreationFromREST() throws Exception {
         j.jenkins.setCrumbIssuer(null);
 
         try (JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false)) {
@@ -102,6 +108,7 @@ public class Security3448Test {
 
     public static class UnsecuredNoFreestyleAuthorizationStrategy extends AuthorizationStrategy {
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public UnsecuredNoFreestyleAuthorizationStrategy() {}
 

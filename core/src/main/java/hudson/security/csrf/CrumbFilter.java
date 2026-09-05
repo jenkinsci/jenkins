@@ -114,12 +114,11 @@ public class CrumbFilter implements CompatibleFilter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         CrumbIssuer crumbIssuer = getCrumbIssuer();
-        if (crumbIssuer == null || !(request instanceof HttpServletRequest)) {
+        if (crumbIssuer == null || !(request instanceof HttpServletRequest httpRequest)) {
             chain.doFilter(request, response);
             return;
         }
 
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         if ("POST".equals(httpRequest.getMethod())) {

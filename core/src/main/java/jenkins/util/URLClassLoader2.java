@@ -2,6 +2,8 @@ package jenkins.util;
 
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import jenkins.ClassLoaderReflectionToolkit;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -12,6 +14,10 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 @Restricted(NoExternalUse.class)
 public class URLClassLoader2 extends URLClassLoader implements JenkinsClassLoader {
+    private static final AtomicInteger NEXT_INSTANCE_NUMBER = new AtomicInteger(0);
+
+    private final String lockObjectPrefixName = String.format(
+            "%s@%x-loadClassLock:", URLClassLoader2.class.getName(), NEXT_INSTANCE_NUMBER.getAndIncrement());
 
     static {
         registerAsParallelCapable();
@@ -69,8 +75,25 @@ public class URLClassLoader2 extends URLClassLoader implements JenkinsClassLoade
         return super.findLoadedClass(name);
     }
 
+    /**
+     * Replace the JDK's per-name lock map with a GC-collectable lock object. This is a workaround
+     * for JDK-8005233. When JDK-8005233 is resolved, this should be deleted. See also the
+     * discussion in <a
+     * href="https://mail.openjdk.org/pipermail/core-libs-dev/2025-May/146392.html">this OpenJDK
+     * thread</a>.
+     *
+     * <p>Parallel-capable {@link ClassLoader} implementations keep a distinct lock object per class
+     * name indefinitely, which can retain huge maps when there are many misses. Returning an
+     * interned {@link String} keyed by this loader and the class name preserves mutual exclusion
+     * for a given (loader, name) pair but allows the JVM to reclaim the lock when no longer
+     * referenced. Interned Strings are heap objects and GC-eligible on modern JDKs (7+).
+     *
+     * @param className the binary name of the class being loaded (must not be null)
+     * @return a lock object unique to this classloader/class pair
+     */
     @Override
     public Object getClassLoadingLock(String className) {
-        return super.getClassLoadingLock(className);
+        Objects.requireNonNull(className);
+        return (lockObjectPrefixName + className).intern();
     }
 }

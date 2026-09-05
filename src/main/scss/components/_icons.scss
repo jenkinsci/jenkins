@@ -36,6 +36,7 @@
 .icon-blue-anime,
 .icon-red-anime {
   will-change: transform;
+
   // animation: blink 1s infinite linear;
 }
 
@@ -112,6 +113,20 @@
 .icon-nobuilt-anime .build-status-icon__outer {
   .svg-icon {
     animation: spin 1.7s linear infinite;
+  }
+}
+
+.app-status-icon-running {
+  animation: pulse-scale 2.5s both ease-in-out infinite;
+  opacity: 0.25;
+  transition: var(--elastic-transition);
+  transform-origin: center;
+
+  @keyframes pulse-scale {
+    50% {
+      scale: 2.25;
+      opacity: 1;
+    }
   }
 }
 

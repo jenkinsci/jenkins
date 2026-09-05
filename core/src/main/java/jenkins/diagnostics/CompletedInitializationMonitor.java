@@ -27,6 +27,7 @@ package jenkins.diagnostics;
 import hudson.Extension;
 import hudson.init.InitMilestone;
 import hudson.model.AdministrativeMonitor;
+import jenkins.health.HealthCheck;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -49,9 +50,26 @@ public class CompletedInitializationMonitor extends AdministrativeMonitor {
 
     @Override
     public boolean isActivated() {
+        return !isInitCompleted();
+    }
+
+    private static boolean isInitCompleted() {
         final Jenkins instance = Jenkins.get();
         // Safe to check in such way, because monitors are being checked in UI only.
         // So Jenkins class construction and initialization must be always finished by the call of this extension.
-        return instance.getInitLevel() != InitMilestone.COMPLETED;
+        return instance.getInitLevel() == InitMilestone.COMPLETED;
+    }
+
+    @Extension
+    public static final class HealthCheckImpl implements HealthCheck {
+        @Override
+        public String getName() {
+            return "completedInitialization";
+        }
+
+        @Override
+        public boolean check() {
+            return isInitCompleted();
+        }
     }
 }

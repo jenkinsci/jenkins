@@ -193,6 +193,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             super(Extension.class);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         protected boolean isOptional(Extension annotation) {
             return annotation.optional();
@@ -627,7 +628,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                             .flatMap(Collection::stream)
                             .filter(m -> m.getAnnotation(PostConstruct.class) != null || m.getAnnotation(javax.annotation.PostConstruct.class) != null)
                             .findFirst()
-                            .ifPresent(method -> methods.add(0, method));
+                            .ifPresent(methods::addFirst);
                     c = c.getSuperclass();
                 }
 
@@ -779,6 +780,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
         }
 
+        @SuppressWarnings("deprecation")
         private Level logLevel(IndexItem<Extension, Object> item) {
             return item.annotation().optional() ? Level.FINE : Level.WARNING;
         }
@@ -786,16 +788,12 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
     private static Class<?> getClassFromIndex(IndexItem<Extension, Object> item) throws InstantiationException {
         AnnotatedElement e = item.element();
-        Class<?> extType;
-        if (e instanceof Class) {
-            extType = (Class) e;
-        } else if (e instanceof Field) {
-            extType = ((Field) e).getType();
-        } else if (e instanceof Method) {
-            extType = ((Method) e).getReturnType();
-        } else {
-            throw new AssertionError();
-        }
+        Class<?> extType = switch (e) {
+            case Class aClass -> aClass;
+            case Field field -> field.getType();
+            case Method method -> method.getReturnType();
+            case null, default -> throw new AssertionError();
+        };
         return extType;
     }
 

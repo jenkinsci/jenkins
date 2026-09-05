@@ -59,6 +59,7 @@ import hudson.util.TagCloud;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -68,6 +69,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.model.Nodes;
+import jenkins.security.XStreamNotDeserializable;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
@@ -115,8 +117,10 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Newly copied agents get this flag set, so that Jenkins doesn't try to start/remove this node until its configuration
      * is saved once.
      */
+    @XStreamNotDeserializable
     protected transient volatile boolean holdOffLaunchUntilSave;
 
+    @XStreamNotDeserializable
     private transient Nodes parent;
 
     @Override
@@ -138,6 +142,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     /**
+     * In most cases, you should not call this method directly, but {@link Jenkins#updateNode(Node)} instead.
      * @since 1.635.
      */
     @Override
@@ -237,7 +242,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     /**
      * Creates a new {@link Computer} object that acts as the UI peer of this {@link Node}.
      *
-     * Nobody but {@link Jenkins#updateComputerList()} should call this method.
+     * Nobody but {@link Jenkins#updateComputerList(boolean, Collection)} should call this method.
      * @return Created instance of the computer.
      *         Can be {@code null} if the {@link Node} implementation does not support it (e.g. {@link Cloud} agent).
      */
@@ -277,11 +282,12 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Enable a {@link Computer} to inform its node when it is taken
      * temporarily offline.
      */
-    void setTemporaryOfflineCause(OfflineCause cause) {
+    @Restricted(NoExternalUse.class)
+    public void setTemporaryOfflineCause(OfflineCause cause) {
         try {
             if (temporaryOfflineCause != cause) {
                 temporaryOfflineCause = cause;
-                save();
+                Jenkins.get().updateNode(this);
             }
             if (temporaryOfflineCause != null) {
                 Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOffline(toComputer(), temporaryOfflineCause));
@@ -337,6 +343,15 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         r.add(getSelfLabel());
         r.addAll(getDynamicLabels());
         return Collections.unmodifiableSet(r);
+    }
+
+    /**
+     * @return the labels to be trimmed for this node.
+     */
+    @NonNull
+    @Restricted(NoExternalUse.class)
+    public Set<LabelAtom> drainLabelsToTrim() {
+        return new HashSet<>(getAssignedLabels());
     }
 
     /**

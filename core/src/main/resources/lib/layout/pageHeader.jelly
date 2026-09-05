@@ -27,4 +27,5 @@
     </st:documentation>
     <j:invokeStatic var="header" className="jenkins.views.Header" method="get"/>
     <st:include it="${header}" page="headerContent.jelly"/>
+    <script src="${resURL}/jsbundles/keyboard-shortcuts.js" type="text/javascript"/>
 </j:jelly>

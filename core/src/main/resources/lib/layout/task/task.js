@@ -23,9 +23,9 @@ Behaviour.specify("a.task-link-no-confirm", "task-link", 0, function (el) {
         headers: crumb.wrap({}),
       }).then((rsp) => {
         if (rsp.ok) {
-          notificationBar(success, notificationBar.SUCCESS);
+          notificationBar.show(success, notificationBar.SUCCESS);
         } else {
-          notificationBar(failure, notificationBar.ERROR);
+          notificationBar.show(failure, notificationBar.ERROR);
         }
       });
       ev.preventDefault();

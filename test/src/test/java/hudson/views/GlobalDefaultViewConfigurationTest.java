@@ -26,14 +26,15 @@ package hudson.views;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import hudson.model.Descriptor;
 import net.sf.json.JSONObject;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.MockStaplerRequestBuilder;
 import org.kohsuke.stapler.StaplerRequest2;
 
@@ -41,14 +42,19 @@ import org.kohsuke.stapler.StaplerRequest2;
  * Tests of {@link GlobalDefaultViewConfiguration}.
  * @author Oleg Nenashev
  */
-public class GlobalDefaultViewConfigurationTest {
+@WithJenkins
+class GlobalDefaultViewConfigurationTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-42717")
-    public void shouldNotFailIfTheDefaultViewIsMissing() {
+    void shouldNotFailIfTheDefaultViewIsMissing() {
         String viewName = "NonExistentView";
         GlobalDefaultViewConfiguration c = new GlobalDefaultViewConfiguration();
 
@@ -62,7 +68,7 @@ public class GlobalDefaultViewConfigurationTest {
                     ex.getMessage(), containsString(Messages.GlobalDefaultViewConfiguration_ViewDoesNotExist(viewName)));
             return;
         }
-        Assert.fail("Expected FormException");
+        fail("Expected FormException");
     }
 
 }

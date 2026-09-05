@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import jenkins.model.Jenkins;
+import jenkins.security.XStreamNotDeserializable;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -59,7 +60,7 @@ import org.kohsuke.stapler.StaplerRequest2;
  * {@link NodeProperty}s show up in the configuration screen of a node, and they are persisted with the {@link Node} object.
  *
  * <p>
- * To add UI action to {@link Node}s, i.e. a new link shown in the left side menu on a node page ({@code ./computer/<a node>}), see instead {@link hudson.model.TransientComputerActionFactory}.
+ * To add UI action to {@link Node}s, i.e. a new link shown in the left side menu on a node page ({@code ./computer/<a node>/}), see instead {@link hudson.model.TransientComputerActionFactory}.
  *
  *
  * <h2>Views</h2>
@@ -80,6 +81,7 @@ import org.kohsuke.stapler.StaplerRequest2;
  */
 public abstract class NodeProperty<N extends Node> implements ReconfigurableDescribable<NodeProperty<?>>, ExtensionPoint {
 
+    @XStreamNotDeserializable
     protected transient N node;
 
     protected void setNode(N node) { this.node = node; }

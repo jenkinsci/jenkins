@@ -59,6 +59,11 @@ public class ConfigureLink extends ManagementLink {
     }
 
     @Override
+    public boolean hasRequiredPermission() {
+        return Jenkins.get().hasAnyPermission(Jenkins.MANAGE_AND_SYSTEM_READ);
+    }
+
+    @Override
     public String getUrlName() {
         return "configure";
     }

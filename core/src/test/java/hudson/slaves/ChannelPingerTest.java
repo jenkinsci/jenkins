@@ -1,7 +1,7 @@
 package hudson.slaves;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
@@ -10,13 +10,13 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-public class ChannelPingerTest {
+class ChannelPingerTest {
 
     @Mock private Channel mockChannel;
 
@@ -24,25 +24,25 @@ public class ChannelPingerTest {
 
     private AutoCloseable mocks;
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         mocks.close();
     }
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         mocks = MockitoAnnotations.openMocks(this);
     }
 
-    @Before
-    public void preserveSystemProperties() {
+    @BeforeEach
+    void preserveSystemProperties() {
         preserveSystemProperty("hudson.slaves.ChannelPinger.pingInterval");
         preserveSystemProperty("hudson.slaves.ChannelPinger.pingIntervalSeconds");
         preserveSystemProperty("hudson.slaves.ChannelPinger.pingTimeoutSeconds");
     }
 
-    @After
-    public void restoreSystemProperties() {
+    @AfterEach
+    void restoreSystemProperties() {
         for (Map.Entry<String, String> entry : savedSystemProperties.entrySet()) {
             if (entry.getValue() != null) {
                 System.setProperty(entry.getKey(), entry.getValue());
@@ -58,7 +58,7 @@ public class ChannelPingerTest {
     }
 
     @Test
-    public void testDefaults() throws IOException, InterruptedException {
+    void testDefaults() throws IOException, InterruptedException {
         ChannelPinger channelPinger = new ChannelPinger();
         channelPinger.install(mockChannel, null);
 
@@ -69,7 +69,7 @@ public class ChannelPingerTest {
     }
 
     @Test
-    public void testFromSystemProperties() throws IOException, InterruptedException {
+    void testFromSystemProperties() throws IOException, InterruptedException {
         System.setProperty("hudson.slaves.ChannelPinger.pingTimeoutSeconds", "42");
         System.setProperty("hudson.slaves.ChannelPinger.pingIntervalSeconds", "73");
 
@@ -81,7 +81,7 @@ public class ChannelPingerTest {
     }
 
     @Test
-    public void testFromOldSystemProperty() throws IOException, InterruptedException {
+    void testFromOldSystemProperty() throws IOException, InterruptedException {
         System.setProperty("hudson.slaves.ChannelPinger.pingInterval", "7");
 
         ChannelPinger channelPinger = new ChannelPinger();
@@ -92,7 +92,7 @@ public class ChannelPingerTest {
     }
 
     @Test
-    public void testNewSystemPropertyTrumpsOld() throws IOException, InterruptedException {
+    void testNewSystemPropertyTrumpsOld() throws IOException, InterruptedException {
         System.setProperty("hudson.slaves.ChannelPinger.pingIntervalSeconds", "73");
         System.setProperty("hudson.slaves.ChannelPinger.pingInterval", "7");
 
@@ -104,7 +104,7 @@ public class ChannelPingerTest {
     }
 
     @Test
-    public void testSetUpRemotePingEquality() {
+    void testSetUpRemotePingEquality() {
         ChannelPinger.SetUpRemotePing pinger1a = new ChannelPinger.SetUpRemotePing(1, 2);
         ChannelPinger.SetUpRemotePing pinger1b = new ChannelPinger.SetUpRemotePing(1, 2);
         ChannelPinger.SetUpRemotePing pinger2a = new ChannelPinger.SetUpRemotePing(2, 3);

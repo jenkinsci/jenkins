@@ -24,23 +24,31 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
 import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class ViewJobTest {
+@WithJenkins
+class ViewJobTest {
 
-    @Rule public JenkinsRule rule = new JenkinsRule();
+    private JenkinsRule rule;
+
+    @BeforeEach
+    void setUp(JenkinsRule j) {
+        rule = j;
+    }
 
     @Issue("JENKINS-19377")
-    @Test public void removeRun() throws Exception {
+    @Test
+    void removeRun() throws Exception {
         J j = rule.jenkins.createProject(J.class, "j");
         R r1 = j.nue();
         R r2 = j.nue();
@@ -52,12 +60,22 @@ public class ViewJobTest {
     @SuppressWarnings({"rawtypes", "deprecation"})
     public static final class J extends ViewJob<J, R> implements TopLevelItem {
 
-        public J(ItemGroup parent, String name) {
+        J(ItemGroup parent, String name) {
             super(parent, name);
         }
 
         @Override protected void reload() {
-            runs.load(this, d -> new R(J.this, d));
+            runs.load(this, new RunMap.Constructor<>() {
+                @Override
+                public R create(File dir) throws IOException {
+                    return new R(J.this, dir);
+                }
+
+                @Override
+                public Class<R> getBuildClass() {
+                    return R.class;
+                }
+            });
         }
 
         @Override public TopLevelItemDescriptor getDescriptor() {
@@ -83,10 +101,12 @@ public class ViewJobTest {
 
     public static final class R extends Run<J, R> {
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public R(J j) throws IOException {
             super(j);
         }
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         public R(J j, File d) throws IOException {
             super(j, d);
         }

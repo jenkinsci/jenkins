@@ -10,13 +10,21 @@ function init() {
     "-dropdown-",
     1000,
     (element) => {
-      Utils.generateDropdown(element, (instance) => {
-        const elements =
-          element.nextElementSibling.content.children[0].children;
-        const mappedItems = Utils.convertHtmlToItems(elements);
+      Utils.generateDropdown(
+        element,
+        (instance) => {
+          const elements =
+            element.nextElementSibling.content.children[0].children;
+          const mappedItems = Utils.convertHtmlToItems(elements);
 
-        instance.setContent(Utils.generateDropdownItems(mappedItems));
-      });
+          instance.setContent(Utils.generateDropdownItems(mappedItems));
+          instance.loaded = true;
+        },
+        false,
+        {
+          appendTo: "parent",
+        },
+      );
     },
   );
 }

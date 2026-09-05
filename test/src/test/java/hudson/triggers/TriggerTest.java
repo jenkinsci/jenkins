@@ -30,20 +30,26 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class TriggerTest {
+@WithJenkins
+class TriggerTest {
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    private JenkinsRule jenkinsRule;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        jenkinsRule = rule;
+    }
 
     @Issue("JENKINS-36748")
     @Test
-    public void testNoNPE() throws Exception {
+    void testNoNPE() throws Exception {
         jenkinsRule.getInstance().createProjectFromXML("whatever", new ByteArrayInputStream(("<project>\n  <builders/>\n  <publishers/>\n  <buildWrappers/>\n" + triggersSection() + "</project>").getBytes(StandardCharsets.UTF_8)));
         final Calendar cal = new GregorianCalendar();
         Trigger.checkTriggers(cal);
@@ -58,6 +64,7 @@ public class TriggerTest {
         @Extension
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
+        @SuppressWarnings("checkstyle:redundantmodifier")
         @DataBoundConstructor
         public MockTrigger(String cron) {
             super(cron);
@@ -79,6 +86,7 @@ public class TriggerTest {
                 return true;
             }
 
+            @SuppressWarnings("checkstyle:redundantmodifier")
             public DescriptorImpl() {
                 load();
                 save();

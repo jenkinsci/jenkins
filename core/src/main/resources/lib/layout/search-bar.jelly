@@ -48,7 +48,7 @@ THE SOFTWARE.
       </div>
       <input value="${attrs.value}"
              id="${attrs.id}"
-             class="jenkins-search__input"
+             class="jenkins-input jenkins-search__input"
              placeholder="${attrs.placeholder ?: '%Search'}"
              type="search"
              autofocus="${attrs.autofocus == 'true' ? 'true' : null}"
@@ -58,9 +58,7 @@ THE SOFTWARE.
              spellcheck="false"
              disabled="${attrs.enabled == false ? true : null}" />
       <j:if test="${attrs.hasKeyboardShortcut != 'false'}">
-        <div class="jenkins-search__shortcut" tooltip="${%Press / on your keyboard to focus}">
-          <l:icon src="symbol-search-shortcut" />
-        </div>
+        <l:keyboard-shortcut shortcut="symbol-search-shortcut" message="${%shortcut}" />
       </j:if>
     </div>
   </div>

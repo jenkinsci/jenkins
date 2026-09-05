@@ -28,38 +28,50 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.cli.CLICommandInvoker;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
+import hudson.slaves.RetentionStrategy;
 import java.net.HttpURLConnection;
 import jenkins.model.Jenkins;
 import jenkins.widgets.ExecutorsWidget;
 import jenkins.widgets.HasWidgetHelper;
+import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ComputerSetTest {
+@WithJenkins
+class ComputerSetTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-2821")
-    public void pageRendering() throws Exception {
+    void pageRendering() throws Exception {
         WebClient client = j.createWebClient();
         j.createSlave();
         client.goTo("computer");
@@ -69,14 +81,14 @@ public class ComputerSetTest {
      * Tests the basic UI behavior of the node monitoring
      */
     @Test
-    public void configuration() throws Exception {
+    void configuration() throws Exception {
         WebClient client = j.createWebClient();
         HtmlForm form = client.goTo("computer/configure").getFormByName("config");
         j.submit(form);
     }
 
     @Test
-    public void nodeOfflineCli() throws Exception {
+    void nodeOfflineCli() throws Exception {
         DumbSlave s = j.createSlave();
 
         assertThat(new CLICommandInvoker(j, "wait-node-offline").invokeWithArgs("xxx"), CLICommandInvoker.Matcher.failedWith(/* IllegalArgumentException from NodeOptionHandler */ 3));
@@ -88,7 +100,7 @@ public class ComputerSetTest {
     }
 
     @Test
-    public void getComputerNames() throws Exception {
+    void getComputerNames() throws Exception {
         assertThat(ComputerSet.getComputerNames(), is(empty()));
         j.createSlave("anAnotherNode", "", null);
         assertThat(ComputerSet.getComputerNames(), contains("anAnotherNode"));
@@ -97,7 +109,7 @@ public class ComputerSetTest {
     }
 
     @Test
-    public void managePermissionCanConfigure() throws Exception {
+    void managePermissionCanConfigure() throws Exception {
         final String USER = "user";
         final String MANAGER = "manager";
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -139,7 +151,7 @@ public class ComputerSetTest {
 
     @Test
     @Issue("SECURITY-2120")
-    public void testTerminatedNodeStatusPageDoesNotShowTrace() throws Exception {
+    void testTerminatedNodeStatusPageDoesNotShowTrace() throws Exception {
         DumbSlave agent = j.createOnlineSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
@@ -161,7 +173,7 @@ public class ComputerSetTest {
 
     @Test
     @Issue("SECURITY-2120")
-    public void testTerminatedNodeAjaxExecutorsDoesNotShowTrace() throws Exception {
+    void testTerminatedNodeAjaxExecutorsDoesNotShowTrace() throws Exception {
         DumbSlave agent = j.createOnlineSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
@@ -173,11 +185,67 @@ public class ComputerSetTest {
                 new OfflineCause.ChannelTermination(new RuntimeException(message))
         );
 
-        WebClient wc = j.createWebClient();
+        WebClient wc = j.createWebClient().withJavaScriptEnabled(false);
         Page page = wc.getPage(wc.createCrumbedUrl(HasWidgetHelper.getWidget(j.jenkins.getComputer(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax"));
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, not(containsString(message)));
 
         j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
+    }
+
+    @Test
+    void createItemFromXmlNoName() throws Exception {
+        createItemTest(null);
+    }
+
+    @Test
+    void createItemFromXmlWithName() throws Exception {
+        createItemTest("new-name");
+    }
+
+    void createItemTest(String name) throws Exception {
+        String USER = "user";
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                // Grant computer create
+                .grant(Jenkins.READ).everywhere().to(USER)
+                .grant(Computer.CREATE).everywhere().to(USER)
+        );
+
+        String xml = """
+                <slave>
+                  <name>agent-from-xml</name>
+                  <description></description>
+                  <remoteFS>/home/jenkins</remoteFS>
+                  <numExecutors>2</numExecutors>
+                  <mode>NORMAL</mode>
+                  <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+                  <launcher class="hudson.slaves.JNLPLauncher"/>
+                  <label>linux</label>
+                  <nodeProperties/>
+                </slave>
+                """;
+        try (JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false)) {
+            wc.login(USER);
+            String agentCreateUrl = "computer/createItem";
+            if (name != null) {
+                agentCreateUrl += "?name=" + name;
+            }
+            WebRequest req = new WebRequest(wc.createCrumbedUrl(agentCreateUrl), HttpMethod.POST);
+            req.setAdditionalHeader("Content-Type", "application/xml");
+            req.setRequestBody(xml);
+            WebResponse rsp = wc.getPage(req).getWebResponse();
+            assertThat(rsp.getStatusCode(), is(200));
+            if (name == null) {
+                name = "agent-from-xml";
+            }
+            Node node = j.jenkins.getNode(name);
+            assertThat(node, is(notNullValue()));
+            DumbSlave agent = (DumbSlave) node;
+            assertThat(agent.remoteFS, is("/home/jenkins"));
+            assertThat(agent.getNumExecutors(), is(2));
+            assertThat(agent.getLabelString(), is("linux"));
+            assertThat(agent.getRetentionStrategy(), is(instanceOf(RetentionStrategy.Always.class)));
+        }
     }
 }

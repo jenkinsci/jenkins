@@ -1,26 +1,39 @@
 .jenkins-input {
   display: block;
   background: var(--input-color);
-  border: 2px solid var(--input-border);
+  border: var(--jenkins-border-width) solid var(--input-border);
   padding: var(--form-input-padding);
   border-radius: var(--form-input-border-radius);
   width: 100%;
+  min-height: 2.375rem;
   box-shadow: var(--form-input-glow);
+  caret-color: var(--focus-input-border);
+
   // Set height transition to 0s as vertical resizing has a delay/lag otherwise
   transition:
     all var(--standard-transition),
     height 0s,
     padding 0s;
 
-  &:hover {
-    border-color: var(--input-border-hover);
+  &::placeholder {
+    color: var(--text-color-secondary);
   }
 
-  &:active,
-  &:focus {
-    outline: none;
-    border-color: var(--focus-input-border);
-    box-shadow: var(--form-input-glow--focus);
+  &:not(:disabled) {
+    &:hover {
+      border-color: var(--input-border-hover);
+    }
+
+    &:active,
+    &:focus {
+      outline: none;
+      border-color: var(--focus-input-border);
+      box-shadow: var(--form-input-glow--focus);
+    }
+  }
+
+  &:disabled {
+    cursor: not-allowed;
   }
 }
 

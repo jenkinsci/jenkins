@@ -42,7 +42,7 @@ import org.springframework.security.core.Authentication;
 /**
  * Refers to an {@link Item} by its name.
  * May be subclassed to handle specific kinds of items.
- * (Use {@code @MetaInfServices(OptionHandler.class)} to register the subclass.)
+ * (Use {@code @OptionHandlerExtension} to register the subclass.)
  * @param <T> the kind of item being handled
  * @since 1.538
  */

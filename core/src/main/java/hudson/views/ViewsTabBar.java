@@ -28,7 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.ListView;
 import hudson.model.View;
@@ -59,7 +59,7 @@ import org.kohsuke.stapler.StaplerRequest2;
  * @since 1.381
  * @see ViewsTabBarDescriptor
  */
-public abstract class ViewsTabBar extends AbstractDescribableImpl<ViewsTabBar> implements ExtensionPoint {
+public abstract class ViewsTabBar implements Describable<ViewsTabBar>, ExtensionPoint {
     /**
      * Returns all the registered {@link ViewsTabBar} descriptors.
      */
@@ -69,7 +69,7 @@ public abstract class ViewsTabBar extends AbstractDescribableImpl<ViewsTabBar> i
 
     @Override
     public ViewsTabBarDescriptor getDescriptor() {
-        return (ViewsTabBarDescriptor) super.getDescriptor();
+        return (ViewsTabBarDescriptor) Describable.super.getDescriptor();
     }
 
     /**

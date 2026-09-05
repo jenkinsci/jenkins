@@ -28,10 +28,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,77 +43,76 @@ import java.util.Random;
 import java.util.stream.Stream;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.rules.TemporaryFolder;
 
-public class OperatingSystemEndOfLifeAdminMonitorTest {
+class OperatingSystemEndOfLifeAdminMonitorTest {
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    @TempDir
+    private File tmp;
 
     private final OperatingSystemEndOfLifeAdminMonitor monitor;
     private final Random random = new Random();
     private final String PREFIX = "administrativeMonitor/";
 
-    public OperatingSystemEndOfLifeAdminMonitorTest() throws IOException {
+    OperatingSystemEndOfLifeAdminMonitorTest() throws IOException {
         this.monitor = random.nextBoolean()
                 ? new OperatingSystemEndOfLifeAdminMonitor()
                 : new OperatingSystemEndOfLifeAdminMonitor(OperatingSystemEndOfLifeAdminMonitor.class.getName());
     }
 
     @Test
-    public void testGetDisplayName() {
+    void testGetDisplayName() {
         assertThat(monitor.getDisplayName(), is("Operating system end of life monitor"));
     }
 
     @Test
-    public void testGetAfterEndOfLifeDate() {
+    void testGetAfterEndOfLifeDate() {
         assertFalse(monitor.getAfterEndOfLifeDate());
     }
 
     @Test
-    public void testGetDocumentationUrl() {
+    void testGetDocumentationUrl() {
         assertThat(monitor.getDocumentationUrl(), is(not(nullValue())));
     }
 
     @Test
-    public void testGetEndOfLifeDate() {
+    void testGetEndOfLifeDate() {
         assertThat(monitor.getEndOfLifeDate(), is("2099-12-31"));
     }
 
     @Test
-    public void testGetOperatingSystemName() {
+    void testGetOperatingSystemName() {
         /* Operating system name depends on the operating system running test */
         assertThat(monitor.getOperatingSystemName(), not(nullValue()));
     }
 
     @Test
-    public void testGetSearchUrl() {
+    void testGetSearchUrl() {
         assertThat(monitor.getSearchUrl(), is(PREFIX + monitor.getClass().getName()));
     }
 
     @Test
-    public void testGetUrl() {
+    void testGetUrl() {
         assertThat(monitor.getUrl(), is(PREFIX + monitor.getClass().getName()));
     }
 
     @Test
-    public void testIsActivated() throws IOException {
+    void testIsActivated() {
         // Will fail if operating system running the test is reaching end of life soon
         assertFalse(monitor.isActivated());
     }
 
     @Test
-    public void testIsSecurity() throws IOException {
+    void testIsSecurity() {
         assertFalse(monitor.isSecurity());
     }
 
     @Test
-    public void testNotIsActivatedWhenIgnoreEndOfLife() throws IOException {
+    void testNotIsActivatedWhenIgnoreEndOfLife() {
         monitor.ignoreEndOfLife = true;
         assertFalse(monitor.isActivated());
     }
@@ -127,27 +127,27 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
 
     @ParameterizedTest
     @MethodSource
-    public void testReadDocumentationUrls(String fileName, String pattern, String component) throws Exception {
+    void testReadDocumentationUrls(String fileName, String pattern, String component) throws Exception {
         URL fileUrl = this.getClass().getResource(fileName);
-        assertTrue("Resource file '" + fileName + "' not found", fileUrl != null);
+        assertNotNull(fileUrl, "Resource file '" + fileName + "' not found");
         File releaseFile = new File(fileUrl.toURI());
         assertThat(monitor.readDocumentationUrl(releaseFile, pattern), is(docsUrl(component)));
     }
 
     @Test
-    public void testReadOperatingSystemListEmptySet() {
+    void testReadOperatingSystemListEmptySet() {
         IOException e = assertThrows(IOException.class, () -> monitor.readOperatingSystemList("[]"));
         assertThat(e.getMessage(), is("Empty data set"));
     }
 
     @Test
-    public void testReadOperatingSystemListNoEndOfLife() {
+    void testReadOperatingSystemListNoEndOfLife() {
         IOException e = assertThrows(IOException.class, () -> monitor.readOperatingSystemList("[{\"pattern\": \"Alpine\"}]"));
         assertThat(e.getMessage(), is("No end of life date for Alpine"));
     }
 
     @Test
-    public void testReadOperatingSystemListNoPattern() {
+    void testReadOperatingSystemListNoPattern() {
         IOException e = assertThrows(IOException.class, () -> monitor.readOperatingSystemList("[{\"endOfLife\": \"2029-03-31\"}]"));
         assertThat(e.getMessage(), is("Missing pattern in definition file"));
     }
@@ -158,16 +158,16 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
 
     @ParameterizedTest
     @MethodSource
-    public void testReadOperatingSystemNames(String fileName, String pattern, String job) throws Exception {
+    void testReadOperatingSystemNames(String fileName, String pattern, String job) throws Exception {
         URL fileUrl = this.getClass().getResource(fileName);
-        assertTrue("Resource file '" + fileName + "' not found", fileUrl != null);
+        assertNotNull(fileUrl, "Resource file '" + fileName + "' not found");
         File releaseFile = new File(fileUrl.toURI());
         assertThat(monitor.readOperatingSystemName(releaseFile, pattern), is(job));
     }
 
     @Test
-    public void testReadOperatingSystemListOnWarningDate() throws Exception {
-        File dataFile = tmp.newFile();
+    void testReadOperatingSystemListOnWarningDate() throws Exception {
+        File dataFile = File.createTempFile("junit", null, tmp);
         Files.writeString(dataFile.toPath(), "PRETTY_NAME=\"Test OS\"");
         JSONObject eolIn6Months = new JSONObject();
         eolIn6Months.put("pattern", "Test OS");
@@ -181,7 +181,7 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
     }
 
     @Test
-    public void testReadOperatingSystemNameMissingFile() {
+    void testReadOperatingSystemNameMissingFile() {
         assertThat(monitor.readOperatingSystemName(new File("/this/file/does/not/exist"), ".*"), is(""));
     }
 
@@ -197,7 +197,7 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
      * name, and expected value for each of the resource files used by
      * the test.
      *
-     * @param simplifyExpectedValue if true, then the expected value
+     * @param simplify if true, then the expected value
      * is simplified by replacing ' ' with '-', by replacing '/' with
      * '-', and by removing '(' and ')'.
      * @return arguments for ParameterizedTest, resource file name,
@@ -214,12 +214,19 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
             Arguments.of("os-release-alpine-3.18", "Alpine Linux v3.18", s("Alpine Linux v3.18", simplify)),
             Arguments.of("os-release-alpine-3.19", "Alpine Linux v3.19", s("Alpine Linux v3.19", simplify)),
             Arguments.of("os-release-alpine-3.20", "Alpine Linux v3.20", s("Alpine Linux v3.20", simplify)),
+            Arguments.of("os-release-alpine-3.21", "Alpine Linux v3.21", s("Alpine Linux v3.21", simplify)),
+            Arguments.of("os-release-alpine-3.22", "Alpine Linux v3.22", s("Alpine Linux v3.22", simplify)),
+            Arguments.of("os-release-alpine-3.23", "Alpine Linux v3.23", s("Alpine Linux v3.23", simplify)),
+            Arguments.of("os-release-alpine-3.24", "Alpine Linux v3.24", s("Alpine Linux v3.24", simplify)),
             Arguments.of("os-release-amazon-linux-2", "Amazon Linux 2", s("Amazon Linux 2", simplify)),
             Arguments.of("os-release-amazon-linux-2023", "Amazon Linux 2023.*", s("Amazon Linux 2023.5.20241001", simplify)),
             Arguments.of("os-release-centos-7", "CentOS Linux.* 7.*", s("CentOS Linux 7 (Core)", simplify)),
+            Arguments.of("os-release-centos-stream-9", "CentOS Stream.* 9.*", s("CentOS Stream 9", simplify)),
+            Arguments.of("os-release-centos-stream-10", "CentOS Stream.* 10.*", s("CentOS Stream 10", simplify)),
             Arguments.of("os-release-debian-10", "Debian.* 10.*", s("Debian GNU/Linux 10 (buster)", simplify)),
             Arguments.of("os-release-debian-11", "Debian.* 11.*", s("Debian GNU/Linux 11 (bullseye)", simplify)),
             Arguments.of("os-release-debian-12", "Debian.* 12.*", s("Debian GNU/Linux 12 (bookworm)", simplify)),
+            Arguments.of("os-release-debian-13", "Debian.* 13.*", s("Debian GNU/Linux 13 (trixie)", simplify)),
             Arguments.of("os-release-eurolinux-8", "EuroLinux.* 8.*", s("EuroLinux 8.10 (Bucharest)", simplify)),
             Arguments.of("os-release-eurolinux-9", "EuroLinux.* 9.*", s("EuroLinux 9.4 (San Marino)", simplify)),
             Arguments.of("os-release-fedora-36", "Fedora.* 36.*", s("Fedora Linux 36 (Container Image)", simplify)),
@@ -229,20 +236,26 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
             Arguments.of("os-release-fedora-39", "Fedora.* 39.*", s("Fedora Linux 39 (Container Image)", simplify)),
             Arguments.of("os-release-fedora-40", "Fedora.* 40.*", s("Fedora Linux 40 (Container Image)", simplify)),
             Arguments.of("os-release-fedora-41", "Fedora.* 41.*", s("Fedora Linux 41 (Container Image)", simplify)),
+            Arguments.of("os-release-fedora-42", "Fedora.* 42.*", s("Fedora Linux 42 (Container Image)", simplify)),
+            Arguments.of("os-release-fedora-43", "Fedora.* 43.*", s("Fedora Linux 43 (Container Image)", simplify)),
+            Arguments.of("os-release-fedora-44", "Fedora.* 44.*", s("Fedora Linux 44 (Container Image)", simplify)),
             Arguments.of("os-release-oracle-7", "Oracle Linux.* 7.*", s("Oracle Linux Server 7.9", simplify)),
             Arguments.of("os-release-oracle-8", "Oracle Linux.* 8.*", s("Oracle Linux Server 8.10", simplify)),
             Arguments.of("os-release-oracle-9", "Oracle Linux.* 9.*", s("Oracle Linux Server 9.4", simplify)),
             Arguments.of("os-release-redhat-7", "Red Hat Enterprise Linux.* 7.*", s("Red Hat Enterprise Linux Server 7.9 (Maipo)", simplify)),
             Arguments.of("os-release-redhat-8", "Red Hat Enterprise Linux.* 8.*", s("Red Hat Enterprise Linux 8.10 (Ootpa)", simplify)),
+            Arguments.of("os-release-redhat-10", "Red Hat Enterprise Linux.* 10.*", s("Red Hat Enterprise Linux 10.2 (Coughlan)", simplify)),
             Arguments.of("os-release-rocky-8", "Rocky Linux.* 8.*", s("Rocky Linux 8.10 (Green Obsidian)", simplify)),
             Arguments.of("os-release-rocky-9", "Rocky Linux.* 9.*", s("Rocky Linux 9.4 (Blue Onyx)", simplify)),
+            Arguments.of("os-release-rocky-10", "Rocky Linux.* 10.*", s("Rocky Linux 10.1 (Red Quartz)", simplify)),
             Arguments.of("os-release-scientific-7", "Scientific Linux.* 7.*", s("Scientific Linux 7.9 (Nitrogen)", simplify)),
             Arguments.of("os-release-ubi-8", "Red Hat Enterprise Linux.* 8.*", s("Red Hat Enterprise Linux 8.10 (Ootpa)", simplify)),
             Arguments.of("os-release-ubi-9", "Red Hat Enterprise Linux.* 9.*", s("Red Hat Enterprise Linux 9.4 (Plow)", simplify)),
             Arguments.of("os-release-ubuntu-18.04", "Ubuntu.* 18.*", s("Ubuntu 18.04.6 LTS", simplify)),
             Arguments.of("os-release-ubuntu-20.04", "Ubuntu.* 20.*", s("Ubuntu 20.04.6 LTS", simplify)),
             Arguments.of("os-release-ubuntu-22.04", "Ubuntu.* 22.*", s("Ubuntu 22.04.4 LTS", simplify)),
-            Arguments.of("os-release-ubuntu-24.04", "Ubuntu.* 24.*", s("Ubuntu 24.04.1 LTS", simplify))
+            Arguments.of("os-release-ubuntu-24.04", "Ubuntu.* 24.*", s("Ubuntu 24.04.1 LTS", simplify)),
+            Arguments.of("os-release-ubuntu-26.04", "Ubuntu.* 26.04.*", s("Ubuntu 26.04.0 LTS", simplify))
         );
     }
 }

@@ -19,7 +19,7 @@ function init() {
       e.focus();
     };
     return {
-      label: suggestion.name,
+      displayName: suggestion.name,
       onClick: confirm,
       onKeyPress: (evt) => {
         if (evt.key === "Tab") {
@@ -43,6 +43,9 @@ function init() {
           instance.popper.style.minWidth = e.offsetWidth + "px";
         },
         true,
+        {
+          appendTo: (ref) => ref.closest("dialog") || document.body,
+        },
       );
     }
     e.dropdown.setContent(Utils.generateDropdownItems(items, true));
@@ -59,9 +62,30 @@ function init() {
       }
       return;
     }
-    const url =
-      e.getAttribute("autoCompleteUrl") + "?value=" + encodeURIComponent(word);
-    fetch(url)
+
+    const url = e.getAttribute("autoCompleteUrl");
+
+    const depends = e.getAttribute("fillDependsOn");
+    const q = qs(e).addThis();
+    if (depends && depends.length > 0) {
+      depends.split(" ").forEach(
+        TryEach(function (n) {
+          q.nearBy(n);
+        }),
+      );
+    }
+
+    const queryString = q.toString();
+    const idx = queryString.indexOf("?");
+    const parameters = queryString.substring(idx + 1);
+
+    fetch(url, {
+      method: "post",
+      headers: crumb.wrap({
+        "Content-Type": "application/x-www-form-urlencoded",
+      }),
+      body: parameters,
+    })
       .then((rsp) => (rsp.ok ? rsp.json() : {}))
       .then((response) => createAndShowDropdown(e, response.suggestions || []));
   }
@@ -72,14 +96,20 @@ function init() {
     0,
     function (e) {
       e.setAttribute("autocomplete", "off");
-      e.dataset["hideOnClick"] = "false";
       // form field with auto-completion support
       e.style.position = "relative";
       // otherwise menu won't hide on tab with nothing selected
       // needs delay as without that it blocks click selection of an item
-      e.addEventListener("focusout", () =>
-        setTimeout(() => e.dropdown && e.dropdown.hide(), 200),
-      );
+      e.addEventListener("focusout", (event) => {
+        if (
+          event.relatedTarget &&
+          e.dropdown &&
+          e.dropdown.popper.contains(event.relatedTarget)
+        ) {
+          return;
+        }
+        setTimeout(() => e.dropdown && e.dropdown.hide(), 200);
+      });
       e.addEventListener(
         "input",
         Utils.debounce(() => {

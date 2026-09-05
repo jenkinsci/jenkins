@@ -41,7 +41,6 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import jenkins.security.NonSerializableSecurityContext;
-import jenkins.security.NotReallyRoleSensitiveCallable;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
 import org.kohsuke.accmod.Restricted;
@@ -438,10 +437,6 @@ public abstract class ACL {
     }
 
     /**
-     * Safer variant of {@link #impersonate2(Authentication)} that does not require a finally-block.
-     * @param auth authentication, such as {@link #SYSTEM2}
-     * @param body an action to run with this alternate authentication in effect (try {@link NotReallyRoleSensitiveCallable})
-     * @since 2.266
      * @deprecated use try with resources and {@link #as2(Authentication)}
      */
     @Deprecated
@@ -455,7 +450,7 @@ public abstract class ACL {
     }
 
     /**
-     * @deprecated use {@link #impersonate2(Authentication, Callable)}
+     * @deprecated use try with resources and {@link #as2(Authentication)}
      * @since 1.587
      */
     @Deprecated

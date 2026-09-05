@@ -24,10 +24,10 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -37,26 +37,33 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.DependencyDeclarer;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * @author Alan.Harder@sun.com
  */
-public class DependencyGraphTest {
+@WithJenkins
+class DependencyGraphTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Tests triggering downstream projects with DependencyGraph.Dependency
      */
     @Test
-    public void testTriggerJob() throws Exception {
+    void testTriggerJob() throws Exception {
         j.setQuietPeriod(3);
         Project p = j.createFreeStyleProject(),
             down1 = j.createFreeStyleProject(), down2 = j.createFreeStyleProject();
@@ -71,14 +78,14 @@ public class DependencyGraphTest {
         Build b = (Build) p.scheduleBuild2(0, new Cause.UserIdCause()).get();
         String log = JenkinsRule.getLog(b);
         Queue.Item q = j.jenkins.getQueue().getItem(down1);
-        assertNull("down1 should not be triggered: " + log, q);
-        assertNull("down1 should not be triggered: " + log, down1.getLastBuild());
+        assertNull(q, "down1 should not be triggered: " + log);
+        assertNull(down1.getLastBuild(), "down1 should not be triggered: " + log);
         q = j.jenkins.getQueue().getItem(down2);
-        assertNotNull("down2 should be in queue (quiet period): " + log, q);
+        assertNotNull(q, "down2 should be in queue (quiet period): " + log);
         Run r = (Run) q.getFuture().get(60, TimeUnit.SECONDS);
-        assertNotNull("down2 should be triggered: " + log, r);
-        assertNotNull("down2 should have MailMessageIdAction",
-                      r.getAction(MailMessageIdAction.class));
+        assertNotNull(r, "down2 should be triggered: " + log);
+        assertNotNull(r.getAction(MailMessageIdAction.class),
+                      "down2 should have MailMessageIdAction");
         // Now change to success result..
         p.getBuildersList().replace(new TestDeclarer(Result.SUCCESS, down2));
         j.jenkins.rebuildDependencyGraph();
@@ -87,13 +94,14 @@ public class DependencyGraphTest {
         b = (Build) p.scheduleBuild2(0, new Cause.UserIdCause()).get();
         log = JenkinsRule.getLog(b);
         q = j.jenkins.getQueue().getItem(down2);
-        assertNull("down2 should not be triggered: " + log, q);
-        assertEquals("down2 should not be triggered: " + log, 1,
-                     down2.getLastBuild().getNumber());
+        assertNull(q, "down2 should not be triggered: " + log);
+        assertEquals(1,
+                     down2.getLastBuild().getNumber(),
+                     "down2 should not be triggered: " + log);
         q = j.jenkins.getQueue().getItem(down1);
-        assertNotNull("down1 should be in queue (quiet period): " + log, q);
+        assertNotNull(q, "down1 should be in queue (quiet period): " + log);
         r = (Run) q.getFuture().get(60, TimeUnit.SECONDS);
-        assertNotNull("down1 should be triggered", r);
+        assertNotNull(r, "down1 should be triggered");
     }
 
     private static class TestDeclarer extends MockBuilder implements DependencyDeclarer {
@@ -124,18 +132,19 @@ public class DependencyGraphTest {
     /**
      * Tests that all dependencies are found even when some projects have restricted visibility.
      */
-    @LocalData @Issue("JENKINS-5265")
+    @LocalData
+    @Issue("JENKINS-5265")
     @Test
-    public void testItemReadPermission() {
+    void testItemReadPermission() {
         // Rebuild dependency graph as anonymous user:
         j.jenkins.rebuildDependencyGraph();
         // Switch to full access to check results:
         try (ACLContext ignored = ACL.as2(ACL.SYSTEM2)) {
             // @LocalData for this test has jobs w/o anonymous Item.READ
             AbstractProject up = (AbstractProject) j.jenkins.getItem("hiddenUpstream");
-            assertNotNull("hiddenUpstream project not found", up);
+            assertNotNull(up, "hiddenUpstream project not found");
             List<AbstractProject> down = j.jenkins.getDependencyGraph().getDownstream(up);
-            assertEquals("Should have one downstream project", 1, down.size());
+            assertEquals(1, down.size(), "Should have one downstream project");
         } finally {
             SecurityContextHolder.clearContext();
         }
@@ -143,7 +152,7 @@ public class DependencyGraphTest {
 
     @Issue("JENKINS-17247")
     @Test
-    public void testTopologicalSort() throws Exception {
+    void testTopologicalSort() throws Exception {
         /*
             A-B---C-E
                \ /

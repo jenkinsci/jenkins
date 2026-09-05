@@ -26,7 +26,7 @@ package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.TaskListener;
 import java.io.IOException;
 
@@ -40,7 +40,7 @@ import java.io.IOException;
  * @since 1.383
  * @see ComputerLauncher
  */
-public abstract class ComputerConnector extends AbstractDescribableImpl<ComputerConnector> implements ExtensionPoint {
+public abstract class ComputerConnector implements Describable<ComputerConnector>, ExtensionPoint {
     /**
      * Creates a {@link ComputerLauncher} for connecting to the given host.
      *
@@ -53,6 +53,6 @@ public abstract class ComputerConnector extends AbstractDescribableImpl<Computer
 
     @Override
     public ComputerConnectorDescriptor getDescriptor() {
-        return (ComputerConnectorDescriptor) super.getDescriptor();
+        return (ComputerConnectorDescriptor) Describable.super.getDescriptor();
     }
 }

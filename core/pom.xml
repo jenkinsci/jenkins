@@ -39,11 +39,12 @@ THE SOFTWARE.
   <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
-    <xmlunit.version>2.10.0</xmlunit.version>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
-    <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
+    <!-- Not managed by jenkins-bom, so referenced from annotationProcessorPaths via this property -->
+    <core-annotation-processors.version>59.ve181f58722c6</core-annotation-processors.version>
   </properties>
 
   <dependencyManagement>
@@ -52,6 +53,13 @@ THE SOFTWARE.
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>jenkins-bom</artifactId>
         <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.xmlunit</groupId>
+        <artifactId>xmlunit-bom</artifactId>
+        <version>2.13.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -112,20 +120,6 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.infradna.tool</groupId>
-      <artifactId>bridge-method-annotation</artifactId>
-      <version>${bridge-method-injector.version}</version>
-    </dependency>
-    <dependency>
-      <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
-      <groupId>com.jcraft</groupId>
-      <artifactId>jzlib</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.solaris</groupId>
-      <artifactId>embedded_su4j</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.sun.xml.txw2</groupId>
       <artifactId>txw2</artifactId>
       <exclusions>
@@ -159,6 +153,7 @@ THE SOFTWARE.
       <artifactId>commons-codec</artifactId>
     </dependency>
     <dependency>
+      <!-- Jenkins core does not use this directly, but it remains a transitive dependency through BeanUtils, Jelly, and JSON-lib, and plugins rely on core providing it. -->
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
     </dependency>
@@ -167,51 +162,9 @@ THE SOFTWARE.
       <artifactId>commons-io</artifactId>
     </dependency>
     <dependency>
-      <groupId>commons-jelly</groupId>
-      <artifactId>commons-jelly-tags-fmt</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-jelly</groupId>
-      <artifactId>commons-jelly-tags-xml</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-jelly</groupId>
-          <artifactId>commons-jelly</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-jelly</groupId>
-          <artifactId>commons-jelly-tags-junit</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-jexl</groupId>
-          <artifactId>commons-jexl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xalan</groupId>
-          <artifactId>xalan</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xerces</groupId>
-          <artifactId>xercesImpl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!-- Jenkins doesn't use this directly, but some plugins wanted to use the latest -->
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.jenkins.stapler</groupId>
-      <artifactId>jenkins-stapler-support</artifactId>
+      <groupId>io.jenkins.tools</groupId>
+      <artifactId>bridge-method-annotation</artifactId>
+      <version>${bridge-method-injector.version}</version>
     </dependency>
     <dependency>
       <!-- needed by Jelly -->
@@ -287,17 +240,6 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
-      <artifactId>commons-compress</artifactId>
-      <exclusions>
-        <!-- Only needed for Pack200UnpackerAdapter, which we do not use -->
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-lang3</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
       <artifactId>commons-fileupload2-core</artifactId>
     </dependency>
     <dependency>
@@ -309,10 +251,6 @@ THE SOFTWARE.
       <artifactId>groovy-all</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.connectbot</groupId>
-      <artifactId>jbcrypt</artifactId>
-    </dependency>
-    <dependency>
       <!-- Groovy shell uses this, but it doesn't declare the dependency -->
       <groupId>org.fusesource.jansi</groupId>
       <artifactId>jansi</artifactId>
@@ -320,6 +258,24 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>commons-jelly-tags-fmt</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>commons-jelly-tags-xml</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>jaxen</groupId>
+          <artifactId>jaxen</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.dom4j</groupId>
+          <artifactId>dom4j</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -370,10 +326,6 @@ THE SOFTWARE.
       <artifactId>localizer</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.robust-http-client</groupId>
-      <artifactId>robust-http-client</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
     </dependency>
@@ -384,10 +336,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>windows-package-checker</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke.jinterop</groupId>
-      <artifactId>j-interop</artifactId>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.metainf-services</groupId>
@@ -466,10 +414,12 @@ THE SOFTWARE.
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <!-- working around MCOMPILER-97 -->
+      <!-- Also listed in annotationProcessorPaths above; kept as a dependency so that
+           jenkins-core continues to ship META-INF/services/javax.annotation.processing.Processor
+           for plugin builds. -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>core-annotation-processors</artifactId>
-      <version>13.v2dcfc22a_a_b_29</version>
+      <version>${core-annotation-processors.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
@@ -497,13 +447,8 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
+      <artifactId>mockito-junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -514,19 +459,54 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.xmlunit</groupId>
       <artifactId>xmlunit-core</artifactId>
-      <version>${xmlunit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.xmlunit</groupId>
       <artifactId>xmlunit-matchers</artifactId>
-      <version>${xmlunit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <!--
+            Declare the annotation processors explicitly rather than letting javac discover them by
+            scanning the whole compile classpath.
+          -->
+          <annotationProcessorPaths>
+            <path>
+              <groupId>net.java.sezpoz</groupId>
+              <artifactId>sezpoz</artifactId>
+            </path>
+            <path>
+              <groupId>org.jenkins-ci</groupId>
+              <artifactId>annotation-indexer</artifactId>
+            </path>
+            <path>
+              <groupId>org.jenkins-ci</groupId>
+              <artifactId>core-annotation-processors</artifactId>
+              <version>${core-annotation-processors.version}</version>
+            </path>
+            <path>
+              <groupId>org.kohsuke</groupId>
+              <artifactId>windows-package-checker</artifactId>
+            </path>
+            <path>
+              <groupId>org.kohsuke.metainf-services</groupId>
+              <artifactId>metainf-services</artifactId>
+            </path>
+            <path>
+              <groupId>org.kohsuke.stapler</groupId>
+              <artifactId>stapler</artifactId>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -620,7 +600,7 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
-        <groupId>com.infradna.tool</groupId>
+        <groupId>io.jenkins.tools</groupId>
         <artifactId>bridge-method-injector</artifactId>
         <executions>
           <execution>
@@ -676,6 +656,11 @@ THE SOFTWARE.
         <!-- Version specified in grandparent POM -->
         <executions>
           <execution>
+            <goals>
+              <goal>properties</goal>
+            </goals>
+          </execution>
+          <execution>
             <id>winsw</id>
             <goals>
               <!-- we use copy as this is a dependency from outside the reactor -->
@@ -699,11 +684,42 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
+        <executions>
+          <execution>
+            <!--
+              License headers make up the majority of the bytes of the localization and Jelly view files
+              (the license is retained in the source files and in the LICENSE.txt shipped in the war, just
+              as it is not retained in compiled class files), so strip comments from the packaged jar.
+            -->
+            <id>strip-license-comments</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <skip>${strip.license.comments.skip}</skip>
+              <target>
+                <!-- Only the leading comment block, to leave any semantically interesting comments elsewhere in the file untouched -->
+                <replaceregexp encoding="UTF-8" match="\A(?:[ \t]*(?:[#!].*)?\r?\n)+" replace="">
+                  <fileset dir="${project.build.outputDirectory}" includes="**/*.properties" />
+                </replaceregexp>
+                <!-- Only license comments, to leave any semantically interesting comments untouched -->
+                <replaceregexp encoding="UTF-8" flags="g" match="&lt;!--(?:(?!--&gt;)[\s\S])*?The MIT License[\s\S]*?--&gt;" replace="">
+                  <fileset dir="${project.build.outputDirectory}" includes="**/*.jelly" />
+                </replaceregexp>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <configuration>
           <!-- Make sure to keep the directives in test/pom.xml and war/pom.xml in sync with these. -->
-          <argLine>@{jacocoSurefireArgs} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
+          <argLine>@{jacocoSurefireArgs} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED -javaagent:"${org.mockito:mockito-core:jar}"</argLine>
           <reuseForks>false</reuseForks>
         </configuration>
       </plugin>

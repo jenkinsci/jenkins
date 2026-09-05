@@ -80,7 +80,7 @@ public class QueryParameterMap {
 
     public String get(String name) {
         List<String> v = store.get(name);
-        return v != null ? v.get(0) : null;
+        return v != null ? v.getFirst() : null;
     }
 
     public List<String> getAll(String name) {

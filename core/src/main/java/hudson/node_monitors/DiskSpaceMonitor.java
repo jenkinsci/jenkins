@@ -40,7 +40,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Checks available disk space of the remote FS root.
- * Requires Mustang.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.123

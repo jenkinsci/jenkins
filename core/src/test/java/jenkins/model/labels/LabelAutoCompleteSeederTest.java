@@ -36,7 +36,7 @@ import org.junit.jupiter.params.provider.MethodSource;
  *
  * @author dty
  */
-public class LabelAutoCompleteSeederTest {
+class LabelAutoCompleteSeederTest {
 
     static Stream<Arguments> localParameters()
     {
@@ -59,7 +59,7 @@ public class LabelAutoCompleteSeederTest {
 
     @ParameterizedTest(name = "{index}")
     @MethodSource("localParameters")
-    public void testAutoCompleteSeeds(String underTest, List<String> expected) {
+    void testAutoCompleteSeeds(String underTest, List<String> expected) {
         LabelAutoCompleteSeeder seeder = new LabelAutoCompleteSeeder(underTest);
         assertEquals(expected, seeder.getSeeds());
 
