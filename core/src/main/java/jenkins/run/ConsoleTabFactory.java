@@ -43,6 +43,11 @@ public class ConsoleTabFactory extends TransientActionFactory<Run> {
         return Run.class;
     }
 
+    @Override
+    public Class<Tab> actionType() {
+        return Tab.class;
+    }
+
     @NonNull
     @Override
     public Collection<? extends Tab> createFor(@NonNull Run target) {
