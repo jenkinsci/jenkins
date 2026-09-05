@@ -130,6 +130,7 @@ class ComputerSetTest {
 
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
+        wc.getOptions().setPrintContentOnFailingStatusCode(false);
 
         // Jenkins.READ can access /computer but not /computer/configure
         wc.login(USER);
@@ -192,6 +193,7 @@ class ComputerSetTest {
         );
 
         WebClient wc = j.createWebClient().withJavaScriptEnabled(false);
+        wc.getOptions().setPrintContentOnFailingStatusCode(false);
         Page page = wc.getPage(wc.createCrumbedUrl(HasWidgetHelper.getWidget(j.jenkins.getComputer(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax"));
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, not(containsString(message)));
@@ -333,6 +335,7 @@ class ComputerSetTest {
                 </slave>
                 """, embedNameInXML ? name : "");
         try (JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false)) {
+            wc.getOptions().setPrintContentOnFailingStatusCode(false);
             wc.login(USER);
             String agentCreateUrl = "computer/createItem";
             if (provideNameAsQueryParameter) {
