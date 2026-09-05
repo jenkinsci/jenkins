@@ -81,7 +81,7 @@ class CreateJobCommandTest {
 
         CLICommandInvoker.Result result = invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("job1.");
         assertThat(result.stderr(), containsString(hudson.model.Messages.Hudson_TrailingDot()));
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(8));
 
         assertThat(r.jenkins.getItems(), Matchers.hasSize(0));
     }
@@ -97,7 +97,7 @@ class CreateJobCommandTest {
 
         CLICommandInvoker.Result result = invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("job1.");
         assertThat(result.stderr(), containsString(hudson.model.Messages.Hudson_TrailingDot()));
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(8));
 
         assertThat(r.jenkins.getItems(), Matchers.hasSize(1));
     }
