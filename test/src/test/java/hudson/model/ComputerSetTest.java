@@ -25,6 +25,7 @@
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
@@ -33,11 +34,15 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
+import hudson.Functions;
 import hudson.cli.CLICommandInvoker;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.RetentionStrategy;
+import hudson.util.FormValidation;
 import java.net.HttpURLConnection;
 import jenkins.model.Jenkins;
 import jenkins.widgets.ExecutorsWidget;
@@ -191,6 +196,49 @@ class ComputerSetTest {
         assertThat(content, not(containsString(message)));
 
         j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
+    }
+
+    @Test
+    @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
+    void checkNameRejectsBuiltInLiteral() {
+        ComputerSet computerSet = new ComputerSet();
+        Failure f = assertThrows(Failure.class, () -> computerSet.checkName("(built-in)"));
+        assertThat(f.getMessage(), allOf(containsString("(built-in)"), containsString("is not an allowed name")));
+    }
+
+    @Test
+    @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
+    void checkNameAllowsCaseVariations() {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value on Windows");
+        ComputerSet computerSet = new ComputerSet();
+        // These should be allowed (case-sensitive check)
+        assertThat(computerSet.checkName("(Built-in)"), is("(Built-in)"));
+        assertThat(computerSet.checkName("(Built-IN)"), is("(Built-IN)"));
+        assertThat(computerSet.checkName("(BuiLT-in)"), is("(BuiLT-in)"));
+    }
+
+    @Test
+    @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
+    void checkNameAllowsSubstrings() {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value on Windows");
+        ComputerSet computerSet = new ComputerSet();
+        // These should be allowed (not exact matches)
+        assertThat(computerSet.checkName("prefix-(built-in)"), is("prefix-(built-in)"));
+        assertThat(computerSet.checkName("(built-in)-suffix"), is("(built-in)-suffix"));
+        assertThat(computerSet.checkName("space (built-in) name"), is("space (built-in) name"));
+        assertThat(computerSet.checkName("(built-in-suffix)"), is("(built-in-suffix)"));
+        assertThat(computerSet.checkName("(prefix-built-in)"), is("(prefix-built-in)"));
+    }
+
+    @Test
+    @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
+    void doCheckNameFormValidation() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value on Windows");
+        ComputerSet computerSet = new ComputerSet();
+        // Should return error for "(built-in)"
+        FormValidation validation = computerSet.doCheckName("(built-in)");
+        assertThat(validation.kind, is(FormValidation.Kind.ERROR));
+        assertThat(validation.toString(), allOf(containsString("(built-in)"), containsString("is not an allowed name")));
     }
 
     @Test
