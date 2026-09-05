@@ -331,6 +331,10 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                 name = Util.fixEmptyAndTrim(name);
 
                 if (name != null) {
+                    if ("(built-in)".equals(name))
+                        throw new Failure(Messages.Jenkins_NotAllowedName("(built-in)"));
+                    if ("(master)".equals(name))
+                        throw new Failure(Messages.Jenkins_NotAllowedName("(master)"));
                     newNode.setNodeName(name);
                 }
 
@@ -389,6 +393,8 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         name = name.trim();
         if ("(built-in)".equals(name))
             throw new Failure(Messages.Jenkins_NotAllowedName("(built-in)"));
+        if ("(master)".equals(name))
+            throw new Failure(Messages.Jenkins_NotAllowedName("(master)"));
         Jenkins.checkGoodName(name);
 
         if (Jenkins.get().getNode(name) != null)

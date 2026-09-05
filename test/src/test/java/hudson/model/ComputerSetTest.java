@@ -204,23 +204,28 @@ class ComputerSetTest {
         ComputerSet computerSet = new ComputerSet();
         Failure f = assertThrows(Failure.class, () -> computerSet.checkName("(built-in)"));
         assertThat(f.getMessage(), allOf(containsString("(built-in)"), containsString("is not an allowed name")));
+        f = assertThrows(Failure.class, () -> computerSet.checkName("(master)"));
+        assertThat(f.getMessage(), allOf(containsString("(master)"), containsString("is not an allowed name")));
     }
 
     @Test
     @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
     void checkNameAllowsCaseVariations() {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value on Windows");
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows");
         ComputerSet computerSet = new ComputerSet();
         // These should be allowed (case-sensitive check)
         assertThat(computerSet.checkName("(Built-in)"), is("(Built-in)"));
         assertThat(computerSet.checkName("(Built-IN)"), is("(Built-IN)"));
         assertThat(computerSet.checkName("(BuiLT-in)"), is("(BuiLT-in)"));
+        assertThat(computerSet.checkName("(Master)"), is("(Master)"));
+        assertThat(computerSet.checkName("(MASTER)"), is("(MASTER)"));
+        assertThat(computerSet.checkName("(mastEr)"), is("(mastEr)"));
     }
 
     @Test
     @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
     void checkNameAllowsSubstrings() {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value on Windows");
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows");
         ComputerSet computerSet = new ComputerSet();
         // These should be allowed (not exact matches)
         assertThat(computerSet.checkName("prefix-(built-in)"), is("prefix-(built-in)"));
@@ -228,17 +233,36 @@ class ComputerSetTest {
         assertThat(computerSet.checkName("space (built-in) name"), is("space (built-in) name"));
         assertThat(computerSet.checkName("(built-in-suffix)"), is("(built-in-suffix)"));
         assertThat(computerSet.checkName("(prefix-built-in)"), is("(prefix-built-in)"));
+        assertThat(computerSet.checkName("prefix-(master)"), is("prefix-(master)"));
+        assertThat(computerSet.checkName("(master)-suffix"), is("(master)-suffix"));
+        assertThat(computerSet.checkName("space (master) name"), is("space (master) name"));
+        assertThat(computerSet.checkName("(master-suffix)"), is("(master-suffix)"));
+        assertThat(computerSet.checkName("(prefix-master)"), is("(prefix-master)"));
     }
 
     @Test
     @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
     void doCheckNameFormValidation() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value on Windows");
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows");
         ComputerSet computerSet = new ComputerSet();
         // Should return error for "(built-in)"
         FormValidation validation = computerSet.doCheckName("(built-in)");
         assertThat(validation.kind, is(FormValidation.Kind.ERROR));
         assertThat(validation.toString(), allOf(containsString("(built-in)"), containsString("is not an allowed name")));
+        validation = computerSet.doCheckName("(master)");
+        assertThat(validation.kind, is(FormValidation.Kind.ERROR));
+        assertThat(validation.toString(), allOf(containsString("(master)"), containsString("is not an allowed name")));
+    }
+
+    @Test
+    void createItemFromXmlWithNameBuiltIn() throws Exception {
+        createItemTest("(built-in)");
+    }
+
+    @Test
+    void createItemFromXmlWithNameMaster() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows");
+        createItemTest("(master)");
     }
 
     @Test
@@ -283,6 +307,10 @@ class ComputerSetTest {
             req.setAdditionalHeader("Content-Type", "application/xml");
             req.setRequestBody(xml);
             WebResponse rsp = wc.getPage(req).getWebResponse();
+            if ("(built-in)".equals(name) || "(master)".equals(name)) {
+                assertThat(rsp.getStatusCode(), is(400));
+                return;
+            }
             assertThat(rsp.getStatusCode(), is(200));
             if (name == null) {
                 name = "agent-from-xml";
