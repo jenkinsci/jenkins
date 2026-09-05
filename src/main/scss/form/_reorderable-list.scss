@@ -233,78 +233,31 @@ div.repeated-chunk {
 
 /* ========================= repeatable elements ========================= */
 
-.repeated-chunk .show-if-last {
-  visibility: hidden;
-}
+.repeated-chunk {
+  --repeatable-show-if-last: hidden;
+  --repeatable-show-if-not-last: visible;
+  --repeatable-show-if-not-only: visible;
 
-.repeated-chunk.last .show-if-last {
-  visibility: visible;
-}
+  &.last {
+    --repeatable-show-if-last: visible;
+    --repeatable-show-if-not-last: hidden;
+  }
 
-.repeated-chunk .show-if-not-last {
-  visibility: visible;
-}
+  &.first.last {
+    --repeatable-show-if-not-only: hidden;
+  }
 
-.repeated-chunk.last .show-if-not-last {
-  visibility: hidden;
-}
+  .show-if-last {
+    visibility: var(--repeatable-show-if-last);
+  }
 
-.repeated-chunk .show-if-not-only {
-  visibility: visible;
-}
+  .show-if-not-last {
+    visibility: var(--repeatable-show-if-not-last);
+  }
 
-.repeated-chunk.first.last .show-if-not-only {
-  visibility: hidden;
-}
-
-/* == nested repeatable elements / 2 deep == */
-.repeated-chunk .repeated-chunk .show-if-last {
-  visibility: hidden;
-}
-
-.repeated-chunk .repeated-chunk.last .show-if-last {
-  visibility: visible;
-}
-
-.repeated-chunk .repeated-chunk .show-if-not-last {
-  visibility: visible;
-}
-
-.repeated-chunk .repeated-chunk.last .show-if-not-last {
-  visibility: hidden;
-}
-
-.repeated-chunk .repeated-chunk .show-if-not-only {
-  visibility: visible;
-}
-
-.repeated-chunk .repeated-chunk.first.last .show-if-not-only {
-  visibility: hidden;
-}
-
-/* == nested repeatable elements / 3 deep == */
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-last {
-  visibility: hidden;
-}
-
-.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last {
-  visibility: visible;
-}
-
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-last {
-  visibility: visible;
-}
-
-.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-not-last {
-  visibility: hidden;
-}
-
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-only {
-  visibility: visible;
-}
-
-.repeated-chunk .repeated-chunk .repeated-chunk.first.last .show-if-not-only {
-  visibility: hidden;
+  .show-if-not-only {
+    visibility: var(--repeatable-show-if-not-only);
+  }
 }
 
 /*
