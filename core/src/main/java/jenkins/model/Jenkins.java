@@ -42,6 +42,7 @@ import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
+import static jenkins.model.Messages.Hudson_Computer_ExecutorsUnsafe;
 import static jenkins.model.Messages.Hudson_Computer_IncorrectNumberOfExecutors;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -2344,7 +2345,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         public FormValidation doCheckNumExecutors(@QueryParameter String value) {
-            return FormValidation.validateNonNegativeInteger(value);
+            FormValidation validation = FormValidation.validateNonNegativeInteger(value);
+            if (validation.kind != FormValidation.Kind.OK) {
+                return validation;
+            }
+            if (Integer.parseInt(value) > 0) {
+                return FormValidation.warningWithMarkup(Hudson_Computer_ExecutorsUnsafe());
+            }
+            return FormValidation.ok();
         }
 
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
@@ -5469,6 +5477,30 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         @Override
         public HttpResponse doDoDelete() throws IOException {
             throw HttpResponses.status(SC_BAD_REQUEST);
+        }
+
+        /**
+         * Enables building on the built-in node by giving it a single executor, unless it already has any.
+         *
+         * <p>Since builds running on the built-in node have the same level of access to the controller file system as
+         * the Jenkins process itself, this is only offered as a convenience for instances without any other build
+         * capacity. Setting up agents or clouds is preferable.
+         *
+         * <p>Redirects back to the referring page, so that the caller sees the effect of the change.
+         *
+         * @since TODO
+         */
+        @RequirePOST
+        @Restricted(NoExternalUse.class)
+        public HttpResponse doAddExecutor() throws IOException {
+            checkPermission(ADMINISTER);
+            Jenkins jenkins = Jenkins.get();
+            if (jenkins.getNumExecutors() == 0) {
+                jenkins.setNumExecutors(1);
+            }
+            // Return to where this was triggered from, so that the effect of the change is visible: Sending the user
+            // to the configuration page instead would not indicate that anything happened.
+            return HttpResponses.forwardToPreviousPage();
         }
 
         @Override

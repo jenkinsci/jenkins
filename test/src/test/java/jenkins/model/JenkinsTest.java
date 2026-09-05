@@ -793,6 +793,24 @@ public class JenkinsTest {
         assertThat(j.jenkins.getViews(), contains(isA(AllView.class)));
     }
 
+    @Test
+    void checkNumExecutorsWarnsAboutBuildingOnBuiltInNode() {
+        Jenkins.DescriptorImpl descriptor = Jenkins.DescriptorImpl.INSTANCE;
+
+        // Not building on the built-in node is the recommended configuration.
+        assertEquals(FormValidation.Kind.OK, descriptor.doCheckNumExecutors("0").kind);
+
+        // Any executors on the built-in node mean builds get controller file system access.
+        FormValidation warning = descriptor.doCheckNumExecutors("1");
+        assertEquals(FormValidation.Kind.WARNING, warning.kind);
+        assertThat(warning.renderHtml(), containsString("https://www.jenkins.io/redirect/building-on-controller/"));
+        assertEquals(FormValidation.Kind.WARNING, descriptor.doCheckNumExecutors("2").kind);
+
+        // Invalid values are still reported as errors, not warnings.
+        assertEquals(FormValidation.Kind.ERROR, descriptor.doCheckNumExecutors("-1").kind);
+        assertEquals(FormValidation.Kind.ERROR, descriptor.doCheckNumExecutors("nope").kind);
+    }
+
     private static File newFolder(File root, String... subDirs) throws IOException {
         String subFolder = String.join("/", subDirs);
         File result = new File(root, subFolder);

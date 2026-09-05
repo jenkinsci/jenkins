@@ -2138,6 +2138,51 @@ function AutoScroller(scrollContainer) {
   };
 }
 
+/**
+ * Replaces the element with the given ID with fresh content retrieved from the given URL, once.
+ *
+ * Useful to reflect a change immediately instead of waiting for the next periodic refresh, see
+ * {@link refreshPart}.
+ *
+ * @return a promise resolving to false if the element to refresh no longer exists, true otherwise.
+ */
+function refreshPartNow(id, url) {
+  return fetch(url, {
+    headers: crumb.wrap({}),
+    method: "post",
+  }).then((rsp) => {
+    if (!rsp.ok) {
+      return true;
+    }
+    return rsp.text().then((responseText) => {
+      var hist = document.getElementById(id);
+      if (hist == null) {
+        console.log("There's no element that has ID of " + id);
+        return false;
+      }
+      if (!responseText) {
+        console.log(
+          "Failed to retrieve response for ID " +
+            id +
+            ", perhaps Jenkins is unavailable",
+        );
+        return true;
+      }
+      var p = hist.parentNode;
+
+      var div = document.createElement("div");
+      div.innerHTML = responseText;
+
+      var node = div.firstElementChild;
+      p.replaceChild(node, hist);
+
+      Behaviour.applySubtree(node);
+      layoutUpdateCallback.call();
+      return true;
+    });
+  });
+}
+
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
 // eslint-disable-next-line no-unused-vars
@@ -2145,39 +2190,9 @@ function refreshPart(id, url) {
   var intervalID = null;
   var f = function () {
     if (isPageVisible()) {
-      fetch(url, {
-        headers: crumb.wrap({}),
-        method: "post",
-      }).then((rsp) => {
-        if (rsp.ok) {
-          rsp.text().then((responseText) => {
-            var hist = document.getElementById(id);
-            if (hist == null) {
-              console.log("There's no element that has ID of " + id);
-              if (intervalID !== null) {
-                window.clearInterval(intervalID);
-              }
-              return;
-            }
-            if (!responseText) {
-              console.log(
-                "Failed to retrieve response for ID " +
-                  id +
-                  ", perhaps Jenkins is unavailable",
-              );
-              return;
-            }
-            var p = hist.parentNode;
-
-            var div = document.createElement("div");
-            div.innerHTML = responseText;
-
-            var node = div.firstElementChild;
-            p.replaceChild(node, hist);
-
-            Behaviour.applySubtree(node);
-            layoutUpdateCallback.call();
-          });
+      refreshPartNow(id, url).then((exists) => {
+        if (!exists && intervalID !== null) {
+          window.clearInterval(intervalID);
         }
       });
     }
