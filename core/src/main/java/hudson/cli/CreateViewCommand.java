@@ -24,8 +24,11 @@
 
 package hudson.cli;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Failure;
+import hudson.model.Item;
+import hudson.model.ModifiableViewGroup;
 import hudson.model.View;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
@@ -37,7 +40,8 @@ import org.kohsuke.args4j.Argument;
 @Extension
 public class CreateViewCommand extends CLICommand {
 
-    @Argument(usage = "Name of the view to use instead of the one in XML")
+    @Argument(usage = "Name of the view to use instead of the one in XML. Any '/' in the name is used to put the view into a folder.")
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public String viewName = null;
 
     @Override
@@ -50,7 +54,27 @@ public class CreateViewCommand extends CLICommand {
     protected int run() throws Exception {
 
         final Jenkins jenkins = Jenkins.get();
-        jenkins.checkPermission(View.CREATE);
+
+        ModifiableViewGroup vg = jenkins;
+        if (viewName != null) {
+            int i = viewName.lastIndexOf('/');
+            if (i > 0) {
+                String group = viewName.substring(0, i);
+                Item item = jenkins.getItemByFullName(group);
+                if (item == null) {
+                    throw new IllegalArgumentException("Unknown folder " + group);
+                }
+
+                if (item instanceof ModifiableViewGroup) {
+                    vg = (ModifiableViewGroup) item;
+                } else {
+                    throw new IllegalStateException("Can't create view from CLI in " + group);
+                }
+                viewName = viewName.substring(i + 1);
+            }
+        }
+
+        vg.checkPermission(View.CREATE);
 
         View newView;
         try {
@@ -61,11 +85,11 @@ public class CreateViewCommand extends CLICommand {
         }
 
         final String newName = newView.getViewName();
-        if (jenkins.getView(newName) != null) {
+        if (vg.getView(newName) != null) {
             throw new IllegalStateException("View '" + newName + "' already exists");
         }
 
-        jenkins.addView(newView);
+        vg.addView(newView);
 
         return 0;
     }
