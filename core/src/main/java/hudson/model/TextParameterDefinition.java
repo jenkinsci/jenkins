@@ -29,6 +29,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import java.util.Objects;
+import jenkins.model.EnvironmentVariableParameterNameFormValidation;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -54,7 +55,7 @@ public class TextParameterDefinition extends StringParameterDefinition {
     }
 
     @Extension @Symbol({"text", "textParam"})
-    public static class DescriptorImpl extends ParameterDescriptor {
+    public static class DescriptorImpl extends ParameterDescriptor implements EnvironmentVariableParameterNameFormValidation {
         @NonNull
         @Override
         public String getDisplayName() {
