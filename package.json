@@ -40,7 +40,7 @@
     "handlebars-loader": "1.7.3",
     "jsdom": "30.0.1",
     "mini-css-extract-plugin": "2.10.2",
-    "postcss": "8.5.26",
+    "postcss": "8.5.28",
     "postcss-loader": "8.2.1",
     "postcss-preset-env": "11.5.1",
     "postcss-scss": "4.0.9",
