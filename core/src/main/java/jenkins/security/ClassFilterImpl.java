@@ -27,6 +27,7 @@ package jenkins.security;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.Main;
 import hudson.remoting.ClassFilter;
@@ -67,6 +68,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * yet is not mentioned in {@code whitelisted-classes.txt}.
  */
 @Restricted(NoExternalUse.class)
+@SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
 public class ClassFilterImpl extends ClassFilter {
 
     private static final Logger LOGGER = Logger.getLogger(ClassFilterImpl.class.getName());

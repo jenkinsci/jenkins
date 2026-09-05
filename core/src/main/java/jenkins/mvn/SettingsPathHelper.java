@@ -1,5 +1,6 @@
 package jenkins.mvn;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Util;
@@ -13,6 +14,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
 class SettingsPathHelper {
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     static FilePath getSettings(AbstractBuild<?, ?> build, TaskListener listener, String path) throws IOException, InterruptedException {
         EnvVars env = build.getEnvironment(listener);
         String targetPath = Util.replaceMacro(path, build.getBuildVariableResolver());

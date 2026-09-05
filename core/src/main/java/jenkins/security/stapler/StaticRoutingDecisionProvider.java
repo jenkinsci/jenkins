@@ -245,6 +245,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
         }
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private File getConfigFile() {
         return new File(WHITELIST_PATH == null ? new File(Jenkins.get().getRootDir(), "stapler-whitelist.txt").toString() : WHITELIST_PATH);
     }
