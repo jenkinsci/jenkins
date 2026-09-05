@@ -268,7 +268,7 @@ class ComputerSetTest {
     @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
     void createItemFromXmlWithNameBuiltInXML() throws Exception {
         assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows CI");
-        createItemTest("(built-in)", true, false);
+        createItemTestEmbedNameInXML("(built-in)");
     }
 
     @Test
@@ -282,7 +282,7 @@ class ComputerSetTest {
     @Issue("https://github.com/jenkinsci/jenkins/issues/16372")
     void createItemFromXmlWithEmptyNameInXML() throws Exception {
         assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Not valuable enough to run on Windows CI");
-        createItemTest("", true, false);
+        createItemTestEmbedNameInXML("");
     }
 
     @Test
@@ -294,12 +294,16 @@ class ComputerSetTest {
 
     @Test
     void createItemFromXmlNoNameQueryParameter() throws Exception {
-        createItemTest("agent-from-xml", true, false);
+        createItemTestEmbedNameInXML("agent-from-xml");
     }
 
     @Test
     void createItemFromXmlWithName() throws Exception {
         createItemTest("new-name");
+    }
+
+    private void createItemTestEmbedNameInXML(@NonNull String name) throws Exception {
+        createItemTest(name, true, false);
     }
 
     private void createItemTest(@NonNull String name) throws Exception {
