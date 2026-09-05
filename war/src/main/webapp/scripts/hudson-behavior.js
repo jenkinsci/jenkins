@@ -1208,7 +1208,9 @@ function helpButtonOnClick() {
             // Which plugin is this from?
             div.innerHTML =
               responseText +
-              (from ? "<div class='from-plugin'>" + from + "</div>" : "");
+              (from
+                ? "<div class='from-plugin'>" + escapeHTML(from) + "</div>"
+                : "");
 
             // Ensure links open in new window unless explicitly specified otherwise
             var links = div.getElementsByTagName("a");
@@ -1226,7 +1228,8 @@ function helpButtonOnClick() {
             }
           } else {
             div.innerHTML =
-              "<b>ERROR</b>: Failed to load help file: " + rsp.statusText;
+              "<b>ERROR</b>: Failed to load help file: " +
+              escapeHTML(rsp.statusText);
           }
           layoutUpdateCallback.call();
         });
