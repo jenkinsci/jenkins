@@ -27,6 +27,7 @@ package hudson.scm;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Job;
 import hudson.util.DescriptorList;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
@@ -57,24 +58,21 @@ public class SCMS {
      */
     @SuppressWarnings("deprecation")
     public static SCM parseSCM(StaplerRequest2 req, AbstractProject target) throws FormException, ServletException {
-        // Get filtered list of SCM descriptors applicable to this project
-        List<SCMDescriptor<?>> descriptors = SCM._for(target);
-
-        // Find the selected descriptor from the filtered list
         JSONObject scmConfig = req.getSubmittedForm().getJSONObject("scm");
-        if (scmConfig.isNullObject())
-            return new NullSCM();
-
-        int selectedIndex = scmConfig.getInt("value");
-        if (selectedIndex >= descriptors.size())
-            throw new FormException("SCM index out of range", "scm");
-
-        // Create new instance using the selected descriptor
-        SCM scm = descriptors.get(selectedIndex).newInstance(req, scmConfig);
+        SCM scm = null;
+        if (!scmConfig.isNullObject()) {
+            // Use the same filtered list as config-scm.jelly to interpret the radio button index.
+            List<SCMDescriptor<?>> descriptors = SCM._for((Job) target);
+            int selectedIndex = scmConfig.getInt("value");
+            if (selectedIndex < 0 || selectedIndex >= descriptors.size())
+                throw new FormException("SCM index out of range", "scm");
+            scm = descriptors.get(selectedIndex).newInstance(req, scmConfig);
+        }
         if (scm == null) {
             scm = new NullSCM(); // JENKINS-36043 workaround for AbstractMultiBranchProject.submit
         }
 
+        scm.getDescriptor().incrementGeneration();
         return scm;
     }
 
