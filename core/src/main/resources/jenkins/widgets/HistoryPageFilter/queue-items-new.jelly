@@ -1,0 +1,80 @@
+<!--
+The MIT License
+
+Copyright (c) 2026, Jan Faracik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <!-- pending build -->
+  <j:set var="queuedItems" value="${it.queueItems}" />
+  <j:if test="${!queuedItems.isEmpty()}">
+    <j:forEach var="pageEntry" items="${queuedItems}" indexVar="i">
+      <j:set var="item" value="${pageEntry.entry}" />
+      <j:set var="id" value="${h.generateId()}" />
+
+      <div class="app-temporary-list__item" page-entry-id="${pageEntry.entryId}">
+        <div class="app-build-item">
+          <div class="app-build-item__icon">
+            <l:icon src="symbol-status-nobuilt" />
+          </div>
+          <div class="app-temporary-list__item__details">
+            <div class="app-temporary-list__item__details__text">
+              <div class="app-temporary-list__item__label">
+                <!-- Don't use math unless needed, in case nextBuildNumber is not numeric -->
+                #${queuedItems.size() == 1 ? it.widget.owner.nextBuildNumber : it.widget.owner.nextBuildNumber+queuedItems.size()-i-1}
+              </div>
+
+              <div class="app-temporary-list__item__description">
+                <div class="jenkins-details">
+                  <j:set var="cause" value="${item.getCauseOfBlockage()}" />
+                  <j:if test="${cause!=null}">
+                      <div class="jenkins-details__item">
+                      <div class="jenkins-details__item__icon">
+                        <l:icon src="symbol-information-circle" />
+                      </div>
+                      <st:include it="${cause}" page="summary.jelly" />
+                    </div>
+                  </j:if>
+
+                  <j:if test="${!item.params.isEmpty()}">
+                    <div tooltip="Build Parameters: ${item.params}" class="jenkins-details__item">
+                      <div class="jenkins-details__item__icon">
+                        <l:icon src="symbol-parameters" />
+                      </div>
+                      <span>${%Parameters}</span>
+                    </div>
+                  </j:if>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="app-temporary-list__item__actions">
+            <j:if test="${item.hasCancelPermission()}">
+              <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="${%Cancel}" />
+            </j:if>
+          </div>
+        </div>
+      </div>
+    </j:forEach>
+  </j:if>
+</j:jelly>
