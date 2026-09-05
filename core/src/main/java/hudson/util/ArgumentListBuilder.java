@@ -286,10 +286,29 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     /**
      * Just adds quotes around args containing spaces, but no other special characters,
      * so this method should generally be used only for informational/logging purposes.
+     *
+     * <p>Masked arguments are replaced with {@code ******}, as in {@link #toString()}:
+     * the output of this method is destined for a log, which is exactly where a masked
+     * argument must not appear.
+     *
+     * <p>This is the same rendering as {@link #toString()}; the two share one
+     * implementation so a change to the masking of one cannot silently miss the other.
      */
     public String toStringWithQuote() {
+        return renderForDisplay();
+    }
+
+    /**
+     * Renders the arguments for human consumption, quoting anything that contains a
+     * space or is empty and replacing masked arguments with {@code ******}.
+     */
+    private String renderForDisplay() {
         StringBuilder buf = new StringBuilder();
-        for (String arg : args) {
+        for (int i = 0; i < args.size(); i++) {
+            String arg = args.get(i);
+            if (mask.get(i))
+                arg = "******";
+
             if (!buf.isEmpty())  buf.append(' ');
 
             if (arg.indexOf(' ') >= 0 || arg.isEmpty())
@@ -426,20 +445,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      */
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < args.size(); i++) {
-            String arg = args.get(i);
-            if (mask.get(i))
-                arg = "******";
-
-            if (!buf.isEmpty())  buf.append(' ');
-
-            if (arg.indexOf(' ') >= 0 || arg.isEmpty())
-                buf.append('"').append(arg).append('"');
-            else
-                buf.append(arg);
-        }
-        return buf.toString();
+        return renderForDisplay();
     }
 
     private static final long serialVersionUID = 1L;
