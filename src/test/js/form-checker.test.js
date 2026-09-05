@@ -1,3 +1,4 @@
+/* global formatValidationResponse */
 import hudsonBehaviorSource from "../../../war/src/main/webapp/scripts/hudson-behavior.js?raw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -15,6 +16,34 @@ function loadHudsonBehavior() {
   // indirect eval, so that the top level `var`s of the script become globals
   (0, eval)(hudsonBehaviorSource);
 }
+
+describe("formatValidationResponse", () => {
+  beforeEach(() => {
+    loadHudsonBehavior();
+  });
+
+  it("shows a concise message for an error response", () => {
+    const response = {
+      ok: false,
+      status: 500,
+    };
+    const responseText = "<html><body><h1>Oops!</h1></body></html>";
+
+    expect(formatValidationResponse(response, responseText)).toBe(
+      '<div class="error">An internal error occurred during form field validation (HTTP 500). Please reload the page and if the problem persists, ask the administrator for help.</div>',
+    );
+  });
+
+  it("returns the response body for a successful response", () => {
+    const response = {
+      ok: true,
+      status: 200,
+    };
+    const responseText = "<div>Validation successful</div>";
+
+    expect(formatValidationResponse(response, responseText)).toBe(responseText);
+  });
+});
 
 describe("FormChecker.delayedCheck", () => {
   /** The requests handed to fetch, each one settled by the test. */
