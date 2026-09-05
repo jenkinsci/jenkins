@@ -275,10 +275,6 @@ var FormChecker = {
         params.onComplete(response);
       })
       .catch((error) => {
-        if (FormChecker.inProgress > 0) {
-          FormChecker.inProgress--;
-          FormChecker.schedule();
-        }
         if (params.onError != null) {
           params.onError(error);
           return;
@@ -1235,7 +1231,12 @@ function helpButtonOnClick() {
           layoutUpdateCallback.call();
         });
       })
-      .catch((e) => console.warn("Failed to load help:", e));
+      .catch((e) => {
+        console.warn("Failed to load help:", e);
+        div.innerHTML =
+          "<b>ERROR</b>: Failed to load help file: " + escapeHTML(String(e));
+        layoutUpdateCallback.call();
+      });
   } else {
     helpArea.style.display = "none";
     layoutUpdateCallback.call();
