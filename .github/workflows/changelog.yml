@@ -2,14 +2,7 @@
 # More Info: https://github.com/jenkinsci/.github/blob/master/.github/release-drafter.adoc
 name: Changelog Drafter
 
-on:
-  workflow_dispatch:
-  push:
-    # branches to consider in the event; optional, defaults to all
-    branches:
-      - master
-  pull_request_target:
-    types: [synchronize]
+on: [pull_request_target]
 
 permissions:
   contents: read
