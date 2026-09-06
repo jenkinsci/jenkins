@@ -8,6 +8,8 @@ on:
     # branches to consider in the event; optional, defaults to all
     branches:
       - master
+  pull_request_target:
+    types: [synchronize]
 
 permissions:
   contents: read
