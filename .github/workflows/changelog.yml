@@ -32,8 +32,8 @@ jobs:
       - name: Generate YAML changelog draft
         id: jenkins-core-changelog-generator
         uses: jenkinsci/core-changelog-generator@feb124ed2262f8586ac4561348436afb965812e1 # v2.2.2
-        with:
-          token: github-actions:${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_AUTH: "github-actions:${{ secrets.GITHUB_TOKEN }}"
       - name: Upload Changelog YAML
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: generate-token
         with:
-          app-id: ${{ secrets.JENKINS_CHANGELOG_UPDATER_APP_ID }}
+          client-id: ${{ secrets.JENKINS_CHANGELOG_UPDATER_APP_ID }}
           private-key: ${{ secrets.JENKINS_CHANGELOG_UPDATER_PRIVATE_KEY }}
           owner: jenkins-infra
           repositories: jenkins.io
