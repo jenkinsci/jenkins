@@ -103,7 +103,7 @@ THE SOFTWARE.
     <!-- Skips node installation, "yarn install" and "yarn build". Only safe when
          war/src/main/webapp/jsbundles is already populated from an earlier build. -->
     <skip.frontend>false</skip.frontend>
-    <winstone.version>8.1047.v331d3186f463</winstone.version>
+    <winstone.version>8.1050.veb_a_0d2124285</winstone.version>
     <node.version>24.19.0</node.version>
   </properties>
 
