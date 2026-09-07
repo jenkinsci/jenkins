@@ -101,7 +101,7 @@ public class SCMSTest {
 
     @Test
     @SuppressWarnings("deprecation")
-    void absentSCMUsesNullSCM() throws Exception {
+    void nullSCMConfigurationUsesNullSCM() throws Exception {
         StaplerRequest2 request = mock(StaplerRequest2.class);
         JSONObject form = new JSONObject();
         form.put("scm", JSONObject.fromObject("null"));
@@ -127,7 +127,7 @@ public class SCMSTest {
 
             @Override
             public String getDisplayName() {
-                return "A Inapplicable SCM";
+                return "An Inapplicable SCM";
             }
         }
     }
