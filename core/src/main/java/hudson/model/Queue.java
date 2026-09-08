@@ -1764,8 +1764,14 @@ public class Queue extends ResourceController implements Saveable {
                     }
                 } else {
 
+                    Label assignedLabel = p.getAssignedLabel();
                     List<JobOffer> candidates = new ArrayList<>(parked.size());
                     Map<Node, CauseOfBlockage> reasonMap = new HashMap<>();
+                    // Whether some relevant node is already executing other work and still refused this item
+                    // (so more capacity could plausibly help) and whether some relevant node refused it while
+                    // being completely idle (so more capacity of the same kind would refuse it as well).
+                    boolean refusedByBusyNode = false;
+                    boolean refusedByIdleNode = false;
                     for (JobOffer j : parked.values()) {
                         Node offerNode = j.getNode();
                         CauseOfBlockage reason;
@@ -1782,8 +1788,22 @@ public class Queue extends ResourceController implements Saveable {
                             candidates.add(j);
                         } else {
                             LOGGER.log(Level.FINEST, "{0} rejected {1}: {2}", new Object[] {j, taskDisplayName, reason});
+                            // Only offers that are still available are capacity at all; in particular an offer
+                            // that was just handed a work unit earlier in this very loop is not.
+                            if (j.isAvailable() && offerNode != null
+                                    && (assignedLabel == null || assignedLabel.contains(offerNode))) {
+                                if (j.executor.getOwner().countBusy() > 0) {
+                                    refusedByBusyNode = true;
+                                } else {
+                                    refusedByIdleNode = true;
+                                }
+                            }
                         }
                     }
+
+                    // Assign before mapping, so that an item that does get assigned to an executor (and thus
+                    // moves on to the pendings list, where LoadStatistics still sees it) is left with false.
+                    p.rejectedByAllAvailableExecutors = candidates.isEmpty() && refusedByBusyNode && !refusedByIdleNode;
 
                     MappingWorksheet ws = new MappingWorksheet(p, candidates);
                     Mapping m = loadBalancer.map(p.task, ws);
@@ -2811,6 +2831,21 @@ public class Queue extends ResourceController implements Saveable {
          */
         private transient volatile @CheckForNull List<CauseOfBlockage> transientCausesOfBlockage;
 
+        /**
+         * Set by the last call to {@link #maintain} when this item could not be assigned to any of the
+         * currently available (i.e. idle and accepting tasks) executors, and when adding capacity could
+         * plausibly help.
+         *
+         * <p>More precisely, this is {@code true} when every available executor refused this item, at least
+         * one of the refusing nodes matches {@link #getAssignedLabel} while already executing other work,
+         * and no completely idle node matching {@link #getAssignedLabel} refused it. A completely idle node
+         * refusing the item means the refusal is not caused by the node being occupied, so a freshly
+         * provisioned node would refuse the item as well.
+         *
+         * @see hudson.model.LoadStatistics.LoadStatisticsSnapshot#getRejectedQueueLength
+         */
+        private transient volatile boolean rejectedByAllAvailableExecutors;
+
         public BuildableItem(WaitingItem wi) {
             super(wi);
         }
@@ -2872,6 +2907,23 @@ public class Queue extends ResourceController implements Saveable {
         @Exported
         public boolean isPending() {
             return isPending;
+        }
+
+        /**
+         * Whether the last call to {@link #maintain} found that this item was refused by every available
+         * executor, in a way that suggests that additional capacity would be able to take it.
+         *
+         * <p>{@link QueueTaskDispatcher#canTake(Node, BuildableItem)} vetoes mean "this node isn't the right
+         * place for this work" rather than "the time isn't right for this work", so such an executor should
+         * not be treated as capacity that is able to serve this item. This is what allows a
+         * {@link hudson.slaves.Cloud} to provision an additional node even though the label still reports
+         * idle executors.
+         *
+         * @see hudson.model.LoadStatistics.LoadStatisticsSnapshot#getRejectedQueueLength
+         * @since TODO
+         */
+        public boolean isRejectedByAllAvailableExecutors() {
+            return rejectedByAllAvailableExecutors;
         }
 
         @Override
