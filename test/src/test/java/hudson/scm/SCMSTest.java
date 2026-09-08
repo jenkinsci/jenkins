@@ -96,7 +96,11 @@ public class SCMSTest {
         form.put("scm", config);
         when(request.getSubmittedForm()).thenReturn(form);
 
-        assertThrows(FormException.class, () -> SCMS.parseSCM(request, j.createFreeStyleProject()));
+        FreeStyleProject project = j.createFreeStyleProject();
+        int descriptorCount = SCM._for((Job) project).size();
+        FormException exception = assertThrows(FormException.class, () -> SCMS.parseSCM(request, project));
+        assertEquals("Invalid SCM index " + index + "; expected 0 <= index < " + descriptorCount, exception.getMessage());
+        assertEquals("scm", exception.getFormField());
     }
 
     @Test

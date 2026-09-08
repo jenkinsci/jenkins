@@ -64,8 +64,10 @@ public class SCMS {
             // Use the same filtered list as config-scm.jelly to interpret the radio button index.
             List<SCMDescriptor<?>> descriptors = SCM._for((Job) target);
             int selectedIndex = scmConfig.getInt("value");
-            if (selectedIndex < 0 || selectedIndex >= descriptors.size())
-                throw new FormException("SCM index out of range", "scm");
+            if (selectedIndex < 0 || selectedIndex >= descriptors.size()) {
+                throw new FormException("Invalid SCM index " + selectedIndex
+                        + "; expected 0 <= index < " + descriptors.size(), "scm");
+            }
             scm = descriptors.get(selectedIndex).newInstance(req, scmConfig);
         }
         if (scm == null) {
