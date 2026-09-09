@@ -75,6 +75,7 @@ import jenkins.mvn.GlobalMavenConfig;
 import jenkins.mvn.GlobalSettingsProvider;
 import jenkins.mvn.SettingsProvider;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.XStreamDeserializable;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -506,6 +507,7 @@ public class Maven extends Builder {
          * @deprecated since 2009-02-25.
          */
         @Deprecated // kept for backward compatibility - use getHome()
+        @XStreamDeserializable
         private transient String mavenHome;
 
         /**
