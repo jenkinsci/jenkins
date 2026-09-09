@@ -280,7 +280,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.winp</groupId>
         <artifactId>winp</artifactId>
-        <version>1.31</version>
+        <version>1.32-rc409.fa_92056c4035</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
