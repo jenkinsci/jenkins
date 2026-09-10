@@ -2865,6 +2865,11 @@ public class Queue extends ResourceController implements Saveable {
                 }
             } else if (causesOfBlockage != null && new ComputerSet().getIdleExecutors() > 0) {
                 return new CompositeCauseOfBlockage(causesOfBlockage);
+            } else if (jenkins.getNumExecutors() == 0 && jenkins.clouds.isEmpty() && allNodes.isEmpty()
+                    && jenkins.hasPermission(Jenkins.ADMINISTER)) {
+                // Nothing can ever run in this configuration, so the generic "wait" message would be misleading.
+                // Only administrators can act on this, and only they can see the actionable message.
+                return CauseOfBlockage.createNeedsMoreExecutor(Messages._Queue_NoExecutorsConfigured());
             } else {
                 return CauseOfBlockage.createNeedsMoreExecutor(Messages._Queue_WaitingForNextAvailableExecutor());
             }
