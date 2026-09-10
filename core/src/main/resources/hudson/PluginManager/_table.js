@@ -191,6 +191,16 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
       pluginTR.classList.remove("has-disabled-dependency");
     }
 
+    function updateSortState(pluginTR) {
+      var pluginMetadata = pluginTR.jenkinsPluginMetadata;
+      var state = pluginMetadata.enableInput.checked
+        ? pluginTR.classList.contains("all-dependents-disabled")
+          ? "2"
+          : "1"
+        : "0";
+      pluginTR.querySelector("td.enable").setAttribute("data", state);
+    }
+
     function setEnableWidgetStates() {
       for (var i = 0; i < pluginTRs.length; i++) {
         var pluginMetadata = pluginTRs[i].jenkinsPluginMetadata;
@@ -201,6 +211,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
         }
         markAllDependentsDisabled(pluginTRs[i]);
         markHasDisabledDependencies(pluginTRs[i]);
+        updateSortState(pluginTRs[i]);
       }
     }
 
