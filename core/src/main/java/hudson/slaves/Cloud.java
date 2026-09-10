@@ -57,8 +57,8 @@ import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
@@ -313,7 +313,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     public HttpResponse doDoDelete() throws IOException {
         checkPermission(Jenkins.ADMINISTER);
         Jenkins.get().clouds.remove(this);
-        return new HttpRedirect("..");
+        return HttpResponses.redirectViaContextPath("cloud");
     }
 
     /**
