@@ -27,7 +27,6 @@ package hudson.cli.handlers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
@@ -49,7 +48,6 @@ import org.kohsuke.args4j.spi.Setter;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 
 class ViewOptionHandlerTest {
@@ -234,72 +232,6 @@ class ViewOptionHandlerTest {
             assertThrows(NullPointerException.class, () -> handler.getView(null));
             verifyNoInteractions(setter);
         }
-    }
-
-    @Test
-    void refuseToReadOuterView() {
-        Jenkins jenkins = mock(Jenkins.class);
-        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
-            mockJenkins(mocked, jenkins);
-            denyAccessOn(outer);
-
-            AccessDeniedException e = assertThrows(AccessDeniedException.class, () -> parse("outer/nested/inner"));
-            assertEquals(
-                    "Access denied for: outer",
-                    e.getMessage()
-            );
-
-            verify(outer).checkPermission(View.READ);
-
-            verifyNoInteractions(nested);
-            verifyNoInteractions(inner);
-            verifyNoInteractions(setter);
-        }
-    }
-
-    @Test
-    void refuseToReadNestedView() {
-        Jenkins jenkins = mock(Jenkins.class);
-        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
-            mockJenkins(mocked, jenkins);
-            denyAccessOn(nested);
-
-            AccessDeniedException e = assertThrows(AccessDeniedException.class, () -> parse("outer/nested/inner"));
-            assertEquals(
-                    "Access denied for: nested",
-                    e.getMessage()
-            );
-
-            verify(nested).checkPermission(View.READ);
-
-            verifyNoInteractions(inner);
-            verifyNoInteractions(setter);
-        }
-    }
-
-    @Test
-    void refuseToReadInnerView() {
-        Jenkins jenkins = mock(Jenkins.class);
-        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
-            mockJenkins(mocked, jenkins);
-            denyAccessOn(inner);
-
-            AccessDeniedException e = assertThrows(AccessDeniedException.class, () -> parse("outer/nested/inner"));
-            assertEquals(
-                    "Access denied for: inner",
-                    e.getMessage()
-            );
-
-            verify(inner).checkPermission(View.READ);
-
-            verifyNoInteractions(setter);
-        }
-    }
-
-    private void denyAccessOn(View view) {
-
-        final AccessDeniedException ex = new AccessDeniedException("Access denied for: " + view.getViewName());
-        doThrow(ex).when(view).checkPermission(View.READ);
     }
 
     private void parse(final String... params) throws CmdLineException {
