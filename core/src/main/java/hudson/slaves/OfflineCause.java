@@ -36,6 +36,7 @@ import jenkins.model.Jenkins;
 import jenkins.security.XStreamDeserializable;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -117,6 +118,28 @@ public abstract class OfflineCause implements IOfflineCause {
 
         public String getShortDescription() {
             return cause.toString();
+        }
+
+        /**
+         * Exposes {@link #cause} to the remote API as {@code cause}, but only when its runtime
+         * type is itself annotated {@link ExportedBean}. {@code cause} previously had no
+         * {@code @Exported} annotation at all, so it was never present in the
+         * {@code computer/api/json} response for an agent whose channel terminated. This restores
+         * that information for exception types that can safely be exported; most exceptions are
+         * not annotated {@link ExportedBean}, and exporting one of those unconditionally would
+         * throw {@code NotExportableException} and break the whole response, which is why this is
+         * conditional rather than an unconditional {@code @Exported} on the field itself.
+         *
+         * <p>Returning {@code null} for a cause that is present but not exportable is a poor fit
+         * for a general-purpose Java API, so this exists only to feed the remote API. Read
+         * {@link #cause} directly instead.
+         *
+         * @since TODO
+         */
+        @Restricted(DoNotUse.class)
+        @Exported(name = "cause")
+        public Exception getCauseForApi() {
+            return cause.getClass().isAnnotationPresent(ExportedBean.class) ? cause : null;
         }
 
         @Override public String toString() {
