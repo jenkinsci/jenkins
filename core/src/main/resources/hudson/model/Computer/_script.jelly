@@ -30,9 +30,13 @@ THE SOFTWARE.
   <j:set var="script" value='println System.getenv("PATH")' />
   <j:set var="script2" value='println "uname -a".execute().text' />
 
-  <t:scriptConsole scripts="${[script, script2]}">
-    <p class="jenkins-section__description">
-      ${%This execution happens in the agent JVM.}
-    </p>
-  </t:scriptConsole>
+  <l:agent-subpage title="${%Script Console}" agent="${it}">
+    <div class="app-agent__script-console">
+      <t:scriptConsole scripts="${[script, script2]}" layout="none">
+        <p class="jenkins-section__description">
+          ${%This execution happens in the agent JVM.}
+        </p>
+      </t:scriptConsole>
+    </div>
+  </l:agent-subpage>
 </j:jelly>
