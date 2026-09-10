@@ -73,6 +73,18 @@ function init() {
       }
     },
   };
-}
 
+  const pending = sessionStorage.getItem("jenkins-dropdown-notification");
+
+  if (pending) {
+    sessionStorage.removeItem("jenkins-dropdown-notification");
+
+    const notification = JSON.parse(pending);
+
+    window.notificationBar.show(
+      notification.message,
+      window.notificationBar[notification.type],
+    );
+  }
+}
 export default { init };
