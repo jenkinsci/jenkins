@@ -91,6 +91,7 @@ THE SOFTWARE.
 </j:if>
 
 <j:set var="_" value="${request2.getSession()}"/>
+<j:set var="formApplyNotification" value="${h.formApplyNotification}"/>
 <j:set var="extensionsAvailable" value="${h.extensionsAvailable}"/>
 <j:if test="${request2.servletPath=='/' || request2.servletPath==''}">
   ${h.advertiseHeaders(response2)}
@@ -155,7 +156,9 @@ THE SOFTWARE.
   </head>
   <body id="jenkins" class="${layoutType} jenkins-${h.version}" data-version="${h.version}" data-model-type="${it.class.name}"
         data-search-url="${rootURL + '/search/suggest'}"
-        data-search-help-url="${%searchBox.url}">
+        data-search-help-url="${%searchBox.url}"
+        data-notification-message="${formApplyNotification.message}"
+        data-notification-type="${formApplyNotification.notificationType}">
     <l:command-palette />
 
     <j:if test="${layoutType!='full-screen'}">
