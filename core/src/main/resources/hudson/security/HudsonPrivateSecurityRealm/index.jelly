@@ -39,7 +39,7 @@ THE SOFTWARE.
     </l:view>
   </j:set>
 
-  <l:settings-subpage header="${header}" permission="${app.ADMINISTER}">
+  <l:settings-subpage header="${header}" permission="${app.SYSTEM_READ}">
     <table class="jenkins-table sortable" id="people">
       <thead>
         <tr>
