@@ -26,6 +26,7 @@ package jenkins.scm;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -34,6 +35,7 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import hudson.util.AdaptedIterator;
 import java.util.AbstractSet;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -93,9 +95,15 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
             return calculateCulprits();
         }
 
-        return new AbstractSet<>() {
-            private Set<String> culpritIds = Set.copyOf(getCulpritIds());
+            Set<String> ids = getCulpritIds();
+            final Set<String> culpritIds;
+            if (ids == null) {
+                culpritIds = Set.of();
+            } else {
+                culpritIds = Collections.unmodifiableSet(defensiveCopy(ids));
+            }
 
+        return new AbstractSet<User>() {
             @Override
             public Iterator<User> iterator() {
                 return new AdaptedIterator<>(culpritIds.iterator()) {
@@ -112,6 +120,21 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
                 return culpritIds.size();
             }
         };
+    }
+
+    @SuppressFBWarnings(value = "DCN_NULLPOINTER_EXCEPTION",
+        justification = "Guards against corrupted persisted build data where the underlying "
+                + "collection's internal state is null despite a non-null reference")
+    private Set<String> defensiveCopy(Set<String> ids) {
+        try {
+            return new HashSet<>(ids);
+        } catch (NullPointerException e) {
+            Run<?, ?> run = (Run<?, ?>) this;
+            Logger.getLogger(RunWithSCM.class.getName())
+                    .log(Level.WARNING, "Corrupted culprit data encountered while reading culprits for "
+                            + run.getFullDisplayName(), e);
+            return new HashSet<>();
+        }
     }
 
     /**
