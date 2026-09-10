@@ -36,6 +36,7 @@ import static org.apache.commons.io.FilenameUtils.getBaseName;
 import com.google.common.collect.Sets;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
@@ -939,6 +940,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return manifest.getMainAttributes().getValue("Plugin-Class");
     }
 
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Probes for a resource relative to this plugin's own base resource URL, not a user-supplied URL.")
     public boolean hasLicensesXml() {
         try {
             new URL(baseResourceURL, "WEB-INF/licenses.xml").openStream().close();
@@ -1165,6 +1167,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Where is the backup file?
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     public File getBackupFile() {
         return new File(Jenkins.get().getRootDir(), "plugins/" + getShortName() + ".bak");
     }

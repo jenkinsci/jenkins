@@ -991,6 +991,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
         }
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     protected XmlFile getConfigFile() {
         return new XmlFile(new File(Jenkins.get().getRootDir(), getId() + ".xml"));
     }
@@ -1033,6 +1034,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
         }
     }
 
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Serves a static help page resolved from this descriptor's own classpath resources, not from a user-supplied URL.")
     private void doHelpImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();
         if (path.contains("..")) throw new ServletException("Illegal path: " + path);

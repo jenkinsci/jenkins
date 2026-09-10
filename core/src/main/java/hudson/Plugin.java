@@ -343,6 +343,7 @@ public abstract class Plugin implements Loadable, Saveable, StaplerProxy {
      *
      * @since 1.245
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     protected XmlFile getConfigXml() {
         return new XmlFile(Jenkins.XSTREAM,
                 new File(Jenkins.get().getRootDir(), wrapper.getShortName() + ".xml"));

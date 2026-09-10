@@ -24,6 +24,7 @@
 
 package hudson.util.io;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import java.io.File;
 import java.io.IOException;
@@ -53,6 +54,7 @@ import java.util.logging.Logger;
         this.size = size;
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     protected File getNumberedFileName(int n) {
         if (n == 0)   return out;
         return new File(out.getPath() + "." + n);

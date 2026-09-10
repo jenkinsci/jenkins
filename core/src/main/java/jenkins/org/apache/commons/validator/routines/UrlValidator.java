@@ -18,6 +18,7 @@
 
 package jenkins.org.apache.commons.validator.routines;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -80,6 +81,10 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 //[PATCH]
 @Restricted(NoExternalUse.class)
+@SuppressFBWarnings(value = "REDOS", justification = "Vendored from Apache Commons Validator. "
+        + "PATH_PATTERN is anchored at both ends and repeats a single bounded character class, so it runs in linear time. "
+        + "AUTHORITY_PATTERN matches the upstream implementation and only runs against the bounded authority component of a URL; "
+        + "callers validate already length-limited URL strings.")
 // end of [PATCH]
 public class UrlValidator implements Serializable {
 

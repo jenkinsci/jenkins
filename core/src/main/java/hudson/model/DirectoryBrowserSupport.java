@@ -421,6 +421,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     private record IsAbsolute(String fragment) implements ControllerToAgentCallable<Boolean, IOException> {
         @Override
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         public Boolean call() throws IOException {
             return new File(fragment).isAbsolute();
         }
