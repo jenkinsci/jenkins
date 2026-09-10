@@ -120,9 +120,13 @@ public abstract class OfflineCause implements IOfflineCause {
 
         /**
          * Exposes {@link #cause} to the remote API, but only when its runtime type is itself
-         * annotated {@link ExportedBean}. Most exceptions are not, and attempting to export one
-         * of those throws {@code NotExportableException} and breaks the whole
-         * {@code computer/api/json} response for that agent.
+         * annotated {@link ExportedBean}. {@code cause} previously had no {@code @Exported}
+         * annotation at all, so it was never present in the {@code computer/api/json} response
+         * for an agent whose channel terminated. This restores that information for exception
+         * types that can safely be exported; most exceptions are not annotated
+         * {@link ExportedBean}, and exporting one of those unconditionally would throw
+         * {@code NotExportableException} and break the whole response, which is why this is
+         * conditional rather than an unconditional {@code @Exported} on the field itself.
          *
          * @since TODO
          */
