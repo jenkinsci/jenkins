@@ -26,10 +26,10 @@ package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
-import java.io.IOException;
-import java.util.logging.Level;
+import java.util.Set;
 import java.util.logging.Logger;
 import jenkins.model.GlobalConfiguration;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
@@ -39,21 +39,29 @@ import org.kohsuke.stapler.StaplerRequest2;
 @Extension
 @Restricted(NoExternalUse.class)
 public class AdministrativeMonitorsConfiguration extends GlobalConfiguration {
+
+    public boolean isMonitorEnabled(String id) {
+        return !Jenkins.get().getDisabledAdministrativeMonitors().contains(id);
+    }
+
     @Override
     public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         JSONArray monitors = json.optJSONArray("administrativeMonitor");
+        Jenkins jenkins = Jenkins.get();
         for (AdministrativeMonitor am : AdministrativeMonitor.all()) {
-            try {
-                boolean disable;
-                if (monitors != null) {
-                    disable = !monitors.contains(am.id);
-                } else {
-                    disable = !am.id.equals(json.optString("administrativeMonitor"));
-                }
-                am.disable(disable);
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to process form submission for " + am.id, e);
+            boolean disable;
+            if (monitors != null) {
+                disable = !monitors.contains(am.id);
+            } else {
+                disable = !am.id.equals(json.optString("administrativeMonitor"));
             }
+            Set<String> set = jenkins.getDisabledAdministrativeMonitors();
+            if (disable) {
+                set.add(am.id);
+            } else {
+                set.remove(am.id);
+            }
+            jenkins.setDisabledAdministrativeMonitors(set);
         }
         return true;
     }
