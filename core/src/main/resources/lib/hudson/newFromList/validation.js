@@ -25,10 +25,7 @@ function updateOk() {
   document.getElementById("ok").disabled = state();
 }
 
-updateOk();
-
-document.addEventListener("DOMContentLoaded", function () {
-  let nameField = document.getElementById("name");
+Behaviour.specify("#name", "name-input", 0, function (nameField) {
   nameField.focus();
   nameField.addEventListener("change", function () {
     updateOk();
@@ -45,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
       updateOk();
     });
   });
+
   let copyRadio = document.getElementById("copy");
   if (copyRadio !== null) {
     copyRadio.addEventListener("click", function () {
@@ -53,4 +51,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }, 100);
     });
   }
+
+  updateOk();
 });
