@@ -125,6 +125,21 @@ public class SearchTest {
         assertTrue(contents.contains(String.format("<title>%s - Jenkins</title>", projectName)));
     }
 
+    @Test
+    void shouldRedirectToSingleSuggestedItem() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject("job-config-scroll-test");
+
+        Page result = j.search("job-config-scroll");
+
+        assertNotNull(result);
+        j.assertGoodStatus(result);
+
+        assertEquals(
+                j.getURL().toString() + project.getUrl(),
+                result.getUrl().toString()
+        );
+    }
+
     @Issue("JENKINS-24433")
     @Test
     void testSearchByProjectNameBehindAFolder() throws Exception {
