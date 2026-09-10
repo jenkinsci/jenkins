@@ -48,9 +48,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -724,9 +728,7 @@ public class NodeProvisioner {
                                 }
                             }
 
-                            Collection<PlannedNode> additionalCapacities = c.provision(cloudState, workloadToProvision);
-
-                            fireOnStarted(c, state.getLabel(), additionalCapacities);
+                            Collection<PlannedNode> additionalCapacities = provisionWithTimeout(c, cloudState, workloadToProvision, state);
 
                             for (PlannedNode ac : additionalCapacities) {
                                 excessWorkload -= ac.numExecutors;
@@ -734,7 +736,6 @@ public class NodeProvisioner {
                                                 + "executors. Remaining excess workload: {3,number,#.###}",
                                         new Object[]{ac.displayName, c.name, ac.numExecutors, excessWorkload});
                             }
-                            state.recordPendingLaunches(additionalCapacities);
                         }
                     }
                     // we took action, only pass on to other strategies if our action was insufficient
@@ -744,6 +745,85 @@ public class NodeProvisioner {
             // if we reach here then the standard strategy obviously decided to do nothing, so let any other strategies
             // take their considerations.
             return StrategyDecision.CONSULT_REMAINING_STRATEGIES;
+        }
+
+        /**
+         * Maximum time, in milliseconds, that {@link #apply(StrategyState)} will wait for a single
+         * {@link Cloud#provision} call to return before moving on to the next cloud/strategy.
+         *
+         * <p>{@link Cloud#provision} is documented to start provisioning asynchronously, but this is not
+         * enforced: {@link #apply(StrategyState)} runs on the shared {@link jenkins.util.Timer} pool (via
+         * {@link NodeProvisionerInvoker}), which is also used for every other periodic task in Jenkins core
+         * and in plugins. A {@link Cloud} implementation that blocks on a slow or hung provider API inside
+         * {@link Cloud#provision} would otherwise tie up one of that pool's few threads for the duration of
+         * the call. This timeout bounds that exposure: once it elapses, the call is left to complete in the
+         * background on {@link Computer#threadPoolForRemoting} instead, and its result (if any) is applied
+         * once it arrives, rather than blocking the calling thread any further.
+         */
+        private static final long PROVISION_TIMEOUT_MS = SystemProperties.getLong(
+                NodeProvisioner.class.getName() + ".provisionTimeoutMillis", TimeUnit.SECONDS.toMillis(30));
+
+        /**
+         * Cloud/label pairs with a {@link Cloud#provision} call currently running past
+         * {@link #PROVISION_TIMEOUT_MS} in the background. Prevents {@link #apply(StrategyState)}, on a
+         * later cycle, from issuing another provisioning request for the same demand before the first one
+         * has had a chance to report back via {@link StrategyState#recordPendingLaunches}.
+         */
+        private static final Set<String> PENDING_PROVISION_REQUESTS = ConcurrentHashMap.newKeySet();
+
+        /**
+         * Calls {@link Cloud#provision} with a bound on how long the calling thread will wait for it to
+         * return. If the call does not complete within {@link #PROVISION_TIMEOUT_MS}, an empty collection is
+         * returned immediately so provisioning can proceed with the next cloud/strategy, and the original
+         * call is left running on {@link Computer#threadPoolForRemoting}; its result is applied
+         * ({@link #fireOnStarted} and {@link StrategyState#recordPendingLaunches}) once it completes, whether
+         * that happens before or after the timeout. While that background call is outstanding, further
+         * calls for the same cloud/label are skipped rather than piling up duplicate requests.
+         */
+        private static Collection<PlannedNode> provisionWithTimeout(Cloud c, Cloud.CloudState cloudState, int workloadToProvision, StrategyState state) {
+            Label label = state.getLabel();
+            String key = c.name + "::" + (label == null ? "" : label.getName());
+            if (!PENDING_PROVISION_REQUESTS.add(key)) {
+                LOGGER.log(Level.FINE, "Skipping provision() for cloud {0}; a previous call for the same "
+                        + "label has not completed yet", c.name);
+                return List.of();
+            }
+
+            CompletableFuture<Collection<PlannedNode>> provisionFuture = CompletableFuture.supplyAsync(
+                    () -> c.provision(cloudState, workloadToProvision), Computer.threadPoolForRemoting);
+
+            provisionFuture.whenComplete((additionalCapacities, error) -> {
+                PENDING_PROVISION_REQUESTS.remove(key);
+                if (error != null) {
+                    LOGGER.log(Level.WARNING, "Cloud " + c.name + " failed to provision", error);
+                    return;
+                }
+                fireOnStarted(c, label, additionalCapacities);
+                state.recordPendingLaunches(additionalCapacities);
+            });
+
+            try {
+                return provisionFuture.get(PROVISION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            } catch (TimeoutException e) {
+                LOGGER.log(Level.WARNING,
+                        "Cloud {0} did not return from provision() within {1}ms; not waiting any longer so as to "
+                                + "avoid blocking other provisioning work. It will keep running in the background "
+                                + "and its result, if any, will be applied once it completes.",
+                        new Object[]{c.name, PROVISION_TIMEOUT_MS});
+                return List.of();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return List.of();
+            } catch (ExecutionException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof RuntimeException re) {
+                    throw re;
+                }
+                if (cause instanceof Error er) {
+                    throw er;
+                }
+                throw new RuntimeException(cause);
+            }
         }
 
         /**
