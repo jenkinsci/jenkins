@@ -80,6 +80,10 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
         return "";
     }
 
+    public @NonNull String getSearchKeywords() {
+        return "";
+    }
+
     /**
      * {@inheritDoc}
      *
