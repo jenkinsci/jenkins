@@ -233,77 +233,27 @@ div.repeated-chunk {
 
 /* ========================= repeatable elements ========================= */
 
-.repeated-chunk .show-if-last {
+.repeated-chunk > .jenkins-repeated-chunk__content .show-if-last {
   visibility: hidden;
 }
 
-.repeated-chunk.last .show-if-last {
+.repeated-chunk.last > .jenkins-repeated-chunk__content .show-if-last {
   visibility: visible;
 }
 
-.repeated-chunk .show-if-not-last {
+.repeated-chunk > .jenkins-repeated-chunk__content .show-if-not-last {
   visibility: visible;
 }
 
-.repeated-chunk.last .show-if-not-last {
+.repeated-chunk.last > .jenkins-repeated-chunk__content .show-if-not-last {
   visibility: hidden;
 }
 
-.repeated-chunk .show-if-not-only {
+.repeated-chunk > .jenkins-repeated-chunk__content .show-if-not-only {
   visibility: visible;
 }
 
-.repeated-chunk.first.last .show-if-not-only {
-  visibility: hidden;
-}
-
-/* == nested repeatable elements / 2 deep == */
-.repeated-chunk .repeated-chunk .show-if-last {
-  visibility: hidden;
-}
-
-.repeated-chunk .repeated-chunk.last .show-if-last {
-  visibility: visible;
-}
-
-.repeated-chunk .repeated-chunk .show-if-not-last {
-  visibility: visible;
-}
-
-.repeated-chunk .repeated-chunk.last .show-if-not-last {
-  visibility: hidden;
-}
-
-.repeated-chunk .repeated-chunk .show-if-not-only {
-  visibility: visible;
-}
-
-.repeated-chunk .repeated-chunk.first.last .show-if-not-only {
-  visibility: hidden;
-}
-
-/* == nested repeatable elements / 3 deep == */
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-last {
-  visibility: hidden;
-}
-
-.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last {
-  visibility: visible;
-}
-
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-last {
-  visibility: visible;
-}
-
-.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-not-last {
-  visibility: hidden;
-}
-
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-only {
-  visibility: visible;
-}
-
-.repeated-chunk .repeated-chunk .repeated-chunk.first.last .show-if-not-only {
+.repeated-chunk.first.last > .jenkins-repeated-chunk__content .show-if-not-only {
   visibility: hidden;
 }
 
