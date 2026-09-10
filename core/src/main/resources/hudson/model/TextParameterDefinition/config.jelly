@@ -26,8 +26,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-	<f:entry title="${%Name}" help="/help/parameter/name.html">
-		<f:textbox name="parameter.name" value="${instance.name}" />
+	<f:entry field="name" title="${%Name}" help="/help/parameter/name.html">
+		<f:textbox />
 	</f:entry>
 	<f:entry title="${%Default Value}" help="/help/parameter/string-default.html">
 		<f:textarea name="parameter.defaultValue" value="${instance.defaultValue}" />
