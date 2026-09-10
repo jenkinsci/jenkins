@@ -140,6 +140,32 @@ THE SOFTWARE.
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
           <execution>
+            <!--
+              A ratchet, so that the work that went into shrinking the war is not given back a few
+              hundred kilobytes at a time by dependency upgrades. If this fails, find out what grew
+              before raising the number: compare `unzip -l` of the new war against the previous
+              release, rather than assuming the growth was necessary.
+            -->
+            <id>war-size</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <!-- After package, since it is the packaged artifact being measured. -->
+            <phase>verify</phase>
+            <configuration>
+              <rules>
+                <requireFilesSize>
+                  <message>jenkins.war has grown past 50 MiB. Compare `unzip -l` against the previous release to find what grew, and only raise this limit once you know the growth was unavoidable.</message>
+                  <!-- 50 MiB. The war was 49.2 MiB when this was introduced. -->
+                  <maxsize>52428800</maxsize>
+                  <files>
+                    <file>${project.build.directory}/${project.build.finalName}.war</file>
+                  </files>
+                </requireFilesSize>
+              </rules>
+            </configuration>
+          </execution>
+          <execution>
             <id>display-info</id>
             <configuration>
               <rules>
