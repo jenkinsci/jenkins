@@ -26,6 +26,6 @@ jobs:
           secure: true
           subject: ${{ github.event.release.tag_name }} has been released
           to: jenkinsci-dev@googlegroups.com
-          from: Jenkins Release Bot
+          from: 'Jenkins Release Bot <jenkins-release-bot@community.jenkins.io>'
           html_body: ${{ github.event.release.body }}
           convert_markdown: true
