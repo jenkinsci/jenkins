@@ -115,6 +115,16 @@ function appendTokenToTable(data) {
 
   apiTokenRow.id = data.tokenUuid;
   apiTokenRow.querySelector(".token-name").innerText = data.tokenName;
+  const chip = apiTokenRow.querySelector(".token-scope-chip");
+  if (chip && data.scopeCount > 0) {
+    chip.innerText = chip.dataset.scopedChipText.replace(
+      "__COUNT__",
+      data.scopeCount,
+    );
+    chip.title = data.scopeLabels || "";
+    chip.classList.add("token-scope-chip--scoped");
+    chip.classList.remove("jenkins-hidden");
+  }
   tokenShowButton.dataset.tokenValue = data.tokenValue;
   tokenShowButton.dataset.title = data.tokenName;
   tokenShowButton.dataset.expirationDate = data.expirationDate;
@@ -162,12 +172,54 @@ function addFormChangesHandling(form) {
   });
 }
 
+function syncTokenScopePicker(form) {
+  const picker = form.querySelector(".token-scope-picker");
+  if (!picker) return;
+  const scoped = form.querySelector(
+    'input[name="tokenScopeMode"][value="scoped"]',
+  );
+  picker.classList.toggle("jenkins-hidden", !scoped || !scoped.checked);
+}
+
+// Jenkins' Behaviour framework reliably attaches handlers after dialog reparenting.
+Behaviour.specify(
+  'input[name="tokenScopeMode"]',
+  "token-scope-mode-radio",
+  0,
+  (input) => {
+    input.addEventListener("change", () => {
+      const form = input.closest("form");
+      if (form) syncTokenScopePicker(form);
+    });
+  },
+);
+
+function collectScopes(form) {
+  const mode = form.querySelector('input[name="tokenScopeMode"]:checked');
+  if (!mode || mode.value !== "scoped") {
+    return "";
+  }
+  const boxes = form.querySelectorAll(".token-scope-checkbox:checked");
+  return Array.from(boxes)
+    .map((b) => b.value)
+    .join(",");
+}
+
 function addToken(button) {
   const targetUrl = button.dataset.targetUrl;
   const promptMessage = button.dataset.promptMessage;
   const formTemplate = document
     .getElementById("api-token-add-template")
     .firstElementChild.cloneNode(true);
+  // Suffix IDs so label for= targets the clone, not the hidden template copy.
+  const suffix = "-u" + Date.now();
+  formTemplate.querySelectorAll("[id]").forEach((el) => {
+    const oldId = el.id;
+    formTemplate
+      .querySelectorAll(`[for="${oldId}"]`)
+      .forEach((l) => l.setAttribute("for", oldId + suffix));
+    el.id = oldId + suffix;
+  });
   const form = document.createElement("form");
   const dateInput = formTemplate.querySelector('input[name="tokenExpiration"]');
   const now = new Date();
@@ -180,6 +232,7 @@ function addToken(button) {
   dateInput.value = presetDate.toISOString().split("T")[0];
   form.appendChild(formTemplate);
   addFormChangesHandling(form);
+  syncTokenScopePicker(form);
   dialog
     .form(form, {
       title: promptMessage,
@@ -196,6 +249,7 @@ function addToken(button) {
             newTokenName: formData.get("tokenName"),
             tokenExpiration: formData.get("tokenExpiration"),
             expirationDuration: formData.get("expirationDuration"),
+            scopes: collectScopes(form),
           }),
           method: "post",
           headers: crumb.wrap({

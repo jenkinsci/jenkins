@@ -29,6 +29,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
+import hudson.security.Permission;
 import hudson.util.Secret;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -38,13 +39,16 @@ import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -182,6 +186,15 @@ public class ApiTokenStore {
      * Result meant to be sent / displayed and then discarded.
      */
     public synchronized @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate) {
+        return generateNewToken(name, expirationDate, null);
+    }
+
+    /**
+     * Same as {@link #generateNewToken(String, LocalDate)} but creates a token scoped to the
+     * given permission IDs. {@code null} scopes produces a legacy-style unscoped token.
+     */
+    public synchronized @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate, @CheckForNull Set<String> scopes) {
+        Set<String> normalizedScopes = validateScopes(scopes);
         // 16x8=128bit worth of randomness, using brute-force you need on average 2^127 tries (~10^37)
         byte[] random = new byte[16];
         RANDOM.nextBytes(random);
@@ -190,9 +203,30 @@ public class ApiTokenStore {
         String tokenTheUserWillUse = HASH_VERSION + secretValue;
         assert tokenTheUserWillUse.length() == 2 + 32;
 
-        HashedToken token = prepareAndStoreToken(name, secretValue, expirationDate);
+        HashedToken token = prepareAndStoreToken(name, secretValue, expirationDate, normalizedScopes);
 
         return new TokenUuidAndPlainValue(token.uuid, tokenTheUserWillUse, expirationDate, token.isAboutToExpire());
+    }
+
+    private static @CheckForNull Set<String> validateScopes(@CheckForNull Set<String> scopes) {
+        if (scopes == null) {
+            return null;
+        }
+        if (scopes.isEmpty()) {
+            throw new IllegalArgumentException("A scoped token must have at least one permission; use null scopes to create an unscoped token.");
+        }
+        Set<String> normalized = new LinkedHashSet<>();
+        for (String id : scopes) {
+            if (id == null || id.isBlank()) {
+                throw new IllegalArgumentException("Blank permission ID in token scopes");
+            }
+            Permission resolved = Permission.fromId(id);
+            if (resolved == null) {
+                throw new IllegalArgumentException("Unknown permission ID: " + id);
+            }
+            normalized.add(resolved.getId());
+        }
+        return normalized;
     }
 
     private static final int VERSION_LENGTH = 2;
@@ -221,16 +255,16 @@ public class ApiTokenStore {
             throw new IllegalArgumentException("The secret part of the token must consist of 32 hex-characters");
         }
 
-        HashedToken token = prepareAndStoreToken(name, tokenPlainHexValue, expirationDate);
+        HashedToken token = prepareAndStoreToken(name, tokenPlainHexValue, expirationDate, null);
 
         return token.uuid;
     }
 
-    private @NonNull HashedToken prepareAndStoreToken(@NonNull String name, @NonNull String tokenPlainValue, LocalDate expirationDate) {
+    private @NonNull HashedToken prepareAndStoreToken(@NonNull String name, @NonNull String tokenPlainValue, LocalDate expirationDate, @CheckForNull Set<String> scopes) {
         String secretValueHashed = this.plainSecretToHashInHex(tokenPlainValue);
 
         HashValue hashValue = new HashValue(HASH_VERSION, secretValueHashed);
-        HashedToken token = HashedToken.buildNew(name, hashValue, expirationDate);
+        HashedToken token = HashedToken.buildNew(name, hashValue, expirationDate, scopes);
 
         this.addToken(token);
         return token;
@@ -383,6 +417,9 @@ public class ApiTokenStore {
 
         private HashValue value;
 
+        // null = unscoped (inherits user permissions, legacy); non-null = gated at permission-check time
+        private Set<String> scopes;
+
         private HashedToken() {
             this.init();
         }
@@ -399,12 +436,19 @@ public class ApiTokenStore {
         }
 
         public static @NonNull HashedToken buildNew(@NonNull String name, @NonNull HashValue value, LocalDate expirationDate) {
+            return buildNew(name, value, expirationDate, null);
+        }
+
+        public static @NonNull HashedToken buildNew(@NonNull String name, @NonNull HashValue value, LocalDate expirationDate, @CheckForNull Set<String> scopes) {
             HashedToken result = new HashedToken();
             result.name = name;
             result.creationDate = new Date();
 
             result.value = value;
             result.expirationDate = expirationDate;
+            if (scopes != null) {
+                result.scopes = Collections.unmodifiableSet(new LinkedHashSet<>(scopes));
+            }
 
             return result;
         }
@@ -494,6 +538,14 @@ public class ApiTokenStore {
 
         public void setName(String name) {
             this.name = name;
+        }
+
+        public @CheckForNull Set<String> getScopes() {
+            return scopes;
+        }
+
+        public boolean isScoped() {
+            return scopes != null;
         }
     }
 }
