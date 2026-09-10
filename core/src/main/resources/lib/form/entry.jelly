@@ -85,15 +85,15 @@ THE SOFTWARE.
             <j:out value="${escapeEntryTitleAndDescription ? h.escape(attrs.description) : attrs.description}"/>
           </f:description>
         </j:if>
+        <j:if test="${attrs.help!=null}">
+          <f:helpArea />
+        </j:if>
         <div class="setting-main">
           <d:invokeBody />
         </div>
         <div class="validation-error-area">
           <!-- Used to display the form validation status -->
         </div>
-        <j:if test="${attrs.help!=null}">
-          <f:helpArea />
-        </j:if>
       </j:when>
       <j:otherwise>
         <j:choose>
