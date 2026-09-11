@@ -96,6 +96,30 @@ describe("scroll-region", () => {
     }
   });
 
+  it("moves focus when a responsive width change selects a new region", async () => {
+    const originalWidth = window.innerWidth;
+    const { contents, pageBody } = render();
+    const { resize } = await load();
+
+    contents.focus();
+    contents.style.overflowY = "visible";
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      value: originalWidth + 1,
+    });
+
+    try {
+      resize();
+
+      expect(document.activeElement).toBe(pageBody);
+    } finally {
+      Object.defineProperty(window, "innerWidth", {
+        configurable: true,
+        value: originalWidth,
+      });
+    }
+  });
+
   it("focuses the scroll region for every supported scroll key", async () => {
     const { contents } = render();
     const focus = vi.spyOn(contents, "focus");

@@ -22,6 +22,7 @@ function update() {
   const candidates = CANDIDATES.map((selector) =>
     document.querySelector(selector),
   ).filter(Boolean);
+  const previousRegion = region;
   region = candidates.find(scrollsVertically) || null;
 
   candidates.forEach((element) => {
@@ -37,6 +38,10 @@ function update() {
       element.removeAttribute("aria-label");
     }
   });
+
+  if (previousRegion === document.activeElement && region !== previousRegion) {
+    region?.focus({ preventScroll: true });
+  }
 }
 
 function init() {
