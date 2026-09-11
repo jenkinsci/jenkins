@@ -71,13 +71,54 @@ describe("scroll-region", () => {
     expect(pageBody.getAttribute("role")).toBe("region");
   });
 
-  it("focuses the scroll region when the first scroll key is pressed on the page", async () => {
+  it("updates the active region when a responsive width change moves scrolling", async () => {
+    const originalWidth = window.innerWidth;
+    const { contents, pageBody } = render();
+    const { resize } = await load();
+
+    contents.style.overflowY = "visible";
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      value: originalWidth + 1,
+    });
+
+    try {
+      resize();
+
+      expect(contents.hasAttribute("tabindex")).toBe(false);
+      expect(pageBody.getAttribute("tabindex")).toBe("0");
+      expect(pageBody.getAttribute("role")).toBe("region");
+    } finally {
+      Object.defineProperty(window, "innerWidth", {
+        configurable: true,
+        value: originalWidth,
+      });
+    }
+  });
+
+  it("focuses the scroll region for every supported scroll key", async () => {
     const { contents } = render();
     const focus = vi.spyOn(contents, "focus");
     const { keydown } = await load();
 
-    keydown({ target: document.body, key: "PageDown" });
+    ["End", "Home", "PageUp", "PageDown", "ArrowUp", "ArrowDown", " "].forEach(
+      (key) => keydown({ target: document.body, key }),
+    );
 
-    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    expect(focus).toHaveBeenCalledTimes(7);
+    expect(focus).toHaveBeenLastCalledWith({ preventScroll: true });
+  });
+
+  it("does not steal focus for unrelated keys or from an interactive control", async () => {
+    const { contents } = render();
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+    const focus = vi.spyOn(contents, "focus");
+    const { keydown } = await load();
+
+    keydown({ target: document.body, key: "Enter" });
+    keydown({ target: input, key: "PageDown" });
+
+    expect(focus).not.toHaveBeenCalled();
   });
 });
