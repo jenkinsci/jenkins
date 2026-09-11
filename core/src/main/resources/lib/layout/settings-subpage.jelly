@@ -70,7 +70,7 @@ THE SOFTWARE.
       Defaults to false if not set.
     </st:attribute>
     <st:attribute name="width">
-      Optional, sets the width of the page. Available options are 'narrow' or 'wide'.
+      Optional, sets the width of the page. Available options are 'default', 'narrow', or 'wide'.
     </st:attribute>
   </st:documentation>
 
@@ -124,7 +124,7 @@ THE SOFTWARE.
             </j:forEach>
           </l:tasks>
         </l:side-panel>
-        <l:main-panel width="${attrs.width ?: 'narrow'}">
+        <l:main-panel width="${attrs.width eq 'wide' ? 'wide' : 'narrow'}">
           <j:if test="${!attrs.containsKey('header')}">
             <l:app-bar title="${pageTitle}" />
             <j:if test="${!empty(description)}">
@@ -165,7 +165,7 @@ THE SOFTWARE.
           <st:include page="sidepanel" />
         </j:if>
 
-        <l:main-panel width="${attrs.width ?: 'narrow'}">
+        <l:main-panel width="${attrs.width eq 'wide' ? 'wide' : 'narrow'}">
           <j:if test="${!attrs.containsKey('header')}">
             <l:app-bar title="${pageTitle}" />
             <j:if test="${!empty(description)}">
