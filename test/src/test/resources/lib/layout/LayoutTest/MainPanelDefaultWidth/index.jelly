@@ -1,0 +1,8 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <l:layout title="Main panel default width" type="one-column">
+    <l:main-panel width="default">
+      Main panel content
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
