@@ -71,6 +71,15 @@ describe("scroll-region", () => {
     expect(pageBody.getAttribute("role")).toBe("region");
   });
 
+  it("treats overlay overflow as a scrollable region", async () => {
+    const { contents, pageBody } = render({ contentsOverflow: "overlay" });
+
+    await load();
+
+    expect(contents.getAttribute("tabindex")).toBe("0");
+    expect(pageBody.hasAttribute("tabindex")).toBe(false);
+  });
+
   it("updates the active region when a responsive width change moves scrolling", async () => {
     const originalWidth = window.innerWidth;
     const { contents, pageBody } = render();

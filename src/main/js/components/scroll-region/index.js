@@ -13,7 +13,9 @@ const SCROLL_KEYS = [
 
 function scrollsVertically(element) {
   const overflowY = getComputedStyle(element).overflowY;
-  return overflowY === "auto" || overflowY === "scroll";
+  return (
+    overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay"
+  );
 }
 
 let region = null;
