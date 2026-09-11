@@ -81,6 +81,23 @@
 .app-main-panel {
   margin-bottom: var(--section-padding);
 
+  &--one-column {
+    --form-item-max-width: calc(85vw - 4rem);
+
+    max-width: 85vw;
+    margin-inline: auto;
+
+    .jenkins-section {
+      max-width: unset;
+    }
+
+    @media (width <= 1200px) {
+      --form-item-max-width: 100%;
+
+      max-width: none;
+    }
+  }
+
   &--narrow {
     max-width: 900px;
     margin-inline: auto;
