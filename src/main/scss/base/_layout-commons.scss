@@ -106,6 +106,32 @@
   }
 }
 
+@media print {
+  .app-page-body {
+    display: block;
+    height: auto;
+    margin-inline: 0;
+    overflow: visible;
+    border: 0;
+    background: none;
+
+    & > .app-page-body__sidebar,
+    & > .app-page-body__contents {
+      overflow: visible;
+    }
+
+    & > .app-page-body__sidebar {
+      width: auto;
+      min-height: auto;
+      border-right: 0;
+    }
+  }
+
+  .app-full-screen-page-body .app-main-panel {
+    min-height: auto;
+  }
+}
+
 // Clearfixes extracted from responsive-grid.css as they essential
 .clearfix::before,
 .clearfix::after,

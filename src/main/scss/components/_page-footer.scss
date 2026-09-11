@@ -5,6 +5,11 @@
   clear: both;
   font-size: var(--font-size-sm);
   display: none;
+
+  @media print {
+    // Override jenkins-mobile-hide when the printable page is narrower than 768px.
+    display: block !important;
+  }
 }
 
 .page-footer .container-fluid {
