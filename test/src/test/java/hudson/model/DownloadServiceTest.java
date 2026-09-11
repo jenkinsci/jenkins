@@ -33,7 +33,7 @@ class DownloadServiceTest {
 
     private static void assertRoots(String expected, URL resource) throws Exception {
         assertNotNull(resource);
-        JSONObject json = JSONObject.fromObject(DownloadService.loadJSON(resource));
+        JSONObject json = JSONObject.fromObject(DownloadService.loadJSON(resource.toURI()));
         Set<String> keySet = json.keySet();
         assertEquals(expected, new TreeSet<>(keySet).toString());
     }
@@ -43,9 +43,9 @@ class DownloadServiceTest {
         URL resource1 = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstaller1.json");
         URL resource2 = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstaller2.json");
         URL resource3 = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstaller3.json");
-        JSONObject json1 = JSONObject.fromObject(DownloadService.loadJSON(resource1));
-        JSONObject json2 = JSONObject.fromObject(DownloadService.loadJSON(resource2));
-        JSONObject json3 = JSONObject.fromObject(DownloadService.loadJSON(resource3));
+        JSONObject json1 = JSONObject.fromObject(DownloadService.loadJSON(resource1.toURI()));
+        JSONObject json2 = JSONObject.fromObject(DownloadService.loadJSON(resource2.toURI()));
+        JSONObject json3 = JSONObject.fromObject(DownloadService.loadJSON(resource3.toURI()));
         List<JSONObject> jsonObjectList = new ArrayList<>();
         jsonObjectList.add(json1);
         jsonObjectList.add(json2);
@@ -53,7 +53,7 @@ class DownloadServiceTest {
         Downloadable downloadable = new Maven.MavenInstaller.DescriptorImpl().createDownloadable();
         JSONObject reducedJson = downloadable.reduce(jsonObjectList);
         URL expectedResult = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstallerResult.json");
-        JSONObject expectedResultJson = JSONObject.fromObject(DownloadService.loadJSON(expectedResult));
+        JSONObject expectedResultJson = JSONObject.fromObject(DownloadService.loadJSON(expectedResult.toURI()));
         assertEquals(reducedJson, expectedResultJson);
     }
 
@@ -62,9 +62,9 @@ class DownloadServiceTest {
         URL resource1 = DownloadServiceTest.class.getResource("hudson.tasks.Ant.AntInstaller1.json");
         URL resource2 = DownloadServiceTest.class.getResource("hudson.tasks.Ant.AntInstaller2.json");
         URL resource3 = DownloadServiceTest.class.getResource("hudson.tasks.Ant.AntInstaller3.json");
-        JSONObject json1 = JSONObject.fromObject(DownloadService.loadJSON(resource1));
-        JSONObject json2 = JSONObject.fromObject(DownloadService.loadJSON(resource2));
-        JSONObject json3 = JSONObject.fromObject(DownloadService.loadJSON(resource3));
+        JSONObject json1 = JSONObject.fromObject(DownloadService.loadJSON(resource1.toURI()));
+        JSONObject json2 = JSONObject.fromObject(DownloadService.loadJSON(resource2.toURI()));
+        JSONObject json3 = JSONObject.fromObject(DownloadService.loadJSON(resource3.toURI()));
         List<JSONObject> jsonObjectList = new ArrayList<>();
         jsonObjectList.add(json1);
         jsonObjectList.add(json2);
@@ -72,7 +72,7 @@ class DownloadServiceTest {
         Downloadable downloadable = new AntInstaller.DescriptorImpl().createDownloadable();
         JSONObject reducedJson = downloadable.reduce(jsonObjectList);
         URL expectedResult = DownloadServiceTest.class.getResource("hudson.tasks.Ant.AntInstallerResult.json");
-        JSONObject expectedResultJson = JSONObject.fromObject(DownloadService.loadJSON(expectedResult));
+        JSONObject expectedResultJson = JSONObject.fromObject(DownloadService.loadJSON(expectedResult.toURI()));
         assertEquals(reducedJson, expectedResultJson);
     }
 
@@ -80,15 +80,15 @@ class DownloadServiceTest {
     void testReduceFunctionWithNotDefaultSchemaJsons() throws Exception {
         URL resource1 = DownloadServiceTest.class.getResource("hudson.plugins.cmake.CmakeInstaller1.json");
         URL resource2 = DownloadServiceTest.class.getResource("hudson.plugins.cmake.CmakeInstaller2.json");
-        JSONObject json1 = JSONObject.fromObject(DownloadService.loadJSON(resource1));
-        JSONObject json2 = JSONObject.fromObject(DownloadService.loadJSON(resource2));
+        JSONObject json1 = JSONObject.fromObject(DownloadService.loadJSON(resource1.toURI()));
+        JSONObject json2 = JSONObject.fromObject(DownloadService.loadJSON(resource2.toURI()));
         List<JSONObject> jsonObjectList = new ArrayList<>();
         jsonObjectList.add(json1);
         jsonObjectList.add(json2);
         Downloadable downloadable = new GenericDownloadFromUrlInstaller.DescriptorImpl().createDownloadable();
         JSONObject reducedJson = downloadable.reduce(jsonObjectList);
         URL expectedResult = DownloadServiceTest.class.getResource("hudson.plugins.cmake.CmakeInstallerResult.json");
-        JSONObject expectedResultJson = JSONObject.fromObject(DownloadService.loadJSON(expectedResult));
+        JSONObject expectedResultJson = JSONObject.fromObject(DownloadService.loadJSON(expectedResult.toURI()));
         assertEquals(reducedJson, expectedResultJson);
     }
 
