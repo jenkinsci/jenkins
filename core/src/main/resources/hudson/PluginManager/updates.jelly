@@ -59,7 +59,8 @@ THE SOFTWARE.
 
         <j:choose>
           <j:when test="${!empty(list)}">
-            <table id="plugins" class="jenkins-table sortable">
+            <div class="jenkins-table-wrapper">
+              <table id="plugins" class="jenkins-table sortable">
               <thead>
                 <tr>
                   <l:isAdmin>
@@ -244,7 +245,8 @@ THE SOFTWARE.
                       </j:if>
                     </tr>
                   </j:forEach>
-            </table>
+              </table>
+            </div>
           </j:when>
           <j:otherwise>
             <l:notice icon="symbol-up-to-date" title="${%No updates available}" />
