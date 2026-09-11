@@ -34,7 +34,7 @@ THE SOFTWARE.
   <j:if test="${mode=='main-panel'}">
     <div id="main-panel" class="app-main-panel
               ${attrs.width eq 'wide' ? 'app-main-panel--wide' : ''}
-              ${(attrs.width eq 'narrow' || attrs.width eq 'default') ? 'app-main-panel--narrow' : ''}">
+              ${attrs.width ne 'wide' ? 'app-main-panel--narrow' : ''}">
       <j:if test="${app.isQuietingDown()}">
         <j:choose>
           <j:when test="${app.isPreparingSafeRestart()}">
