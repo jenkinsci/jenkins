@@ -105,12 +105,6 @@
   }
 }
 
-#page-body.clear::after {
-  clear: both;
-  content: "";
-  display: table;
-}
-
 // Clearfixes extracted from responsive-grid.css as they essential
 .clearfix::before,
 .clearfix::after,
