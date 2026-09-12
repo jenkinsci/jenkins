@@ -44,6 +44,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import jenkins.model.Jenkins;
+import jenkins.security.XStreamDeserializable;
+import jenkins.security.XStreamNotDeserializable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.export.Exported;
@@ -168,8 +170,11 @@ public abstract class Cause {
          * @deprecated since 2009-02-28
          */
         @Deprecated
+        @XStreamDeserializable
         private transient Cause upstreamCause;
         private @NonNull List<Cause> upstreamCauses;
+
+        @XStreamNotDeserializable
         private transient Map<Cause, Integer> causeBag;
 
         /**

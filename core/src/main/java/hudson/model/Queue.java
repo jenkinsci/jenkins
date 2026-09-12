@@ -126,6 +126,7 @@ import jenkins.util.SystemProperties;
 import jenkins.util.ThrowingCallable;
 import jenkins.util.ThrowingRunnable;
 import jenkins.util.Timer;
+import jenkins.util.xstream.CriticalXStreamException;
 import net.jcip.annotations.GuardedBy;
 import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.accmod.Restricted;
@@ -136,6 +137,7 @@ import org.kohsuke.stapler.CancelRequestHandlingException;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -450,6 +452,8 @@ public class Queue extends ResourceController implements Saveable {
                 File bk = new File(queueFile.getPath() + ".bak");
                 Files.move(queueFile.toPath(), bk.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
+        } catch (CriticalXStreamException e) {
+            LOGGER.log(Level.WARNING, "Failed to load the queue file due to a security policy violation; starting with an empty queue. " + getXMLQueueFile(), e);
         } catch (IOException | InvalidPathException e) {
             LOGGER.log(Level.WARNING, "Failed to load the queue file " + getXMLQueueFile(), e);
         } finally { updateSnapshot(); } } finally {
@@ -2258,7 +2262,7 @@ public class Queue extends ResourceController implements Saveable {
      * Item in a queue.
      */
     @ExportedBean(defaultVisibility = 999)
-    public abstract static class Item extends Actionable implements QueueItem {
+    public abstract static class Item extends Actionable implements QueueItem, StaplerProxy {
 
         private final long id;
 
@@ -2528,6 +2532,21 @@ public class Queue extends ResourceController implements Saveable {
         @Deprecated
         public org.acegisecurity.Authentication authenticate() {
             return org.acegisecurity.Authentication.fromSpring(authenticate2());
+        }
+
+        @Restricted(DoNotUse.class) // Stapler
+        @Override
+        public Object getTarget() {
+            if (!(task instanceof AccessControlled ac)) {
+                return this;
+            }
+            if (!ac.hasPermission(hudson.model.Item.DISCOVER)) {
+                return null;
+            }
+            if (!ac.hasPermission(hudson.model.Item.READ)) {
+                throw new AccessDeniedException("Please log in to access " + task.getUrl());
+            }
+            return this;
         }
 
         @Restricted(DoNotUse.class) // only for Stapler export

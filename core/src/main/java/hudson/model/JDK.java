@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.security.XStreamDeserializable;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -79,6 +80,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * @deprecated since 2009-02-25
      */
     @Deprecated // kept for backward compatibility - use getHome() instead
+    @XStreamDeserializable
     private transient String javaHome;
 
     public JDK(String name, String javaHome) {
