@@ -361,6 +361,8 @@ var Sortable = (function () {
         hours = parseInt(hours);
         if (dmatches[7] && dmatches[7].match(/pm/i) && hours < 12) {
           hours += 12;
+        } else if (dmatches[7] && dmatches[7].match(/am/i) && hours === 12) {
+          hours = 0;
         }
         return new Date(year, month, day, hours, minutes, seconds, 0);
       }
