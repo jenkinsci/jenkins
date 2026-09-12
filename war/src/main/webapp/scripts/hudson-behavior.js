@@ -2088,12 +2088,27 @@ function AutoScroller(scrollContainer) {
     return null;
   }
 
+  function isViewportScroller(scrollDiv) {
+    return (
+      scrollDiv === document.body ||
+      scrollDiv === document.documentElement ||
+      scrollDiv === document.scrollingElement
+    );
+  }
+
   return {
     bottomThreshold: 25,
     scrollContainer: scrollContainer,
 
+    // May be a function so that a container which varies with the layout can be re-resolved.
+    resolveScrollContainer: function () {
+      return typeof this.scrollContainer === "function"
+        ? this.scrollContainer()
+        : this.scrollContainer;
+    },
+
     getCurrentHeight: function () {
-      var scrollDiv = this.scrollContainer;
+      var scrollDiv = this.resolveScrollContainer();
 
       if (scrollDiv.scrollHeight > 0) {
         return scrollDiv.scrollHeight;
@@ -2106,28 +2121,27 @@ function AutoScroller(scrollContainer) {
 
     // return true if we are in the "stick to bottom" mode
     isSticking: function () {
-      var scrollDiv = this.scrollContainer;
+      var scrollDiv = this.resolveScrollContainer();
       var currentHeight = this.getCurrentHeight();
 
       // when used with the BODY tag, the height needs to be the viewport height, instead of
       // the element height.
-      //var height = ((scrollDiv.style.pixelHeight) ? scrollDiv.style.pixelHeight : scrollDiv.offsetHeight);
-      var height = getViewportHeight();
-      var scrollPos = Math.max(
-        scrollDiv.scrollTop,
-        document.documentElement.scrollTop,
-      );
-      var diff = currentHeight - scrollPos - height;
-      // window.alert("currentHeight=" + currentHeight + ",scrollTop=" + scrollDiv.scrollTop + ",height=" + height);
+      const height = isViewportScroller(scrollDiv)
+        ? getViewportHeight()
+        : scrollDiv.clientHeight;
+      const scrollPos = isViewportScroller(scrollDiv)
+        ? Math.max(scrollDiv.scrollTop, document.documentElement.scrollTop)
+        : scrollDiv.scrollTop;
+      const diff = currentHeight - scrollPos - height;
 
       return diff < this.bottomThreshold;
     },
 
     scrollToBottom: function () {
-      var scrollDiv = this.scrollContainer;
+      var scrollDiv = this.resolveScrollContainer();
       var currentHeight = this.getCurrentHeight();
 
-      if (scrollDiv === document.body) {
+      if (isViewportScroller(scrollDiv)) {
         window.scrollTo({
           top: currentHeight,
         });
