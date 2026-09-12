@@ -25,7 +25,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt"
-         xmlns:x="jelly:xml" xmlns:dd="/lib/layout/dropdowns">
+         xmlns:x="jelly:xml">
   <st:documentation> <![CDATA[
     Outer-most tag for a normal (non-AJAX) HTML rendering.
     This is used with nested <header>, <side-panel>, and <main-panel>
@@ -169,54 +169,22 @@ THE SOFTWARE.
                     logout="${%logout}"/>
     </j:if>
 
-    <div id="page-body" class="app-page-body app-page-body--${layoutType} clear">
+    <j:if test="${layoutType != 'full-screen'}">
+      <div class="app-page-frame__blur" />
+      <div class="app-page-frame__mask" />
+      <div class="app-page-frame__background" />
+    </j:if>
+
+    <div id="page-body" class="${layoutType eq 'full-screen' ? 'app-full-screen-page-body' : 'app-page-body'} clear">
       <j:if test="${layoutType=='two-column'}">
         <j:set var="mode" value="side-panel" />
         <d:invokeBody />
       </j:if>
-      <div id="main-panel">
+      <div class="app-page-body__contents">
         <j:set var="mode" value="main-panel" />
         <d:invokeBody/>
       </div>
     </div>
-
-    <j:if test="${layoutType!='full-screen'}">
-      <footer class="page-footer jenkins-mobile-hide">
-        <div class="page-footer__flex-row">
-          <div class="page-footer__footer-id-placeholder" id="footer"></div>
-
-          <j:if test="${extensionsAvailable}">
-            <j:forEach var="pd" items="${h.pageDecorators}">
-              <st:include it="${pd}" page="footer.jelly" optional="true" />
-            </j:forEach>
-          </j:if>
-
-          <div class="page-footer__links">
-            <j:if test="${!empty(it.api)}">
-              <a class="jenkins-button jenkins-button--tertiary rest-api" href="api/">REST API</a>
-            </j:if>
-
-            <l:overflowButton text="Jenkins ${h.version}"
-                              clazz="jenkins-button--tertiary jenkins_ver"
-                              icon="${null}"
-                              tooltip="${null}">
-              <l:hasPermission permission="${app.SYSTEM_READ}">
-                <dd:item icon="symbol-jenkins"
-                        text="${%About Jenkins}"
-                         href="${rootURL}/manage/about" />
-                <dd:separator />
-              </l:hasPermission>
-              <dd:item icon="symbol-heart"
-                       text="${%Get involved}"
-                       href="https://www.jenkins.io/participate/" />
-              <dd:item icon="symbol-external"
-                       text="${%Website}"
-                       href="${h.getFooterURL()}" />
-            </l:overflowButton>
-          </div>
-        </div>
-      </footer>
-    </j:if>
   </body>
 </html>
 </l:view>

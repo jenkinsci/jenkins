@@ -1,110 +1,172 @@
 @use "../base/breakpoints";
 
-/* -------------------------------------- */
-
 .app-page-body {
-  display: flex;
-  justify-content: flex-start;
+  position: relative;
+  display: grid;
   align-items: stretch;
-  flex: 1 0 auto;
-}
+  border: 1px solid transparent;
+  margin-inline: var(--page-inset);
+  isolation: isolate;
+  flex-grow: 1;
 
-.app-page-body__sidebar {
-  @media (min-width: breakpoints.$tablet-breakpoint) {
-    &--sticky {
-      position: sticky;
-      top: var(--header-height);
-      align-self: flex-start;
+  &:has(> .app-page-body__sidebar) {
+    grid-template-columns: auto 1fr;
+  }
+
+  @media (width < 740px) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  & > .app-page-body__sidebar {
+    padding: var(--section-padding);
+
+    @media (width >= 740px) {
+      width: 280px;
+
+      &:not(:has(.pane, .jenkins-card)) {
+        position: sticky;
+        top: calc(var(--header-height) + var(--jenkins-border-width));
+        height: calc(100vh - var(--header-height) - var(--page-inset));
+        overflow-y: auto;
+        border-right: var(--jenkins-border);
+      }
+    }
+
+    @media (width > breakpoints.$tablet-breakpoint) {
+      width: 320px;
+    }
+  }
+
+  & > .app-page-body__contents {
+    padding: var(--section-padding);
+    padding-bottom: 0;
+  }
+
+  // Remove this when sidepanels no longer contain widgets
+  &:has(#side-panel .pane, #side-panel .jenkins-card) {
+    & > .app-page-body__sidebar {
+      padding-right: 0;
+
+      #tasks {
+        margin-bottom: 1rem;
+      }
+
+      .jenkins-card,
+      .pane-frame {
+        margin-inline: -0.5rem;
+      }
     }
   }
 }
 
+.app-main-panel {
+  margin-bottom: var(--section-padding);
+
+  &--narrow {
+    max-width: 900px;
+    margin-inline: auto;
+  }
+
+  &--wide {
+    width: 70vw;
+    max-width: 1700px;
+    margin-inline: auto;
+  }
+}
+
+.app-full-screen-page-body {
+  .app-main-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+}
+
+// Page frame
+.app-page-frame__background {
+  position: relative;
+  pointer-events: none;
+
+  &::before, &::after {
+    content: "";
+    position: fixed;
+    top: var(--header-height);
+    left: var(--page-inset);
+    right: var(--page-inset);
+    bottom: var(--page-inset);
+    border-radius: var(--form-input-border-radius);
+  }
+
+  &::before {
+    --background: var(--card-background);
+
+    background-color: var(--card-background);
+    background-image: linear-gradient(in oklch, var(--body-background-top), var(--background));
+    background-size: 100% 90vh;
+    background-repeat: no-repeat;
+    z-index: -1;
+  }
+
+  &::after {
+    border: var(--jenkins-border);
+    z-index: 1;
+  }
+}
+
+.app-page-frame__mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  mask:
+          linear-gradient(#000 0 0),
+          linear-gradient(#000 0 0)
+          left calc(var(--page-inset) + 1px) top calc(var(--header-height) + 1px) /
+      calc(100% - calc(var(--page-inset) + 1px) * 2)
+          calc(100% - calc(var(--header-height) + 1px) - calc(var(--page-inset) + 1px)) no-repeat;
+  mask-composite: exclude;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--header-background);
+    background-attachment: fixed;
+    opacity: 0.75;
+  }
+}
+
+.app-page-frame__blur {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+
+  &::before, &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    backdrop-filter: blur(15px);
+  }
+
+  &::before {
+    top: 0;
+    height: calc(var(--header-height) + var(--jenkins-border-width));
+  }
+
+  &::after {
+    bottom: 0;
+    height: var(--page-inset);
+  }
+}
+
+// Legacy
 #page-body.clear::after {
   clear: both;
   content: "";
   display: table;
-}
-
-#side-panel {
-  flex-shrink: 0;
-}
-
-#main-panel {
-  padding: 0 var(--section-padding) var(--section-padding)
-    var(--section-padding);
-  display: inline-block;
-  width: 100%;
-}
-
-.app-page-body--one-column {
-  --form-item-max-width: calc(85vw - 4rem);
-
-  @media screen and (width <= 1200px) {
-    --form-item-max-width: 100%;
-  }
-
-  max-width: 85vw;
-
-  #main-panel {
-    width: 100vw;
-  }
-
-  .jenkins-section {
-    max-width: unset;
-  }
-
-  @media (width <= 1200px) {
-    max-width: unset;
-  }
-
-  margin: auto;
-}
-
-body.two-column #main-panel {
-  width: calc(100% - var(--side-panel-width));
-  flex: 1;
-  display: block;
-}
-
-body.full-screen {
-  padding: 0;
-}
-
-body.full-screen #main-panel {
-  padding: 0;
-}
-
-body.two-column #side-panel {
-  width: var(--side-panel-width);
-}
-
-@media (max-width: breakpoints.$tablet-breakpoint) {
-  body.two-column #page-body {
-    flex-wrap: wrap;
-  }
-
-  body.two-column #side-panel {
-    width: 100%;
-    border-right: none;
-  }
-
-  body.two-column #main-panel {
-    margin-left: 0;
-    width: 100%;
-  }
-}
-
-.app-project-status-table {
-  width: 100%;
-  overflow-x: auto;
-}
-
-@media (width >= 1170px) {
-  body.two-column #main-panel {
-    width: calc(
-      100% - calc(var(--side-panel-width) + calc(var(--section-padding) * 2))
-    );
-  }
 }
 
 // Clearfixes extracted from responsive-grid.css as they essential
