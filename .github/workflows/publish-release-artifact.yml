@@ -62,6 +62,7 @@ jobs:
           IS_LTS=${{ needs.determine-version.outputs.is-lts }}
           echo $PROJECT_VERSION
           echo "file-name=$FILE_NAME" >> $GITHUB_OUTPUT
+          echo "signature-file-name=${FILE_NAME}.asc" >> $GITHUB_OUTPUT
 
           REPO=war
           if [ ${IS_LTS} = 'true' ]
@@ -72,13 +73,16 @@ jobs:
           echo $REPO
 
           wget -q https://get.jenkins.io/${REPO}/${PROJECT_VERSION}/${FILE_NAME}
+          wget -q https://get.jenkins.io/${REPO}/${PROJECT_VERSION}/${FILE_NAME}.asc
       - name: Upload Release Asset
         id: upload-war
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: ${{ steps.fetch-war.outputs.file-name }}
+          files: |
+            ${{ steps.fetch-war.outputs.file-name }}
+            ${{ steps.fetch-war.outputs.signature-file-name }}
   debian:
     permissions:
       contents: write # to upload release asset (softprops/action-gh-release)
@@ -109,7 +113,7 @@ jobs:
       - name: Upload Release Asset
         id: upload-deb
         if: always()
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -146,7 +150,7 @@ jobs:
       - name: Upload Release Asset
         id: upload-rpm
         if: always()
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -182,7 +186,7 @@ jobs:
       - name: Upload Release Asset
         id: upload-msi
         if: always()
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

@@ -5,10 +5,13 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasLength;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
+import hudson.Functions;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.WebClient;
 import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
@@ -17,6 +20,11 @@ public class WinstoneResponseHeaderLengthTest {
 
     @RegisterExtension
     public RealJenkinsExtension extension = new RealJenkinsExtension().addSyntheticPlugin(new RealJenkinsExtension.SyntheticPlugin(jenkins.security.csp.winstoneResponseHeaderLengthTest.ContributorImpl.class));
+
+    @BeforeEach
+    void skipTestsOnWindowsCI() {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Expensive to run and not Windows specific");
+    }
 
     @Test
     void testLength() throws Exception {
