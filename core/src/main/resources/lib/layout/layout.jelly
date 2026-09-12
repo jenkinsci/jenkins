@@ -170,9 +170,9 @@ THE SOFTWARE.
     </j:if>
 
     <j:if test="${layoutType != 'full-screen'}">
-      <div class="app-page-frame__background" />
       <div class="app-page-frame__blur" />
       <div class="app-page-frame__mask" />
+      <div class="app-page-frame__background" />
     </j:if>
 
     <div id="page-body" class="${layoutType eq 'full-screen' ? 'app-full-screen-page-body' : 'app-page-body'} clear">
