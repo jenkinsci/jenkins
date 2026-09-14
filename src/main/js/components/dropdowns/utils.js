@@ -290,6 +290,14 @@ function convertHtmlToItems(children) {
           semantic: attributes.dropdownSemantic,
         };
 
+        if (attributes.dropdownBadgeText != null) {
+          item.badge = {
+            text: attributes.dropdownBadgeText,
+            tooltip: attributes.dropdownBadgeTooltip,
+            severity: attributes.dropdownBadgeSeverity,
+          };
+        }
+
         if (attributes.dropdownConfirmationTitle) {
           item.event = {
             title: attributes.dropdownConfirmationTitle,
