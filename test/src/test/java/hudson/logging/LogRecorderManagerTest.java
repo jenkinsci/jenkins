@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -201,6 +202,30 @@ class LogRecorderManagerTest {
         assertFalse(text.contains("msg #4"), text);
         assertTrue(text.contains("LambdaLog @FINE"), text);
         assertFalse(text.contains("LambdaLog @FINER"), text);
+    }
+
+    @Issue("SECURITY-3967")
+    @Test
+    void logRecorderPageDoesNotRenderUnescapedMetadata() throws Exception {
+        LogRecorderManager mgr = j.jenkins.getLog();
+        LogRecorder recorder = new LogRecorder("xsstest");
+        recorder.getLoggers().add(new LogRecorder.Target("hudson.remoting", Level.ALL));
+        mgr.getRecorders().add(recorder);
+        recorder.save();
+        recorder.getLoggers().forEach(LogRecorder.Target::enable);
+
+        // Craft a LogRecord with an XSS payload in sourceClassName — the same vector as the attack.
+        // Logger.log(LogRecord) preserves sourceClassName when already set, so this mirrors what
+        // an attacker-controlled agent JVM would send.
+        LogRecord malicious = new LogRecord(Level.SEVERE, "routine agent message");
+        malicious.setLoggerName("hudson.remoting");
+        malicious.setSourceClassName("<svg onload=alert(1)>");
+        malicious.setSourceMethodName(null);
+        Logger.getLogger("hudson.remoting").log(malicious);
+
+        String page = j.createWebClient().goTo("log/xsstest/").asXml();
+        assertThat("page must not contain unescaped XSS payload", page, not(containsString("<svg onload")));
+        assertThat("page must contain escaped payload", page, containsString("&lt;svg onload"));
     }
 
     @Test
