@@ -1,5 +1,11 @@
 @use "../abstracts/mixins";
 
+#side-panel {
+  #buildHistoryPage {
+    margin: 10px 0 10px 10px;
+  }
+}
+
 #buildHistoryPage {
   .jenkins-search {
     margin-inline: -0.25rem;
@@ -225,8 +231,8 @@
     }
 
     &:has(
-      .app-temporary-list__item__label:active,
-      .app-temporary-list__item__label:focus-visible
+      a.app-temporary-list__item__label:active,
+      a.app-temporary-list__item__label:focus-visible
     ) {
       border-bottom-color: transparent;
       border-radius: calc(var(--form-input-border-radius) / 2);

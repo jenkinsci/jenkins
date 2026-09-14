@@ -50,7 +50,7 @@ import org.apache.sshd.common.util.io.resource.PathResource;
 import org.apache.sshd.common.util.security.SecurityUtils;
 
 /**
- * Read DSA or RSA key from file(s) asking for password interactively.
+ * Read an SSH private key (RSA, DSA, ECDSA or Ed25519) from file(s) asking for password interactively.
  *
  * @author ogondza
  * @since 1.556
