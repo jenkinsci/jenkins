@@ -26,14 +26,14 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <j:set var="title" value="${it.displayName}" />
   <l:layout title="${title}">
-    <j:invokeStatic var="currentThread" className="java.lang.Thread" method="currentThread" />
-    <j:invoke var="buildClass" on="${currentThread.contextClassLoader}" method="loadClass">
-      <j:arg value="hudson.model.Run" />
-    </j:invoke>
-    <j:set var="build" value="${request2.findAncestorObject(buildClass)}" />
-    <st:include page="sidepanel.jelly" it="${build}" />
+    <j:set var="build" value="${it.run}" />
+    <j:if test="${build != null}">
+      <st:include page="sidepanel.jelly" it="${build}" />
+    </j:if>
     <l:main-panel>
-	  <t:buildCaption it="${build}">${title}</t:buildCaption>
+      <j:if test="${build != null}">
+        <t:buildCaption it="${build}">${title}</t:buildCaption>
+      </j:if>
       <j:set var="escapeEntryTitleAndDescription" value="true" /> <!-- SECURITY-353 defense unless overridden -->
       <j:set var="readOnlyMode" value="true"/>
       <j:forEach var="parameterValue" items="${it.parameters}">
