@@ -48,6 +48,8 @@ THE SOFTWARE.
 
           <j:set var="items" value="${it.items}"/>
           <st:include page="main.jelly" />
+          
+          <st:include page="footer.jelly" />
         </l:main-panel>
         <l:header>
           <!-- for screen resolution detection -->
