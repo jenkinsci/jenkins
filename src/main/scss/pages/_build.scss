@@ -166,14 +166,17 @@
   align-items: center;
   gap: 0.5rem 1.5rem;
   min-height: var(--header-height);
-  background-color: color-mix(in oklch, transparent 25%, var(--body-background-top));
+  background-color: color-mix(
+    in oklch,
+    transparent 25%,
+    var(--body-background-top)
+  );
   padding-inline: var(--section-padding);
   z-index: 102;
   border-bottom: var(--jenkins-border-width) solid
     var(--app-build-bar-border-color);
   margin-left: calc(var(--section-padding) * -1);
   margin-right: calc(var(--section-padding) * -1);
-
   border-top-left-radius: var(--form-input-border-radius);
   border-top-right-radius: var(--form-input-border-radius);
 

@@ -78,14 +78,18 @@ $semantics: (
   // Background colors
   --background: rgb(254 254 254);
 
-  // TODO
-  --body-background-top: color-mix(in oklch, white 1.5%, var(--card-background));
+  // Body
+  --body-background-top: color-mix(
+    in oklch,
+    white 1.5%,
+    var(--card-background)
+  );
 
   // Header
   --header-background: color-mix(
-          in sRGB,
-          var(--background),
-          var(--text-color-secondary) 2.5%
+    in sRGB,
+    var(--background),
+    var(--text-color-secondary) 2.5%
   );
   --header-color: var(--text-color);
   --header-height: 3.5rem;
