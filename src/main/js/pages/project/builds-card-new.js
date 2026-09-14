@@ -93,14 +93,12 @@ BehaviorShim.specify(
             BehaviorShim.applySubtree(contents);
 
             // Show the card controls
-            const div = document.createElement("div");
-            div.innerHTML = responseText;
-            const innerChild = div.children[0];
+            const dataset = contents.firstElementChild.dataset;
             updateCardControls({
-              pageHasUp: innerChild.dataset.pageHasUp === "true",
-              pageHasDown: innerChild.dataset.pageHasDown === "true",
-              pageEntryNewest: innerChild.dataset.pageEntryNewest,
-              pageEntryOldest: innerChild.dataset.pageEntryOldest,
+              pageHasUp: dataset.pageHasUp === "true",
+              pageHasDown: dataset.pageHasDown === "true",
+              pageEntryNewest: dataset.pageEntryNewest,
+              pageEntryOldest: dataset.pageEntryOldest,
             });
           });
         } else {
