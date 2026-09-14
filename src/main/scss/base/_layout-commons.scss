@@ -92,7 +92,8 @@
   &::after {
     content: "";
     position: fixed;
-    inset: var(--header-height) var(--page-inset) var(--page-inset) var(--page-inset);
+    inset: var(--header-height) var(--page-inset) var(--page-inset)
+      var(--page-inset);
     border-radius: var(--form-input-border-radius);
   }
 
