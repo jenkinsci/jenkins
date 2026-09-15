@@ -71,7 +71,14 @@ THE SOFTWARE.
         </f:rowSet>
       </j:forEach>
       <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}"/>
-      <f:saveApplyBar/>
+      <j:choose>
+        <j:when test="${newManageJenkins}">
+          <f:saveBar/>
+        </j:when>
+        <j:otherwise>
+          <f:saveApplyBar/>
+        </j:otherwise>
+      </j:choose>
     </f:form>
   </l:settings-subpage>
 </j:jelly>
