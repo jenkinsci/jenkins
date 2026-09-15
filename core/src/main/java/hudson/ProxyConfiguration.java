@@ -308,6 +308,7 @@ public final class ProxyConfiguration implements Describable<ProxyConfiguration>
      * @deprecated use {@link #newHttpClient}/{@link #newHttpClientBuilder} and {@link #newHttpRequestBuilder(URI)}
      */
     @Deprecated
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "This is the central helper through which Jenkins opens connections to (proxy-configured) URLs; opening the connection is its sole purpose.")
     public static URLConnection open(URL url) throws IOException {
         final ProxyConfiguration p = get();
 
@@ -339,6 +340,7 @@ public final class ProxyConfiguration implements Describable<ProxyConfiguration>
      * @deprecated use {@link #newHttpClient}/{@link #newHttpClientBuilder} and {@link #newHttpRequestBuilder(URI)}
      */
     @Deprecated
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "This is the central helper through which Jenkins opens connections to (proxy-configured) URLs; opening the connection is its sole purpose.")
     public static InputStream getInputStream(URL url) throws IOException {
         final ProxyConfiguration p = get();
         if (p == null)
@@ -460,6 +462,7 @@ public final class ProxyConfiguration implements Describable<ProxyConfiguration>
      * pre-populated, so we try to access at least one HTTP URL before the very first HTTPS url.
      * @param url the actual URL being opened.
      */
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Intentional probe that forces proxy authentication for the host already being connected to; see JENKINS-48775.")
     private void jenkins48775workaround(Proxy proxy, URL url) {
         if ("https".equals(url.getProtocol()) && !authCacheSeeded && proxy != Proxy.NO_PROXY) {
             HttpURLConnection preAuth = null;
