@@ -148,7 +148,15 @@ THE SOFTWARE.
   <j:set var="computersSize" value="${computers.size()}"/>
   <j:choose>
     <j:when test="${!builtInHasExecutors and app.clouds.isEmpty() and app.nodes.isEmpty()}">
-      <j:set var="collapsedText" value="${%noExecutors}"/>
+      <j:choose>
+        <!-- Only administrators can act on this, so only they get the actionable variant with links. -->
+        <j:when test="${h.hasPermission(app.ADMINISTER)}">
+          <j:set var="collapsedMarkup" value="${%noExecutorsAdmin(rootURL)}"/>
+        </j:when>
+        <j:otherwise>
+          <j:set var="collapsedText" value="${%noExecutors}"/>
+        </j:otherwise>
+      </j:choose>
       <j:set var="showCollapsedText" value="true" />
     </j:when>
     <j:when test="${singleComputer}">
@@ -186,7 +194,14 @@ THE SOFTWARE.
       <div class="pane-content">
         <j:when test="${paneIsCollapsed or showCollapsedText}">
           <div class="executors-collapsed">
-            ${collapsedText}
+            <j:choose>
+              <j:when test="${collapsedMarkup != null}">
+                <j:out value="${collapsedMarkup}"/>
+              </j:when>
+              <j:otherwise>
+                ${collapsedText}
+              </j:otherwise>
+            </j:choose>
           </div>
         </j:when>
         <j:otherwise>
