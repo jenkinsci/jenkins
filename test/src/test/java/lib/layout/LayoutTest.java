@@ -24,13 +24,20 @@
 
 package lib.layout;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+
+import hudson.model.InvisibleAction;
+import hudson.model.RootAction;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlLink;
+import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
@@ -65,6 +72,21 @@ class LayoutTest {
     void fullScreen() throws Exception {
         // Example page using <l:layout type="full-screen">:
         r.createWebClient().goTo("setupWizard/proxy-configuration");
+    }
+
+    @Test
+    void mainPanelDefaultWidthIsNarrow() throws Exception {
+        HtmlPage page = r.createWebClient().goTo("mainPanelDefaultWidth");
+
+        assertThat(page.getElementById("main-panel").getAttribute("class"), containsString("app-main-panel--narrow"));
+    }
+
+    @TestExtension("mainPanelDefaultWidthIsNarrow")
+    public static class MainPanelDefaultWidth extends InvisibleAction implements RootAction {
+        @Override
+        public String getUrlName() {
+            return "mainPanelDefaultWidth";
+        }
     }
 
 }

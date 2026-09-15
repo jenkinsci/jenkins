@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-  <a href="${rootURL}/" class="app-jenkins-logo">
+  <a href="${rootURL}/" class="app-jenkins-logo" tooltip="Jenkins ${app.VERSION}" data-tooltip-delay="1000">
     <img id="jenkins-head-icon" src="${imagesURL}/svgs/logo.svg" aria-hidden="true" />
     <span class="jenkins-mobile-hide">Jenkins</span>
   </a>

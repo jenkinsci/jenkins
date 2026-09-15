@@ -74,7 +74,8 @@ THE SOFTWARE.
           <l:notice icon="symbol-plugins" title="${%No plugins installed}" />
         </j:when>
         <j:otherwise>
-          <table id="plugins" class="jenkins-table sortable">
+          <div class="jenkins-table-wrapper">
+            <table id="plugins" class="jenkins-table sortable">
             <thead>
             <tr>
               <th initialSortDir="down">${%Name}</th>
@@ -296,7 +297,8 @@ THE SOFTWARE.
                 </tr>
               </j:forEach>
             </tbody>
-          </table>
+            </table>
+          </div>
         </j:otherwise>
       </j:choose>
 
