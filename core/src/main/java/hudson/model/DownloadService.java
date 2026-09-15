@@ -52,6 +52,7 @@ import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -79,6 +80,10 @@ public class DownloadService {
      * the prefix for the signature validator name
      */
     private static final String signatureValidatorPrefix = "downloadable";
+    /**
+     * Read timeout when downloading json, defaults to 1 minute
+     */
+    private static final int JSON_READ_TIMEOUT = (int) TimeUnit.SECONDS.toMillis(SystemProperties.getInteger(DownloadService.class.getName() + ".jsonReadTimeoutSeconds", 60));
     /**
      * Builds up an HTML fragment that starts all the download jobs.
      *
@@ -119,6 +124,7 @@ public class DownloadService {
             // prevent problems from misbehaving plugins disabling redirects by default
             ((HttpURLConnection) con).setInstanceFollowRedirects(true);
         }
+        con.setReadTimeout(JSON_READ_TIMEOUT);
         try (InputStream is = con.getInputStream()) {
             String jsonp = IOUtils.toString(is, StandardCharsets.UTF_8);
             int start = jsonp.indexOf('{');
@@ -144,6 +150,7 @@ public class DownloadService {
             // prevent problems from misbehaving plugins disabling redirects by default
             ((HttpURLConnection) con).setInstanceFollowRedirects(true);
         }
+        con.setReadTimeout(JSON_READ_TIMEOUT);
         try (InputStream is = con.getInputStream()) {
             String jsonp = IOUtils.toString(is, StandardCharsets.UTF_8);
             String preamble = "window.parent.postMessage(JSON.stringify(";
