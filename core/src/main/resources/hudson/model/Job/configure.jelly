@@ -36,7 +36,7 @@ THE SOFTWARE.
 
     <l:breadcrumb title="${readOnlyMode ? '%Configuration' : '%Configure'}" />
 
-    <l:side-panel sticky="true">
+    <l:side-panel>
       <l:app-bar title="${readOnlyMode ? '%Configuration' : '%Configure'}" />
       <div id="tasks">
         <l:skeleton type="side-panel" />
