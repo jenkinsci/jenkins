@@ -87,7 +87,8 @@ $background-outset: 0.5rem;
 
     .task-link-text {
       display: contents;
-      word-break: word-break;
+      word-break: normal;
+      overflow-wrap: anywhere;
     }
 
     &--active {
