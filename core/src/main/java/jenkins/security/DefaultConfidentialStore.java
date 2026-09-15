@@ -1,6 +1,7 @@
 package jenkins.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.util.Secret;
@@ -41,6 +42,7 @@ public class DefaultConfidentialStore extends ConfidentialStore {
     private final SecureRandom sr = new SecureRandom();
 
     @NonNull
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private static File getMasterKeyFile(File rootDir) {
         var jenkinsMasterKey = SystemProperties.getString(MASTER_KEY_FILE_SYSTEM_PROPERTY);
         if (jenkinsMasterKey != null) {
@@ -161,6 +163,7 @@ public class DefaultConfidentialStore extends ConfidentialStore {
         return truncated;
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private File getFileFor(ConfidentialKey key) {
         return new File(rootDir, key.getId());
     }

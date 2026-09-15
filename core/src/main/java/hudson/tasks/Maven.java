@@ -24,6 +24,7 @@
 
 package hudson.tasks;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.CopyOnWrite;
@@ -260,6 +261,7 @@ public class Maven extends Builder {
         }
 
         @Override
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         public String invoke(File ws, VirtualChannel channel) throws IOException {
             String seed = null;
 
@@ -534,6 +536,11 @@ public class Maven extends Builder {
             return getHome();
         }
 
+        /**
+         * Gets the Maven home directory, or {@code null} if the home location is not configured.
+         */
+        @CheckForNull
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         public File getHomeDir() {
             return new File(getHome());
         }
@@ -588,6 +595,7 @@ public class Maven extends Builder {
             }
 
             @Override
+            @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
             public String call() throws IOException {
                 File[] jars = new File(home, "lib").listFiles();
                 if (jars != null) { // be defensive
@@ -645,6 +653,7 @@ public class Maven extends Builder {
             }
         }
 
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         private static File getExeFile(String execName, String home) {
             String m2Home = Util.replaceMacro(home, EnvVars.masterEnvVars);
 

@@ -27,6 +27,7 @@ package jenkins.security;
 import static jenkins.security.ResourceDomainFilter.ERROR_RESPONSE;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
@@ -91,6 +92,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
         return checkUrl(resourceRootUrlString, true);
     }
 
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Admin-only form validation that intentionally probes the administrator-configured resource root URL to verify it points back to this Jenkins instance.")
     private FormValidation checkUrl(String resourceRootUrlString, boolean allowOnlineIdentityCheck) {
         String jenkinsRootUrlString = JenkinsLocationConfiguration.get().getUrl();
         if (ExtensionList.lookupSingleton(RootUrlNotSetMonitor.class).isActivated() || jenkinsRootUrlString == null) {
