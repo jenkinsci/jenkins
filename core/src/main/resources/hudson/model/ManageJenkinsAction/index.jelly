@@ -49,7 +49,7 @@ THE SOFTWARE.
           <div class="jenkins-section__items">
             <j:forEach var="m" items="${category.value}">
               <j:if test="${m.iconFileName != null}">
-                <div class="jenkins-section__item">
+                <div class="jenkins-section__item" data-search-keywords="${m.searchKeywords}">
                   <j:set var="alt" value="${icon.replaceAll('\\d*\\.[^.]+$', '')}"/>
                   <j:set var="iconSrc" value="${h.tryGetIconPath(m.iconFileName, context)}"/>
                   <j:set var="sure" value="${%sure}"/>
