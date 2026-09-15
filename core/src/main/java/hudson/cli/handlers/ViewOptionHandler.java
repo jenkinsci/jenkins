@@ -36,7 +36,6 @@ import org.kohsuke.args4j.OptionDef;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
-import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Refers to {@link View} by its name.
@@ -53,7 +52,7 @@ import org.springframework.security.access.AccessDeniedException;
  * Handler traverse the view names from left to right. First one is expected to
  * be a top level view and all but the last one are expected to be instances of
  * {@link ViewGroup}. Handler fails to resolve view provided a view with given
- * name does not exist or a user was not granted {@link View#READ} permission.
+ * name does not exist.
  *
  * @author ogondza
  * @since 1.538
@@ -84,8 +83,6 @@ public class ViewOptionHandler extends OptionHandler<View> {
      *      If the view isn't found
      * @throws IllegalStateException
      *      If cannot get active Jenkins instance or view can't contain a views
-     * @throws AccessDeniedException
-     *      If user doesn't have a READ permission for the view
      * @since 1.618
      */
     @CheckForNull
@@ -101,13 +98,11 @@ public class ViewOptionHandler extends OptionHandler<View> {
 
             view = group.getView(viewName);
             if (view == null) {
-                group.checkPermission(View.READ);
                 throw new IllegalArgumentException(String.format(
                         "No view named %s inside view %s",
                         viewName, group.getDisplayName()
                 ));
             }
-            view.checkPermission(View.READ);
             if (view instanceof ViewGroup) {
                 group = (ViewGroup) view;
             } else if (tok.hasMoreTokens()) {
