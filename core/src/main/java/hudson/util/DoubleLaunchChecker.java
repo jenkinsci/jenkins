@@ -95,7 +95,7 @@ public class DoubleLaunchChecker extends AdministrativeMonitor {
         File timestampFile = new File(home, ".owner");
 
         long t = timestampFile.lastModified();
-        if (t != 0 && lastWriteTime != 0 && t != lastWriteTime && isEnabled()) {
+        if (t != 0 && lastWriteTime != 0 && t != lastWriteTime && isEnabledGlobally()) {
             try {
                 collidingId = Files.readString(Util.fileToPath(timestampFile), Charset.defaultCharset());
             } catch (IOException e) {
@@ -108,7 +108,7 @@ public class DoubleLaunchChecker extends AdministrativeMonitor {
         }
 
         try {
-            Files.writeString(Util.fileToPath(timestampFile), getId(), Charset.defaultCharset());
+            Files.writeString(Util.fileToPath(timestampFile), getPid(), Charset.defaultCharset());
             lastWriteTime = timestampFile.lastModified();
         } catch (IOException e) {
             LOGGER.log(Level.FINE, null, e);
@@ -120,7 +120,7 @@ public class DoubleLaunchChecker extends AdministrativeMonitor {
     /**
      * Figures out a string that identifies this instance of Hudson.
      */
-    public String getId() {
+    private String getPid() {
         return Long.toString(ProcessHandle.current().pid());
     }
 
