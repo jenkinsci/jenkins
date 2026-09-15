@@ -26,8 +26,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
   <st:adjunct includes="hudson.model.LoadStatistics.resources"/>
+  <l:userExperimentalFlag var="newAgentPage" flagClassName="jenkins.model.experimentalflags.NewAgentPageUserExperimentalFlag" />
 
-  <j:if test="${it != app}">
+  <j:if test="${it != app and not newAgentPage}">
     <l:app-bar title="${%title(it.displayName)}" />
   </j:if>
 
