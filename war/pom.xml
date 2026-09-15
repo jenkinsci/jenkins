@@ -262,28 +262,6 @@ THE SOFTWARE.
               <overWriteSnapshots>true</overWriteSnapshots>
             </configuration>
           </execution>
-          <execution>
-            <!-- see jetty-ee9-maven-plugin config and WebAppMain -->
-            <id>support-log-formatter</id>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>io.jenkins.lib</groupId>
-                  <artifactId>support-log-formatter</artifactId>
-                  <version>123.v72513b_f61500</version>
-                </artifactItem>
-              </artifactItems>
-              <outputDirectory>${project.build.directory}</outputDirectory>
-              <stripVersion>true</stripVersion>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>true</overWriteSnapshots>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -329,35 +307,75 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.eclipse.jetty.ee9</groupId>
-        <artifactId>jetty-ee9-maven-plugin</artifactId>
         <!--
-          Make sure to keep the Winstone version in pom.xml in sync with this version. If the current Winstone release
-          contains a version of Jetty that is older than this, trigger Dependabot in jenkinsci/winstone and release the
-          result before proceeding with the update here.
+          Development instance: mvn -pl war hpi:run. Serves the exploded WAR under Winstone, the same way
+          jenkins.war is served in production, so build the WAR first.
         -->
-        <version>12.1.12</version>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-hpi-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
         <configuration>
+          <webAppFile>${project.build.directory}/${project.build.finalName}.war</webAppFile>
+          <explodedWar>${project.build.directory}/${project.build.finalName}</explodedWar>
+          <webApp>
+            <contextPath>${contextPath}</contextPath>
+          </webApp>
           <!--
-            Reload webapp when you hit ENTER. (See JETTY-282 for more)
+            Serve these from the source tree rather than from the copies in the exploded WAR, so that
+            editing them (or running "yarn start", which writes to src/main/webapp/jsbundles) takes
+            effect without repackaging.
+
+            Never link WEB-INF/classes as a whole: it is real build output holding the symbol SVGs that
+            Symbol.loadSymbol reads off the class path as images/symbols/*.svg, and replacing it makes
+            every icon render as the placeholder cross. Link the individual roots instead. A miss in
+            WEB-INF/classes falls through to jenkins-core.jar, so the generated .stapler and .javadoc
+            resources under these packages still resolve.
+
+            Putting the core roots in front of jenkins-core.jar is what lets an edited Messages.properties
+            be picked up on the next restart rather than needing "mvn -pl core install" and a repackage.
+            Only on restart: ResourceBundleHolder caches each bundle for the life of the JVM. Views and
+            their sibling .properties are live, via stapler.resourcePath below.
           -->
-          <scan>0</scan>
-          <httpConnector>
-            <host>${host}</host>
-            <port>${port}</port>
-          </httpConnector>
-          <loginServices>
-            <loginService implementation="org.eclipse.jetty.security.HashLoginService">
-              <name>default</name>
-              <config implementation="org.eclipse.jetty.maven.MavenResource">
-                <resourceAsString>${basedir}/src/realm.properties</resourceAsString>
-              </config>
-            </loginService>
-          </loginServices>
+          <webrootLinks>
+            <webrootLink>
+              <path>jsbundles</path>
+              <target>${project.basedir}/src/main/webapp/jsbundles</target>
+            </webrootLink>
+            <webrootLink>
+              <path>images</path>
+              <target>${project.basedir}/src/main/webapp/images</target>
+            </webrootLink>
+            <webrootLink>
+              <path>scripts</path>
+              <target>${project.basedir}/src/main/webapp/scripts</target>
+            </webrootLink>
+            <webrootLink>
+              <path>css</path>
+              <target>${project.basedir}/src/main/webapp/css</target>
+            </webrootLink>
+            <webrootLink>
+              <path>help</path>
+              <target>${project.basedir}/src/main/webapp/help</target>
+            </webrootLink>
+            <webrootLink>
+              <path>WEB-INF/classes/images</path>
+              <target>${project.basedir}/src/main/resources/images</target>
+            </webrootLink>
+            <webrootLink>
+              <path>WEB-INF/classes/hudson</path>
+              <target>${project.basedir}/../core/src/main/resources/hudson</target>
+            </webrootLink>
+            <webrootLink>
+              <path>WEB-INF/classes/jenkins</path>
+              <target>${project.basedir}/../core/src/main/resources/jenkins</target>
+            </webrootLink>
+            <webrootLink>
+              <path>WEB-INF/classes/lib</path>
+              <target>${project.basedir}/../core/src/main/resources/lib</target>
+            </webrootLink>
+          </webrootLinks>
           <systemProperties>
-            <JENKINS_HOME>${JENKINS_HOME}</JENKINS_HOME>
-            <!-- always reload views during debugging -->
-            <stapler.jelly.noCache>true</stapler.jelly.noCache>
+            <hudson.Main.development>true</hudson.Main.development>
             <!-- show the stapler evaluation during execution -->
             <stapler.trace>true</stapler.trace>
             <!-- show the full stack trace on errors (the oops page) -->
@@ -365,26 +383,10 @@ THE SOFTWARE.
             <!-- always reload scripts during debugging -->
             <hudson.script.noCache>true</hudson.script.noCache>
             <!-- load view resources from the source directly, again for real time change -->
-            <stapler.resourcePath>../core/src/main/resources;</stapler.resourcePath>
-            <!-- enable the plugins in main by default -->
-            <!-- run "mvn install" once will generate the.hpl -->
-            <hudson.bundled.plugins>${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/*.hpi</hudson.bundled.plugins>
+            <stapler.resourcePath>${project.basedir}/../core/src/main/resources</stapler.resourcePath>
             <!-- stat collection pointless -->
             <hudson.model.UsageStatistics.disabled>true</hudson.model.UsageStatistics.disabled>
-            <hudson.Main.development>true</hudson.Main.development>
-            <!--
-              Prevent org.apache.xalan.processor.TransformerFactoryImpl from being loaded from the Maven classpath,
-              instead preferring com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl as is used in
-              production contexts.
-            -->
-            <javax.xml.transform.TransformerFactory>com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl</javax.xml.transform.TransformerFactory>
           </systemProperties>
-          <webApp>
-            <!-- Allow resources to be reloaded and enable nicer console logging. -->
-            <extraClasspath>${project.basedir}/../core/src/main/resources,${project.build.directory}/support-log-formatter.jar</extraClasspath>
-            <contextPath>${contextPath}</contextPath>
-            <webInfIncludeJarPattern>.*(jenkins-core|target/classes).*</webInfIncludeJarPattern>
-          </webApp>
         </configuration>
       </plugin>
     </plugins>

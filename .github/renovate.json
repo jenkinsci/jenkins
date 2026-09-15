@@ -5,15 +5,6 @@
   "prConcurrentLimit": 0,
   "packageRules": [
     {
-      "description": "Should be upgraded in lockstep in order to keep their corresponding Jetty versions aligned",
-      "matchManagers": ["maven"],
-      "groupName": "Winstone and Jetty",
-      "matchPackageNames": [
-        "org.eclipse.jetty.ee9:jetty-ee9-maven-plugin",
-        "org.jenkins-ci:winstone"
-      ]
-    },
-    {
       "description": "Provided by Jetty and should be aligned with the version provided by the version of Jetty we deliver. See: https://github.com/jenkinsci/jenkins/pull/5211",
       "matchManagers": ["maven"],
       "enabled": false,
