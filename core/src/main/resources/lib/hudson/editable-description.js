@@ -54,7 +54,8 @@
                   if (description !== null && description !== "") {
                     label = button.dataset.editLabel;
                   }
-                  if (button.dataset.compact === "true") {
+                  button.dataset.title = label;
+                  if (button.dataset.mode === "compact") {
                     button.setAttribute("tooltip", label);
                     Behaviour.applySubtree(button, true);
                   } else {
@@ -75,15 +76,19 @@
       });
   }
 
-  document.addEventListener("DOMContentLoaded", function () {
-    const descriptionLink = document.querySelector("#description-link");
-    const description = document.getElementById("description");
-    if (description != null) {
-      descriptionLink.classList.remove("jenkins-hidden");
-      descriptionLink.addEventListener("click", function (e) {
+  Behaviour.specify(
+    "#description-link",
+    "editable-description",
+    0,
+    function (element) {
+      const description = document.getElementById("description");
+      if (description != null) {
+        element.classList.remove("jenkins-hidden");
+      }
+      element.addEventListener("click", function (e) {
         e.preventDefault();
-        editDescription(descriptionLink);
+        editDescription(element);
       });
-    }
-  });
+    },
+  );
 })();
