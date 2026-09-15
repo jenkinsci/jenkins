@@ -1,5 +1,9 @@
 @use "../abstracts/mixins";
 
+// Deliberately slower than the exit animations of dismissable components such as dialogs: This one is feedback for
+// an action rather than a dismissal, so it needs to be noticeable, and it collapses a comparatively tall section.
+$empty-state-exit-animation: 1s;
+
 .content-block__link {
   @include mixins.item;
 
@@ -36,6 +40,25 @@
 
 .empty-state-section {
   margin-top: var(--section-padding);
+}
+
+// Collapses a section that no longer applies, rather than having it disappear abruptly.
+// The element is removed once the max-height transition finishes, see hudson/model/AllView/noJob.js.
+.empty-state-section--removing {
+  overflow: hidden;
+
+  // ease-in so the section stays legible for a moment before fading, rather than vanishing immediately.
+  animation: empty-state-section-exit-animation #{$empty-state-exit-animation}
+    ease-in both;
+  transition: max-height #{$empty-state-exit-animation} ease-in-out;
+}
+
+@keyframes empty-state-section-exit-animation {
+  to {
+    scale: 0.98;
+    opacity: 0;
+    filter: blur(3px);
+  }
 }
 
 .empty-state-section-list {
