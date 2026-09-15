@@ -379,11 +379,25 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 return;
             }
 
-            // for binary files, provide the file name for download
-            rsp.setHeader("Content-Disposition", "inline; filename=" + baseFile.getName());
+            DirectoryBrowserSupportFilter.Context context;
+            try {
+                context = applyFilters(req, baseFile, in, length, true);
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, "Failed to filter stream for " + baseFile, ioe);
+                rsp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                return;
+            }
+            try (context) {
+                in = context.getInputStream();
+                length = context.getLength();
+                String fileName = context.getFileName();
 
-            // pseudo file name to let the Stapler set text/plain; ensure charset for non-ASCII text
-            rsp.serveFile(req, in, lastModified, -1, length, "mime-type:text/plain;charset=UTF-8");
+                // for binary files, provide the file name for download
+                rsp.setHeader("Content-Disposition", "inline; filename=" + fileName);
+
+                // pseudo file name to let Stapler set text/plain; ensure charset for non-ASCII text
+                rsp.serveFile(req, in, lastModified, -1, length, "mime-type:text/plain;charset=UTF-8");
+            }
         } else {
             if (resourceToken != null) {
                 // redirect to second domain
@@ -407,16 +421,44 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                     rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
                     return;
                 }
-                String fileName = baseFile.getName();
-                String mimeType = Jenkins.get().getServletContext().getMimeType(fileName);
-                if (mimeType != null && mimeType.startsWith("text/")) {
-                    // include charset=UTF-8 for text files to prevent browser encoding guessing
-                    rsp.serveFile(req, in, lastModified, -1, length, "mime-type:" + mimeType + ";charset=UTF-8");
-                } else {
-                    rsp.serveFile(req, in, lastModified, -1, length, fileName);
+
+                DirectoryBrowserSupportFilter.Context context;
+                try {
+                    context = applyFilters(req, baseFile, in, length, false);
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.WARNING, "Failed to filter stream for " + baseFile, ioe);
+                    rsp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    return;
+                }
+                try (context) {
+                    in = context.getInputStream();
+                    length = context.getLength();
+                    String fileName = context.getFileName();
+
+                    String mimeType = Jenkins.get().getServletContext().getMimeType(fileName);
+                    if (mimeType != null && mimeType.startsWith("text/")) {
+                        // include charset=UTF-8 for text files to prevent browser encoding guessing
+                        rsp.serveFile(req, in, lastModified, -1, length, "mime-type:" + mimeType + ";charset=UTF-8");
+                    } else {
+                        rsp.serveFile(req, in, lastModified, -1, length, fileName);
+                    }
                 }
             }
         }
+    }
+
+    private DirectoryBrowserSupportFilter.Context applyFilters(StaplerRequest2 req, VirtualFile baseFile, InputStream in, long length, boolean view) throws IOException {
+        DirectoryBrowserSupportFilter.Context context = new DirectoryBrowserSupportFilter.Context(baseFile, req, in, length, view);
+        for (DirectoryBrowserSupportFilter filter : DirectoryBrowserSupportFilter.all()) {
+            try {
+                filter.filter(context);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to filter stream for " + baseFile + " using " + filter, e);
+                context.close();
+                throw new IOException("Filter execution failed: " + filter.getClass().getName(), e);
+            }
+        }
+        return context;
     }
 
     private record IsAbsolute(String fragment) implements ControllerToAgentCallable<Boolean, IOException> {

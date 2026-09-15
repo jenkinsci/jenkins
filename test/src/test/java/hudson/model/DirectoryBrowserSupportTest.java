@@ -1558,4 +1558,62 @@ class DirectoryBrowserSupportTest {
         }
     }
 
+    @TestExtension({"directoryBrowserSupportFilterTest", "directoryBrowserSupportNonViewFilterTest"})
+    public static class TestGzipFilter extends DirectoryBrowserSupportFilter {
+        @Override
+        public void filter(Context context) throws IOException {
+            if (context.getFile().getName().endsWith(".custom")) {
+                String modified = "MODIFIED: " + new String(context.getInputStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                byte[] bytes = modified.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                context.setInputStream(new java.io.ByteArrayInputStream(bytes));
+                context.setLength(bytes.length);
+            }
+        }
+    }
+
+    @Test
+    public void directoryBrowserSupportFilterTest() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScm(new SingleFileSCM("test.custom", "hello world"));
+        p.getPublishersList().add(new ArtifactArchiver("test.custom"));
+        j.buildAndAssertSuccess(p);
+
+        org.htmlunit.Page page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.custom/*view*/", "text/plain");
+        assertEquals("MODIFIED: hello world", page.getWebResponse().getContentAsString());
+    }
+
+    @Test
+    public void directoryBrowserSupportNonViewFilterTest() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScm(new SingleFileSCM("test.custom", "hello world"));
+        p.getPublishersList().add(new ArtifactArchiver("test.custom"));
+        j.buildAndAssertSuccess(p);
+
+        org.htmlunit.Page page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.custom", "text/plain");
+        assertEquals("MODIFIED: hello world", page.getWebResponse().getContentAsString());
+    }
+
+    @TestExtension("directoryBrowserSupportRenameFilterTest")
+    public static class TestRenameFilter extends DirectoryBrowserSupportFilter {
+        @Override
+        public void filter(Context context) throws IOException {
+            if (context.getFile().getName().endsWith(".unknownext")) {
+                context.setFileName("renamed.txt");
+            }
+        }
+    }
+
+    @Test
+    public void directoryBrowserSupportRenameFilterTest() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScm(new SingleFileSCM("test.unknownext", "hello world"));
+        p.getPublishersList().add(new ArtifactArchiver("test.unknownext"));
+        j.buildAndAssertSuccess(p);
+
+        org.htmlunit.Page page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.unknownext", "text/plain");
+        assertEquals("hello world", page.getWebResponse().getContentAsString());
+        // ".unknownext" has no registered MIME type, so this only resolves to text/plain if the
+        // filter's renamed "renamed.txt" filename (not the original artifact name) drove the lookup.
+        assertTrue(page.getWebResponse().getResponseHeaderValue("Content-Type").toLowerCase(java.util.Locale.ROOT).startsWith("text/plain"));
+    }
 }
