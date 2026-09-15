@@ -30,5 +30,27 @@
     &:empty {
       display: none;
     }
+
+    & > button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      appearance: none;
+      border: none;
+      outline: none;
+      background: none;
+      color: var(--link-color);
+      gap: 0.5rem;
+      cursor: pointer;
+
+      svg {
+        width: 1.25rem;
+        height: 1.25rem;
+      }
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
   }
 }
