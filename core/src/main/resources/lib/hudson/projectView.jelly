@@ -52,6 +52,9 @@ THE SOFTWARE.
     <st:attribute name="itemGroup" use="optional" type="hudson.model.ItemGroup">
       The containing group, for purposes of name calculation.
     </st:attribute>
+    <st:attribute name="alwaysMobile" use="optional" type="boolean">
+      If true, the mobile view is always used, even on desktop browsers.
+    </st:attribute>
   </st:documentation>
 
   <t:setIconSize/>
@@ -66,34 +69,33 @@ THE SOFTWARE.
         <d:invokeBody/>
       </div>
 
-      <div class="jenkins-mobile-hide">
-        <div class="app-project-status-table">
-          <table id="projectstatus" class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable">
-            <thead>
-              <tr>
-                <j:forEach var="col" items="${columnExtensions}">
-                  <j:if test="${col.class.simpleName.equals('BuildButtonColumn')}">
-                    <j:set var="buildButtonColumn" value="${col}" />
-                  </j:if>
-                  <st:include page="columnHeader.jelly" it="${col}" />
-                </j:forEach>
-              </tr>
-            </thead>
+      <j:if test="${!attrs.alwaysMobile}">
+        <div class="jenkins-mobile-hide">
+          <div class="app-project-status-table">
+            <table id="projectstatus" class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable">
+              <thead>
+                <tr>
+                  <j:forEach var="col" items="${columnExtensions}">
+                    <st:include page="columnHeader.jelly" it="${col}" />
+                  </j:forEach>
+                </tr>
+              </thead>
 
-            <j:forEach var="job" items="${jobs}">
-              <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
-              <t:projectViewRow jobBaseUrl="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>
-            </j:forEach>
-          </table>
+              <j:forEach var="job" items="${jobs}">
+                <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
+                <t:projectViewRow jobBaseUrl="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>
+              </j:forEach>
+            </table>
+          </div>
+
+          <l:userExperimentalFlag var="newDashboardPage" flagClassName="jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag" />
+          <j:if test="${!newDashboardPage}">
+            <t:iconSize><t:rssBar/></t:iconSize>
+          </j:if>
         </div>
+      </j:if>
 
-        <l:userExperimentalFlag var="newDashboardPage" flagClassName="jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag" />
-        <j:if test="${!newDashboardPage}">
-          <t:iconSize><t:rssBar/></t:iconSize>
-        </j:if>
-      </div>
-
-      <div class="jenkins-jobs-list jenkins-mobile-show">
+      <div class="jenkins-jobs-list ${attrs.alwaysMobile ? '' : 'jenkins-mobile-show'}">
         <j:set var="jenkins_mobile_show" value="${true}"/>
         <j:forEach var="job" items="${jobs}">
           <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
@@ -122,6 +124,9 @@ THE SOFTWARE.
                   </j:if>
 
                   <j:forEach var="col" items="${columnExtensions}">
+                    <j:if test="${col.class.simpleName.equals('BuildButtonColumn')}">
+                      <j:set var="buildButtonColumn" value="${col}" />
+                    </j:if>
                     <st:include page="compactColumn.jelly" it="${col}" optional="true" />
                   </j:forEach>
                 </div>
