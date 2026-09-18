@@ -19,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.security.XStreamDeserializable;
 import jenkins.util.SystemProperties;
 import jenkins.util.UrlHelper;
 import org.jenkinsci.Symbol;
@@ -54,11 +55,13 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
      * @deprecated replaced by {@link #jenkinsUrl}
      */
     @Deprecated
+    @XStreamDeserializable
     private transient String hudsonUrl;
     private String adminAddress;
     private String jenkinsUrl;
 
     // just to suppress warnings
+    @XStreamDeserializable
     private transient String charset, useSsl;
 
     public static @NonNull JenkinsLocationConfiguration get() {

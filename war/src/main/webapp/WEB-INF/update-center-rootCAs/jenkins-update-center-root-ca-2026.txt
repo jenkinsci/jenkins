@@ -1,0 +1,30 @@
+Created for https://github.com/jenkins-infra/helpdesk/issues/5206
+
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            45:24:f0:80:a1:0a:f9:8a:17:40:f7:a7:eb:a5:ec:b5:4a:e9:97:47
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C=US, ST=California, O=Jenkins Project, OU=Jenkins Infrastructure Team, emailAddress=jenkins-infra-team@googlegroups.com
+        Validity
+            Not Before: Jul 27 15:02:54 2026 GMT
+            Not After : Jul 24 15:02:54 2036 GMT
+        Subject: C=US, ST=California, O=Jenkins Project, OU=Jenkins Infrastructure Team, emailAddress=jenkins-infra-team@googlegroups.com
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (4096 bit)
+                Modulus:
+                    ...
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Subject Key Identifier:
+                ...
+            X509v3 Authority Key Identifier:
+                ...
+            X509v3 Basic Constraints: critical
+                CA:TRUE
+    Signature Algorithm: sha256WithRSAEncryption
+    Signature Value:
+        ...
+sha256 Fingerprint=49:22:70:D3:3F:4D:FB:F1:12:28:57:F9:43:40:58:F5:2A:5A:11:99:3D:BC:D5:D0:13:FE:01:7C:E6:57:EE:7C

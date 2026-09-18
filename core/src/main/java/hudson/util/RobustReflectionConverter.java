@@ -29,6 +29,7 @@ import static java.util.logging.Level.FINE;
 import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.ConverterLookup;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -45,9 +46,11 @@ import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.security.InputManipulationException;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.diagnosis.OldDataMonitor;
+import hudson.model.PersistenceRoot;
 import hudson.model.Saveable;
 import hudson.security.ACL;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,6 +86,9 @@ import org.jvnet.tiger_types.Types;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class RobustReflectionConverter implements Converter {
 
+    static /* non-final for Groovy */ boolean DISABLE_XSTREAM_NOT_DESERIALIZABLE_CHECK = SystemProperties.getBoolean(RobustReflectionConverter.class.getName() + ".DISABLE_XSTREAM_NOT_DESERIALIZABLE_CHECK", false);
+    static /* non-final for Groovy */ boolean TRANSIENT_FIELD_STRICT_MODE = SystemProperties.getBoolean(RobustReflectionConverter.class.getName() + ".TRANSIENT_FIELD_STRICT_MODE", false);
+
     static /* non-final for Groovy */ boolean RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = SystemProperties.getBoolean(RobustReflectionConverter.class.getName() + ".recordFailuresForAllAuthentications", false);
     private static /* non-final for Groovy */ boolean RECORD_FAILURES_FOR_ADMINS = SystemProperties.getBoolean(RobustReflectionConverter.class.getName() + ".recordFailuresForAdmins", false);
 
@@ -115,6 +121,11 @@ public class RobustReflectionConverter implements Converter {
     private final ReadWriteLock criticalFieldsLock = new ReentrantReadWriteLock();
     @GuardedBy("criticalFieldsLock")
     private final Map<String, Set<String>> criticalFields = new HashMap<>();
+    private ConverterLookup converterLookup;
+
+    void setConverterLookup(ConverterLookup converterLookup) {
+        this.converterLookup = converterLookup;
+    }
 
     public RobustReflectionConverter(Mapper mapper, ReflectionProvider reflectionProvider) {
         this(mapper, reflectionProvider, new XStream2().new PluginClassOwnership());
@@ -365,6 +376,13 @@ public class RobustReflectionConverter implements Converter {
                 final Object value;
                 if (fieldExistsInClass) {
                     Field field = reflectionProvider.getField(result.getClass(), fieldName);
+                    if (PersistenceRoot.class.isAssignableFrom(type) && !isSafePersistenceRootReference(reader)) {
+                        final String msg = "Refusing to unmarshal PersistenceRoot subtype '" + type.getName() + "' into field '"
+                                + fieldName + "' in '" + result.getClass().getName()
+                                + "'. PersistenceRoot objects are document roots and must not appear as nested field values.";
+                        LOGGER.log(Level.WARNING, msg);
+                        throw new CriticalXStreamException(new XStreamException(msg));
+                    }
                     value = unmarshalField(context, result, type, field);
                     // TODO the reflection provider should have returned the proper field in first place ....
                     Class definedType = reflectionProvider.getFieldType(result, fieldName, classDefiningField);
@@ -461,10 +479,84 @@ public class RobustReflectionConverter implements Converter {
         list.add(e);
     }
 
+    /**
+     * Returns true when the current XML element carrying a {@link PersistenceRoot}-typed field is
+     * safe to unmarshal. There are three safe patterns:
+     *
+     * <ol>
+     *   <li><b>XStream back-reference</b>: the element has a {@code reference=} system attribute.
+     *       XStream resolves this to an already-deserialized ancestor object from the current context
+     *       (e.g. {@code <owner class="hudson" reference="../../.."/>} inside a view serialized into
+     *       the same config.xml as the Jenkins root). No new object is constructed; no attacker-controlled
+     *       state enters the graph.</li>
+     *   <li><b>Replacement placeholder</b>: the element carries a {@code resolves-to} attribute naming
+     *       a non-{@link PersistenceRoot} type (e.g. {@code Run$Replacer} or {@code User$Replacer})
+     *       and has no {@code class=} override. The placeholder's {@code readResolve()} looks up the
+     *       live instance by ID rather than carrying attacker-controlled state.</li>
+     *   <li><b>Single-value reference</b>: the element has a {@code class=} attribute and the resolved
+     *       type has a {@link com.thoughtworks.xstream.converters.SingleValueConverter} registered in the
+     *       converter lookup. Such converters (e.g. {@link com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter})
+     *       serialize a {@link PersistenceRoot} as a plain identifier string (no child XML elements), so
+     *       no attacker-controlled object graph can be injected via reflection.
+     *       Example: {@code Queue.XSTREAM}'s converter for {@code hudson.model.Item} writes
+     *       {@code <task class="hudson.model.FreeStyleProject">project-name</task>}; the text content is
+     *       handled by the single-value converter which performs a safe registry lookup.</li>
+     * </ol>
+     */
+    private boolean isSafePersistenceRootReference(HierarchicalStreamReader reader) {
+        // Pattern 1: XStream back-reference — already-deserialized object, nothing new constructed.
+        String referenceAttr = reader.getAttribute(mapper.aliasForSystemAttribute("reference"));
+        if (referenceAttr != null) {
+            return true;
+        }
+        // Pattern 2: writeReplace placeholder — resolves-to names a non-PersistenceRoot replacer class,
+        // and there is no class= attribute that could override it with an arbitrary PersistenceRoot.
+        String classAttr = reader.getAttribute(mapper.aliasForAttribute("class"));
+        if (classAttr != null) {
+            // Pattern 3: single-value reference — the resolved type has a SingleValueConverter
+            // registered (e.g. Queue.XSTREAM's converter for hudson.model.Item). Such converters
+            // serialize PersistenceRoot objects as plain identifier strings with no child XML elements,
+            // so no attacker-controlled object graph can be injected.
+            if (converterLookup != null) {
+                try {
+                    Class<?> resolvedType = mapper.realClass(classAttr);
+                    if (converterLookup.lookupConverterForType(resolvedType) instanceof SingleValueConverter) {
+                        return true;
+                    }
+                } catch (Exception ignored) {
+                    // class not resolvable — fall through
+                }
+            }
+            return false;
+        }
+        String resolvesToAttr = reader.getAttribute(mapper.aliasForAttribute("resolves-to"));
+        if (resolvesToAttr == null) {
+            return false;
+        }
+        try {
+            Class<?> replacerType = mapper.realClass(resolvesToAttr);
+            return !PersistenceRoot.class.isAssignableFrom(replacerType);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private boolean fieldDefinedInClass(Object result, String attrName) {
         // during unmarshalling, unmarshal into transient fields like XStream 1.1.3
+        // unless @XStreamNotDeserializable is used or TRANSIENT_FIELD_STRICT_MODE is set.
         //boolean fieldExistsInClass = reflectionProvider.fieldDefinedInClass(attrName, result.getClass());
-        return reflectionProvider.getFieldOrNull(result.getClass(), attrName) != null;
+        Field field = reflectionProvider.getFieldOrNull(result.getClass(), attrName);
+        if (field == null) {
+            return false;
+        }
+        if (!Modifier.isTransient(field.getModifiers())) {
+            return true;
+        }
+        if (!DISABLE_XSTREAM_NOT_DESERIALIZABLE_CHECK
+                && Arrays.stream(field.getAnnotations()).anyMatch(a -> "XStreamNotDeserializable".equals(a.annotationType().getSimpleName()))) {
+            return false;
+        }
+        return !TRANSIENT_FIELD_STRICT_MODE || Arrays.stream(field.getAnnotations()).anyMatch(a -> "XStreamDeserializable".equals(a.annotationType().getSimpleName()));
     }
 
     protected Object unmarshalField(final UnmarshallingContext context, final Object result, Class type, Field field) {
