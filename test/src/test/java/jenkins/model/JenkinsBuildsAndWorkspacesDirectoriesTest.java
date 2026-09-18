@@ -1,95 +1,48 @@
 package jenkins.model;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
+import hudson.FilePath;
 import hudson.Functions;
-import hudson.init.InitMilestone;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Items;
+import hudson.tasks.ArtifactArchiver;
+import hudson.tasks.BatchFile;
+import hudson.tasks.Shell;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.stream.Stream;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
-import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.LogRecorder;
-import org.jvnet.hudson.test.MockFolder;
-import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
-import org.jvnet.hudson.test.recipes.LocalData;
+import org.jvnet.hudson.test.fixtures.RealJenkinsFixture;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 
 /**
  * Since JENKINS-50164, Jenkins#workspacesDir and Jenkins#buildsDir had their associated UI deleted.
  * So instead of configuring through the UI, we now have to use sysprops for this.
- * <p>
- * So this test class uses a {@link JenkinsSessionExtension} to check the behaviour of this sysprop being
- * present or not between two restarts.
  */
 class JenkinsBuildsAndWorkspacesDirectoriesTest {
 
-    private static final String LOG_WHEN_CHANGING_BUILDS_DIR = "Changing builds directories from ";
-    private static final String LOG_WHEN_CHANGING_WORKSPACES_DIR = "Changing workspaces directories from ";
-
     @RegisterExtension
-    private final JenkinsSessionExtension story = new JenkinsSessionExtension();
-
-    private final LogRecorder loggerRule = new LogRecorder();
+    private final RealJenkinsExtension story = new RealJenkinsExtension();
 
     @TempDir
-    private static File tmp;
-
-    @BeforeEach
-    void before() {
-        clearSystemProperties();
-    }
-
-    @AfterEach
-    void after() {
-        clearSystemProperties();
-    }
-
-    private void clearSystemProperties() {
-        Stream.of(Jenkins.BUILDS_DIR_PROP, Jenkins.WORKSPACES_DIR_PROP)
-                .forEach(System::clearProperty);
-    }
-
-    @Issue("JENKINS-53284")
-    @Test
-    void changeWorkspacesDirLog() throws Throwable {
-        loggerRule.record(Jenkins.class, Level.WARNING)
-                .record(Jenkins.class, Level.INFO).capture(1000);
-
-        story.then(step -> {
-            assertFalse(logWasFound(LOG_WHEN_CHANGING_WORKSPACES_DIR));
-            setWorkspacesDirProperty("testdir1");
-        });
-
-        story.then(step -> {
-            assertTrue(logWasFoundAtLevel(LOG_WHEN_CHANGING_WORKSPACES_DIR,
-                                          Level.WARNING));
-            setWorkspacesDirProperty("testdir2");
-        });
-
-        story.then(step -> assertTrue(logWasFoundAtLevel(LOG_WHEN_CHANGING_WORKSPACES_DIR, Level.WARNING)));
-    }
+    private File tmp;
 
     @Issue("JENKINS-50164")
     @Test
@@ -128,178 +81,31 @@ class JenkinsBuildsAndWorkspacesDirectoriesTest {
         });
     }
 
+    private void setRawBuildsDir(String rawBuildsDir) {
+        story.javaOptions("-D" + Jenkins.BUILDS_DIR_PROP + "=" + rawBuildsDir);
+    }
+
     @Issue("JENKINS-50164")
     @Test
     void jenkinsDoesNotStartWithBadSysProp() throws Throwable {
-        loggerRule.record(Jenkins.class, Level.WARNING)
-                .record(Jenkins.class, Level.INFO)
-                .capture(100);
-
-        story.then(rule -> {
-            assertTrue(rule.getInstance().isDefaultBuildDir());
-            setBuildsDirProperty("/bluh");
-        });
-
-        assertThrows(ReactorException.class, () -> story.then(step -> fail("should have failed before reaching here.")));
-    }
-
-    @Issue("JENKINS-50164")
-    @Test
-    void jenkinsDoesNotStartWithScrewedUpConfigXml() throws Throwable {
-        loggerRule.record(Jenkins.class, Level.WARNING)
-                .record(Jenkins.class, Level.INFO)
-                .capture(100);
-
-        story.then(rule -> {
-
-            assertTrue(rule.getInstance().isDefaultBuildDir());
-
-            // Now screw up the value by writing into the file directly, like one could do using external XML manipulation tools
-            final Path configFile = rule.jenkins.getRootDir().toPath().resolve("config.xml");
-            final String screwedUp = Files.readString(configFile, StandardCharsets.UTF_8).
-                    replaceFirst("<buildsDir>.*</buildsDir>", "<buildsDir>eeeeeeeeek</buildsDir>");
-            Files.writeString(configFile, screwedUp, StandardCharsets.UTF_8);
-        });
-
-        assertThrows(ReactorException.class, () -> story.then(step -> fail("should have failed before reaching here.")));
-    }
-
-    @Issue("JENKINS-50164")
-    @Test
-    void buildsDir() throws Throwable {
-        loggerRule.record(Jenkins.class, Level.WARNING)
-                .record(Jenkins.class, Level.INFO)
-                .capture(100);
-
-        story.then(step -> assertFalse(logWasFound("Using non default builds directories")));
-
-        story.then(steps -> {
-            assertTrue(steps.getInstance().isDefaultBuildDir());
-            setBuildsDirProperty("$JENKINS_HOME/plouf/$ITEM_FULL_NAME/bluh");
-            assertFalse(JenkinsBuildsAndWorkspacesDirectoriesTest.this.logWasFound(LOG_WHEN_CHANGING_BUILDS_DIR));
-        });
-
-        story.then(step -> {
-                       assertFalse(step.getInstance().isDefaultBuildDir());
-                       assertEquals("$JENKINS_HOME/plouf/$ITEM_FULL_NAME/bluh", step.getInstance().getRawBuildsDir());
-                       assertTrue(logWasFound("Changing builds directories from "));
-                   }
-        );
-
-        story.then(step -> assertTrue(logWasFound("Using non default builds directories"))
-        );
-    }
-
-    @Issue("JENKINS-50164")
-    @Test
-    void workspacesDir() throws Throwable {
-        loggerRule.record(Jenkins.class, Level.WARNING)
-                .record(Jenkins.class, Level.INFO)
-                .capture(1000);
-
-        story.then(step -> assertFalse(logWasFound("Using non default workspaces directories")));
-
-        story.then(step -> {
-            assertTrue(step.getInstance().isDefaultWorkspaceDir());
-            final String workspacesDir = "bluh";
-            setWorkspacesDirProperty(workspacesDir);
-            assertFalse(logWasFound("Changing workspaces directories from "));
-        });
-
-        story.then(step -> {
-            assertFalse(step.getInstance().isDefaultWorkspaceDir());
-            assertEquals("bluh", step.getInstance().getRawWorkspaceDir());
-            assertTrue(logWasFound("Changing workspaces directories from "));
-        });
-
-
-        story.then(step -> {
-                       assertFalse(step.getInstance().isDefaultWorkspaceDir());
-                       assertTrue(logWasFound("Using non default workspaces directories"));
-                   }
-        );
-    }
-
-    @Disabled("TODO calling restart seems to break Surefire")
-    @Issue("JENKINS-50164")
-    @LocalData
-    @Test
-    void fromPreviousCustomSetup() throws Throwable {
-        assumeFalse(Functions.isWindows(), "Default Windows lifecycle does not support restart.");
-
-        // check starting point and change config for next run
-        final String newBuildsDirValueBySysprop = "/tmp/${ITEM_ROOTDIR}/bluh";
-        story.then(j -> {
-            assertEquals("${ITEM_ROOTDIR}/ze-previous-custom-builds", j.jenkins.getRawBuildsDir());
-            setBuildsDirProperty(newBuildsDirValueBySysprop);
-        });
-
-        // Check the sysprop setting was taken in account
-        story.then(j -> {
-            assertEquals(newBuildsDirValueBySysprop, j.jenkins.getRawBuildsDir());
-
-            // ** HACK AROUND JENKINS-50422: manually restarting ** //
-            // Check the disk (cannot just restart normally with the rule, )
-            assertThat(Files.readString(j.jenkins.getRootDir().toPath().resolve("config.xml"), StandardCharsets.UTF_8),
-                       containsString("<buildsDir>" + newBuildsDirValueBySysprop + "</buildsDir>"));
-
-            String rootDirBeforeRestart = j.jenkins.getRootDir().toString();
-            clearSystemProperties();
-            j.jenkins.restart();
-
-            int maxLoops = 50;
-            while (j.jenkins.getInitLevel() != InitMilestone.COMPLETED && maxLoops-- > 0) {
-                Thread.sleep(300);
-            }
-
-            assertEquals(rootDirBeforeRestart, j.jenkins.getRootDir().toString());
-            assertThat(Files.readString(j.jenkins.getRootDir().toPath().resolve("config.xml"), StandardCharsets.UTF_8),
-                       containsString("<buildsDir>" + newBuildsDirValueBySysprop + "</buildsDir>"));
-            assertEquals(newBuildsDirValueBySysprop, j.jenkins.getRawBuildsDir());
-            // ** END HACK ** //
-        });
-
-    }
-
-    private void setWorkspacesDirProperty(String workspacesDir) {
-        System.setProperty(Jenkins.WORKSPACES_DIR_PROP, workspacesDir);
-    }
-
-    private void setBuildsDirProperty(String buildsDir) {
-        System.setProperty(Jenkins.BUILDS_DIR_PROP, buildsDir);
-    }
-
-    private boolean logWasFound(String searched) {
-        return loggerRule.getRecords().stream()
-                .anyMatch(record -> record.getMessage().contains(searched));
-    }
-
-    private boolean logWasFoundAtLevel(String searched, Level level) {
-        return loggerRule.getRecords().stream()
-                .filter(record -> record.getMessage().contains(searched)).anyMatch(record -> record.getLevel().equals(level));
+        setRawBuildsDir("/bluh");
+        assertThrows(RealJenkinsFixture.JenkinsStartupException.class, () -> story.then(step -> fail("should have failed before reaching here.")));
     }
 
     @Test
     @Issue("JENKINS-17138")
     void externalBuildDirectoryRenameDelete() throws Throwable {
-        // Hack to get String builds usable in lambda below
-        final List<String> builds = new ArrayList<>();
-
+        setRawBuildsDir(tmp + "/${ITEM_FULL_NAME}");
+        var _tmp = tmp;
         story.then(steps -> {
-            builds.add(newFolder(tmp, "junit").toString());
-            assertTrue(steps.getInstance().isDefaultBuildDir());
-            setBuildsDirProperty(builds.getFirst() + "/${ITEM_FULL_NAME}");
-        });
-
-        story.then(steps -> {
-            assertEquals(builds.getFirst() + "/${ITEM_FULL_NAME}", steps.jenkins.getRawBuildsDir());
-            FreeStyleProject p = steps.jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "prj");
+            assertEquals(_tmp + "/${ITEM_FULL_NAME}", steps.jenkins.getRawBuildsDir());
+            FreeStyleProject p = steps.jenkins.createProject(Folder.class, "d").createProject(FreeStyleProject.class, "prj");
             FreeStyleBuild b = p.scheduleBuild2(0).get();
-            File oldBuildDir = new File(builds.getFirst(), "d/prj");
+            File oldBuildDir = new File(_tmp, "d/prj");
             assertEquals(new File(oldBuildDir, b.getId()), b.getRootDir());
             assertTrue(b.getRootDir().isDirectory());
             p.renameTo("proj");
-            File newBuildDir = new File(builds.getFirst(), "d/proj");
+            File newBuildDir = new File(_tmp, "d/proj");
             assertEquals(new File(newBuildDir, b.getId()), b.getRootDir());
             assertTrue(b.getRootDir().isDirectory());
             p.delete();
@@ -307,13 +113,138 @@ class JenkinsBuildsAndWorkspacesDirectoriesTest {
         });
     }
 
-    private static File newFolder(File root, String... subDirs) throws IOException {
-        String subFolder = String.join("/", subDirs);
-        File result = new File(root, subFolder);
-        if (!result.mkdirs()) {
-            throw new IOException("Couldn't create folders " + root);
+    @Issue("JENKINS-24825")
+    @Test
+    void moveItem() throws Throwable {
+        setRawBuildsDir(tmp + "/${ITEM_FULL_NAME}");
+        var _tmp = tmp;
+        story.then(r -> {
+            var foo = r.createProject(Folder.class, "foo");
+            var bar = r.createProject(Folder.class, "bar");
+            var test = foo.createProject(FreeStyleProject.class, "test");
+            r.buildAndAssertSuccess(test);
+            Items.move(test, bar);
+            assertFalse(new File(_tmp, "foo/test/1").exists());
+            assertTrue(new File(_tmp, "bar/test/1").exists());
+        });
+    }
+
+    @Issue("JENKINS-19764")
+    @Test
+    void testRenameWithCustomBuildsDirWithSubdir() throws Throwable {
+        setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
+        story.then(j -> {
+            final FreeStyleProject p = j.createFreeStyleProject();
+            j.buildAndAssertSuccess(p);
+            p.renameTo("different-name");
+        });
+    }
+
+    @Issue("JENKINS-44657")
+    @Test
+    void testRenameWithCustomBuildsDirWithBuildsIntact() throws Throwable {
+        setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
+        story.then(j -> {
+            final FreeStyleProject p = j.createFreeStyleProject();
+            final File oldBuildsDir = p.getBuildDir();
+            j.buildAndAssertSuccess(p);
+            String oldDirContent = dirContent(oldBuildsDir);
+            p.renameTo("different-name");
+            final File newBuildDir = p.getBuildDir();
+            assertNotNull(newBuildDir);
+            assertNotEquals(oldBuildsDir.getAbsolutePath(), newBuildDir.getAbsolutePath());
+            String newDirContent = dirContent(newBuildDir);
+            assertEquals(oldDirContent, newDirContent);
+        });
+    }
+
+    @Issue("JENKINS-44657")
+    @Test
+    void testRenameWithCustomBuildsDirWithBuildsIntactInFolder() throws Throwable {
+        setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
+        story.then(j -> {
+            var f = j.createProject(Folder.class, "F");
+
+            final FreeStyleProject p1 = f.createProject(FreeStyleProject.class, "P1");
+            j.buildAndAssertSuccess(p1);
+            File oldP1BuildsDir = p1.getBuildDir();
+            final String oldP1DirContent = dirContent(oldP1BuildsDir);
+            f.renameTo("different-name");
+
+            File newP1BuildDir = p1.getBuildDir();
+            assertNotNull(newP1BuildDir);
+            assertNotEquals(oldP1BuildsDir.getAbsolutePath(), newP1BuildDir.getAbsolutePath());
+            String newP1DirContent = dirContent(newP1BuildDir);
+            assertEquals(oldP1DirContent, newP1DirContent);
+
+            final FreeStyleProject p2 = f.createProject(FreeStyleProject.class, "P2");
+            if (Functions.isWindows()) {
+                p2.getBuildersList().add(new BatchFile("echo hello > hello.txt"));
+            } else {
+                p2.getBuildersList().add(new Shell("echo hello > hello.txt"));
+            }
+            p2.getPublishersList().add(new ArtifactArchiver("*.txt"));
+            j.buildAndAssertSuccess(p2);
+
+            File oldP2BuildsDir = p2.getBuildDir();
+            final String oldP2DirContent = dirContent(oldP2BuildsDir);
+            FreeStyleBuild b2 = p2.getBuilds().getLastBuild();
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            b2.getLogText().writeRawLogTo(0, out); // TODO use writeWholeLogTo?
+            final String oldB2Log = out.toString(Charset.defaultCharset());
+            assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
+            f.renameTo("something-else");
+
+            //P1 check again
+            newP1BuildDir = p1.getBuildDir();
+            assertNotNull(newP1BuildDir);
+            assertNotEquals(oldP1BuildsDir.getAbsolutePath(), newP1BuildDir.getAbsolutePath());
+            newP1DirContent = dirContent(newP1BuildDir);
+            assertEquals(oldP1DirContent, newP1DirContent);
+
+            //P2 check
+
+            b2 = p2.getBuilds().getLastBuild();
+            assertNotNull(b2);
+            out = new ByteArrayOutputStream();
+            b2.getLogText().writeRawLogTo(0, out); // TODO use writeWholeLogTo?
+            final String newB2Log = out.toString(Charset.defaultCharset());
+            assertEquals(oldB2Log, newB2Log);
+            assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
+
+            File newP2BuildDir = p2.getBuildDir();
+            assertNotNull(newP2BuildDir);
+            assertNotEquals(oldP2BuildsDir.getAbsolutePath(), newP2BuildDir.getAbsolutePath());
+            String newP2DirContent = dirContent(newP2BuildDir);
+            assertEquals(oldP2DirContent, newP2DirContent);
+        });
+    }
+
+    private static String dirContent(File dir) throws IOException, InterruptedException {
+        if (dir == null || !dir.isDirectory()) {
+            return null;
         }
-        return result;
+        StringBuilder str = new StringBuilder();
+        final FilePath[] list = new FilePath(dir).list("**/*");
+        Arrays.sort(list, Comparator.comparing(FilePath::getRemote));
+        for (FilePath path : list) {
+            str.append(relativePath(dir, path));
+            str.append(' ').append(path.length()).append('\n');
+        }
+        return str.toString();
+    }
+
+    private static String relativePath(File base, FilePath path) throws IOException, InterruptedException {
+        if (path.absolutize().getRemote().equals(base.getAbsolutePath())) {
+            return "";
+        } else {
+            final String s = relativePath(base, path.getParent());
+            if (s.isEmpty()) {
+                return path.getName();
+            } else {
+                return s + "/" + path.getName();
+            }
+        }
     }
 
 }
