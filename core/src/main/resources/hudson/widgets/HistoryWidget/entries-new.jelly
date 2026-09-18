@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2023 Jenkins contributors
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,28 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<!--
+  Render build histories. 
+-->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:d="jelly:define">
-  <st:documentation>
-    <st:attribute name="title" use="required">
-      Sets the title for the notice. HTML isn't supported.
-    </st:attribute>
-    <st:attribute name="icon" use="required">
-      Sets the icon for the notice. Supports Jenkins Symbols and regular images.
-    </st:attribute>
-    <st:attribute name="id" use="optional">
-      If set, id will be the identifier for the component.
-    </st:attribute>
-    <st:attribute name="clazz" use="optional">
-      Additional CSS class(es) to add.
-    </st:attribute>
-  </st:documentation>
-
-  <div class="jenkins-notice ${attrs.clazz}" id="${attrs.id}">
-    <l:icon src="${attrs.icon}" />
-    <div>${attrs.title}</div>
-    <div class="jenkins-notice__description">
-      <d:invokeBody />
-    </div>
-  </div>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <j:set target="${it}" property="nextBuildNumberToFetch" value="${it.nextBuildNumber}" />
+  <j:forEach var="pageEntry" items="${it.runs}">
+    <st:include page="/hudson/widgets/HistoryWidget/entry-new.jelly" />
+  </j:forEach>
 </j:jelly>
