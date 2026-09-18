@@ -1,4 +1,5 @@
 @use "../abstracts/mixins";
+@use "../base/breakpoints";
 
 #side-panel {
   #buildHistoryPage {
@@ -14,6 +15,24 @@
 
   #jenkins-builds .jenkins-card__content {
     overflow: visible;
+  }
+
+  #jenkins-builds.jenkins-builds--collapsed .jenkins-card__content {
+    padding-bottom: 0;
+  }
+}
+
+.jenkins-builds-fold {
+  svg {
+    transition: rotate var(--standard-transition);
+  }
+}
+
+#jenkins-builds .jenkins-builds-fold {
+  display: none;
+
+  @media (max-width: breakpoints.$tablet-breakpoint) {
+    display: inline-flex;
   }
 }
 
