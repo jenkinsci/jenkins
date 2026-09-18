@@ -27,8 +27,8 @@ package hudson.model;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.List;
-import org.htmlunit.html.DomNodeUtil;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.DomNodeList;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,14 +60,15 @@ class ManagementLinkTest {
     @WithTimeout(300)
     void links() throws Exception {
         WebClient wc = j.createWebClient();
+        HtmlPage page = wc.goTo("manage");
 
-        for (int i = 0; ; i++) {
-            HtmlPage page = wc.goTo("manage");
-            List<?> anchors = DomNodeUtil.selectNodes(page, "//div[contains(@class,'jenkins-section__item')]/a[not(contains(@class,'confirmation-link'))]");
-            assertTrue(anchors.size() >= 8);
-            if (i == anchors.size())  return; // done
+        DomNodeList<DomNode> anchors = page.querySelectorAll("a.task-link:not(.confirmation-link)");
+        assertTrue(anchors.size() >= 8);
 
-            ((HtmlAnchor) anchors.get(i)).click();
+        String prefix = j.contextPath + '/';
+        for (DomNode anchor : anchors) {
+            System.out.println(((HtmlAnchor) anchor).getHrefAttribute());
+            wc.goTo(((HtmlAnchor) anchor).getHrefAttribute().substring(prefix.length()), null);
         }
     }
 
