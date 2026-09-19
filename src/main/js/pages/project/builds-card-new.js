@@ -27,10 +27,9 @@ BehaviorShim.specify(
       "#build-status-filter-template",
     );
     const ajaxUrl = buildHistoryPage.getAttribute("page-ajax");
-    const card = document.querySelector("#jenkins-builds");
-    const contents = card.querySelector("#jenkins-build-history");
-    const container = card.querySelector(".app-temporary-list");
-    const loadingBuilds = card.querySelector("#loading-builds");
+    const container = document.querySelector("#jenkins-builds");
+    const contents = container.querySelector("#jenkins-build-history");
+    const loadingBuilds = container.querySelector("#loading-builds");
     const noBuilds = buildHistoryPage.querySelector("#no-builds");
     const noBuildsYet = buildHistoryPage.querySelector("#no-builds-yet");
 
@@ -101,7 +100,7 @@ BehaviorShim.specify(
             // Show the 'No results found' notice if there are no builds
             if (responseText.trim() === "") {
               contents.innerHTML = "";
-              card.classList.add("jenkins-hidden");
+              container.classList.add("jenkins-hidden");
               if (isFiltered) {
                 noBuilds.classList.remove("jenkins-hidden");
               } else {
@@ -120,7 +119,7 @@ BehaviorShim.specify(
 
             // Show the refreshed builds list
             contents.innerHTML = responseText;
-            card.classList.remove("jenkins-hidden");
+            container.classList.remove("jenkins-hidden");
             noBuilds.classList.add("jenkins-hidden");
             if (!isFiltered) {
               noBuildsYet.classList.add("jenkins-hidden");
