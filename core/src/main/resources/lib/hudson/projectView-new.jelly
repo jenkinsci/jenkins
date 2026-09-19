@@ -50,7 +50,7 @@ THE SOFTWARE.
               <div class="app-build-item__icon">
                 <j:choose>
                   <j:when test="${job.iconColor.iconName != null}">
-                    <l:icon src="symbol-status-${job.iconColor.iconName}" tooltip="${job.iconColor.description}" />
+                    <l:icon src="symbol-status-${job.iconColor.iconName}" alt="${job.iconColor.description}" />
                   </j:when>
                   <j:otherwise>
                     <!-- This is for special conditions, such as folders -->
