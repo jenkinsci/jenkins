@@ -13,8 +13,6 @@ BehaviorShim.specify(
   1000,
   (buildHistoryPage) => {
     // Card/item controls
-    // These now live in the app bar (jenkins/job/OverviewTab/index.jelly)
-    // rather than inside #buildHistoryPage, so look them up from the document.
     const pageSearchInput = document.querySelector("#build-history-search");
     const pageSearch = pageSearchInput.closest(".jenkins-search");
     const pageSearchContainer = pageSearchInput.closest(
@@ -129,14 +127,12 @@ BehaviorShim.specify(
             BehaviorShim.applySubtree(contents);
 
             // Show the card controls
-            const div = document.createElement("div");
-            div.innerHTML = responseText;
-            const innerChild = div.children[0];
+            const dataset = contents.firstElementChild.dataset;
             updateCardControls({
-              pageHasUp: innerChild.dataset.pageHasUp === "true",
-              pageHasDown: innerChild.dataset.pageHasDown === "true",
-              pageEntryNewest: innerChild.dataset.pageEntryNewest,
-              pageEntryOldest: innerChild.dataset.pageEntryOldest,
+              pageHasUp: dataset.pageHasUp === "true",
+              pageHasDown: dataset.pageHasDown === "true",
+              pageEntryNewest: dataset.pageEntryNewest,
+              pageEntryOldest: dataset.pageEntryOldest,
             });
           });
         } else {
