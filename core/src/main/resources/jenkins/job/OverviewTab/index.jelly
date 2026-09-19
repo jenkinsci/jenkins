@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:dd="/lib/layout/dropdowns">
   <l:job-subpage>
     <j:set var="tab" value="${it}" />
     <j:set var="it" value="${it.object}" />
@@ -31,31 +31,25 @@ THE SOFTWARE.
     <l:app-bar title="${%Builds}">
       <l:details-bar it="${it}">
         <j:set var="filter">
-          <button type="button"
-                  class="jenkins-button jenkins-button--tertiary"
-                  id="build-status-filter-button"
-                  tooltip="${%Filter}">
-            <l:icon src="symbol-filter" />
-          </button>
-
-          <template id="build-status-filter-template">
-            <div class="app-temporary-list__filter-panel">
-              <div class="jenkins-dropdown app-temporary-list__filter-panel__items">
-                <span class="jenkins-dropdown__heading">
-                  ${%Filter}
-                  <button type="button" class="app-temporary-list__filter-panel__reset jenkins-hidden">${%Reset}</button>
-                </span>
-                <j:forEach var="filter" items="${tab.statusFilters}">
-                  <button type="button" class="jenkins-dropdown__item" data-status="${filter.value}">
-                    <div class="jenkins-dropdown__item__icon">
-                      <l:icon src="${filter.icon}" />
-                    </div>
-                    <span>${filter.displayName}</span>
-                  </button>
-                </j:forEach>
-              </div>
-            </div>
-          </template>
+          <l:overflowButton id="build-status-filter-button"
+                            icon="symbol-filter"
+                            clazz="jenkins-button--tertiary"
+                            tooltip="${%Filter}">
+            <dd:custom>
+              <p class="jenkins-dropdown__heading">
+                ${%Filter}
+                <button type="button"
+                        id="build-status-filter-reset"
+                        class="app-temporary-list__filter-panel__reset jenkins-hidden">${%Reset}</button>
+              </p>
+            </dd:custom>
+            <j:forEach var="status" items="${tab.statusFilters}">
+              <dd:item id="build-status-filter-${status.value}"
+                       clazz="app-temporary-list__filter-panel__item"
+                       icon="${status.icon}"
+                       text="${status.displayName}" />
+            </j:forEach>
+          </l:overflowButton>
         </j:set>
 
         <l:search-bar id="build-history-search" placeholder="${%Search}" charms="${filter}" />

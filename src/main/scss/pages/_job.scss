@@ -207,10 +207,6 @@
 }
 
 .app-temporary-list__filter-panel {
-  display: flex;
-  flex-direction: column;
-  min-width: 220px;
-
   &__reset {
     appearance: none;
     border: none;
@@ -222,8 +218,15 @@
     cursor: pointer;
   }
 
-  &__items__item--muted {
-    opacity: 0.5;
+  &__item {
+    &--active::before {
+      background-color: var(--item-background--hover);
+      border: var(--jenkins-border);
+    }
+
+    &--muted {
+      opacity: 0.5;
+    }
   }
 }
 

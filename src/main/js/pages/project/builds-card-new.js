@@ -1,11 +1,11 @@
 import debounce from "lodash/debounce";
-import tippy from "tippy.js";
 import BehaviorShim from "@/util/behavior-shim";
-import Templates from "@/components/dropdowns/templates";
 
-const SELECTED_STATUS_ITEM_CLASS = "jenkins-dropdown__item--selected";
-const MUTED_STATUS_ITEM_CLASS =
-  "app-temporary-list__filter-panel__items__item--muted";
+const STATUS_ITEM_CLASS = "app-temporary-list__filter-panel__item";
+const ACTIVE_STATUS_ITEM_CLASS = `${STATUS_ITEM_CLASS}--active`;
+const MUTED_STATUS_ITEM_CLASS = `${STATUS_ITEM_CLASS}--muted`;
+const STATUS_ITEM_ID_PREFIX = "build-status-filter-";
+const RESET_BUTTON_ID = "build-status-filter-reset";
 
 BehaviorShim.specify(
   "#buildHistoryPage",
@@ -20,9 +20,6 @@ BehaviorShim.specify(
     );
     const statusFilterButton = document.querySelector(
       "#build-status-filter-button",
-    );
-    const statusFilterTemplate = document.querySelector(
-      "#build-status-filter-template",
     );
     const ajaxUrl = buildHistoryPage.getAttribute("page-ajax");
     const container = document.querySelector("#jenkins-builds");
@@ -184,8 +181,6 @@ BehaviorShim.specify(
       }
     }
 
-    // Only show the search bar's spinner if a load takes a while - avoids a
-    // flash of the spinner for fast responses, same as the command palette.
     const debouncedSpinner = debounce(() => {
       pageSearch.classList.add("jenkins-search--loading");
     }, 150);
@@ -200,30 +195,44 @@ BehaviorShim.specify(
       debouncedLoad();
     });
 
-    // Build the filter panel once and keep it around for the lifetime of the
-    // page - tippy just shows/hides it, so listeners are only attached once.
-    const statusFilterPanel =
-      statusFilterTemplate.content.cloneNode(true).firstElementChild;
+    // The dropdown's contents are built by the overflow button's behaviour and
+    // appended to the trigger's parent, so delegate from there.
+    const statusFilterDropdown = statusFilterButton.parentElement;
 
     /**
-     * Applies the current selection to the filter panel's rows, the Reset link,
-     * and the funnel trigger button.
+     * @param {Element}  item
+     * @return {string}
+     */
+    function statusOf(item) {
+      return item.id.slice(STATUS_ITEM_ID_PREFIX.length);
+    }
+
+    /**
+     * Applies the current selection to the dropdown's rows, the Reset link, and
+     * the funnel trigger button. The rows are only created the first time the
+     * dropdown is opened, so this does nothing until then - which is fine, as a
+     * status can only be picked from the dropdown itself.
      */
     function renderStatusSelection() {
       const hasSelection = selectedStatuses.size > 0;
 
-      statusFilterPanel.querySelectorAll("[data-status]").forEach((item) => {
-        const isSelected = selectedStatuses.has(item.dataset.status);
-        item.classList.toggle(SELECTED_STATUS_ITEM_CLASS, isSelected);
-        item.classList.toggle(
-          MUTED_STATUS_ITEM_CLASS,
-          hasSelection && !isSelected,
-        );
-      });
+      statusFilterDropdown
+        .querySelectorAll(`.${STATUS_ITEM_CLASS}`)
+        .forEach((item) => {
+          const isSelected = selectedStatuses.has(statusOf(item));
+          item.classList.toggle(ACTIVE_STATUS_ITEM_CLASS, isSelected);
+          item.classList.toggle(
+            MUTED_STATUS_ITEM_CLASS,
+            hasSelection && !isSelected,
+          );
+        });
 
-      statusFilterPanel
-        .querySelector(".app-temporary-list__filter-panel__reset")
-        .classList.toggle("jenkins-hidden", !hasSelection);
+      const resetButton = statusFilterDropdown.querySelector(
+        `#${RESET_BUTTON_ID}`,
+      );
+      if (resetButton) {
+        resetButton.classList.toggle("jenkins-hidden", !hasSelection);
+      }
 
       statusFilterButton.classList.toggle(
         "jenkins-button--tertiary",
@@ -235,46 +244,36 @@ BehaviorShim.specify(
       );
     }
 
-    statusFilterPanel
-      .querySelector(".app-temporary-list__filter-panel__items")
-      .addEventListener("click", (event) => {
-        const item = event.target.closest("[data-status]");
-        if (!item) {
-          return;
-        }
+    statusFilterDropdown.addEventListener("click", (event) => {
+      const item = event.target.closest(
+        `.${STATUS_ITEM_CLASS}, #${RESET_BUTTON_ID}`,
+      );
+      if (!item) {
+        return;
+      }
 
-        const status = item.dataset.status;
+      // Dropdowns close on any click outside of their trigger, which is no use
+      // for a filter you pick several values from - keep this one open.
+      event.stopPropagation();
+
+      if (item.id === RESET_BUTTON_ID) {
+        selectedStatuses = new Set();
+      } else {
+        const status = statusOf(item);
         if (selectedStatuses.size === 0) {
-          // Nothing selected yet (i.e. everything shown) - isolate to just this one
           selectedStatuses = new Set([status]);
         } else if (selectedStatuses.has(status)) {
           selectedStatuses.delete(status);
         } else {
           selectedStatuses.add(status);
         }
+      }
 
-        renderStatusSelection();
-        container.classList.add("app-temporary-list--loading");
-        debouncedSpinner();
-        load();
-      });
-
-    statusFilterPanel
-      .querySelector(".app-temporary-list__filter-panel__reset")
-      .addEventListener("click", () => {
-        selectedStatuses = new Set();
-        renderStatusSelection();
-        container.classList.add("app-temporary-list--loading");
-        debouncedSpinner();
-        load();
-      });
-
-    tippy(
-      statusFilterButton,
-      Object.assign({}, Templates.dropdown(), {
-        content: statusFilterPanel,
-      }),
-    );
+      renderStatusSelection();
+      container.classList.add("app-temporary-list--loading");
+      debouncedSpinner();
+      load();
+    });
 
     container.classList.add("app-temporary-list--loading");
     load();
