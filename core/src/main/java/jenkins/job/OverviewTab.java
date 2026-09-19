@@ -25,7 +25,9 @@
 package jenkins.job;
 
 import hudson.model.Actionable;
+import java.util.List;
 import jenkins.model.Tab;
+import jenkins.widgets.BuildStatusFilter;
 
 public class OverviewTab extends Tab {
 
@@ -46,5 +48,12 @@ public class OverviewTab extends Tab {
     @Override
     public String getUrlName() {
         return null;
+    }
+
+    /**
+     * The statuses offered in the builds list's status filter panel.
+     */
+    public List<BuildStatusFilter> getStatusFilters() {
+        return BuildStatusFilter.all();
     }
 }

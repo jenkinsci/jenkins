@@ -23,12 +23,37 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:dd="/lib/layout/dropdowns">
   <l:job-subpage>
+    <j:set var="tab" value="${it}" />
     <j:set var="it" value="${it.object}" />
 
     <l:app-bar title="${%Builds}">
       <l:details-bar it="${it}">
+        <j:set var="filter">
+          <l:overflowButton id="build-status-filter-button"
+                            icon="symbol-filter"
+                            clazz="jenkins-button--tertiary"
+                            tooltip="${%Filter}">
+            <dd:custom>
+              <p class="jenkins-dropdown__heading">
+                ${%Filter}
+                <button type="button"
+                        id="build-status-filter-reset"
+                        class="app-temporary-list__filter-panel__reset jenkins-hidden">${%Reset}</button>
+              </p>
+            </dd:custom>
+            <j:forEach var="status" items="${tab.statusFilters}">
+              <dd:item id="build-status-filter-${status.value}"
+                       clazz="app-temporary-list__filter-panel__item"
+                       icon="${status.icon}"
+                       text="${status.displayName}" />
+            </j:forEach>
+          </l:overflowButton>
+        </j:set>
+
+        <l:search-bar id="build-history-search" placeholder="${%Search}" charms="${filter}" />
+
         <t:editDescriptionButton permission="${it.CONFIGURE}" compact="true" />
       </l:details-bar>
     </l:app-bar>

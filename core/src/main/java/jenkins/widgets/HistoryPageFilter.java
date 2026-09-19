@@ -56,6 +56,7 @@ public class HistoryPageFilter<T> {
     private Long newerThan;
     private Long olderThan;
     private String searchString;
+    private Set<String> statuses;
 
     // Need to use different Lists for QueueItem and HistoricalBuilds because
     // we need access to them separately in the jelly files for rendering.
@@ -112,6 +113,18 @@ public class HistoryPageFilter<T> {
      */
     public void setSearchString(@NonNull String searchString) {
         this.searchString = searchString;
+    }
+
+    /**
+     * Set the build statuses to narrow the filtered set of builds to. A build matching any
+     * one of the given statuses is included (i.e. the statuses are OR'd together). Each
+     * status is one of the {@link hudson.model.Result} names (e.g. {@code SUCCESS},
+     * {@code FAILURE}), or {@code BUILDING} to match builds currently in progress. Queue
+     * items never have a build status, so setting any statuses excludes them entirely.
+     * @param statuses The statuses to filter by.
+     */
+    public void setStatuses(@NonNull Set<String> statuses) {
+        this.statuses = statuses;
     }
 
     /**
@@ -280,14 +293,34 @@ public class HistoryPageFilter<T> {
             if (searchString != null && !fitsSearchParams(item)) {
                 return false;
             }
+            // Queue items don't have a build status, so they never match a status filter.
+            if (statuses != null && !statuses.isEmpty()) {
+                return false;
+            }
             addQueueItem(item);
             return true;
         } else if (entry instanceof HistoricalBuild run) {
             if (searchString != null && !fitsSearchParams(run)) {
                 return false;
             }
+            if (statuses != null && !statuses.isEmpty() && !fitsStatus(run)) {
+                return false;
+            }
             addRun(run);
             return true;
+        }
+        return false;
+    }
+
+    private boolean fitsStatus(@NonNull HistoricalBuild run) {
+        for (String status : statuses) {
+            if (BuildStatusFilter.BUILDING.getValue().equals(status)) {
+                if (run.isBuilding()) {
+                    return true;
+                }
+            } else if (!run.isBuilding() && run.getResult() != null && status.equals(run.getResult().toString())) {
+                return true;
+            }
         }
         return false;
     }
