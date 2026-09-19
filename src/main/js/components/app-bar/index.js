@@ -1,6 +1,7 @@
 import behaviorShim from "@/util/behavior-shim";
 import Utils from "@/components/dropdowns/utils";
 import Templates from "@/components/dropdowns/templates";
+import { xmlEscape } from "@/util/security";
 
 /**
  * Generates inline actions and an overflow menu if necessary.
@@ -22,7 +23,7 @@ function init() {
         if (compact) {
           // Dense contexts such as list rows have no room for labels,
           // so fall back to a tooltip and match the tertiary button styling
-          item.tooltip = item.displayName;
+          item.tooltip = xmlEscape(item.displayName);
           item.displayName = "";
           item.clazz = [item.clazz, "jenkins-button--tertiary"]
             .filter(Boolean)
