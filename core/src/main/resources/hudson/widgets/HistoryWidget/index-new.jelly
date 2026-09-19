@@ -36,7 +36,9 @@ THE SOFTWARE.
     <l:notice id="no-builds-yet"
               icon="symbol-play"
               title="${%No builds yet}"
-              clazz="jenkins-hidden" />
+              clazz="jenkins-hidden">
+      ${%Start the first build to see run history here.}
+    </l:notice>
 
     <l:notice id="no-builds"
               icon="symbol-search"
