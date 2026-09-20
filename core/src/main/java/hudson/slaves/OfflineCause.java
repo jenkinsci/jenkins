@@ -33,6 +33,7 @@ import java.io.ObjectStreamException;
 import java.util.Collections;
 import jenkins.agents.IOfflineCause;
 import jenkins.model.Jenkins;
+import jenkins.security.XStreamDeserializable;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -163,6 +164,7 @@ public abstract class OfflineCause implements IOfflineCause {
      */
     public static class UserCause extends SimpleOfflineCause {
         @Deprecated
+        @XStreamDeserializable
         private transient User user;
         // null when unknown
         private /*final*/ @CheckForNull String userId;
