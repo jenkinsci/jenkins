@@ -126,24 +126,40 @@ THE SOFTWARE.
                 </div>
               </j:if>
               <div>
-                <div class="inputHeader password">
-                  <label class="app-sign-in-register__form-label ${data.errors.containsKey('password1') ? 'alert' : ''}" for="password1">
-                    ${%Password}
-                  </label>
-                  <div class="jenkins-checkbox">
-                    <input type="checkbox" id="showPassword" />
-                    <label for="showPassword">${%Show}</label>
-                  </div>
-                </div>
+                <label class="app-sign-in-register__form-label ${data.errors.containsKey('password1') ? 'alert' : ''}" for="password1">
+                  ${%Password}
+                </label>
                 <div class="app-sign-in-register__error">
                   ${data.errors.containsKey('password1') ? data.errors.get('password1') : ''}
                 </div>
-                <input class="jenkins-input ${data.errors.containsKey('password1') ? 'jenkins-input--error' : ''}"
-                       value="${data.password1}"
-                       type="password"
-                       name="password1"
-                       id="password1"
-                       autofocus="${data.errors.containsKey('password1') ? true : null}" />
+                <div class="app-sign-in-register__password-wrapper">
+                  <input class="jenkins-input ${data.errors.containsKey('password1') ? 'jenkins-input--error' : ''}"
+                         value="${data.password1}"
+                         type="password"
+                         name="password1"
+                         id="password1"
+                         autofocus="${data.errors.containsKey('password1') ? true : null}" />
+                  <span id="capsLockWarning"
+                      class="app-sign-in-register__caps-lock-indicator"
+                      role="status"
+                      hidden="hidden">
+                    <l:icon src="symbol-caps-lock"/>
+                    <span class="jenkins-visually-hidden">${%Caps Lock is on}</span>
+                  </span>
+                  <button type="button"
+                      id="togglePassword"
+                      class="app-sign-in-register__password-toggle"
+                      aria-pressed="false"
+                      aria-label="${%Show password}"
+                      hidden="hidden">
+                    <span class="app-sign-in-register__password-toggle-icon--show">
+                      <l:icon src="symbol-eye-outline"/>
+                    </span>
+                    <span class="app-sign-in-register__password-toggle-icon--hide">
+                      <l:icon src="symbol-eye-off-outline"/>
+                    </span>
+                  </button>
+                </div>
                 <div id="passwordStrengthWrapper">
                   ${%Strength}: <span id="passwordStrength"></span>
                 </div>
