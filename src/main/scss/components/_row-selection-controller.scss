@@ -172,7 +172,7 @@
   &::before {
     content: "";
     position: absolute;
-    inset: 0;
+    inset: -0.0625rem;
     border: var(--jenkins-border);
     border-radius: 0.375rem;
   }
