@@ -2,29 +2,21 @@ package hudson.diagnosis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.User;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.util.List;
 import jenkins.model.Jenkins;
-import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
-import org.htmlunit.html.HtmlForm;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.util.NameValuePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
-import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -37,25 +29,6 @@ class HudsonHomeDiskUsageMonitorTest {
     @BeforeEach
     void setUp(JenkinsRule rule) {
         j = rule;
-    }
-
-    @Test
-    void flow() throws Exception {
-        // manually activate this
-        HudsonHomeDiskUsageMonitor mon = HudsonHomeDiskUsageMonitor.get();
-        mon.activated = true;
-
-        // clicking yes should take us to somewhere
-        j.submit(getForm(mon), "yes");
-        assertTrue(mon.isEnabled());
-
-        // now dismiss
-        // submit(getForm(mon),"no"); TODO: figure out why this test is fragile
-        mon.doAct("no");
-        assertFalse(mon.isEnabled());
-
-        // and make sure it's gone
-        assertThrows(ElementNotFoundException.class, () -> getForm(mon));
     }
 
     @Issue("SECURITY-371")
@@ -77,9 +50,7 @@ class HudsonHomeDiskUsageMonitorTest {
         User bob = User.getById("bob", true);
         User administrator = User.getById("administrator", true);
 
-        WebRequest request = new WebRequest(new URI(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull/act").toURL(), HttpMethod.POST);
-        NameValuePair param = new NameValuePair("no", "true");
-        request.setRequestParameters(List.of(param));
+        WebRequest request = new WebRequest(new URI(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull/disable").toURL(), HttpMethod.POST);
 
         HudsonHomeDiskUsageMonitor mon = HudsonHomeDiskUsageMonitor.get();
 
@@ -94,18 +65,9 @@ class HudsonHomeDiskUsageMonitorTest {
         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, p.getWebResponse().getStatusCode());
 
         wc.withBasicApiToken(administrator);
-        request = new WebRequest(new URI(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull/act").toURL(), HttpMethod.POST);
-        request.setRequestParameters(List.of(param));
+        request = new WebRequest(new URI(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull/disable").toURL(), HttpMethod.POST);
         p = wc.getPage(request);
         assertEquals(HttpURLConnection.HTTP_OK, p.getWebResponse().getStatusCode());
         assertFalse(mon.isEnabled());
-    }
-
-    /**
-     * Gets the warning form.
-     */
-    private HtmlForm getForm(HudsonHomeDiskUsageMonitor mon) throws IOException, SAXException {
-        HtmlPage p = j.createWebClient().goTo("manage");
-        return p.getFormByName(mon.id);
     }
 }

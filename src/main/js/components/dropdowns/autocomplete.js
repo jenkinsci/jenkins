@@ -19,7 +19,7 @@ function init() {
       e.focus();
     };
     return {
-      label: suggestion.name,
+      displayName: suggestion.name,
       onClick: confirm,
       onKeyPress: (evt) => {
         if (evt.key === "Tab") {
@@ -43,6 +43,9 @@ function init() {
           instance.popper.style.minWidth = e.offsetWidth + "px";
         },
         true,
+        {
+          appendTo: (ref) => ref.closest("dialog") || document.body,
+        },
       );
     }
     e.dropdown.setContent(Utils.generateDropdownItems(items, true));
@@ -97,9 +100,16 @@ function init() {
       e.style.position = "relative";
       // otherwise menu won't hide on tab with nothing selected
       // needs delay as without that it blocks click selection of an item
-      e.addEventListener("focusout", () =>
-        setTimeout(() => e.dropdown && e.dropdown.hide(), 200),
-      );
+      e.addEventListener("focusout", (event) => {
+        if (
+          event.relatedTarget &&
+          e.dropdown &&
+          e.dropdown.popper.contains(event.relatedTarget)
+        ) {
+          return;
+        }
+        setTimeout(() => e.dropdown && e.dropdown.hide(), 200);
+      });
       e.addEventListener(
         "input",
         Utils.debounce(() => {

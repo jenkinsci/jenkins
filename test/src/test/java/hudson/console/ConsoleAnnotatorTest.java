@@ -22,6 +22,7 @@ import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMRevisionState;
 import hudson.triggers.SCMTrigger;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -29,6 +30,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.apache.commons.fileupload2.core.MultipartInput;
 import org.htmlunit.Page;
 import org.htmlunit.TextPage;
 import org.htmlunit.WebRequest;
@@ -147,28 +150,57 @@ public class ConsoleAnnotatorTest {
     class ProgressiveLogClient {
         JenkinsRule.WebClient wc;
         Run run;
+        boolean streaming;
 
         String consoleAnnotator;
         String start;
         private Page p;
 
-        ProgressiveLogClient(JenkinsRule.WebClient wc, Run r) {
+        ProgressiveLogClient(JenkinsRule.WebClient wc, Run r, boolean streaming) {
             this.wc = wc;
             this.run = r;
+            this.streaming = streaming;
         }
 
         String next() throws IOException {
             WebRequest req = new WebRequest(new URL(r.getURL() + run.getUrl() + "/logText/progressiveHtml" + (start != null ? "?start=" + start : "")));
             req.setEncodingType(null);
-            Map headers = new HashMap();
+            Map<String, String> headers = new HashMap<>();
             if (consoleAnnotator != null)
                 headers.put("X-ConsoleAnnotator", consoleAnnotator);
+            if (streaming) headers.put("Accept", "multipart/form-data");
             req.setAdditionalHeaders(headers);
 
             p = wc.getPage(req);
-            consoleAnnotator = p.getWebResponse().getResponseHeaderValue("X-ConsoleAnnotator");
-            start = p.getWebResponse().getResponseHeaderValue("X-Text-Size");
-            return p.getWebResponse().getContentAsString();
+            String content;
+            if (streaming) {
+                var ct = p.getWebResponse().getResponseHeaderValue("Content-Type");
+                assertTrue(ct.matches("^multipart/form-data;boundary=[a-f0-9-]{36};charset=utf-8$"));
+                var boundary = ct.substring(29, 29 + 36).getBytes();
+                var mp = new MultipartInput.Builder()
+                        .setBoundary(boundary)
+                        .setInputStream(p.getWebResponse().getContentAsStream())
+                        .get();
+                var text = new ByteArrayOutputStream();
+                mp.skipPreamble();
+                assertEquals("Content-Disposition: form-data;name=text\r\nContent-Type: text/html;charset=utf-8\r\n\r\n", mp.readHeaders());
+                mp.readBodyData(text);
+
+                var metaBAOS = new ByteArrayOutputStream();
+                mp.readBoundary();
+                assertEquals("Content-Disposition: form-data;name=meta\r\nContent-Type: application/json;charset=utf-8\r\n\r\n", mp.readHeaders());
+                mp.readBodyData(metaBAOS);
+
+                content = text.toString();
+                var meta = JSONObject.fromObject(metaBAOS.toString());
+                consoleAnnotator = meta.getString("consoleAnnotator");
+                start = meta.getString("end");
+            } else {
+                content = p.getWebResponse().getContentAsString();
+                consoleAnnotator = p.getWebResponse().getResponseHeaderValue("X-ConsoleAnnotator");
+                start = p.getWebResponse().getResponseHeaderValue("X-Text-Size");
+            }
+            return content;
         }
 
     }
@@ -179,6 +211,15 @@ public class ConsoleAnnotatorTest {
      */
     @Test
     void progressiveOutput() throws Exception {
+        progressiveOutputWith(false, "\r\n");
+    }
+
+    @Test
+    void progressiveOutputStreaming() throws Exception {
+        progressiveOutputWith(true, System.lineSeparator());
+    }
+
+    void progressiveOutputWith(boolean streaming, String linefeed) throws Exception {
         final SequenceLock lock = new SequenceLock();
         JenkinsRule.WebClient wc = r.createWebClient();
         FreeStyleProject p = r.createFreeStyleProject();
@@ -200,16 +241,17 @@ public class ConsoleAnnotatorTest {
 
         lock.phase(1);
         FreeStyleBuild b = p.getBuildByNumber(1);
-        ProgressiveLogClient plc = new ProgressiveLogClient(wc, b);
+        ProgressiveLogClient plc = new ProgressiveLogClient(wc, b, streaming);
         // the page should contain some output indicating the build has started why and etc.
-        plc.next();
+        var preamble = plc.next();
+        assertEquals(false, preamble.isEmpty());
 
         lock.phase(3);
-        assertEquals("<b tag=1>line1</b>\r\n", plc.next());
+        assertEquals("<b tag=1>line1</b>" + linefeed, plc.next());
 
         // the new invocation should start from where the previous call left off
         lock.phase(5);
-        assertEquals("<b tag=2>line2</b>\r\n", plc.next());
+        assertEquals("<b tag=2>line2</b>" + linefeed, plc.next());
 
         lock.done();
 
@@ -217,7 +259,7 @@ public class ConsoleAnnotatorTest {
         r.assertBuildStatusSuccess(f);
     }
 
-    @TestExtension("progressiveOutput")
+    @TestExtension({"progressiveOutput", "progressiveOutputStreaming"})
     public static final ConsoleAnnotatorFactory STATEFUL_ANNOTATOR = new ConsoleAnnotatorFactory() {
         @Override
         public ConsoleAnnotator newInstance(Object context) {
@@ -247,6 +289,18 @@ public class ConsoleAnnotatorTest {
      */
     @Test
     void consoleAnnotation() throws Exception {
+        consoleAnnotationWith(false, "\r\n");
+    }
+
+    @Test
+    void consoleAnnotationStreaming() throws Exception {
+        consoleAnnotationWith(true, System.lineSeparator());
+    }
+
+    /**
+     * Place {@link ConsoleNote}s and make sure it works.
+     */
+    void consoleAnnotationWith(boolean streaming, String lineEndings) throws Exception {
         final SequenceLock lock = new SequenceLock();
         JenkinsRule.WebClient wc = r.createWebClient();
         FreeStyleProject p = r.createFreeStyleProject();
@@ -277,14 +331,14 @@ public class ConsoleAnnotatorTest {
         // discard the initial header portion
         lock.phase(1);
         FreeStyleBuild b = p.getBuildByNumber(1);
-        ProgressiveLogClient plc = new ProgressiveLogClient(wc, b);
+        ProgressiveLogClient plc = new ProgressiveLogClient(wc, b, streaming);
         plc.next();
 
         lock.phase(3);
-        assertEquals("abc$$$def\r\n", plc.next());
+        assertEquals("abc$$$def" + lineEndings, plc.next());
 
         lock.phase(5);
-        assertEquals("123$$$456$$$789\r\n", plc.next());
+        assertEquals("123$$$456$$$789" + lineEndings, plc.next());
 
         lock.done();
 

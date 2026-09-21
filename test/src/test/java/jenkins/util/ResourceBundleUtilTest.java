@@ -67,7 +67,7 @@ class ResourceBundleUtilTest {
     void noFallbackLocale() {
         try (var ignored = new DefaultLocale(new Locale("fr"))) {
             var bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("en"));
-            assertEquals("System Log", bundle.getString("LogRecorderManager.DisplayName"));
+            assertEquals("Logs", bundle.getString("LogRecorderManager.DisplayName"));
         }
     }
 

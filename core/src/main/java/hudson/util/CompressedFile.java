@@ -137,34 +137,31 @@ public class CompressedFile {
      * the further reading will be done from the compressed stream.
      */
     public void compress() {
-        compressionThread.submit(new Runnable() {
-            @Override
-            public void run() {
-                boolean success;
-                try (InputStream in = read();
-                     OutputStream os = Files.newOutputStream(gz.toPath());
-                     OutputStream out = new GZIPOutputStream(os)) {
-                    org.apache.commons.io.IOUtils.copy(in, out);
-                    out.flush();
-                    success = true;
-                } catch (IOException | InvalidPathException e) {
-                    LOGGER.log(Level.WARNING, "Failed to compress " + file, e);
-                    success = false;
-                }
+        compressionThread.submit(() -> {
+            boolean success;
+            try (InputStream in = read();
+                 OutputStream os = Files.newOutputStream(gz.toPath());
+                 OutputStream out = new GZIPOutputStream(os)) {
+                org.apache.commons.io.IOUtils.copy(in, out);
+                out.flush();
+                success = true;
+            } catch (IOException | InvalidPathException e) {
+                LOGGER.log(Level.WARNING, "Failed to compress " + file, e);
+                success = false;
+            }
 
-                File fileToDelete;
-                if (success) {
-                    // if the compressed file is created successfully, remove the original
-                    fileToDelete = file;
-                } else {
-                    // in case a processing is left in the middle
-                    fileToDelete = gz;
-                }
-                try {
-                    Files.deleteIfExists(fileToDelete.toPath());
-                } catch (IOException | InvalidPathException e) {
-                    LOGGER.log(Level.WARNING, "Failed to delete " + fileToDelete, e);
-                }
+            File fileToDelete;
+            if (success) {
+                // if the compressed file is created successfully, remove the original
+                fileToDelete = file;
+            } else {
+                // in case a processing is left in the middle
+                fileToDelete = gz;
+            }
+            try {
+                Files.deleteIfExists(fileToDelete.toPath());
+            } catch (IOException | InvalidPathException e) {
+                LOGGER.log(Level.WARNING, "Failed to delete " + fileToDelete, e);
             }
         });
     }

@@ -34,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -274,12 +275,13 @@ public class ProjectTest {
 
     @Test
     void testGetScmCheckoutRetryCount() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         FreeStyleProject p = j.createFreeStyleProject("project");
         assertEquals(j.jenkins.getScmCheckoutRetryCount(), p.getScmCheckoutRetryCount(), "Scm retry count should be default.");
         j.jenkins.setScmCheckoutRetryCount(6);
         assertEquals(6, p.getScmCheckoutRetryCount(), "Scm retry count should be the same as global scm retry count.");
         HtmlForm form = j.createWebClient().goTo(p.getUrl() + "/configure").getFormByName("config");
-        ((HtmlElement) form.querySelectorAll(".advancedButton").get(0)).click();
+        ((HtmlElement) form.querySelectorAll(".advancedButton").getFirst()).click();
         // required due to the new default behavior of click
         form.getInputByName("hasCustomScmCheckoutRetryCount").click(new Event(), false, false, false, true);
         form.getInputByName("scmCheckoutRetryCount").setValue("7");
@@ -392,6 +394,7 @@ public class ProjectTest {
 
     @Test
     void testGetCauseOfBlockage() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10"));
         QueueTaskFuture<FreeStyleBuild> b1 = waitForStart(p);
@@ -463,6 +466,7 @@ public class ProjectTest {
 
     @Test
     void testCheckout() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         SCM scm = new NullSCM();
         FreeStyleProject p = j.createFreeStyleProject("project");
         Slave slave = j.createOnlineSlave();
@@ -577,6 +581,7 @@ public class ProjectTest {
 
     @Test
     void testDoDoDelete() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         FreeStyleProject project = j.createFreeStyleProject("project");
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
@@ -607,6 +612,7 @@ public class ProjectTest {
 
     @Test
     void testDoDoWipeOutWorkspace() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         FreeStyleProject project = j.createFreeStyleProject("project");
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
@@ -639,6 +645,7 @@ public class ProjectTest {
 
     @Test
     void testDoDisable() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         FreeStyleProject project = j.createFreeStyleProject("project");
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
@@ -666,6 +673,7 @@ public class ProjectTest {
 
     @Test
     void testDoEnable() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         FreeStyleProject project = j.createFreeStyleProject("project");
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);

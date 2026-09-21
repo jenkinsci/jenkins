@@ -102,12 +102,19 @@
     }
 
     .jenkins-badge {
+      --item-background: var(--color, var(--accent-color));
+
       position: absolute;
       top: calc(16%);
       right: calc(16%);
       min-width: 5px;
       min-height: 5px;
       padding: 0;
+
+      &::before {
+        border: var(--jenkins-border--subtle);
+        background-clip: unset;
+      }
     }
   }
 

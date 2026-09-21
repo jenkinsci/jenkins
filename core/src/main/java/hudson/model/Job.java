@@ -108,6 +108,7 @@ import jenkins.model.details.UpstreamProjectsDetail;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.RunWithSCM;
 import jenkins.security.HexStringConfidentialKey;
+import jenkins.security.XStreamNotDeserializable;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.widgets.HasWidgets;
@@ -164,12 +165,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * In 1.28 and earlier, this field was stored in the project configuration
      * file, so even though this is marked as transient, don't move it around.
      */
+    // TODO Mark @XStreamNotDeserializable and review #onLoad
     protected transient volatile int nextBuildNumber = 1;
 
     /**
      * Newly copied jobs get this flag set, so that Hudson doesn't try to run the job until its configuration
      * is saved once.
      */
+    @XStreamNotDeserializable
     private transient volatile boolean holdOffBuildUntilSave;
 
     /**
@@ -177,6 +180,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * {@link #holdOffBuildUntilSave} prematurely. The {@link LastItemListener} is responsible for
      * clearing this flag as the last item listener.
      */
+    @XStreamNotDeserializable
     private transient volatile boolean holdOffBuildUntilUserSave;
 
     /** @deprecated Replaced by {@link BuildDiscarderProperty} */
@@ -1053,6 +1057,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public List<RunT> getLastBuildsOverThreshold(int numberOfBuilds, Result threshold) {
         RunT r = getLastBuild();
+        if (r == null) {
+            return Collections.emptyList();
+        }
         return r.getBuildsOverThreshold(numberOfBuilds, threshold);
     }
 
@@ -1093,7 +1100,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         while (candidates.size() < 3) {
             if (fallbackCandidates.isEmpty())
                 break;
-            RunT run = fallbackCandidates.remove(0);
+            RunT run = fallbackCandidates.removeFirst();
             candidates.add(run);
         }
 
@@ -1119,12 +1126,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * @return never null
      */
+    @SuppressWarnings("deprecation")
     public PermalinkList getPermalinks() {
         PeepholePermalink.initialized();
         // TODO: shall we cache this?
         PermalinkList permalinks = new PermalinkList(Permalink.BUILTIN);
-        for (PermalinkProjectAction ppa : getActions(PermalinkProjectAction.class)) {
-            permalinks.addAll(ppa.getPermalinks());
+        for (var action : getActions()) {
+            if (action instanceof PermalinkProjectAction ppa) {
+                permalinks.addAll(ppa.getPermalinks());
+            }
         }
         return permalinks;
     }
@@ -1266,7 +1276,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public HealthReport getBuildHealth() {
         List<HealthReport> reports = getBuildHealthReports();
-        return reports.isEmpty() ? new HealthReport() : reports.get(0);
+        return reports.isEmpty() ? new HealthReport() : reports.getFirst();
     }
 
     @Exported(name = "healthReport")
@@ -1715,7 +1725,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Restricted(NoExternalUse.class)
     public List<Tab> getJobTabs() {
-        return getActions(Tab.class);
+        return getActions(Tab.class).stream().filter(e -> e.getIconFileName() != null).toList();
     }
 
     @Restricted(NoExternalUse.class)

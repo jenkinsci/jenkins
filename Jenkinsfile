@@ -6,20 +6,21 @@
  */
 
 def failFast = false
+def numBuildToKeep = env.CHANGE_ID ? '10' : '50'
 
 properties([
-  buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')),
+  buildDiscarder(logRotator(numToKeepStr: numBuildToKeep, artifactNumToKeepStr: '3')),
   disableConcurrentBuilds(abortPrevious: true)
 ])
 
 def axes = [
   platforms: ['linux', 'windows'],
-  jdks: [17, 21],
+  jdks: [21, 25],
 ]
 
 stage('Record build') {
   retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
-    node('maven-17') {
+    node('maven-21-nonspot') {
       infra.checkoutSCM()
 
       /*
@@ -34,7 +35,7 @@ stage('Record build') {
         sh "launchable verify && launchable record build --name ${launchableName} --source jenkinsci/jenkins=."
         axes.values().combinations {
           def (platform, jdk) = it
-          if (platform == 'windows' && jdk != 17) {
+          if (platform == 'windows' && jdk != axes.jdks.last()) {
             return // unnecessary use of hardware
           }
           def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
@@ -60,7 +61,7 @@ def builds = [:]
 
 axes.values().combinations {
   def (platform, jdk) = it
-  if (platform == 'windows' && jdk != 17) {
+  if (platform == 'windows' && jdk != axes.jdks.last()) {
     return // unnecessary use of hardware
   }
   builds["${platform}-jdk${jdk}"] = {
@@ -69,13 +70,8 @@ axes.values().combinations {
     if (platform == 'windows') {
       agentContainerLabel += '-windows'
     }
-    int retryCount = 0
+    agentContainerLabel += '-nonspot'
     retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
-      if (retryCount == 1 && platform == 'windows' ) {
-        agentContainerLabel = agentContainerLabel + '-nonspot'
-      }
-      // Increment before allocating the node in case it fails
-      retryCount++
       node(agentContainerLabel) {
         // First stage is actually checking out the source. Since we're using Multibranch
         // currently, we can use "checkout scm".
@@ -127,7 +123,7 @@ axes.values().combinations {
               mavenOptions.add(0, "-Dsurefire.excludesFile=${excludesFile}")
             }
             withChecks(name: 'Tests', includeStage: true) {
-              realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
+              realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,target/vitest-reports/*.xml') {
                 infra.runMaven(mavenOptions, jdk)
                 if (isUnix()) {
                   sh 'git add . && git diff --exit-code HEAD'
@@ -218,7 +214,7 @@ axes.values().combinations {
 
 def athAxes = [
   platforms: ['linux'],
-  jdks: [17],
+  jdks: [21],
   browsers: ['firefox'],
 ]
 athAxes.values().combinations {

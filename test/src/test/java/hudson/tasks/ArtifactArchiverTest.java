@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -220,7 +221,7 @@ class ArtifactArchiverTest {
         assumeTrue(ws.child("dir/lodge").exists(), "May not be testable on Windows:\n" + JenkinsRule.getLog(b));
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(1, artifacts.size());
-        FreeStyleBuild.Artifact artifact = artifacts.get(0);
+        FreeStyleBuild.Artifact artifact = artifacts.getFirst();
         assertEquals("dir/lodge", artifact.relativePath);
         VirtualFile[] kids = b.getArtifactManager().root().child("dir").list();
         assertEquals(1, kids.length);
@@ -281,6 +282,7 @@ class ArtifactArchiverTest {
     @Issue("SECURITY-162")
     @Test
     void outsideSymlinks() throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -296,7 +298,7 @@ class ArtifactArchiverTest {
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(1, artifacts.size());
-        FreeStyleBuild.Artifact artifact = artifacts.get(0);
+        FreeStyleBuild.Artifact artifact = artifacts.getFirst();
         assertEquals("hack", artifact.relativePath);
         VirtualFile[] kids = b.getArtifactManager().root().list();
         assertEquals(1, kids.length);
@@ -490,7 +492,7 @@ class ArtifactArchiverTest {
     }
 
     @Test
-    @Issue("JENKINS-21905")
+    @Issue({"JENKINS-21905", "https://github.com/jenkinsci/jenkins/issues/27188"})
     void archiveNotReadable() throws Exception {
         assumeFalse(Functions.isWindows()); // No permission support
 
@@ -512,13 +514,15 @@ class ArtifactArchiverTest {
         FreeStyleBuild build = j.buildAndAssertStatus(Result.FAILURE, p);
         assumeFalse(new File(build.getWorkspace().child(FILENAME).getRemote()).canRead(), FILENAME + " should not be readable by " + System.getProperty("user.name"));
         String expectedPath = build.getWorkspace().child(FILENAME).getRemote();
-        j.assertLogContains("ERROR: Step ‘Archive the artifacts’ failed: java.nio.file.AccessDeniedException: " + expectedPath, build);
+        String expectedMessage = Messages.ArtifactArchiver_AccessDenied(expectedPath, build.getWorkspace().getRemote());
+        j.assertLogContains("ERROR: Step ‘Archive the artifacts’ failed: " + expectedMessage, build);
         assertThat("No stacktrace shown", build.getLog(31), Matchers.iterableWithSize(lessThan(30)));
     }
 
     @Test
     @Issue("JENKINS-55049")
     void lengthOfArtifactIsCorrect_eventForInvalidSymlink() throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -545,7 +549,7 @@ class ArtifactArchiverTest {
         artifacts.sort(Comparator.comparing(Run.Artifact::getFileName));
 
         // invalid symlink => size of 0
-        FreeStyleBuild.Artifact artifact = artifacts.get(0);
+        FreeStyleBuild.Artifact artifact = artifacts.getFirst();
         assertEquals("dir/_nonexistant", artifact.relativePath);
         assertEquals(0, artifact.getFileSize());
         assertEquals("", artifact.getLength());
@@ -566,7 +570,7 @@ class ArtifactArchiverTest {
     private static class RemoveReadPermission extends MasterToSlaveFileCallable<Object> {
         @Override
         public Object invoke(File f, VirtualChannel channel) throws IOException {
-            assertTrue(f.createNewFile());
+            Files.writeString(f.toPath(), "contents");
             assertTrue(f.setReadable(false));
             return null;
         }

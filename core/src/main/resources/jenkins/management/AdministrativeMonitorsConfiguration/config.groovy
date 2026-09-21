@@ -39,7 +39,7 @@ f.section(title: _("Administrative monitors"), description: _("blurb")) {
                         f.checkbox(name: "administrativeMonitor",
                                 title: am.displayName,
                                 checked: am.enabled,
-                                json: am.id)
+                                json: am.@id)
                         if (am.isSecurity()) {
                             span(style: 'margin-left: 0.5rem', class: 'jenkins-badge', _("Security"))
                         }

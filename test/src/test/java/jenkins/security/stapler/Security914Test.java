@@ -55,12 +55,12 @@ class Security914Test {
     void cannotUseInvalidLocale_toTraverseFolder() throws Exception {
         assumeTrue(Functions.isWindows());
 
-        assertNotNull(j.getPluginManager().getPlugin("credentials"));
-        j.createWebClient().goTo("plugin/credentials/images/credentials.svg", "image/svg+xml");
+        assertNotNull(j.getPluginManager().getPlugin("matrix-project"));
+        j.createWebClient().goTo("plugin/matrix-project/images/matrixproject.svg", "image/svg+xml");
 
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
-        WebRequest request = new WebRequest(new URI(j.getURL() + "plugin/credentials/.xml").toURL());
+        WebRequest request = new WebRequest(new URI(j.getURL() + "plugin/matrix-project/.xml").toURL());
         // plugin deployed in: test\target\jenkins7375296945862059919tmp
         // rootDir is in     : test\target\jenkinsTests.tmp\jenkins1274934531848159942test
         // j.jenkins.getRootDir().getName() = jenkins1274934531848159942test
@@ -75,12 +75,12 @@ class Security914Test {
     void cannotUseInvalidLocale_toAnyFileInSystem() throws Exception {
         assumeTrue(Functions.isWindows());
 
-        assertNotNull(j.getPluginManager().getPlugin("credentials"));
-        j.createWebClient().goTo("plugin/credentials/images/credentials.svg", "image/svg+xml");
+        assertNotNull(j.getPluginManager().getPlugin("matrix-project"));
+        j.createWebClient().goTo("plugin/matrix-project/images/matrixproject.svg", "image/svg+xml");
 
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
-        WebRequest request = new WebRequest(new URI(j.getURL() + "plugin/credentials/.ini").toURL());
+        WebRequest request = new WebRequest(new URI(j.getURL() + "plugin/matrix-project/.ini").toURL());
         // ../ can be multiply to infinity, no impact, we just need to have enough to reach the root
         request.setAdditionalHeader("Accept-Language", "../../../../../../../../../../../../windows/win");
 

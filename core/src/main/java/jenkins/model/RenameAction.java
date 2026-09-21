@@ -38,7 +38,7 @@ public class RenameAction implements Action {
 
     @Override
     public String getIconFileName() {
-        return "notepad.png";
+        return "symbol-edit";
     }
 
     @Override
@@ -51,7 +51,7 @@ public class RenameAction implements Action {
         return "confirm-rename";
     }
 
-    @Extension
+    @Extension(ordinal = 70)
     public static class TransientActionFactoryImpl extends TransientActionFactory<AbstractItem> {
 
         @Override

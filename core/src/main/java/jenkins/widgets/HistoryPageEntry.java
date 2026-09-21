@@ -55,15 +55,13 @@ public class HistoryPageEntry<T> {
     }
 
     protected static long getEntryId(@NonNull Object entry) {
-        if (entry instanceof QueueItem) {
-            return ((QueueItem) entry).getId();
-        } else if (entry instanceof HistoricalBuild run) {
-            return Long.MIN_VALUE + run.getNumber();
-        } else if (entry instanceof Number) {
-            // Used for testing purposes because of JENKINS-30899 and JENKINS-30909
-            return Long.MIN_VALUE + ((Number) entry).longValue();
-        } else {
-            return Run.QUEUE_ID_UNKNOWN;
-        }
+        return switch (entry) {
+            case QueueItem queueItem -> queueItem.getId();
+            case HistoricalBuild run -> Long.MIN_VALUE + run.getNumber();
+            case Number number ->
+                // Used for testing purposes because of JENKINS-30899 and JENKINS-30909
+                    Long.MIN_VALUE + number.longValue();
+            default -> Run.QUEUE_ID_UNKNOWN;
+        };
     }
 }

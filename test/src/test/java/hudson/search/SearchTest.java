@@ -501,4 +501,19 @@ public class SearchTest {
         assertNotNull(jsonArray);
         return jsonArray;
     }
+
+    @Issue("27210")
+    @Test
+    void testOpenSearchXml() throws Exception {
+        WebClient wc = j.createWebClient();
+        Page page = wc.goTo("opensearch.xml", "application/opensearchdescription+xml");
+        assertNotNull(page);
+        j.assertGoodStatus(page);
+
+        assertEquals("application/opensearchdescription+xml", page.getWebResponse().getContentType());
+
+        String content = page.getWebResponse().getContentAsString();
+        assertTrue(content.contains("xmlns:moz=\"http://www.mozilla.org/2006/browser/search/\""));
+        assertTrue(content.contains("<moz:SearchForm>"));
+    }
 }

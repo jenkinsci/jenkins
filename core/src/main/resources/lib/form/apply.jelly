@@ -32,6 +32,9 @@ THE SOFTWARE.
     When this button is pressed, the FORM element fires the "jenkins:apply" event
     that allows interested parties to write back whatever states back into the INPUT
     elements.
+    <s:attribute name="clazz">
+      Additional CSS class(es) to add.
+    </s:attribute>
     <s:attribute name="value">
       The text of the apply button.
     </s:attribute>
@@ -39,7 +42,7 @@ THE SOFTWARE.
 
   <st:adjunct includes="lib.form.apply.apply"/>
   <input type="hidden" name="core:apply" value="" />
-  <button type="button" class="jenkins-button apply-button" name="Apply">
+  <button type="button" class="jenkins-button ${attrs.clazz} apply-button" name="Apply">
     ${attrs.value ?: '%Apply'}
   </button>
 </j:jelly>

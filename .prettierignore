@@ -1,3 +1,18 @@
+# Only scan Jenkins source areas, not arbitrary top-level work directories
+/*/
+!/.github/
+!/.idea/
+!/.mvn/
+!/bom/
+!/cli/
+!/core/
+!/coverage/
+!/docs/
+!/src/
+!/test/
+!/war/
+!/websocket/
+
 # generated / build files
 .pnp.cjs
 .pnp.loader.mjs

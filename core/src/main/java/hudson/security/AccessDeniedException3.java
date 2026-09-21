@@ -28,7 +28,7 @@ public class AccessDeniedException3 extends AccessDeniedException {
     /**
      * This object represents the permission that the user needed.
      */
-    public final Permission permission;
+    public final transient Permission permission;
 
     public AccessDeniedException3(Authentication authentication, Permission permission) {
         this(null, authentication, permission);

@@ -43,7 +43,7 @@ import hudson.model.Actionable;
  */
 public abstract class Tab implements Action, Badgeable {
 
-    protected Actionable object;
+    protected transient Actionable object;
 
     public Tab(Actionable object) {
         this.object = object;

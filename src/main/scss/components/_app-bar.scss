@@ -125,25 +125,16 @@
   text-overflow: ellipsis;
 }
 
-$bottom-app-bar-padding: 0.875rem;
-
 .jenkins-bottom-app-bar__shadow {
-  --semi-translucent: color-mix(in sRGB, var(--background) 75%, transparent);
+  --semi-translucent: color-mix(in sRGB, var(--background) 70%, transparent);
 
   position: sticky;
   height: calc(
-    2.375rem + ($bottom-app-bar-padding * 2) + 1px + var(--jenkins-border-width)
+    2.375rem + (var(--bottom-app-bar-padding) * 2) + 1px +
+      var(--jenkins-border-width)
   );
   bottom: -1px;
-  margin-bottom: calc((2.375rem + $bottom-app-bar-padding) * -1);
-  backdrop-filter: blur(20px);
-  background: linear-gradient(
-    to right,
-    var(--background),
-    var(--semi-translucent) 3rem,
-    var(--semi-translucent) calc(100% - 3rem),
-    var(--background)
-  );
+  margin-bottom: calc((2.375rem + var(--bottom-app-bar-padding)) * -1);
   border-top: var(--jenkins-border-width) solid var(--jenkins-border-color);
   z-index: 997;
 
@@ -167,7 +158,33 @@ $bottom-app-bar-padding: 0.875rem;
     opacity: 0;
   }
 
+  &--borderless:not(&--stuck) {
+    border-top-color: transparent;
+  }
+
+  &--borderless {
+    margin-top: calc(
+      (var(--bottom-app-bar-padding) + var(--jenkins-border-width)) * -1
+    );
+  }
+
   &--stuck {
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      backdrop-filter: blur(20px);
+    }
+
+    background: linear-gradient(
+      to right,
+      var(--background),
+      var(--background) 3rem,
+      var(--semi-translucent),
+      var(--background) calc(100% - 3rem),
+      var(--background)
+    );
+
     &::after {
       opacity: 1 !important;
     }
@@ -183,5 +200,5 @@ $bottom-app-bar-padding: 0.875rem;
 
 .bottom-sticker-inner {
   position: relative;
-  padding: $bottom-app-bar-padding 0;
+  padding: var(--bottom-app-bar-padding) 0;
 }

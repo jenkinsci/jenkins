@@ -772,7 +772,7 @@ var createPluginSetupWizard = function (appendTarget) {
 
   // remove a plugin from the selected list
   var removePlugin = function (arr, item) {
-    for (var i = arr.length; i--; ) {
+    for (var i = arr.length; i--;) {
       if (arr[i] === item) {
         arr.splice(i, 1);
       }

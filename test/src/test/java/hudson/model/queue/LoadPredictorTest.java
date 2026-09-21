@@ -37,6 +37,7 @@ import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.JobOffer;
 import hudson.model.Queue.Task;
 import hudson.model.Queue.WaitingItem;
+import hudson.slaves.DumbSlave;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -86,7 +87,7 @@ class LoadPredictorTest {
 
         Computer c = createMockComputer(1);
 
-        JobOffer o = createMockOffer(c.getExecutors().get(0));
+        JobOffer o = createMockOffer(c.getExecutors().getFirst());
 
         MappingWorksheet mw = new MappingWorksheet(wrap(t), List.of(o));
 
@@ -106,7 +107,7 @@ class LoadPredictorTest {
     }
 
     private Computer createMockComputer(int nExecutors) throws Exception {
-        Node n = mock(Node.class);
+        Node n = mock(DumbSlave.class);
         Computer c = mock(Computer.class);
         when(c.getNode()).thenReturn(n);
 

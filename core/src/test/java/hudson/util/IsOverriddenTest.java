@@ -33,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.Util;
 import java.io.PrintWriter;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -189,5 +190,76 @@ class IsOverriddenTest {
         @Override public String bar() { return "bar"; }
     }
 
+    @BeforeEach
+    void clearCache() {
+        Util.clearIsOverriddenCache();
+    }
+
+    /**
+     * Repeated calls for the same (base, derived, method) return the same result and populate the cache.
+     */
+    @Test
+    void cacheReturnsSameResult() {
+        boolean first = Util.isOverridden(Base.class, Intermediate.class, "method");
+        assertTrue(first);
+        assertThat("cache populated after first call", Util.isOverriddenCacheSize(), is(1));
+
+        boolean second = Util.isOverridden(Base.class, Intermediate.class, "method");
+        assertThat("cached result matches original", second, is(first));
+        assertThat("cache size unchanged on hit", Util.isOverriddenCacheSize(), is(1));
+    }
+
+    /**
+     * Different derived classes produce independent cache entries.
+     * base == derived short-circuits before the cache, so it does not produce an entry.
+     */
+    @Test
+    void cacheIsScopedToDerivedClass() {
+        assertFalse(Util.isOverridden(Base.class, Base.class, "method"));
+        assertTrue(Util.isOverridden(Base.class, Intermediate.class, "method"));
+        assertTrue(Util.isOverridden(Base.class, Derived.class, "method"));
+        assertThat("one entry per distinct derived class", Util.isOverriddenCacheSize(), is(2));
+    }
+
+    /**
+     * Different method signatures produce independent cache entries.
+     */
+    @Test
+    void cacheKeyIncludesMethodSignature() {
+        assertTrue(Util.isOverridden(Base.class, Intermediate.class, "getX"));
+        assertTrue(Util.isOverridden(Base.class, Intermediate.class, "setX", Object.class));
+        assertThat("distinct entries for different method signatures", Util.isOverriddenCacheSize(), is(2));
+    }
+
+    /**
+     * An invalid method name throws even when a valid entry for the same class is already cached.
+     */
+    @Test
+    void invalidMethodStillThrowsAfterCacheWarm() {
+        assertTrue(Util.isOverridden(Base.class, Intermediate.class, "method"));
+        assertThrows(IllegalArgumentException.class,
+                () -> Util.isOverridden(Base.class, Intermediate.class, "nonExistentMethod"));
+    }
+
+    /**
+     * base == derived short-circuits before touching the cache.
+     */
+    @Test
+    void baseSameAsDerivedBypassesCache() {
+        assertFalse(Util.isOverridden(Base.class, Base.class, "method"));
+        assertThat("base==derived short-circuit must not write to cache", Util.isOverriddenCacheSize(), is(0));
+    }
+
+    /**
+     * A false result (no override) is cached correctly.
+     */
+    @Test
+    void cachesNegativeResult() {
+        assertFalse(Util.isOverridden(Throwable.class, Exception.class, "printStackTrace", PrintWriter.class));
+        assertThat("negative result is cached", Util.isOverriddenCacheSize(), is(1));
+
+        assertFalse(Util.isOverridden(Throwable.class, Exception.class, "printStackTrace", PrintWriter.class));
+        assertThat("cache size unchanged on second call", Util.isOverriddenCacheSize(), is(1));
+    }
 
 }

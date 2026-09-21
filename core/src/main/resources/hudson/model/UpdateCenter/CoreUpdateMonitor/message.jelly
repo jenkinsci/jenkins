@@ -24,9 +24,33 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div class="jenkins-alert jenkins-alert-info">
-    <j:set var="ucData" value="${it.data}" />
-    <j:set var="upJob" value="${app.updateCenter.hudsonJob}" />
+  <j:set var="ucData" value="${it.data}" />
+  <j:set var="upJob" value="${app.updateCenter.hudsonJob}" />
+  <j:set var="controls">
+    <j:choose>
+      <j:when test="${upJob.status.success}">
+      </j:when>
+      <j:when test="${upJob!=null and upJob.error != null}">
+        <j:if test="${ucData.canUpgrade()}">
+          <form method="post" action="${rootURL}/updateCenter/upgrade">
+            <f:submit value="${%Retry}"/>
+          </form>
+        </j:if>
+      </j:when>
+      <j:when test="${upJob!=null}">
+      </j:when>
+      <j:otherwise>
+        <l:isAdmin>
+          <j:if test="${ucData.canUpgrade()}">
+            <form method="post" action="${rootURL}/updateCenter/upgrade">
+              <f:submit value="${%Or Upgrade Automatically}"/>
+            </form>
+          </j:if>
+        </l:isAdmin>
+      </j:otherwise>
+    </j:choose>
+  </j:set>
+  <l:adminMonitor severity="info" controls="${controls}">
     <j:choose>
       <j:when test="${upJob.status.success}">
         <j:invokeStatic var="lifecycle" className="hudson.lifecycle.Lifecycle" method="get" />
@@ -41,11 +65,6 @@ THE SOFTWARE.
       </j:when>
       <j:when test="${upJob!=null and upJob.error != null}">
         ${%UpgradeFailed(ucData.core.version,upJob.errorMessage,rootURL+'/updateCenter/')}
-        <j:if test="${ucData.canUpgrade()}">
-        <form method="post" action="${rootURL}/updateCenter/upgrade">
-          <f:submit value="${%Retry}"/>
-        </form>
-        </j:if>
       </j:when>
       <j:when test="${upJob!=null}">
         ${%UpgradeProgress(ucData.core.version,rootURL+'/updateCenter/')}
@@ -53,14 +72,7 @@ THE SOFTWARE.
       <j:otherwise>
         <j:set var="changelog_url" value="${app.CHANGELOG_URL}"/>
         ${%NewVersionAvailable(ucData.core.version,ucData.core.url,changelog_url)}
-        <l:isAdmin>
-          <j:if test="${ucData.canUpgrade()}">
-            <form method="post" action="${rootURL}/updateCenter/upgrade">
-              <f:submit value="${%Or Upgrade Automatically}"/>
-            </form>
-          </j:if>
-        </l:isAdmin>
       </j:otherwise>
     </j:choose>
-  </div>
+  </l:adminMonitor>
 </j:jelly>

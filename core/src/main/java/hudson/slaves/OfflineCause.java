@@ -26,12 +26,14 @@ package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.User;
 import java.io.ObjectStreamException;
 import java.util.Collections;
 import jenkins.agents.IOfflineCause;
 import jenkins.model.Jenkins;
+import jenkins.security.XStreamDeserializable;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -139,6 +141,7 @@ public abstract class OfflineCause implements IOfflineCause {
      */
     public static class UserCause extends SimpleOfflineCause {
         @Deprecated
+        @XStreamDeserializable
         private transient User user;
         // null when unknown
         private /*final*/ @CheckForNull String userId;
@@ -166,7 +169,7 @@ public abstract class OfflineCause implements IOfflineCause {
          * @return the message that was provided when the computer was taken offline
          */
         public String getMessage() {
-            return message;
+            return Util.escape(message);
         }
 
         // Storing the User in a filed was a mistake, switch to userId

@@ -57,7 +57,7 @@ class MaintainCanTakeStrengtheningTest {
 
         // The faulty one is the only one in the queue
         assertThat(r.getInstance().getQueue().getBuildableItems().size(), equalTo(1));
-        assertThat(r.getInstance().getQueue().getBuildableItems().get(0).task.getName(), equalTo("theFaultyOne"));
+        assertThat(r.getInstance().getQueue().getBuildableItems().getFirst().task.getName(), equalTo("theFaultyOne"));
 
         // The new error is shown in the logs
         assertThat(logging.getMessages(), hasItem(String.format("Exception evaluating if the node '%s' can take the task '%s'", faultyAgent.getDisplayName(), "theFaultyOne")));

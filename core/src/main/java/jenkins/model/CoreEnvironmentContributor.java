@@ -55,8 +55,7 @@ public class CoreEnvironmentContributor extends EnvironmentContributor {
         env.put("HUDSON_HOME", root);   // legacy compatibility
 
         Thread t = Thread.currentThread();
-        if (t instanceof Executor) {
-            Executor e = (Executor) t;
+        if (t instanceof Executor e) {
             env.put("EXECUTOR_NUMBER", String.valueOf(e.getNumber()));
             if (e.getOwner() instanceof MasterComputer) {
                 env.put("NODE_NAME", Jenkins.get().getSelfLabel().getName());

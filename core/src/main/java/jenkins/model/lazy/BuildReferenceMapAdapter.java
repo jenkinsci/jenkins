@@ -22,7 +22,7 @@ import java.util.function.IntConsumer;
  * Take {@code SortedMap<Integer,BuildReference<R>>} and make it look like {@code SortedMap<Integer,R>}.
  *
  * <p>
- * When {@link BuildReference} lost the build object, we'll use {@link Resolver} to obtain one.
+ * When {@link BuildReference} lost the build object, we'll use {@link BuildReferenceResolver} to obtain one.
  * </p>
  *
  * <p>
@@ -43,17 +43,21 @@ import java.util.function.IntConsumer;
  *
  * @author Kohsuke Kawaguchi
  */
-class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements SortedMap<Integer, R> {
-    private final NavigableMap<Integer, BuildReference<R>> core;
-    private final Resolver<R> resolver;
+class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R>
+        implements SortedMap<Integer, R> {
+    protected final NavigableMap<Integer, BuildReference<R>> core;
+    protected final BuildReferenceResolver<R> resolver;
+    protected final BuildTypeDescriptor<R>  typeDescriptor;
 
     private final Set<Integer> keySet = new KeySetAdapter();
     private final Collection<R> values = new ValuesAdapter();
     private final Set<Map.Entry<Integer, R>> entrySet = new EntrySetAdapter();
 
-    BuildReferenceMapAdapter(NavigableMap<Integer, BuildReference<R>> core, Resolver<R> resolver) {
+    BuildReferenceMapAdapter(NavigableMap<Integer, BuildReference<R>> core, BuildReferenceResolver<R> resolver,
+                             BuildTypeDescriptor<R> typeDescriptor) {
         this.core = core;
         this.resolver = resolver;
+        this.typeDescriptor = typeDescriptor;
     }
 
     @Override
@@ -63,17 +67,22 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
 
     @Override
     public SortedMap<Integer, R> subMap(Integer fromKey, Integer toKey) {
-        return new BuildReferenceMapAdapter<>(core.subMap(fromKey, true, toKey, false), resolver);
+        return createInstance(core.subMap(fromKey, true, toKey, false));
     }
 
     @Override
     public SortedMap<Integer, R> headMap(Integer toKey) {
-        return new BuildReferenceMapAdapter<>(core.headMap(toKey, false), resolver);
+        return createInstance(core.headMap(toKey, false));
     }
 
     @Override
     public SortedMap<Integer, R> tailMap(Integer fromKey) {
-        return new BuildReferenceMapAdapter<>(core.tailMap(fromKey, true), resolver);
+        return createInstance(core.tailMap(fromKey, true));
+    }
+
+    @Override
+    public SortedMap<Integer, R> reversed() {
+        return createInstance(core.descendingMap());
     }
 
     @Override
@@ -83,7 +92,7 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
 
     @Override
     public Integer lastKey() {
-        return new BuildReferenceMapAdapter<>(core.descendingMap(), resolver).firstKey();
+        return reversed().firstKey();
     }
 
     @Override
@@ -102,30 +111,27 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
     }
 
     @Override
+    public int size() {
+        return core.size();
+    }
+
+    @Override
     public boolean isEmpty() {
-        return entrySet().isEmpty();
+        return entrySet().stream().findFirst().isEmpty();
     }
 
     @Override
     public boolean containsKey(Object key) {
-        BuildReference<R> ref = key instanceof Integer ? core.get(key) : null;
-        if (ref == null) {
-            return false;
-        }
-        // if found, check if value is loadable
-        if (!ref.isSet()) {
-            resolver.resolveBuildRef(ref);
-        }
-        return !ref.isUnloadable();
+        return resolver.isBuildRefResolvable(key instanceof Integer ? core.get(key) : null);
     }
 
     @Override
     public boolean containsValue(Object value) {
-        if (!resolver.getBuildClass().isInstance(value)) {
+        if (!typeDescriptor.getBuildClass().isInstance(value)) {
             return false;
         }
-        R val = resolver.getBuildClass().cast(value);
-        return val.equals(get(resolver.getNumberOf(val)));
+        R val = typeDescriptor.getBuildClass().cast(value);
+        return val.equals(get(typeDescriptor.getNumberOf(val)));
     }
 
     @Override
@@ -140,6 +146,10 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
             return null;
         }
         return removeValue(val) ? val : null;
+    }
+
+    protected BuildReferenceMapAdapter<R> createInstance(NavigableMap<Integer, BuildReference<R>> coreMap) {
+        return new BuildReferenceMapAdapter<>(coreMap, resolver, typeDescriptor);
     }
 
     protected boolean removeValue(R value) {
@@ -169,12 +179,11 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
 
         @Override
         public Iterator<Integer> iterator() {
-            return new AdaptedIterator<>(BuildReferenceMapAdapter.this.entrySet().iterator()) {
-                @Override
-                protected Integer adapt(Map.Entry<Integer, R> e) {
-                    return e.getKey();
-                }
-            };
+            return Iterators.removeNull(Iterators.map(
+                    BuildReferenceMapAdapter.this.core.entrySet().iterator(), coreEntry -> {
+                        BuildReference<R> ref = coreEntry.getValue();
+                        return resolver.isBuildRefResolvable(ref) ? ref.number : null;
+                    }));
         }
 
         @Override
@@ -219,8 +228,8 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
 
         @Override
         public boolean remove(Object o) {
-            return resolver.getBuildClass().isInstance(o) &&
-                    BuildReferenceMapAdapter.this.removeValue(resolver.getBuildClass().cast(o));
+            return typeDescriptor.getBuildClass().isInstance(o) &&
+                    BuildReferenceMapAdapter.this.removeValue(typeDescriptor.getBuildClass().cast(o));
         }
 
         @Override
@@ -242,12 +251,12 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
     private class EntrySetAdapter extends AbstractSet<Map.Entry<Integer, R>> {
         @Override
         public int size() {
-            return BuildReferenceMapAdapter.this.core.size();
+            return BuildReferenceMapAdapter.this.size();
         }
 
         @Override
         public boolean isEmpty() {
-            return this.stream().findFirst().isEmpty();
+            return BuildReferenceMapAdapter.this.isEmpty();
         }
 
         @Override
@@ -261,8 +270,8 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
         @Override
         public boolean remove(Object o) {
             if (o instanceof Map.Entry<?, ?> e) {
-                return resolver.getBuildClass().isInstance(e.getValue()) &&
-                        BuildReferenceMapAdapter.this.removeValue(resolver.getBuildClass().cast(e.getValue()));
+                return typeDescriptor.getBuildClass().isInstance(e.getValue()) &&
+                        BuildReferenceMapAdapter.this.removeValue(typeDescriptor.getBuildClass().cast(e.getValue()));
             }
             return false;
         }
@@ -273,19 +282,9 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
                 private Map.Entry<Integer, R> current;
                 private final Iterator<Map.Entry<Integer, R>> it = Iterators.removeNull(Iterators.map(
                         BuildReferenceMapAdapter.this.core.entrySet().iterator(), coreEntry -> {
-                            BuildReference<R> ref = coreEntry.getValue();
-                            if (!ref.isSet()) {
-                                R r = resolver.resolveBuildRef(ref);
-                                // load not loaded or unloadable build
-                                if (r == null) {
-                                    return null;
-                                }
-                                return new EntryAdapter(coreEntry, r);
-                            }
-                            if (ref.isUnloadable()) {
-                                return null;
-                            }
-                            return new EntryAdapter(coreEntry);
+                            R r = resolver.resolveBuildRef(coreEntry.getValue());
+                            // if null - load not allowed or build is unloadable
+                            return r == null ? null : new AbstractMap.SimpleImmutableEntry<>(coreEntry.getKey(), r);
                         }));
 
                 @Override
@@ -314,67 +313,14 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
         }
     }
 
-    private class EntryAdapter implements Entry<Integer, R> {
-        private final Map.Entry<Integer, BuildReference<R>> coreEntry;
-        private volatile R resolvedValue;
-
-        EntryAdapter(Map.Entry<Integer, BuildReference<R>> coreEntry) {
-            this(coreEntry, null);
-        }
-
-        EntryAdapter(Map.Entry<Integer, BuildReference<R>> coreEntry, R resolvedValue) {
-            this.coreEntry = coreEntry;
-            this.resolvedValue = resolvedValue;
-        }
-
-        private Map.Entry<Integer, R> getResolvedEntry() {
-            return new AbstractMap.SimpleEntry<>(getKey(), getValue());
-        }
-
-        @Override
-        public Integer getKey() {
-            return coreEntry.getKey();
-        }
-
-        @Override
-        public R getValue() {
-            R value = resolvedValue;
-            if (value != null) {
-                return value;
-            }
-            return resolvedValue = resolver.resolveBuildRef(coreEntry.getValue());
-        }
-
-        @Override
-        public R setValue(R value) {
-            // BuildReferenceAdapter is read only
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String toString() {
-            return getResolvedEntry().toString();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return (o instanceof Map.Entry<?, ?>) && getResolvedEntry().equals(o);
-        }
-
-        @Override
-        public int hashCode() {
-            return getResolvedEntry().hashCode();
-        }
-    }
-
     /**
      * An interface for resolving build references into actual build instances
-     * and extracting basic metadata from them.
      **/
-    public interface Resolver<R> {
-
+    interface BuildReferenceResolver<R> {
         /**
          * Resolves the given build reference into an actual build instance.
+         * This method is used by {@link BuildReferenceMapAdapter} for operations
+         * that return map values or entries.
          *
          * @param buildRef the reference to a build to resolve, can be {@code null}
          * @return the resolved build instance, or {@code null} if the reference is {@code null}
@@ -382,6 +328,27 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R> implements Sor
          */
         R resolveBuildRef(BuildReference<R> buildRef);
 
+        /**
+         * Checks whether the given build reference can be resolved to a non-null build instance.
+         * This method is used by {@link BuildReferenceMapAdapter} to determine whether a key
+         * effectively exists in the map.
+         *
+         * <p>This method may be weakly consistent with {@link #resolveBuildRef(BuildReference)}.
+         * However, the following guarantee must hold:
+         * if this method returns {@code false}, then {@link #resolveBuildRef(BuildReference)}
+         * must return {@code null} for the same reference.</p>
+         *
+         * @param buildRef the reference to a build, may be {@code null}
+         * @return {@code true} if the reference can be resolved to a non-null build instance,
+         *         {@code false} otherwise
+         */
+        boolean isBuildRefResolvable(BuildReference<R> buildRef);
+    }
+
+    /**
+     * An interface for extracting basic metadata from the build instance.
+     **/
+    interface BuildTypeDescriptor<R> {
         /**
          * Returns the build number associated with the given build instance.
          *

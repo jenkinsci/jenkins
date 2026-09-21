@@ -57,7 +57,7 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
     /**
      * Reused buffer that stores char representation of a single line.
      */
-    private final LineBuffer line = new LineBuffer(256);
+    private final LineBuffer line = new LineBuffer(4096);
     /**
      * {@link OutputStream} that writes to {@link #line}.
      */
@@ -173,8 +173,8 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
 
         private void reset() {
             StringBuffer buf = getStringBuffer();
-            if (buf.length() > 4096)
-                out = new StringWriter(256);
+            if (buf.length() > 64 * 1024)
+                out = new StringWriter(4096);
             else
                 buf.setLength(0);
         }

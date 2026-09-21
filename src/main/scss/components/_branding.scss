@@ -1,0 +1,91 @@
+.app-branding {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: var(--standard-transition);
+  z-index: 0;
+  border-radius: var(--form-input-border-radius);
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+
+  &::before {
+    background-color: color-mix(
+      in sRGB,
+      var(--text-color-secondary) 20%,
+      transparent
+    );
+    background-image:
+      radial-gradient(
+        ellipse 85% 65% at 20% 25%,
+        var(--light-orange) 0%,
+        transparent 78%
+      ),
+      radial-gradient(
+        ellipse 80% 60% at 80% 20%,
+        var(--light-purple) 0%,
+        transparent 80%
+      ),
+      radial-gradient(
+        ellipse 78% 58% at 28% 75%,
+        var(--light-blue) 0%,
+        transparent 78%
+      ),
+      radial-gradient(
+        ellipse 80% 60% at 78% 72%,
+        var(--light-pink) 0%,
+        transparent 80%
+      ),
+      radial-gradient(
+        ellipse 90% 70% at 50% 50%,
+        var(--light-cyan) 0%,
+        transparent 84%
+      );
+    inset: -100px;
+    opacity: 0.5;
+  }
+
+  &::after {
+    border: var(--jenkins-border--subtle);
+    z-index: 1;
+  }
+
+  .app-branding__conic {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      flex: 1;
+      backdrop-filter: invert(1%) blur(60px);
+      mask-image: repeating-conic-gradient(
+        from 0deg,
+        var(--background) 0deg,
+        transparent 20deg
+      );
+    }
+
+    img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-height: 80px;
+      height: 60%;
+      max-height: 250px;
+    }
+  }
+}

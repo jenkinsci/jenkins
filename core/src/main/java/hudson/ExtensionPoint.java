@@ -29,31 +29,26 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import jenkins.model.Jenkins;
 
 /**
  * Marker interface that designates extensible components
  * in Jenkins that can be implemented by plugins.
  *
  * <p>
- * See respective interfaces/classes for more about how to register custom
- * implementations to Jenkins. See {@link Extension} for how to have
- * Jenkins auto-discover your implementations.
+ * Use {@link Extension} to register an implementation.
+ * Use {@link ExtensionList} to look for implementations.
  *
  * <p>
  * This interface is used for auto-generating
  * documentation.
  *
  * @author Kohsuke Kawaguchi
- * @see Plugin
- * @see Extension
  */
 public interface ExtensionPoint {
     /**
-     * Used by designers of extension points (direct subtypes of {@link ExtensionPoint}) to indicate that
-     * the legacy instances are scoped to {@link Jenkins} instance. By default, legacy instances are
-     * static scope.
+     * @deprecated No longer has any effect.
      */
+    @Deprecated
     @Target(TYPE)
     @Retention(RUNTIME)
     @interface LegacyInstancesAreScopedToHudson {}

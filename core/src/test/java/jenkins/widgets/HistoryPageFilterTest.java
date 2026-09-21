@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -117,9 +118,9 @@ class HistoryPageFilterTest {
         assertEquals(2, historyPageFilter.queueItems.size());
         assertEquals(3, historyPageFilter.runs.size());
 
-        assertEquals(12, historyPageFilter.queueItems.get(0).getEntryId());
+        assertEquals(12, historyPageFilter.queueItems.getFirst().getEntryId());
         assertEquals(12, historyPageFilter.newestOnPage);
-        assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.runs.get(0).getEntryId());
+        assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.runs.getFirst().getEntryId());
     }
 
     /**
@@ -285,7 +286,7 @@ class HistoryPageFilterTest {
         assertEquals(0, historyPageFilter.queueItems.size());
         assertEquals(5, historyPageFilter.runs.size());
 
-        assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.runs.get(0).getEntryId());
+        assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.runs.getFirst().getEntryId());
         assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.newestOnPage);
         assertEquals(HistoryPageEntry.getEntryId(6), historyPageFilter.oldestOnPage);
     }
@@ -328,7 +329,7 @@ class HistoryPageFilterTest {
 
         //then
         assertEquals(1, historyPageFilter.runs.size());
-        assertEquals(HistoryPageEntry.getEntryId(23), historyPageFilter.runs.get(0).getEntryId());
+        assertEquals(HistoryPageEntry.getEntryId(23), historyPageFilter.runs.getFirst().getEntryId());
     }
 
     @Test
@@ -342,6 +343,18 @@ class HistoryPageFilterTest {
     void should_lower_case_search_string_in_case_insensitive_search() throws IOException {
         Iterable<ModelObject> runs = Arrays.asList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("FAILure", runs);
+    }
+
+    @Test
+    void should_be_case_insensitive_independent_of_default_locale() throws IOException {
+        Locale defaultLocale = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.forLanguageTag("tr"));
+            Iterable<ModelObject> runs = Arrays.asList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+            assertOneMatchingBuildForGivenSearchStringAndRunItems("failure", runs);
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
     }
 
     @Test
@@ -384,7 +397,7 @@ class HistoryPageFilterTest {
 
         //then
         assertEquals(1, historyPageFilter.runs.size());
-        assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
+        assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.getFirst().getEntryId());
     }
 
     private List<QueueItem> newQueueItems(long startId, long endId) {

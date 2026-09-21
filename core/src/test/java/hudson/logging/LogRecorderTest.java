@@ -81,7 +81,7 @@ class LogRecorderTest {
 
             LogRecord record = createLogRecord("jenkins", Level.INFO, "message");
             lr.handler.publish(record);
-            assertEquals(lr.handler.getView().get(0), record);
+            assertEquals(lr.handler.getView().getFirst(), record);
             assertEquals(1, lr.handler.getView().size());
 
             lr.doClear();

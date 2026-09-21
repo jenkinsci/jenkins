@@ -24,6 +24,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <a name="ResourceDomainConfiguration"/>
     <f:section title="${%Serve resource files from another domain}">
         <f:entry title="${%Resource Root URL}" field="url">
             <f:textbox checkMethod="post"/>

@@ -59,6 +59,6 @@ public class JavaUtils {
      */
     public static String getCurrentRuntimeJavaVersion() {
         Runtime.Version runtimeVersion = Runtime.version();
-        return String.valueOf(runtimeVersion.version().get(0));
+        return String.valueOf(runtimeVersion.version().getFirst());
     }
 }

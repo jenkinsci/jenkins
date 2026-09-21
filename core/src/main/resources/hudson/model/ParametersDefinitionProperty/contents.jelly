@@ -24,9 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
-  <j:set var="delay" value="${request2.getParameter('delay')}" />
-  <f:form method="post" action="build${empty(delay)?'':'?delay='+delay}" name="parameters"
-          tableClass="parameters" class="jenkins-form">
+  <j:if test="${delay == null}">
+    <j:set var="delay" value="${request2.getParameter('delay')}" />
+  </j:if>
+  <f:form method="post" action="${rootURL}/${it.job.url}build${empty(delay)?'':'?delay='+delay}" name="parameters" class="jenkins-form">
     <j:forEach var="parameterDefinition" items="${it.parameterDefinitions}">
       <j:set var="escapeEntryTitleAndDescription" value="true"/> <!-- SECURITY-353 defense unless overridden -->
       <tbody>
@@ -46,6 +47,7 @@ THE SOFTWARE.
        -->
       <input type="hidden" name="statusCode" value="303" />
       <input type="hidden" name="redirectTo" value="." />
+      <!-- TODO - when the legacy UI is no longer default, the ordering of these buttons should be switched around -->
       <button class="jenkins-button jenkins-button--primary jenkins-!-build-color">
         <l:icon src="symbol-play" />
         ${it.buildButtonText}

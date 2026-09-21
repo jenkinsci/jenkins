@@ -53,7 +53,7 @@ THE SOFTWARE.
           </j:choose>
         </div>
       </j:set>
-      <j:out value="${h.formatMessage(message, h.translateModifierKeysForUsersPlatform(body))}"/>
+      <j:out value="${h.formatMessage(attrs.message, h.translateModifierKeysForUsersPlatform(body))}"/>
     </div>
   </j:set>
 

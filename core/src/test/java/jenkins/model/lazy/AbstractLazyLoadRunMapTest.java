@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -409,6 +410,19 @@ class AbstractLazyLoadRunMapTest {
         assertThat(c.toArray(), arrayWithSize(3));
         assertThat(c.toArray(Object[]::new), arrayWithSize(3));
         // TODO check behavior of subMap
+    }
+
+    @Test
+    void streamLoadedBuilds() {
+        a.getByNumber(1);
+        a.getByNumber(3);
+        a.getByNumber(5);
+
+        var fromStream = a.streamLoadedBuilds().map(b -> b.n).toList();
+        assertEquals(List.of(5, 3, 1), fromStream);
+
+        var firstTwo = a.streamLoadedBuilds().limit(2).map(b -> b.n).toList();
+        assertEquals(List.of(5, 3), firstTwo);
     }
 
     @Issue("JENKINS-22767")

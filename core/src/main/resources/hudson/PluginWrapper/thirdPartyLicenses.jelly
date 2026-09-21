@@ -22,14 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!-- 3rd party license acknowledgements and  -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:layout title="${%about(it.longName)}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
-    <l:main-panel>
-      <h1>${%about(it.longName+' '+it.version)}</h1>
-
-      <h3>${%3rd Party Dependencies}</h3>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:settings-subpage title="${%about(it.longName+' '+it.version)}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
+    <f:section title="${%3rd Party Dependencies}">
       <t:thirdPartyLicenses>
         <j:choose>
           <j:when test="${it.hasLicensesXml()}">
@@ -40,6 +36,6 @@ THE SOFTWARE.
           </j:otherwise>
         </j:choose>
       </t:thirdPartyLicenses>
-    </l:main-panel>
-  </l:layout>
+    </f:section>
+  </l:settings-subpage>
 </j:jelly>

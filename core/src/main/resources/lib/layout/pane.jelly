@@ -61,7 +61,7 @@ THE SOFTWARE.
       <j:if test="${attrs.id != null}">
         <st:adjunct includes="lib.form.link.link"/>
         <!-- TODO improve l:link so the `a` can be changed to `l:link`. -->
-        <a class="collapse post" href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
+        <a class="collapse post" data-post-href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
            title="${paneIsCollapsed ? '%expand' : '%collapse'}">
 
           <j:set var="svgIconId" value="${paneIsCollapsed ? 'chevron-up' : 'chevron-down'}" />

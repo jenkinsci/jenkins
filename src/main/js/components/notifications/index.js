@@ -11,15 +11,15 @@ function init() {
     defaultAlertClass: "jenkins-notification",
 
     SUCCESS: {
-      alertClass: "jenkins-notification jenkins-notification--success",
+      alertClass: "jenkins-notification jenkins-!-success-color",
       icon: Symbols.SUCCESS,
     },
     WARNING: {
-      alertClass: "jenkins-notification jenkins-notification--warning",
+      alertClass: "jenkins-notification jenkins-!-warning-color",
       icon: Symbols.WARNING,
     },
     ERROR: {
-      alertClass: "jenkins-notification jenkins-notification--error",
+      alertClass: "jenkins-notification jenkins-!-error-color",
       icon: Symbols.ERROR,
       sticky: true,
     },
@@ -73,6 +73,21 @@ function init() {
       }
     },
   };
+
+  tryShowPageLoadNotification();
+}
+
+function tryShowPageLoadNotification() {
+  const { notificationMessage, notificationType } = document.body.dataset;
+
+  if (!notificationMessage) {
+    return;
+  }
+
+  window.notificationBar.show(
+    notificationMessage,
+    window.notificationBar[notificationType],
+  );
 }
 
 export default { init };

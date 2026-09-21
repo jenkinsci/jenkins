@@ -81,27 +81,30 @@ THE SOFTWARE.
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
-      <div class="help-sibling" style="width:100%">
-        <j:set var="help" value="${descriptor.helpFile}" />
+      <j:set var="help" value="${descriptor.helpFile}" />
+      <j:set var="disableHandle" value="${attrs.disableDragAndDrop or readOnlyMode}" />
 
-        <div class="repeated-chunk__header">
-          <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}"/>
-
-          ${descriptor.displayName}
-
-          <f:helpLink url="${help}"/>
-
-          <j:if test="${!readOnlyMode}">
-            <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
-          </j:if>
-        </div>
-
-        <j:if test="${help!=null}">
-          <f:helpArea />
+      <div class="repeated-chunk__header ${disableHandle ? 'repeated-chunk__header--no-handle' : ''}">
+        <j:if test="${!disableHandle}">
+          <div class="dd-handle" />
         </j:if>
 
-        <f:class-entry descriptor="${descriptor}" />
+        ${descriptor.displayName}
 
+        <f:helpLink url="${help}"/>
+
+        <j:if test="${!readOnlyMode}">
+          <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
+        </j:if>
+      </div>
+
+      <f:class-entry descriptor="${descriptor}" />
+
+      <j:if test="${help!=null}">
+        <f:helpArea />
+      </j:if>
+
+      <div class="jenkins-repeated-chunk__content">
         <d:invokeBody/>
       </div>
     </d:tag>
@@ -120,7 +123,7 @@ THE SOFTWARE.
       </div>
     </j:forEach>
 
-    <div class="repeatable-insertion-point" />
+    <template class="repeatable-insertion-point" />
 
     <div class="prototypes to-be-removed">
       <!-- render one prototype for each type -->
@@ -153,10 +156,9 @@ THE SOFTWARE.
     </div>
 
     <j:if test="${!readOnlyMode}">
-      <div>
-        <button type="button" class="jenkins-button hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"><l:icon src="symbol-add"/>${attrs.addCaption?:'%Add'}
-        </button>
-      </div>
+      <span>
+        <button type="button" class="jenkins-button hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"><l:icon src="symbol-add"/>${attrs.addCaption?:'%Add'}</button>
+      </span>
     </j:if>
   </div>
 </j:jelly>

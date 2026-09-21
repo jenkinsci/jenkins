@@ -105,17 +105,17 @@ class RowVisibilityGroupTest {
         // reveal the text box
         List<HtmlInput> checkboxes = DomNodeUtil.selectNodes(p, "//INPUT[@name='inner']");
         assertEquals(2, checkboxes.size());
-        checkboxes.get(0).click();
-        assertTrue(textboxes.get(0).isDisplayed());
-        textboxes.get(0).type("Budweiser");
+        checkboxes.getFirst().click();
+        assertTrue(textboxes.getFirst().isDisplayed());
+        textboxes.getFirst().type("Budweiser");
 
         // toggle the selection again
         s.setSelectedAttribute(opts.get(1), true);
         s.setSelectedAttribute(opts.get(0), true);
 
         // make sure it's still displayed this time
-        assertTrue(checkboxes.get(0).isChecked());
-        assertTrue(textboxes.get(0).isDisplayed());
+        assertTrue(checkboxes.getFirst().isChecked());
+        assertTrue(textboxes.getFirst().isDisplayed());
 
         // make sure we get what we expect
         j.submit(p.getFormByName("config"));

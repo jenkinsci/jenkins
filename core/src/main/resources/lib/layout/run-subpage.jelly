@@ -30,7 +30,7 @@ THE SOFTWARE.
     Renders a tabbed layout for runs, including build status and actions.
   </st:documentation>
 
-  <l:layout title="${it.displayName} - ${it.object.displayName}">
+  <l:layout title="${it.object.fullDisplayName} ${it.displayName}">
     <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
 
     <j:choose>
@@ -68,17 +68,8 @@ THE SOFTWARE.
             </div>
 
             <div class="app-build-bar__controls">
-              <l:overflowButton>
-                <dd:custom>
-                  <div class="app-build-overflow">
-                    <j:set var="mode" value="side-panel" />
-                    <st:include page="sidepanel.jelly" it="${it.object}" />
-                  </div>
-                </dd:custom>
-              </l:overflowButton>
+              <l:actions it="${it.object}" />
             </div>
-
-            <st:adjunct includes="lib.hudson.build-caption" />
           </div>
 
           <div class="app-build-content">

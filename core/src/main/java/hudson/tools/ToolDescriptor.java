@@ -77,8 +77,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
             return installations.clone();
 
         Type bt = Types.getBaseClass(getClass(), ToolDescriptor.class);
-        if (bt instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType) bt;
+        if (bt instanceof ParameterizedType pt) {
             // this 't' is the closest approximation of T of Descriptor<T>.
             Class t = Types.erasure(pt.getActualTypeArguments()[0]);
             return (T[]) Array.newInstance(t, 0);

@@ -72,8 +72,9 @@ public abstract class AbstractCommandInstaller extends ToolInstaller {
     @Override
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
         FilePath dir = preferredLocation(tool, node);
+        dir.mkdirs();
         // TODO support Unix scripts with interpreter line (see Shell.buildCommandLine)
-        FilePath script = dir.createTextTempFile("hudson", getCommandFileExtension(), command);
+        FilePath script = dir.createTextTempFile("hudson", getCommandFileExtension(), command, false);
         try {
             String[] cmd = getCommandCall(script);
             int r = node.createLauncher(log).launch().cmds(cmd).stdout(log).pwd(dir).join();
