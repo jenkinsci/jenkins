@@ -52,9 +52,9 @@ THE SOFTWARE.
           </l:overflowButton>
         </j:set>
 
-        <l:search-bar id="build-history-search" placeholder="${%Search}" charms="${filter}" />
-
         <t:editDescriptionButton permission="${it.CONFIGURE}" compact="true" />
+
+        <l:search-bar id="build-history-search" placeholder="${%Search}" charms="${filter}" />
       </l:details-bar>
     </l:app-bar>
 
