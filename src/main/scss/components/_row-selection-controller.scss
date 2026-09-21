@@ -108,7 +108,8 @@
     transition: var(--standard-transition);
   }
 
-  &:hover, &:active {
+  &:hover,
+  &:active {
     svg {
       color: var(--text-color);
     }
