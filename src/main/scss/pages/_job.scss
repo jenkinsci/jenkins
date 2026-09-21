@@ -419,12 +419,19 @@
     margin: 0.75rem 0 0 0.875rem;
     z-index: 1;
     outline: none;
-    border-radius: 100px;
-    transition: var(--standard-transition);
-    box-shadow: 0 0 0 0.5rem transparent;
 
-    &:focus-visible {
-      box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+    &:is(div) {
+      pointer-events: none;
+    }
+
+    &:is(a) {
+      border-radius: 100px;
+      transition: var(--standard-transition);
+      box-shadow: 0 0 0 0.5rem transparent;
+
+      &:focus-visible {
+        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+      }
     }
 
     svg {
