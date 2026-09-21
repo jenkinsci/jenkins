@@ -147,7 +147,8 @@
       padding: 0;
       border-radius: calc(var(--form-input-border-radius) - 0.25rem);
 
-      &::before, &::after {
+      &::before,
+      &::after {
         inset: 0.25rem;
       }
     }
