@@ -11,8 +11,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.ExtensionList;
+import hudson.Functions;
 import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.Launcher;
@@ -60,16 +62,19 @@ class Security3430Test {
 
     @Test
     void runWithOldestSupportedAgentJar() throws Throwable {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         runWithRemoting(RemotingVersionInfo.getMinimumSupportedVersion().toString(), "/old-remoting/remoting-minimum-supported.jar", true);
     }
 
     @Test
     void runWithPreviousAgentJar() throws Throwable {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         runWithRemoting("3256.v88a_f6e922152", "/old-remoting/remoting-before-SECURITY-3430-fix.jar", true);
     }
 
     @Test
     void runWithCurrentAgentJar() throws Throwable {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         runWithRemoting(Launcher.VERSION, null, false);
     }
 

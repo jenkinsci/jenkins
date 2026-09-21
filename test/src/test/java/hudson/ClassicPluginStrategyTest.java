@@ -45,6 +45,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRecipe;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -53,8 +54,21 @@ import org.jvnet.hudson.test.recipes.LocalData;
 @Tag("SmokeTest")
 class ClassicPluginStrategyTest {
 
+    private static final String DISABLED_DEPENDENCY_TEST_PACKAGE = "hudson.classicpluginstrategydisableddep";
+    private static final String DISABLED_DEPENDENCY_TEST_RESOURCE = "hudson/classicpluginstrategydisableddep/test-resource";
+
     @RegisterExtension
     private final JenkinsSessionExtension session = new CustomPluginManagerExtension();
+
+    @RegisterExtension
+    private final RealJenkinsExtension rjr = new RealJenkinsExtension()
+            .addSyntheticPlugin(new RealJenkinsExtension.SyntheticPlugin(DISABLED_DEPENDENCY_TEST_PACKAGE)
+                    .shortName("foo5")
+                    .version("0.5"))
+            .addSyntheticPlugin(new RealJenkinsExtension.SyntheticPlugin(DISABLED_DEPENDENCY_TEST_PACKAGE)
+                    .shortName("foo4")
+                    .version("0.4")
+                    .header("Plugin-Dependencies", "foo5:0.5;resolution:=optional"));
 
     /**
      * Test finding resources via DependencyClassLoader.
@@ -90,14 +104,17 @@ class ClassicPluginStrategyTest {
      * Test finding resources via DependencyClassLoader.
      * Check transitive dependency exclude disabled plugins
      */
-    @LocalData
     @Issue("JENKINS-18654")
     @Test
     void testDisabledDependencyClassLoader() throws Throwable {
-        session.then(j -> {
+        // foo4 has an optional dependency on foo5; disable foo5 before Jenkins starts so foo4 must
+        // still load, but must not see foo5's resources through its DependencyClassLoader.
+        assertTrue(new File(rjr.getHome(), "plugins/foo5.jpi.disabled").createNewFile());
+
+        rjr.then(j -> {
             PluginWrapper p = j.jenkins.getPluginManager().getPlugin("foo4");
 
-            Enumeration<URL> en = p.classLoader.getResources("test-resource");
+            Enumeration<URL> en = p.classLoader.getResources(DISABLED_DEPENDENCY_TEST_RESOURCE);
             for (int i = 0; en.hasMoreElements(); i++) {
                 String res = en.nextElement().toString();
                 if (i == 0)

@@ -36,6 +36,11 @@ THE SOFTWARE.
   <name>Internal SPI for WebSocket</name>
   <description>An abstraction of how Jenkins can serve a WebSocket connection from its servlet container.</description>
 
+  <properties>
+    <!-- Nothing here needs annotation processing. -->
+    <maven.compiler.proc>none</maven.compiler.proc>
+  </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency>

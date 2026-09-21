@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -342,6 +343,18 @@ class HistoryPageFilterTest {
     void should_lower_case_search_string_in_case_insensitive_search() throws IOException {
         Iterable<ModelObject> runs = Arrays.asList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("FAILure", runs);
+    }
+
+    @Test
+    void should_be_case_insensitive_independent_of_default_locale() throws IOException {
+        Locale defaultLocale = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.forLanguageTag("tr"));
+            Iterable<ModelObject> runs = Arrays.asList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+            assertOneMatchingBuildForGivenSearchStringAndRunItems("failure", runs);
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
     }
 
     @Test

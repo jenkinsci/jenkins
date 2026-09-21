@@ -55,7 +55,7 @@ THE SOFTWARE.
     </l:view>
   </j:set>
 
-  <l:settings-subpage header="${header}" noDefer="true">
+  <l:settings-subpage header="${header}">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
     <j:choose>
       <j:when test="${it.cloudAvailable and it.hasClouds()}">
