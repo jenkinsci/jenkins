@@ -192,7 +192,8 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2582.v92781333ea_78</version>
+      <!-- https://github.com/jenkinsci/jenkins-test-harness/pull/1195 -->
+      <version>2588.v92b_e0c3d2ea_1</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
