@@ -272,6 +272,7 @@ class FilePathTest {
     @Issue("JENKINS-9540")
     @Test
     void errorMessageInRemoteCopyRecursive() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Expensive to run and not Windows specific");
         File src = newFolder(temp, "src");
         File dst = newFolder(temp, "dst");
             FilePath from = new FilePath(src);
@@ -430,7 +431,7 @@ class FilePathTest {
         final File tarFile = new File(tmpDir, filePrefix + ".tar");
 
         file.setLength(fileSize);
-        assumeTrue(fileSize == file.length());
+        assertEquals(fileSize, file.length(), "fileSize != file.length() for '" + filePrefix + "'");
         file.close();
 
         // Compress archive

@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import jenkins.model.Jenkins;
+import jenkins.security.XStreamDeserializable;
 import jenkins.util.NonLocalizable;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.export.Exported;
@@ -99,6 +100,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      * @deprecated since 2008-10-18. Use {@link #localizibleDescription}
      */
     @Deprecated
+    @XStreamDeserializable
     private transient String description;
 
     /**

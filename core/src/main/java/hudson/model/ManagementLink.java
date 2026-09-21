@@ -134,7 +134,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * for example, checking either {@link Jenkins#MANAGE} or {@link Jenkins#SYSTEM_READ}.
      * </p>
      * @see #getRequiredPermission()
-     * @since TODO
+     * @since 2.579
      */
     public boolean hasRequiredPermission() {
         return Jenkins.get().hasPermission(getRequiredPermission());

@@ -140,6 +140,10 @@ $agent-widget-breakpoint-side-panel: 1090px;
     flex-direction: row !important;
     flex-wrap: wrap;
 
+    a {
+      align-self: baseline;
+    }
+
     .jenkins-notice {
       margin-bottom: 0;
       min-height: revert;

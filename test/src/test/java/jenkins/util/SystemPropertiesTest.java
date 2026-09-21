@@ -30,7 +30,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import jakarta.servlet.ServletContextEvent;
 import java.time.Duration;
@@ -127,7 +126,6 @@ class SystemPropertiesTest {
      * @param value value of the property
      */
     protected void setWebAppInitParameter(String property, String value) {
-        assumeTrue(j.jenkins.getServletContext() instanceof WebAppContext.Context);
         ((WebAppContext.Context) j.jenkins.getServletContext()).getContextHandler().getInitParams().put(property, value);
     }
 
