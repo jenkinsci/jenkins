@@ -2034,7 +2034,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             try {
                 // For the record, this method creates temporary labels but there is a periodic task
                 // calling "trimLabels" to remove unused labels running every 5 minutes.
-                labels.putIfAbsent(expr, Label.parseExpression(expr));
+                Label parsed = Label.parseExpression(expr);
+                expr = parsed.getName();
+                labels.putIfAbsent(expr, parsed);
             } catch (IllegalArgumentException e) {
                 // laxly accept it as a single label atom for backward compatibility
                 return getLabelAtom(expr);

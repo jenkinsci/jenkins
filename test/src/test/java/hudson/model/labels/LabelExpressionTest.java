@@ -351,6 +351,40 @@ class LabelExpressionTest {
         assertThat(label, instanceOf(LabelExpression.And.class));
     }
 
+    @Test
+    @Issue("27403")
+    void labelWhitespaceVariantsShareSameInstance() {
+        String canonical = "linux&&ssd&&(rack1||rack2)&&!maintenance";
+        String spacedNot = "linux&&ssd&&(rack1||rack2)&& !maintenance";
+        String fullySpaced = "linux && ssd && (rack1 || rack2) && !maintenance";
+
+        Label l1 = j.jenkins.getLabel(canonical);
+        Label l2 = j.jenkins.getLabel(spacedNot);
+        Label l3 = j.jenkins.getLabel(fullySpaced);
+
+        assertSame(l1, l2);
+        assertSame(l1, l3);
+        assertSame(l1.loadStatistics, l2.loadStatistics);
+        assertSame(l1.loadStatistics, l3.loadStatistics);
+    }
+
+    @Test
+    @Issue("27403")
+    void labelWhitespaceVariantsShareSameInstanceWhenSpacedFirst() {
+        String canonical = "win&&fast&&(zone1||zone2)&&!offline";
+        String fullySpaced = "win && fast && (zone1 || zone2) && !offline";
+        String spacedNot = "win&&fast&&(zone1||zone2)&& !offline";
+
+        // Query non-canonical first to verify cache resolution works before canonical key exists
+        Label l1 = j.jenkins.getLabel(fullySpaced);
+        Label l2 = j.jenkins.getLabel(canonical);
+        Label l3 = j.jenkins.getLabel(spacedNot);
+
+        assertSame(l1, l2);
+        assertSame(l1, l3);
+        assertSame(l1.loadStatistics, l2.loadStatistics);
+    }
+
     private void parseShouldFail(String expr, String message) {
         ANTLRException e = assertThrows(
                 ANTLRException.class,
