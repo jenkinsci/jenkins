@@ -75,7 +75,7 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
         if (t instanceof Class<?> c) {
             if (c.isArray()) {
                 validateType(c.componentType());
-            } else if (c.isPrimitive() || c == String.class) {
+            } else if (c.isPrimitive() || c == String.class || c.isEnum()) {
                 // OK
             } else if (!Serializable.class.isAssignableFrom(c)) {
                 throw new IllegalArgumentException(c + " is not serializable");
@@ -113,7 +113,7 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
      * Any attempt by code running in the agent to construct malicious data will be rejected;
      * the data must have been constructed originally in the controller in the same session.
      * Suitable for use as a field in an {@link AgentToControllerCallable}.
-     * @param <T> {@link String}, a primitive type, or a {@link Serializable} {@link Record} or array or {@link TrustedObject} or {@link EncryptedObject} of a supported type
+     * @param <T> {@link String}, a primitive type, an {@link Enum}, or a {@link Serializable} {@link Record} or array or {@link TrustedObject} or {@link EncryptedObject} of a supported type
      */
     final class TrustedObject<T> implements Serializable {
 
@@ -214,7 +214,7 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
      * Unlike {@link TrustedObject}, the agent cannot inspect the contents
      * (beyond what it could guess based on serialized size).
      * Suitable for use as a field in an {@link AgentToControllerCallable}.
-     * @param <T> {@link String}, a primitive type, or a {@link Serializable} {@link Record} or array or {@link TrustedObject} or {@link EncryptedObject} of a supported type
+     * @param <T> {@link String}, a primitive type, an {@link Enum}, or a {@link Serializable} {@link Record} or array or {@link TrustedObject} or {@link EncryptedObject} of a supported type
      */
     @SuppressFBWarnings(value = "DMI_RANDOM_USED_ONLY_ONCE", justification = "used once per JVM, fine")
     final class EncryptedObject<T> implements Serializable {
