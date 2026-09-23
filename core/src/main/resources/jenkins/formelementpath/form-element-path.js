@@ -202,6 +202,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  applyAll();
+
   Behaviour.addLoadEvent(applyAll);
 
   layoutUpdateCallback.add(applyAll);
