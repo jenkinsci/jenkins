@@ -36,6 +36,8 @@ import java.io.InvalidObjectException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
@@ -68,12 +70,31 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
         checker.check(this, Roles.MASTER);
     }
 
-    private static void checkSafety(Class<?> c) {
-        // TODO
+    @VisibleForTesting
+    static void validateType(Type t) {
+        if (t instanceof Class<?> c) {
+            if (c.isArray()) {
+                validateType(c.componentType());
+            } else if (c.isPrimitive() || c == String.class) {
+                // OK
+            } else if (!Serializable.class.isAssignableFrom(c)) {
+                throw new IllegalArgumentException(c + " is not serializable");
+            } else if (c.isRecord()) {
+                for (var rc : c.getRecordComponents()) {
+                    validateType(rc.getGenericType());
+                }
+            } else {
+                throw new IllegalArgumentException(c + " is not a supported class type");
+            }
+        } else if (t instanceof ParameterizedType pt && (pt.getRawType() == TrustedObject.class || pt.getRawType() == EncryptedObject.class)) {
+            validateType(pt.getActualTypeArguments()[0]);
+        } else {
+            throw new IllegalArgumentException(t + " is not a known immutable monomorphic type");
+        }
     }
 
     @VisibleForTesting
-    static byte[] serialize(Serializable o) throws IOException {
+    static byte[] serialize(Object o) throws IOException {
         try (var baos = new ByteArrayOutputStream(); var oos = new ObjectOutputStream(baos)) {
             oos.writeObject(o);
             oos.flush();
@@ -92,8 +113,9 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
      * Any attempt by code running in the agent to construct malicious data will be rejected;
      * the data must have been constructed originally in the controller in the same session.
      * Suitable for use as a field in an {@link AgentToControllerCallable}.
+     * @param <T> {@link String}, a primitive type, or a {@link Serializable} {@link Record} or array or {@link TrustedObject} or {@link EncryptedObject} of a supported type
      */
-    final class TrustedObject<T extends Serializable> implements Serializable {
+    final class TrustedObject<T> implements Serializable {
 
         private static final String ALGORITHM = "HmacSHA256";
 
@@ -129,7 +151,7 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
         public TrustedObject(T o) {
             JenkinsJVM.checkJenkinsJVM();
             type = o.getClass();
-            checkSafety(type);
+            validateType(type);
             this.o = o;
             try {
                 ser = serialize(o);
@@ -153,7 +175,7 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
          * The result cannot be serialized, only used locally.
          */
         @Restricted(DoNotUse.class)
-        public static <T extends Serializable> TrustedObject<T> forUnitTests(T o) {
+        public static <T> TrustedObject<T> forUnitTests(T o) {
             return new TrustedObject<>(o, null, null);
         }
 
@@ -192,9 +214,10 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
      * Unlike {@link TrustedObject}, the agent cannot inspect the contents
      * (beyond what it could guess based on serialized size).
      * Suitable for use as a field in an {@link AgentToControllerCallable}.
+     * @param <T> {@link String}, a primitive type, or a {@link Serializable} {@link Record} or array or {@link TrustedObject} or {@link EncryptedObject} of a supported type
      */
     @SuppressFBWarnings(value = "DMI_RANDOM_USED_ONLY_ONCE", justification = "used once per JVM, fine")
-    final class EncryptedObject<T extends Serializable> implements Serializable {
+    final class EncryptedObject<T> implements Serializable {
 
         private static final String KEY_ALGORITHM = "AES";
 
@@ -242,7 +265,7 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
         public EncryptedObject(T o) {
             JenkinsJVM.checkJenkinsJVM();
             type = o.getClass();
-            checkSafety(type);
+            validateType(type);
             this.o = o;
             byte[] ser;
             try {
