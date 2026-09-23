@@ -188,6 +188,12 @@ THE SOFTWARE.
         <d:invokeBody/>
       </div>
     </div>
+
+    <j:if test="${layoutType!='full-screen' and extensionsAvailable}">
+      <j:forEach var="pd" items="${h.pageDecorators}">
+        <st:include it="${pd}" page="footer.jelly" optional="true" />
+      </j:forEach>
+    </j:if>
   </body>
 </html>
 </l:view>

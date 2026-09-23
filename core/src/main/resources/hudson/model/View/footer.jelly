@@ -23,16 +23,10 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
   <footer class="page-footer">
     <div class="page-footer__flex-row">
       <div class="page-footer__footer-id-placeholder" id="footer"></div>
-
-      <j:if test="${extensionsAvailable}">
-        <j:forEach var="pd" items="${h.pageDecorators}">
-          <st:include it="${pd}" page="footer.jelly" optional="true" />
-        </j:forEach>
-      </j:if>
 
       <div class="page-footer__links">
         <l:overflowButton text="Jenkins ${h.version}"
