@@ -55,6 +55,7 @@ import org.jenkinsci.remoting.RoleChecker;
  * Implement on a {@link Record}.
  * It is recommended that all fields and the return value be of immutable monomorphic types,
  * including {@link Record} or {@link TrustedObject} or {@link EncryptedObject}.
+ * @since TODO
  */
 @SuppressFBWarnings(value = "OBJECT_DESERIALIZATION", justification = "verified input")
 public interface AgentToControllerCallable<V, T extends Throwable> extends Callable<V, T> {
