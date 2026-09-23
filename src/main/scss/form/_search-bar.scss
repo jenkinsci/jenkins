@@ -242,7 +242,7 @@
 }
 
 .jenkins-search__results-container {
-  @include mixins.overlay-surface($opacity: 85%);
+  @include mixins.overlay-surface(85%);
 
   position: absolute;
   width: 100%;
