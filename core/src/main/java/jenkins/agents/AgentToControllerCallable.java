@@ -27,11 +27,12 @@ package jenkins.agents;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.remoting.Callable;
+import hudson.remoting.ClassFilter;
+import hudson.remoting.ObjectInputStreamEx;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InvalidObjectException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -69,6 +70,21 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
         // TODO
     }
 
+    @VisibleForTesting
+    static byte[] serialize(Serializable o) throws IOException {
+        try (var baos = new ByteArrayOutputStream(); var oos = new ObjectOutputStream(baos)) {
+            oos.writeObject(o);
+            oos.flush();
+            return baos.toByteArray();
+        }
+    }
+
+    private static Object deserialize(byte[] ser, ClassLoader loader) throws IOException, ClassNotFoundException {
+        try (var bais = new ByteArrayInputStream(ser); var ois = new ObjectInputStreamEx(bais, loader, ClassFilter.NONE)) {
+            return ois.readObject();
+        }
+    }
+
     /**
      * A signed object which may be passed to an agent and back and then used safely from the controller.
      * Any attempt by code running in the agent to construct malicious data will be rejected;
@@ -96,6 +112,8 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
 
         private static final long serialVersionUID = 1;
 
+        private final Class<?> type;
+
         private transient T o;
 
         private final byte[] ser;
@@ -108,15 +126,21 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
          */
         public TrustedObject(T o) {
             JenkinsJVM.checkJenkinsJVM();
-            checkSafety(o.getClass());
+            type = o.getClass();
+            checkSafety(type);
             this.o = o;
-            ser = serialize(o);
+            try {
+                ser = serialize(o);
+            } catch (IOException x) {
+                throw new RuntimeException(x);
+            }
             mac = hash(ser);
         }
 
         @VisibleForTesting
         TrustedObject(T o, byte[] ser, byte[] mac) {
             this.o = o;
+            type = o.getClass();
             this.ser = ser;
             this.mac = mac;
         }
@@ -132,35 +156,20 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
          * Validates that the wrapper was in fact signed by the controller.
          */
         @SuppressWarnings("unchecked")
-        private Object readResolve() {
+        private Object readResolve() throws InvalidObjectException {
             if (JenkinsJVM.isJenkinsJVM() && !MessageDigest.isEqual(mac, hash(ser))) {
                 throw new SecurityException("Incorrect HMAC");
             }
-            o = (T) deserialize(ser);
+            try {
+                o = (T) deserialize(ser, type.getClassLoader());
+            } catch (IOException | ClassNotFoundException x) {
+                throw new InvalidObjectException(x.toString(), x);
+            }
             return this;
         }
 
         private static synchronized byte[] hash(byte[] ser) {
             return MAC.doFinal(ser);
-        }
-
-        @VisibleForTesting
-        static byte[] serialize(Serializable o) {
-            try (var baos = new ByteArrayOutputStream(); var oos = new ObjectOutputStream(baos)) {
-                oos.writeObject(o);
-                oos.flush();
-                return baos.toByteArray();
-            } catch (IOException x) {
-                throw new RuntimeException(x);
-            }
-        }
-
-        private static Object deserialize(byte[] ser) {
-            try (var bais = new ByteArrayInputStream(ser); var ois = new ObjectInputStream(bais)) {
-                return ois.readObject();
-            } catch (IOException | ClassNotFoundException x) {
-                throw new RuntimeException(x);
-            }
         }
     }
 
@@ -209,6 +218,8 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
 
         private static final long serialVersionUID = 1;
 
+        private final Class<?> type;
+
         private transient T o;
 
         private final byte[] data, iv;
@@ -218,7 +229,8 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
          */
         public EncryptedObject(T o) {
             JenkinsJVM.checkJenkinsJVM();
-            checkSafety(o.getClass());
+            type = o.getClass();
+            checkSafety(type);
             this.o = o;
             byte[] ser;
             try {
@@ -255,7 +267,7 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
                     var cipher = Cipher.getInstance(ALGORITHM);
                     cipher.init(Cipher.DECRYPT_MODE, KEY, new GCMParameterSpec(GCM_TAG_BITS, iv));
                     var ser = cipher.doFinal(data);
-                    o = (T) deserialize(ser);
+                    o = (T) deserialize(ser, type.getClassLoader());
                 } catch (GeneralSecurityException | IOException | ClassNotFoundException x) {
                     throw new InvalidObjectException(x.toString(), x);
                 }
@@ -272,20 +284,6 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
             System.arraycopy(IV_PREFIX, 0, iv, 0, 4);
             ByteBuffer.wrap(iv, 4, 8).putLong(count);
             return iv;
-        }
-
-        private static byte[] serialize(Serializable o) throws IOException {
-            try (var baos = new ByteArrayOutputStream(); var oos = new ObjectOutputStream(baos)) {
-                oos.writeObject(o);
-                oos.flush();
-                return baos.toByteArray();
-            }
-        }
-
-        private static Object deserialize(byte[] ser) throws IOException, ClassNotFoundException {
-            try (var bais = new ByteArrayInputStream(ser); var ois = new ObjectInputStream(bais)) {
-                return ois.readObject();
-            }
         }
     }
 
