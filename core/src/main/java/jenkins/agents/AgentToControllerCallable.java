@@ -49,6 +49,8 @@ import javax.crypto.spec.GCMParameterSpec;
 import jenkins.security.Roles;
 import jenkins.util.JenkinsJVM;
 import org.jenkinsci.remoting.RoleChecker;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Command sent from an agent to be run on the controller.
@@ -143,6 +145,16 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
             type = o.getClass();
             this.ser = ser;
             this.mac = mac;
+        }
+
+        /**
+         * Allows this utility to be used from unit tests as a convenience.
+         * Does not check that the code is running inside a Jenkins JVM.
+         * The result cannot be serialized, only used locally.
+         */
+        @Restricted(DoNotUse.class)
+        public static <T extends Serializable> TrustedObject<T> forUnitTests(T o) {
+            return new TrustedObject<>(o, null, null);
         }
 
         /**
