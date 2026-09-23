@@ -54,7 +54,7 @@ final class AgentToControllerCallableTest {
         C
     }
 
-    record Good(String a, boolean b, AgentToControllerCallable.TrustedObject<Simple> c, AgentToControllerCallable.EncryptedObject<Simple> d, Simple[] e, Variants f) implements Serializable {}
+    record Good(String a, int[] b, AgentToControllerCallable.TrustedObject<Simple> c, AgentToControllerCallable.EncryptedObject<Simple> d, Simple[] e, Variants f) implements Serializable {}
 
     record NotSer() {}
 
