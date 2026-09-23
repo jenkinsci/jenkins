@@ -14,7 +14,7 @@ import org.jenkinsci.remoting.RoleChecker;
  * Additionally, this callable can be called with any {@link hudson.FilePath}, it is your responsibility to validate it
  * in {@link #invoke(java.io.File, hudson.remoting.VirtualChannel)}.
  * @since 1.587 / 1.580.1
- * @deprecated Use {@link jenkins.security.SlaveToMasterCallable} instead (and only if you really have to), and think
+ * @deprecated Use {@link jenkins.agents.AgentToControllerCallable} instead (and only if you really have to), and think
  * carefully about the <a href="https://www.jenkins.io/doc/developer/security/remoting-callables/">security implications</a>.
  *
  * @see jenkins.security.SlaveToMasterCallable
