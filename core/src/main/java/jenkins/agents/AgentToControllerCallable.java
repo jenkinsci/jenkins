@@ -48,6 +48,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
+import jenkins.model.Jenkins;
 import jenkins.security.Roles;
 import jenkins.util.JenkinsJVM;
 import org.jenkinsci.remoting.RoleChecker;
@@ -102,7 +103,15 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
         }
     }
 
-    private static Object deserialize(byte[] ser, ClassLoader loader) throws IOException, ClassNotFoundException {
+    private static Object deserialize(byte[] ser, Class<?> type) throws IOException, ClassNotFoundException {
+        ClassLoader loader;
+        if (JenkinsJVM.isJenkinsJVM()) {
+            // All struct types are expected to be defined in plugins.
+            loader = Jenkins.get().getPluginManager().uberClassLoader;
+        } else {
+            // From the agent side, just trust the controller’s class loader mirroring.
+            loader = type.getClassLoader();
+        }
         try (var bais = new ByteArrayInputStream(ser); var ois = new ObjectInputStreamEx(bais, loader, ClassFilter.STANDARD)) {
             return ois.readObject();
         }
@@ -195,7 +204,7 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
                 throw new SecurityException("Incorrect HMAC");
             }
             try {
-                o = (T) deserialize(ser, type.getClassLoader());
+                o = (T) deserialize(ser, type);
             } catch (IOException | ClassNotFoundException x) {
                 throw new InvalidObjectException(x.toString(), x);
             }
@@ -302,7 +311,7 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
                     var cipher = Cipher.getInstance(ALGORITHM);
                     cipher.init(Cipher.DECRYPT_MODE, KEY, new GCMParameterSpec(GCM_TAG_BITS, iv));
                     var ser = cipher.doFinal(data);
-                    o = (T) deserialize(ser, type.getClassLoader());
+                    o = (T) deserialize(ser, type);
                 } catch (GeneralSecurityException | IOException | ClassNotFoundException x) {
                     throw new InvalidObjectException(x.toString(), x);
                 }
