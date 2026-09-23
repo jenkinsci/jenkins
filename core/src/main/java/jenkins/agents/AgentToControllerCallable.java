@@ -103,7 +103,7 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
     }
 
     private static Object deserialize(byte[] ser, ClassLoader loader) throws IOException, ClassNotFoundException {
-        try (var bais = new ByteArrayInputStream(ser); var ois = new ObjectInputStreamEx(bais, loader, ClassFilter.NONE)) {
+        try (var bais = new ByteArrayInputStream(ser); var ois = new ObjectInputStreamEx(bais, loader, ClassFilter.STANDARD)) {
             return ois.readObject();
         }
     }
