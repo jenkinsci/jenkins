@@ -67,6 +67,7 @@ exec docker-compose \
 		cd acceptance-test-harness
 		run.sh "remote-webdriver-${BROWSER}" /jenkins.war \
 			-Dmaven.test.failure.ignore \
-			-DforkCount=1
+			-DforkCount=1 \
+			-Dgroups=org.jenkinsci.test.acceptance.junit.SmokeTest
 		cp --verbose target/surefire-reports/TEST-*.xml /reports
 	INSIDE
