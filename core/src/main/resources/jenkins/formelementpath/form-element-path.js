@@ -202,23 +202,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  /* JavaScript sometimes re-arranges the DOM and doesn't call layout callback
-   * known cases: YUI buttons, CodeMirror.
-   * We run apply twice to work around this, once immediately so that most cases work and the tests don't need to wait,
-   * and once to catch the edge cases.
-   */
-  function hardenedApplyAll() {
-    applyAll();
+  Behaviour.addLoadEvent(applyAll);
 
-    setTimeout(function () {
-      applyAll();
-    }, 1000);
-  }
-
-  hardenedApplyAll();
-
-  layoutUpdateCallback.add(hardenedApplyAll);
+  layoutUpdateCallback.add(applyAll);
 
   // expose this globally so that Selenium can call it
-  window.recomputeFormElementPath = hardenedApplyAll;
+  window.recomputeFormElementPath = applyAll;
 });
