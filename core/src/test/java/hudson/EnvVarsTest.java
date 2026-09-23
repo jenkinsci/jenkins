@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -48,6 +49,17 @@ class EnvVarsTest {
         EnvVars ev = new EnvVars(Map.of("Path", "A:B:C"));
         assertTrue(ev.containsKey("PATH"));
         assertEquals("A:B:C", ev.get("PATH"));
+    }
+
+    @Test
+    @Issue("JENKINS-33239")
+    void resolveDoesNotExpandSelfReference() {
+        EnvVars env = new EnvVars();
+        env.put("PATH", "path1:$PATH");
+
+        EnvVars.resolve(env);
+
+        assertEquals("path1:$PATH", env.get("PATH"));
     }
 
     @Test

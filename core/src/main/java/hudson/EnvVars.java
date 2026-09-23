@@ -360,7 +360,8 @@ public class EnvVars extends TreeMap<String, String> {
      */
     public static void resolve(Map<String, String> env) {
         for (Map.Entry<String, String> entry : env.entrySet()) {
-            entry.setValue(Util.replaceMacro(entry.getValue(), env));
+            entry.setValue(Util.replaceMacro(
+                    entry.getValue(), name -> name.equalsIgnoreCase(entry.getKey()) ? null : env.get(name)));
         }
     }
 
