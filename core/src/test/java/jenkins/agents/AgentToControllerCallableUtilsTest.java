@@ -32,16 +32,16 @@ import java.io.Serializable;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-final class AgentToControllerCallableTest {
+final class AgentToControllerCallableUtilsTest {
 
     @Test void validateType() {
-        AgentToControllerCallable.validateType(int.class);
-        AgentToControllerCallable.validateType(Simple.class);
-        AgentToControllerCallable.validateType(Good.class);
-        assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallable.validateType(NotSer.class)).getMessage(), is(NotSer.class + " is not serializable"));
-        assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallable.validateType(BadArrayType.class)).getMessage(), is(NotSer.class + " is not serializable"));
-        assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallable.validateType(UsesList.class)).getMessage(), is("java.util.List<java.lang.String> is not a known immutable monomorphic type"));
-        assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallable.validateType(NonRecord.class)).getMessage(), is(NonRecord.class + " is not a supported class type"));
+        AgentToControllerCallableUtils.validateType(int.class);
+        AgentToControllerCallableUtils.validateType(Simple.class);
+        AgentToControllerCallableUtils.validateType(Good.class);
+        assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallableUtils.validateType(NotSer.class)).getMessage(), is(NotSer.class + " is not serializable"));
+        assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallableUtils.validateType(BadArrayType.class)).getMessage(), is(NotSer.class + " is not serializable"));
+        assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallableUtils.validateType(UsesList.class)).getMessage(), is("java.util.List<java.lang.String> is not a known immutable monomorphic type"));
+        assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallableUtils.validateType(NonRecord.class)).getMessage(), is(NonRecord.class + " is not a supported class type"));
     }
 
     record Simple(String a, boolean b) implements Serializable {}

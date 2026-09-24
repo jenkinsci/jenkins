@@ -64,7 +64,7 @@ class AgentToControllerCallableTest {
             TOAndBack andBack;
             if (malicious) {
                 var evilThing = new Thing(thing.o().x(), thing.o().num + 665);
-                var evilTO = new AgentToControllerCallable.TrustedObject<>(thing.o(), AgentToControllerCallable.serialize(evilThing), thing.mac);
+                var evilTO = new AgentToControllerCallable.TrustedObject<>(thing.o(), AgentToControllerCallableUtils.serialize(evilThing), thing.mac);
                 andBack = new TOAndBack(evilTO);
             } else {
                 andBack = new TOAndBack(thing);

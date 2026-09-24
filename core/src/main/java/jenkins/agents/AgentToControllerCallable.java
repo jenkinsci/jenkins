@@ -27,16 +27,10 @@ package jenkins.agents;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.remoting.Callable;
-import hudson.remoting.ClassFilter;
-import hudson.remoting.ObjectInputStreamEx;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InvalidObjectException;
-import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
@@ -47,7 +41,6 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
-import jenkins.model.Jenkins;
 import jenkins.security.Roles;
 import jenkins.util.JenkinsJVM;
 import org.jenkinsci.remoting.RoleChecker;
@@ -68,50 +61,6 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
     @Override
     default void checkRoles(RoleChecker checker) throws SecurityException {
         checker.check(this, Roles.MASTER);
-    }
-
-    @VisibleForTesting
-    static void validateType(Type t) {
-        if (t instanceof Class<?> c) {
-            if (c.isArray()) {
-                validateType(c.componentType());
-            } else if (c.isPrimitive() || c == String.class || c.isEnum()) {
-                // OK
-            } else if (!Serializable.class.isAssignableFrom(c)) {
-                throw new IllegalArgumentException(c + " is not serializable");
-            } else if (c.isRecord()) {
-                for (var rc : c.getRecordComponents()) {
-                    validateType(rc.getGenericType());
-                }
-            } else {
-                throw new IllegalArgumentException(c + " is not a supported class type");
-            }
-        } else {
-            throw new IllegalArgumentException(t + " is not a known immutable monomorphic type");
-        }
-    }
-
-    @VisibleForTesting
-    static byte[] serialize(Object o) throws IOException {
-        try (var baos = new ByteArrayOutputStream(); var oos = new ObjectOutputStream(baos)) {
-            oos.writeObject(o);
-            oos.flush();
-            return baos.toByteArray();
-        }
-    }
-
-    private static Object deserialize(byte[] ser, Class<?> type) throws IOException, ClassNotFoundException {
-        ClassLoader loader;
-        if (JenkinsJVM.isJenkinsJVM()) {
-            // All struct types are expected to be defined in plugins.
-            loader = Jenkins.get().getPluginManager().uberClassLoader;
-        } else {
-            // From the agent side, just trust the controller’s class loader mirroring.
-            loader = type.getClassLoader();
-        }
-        try (var bais = new ByteArrayInputStream(ser); var ois = new ObjectInputStreamEx(bais, loader, ClassFilter.STANDARD)) {
-            return ois.readObject();
-        }
     }
 
     /**
@@ -157,10 +106,10 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
         public TrustedObject(T o) {
             JenkinsJVM.checkJenkinsJVM();
             type = o.getClass();
-            validateType(type);
+            AgentToControllerCallableUtils.validateType(type);
             this.o = o;
             try {
-                ser = serialize(o);
+                ser = AgentToControllerCallableUtils.serialize(o);
             } catch (IOException x) {
                 throw new RuntimeException(x);
             }
@@ -201,7 +150,7 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
                 throw new SecurityException("Incorrect HMAC");
             }
             try {
-                o = (T) deserialize(ser, type);
+                o = (T) AgentToControllerCallableUtils.deserialize(ser, type);
             } catch (IOException | ClassNotFoundException x) {
                 throw new InvalidObjectException(x.toString(), x);
             }
@@ -268,11 +217,11 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
          */
         public EncryptedObject(T o) {
             JenkinsJVM.checkJenkinsJVM();
-            validateType(o.getClass());
+            AgentToControllerCallableUtils.validateType(o.getClass());
             this.o = o;
             byte[] ser;
             try {
-                ser = serialize(o);
+                ser = AgentToControllerCallableUtils.serialize(o);
             } catch (IOException x) {
                 throw new IllegalArgumentException(x);
             }
@@ -305,7 +254,7 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
                     var cipher = Cipher.getInstance(ALGORITHM);
                     cipher.init(Cipher.DECRYPT_MODE, KEY, new GCMParameterSpec(GCM_TAG_BITS, iv));
                     var ser = cipher.doFinal(data);
-                    o = (T) deserialize(ser, null);
+                    o = (T) AgentToControllerCallableUtils.deserialize(ser, null);
                 } catch (GeneralSecurityException | IOException | ClassNotFoundException x) {
                     throw new InvalidObjectException(x.toString(), x);
                 }
