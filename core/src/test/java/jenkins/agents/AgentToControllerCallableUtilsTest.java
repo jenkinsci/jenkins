@@ -38,6 +38,7 @@ final class AgentToControllerCallableUtilsTest {
         AgentToControllerCallableUtils.validateType(int.class);
         AgentToControllerCallableUtils.validateType(Simple.class);
         AgentToControllerCallableUtils.validateType(Good.class);
+        AgentToControllerCallableUtils.validateType(Recursive.class);
         assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallableUtils.validateType(NotSer.class)).getMessage(), is(NotSer.class + " is not serializable"));
         assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallableUtils.validateType(BadArrayType.class)).getMessage(), is(NotSer.class + " is not serializable"));
         assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallableUtils.validateType(UsesList.class)).getMessage(), is("java.util.List<java.lang.String> is not a known immutable monomorphic type"));
@@ -61,5 +62,7 @@ final class AgentToControllerCallableUtilsTest {
     record UsesList(List<String> a) implements Serializable {}
 
     static final class NonRecord implements Serializable {}
+
+    record Recursive(String x, Recursive[] children) implements Serializable {}
 
 }

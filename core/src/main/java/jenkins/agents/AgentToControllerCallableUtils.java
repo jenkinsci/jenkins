@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Type;
+import java.util.HashSet;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import jenkins.util.JenkinsJVM;
 
@@ -40,16 +42,23 @@ import jenkins.util.JenkinsJVM;
 class AgentToControllerCallableUtils {
 
     static void validateType(Type t) {
+        validateType(t, new HashSet<>());
+    }
+
+    private static void validateType(Type t, Set<Type> validated) {
+        if (!validated.add(t)) {
+            return; // already checked
+        }
         if (t instanceof Class<?> c) {
             if (c.isArray()) {
-                validateType(c.componentType());
+                validateType(c.componentType(), validated);
             } else if (c.isPrimitive() || c == String.class || c.isEnum()) {
                 // OK
             } else if (!Serializable.class.isAssignableFrom(c)) {
                 throw new IllegalArgumentException(c + " is not serializable");
             } else if (c.isRecord()) {
                 for (var rc : c.getRecordComponents()) {
-                    validateType(rc.getGenericType());
+                    validateType(rc.getGenericType(), validated);
                 }
             } else {
                 throw new IllegalArgumentException(c + " is not a supported class type");
