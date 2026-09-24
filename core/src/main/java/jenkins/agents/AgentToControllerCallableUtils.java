@@ -25,6 +25,7 @@
 package jenkins.agents;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.remoting.ClassFilter;
 import hudson.remoting.ObjectInputStreamEx;
 import java.io.ByteArrayInputStream;
@@ -76,6 +77,7 @@ class AgentToControllerCallableUtils {
         }
     }
 
+    @SuppressFBWarnings(value = "OBJECT_DESERIALIZATION", justification = "verified input")
     static Object deserialize(byte[] ser, Class<?> type) throws IOException, ClassNotFoundException {
         ClassLoader loader;
         if (JenkinsJVM.isJenkinsJVM()) {

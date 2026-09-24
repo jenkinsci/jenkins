@@ -55,7 +55,6 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * including {@link Record} or {@link TrustedObject} or {@link EncryptedObject}.
  * @since TODO
  */
-@SuppressFBWarnings(value = "OBJECT_DESERIALIZATION", justification = "verified input")
 public interface AgentToControllerCallable<V, T extends Throwable> extends Callable<V, T> {
 
     @Override
