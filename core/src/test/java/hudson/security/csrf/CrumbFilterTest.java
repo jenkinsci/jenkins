@@ -5,27 +5,23 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class CrumbFilterTest {
 
     @Test
-    void legacyDefaultCrumbFieldIsUsedWhenPrimaryFieldIsMissing() {
+    void legacyDefaultCrumbFieldIsUsedWhenPrimaryFieldIsMissing() throws Exception {
         CrumbFilter filter = new CrumbFilter();
-        CrumbIssuer issuer = mock(CrumbIssuer.class);
-        CrumbIssuerDescriptor<CrumbIssuer> descriptor = mock(CrumbIssuerDescriptor.class);
-        when(issuer.getDescriptor()).thenReturn(descriptor);
-        when(descriptor.getCrumbRequestField()).thenReturn("Jenkins-Crumb");
-        when(descriptor.getCrumbSalt()).thenReturn("salt");
-
         HttpServletRequest request = mock(HttpServletRequest.class);
-        when(request.getMethod()).thenReturn("POST");
         when(request.getHeader("Jenkins-Crumb")).thenReturn(null);
-        when(request.getParameterNames()).thenReturn(Collections.emptyEnumeration());
         when(request.getHeader(".crumb")).thenReturn("legacy-crumb");
+        when(request.getParameterNames()).thenReturn(Collections.emptyEnumeration());
 
-        // assert the fallback path is actually used
-        assertEquals("legacy-crumb", filter.extractCrumbFromRequest(request, ".crumb"));
+        Method method = CrumbFilter.class.getDeclaredMethod("extractCrumbFromRequest", HttpServletRequest.class, String.class);
+        method.setAccessible(true);
+
+        assertEquals("legacy-crumb", method.invoke(filter, request, ".crumb"));
     }
 }
