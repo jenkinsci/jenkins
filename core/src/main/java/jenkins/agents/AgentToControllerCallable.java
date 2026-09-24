@@ -214,7 +214,7 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
     }
 
     /**
-     * A encrypted object which may be passed to an agent and back and then used safely from the controller.
+     * An encrypted object which may be passed to an agent and back and then used safely from the controller.
      * Any attempt by code running in the agent to construct malicious data will be rejected;
      * the data must have been constructed originally in the controller in the same session.
      * Unlike {@link TrustedObject}, the agent cannot inspect the contents
