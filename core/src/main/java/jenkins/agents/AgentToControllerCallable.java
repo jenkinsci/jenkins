@@ -262,8 +262,6 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
 
         private static final long serialVersionUID = 1;
 
-        private final Class<?> type;
-
         private transient T o;
 
         private final byte[] data, iv;
@@ -273,8 +271,7 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
          */
         public EncryptedObject(T o) {
             JenkinsJVM.checkJenkinsJVM();
-            type = o.getClass();
-            validateType(type);
+            validateType(o.getClass());
             this.o = o;
             byte[] ser;
             try {
@@ -311,7 +308,7 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
                     var cipher = Cipher.getInstance(ALGORITHM);
                     cipher.init(Cipher.DECRYPT_MODE, KEY, new GCMParameterSpec(GCM_TAG_BITS, iv));
                     var ser = cipher.doFinal(data);
-                    o = (T) deserialize(ser, type);
+                    o = (T) deserialize(ser, null);
                 } catch (GeneralSecurityException | IOException | ClassNotFoundException x) {
                     throw new InvalidObjectException(x.toString(), x);
                 }
