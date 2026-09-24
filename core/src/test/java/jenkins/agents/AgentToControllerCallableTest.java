@@ -42,8 +42,6 @@ final class AgentToControllerCallableTest {
         assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallable.validateType(BadArrayType.class)).getMessage(), is(NotSer.class + " is not serializable"));
         assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallable.validateType(UsesList.class)).getMessage(), is("java.util.List<java.lang.String> is not a known immutable monomorphic type"));
         assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallable.validateType(NonRecord.class)).getMessage(), is(NonRecord.class + " is not a supported class type"));
-        assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallable.validateType(BadTOType.class)).getMessage(), is(NonRecord.class + " is not a supported class type"));
-        assertThat(assertThrows(IllegalArgumentException.class, () -> AgentToControllerCallable.validateType(BadEOType.class)).getMessage(), is(NonRecord.class + " is not a supported class type"));
     }
 
     record Simple(String a, boolean b) implements Serializable {}
@@ -54,7 +52,7 @@ final class AgentToControllerCallableTest {
         C
     }
 
-    record Good(String a, int[] b, AgentToControllerCallable.TrustedObject<Simple> c, AgentToControllerCallable.EncryptedObject<Simple> d, Simple[] e, Variants f) implements Serializable {}
+    record Good(String a, int[] b, Simple[] c, Variants d) implements Serializable {}
 
     record NotSer() {}
 
@@ -63,9 +61,5 @@ final class AgentToControllerCallableTest {
     record UsesList(List<String> a) implements Serializable {}
 
     static final class NonRecord implements Serializable {}
-
-    record BadTOType(AgentToControllerCallable.TrustedObject<NonRecord> a) implements Serializable {}
-
-    record BadEOType(AgentToControllerCallable.EncryptedObject<NonRecord> a) implements Serializable {}
 
 }

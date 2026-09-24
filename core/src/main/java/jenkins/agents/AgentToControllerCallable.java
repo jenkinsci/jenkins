@@ -36,7 +36,6 @@ import java.io.InvalidObjectException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
@@ -87,8 +86,6 @@ public interface AgentToControllerCallable<V, T extends Throwable> extends Calla
             } else {
                 throw new IllegalArgumentException(c + " is not a supported class type");
             }
-        } else if (t instanceof ParameterizedType pt && (pt.getRawType() == TrustedObject.class || pt.getRawType() == EncryptedObject.class)) {
-            validateType(pt.getActualTypeArguments()[0]);
         } else {
             throw new IllegalArgumentException(t + " is not a known immutable monomorphic type");
         }
