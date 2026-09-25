@@ -100,6 +100,7 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTextInput;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -214,6 +215,9 @@ class PasswordTest {
     @For({ExtendedReadRedaction.class, ExtendedReadSecretRedaction.class})
     @Issue("SECURITY-3513")
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void testCopyNodeSecrets() throws Exception {
         Computer.EXTENDED_READ.setEnabled(true);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -602,6 +606,9 @@ class PasswordTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void testBackgroundSecretConversion() throws Exception {
         final JenkinsRule.WebClient wc = j.createWebClient();
         j.configRoundtrip();
@@ -1043,6 +1050,9 @@ class PasswordTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void computerExtendedReadNoSecretsRevealed() throws Exception {
         Computer computer = j.jenkins.getComputers()[0];
         computer.addAction(new SecuredAction());

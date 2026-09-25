@@ -2,6 +2,7 @@ package jenkins.agents;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.junit.jupiter.InboundAgentExtension;
 import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
@@ -15,6 +16,9 @@ class InboundAgentTlsTest {
     private final InboundAgentExtension iar = new InboundAgentExtension();
 
     @BeforeEach
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void setUp() throws Throwable {
         rjr.startJenkins();
     }

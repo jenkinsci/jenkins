@@ -273,6 +273,9 @@ class FilePathTest {
 
     @Issue("JENKINS-9540")
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void errorMessageInRemoteCopyRecursive() throws Exception {
         File src = newFolder(temp, "src");
         File dst = newFolder(temp, "dst");

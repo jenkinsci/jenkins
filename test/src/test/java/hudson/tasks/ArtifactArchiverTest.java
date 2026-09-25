@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -489,7 +490,7 @@ class ArtifactArchiverTest {
     }
 
     @Test
-    @Issue("JENKINS-21905")
+    @Issue({"JENKINS-21905", "https://github.com/jenkinsci/jenkins/issues/27188"})
     @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void archiveNotReadable() throws Exception {
         final String FILENAME = "myfile";
@@ -509,7 +510,8 @@ class ArtifactArchiverTest {
 
         FreeStyleBuild build = j.buildAndAssertStatus(Result.FAILURE, p);
         String expectedPath = build.getWorkspace().child(FILENAME).getRemote();
-        j.assertLogContains("ERROR: Step ‘Archive the artifacts’ failed: java.nio.file.AccessDeniedException: " + expectedPath, build);
+        String expectedMessage = Messages.ArtifactArchiver_AccessDenied(expectedPath, build.getWorkspace().getRemote());
+        j.assertLogContains("ERROR: Step ‘Archive the artifacts’ failed: " + expectedMessage, build);
         assertThat("No stacktrace shown", build.getLog(31), Matchers.iterableWithSize(lessThan(30)));
     }
 
@@ -564,7 +566,7 @@ class ArtifactArchiverTest {
     private static class RemoveReadPermission extends MasterToSlaveFileCallable<Object> {
         @Override
         public Object invoke(File f, VirtualChannel channel) throws IOException {
-            assertTrue(f.createNewFile());
+            Files.writeString(f.toPath(), "contents");
             assertTrue(f.setReadable(false));
             return null;
         }

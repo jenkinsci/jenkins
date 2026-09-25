@@ -1,0 +1,84 @@
+<!--
+The MIT License
+
+Copyright (c) 2026, Jan Faracik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
+  <div class="dashboard">
+    <j:if test="${columnExtensions==null}">
+        <j:invokeStatic var="columnExtensions" className="hudson.model.ListView" method="getDefaultColumns"/>
+    </j:if>
+
+    <j:if test="${!empty(jobs) or !empty(attrs.views)}">
+      <!-- the caller can inject a tab bar here -->
+      <div id="projectstatus-tabBar">
+        <d:invokeBody/>
+      </div>
+
+      <div class="app-temporary-list">
+        <j:set var="jenkins_mobile_show" value="${true}"/>
+        <j:forEach var="col" items="${columnExtensions}">
+          <j:if test="${col.class.simpleName.equals('BuildButtonColumn')}">
+            <j:set var="buildButtonColumn" value="${col}" />
+          </j:if>
+        </j:forEach>
+        <j:forEach var="job" items="${jobs}">
+          <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
+          <j:set var="jobBaseUrl" value="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>
+          <div class="app-temporary-list__item">
+            <div class="app-build-item">
+              <div class="app-build-item__icon">
+                <j:choose>
+                  <j:when test="${job.iconColor.iconName != null}">
+                    <l:icon src="symbol-status-${job.iconColor.iconName}" alt="${job.iconColor.description}" />
+                  </j:when>
+                  <j:otherwise>
+                    <!-- This is for special conditions, such as folders -->
+                    <l:icon src="${job.iconColor.iconClassName}" />
+                  </j:otherwise>
+                </j:choose>
+              </div>
+
+              <div class="app-temporary-list__item__details" href="${jobBaseUrl}${job.shortUrl}">
+                <div class="app-temporary-list__item__details__text">
+                  <a class="app-temporary-list__item__label" href="${jobBaseUrl}${job.shortUrl}">${job.displayName}</a>
+
+                  <j:set var="lastBuild" value="${job.lastBuild}" />
+                  <j:if test="${lastBuild != null}">
+                    <div class="app-temporary-list__item__description">
+                      ${%Description(lastBuild.timestampString, lastBuild.durationString)}
+                    </div>
+                  </j:if>
+                </div>
+              </div>
+
+              <div class="app-temporary-list__item__actions">
+                <l:actions it="${job}" url="${rootURL}/${job.url}" compact="true" />
+              </div>
+            </div>
+          </div>
+        </j:forEach>
+      </div>
+    </j:if>
+  </div>
+</j:jelly>

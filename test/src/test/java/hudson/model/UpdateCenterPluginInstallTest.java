@@ -52,7 +52,7 @@ class UpdateCenterPluginInstallTest {
         jenkinsRule = rule;
         jenkinsRule.jenkins.getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(false);
         InetSocketAddress address = new InetSocketAddress("updates.jenkins-ci.org", 80);
-        assertFalse(address.isUnresolved(), "Unable to resolve updates.jenkins-ci.org. Skip test.");
+        assertFalse(address.isUnresolved(), "Unable to resolve updates.jenkins-ci.org");
     }
 
     @Test

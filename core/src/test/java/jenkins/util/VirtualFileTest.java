@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
@@ -68,6 +69,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.zip.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.Description;
@@ -294,6 +296,40 @@ class VirtualFileTest {
         assertTrue(unzipPath.child("b").child("ba").child("ba.txt").exists());
         assertFalse(unzipPath.child("b").child("_a").exists());
         assertFalse(unzipPath.child("b").child("_aatxt").exists());
+    }
+
+    @Issue("https://github.com/jenkinsci/jenkins/issues/27188")
+    @Test
+    void zipDoesNotCreateEntryWhenFileCannotBeOpened() throws Exception {
+        File source = newFolder(tmp, "source");
+        Files.createFile(new File(source, "unreadable.txt").toPath());
+        VirtualFile virtualRoot = new VirtualFileMinimalImplementation(source) {
+            @Override
+            protected VirtualFile child(File child, File root) {
+                return new VirtualFileMinimalImplementation(child, root) {
+                    @Override
+                    public boolean isFile() {
+                        return true;
+                    }
+
+                    @Override
+                    public InputStream open() throws IOException {
+                        throw new AccessDeniedException(child.toString());
+                    }
+                };
+            }
+        };
+
+        File zipFile = new File(tmp, "output.zip");
+        AccessDeniedException failure;
+        try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
+            failure = assertThrows(AccessDeniedException.class, () -> virtualRoot.zip(outputStream, "**", null, true, ""));
+        }
+
+        assertEquals(0, failure.getSuppressed().length);
+        try (ZipFile zipFileVerify = new ZipFile(zipFile)) {
+            assertEquals(0, zipFileVerify.size());
+        }
     }
 
     @Test

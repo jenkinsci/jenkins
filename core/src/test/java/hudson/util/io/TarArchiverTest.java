@@ -25,6 +25,9 @@
 package hudson.util.io;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
@@ -36,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -121,6 +125,22 @@ class TarArchiverTest {
         Util.createSymlink(dir, "nonexistent", "link", TaskListener.NULL);
         try (OutputStream out = OutputStream.nullOutputStream()) {
             new FilePath(dir).tar(out, "**");
+        }
+    }
+
+    @Issue("https://github.com/jenkinsci/jenkins/issues/27188")
+    @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Requires features not available on Windows")
+    void unreadableFileDoesNotLeaveIncompleteEntry() throws Exception {
+        File unreadable = new File(tmp, "unreadable.txt");
+        Files.writeString(unreadable.toPath(), "contents", StandardCharsets.UTF_8);
+        assertTrue(unreadable.setReadable(false));
+        assertFalse(unreadable.canRead());
+
+        try (TarArchiver archiver = new TarArchiver(OutputStream.nullOutputStream(), StandardCharsets.UTF_8)) {
+            assertThrows(AccessDeniedException.class, () -> archiver.visit(unreadable, unreadable.getName()));
+        } finally {
+            unreadable.setReadable(true);
         }
     }
 

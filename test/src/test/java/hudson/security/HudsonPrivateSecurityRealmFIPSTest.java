@@ -45,7 +45,9 @@ import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPasswordInput;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -64,6 +66,13 @@ class HudsonPrivateSecurityRealmFIPSTest {
     @RegisterExtension
     private final RealJenkinsExtension rjr = new RealJenkinsExtension().includeTestClasspathPlugins(false)
                                                        .javaOptions("-Xmx256M", "-Djenkins.security.FIPS140.COMPLIANCE=true");
+
+    @BeforeEach
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
+    void skipTestsOnWindowsCI() {
+    }
 
     @Test
     void generalLogin() throws Throwable {

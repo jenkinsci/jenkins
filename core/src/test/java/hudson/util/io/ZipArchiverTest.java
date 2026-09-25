@@ -1,6 +1,9 @@
 package hudson.util.io;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.FilePath;
 import java.io.File;
@@ -9,6 +12,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -18,6 +22,8 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 
@@ -78,6 +84,31 @@ class ZipArchiverTest {
             ZipEntry zipEntry = zipFileVerify.entries().nextElement();
             assertEquals("huge64bitFileTest.txt", zipEntry.getName());
             assertEquals(length, zipEntry.getSize());
+        }
+    }
+
+    @Issue("https://github.com/jenkinsci/jenkins/issues/27188")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Requires features not available on Windows")
+    @Test
+    void unreadableFileDoesNotCreateEntry() throws Exception {
+        File unreadable = new File(tmp, "unreadable.txt");
+        Files.writeString(unreadable.toPath(), "contents", StandardCharsets.UTF_8);
+        assertTrue(unreadable.setReadable(false));
+        assertFalse(unreadable.canRead());
+
+        Path zipFile = Files.createTempFile(tmp.toPath(), "test", ".zip");
+        ZipArchiver archiver = new ZipArchiver(Files.newOutputStream(zipFile));
+        AccessDeniedException failure;
+        try {
+            failure = assertThrows(AccessDeniedException.class, () -> archiver.visit(unreadable, unreadable.getName()));
+        } finally {
+            unreadable.setReadable(true);
+            archiver.close();
+        }
+
+        assertEquals(0, failure.getSuppressed().length);
+        try (ZipFile zipFileVerify = new ZipFile(zipFile.toFile())) {
+            assertEquals(0, zipFileVerify.size());
         }
     }
 

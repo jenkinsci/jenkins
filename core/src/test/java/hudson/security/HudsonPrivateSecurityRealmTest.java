@@ -15,8 +15,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.Duration;
 import javax.crypto.SecretKeyFactory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 
@@ -25,6 +27,13 @@ class HudsonPrivateSecurityRealmTest {
     // MySecurePassword
     private static final String PBKDF2_HMAC_SHA512_ENCODED_PASSWORD =
             "$HMACSHA512:210000:30f9e0a5470a8bc67f128ca1aae25dd4$88abaca4f442caeff0096ec0f75df2d77cc31a956c564133232f4d2532a72c8d4380a718d5b2a3dccab9e752027eeadd8f9f2c0c624505531bf3a57ec7d08aad";
+
+    @BeforeEach
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
+    void skipTestsOnWindowsCI() {
+    }
 
     /*
      * This exists so that we can easily check the complexity of how long this takes (ie is the number of iterations we

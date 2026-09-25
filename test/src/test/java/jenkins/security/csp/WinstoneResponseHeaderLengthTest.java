@@ -9,7 +9,9 @@ import static org.hamcrest.Matchers.is;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.WebClient;
 import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 
@@ -17,6 +19,13 @@ public class WinstoneResponseHeaderLengthTest {
 
     @RegisterExtension
     public RealJenkinsExtension extension = new RealJenkinsExtension().addSyntheticPlugin(new RealJenkinsExtension.SyntheticPlugin(jenkins.security.csp.winstoneResponseHeaderLengthTest.ContributorImpl.class));
+
+    @BeforeEach
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
+    void skipTestsOnWindowsCI() {
+    }
 
     @Test
     void testLength() throws Exception {
