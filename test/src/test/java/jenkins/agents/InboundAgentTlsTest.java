@@ -24,6 +24,9 @@ class InboundAgentTlsTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void webSocketNoCertificateCheck() throws Throwable {
         var options = InboundAgentExtension.Options
             .newBuilder()
@@ -33,6 +36,9 @@ class InboundAgentTlsTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void webSocketWithCertByValue() throws Throwable {
         var options = InboundAgentExtension.Options
             .newBuilder()
@@ -42,6 +48,9 @@ class InboundAgentTlsTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void tcpWithNoCertificateCheck() throws Throwable {
         var options = InboundAgentExtension.Options
             .newBuilder()
@@ -50,6 +59,9 @@ class InboundAgentTlsTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void tcpWithCertByValue() throws Throwable {
         var options = InboundAgentExtension.Options
             .newBuilder()

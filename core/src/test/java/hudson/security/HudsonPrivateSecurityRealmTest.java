@@ -15,7 +15,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.Duration;
 import javax.crypto.SecretKeyFactory;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
@@ -28,12 +27,6 @@ class HudsonPrivateSecurityRealmTest {
     private static final String PBKDF2_HMAC_SHA512_ENCODED_PASSWORD =
             "$HMACSHA512:210000:30f9e0a5470a8bc67f128ca1aae25dd4$88abaca4f442caeff0096ec0f75df2d77cc31a956c564133232f4d2532a72c8d4380a718d5b2a3dccab9e752027eeadd8f9f2c0c624505531bf3a57ec7d08aad";
 
-    @BeforeEach
-    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
-                                   matches = "^[C-Z]:.*", // Windows CI workspace path
-                                   disabledReason = "Expensive to run and not Windows specific")
-    void skipTestsOnWindowsCI() {
-    }
 
     /*
      * This exists so that we can easily check the complexity of how long this takes (ie is the number of iterations we
@@ -90,6 +83,9 @@ class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void testPBKDF2RegExp() {
         PBKDF2PasswordEncoder encoder = new PBKDF2PasswordEncoder();
         String encoded = encoder.encode("thisIsMyPassword");
@@ -125,6 +121,9 @@ class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void testPBKDF2PasswordMatching() {
         PBKDF2PasswordEncoder encoder = new PBKDF2PasswordEncoder();
         String encoded = encoder.encode("thisIsMyPassword");
@@ -133,6 +132,9 @@ class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void passwordPBKDF2WithMissingAlgorithm() throws Exception {
         HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
         try (var ignored = mockStatic(SecretKeyFactory.class)) {
@@ -145,6 +147,9 @@ class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void passwordPBKDF2HashWithInvalidKeySpec() throws Exception {
         HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
         try (var ignored = mockStatic(SecretKeyFactory.class)) {
@@ -159,6 +164,9 @@ class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void testJBCryptPasswordMatching() {
         JBCryptEncoder encoder = new JBCryptEncoder();
         String encoded = encoder.encode("thisIsMyPassword");
@@ -168,6 +176,9 @@ class HudsonPrivateSecurityRealmTest {
 
     @Issue("JENKINS-75533")
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void ensureExpectedMessageAscii() {
         final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode2(
                 "1234567890123456789012345678901234567890123456789012345678901234567890123"));
@@ -176,6 +187,9 @@ class HudsonPrivateSecurityRealmTest {
 
     @Issue("JENKINS-75533")
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void ensureExpectedMessageEmoji() {
         final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode2(
                 "\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20" +
@@ -184,6 +198,9 @@ class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void ensureExpectedMessageFromEncode() {
         final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode(
                 "1234567890123456789012345678901234567890123456789012345678901234567890123"));
