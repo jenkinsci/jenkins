@@ -157,7 +157,9 @@ Behaviour.specify(
         /* append text and do autoscroll if applicable */
         parse.then(({ text, end, consoleAnnotator, completed }) => {
           e.fetchedBytes = end;
-          e.consoleAnnotator = consoleAnnotator;
+          if (consoleAnnotator !== undefined && consoleAnnotator !== null) {
+            e.consoleAnnotator = consoleAnnotator;
+          }
           if (text !== "") {
             var p = document.createElement("DIV");
             e.appendChild(p); // Needs to be first for IE

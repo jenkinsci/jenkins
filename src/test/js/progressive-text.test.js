@@ -249,4 +249,35 @@ describe("progressive-text", () => {
     expect(pre.children[0].innerHTML).toContain("Error loading log");
     expect(spinner.style.display).toBe("none");
   });
+
+  it("preserves consoleAnnotator state when a poll returns no annotator", async () => {
+    const { pre, holder } = createFixture({ maxChunks: "2" });
+    let callIdx = 0;
+
+    globalThis.fetch = vi.fn(() => {
+      callIdx++;
+      if (callIdx === 1) {
+        return mockTextResponse({
+          text: "First line",
+          end: "100",
+          completed: false,
+          annotator: "token-abc",
+        });
+      }
+      return mockTextResponse({
+        text: "",
+        end: "100",
+        completed: true,
+        annotator: null,
+      });
+    });
+
+    behaviorCallback(holder);
+
+    await vi.advanceTimersByTimeAsync(0);
+    expect(pre.consoleAnnotator).toBe("token-abc");
+
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(pre.consoleAnnotator).toBe("token-abc");
+  });
 });
