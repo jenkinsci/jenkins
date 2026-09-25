@@ -682,6 +682,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private final transient ConcurrentHashMap<String, Label> labels = new ConcurrentHashMap<>();
 
     /**
+     * Label expressions keyed by their canonical name, so that whitespace variants resolve to the same instance.
+     * Kept apart from {@link #labels} because a quoted {@link LabelAtom} may have the same name as an expression.
+     */
+    private final transient ConcurrentHashMap<String, Label> labelExpressions = new ConcurrentHashMap<>();
+
+    /**
      * Load statistics of the entire system.
      *
      * This includes every executor and every job in the system.
@@ -2031,16 +2037,22 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return l;
 
             // non-existent
+            Label parsed;
             try {
-                // For the record, this method creates temporary labels but there is a periodic task
-                // calling "trimLabels" to remove unused labels running every 5 minutes.
-                Label parsed = Label.parseExpression(expr);
-                expr = parsed.getName();
-                labels.putIfAbsent(expr, parsed);
+                parsed = Label.parseExpression(expr);
             } catch (IllegalArgumentException e) {
                 // laxly accept it as a single label atom for backward compatibility
                 return getLabelAtom(expr);
             }
+            if (!parsed.isAtom()) {
+                Label existing = labelExpressions.putIfAbsent(parsed.getName(), parsed);
+                if (existing != null) {
+                    parsed = existing;
+                }
+            }
+            // For the record, this method creates temporary labels but there is a periodic task
+            // calling "trimLabels" to remove unused labels running every 5 minutes.
+            labels.putIfAbsent(expr, parsed);
         }
     }
 
@@ -2294,6 +2306,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     resetLabel(l);
                 } else {
                     itr.remove();
+                    labelExpressions.remove(l.getName(), l);
                 }
             }
         }

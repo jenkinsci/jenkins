@@ -27,6 +27,7 @@ package hudson.model.labels;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -383,6 +384,29 @@ class LabelExpressionTest {
         assertSame(l1, l2);
         assertSame(l1, l3);
         assertSame(l1.loadStatistics, l2.loadStatistics);
+    }
+
+    @Test
+    @Issue("27403")
+    void spacedExpressionDoesNotResolveToAtomWithCanonicalName() {
+        LabelAtom atom = j.jenkins.getLabelAtom("a&&b");
+
+        Label expression = j.jenkins.getLabel("a && b");
+
+        assertThat(expression, instanceOf(LabelExpression.And.class));
+        assertNotSame(atom, expression);
+        assertSame(atom, j.jenkins.getLabelAtom("a&&b"));
+    }
+
+    @Test
+    @Issue("27403")
+    void atomWithCanonicalNameCanBeCreatedAfterSpacedExpression() {
+        Label expression = j.jenkins.getLabel("c && d");
+
+        LabelAtom atom = j.jenkins.getLabelAtom("c&&d");
+
+        assertNotSame(expression, atom);
+        assertSame(expression, j.jenkins.getLabel("c  &&  d"));
     }
 
     private void parseShouldFail(String expr, String message) {
