@@ -48,7 +48,7 @@ THE SOFTWARE.
       </button>
 
       <div class="jenkins-table__checkbox-dropdown">
-        <span>${%Select}</span>
+        <span class="jenkins-dropdown__heading">${%Select}</span>
         <button type="button" data-select="all" class="jenkins-button jenkins-button--tertiary">
           <div class="jenkins-table__checkbox-dropdown__icon">
             <l:icon src="symbol-check" />
