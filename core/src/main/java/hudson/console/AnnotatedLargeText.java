@@ -94,6 +94,11 @@ public class AnnotatedLargeText<T> extends LargeText {
         this.context = context;
     }
 
+    public AnnotatedLargeText(LargeText.Source source, Charset charset, boolean completed, T context) {
+        super(source, charset, completed);
+        this.context = context;
+    }
+
     /**
      * @since 2.475
      */
@@ -141,7 +146,10 @@ public class AnnotatedLargeText<T> extends LargeText {
      * and use this request attribute to differentiate.
      */
     private boolean isHtml() {
-        StaplerRequest2 req = Stapler.getCurrentRequest2();
+        return isHtml(Stapler.getCurrentRequest2());
+    }
+
+    private boolean isHtml(StaplerRequest2 req) {
         return req != null && req.getAttribute("html") != null;
     }
 
@@ -207,6 +215,11 @@ public class AnnotatedLargeText<T> extends LargeText {
             return super.writeLogTo(start, w);
     }
 
+    @Override
+    protected boolean delegateToWriteLogTo(StaplerRequest2 req, StaplerResponse2 rsp) {
+        return isHtml(req);
+    }
+
     /**
      * Strips annotations using a {@link PlainTextConsoleOutputStream}.
      * {@inheritDoc}
@@ -214,7 +227,15 @@ public class AnnotatedLargeText<T> extends LargeText {
     @CheckReturnValue
     @Override
     public long writeLogTo(long start, OutputStream out) throws IOException {
-        return super.writeLogTo(start, new PlainTextConsoleOutputStream(out));
+        PlainTextConsoleOutputStream ptos = new PlainTextConsoleOutputStream(out);
+        long r = super.writeLogTo(start, ptos);
+        if (isComplete()) {
+            // The client is not expected to perform any further reads after this one. Make sure that we have flushed the line buffer.
+            ptos.forceEol();
+        }
+        // Back-track any pending bytes in the line buffer.
+        r -= ptos.lineBufferSize();
+        return r;
     }
 
     /**
@@ -226,11 +247,27 @@ public class AnnotatedLargeText<T> extends LargeText {
         return super.writeLogTo(start, out);
     }
 
+    /**
+     * Extension point for intercepting writes from {@link #writeHtmlTo(long, Writer)} and directly inserting content into the output.
+     * @since 2.569
+     */
+    protected long writeHtmlToFilter(long start, Writer w, ConsoleAnnotationOutputStream<T> caos) throws IOException {
+        return super.writeLogTo(start, caos);
+    }
+
     @CheckReturnValue
     public long writeHtmlTo(long start, Writer w) throws IOException {
+        StaplerRequest2 req = Stapler.getCurrentRequest2();
+        StaplerResponse2 rsp = Stapler.getCurrentResponse2();
         ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
-                w, createAnnotator(Stapler.getCurrentRequest2()), context, charset);
-        long r = super.writeLogTo(start, caw);
+                w, createAnnotator(req), context, charset);
+        long r = writeHtmlToFilter(start, w, caw);
+        if (isComplete()) {
+            // The client is not expected to perform any further reads after this one. Make sure that we have flushed the line buffer.
+            caw.forceEol();
+        }
+        // Back-track any pending bytes in the line buffer.
+        r -= caw.lineBufferSize();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Cipher sym = PASSING_ANNOTATOR.encrypt();
@@ -238,9 +275,12 @@ public class AnnotatedLargeText<T> extends LargeText {
         oos.writeLong(System.currentTimeMillis()); // send timestamp to prevent a replay attack
         oos.writeObject(caw.getConsoleAnnotator());
         oos.close();
-        StaplerResponse2 rsp = Stapler.getCurrentResponse2();
-        if (rsp != null)
-            rsp.setHeader("X-ConsoleAnnotator", Base64.getEncoder().encodeToString(baos.toByteArray()));
+        String state = Base64.getEncoder().encodeToString(baos.toByteArray());
+        if (isStreamingRequest(req)) {
+            putStreamingMeta("consoleAnnotator", state);
+        } else if (rsp != null) {
+            rsp.setHeader("X-ConsoleAnnotator", state);
+        }
         return r;
     }
 

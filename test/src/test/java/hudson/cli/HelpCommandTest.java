@@ -35,19 +35,27 @@ import hudson.model.AbstractProject;
 import java.io.PrintStream;
 import java.util.Arrays;
 import org.hamcrest.Matcher;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
-public class HelpCommandTest {
+@WithJenkins
+class HelpCommandTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Test public void getHelpRunningCommand() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
+    @Test
+    void getHelpRunningCommand() {
 
         CLICommandInvoker command = new CLICommandInvoker(j, new HelpCommand());
 
@@ -70,7 +78,8 @@ public class HelpCommandTest {
         assertContainsUsageOfMethodCommand(result.stderr());
     }
 
-    @Test public void getHelpUsingJenkinsUI() throws Exception {
+    @Test
+    void getHelpUsingJenkinsUI() throws Exception {
 
         WebClient wc = j.createWebClient();
         String generalHelp = wc.goTo("cli").asNormalizedText();

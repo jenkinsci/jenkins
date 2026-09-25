@@ -3,7 +3,7 @@ package jenkins.mvn;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import io.jenkins.servlet.ServletExceptionWrapper;
@@ -17,7 +17,7 @@ import org.kohsuke.stapler.StaplerRequest2;
  * @author Dominik Bartholdi (imod)
  * @since 1.491
  */
-public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<GlobalSettingsProvider> implements ExtensionPoint {
+public abstract class GlobalSettingsProvider implements Describable<GlobalSettingsProvider>, ExtensionPoint {
 
     /**
      * configure maven launcher argument list with adequate settings path

@@ -26,8 +26,9 @@ package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.ExtensionList;
 import hudson.model.RootAction;
@@ -49,29 +50,34 @@ import org.apache.commons.fileupload2.core.FileUploadFileCountLimitException;
 import org.apache.commons.fileupload2.core.FileUploadSizeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.RequestImpl;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.verb.POST;
 
-public class Security3030Test {
+@WithJenkins
+class Security3030Test {
     // TODO Consider parameterizing with Stapler (RequestImpl/StaplerRequest2FormAction) + Jenkins (MultipartFormDataParser/MultipartFormDataParserAction)
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void fewFilesStapler() throws IOException {
+    void fewFilesStapler() throws IOException {
         assertSubmissionOK(StaplerRequest2FormAction.instance(), 20, 10, 1024 * 1024);
         assertSubmissionOK(StaplerRequest2FormAction.instance(), 10, 41, 10);
     }
 
     @Test
-    public void tooManyFilesStapler() throws Exception {
+    void tooManyFilesStapler() throws Exception {
         ServletException ex = assertSubmissionThrows(StaplerRequest2FormAction.instance(), 10, 1000, 20, FileUploadFileCountLimitException.class);
         assertThat(ex.getMessage(), containsString(RequestImpl.class.getName() + ".FILEUPLOAD_MAX_FILES"));
         ex = assertSubmissionThrows(StaplerRequest2FormAction.instance(), 1000, 10, 10, FileUploadFileCountLimitException.class);
@@ -88,7 +94,7 @@ public class Security3030Test {
     }
 
     @Test
-    public void tooLargeFilesStapler() throws Exception {
+    void tooLargeFilesStapler() throws Exception {
         assertSubmissionOK(StaplerRequest2FormAction.instance(), 1, 50, 10 * 1024 * 1024);
         try (FieldValue v = withStaticField(RequestImpl.class, "FILEUPLOAD_MAX_FILE_SIZE", 1024 * 1024)) {
             assertSubmissionOK(StaplerRequest2FormAction.instance(), 200, 100, 1024);
@@ -99,7 +105,7 @@ public class Security3030Test {
     }
 
     @Test
-    public void tooLargeSubmissionStapler() throws Exception {
+    void tooLargeSubmissionStapler() throws Exception {
         assertSubmissionOK(StaplerRequest2FormAction.instance(), 1, 50, 10 * 1024 * 1024);
         try (FieldValue v = withStaticField(RequestImpl.class, "FILEUPLOAD_MAX_SIZE", 1024 * 1024)) {
             assertSubmissionOK(StaplerRequest2FormAction.instance(), 200, 100, 1024);
@@ -110,13 +116,13 @@ public class Security3030Test {
     }
 
     @Test
-    public void fewFilesParser() throws IOException {
+    void fewFilesParser() throws IOException {
         assertSubmissionOK(MultipartFormDataParserAction.instance(), 20, 10, 1024 * 1024);
         assertSubmissionOK(MultipartFormDataParserAction.instance(), 200, 100, 1024);
     }
 
     @Test
-    public void tooManyFilesParser() throws Exception {
+    void tooManyFilesParser() throws Exception {
         ServletException ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 10, 1000, 20, FileUploadFileCountLimitException.class);
         assertThat(ex.getMessage(), containsString(MultipartFormDataParser.class.getName() + ".FILEUPLOAD_MAX_FILES"));
         ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 1000, 10, 10, FileUploadFileCountLimitException.class);
@@ -133,7 +139,7 @@ public class Security3030Test {
     }
 
     @Test
-    public void tooLargeFilesParser() throws Exception {
+    void tooLargeFilesParser() throws Exception {
         assertSubmissionOK(MultipartFormDataParserAction.instance(), 1, 50, 10 * 1024 * 1024);
         try (FieldValue v = withStaticField(MultipartFormDataParser.class, "FILEUPLOAD_MAX_FILE_SIZE", 1024 * 1024)) {
             assertSubmissionOK(MultipartFormDataParserAction.instance(), 200, 100, 1024);
@@ -144,7 +150,7 @@ public class Security3030Test {
     }
 
     @Test
-    public void tooLargeSubmissionParser() throws Exception {
+    void tooLargeSubmissionParser() throws Exception {
         assertSubmissionOK(MultipartFormDataParserAction.instance(), 1, 50, 10 * 1024 * 1024);
         try (FieldValue v = withStaticField(MultipartFormDataParser.class, "FILEUPLOAD_MAX_SIZE", 1024 * 1024)) {
             assertSubmissionOK(MultipartFormDataParserAction.instance(), 200, 100, 1024);
@@ -195,7 +201,7 @@ public class Security3030Test {
 
     private <T extends Exception> ServletException assertSubmissionThrows(FileUploadAction<T> endpoint, int files, int other, int fileSize, Class<? extends T> expected) throws IOException {
         final ServletException actual = testSubmission(endpoint, files, other, fileSize, expected);
-        assertEquals(actual.getCause().getClass(), expected);
+        assertEquals(expected, actual.getCause().getClass());
         return actual;
     }
 
@@ -271,7 +277,7 @@ public class Security3030Test {
                 actual = null;
                 return processMultipartAndUnwrap(req);
             } else {
-                actualWrapped = Assert.assertThrows(expectedWrapped, () -> processMultipartAndUnwrap(req));
+                actualWrapped = assertThrows(expectedWrapped, () -> processMultipartAndUnwrap(req));
 
                 // The client might still be sending us more of the request, but we have had enough of it already and
                 // have decided to stop processing it. Drain the read end of the socket so that the client can finish

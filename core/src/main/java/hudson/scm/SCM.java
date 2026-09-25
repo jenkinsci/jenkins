@@ -782,8 +782,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
         for (SCMDescriptor<?> scmDescriptor : all()) {
             if (!scmDescriptor.isApplicable(project))    continue;
 
-            if (pd instanceof TopLevelItemDescriptor) {
-                TopLevelItemDescriptor apd = (TopLevelItemDescriptor) pd;
+            if (pd instanceof TopLevelItemDescriptor apd) {
                 if (!apd.isApplicable(scmDescriptor))    continue;
             }
 

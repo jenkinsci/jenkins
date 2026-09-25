@@ -28,11 +28,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.EnvVars;
 import hudson.Functions;
@@ -58,38 +58,38 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.htmlunit.Page;
 import org.htmlunit.WebResponse;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.UnstableBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.xml.sax.SAXException;
 
 /**
  * Unit tests of {@link AbstractBuild}.
  */
-public class AbstractBuildTest {
+@WithJenkins
+class AbstractBuildTest {
 
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
+    private final LogRecorder logging = new LogRecorder();
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Rule
-    public LoggerRule logging = new LoggerRule();
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-30730")
-    public void reportErrorShouldNotFailForNonPublisherClass() throws Exception {
+    void reportErrorShouldNotFailForNonPublisherClass() throws Exception {
         FreeStyleProject prj = j.createFreeStyleProject();
         ErroneousJobProperty erroneousJobProperty = new ErroneousJobProperty();
         prj.addProperty(erroneousJobProperty);
@@ -117,7 +117,7 @@ public class AbstractBuildTest {
     }
 
     @Test
-    public void variablesResolved() throws Exception {
+    void variablesResolved() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         j.jenkins.getNodeProperties().add(new EnvironmentVariablesNodeProperty(new EnvironmentVariablesNodeProperty.Entry("KEY1", "value"), new EnvironmentVariablesNodeProperty.Entry("KEY2", "$KEY1")));
         CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
@@ -134,7 +134,7 @@ public class AbstractBuildTest {
      * Makes sure that raw console output doesn't get affected by XML escapes.
      */
     @Test
-    public void rawConsoleOutput() throws Exception {
+    void rawConsoleOutput() throws Exception {
         final String out = "<test>&</test>";
 
         FreeStyleProject p = j.createFreeStyleProject();
@@ -177,7 +177,7 @@ public class AbstractBuildTest {
     }
 
     @Test
-    public void culprits() throws Exception {
+    void culprits() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         FakeChangeLogSCM scm = new FakeChangeLogSCM();
         p.setScm(scm);
@@ -232,7 +232,7 @@ public class AbstractBuildTest {
 
     @Issue("JENKINS-19920")
     @Test
-    public void lastBuildNextBuild() throws Exception {
+    void lastBuildNextBuild() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         FreeStyleBuild b1 = j.buildAndAssertSuccess(p);
         FreeStyleBuild b2 = j.buildAndAssertSuccess(p);
@@ -245,7 +245,7 @@ public class AbstractBuildTest {
     }
 
     @Test
-    public void doNotInterruptBuildAbruptlyWhenExceptionThrownFromBuildStep() throws Exception {
+    void doNotInterruptBuildAbruptlyWhenExceptionThrownFromBuildStep() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new ThrowBuilder());
         FreeStyleBuild build = j.buildAndAssertStatus(Result.FAILURE, p);
@@ -254,31 +254,31 @@ public class AbstractBuildTest {
     }
 
     @Test
-    public void fixEmptyDisplayName() throws Exception {
+    void fixEmptyDisplayName() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         p.setDisplayName("");
-        assertEquals("An empty display name should be ignored.", "foo", p.getDisplayName());
+        assertEquals("foo", p.getDisplayName(), "An empty display name should be ignored.");
     }
 
     @Test
-    public void fixBlankDisplayName() throws Exception {
+    void fixBlankDisplayName() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         p.setDisplayName(" ");
-        assertEquals("A blank display name should be ignored.", "foo", p.getDisplayName());
+        assertEquals("foo", p.getDisplayName(), "A blank display name should be ignored.");
     }
 
     @Test
-    public void validDisplayName() throws Exception {
+    void validDisplayName() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         p.setDisplayName("bar");
-        assertEquals("A non-blank display name should be used.", "bar", p.getDisplayName());
+        assertEquals("bar", p.getDisplayName(), "A non-blank display name should be used.");
     }
 
     @Test
-    public void trimValidDisplayName() throws Exception {
+    void trimValidDisplayName() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         p.setDisplayName("    bar    ");
-        assertEquals("A non-blank display name with whitespace should be trimmed.", "bar", p.getDisplayName());
+        assertEquals("bar", p.getDisplayName(), "A non-blank display name with whitespace should be trimmed.");
     }
 
     private static class ThrowBuilder extends Builder {
@@ -292,7 +292,7 @@ public class AbstractBuildTest {
 
     @Test
     @Issue("JENKINS-10615")
-    public void workspaceLock() throws Exception {
+    void workspaceLock() throws Exception {
         logging.record(Run.class, Level.FINER);
         FreeStyleProject p = j.createFreeStyleProject();
         p.setConcurrentBuild(true);
@@ -345,7 +345,7 @@ public class AbstractBuildTest {
 
     @Test
     @Issue("JENKINS-60634")
-    public void tempDirVariable() throws Exception {
+    void tempDirVariable() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         if (Functions.isWindows()) {
             p.getBuildersList().add(new BatchFile("mkdir \"%WORKSPACE_TMP%\"\r\necho ok > \"%WORKSPACE_TMP%\\x\""));

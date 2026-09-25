@@ -171,7 +171,7 @@ public abstract class ViewGroupMixIn {
     public View getPrimaryView() {
         View v = getView(primaryView());
         if (v == null && !views().isEmpty()) // fallback
-            v = views().get(0);
+            v = views().getFirst();
         return v;
     }
 

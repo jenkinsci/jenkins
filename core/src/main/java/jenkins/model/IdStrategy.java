@@ -29,7 +29,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Locale;
@@ -47,7 +47,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  *
  * @since 1.566
  */
-public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements ExtensionPoint,
+public abstract class IdStrategy implements Describable<IdStrategy>, ExtensionPoint,
         Comparator<String> {
 
     private static final Pattern PSEUDO_UNICODE_PATTERN = Pattern.compile("\\$[a-f0-9]{4}");
@@ -138,7 +138,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
 
     @Override
     public IdStrategyDescriptor getDescriptor() {
-        return (IdStrategyDescriptor) super.getDescriptor();
+        return (IdStrategyDescriptor) Describable.super.getDescriptor();
     }
 
     /**
@@ -212,12 +212,12 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
 
         @Override
         public boolean equals(@NonNull String id1, @NonNull String id2) {
-            return id1.equalsIgnoreCase(id2);
+            return keyFor(id1).equals(keyFor(id2));
         }
 
         @Override
         public int compare(@NonNull String id1, @NonNull String id2) {
-            return id1.compareToIgnoreCase(id2);
+            return keyFor(id1).compareTo(keyFor(id2));
         }
 
         @Extension @Symbol("caseInsensitive")

@@ -8,11 +8,11 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
@@ -25,10 +25,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStore;
@@ -41,26 +41,32 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.xml.XmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ApiTokenPropertyTest {
+@WithJenkins
+class ApiTokenPropertyTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Tests the UI interaction and authentication.
      */
     @Test
-    public void basics() throws Exception {
+    void basics() throws Exception {
         ApiTokenPropertyConfiguration tokenConfig = ApiTokenPropertyConfiguration.get();
         tokenConfig.setTokenGenerationOnCreationEnabled(true);
 
@@ -72,7 +78,7 @@ public class ApiTokenPropertyTest {
 
         // Make sure that user is able to get the token via the interface
         try (ACLContext acl = ACL.as(u)) {
-            assertEquals("User is unable to get its own token", token, t.getApiToken());
+            assertEquals(token, t.getApiToken(), "User is unable to get its own token");
         }
 
         // test the authentication via Token
@@ -90,7 +96,7 @@ public class ApiTokenPropertyTest {
     }
 
     @Test
-    public void security49Upgrade() throws Exception {
+    void security49Upgrade() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User u = User.getOrCreateByIdOrFullName("foo");
         String historicalInitialValue = Util.getDigestOf(Jenkins.get().getSecretKey() + ":" + u.getId());
@@ -114,7 +120,7 @@ public class ApiTokenPropertyTest {
 
     @Issue("SECURITY-200")
     @Test
-    public void adminsShouldBeUnableToSeeTokensByDefault() throws Exception {
+    void adminsShouldBeUnableToSeeTokensByDefault() throws Exception {
         ApiTokenPropertyConfiguration tokenConfig = ApiTokenPropertyConfiguration.get();
         tokenConfig.setTokenGenerationOnCreationEnabled(true);
 
@@ -133,7 +139,7 @@ public class ApiTokenPropertyTest {
 
     @Issue("SECURITY-200")
     @Test
-    public void adminsShouldBeUnableToChangeTokensByDefault() throws Exception {
+    void adminsShouldBeUnableToChangeTokensByDefault() throws Exception {
         ApiTokenPropertyConfiguration tokenConfig = ApiTokenPropertyConfiguration.get();
         tokenConfig.setTokenGenerationOnCreationEnabled(true);
 
@@ -147,9 +153,9 @@ public class ApiTokenPropertyTest {
         WebClient wc = createClientForUser("bar")
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage requirePOST = wc.goTo(foo.getUrl() + "/" + descriptor.getDescriptorUrl() + "/changeToken");
-        assertEquals("method should not be allowed",
-                HttpURLConnection.HTTP_BAD_METHOD,
-                requirePOST.getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_BAD_METHOD,
+                requirePOST.getWebResponse().getStatusCode(),
+                "method should not be allowed");
 
         wc.setThrowExceptionOnFailingStatusCode(true);
         WebRequest request = new WebRequest(new URI(j.getURL().toString() + foo.getUrl() + "/" + descriptor.getDescriptorUrl() + "/changeToken").toURL(), HttpMethod.POST);
@@ -157,12 +163,11 @@ public class ApiTokenPropertyTest {
 
         // TODO This nicer alternative requires https://github.com/jenkinsci/jenkins/pull/2268 or similar to work
 //        HtmlPage res = requirePOST.getPage().getForms().get(0).getElementsByAttribute("input", "type", "submit").get(0).click();
-        assertEquals("Update token response is incorrect",
-                Messages.ApiTokenProperty_ChangeToken_SuccessHidden(), "<div>" + res.getBody().asNormalizedText() + "</div>");
+        assertEquals(Messages.ApiTokenProperty_ChangeToken_SuccessHidden(), "<div>" + res.getBody().asNormalizedText() + "</div>", "Update token response is incorrect");
     }
 
     @Test
-    public void postWithUsernameAndTokenInBasicAuthHeader() throws Exception {
+    void postWithUsernameAndTokenInBasicAuthHeader() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("bar");
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User.getById("foo", true);
@@ -179,7 +184,7 @@ public class ApiTokenPropertyTest {
     }
 
     @NonNull
-    private WebClient createClientForUser(final String id) throws Exception {
+    private WebClient createClientForUser(final String id) {
         User u = User.getById(id, true);
 
         WebClient wc = j.createWebClient();
@@ -189,7 +194,7 @@ public class ApiTokenPropertyTest {
 
     @Test
     @Issue("JENKINS-32776")
-    public void generateNewTokenWithoutName() throws Exception {
+    void generateNewTokenWithoutName() throws Exception {
         j.jenkins.setCrumbIssuer(null);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
@@ -209,12 +214,12 @@ public class ApiTokenPropertyTest {
     @Test
     @LocalData
     @Issue("JENKINS-32776")
-    public void migrationFromLegacyToken() throws Exception {
+    void migrationFromLegacyToken() throws Exception {
         j.jenkins.setCrumbIssuer(null);
 
         // user is still able to connect with legacy token
         User admin = User.getById("admin", false);
-        assertNotNull("Admin user not configured correctly in local data", admin);
+        assertNotNull(admin, "Admin user not configured correctly in local data");
         ApiTokenProperty apiTokenProperty = admin.getProperty(ApiTokenProperty.class);
 
         WebClient wc = j.createWebClient();
@@ -289,14 +294,14 @@ public class ApiTokenPropertyTest {
         assertThat(xmlPage, hasXPath("//authority", is("authenticated")));
     }
 
-    private void checkUserIsNotConnected(WebClient wc) throws Exception {
+    private void checkUserIsNotConnected(WebClient wc) {
         FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goToXml("whoAmI/api/xml"));
         assertEquals(401, e.getStatusCode());
     }
 
     @Test
     @Issue("JENKINS-32776")
-    public void legacyTokenChange() throws Exception {
+    void legacyTokenChange() throws Exception {
         j.jenkins.setCrumbIssuer(null);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
@@ -410,7 +415,7 @@ public class ApiTokenPropertyTest {
         List<String> uuidList = apiTokenProperty.getTokenStore().getTokenListSortedByName().stream()
                 .filter(filter)
                 .map(ApiTokenStore.HashedToken::getUuid)
-                .collect(Collectors.toList());
+                .toList();
         for (String uuid : uuidList) {
             revokeToken(wc, user.getId(), uuid);
         }
@@ -461,7 +466,7 @@ public class ApiTokenPropertyTest {
 
     @Test
     @Issue("JENKINS-57484")
-    public void script_addFixedNewToken_Regular() throws Exception {
+    void script_addFixedNewToken_Regular() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         User user = User.getById("user", true);
@@ -482,7 +487,7 @@ public class ApiTokenPropertyTest {
 
     @Test
     @Issue("JENKINS-57484")
-    public void script_addFixedNewToken_Invalid() throws Exception {
+    void script_addFixedNewToken_Invalid() {
         User user = User.getById("user", true);
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
 
@@ -499,8 +504,64 @@ public class ApiTokenPropertyTest {
     }
 
     @Test
+    @Issue("JENKINS-75492")
+    void script_generateNewExpiringToken() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+        User user = User.getById("user", true);
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+
+        Collection<ApiTokenStore.HashedToken> beforeTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+
+        TokenUuidAndPlainValue token1 = apiTokenProperty.generateNewToken("token1", tomorrow);
+
+        Collection<ApiTokenStore.HashedToken> afterTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertEquals(beforeTokenList.size() + 1, afterTokenList.size());
+
+        checkTokenIsWorking(user.getId(), token1.plainValue);
+
+        TokenUuidAndPlainValue token2 = apiTokenProperty.generateNewToken("token2", tomorrow);
+        checkTokenIsWorking(user.getId(), token2.plainValue);
+        TokenUuidAndPlainValue token3 = apiTokenProperty.generateNewToken("token3", tomorrow);
+        checkTokenIsWorking(user.getId(), token3.plainValue);
+
+        Collection<ApiTokenStore.HashedToken> afterTokenList2 = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertEquals(beforeTokenList.size() + 3, afterTokenList2.size());
+    }
+
+    @Test
+    @Issue("JENKINS-75492")
+    void script_expiredTokenIsInvalid() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
+        LocalDate expired = LocalDate.now().minusDays(1);
+
+        User user = User.getById("user", true);
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+
+        Collection<ApiTokenStore.HashedToken> beforeTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+
+        TokenUuidAndPlainValue token1 = apiTokenProperty.generateNewToken("token1", expired);
+
+        Collection<ApiTokenStore.HashedToken> afterTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertEquals(beforeTokenList.size() + 1, afterTokenList.size());
+
+        checkTokenIsNotWorking(user.getId(), token1.plainValue);
+
+        TokenUuidAndPlainValue token2 = apiTokenProperty.generateNewToken("token2", expired);
+        checkTokenIsNotWorking(user.getId(), token2.plainValue);
+        TokenUuidAndPlainValue token3 = apiTokenProperty.generateNewToken("token3", expired);
+        checkTokenIsNotWorking(user.getId(), token3.plainValue);
+
+        Collection<ApiTokenStore.HashedToken> afterTokenList2 = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertEquals(beforeTokenList.size() + 3, afterTokenList2.size());
+    }
+
+    @Test
     @Issue("JENKINS-57484")
-    public void script_generateNewToken() throws Exception {
+    void script_generateNewToken() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         User user = User.getById("user", true);
@@ -526,7 +587,7 @@ public class ApiTokenPropertyTest {
 
     @Test
     @Issue("JENKINS-57484")
-    public void script_revokeAllTokens() throws Exception {
+    void script_revokeAllTokens() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
@@ -545,6 +606,13 @@ public class ApiTokenPropertyTest {
         tokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
         assertThat(tokenList, empty());
 
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+        apiTokenProperty.generateNewToken("token2", tomorrow);
+        apiTokenProperty.revokeAllTokens();
+        tokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertThat(tokenList, empty());
+
         String tokenPlainTextValue = "110123456789abcdef0123456789abcdef";
         apiTokenProperty.addFixedNewToken("fixed-token", tokenPlainTextValue);
         checkTokenIsWorking(user.getId(), tokenPlainTextValue);
@@ -557,7 +625,7 @@ public class ApiTokenPropertyTest {
 
     @Test
     @Issue("JENKINS-57484")
-    public void script_revokeAllTokensExceptOne() throws Exception {
+    void script_revokeAllTokensExceptOne() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
@@ -597,7 +665,7 @@ public class ApiTokenPropertyTest {
 
     @Test
     @Issue("JENKINS-57484")
-    public void script_revokeToken() throws Exception {
+    void script_revokeToken() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
@@ -657,11 +725,11 @@ public class ApiTokenPropertyTest {
         assertThat(page.getWebResponse().getStatusCode(), is(HttpServletResponse.SC_UNAUTHORIZED));
     }
 
-    private void checkInvalidTokenValue(ApiTokenProperty apiTokenProperty, String tokenName, String tokenValue) throws Exception {
+    private void checkInvalidTokenValue(ApiTokenProperty apiTokenProperty, String tokenName, String tokenValue) {
         assertThrows(
-                "The invalid token " + tokenName + " with value " + tokenValue + " was accepted but it should have been rejected.",
                 IllegalArgumentException.class,
-                () -> apiTokenProperty.addFixedNewToken(tokenName, tokenValue));
+                () -> apiTokenProperty.addFixedNewToken(tokenName, tokenValue),
+                "The invalid token " + tokenName + " with value " + tokenValue + " was accepted but it should have been rejected.");
     }
 
     // test no token are generated for new user with the global configuration set to false

@@ -24,6 +24,8 @@
 
 package hudson.model;
 
+import static hudson.Functions.getAvatar;
+
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -34,11 +36,16 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.util.XStream2;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import jenkins.model.Jenkins;
+import jenkins.security.XStreamDeserializable;
+import jenkins.security.XStreamNotDeserializable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.export.Exported;
@@ -163,8 +170,12 @@ public abstract class Cause {
          * @deprecated since 2009-02-28
          */
         @Deprecated
+        @XStreamDeserializable
         private transient Cause upstreamCause;
         private @NonNull List<Cause> upstreamCauses;
+
+        @XStreamNotDeserializable
+        private transient Map<Cause, Integer> causeBag;
 
         /**
          * @deprecated since 2009-02-28
@@ -197,15 +208,34 @@ public abstract class Cause {
             this.upstreamCauses = upstreamCauses;
         }
 
+        private synchronized void fillCauseBag() {
+            if (causeBag == null) {
+                causeBag = new LinkedHashMap<>();
+                for (Cause c : upstreamCauses) {
+                    causeBag.compute(c, (unused, cnt) -> cnt == null ? 1 : cnt + 1);
+                }
+            }
+        }
+
+        @Restricted(DoNotUse.class) // used from Jelly
+        public Map<Cause, Integer> getCauseCounts() {
+            fillCauseBag();
+            return Collections.unmodifiableMap(causeBag);
+        }
+
+        @Override
+        public void onLoad(@NonNull Run<?, ?> build) {
+            onLoad(build.getParent(), build.getNumber());
+        }
+
         @Override
         public void onLoad(@NonNull Job<?, ?> _job, int _buildNumber) {
             Item i = Jenkins.get().getItemByFullName(this.upstreamProject);
-            if (!(i instanceof Job)) {
+            if (!(i instanceof Job j)) {
                 // cannot initialize upstream causes
                 return;
             }
 
-            Job j = (Job) i;
             for (Cause c : this.upstreamCauses) {
                 c.onLoad(j, upstreamBuild);
             }
@@ -219,9 +249,7 @@ public abstract class Cause {
 
             if (this == rhs) return true;
 
-            if (!(rhs instanceof UpstreamCause)) return false;
-
-            final UpstreamCause o = (UpstreamCause) rhs;
+            if (!(rhs instanceof UpstreamCause o)) return false;
 
             return Objects.equals(upstreamBuild, o.upstreamBuild) &&
                     Objects.equals(upstreamCauses, o.upstreamCauses) &&
@@ -238,10 +266,9 @@ public abstract class Cause {
         }
 
         private @NonNull Cause trim(@NonNull Cause c, int depth, Set<String> traversed) {
-            if (!(c instanceof UpstreamCause)) {
+            if (!(c instanceof UpstreamCause uc)) {
                 return c;
             }
-            UpstreamCause uc = (UpstreamCause) c;
             List<Cause> cs = new ArrayList<>();
             if (traversed.add(uc.upstreamUrl + uc.upstreamBuild)) {
                 for (Cause c2 : uc.upstreamCauses) {
@@ -356,6 +383,16 @@ public abstract class Cause {
                 return "(deeply nested causes)";
             }
 
+            @Override
+            public int hashCode() {
+                return 11;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                return obj instanceof DeeplyNestedUpstreamCause;
+            }
+
             @Override public String toString() {
                 return "JENKINS-14814";
             }
@@ -445,17 +482,28 @@ public abstract class Cause {
             return  userId != null ? userId : User.getUnknown().getId();
         }
 
+        private User getUser() {
+            return userId == null ? null : User.getById(userId, false);
+        }
+
         @Exported(visibility = 3)
         public String getUserName() {
-            final User user = userId == null ? null : User.getById(userId, false);
+            final User user = getUser();
             return user == null ? "anonymous" : user.getDisplayName();
         }
 
         @Restricted(DoNotUse.class) // for Jelly
         @CheckForNull
         public String getUserUrl() {
-            final User user = userId == null ? null : User.getById(userId, false);
+            final User user = getUser();
             return user != null ? user.getUrl() : null;
+        }
+
+        @Restricted(DoNotUse.class) // for Jelly
+        @CheckForNull
+        public String getUserAvatar() {
+            final User user = getUser();
+            return user != null ? getAvatar(user, "48x48") : null;
         }
 
         @Override

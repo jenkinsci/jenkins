@@ -35,17 +35,23 @@ import hudson.Util;
 import hudson.model.Fingerprint;
 import hudson.model.FingerprintCleanupThreadTest;
 import java.io.IOException;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class FingerprintStorageTest {
+@WithJenkins
+class FingerprintStorageTest {
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    private JenkinsRule jenkinsRule;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        jenkinsRule = rule;
+    }
 
     @Test
-    public void testLoadingAndSavingLocalStorageFingerprintWithExternalStorage() throws IOException {
+    void testLoadingAndSavingLocalStorageFingerprintWithExternalStorage() throws IOException {
         String id = Util.getDigestOf("testLoadingAndSavingLocalStorageFingerprintWithExternalStorage");
         Fingerprint fingerprintSaved = new Fingerprint(null, "foo.jar", Util.fromHexString(id));
         Fingerprint fingerprintLoaded = Fingerprint.load(id);
@@ -69,7 +75,7 @@ public class FingerprintStorageTest {
     }
 
     @Test
-    public void testLoadingAndSavingFingerprintWithExternalStorage() throws IOException {
+    void testLoadingAndSavingFingerprintWithExternalStorage() throws IOException {
         FingerprintStorage externalFingerprintStorage = configureExternalStorage();
         String id = Util.getDigestOf("testLoadingAndSavingFingerprintWithExternalStorage");
         Fingerprint fingerprintSaved = new Fingerprint(null, "bar.jar", Util.fromHexString(id));
@@ -79,7 +85,7 @@ public class FingerprintStorageTest {
     }
 
     @Test
-    public void testDeletingLocalStorageFingerprintWithExternalStorageBeforeMigration() throws IOException {
+    void testDeletingLocalStorageFingerprintWithExternalStorageBeforeMigration() throws IOException {
         String id = Util.getDigestOf("testLoadingAndSavingLocalStorageFingerprintWithExternalStorage");
         new Fingerprint(null, "foo.jar", Util.fromHexString(id));
         configureExternalStorage();
@@ -89,7 +95,7 @@ public class FingerprintStorageTest {
     }
 
     @Test
-    public void testDeletingLocalStorageFingerprintWithExternalStorageAfterMigration() throws IOException {
+    void testDeletingLocalStorageFingerprintWithExternalStorageAfterMigration() throws IOException {
         String id = Util.getDigestOf("testLoadingAndSavingLocalStorageFingerprintWithExternalStorage");
         new Fingerprint(null, "foo.jar", Util.fromHexString(id));
         FingerprintStorage externalFingerprintStorage = configureExternalStorage();
@@ -100,7 +106,7 @@ public class FingerprintStorageTest {
     }
 
     @Test
-    public void testDeletingFingerprintWithExternalStorage() throws IOException {
+    void testDeletingFingerprintWithExternalStorage() throws IOException {
         configureExternalStorage();
         String id = Util.getDigestOf("testLoadingAndSavingLocalStorageFingerprintWithExternalStorage");
         new Fingerprint(null, "foo.jar", Util.fromHexString(id));
@@ -110,7 +116,7 @@ public class FingerprintStorageTest {
     }
 
     @Test
-    public void testMigrationDeletesFingerprintsInMemoryFromFileStorage() throws IOException {
+    void testMigrationDeletesFingerprintsInMemoryFromFileStorage() throws IOException {
         String id = Util.getDigestOf("testMigrationDeletesFingerprintsInMemoryFromFileStorage");
         Fingerprint fingerprintSaved = new Fingerprint(null, "foo.jar", Util.fromHexString(id));
         configureExternalStorage();

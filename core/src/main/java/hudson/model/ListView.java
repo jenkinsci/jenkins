@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import jenkins.model.Jenkins;
+import jenkins.security.XStreamDeserializable;
 import net.jcip.annotations.GuardedBy;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
@@ -112,6 +113,7 @@ public class ListView extends View implements DirectlyModifiableView {
      * @deprecated Status filter is now controlled via a {@link ViewJobFilter}, see {@link StatusFilter}
      */
     @Deprecated
+    @XStreamDeserializable
     private transient Boolean statusFilter;
 
     @DataBoundConstructor

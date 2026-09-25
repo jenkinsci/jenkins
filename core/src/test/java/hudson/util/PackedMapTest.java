@@ -1,15 +1,17 @@
 package hudson.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class PackedMapTest {
+class PackedMapTest {
 
     static class Holder {
         PackedMap pm;
@@ -18,7 +20,7 @@ public class PackedMapTest {
     private XStream2 xs = new XStream2();
 
     @Test
-    public void basic() {
+    void basic() {
         Map<String, String> o = new TreeMap<>();
         o.put("a", "b");
         o.put("c", "d");
@@ -35,20 +37,33 @@ public class PackedMapTest {
         h.pm = p;
         String xml = xs.toXML(h);
         assertEquals(
-                "<hudson.util.PackedMapTest_-Holder>\n" +
-                "  <pm>\n" +
-                "    <entry>\n" +
-                "      <string>a</string>\n" +
-                "      <string>b</string>\n" +
-                "    </entry>\n" +
-                "    <entry>\n" +
-                "      <string>c</string>\n" +
-                "      <string>d</string>\n" +
-                "    </entry>\n" +
-                "  </pm>\n" +
-                "</hudson.util.PackedMapTest_-Holder>",
+                """
+                        <hudson.util.PackedMapTest_-Holder>
+                          <pm>
+                            <entry>
+                              <string>a</string>
+                              <string>b</string>
+                            </entry>
+                            <entry>
+                              <string>c</string>
+                              <string>d</string>
+                            </entry>
+                          </pm>
+                        </hudson.util.PackedMapTest_-Holder>""",
                 xml);
 
         xs.fromXML(xml);
+    }
+
+    @Test
+    void values() {
+        Map<String, String> o = new TreeMap<>();
+        o.put("a", "b");
+        o.put("c", "d");
+
+        PackedMap<String, String> p = PackedMap.of(o);
+        assertEquals(List.of("b", "d"), new ArrayList<>(p.values()));
+        assertEquals("b", p.values().stream().findFirst().orElseThrow());
+        assertEquals(2, p.values().size());
     }
 }

@@ -37,9 +37,6 @@ THE SOFTWARE.
     <st:attribute name="action" use="required">
       The method to call from within the HudsonPrivateSecurityRealm.
     </st:attribute>
-    <st:attribute name="captcha" use="optional" type="boolean">
-      Determines if the tag will include the captcha.
-    </st:attribute>
     <st:attribute name="data" use="optional" type="hudson.security.HudsonPrivateSecurityRealm.SignupInfo">
       The wrapper for the data provided by the user and the error message(s) if any. Is null on first form display.
     </st:attribute>
@@ -48,7 +45,7 @@ THE SOFTWARE.
     <l:breadcrumb title="${title}"/>
     <l:main-panel>
       <form action="${rootURL}/securityRealm/${action}" method="post" class="jenkins-form jenkins-form-item--small jenkins-!-margin-auto">
-        <local:_entryForm title="${title}" action="${action}" captcha="${captcha}" it="${host}" data="${data}" />
+        <local:_entryForm title="${title}" action="${action}" it="${host}" data="${data}" />
         <f:bottomButtonBar>
           <f:submit value="${title}" />
         </f:bottomButtonBar>

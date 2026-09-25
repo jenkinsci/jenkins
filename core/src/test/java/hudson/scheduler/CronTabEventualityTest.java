@@ -1,23 +1,21 @@
 package hudson.scheduler;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 
-@RunWith(Parameterized.class)
 @For({CronTab.class, Hash.class})
-public class CronTabEventualityTest {
-    @Parameterized.Parameters
-    public static Collection<Object[]> parameters() {
+class CronTabEventualityTest {
+
+    static Collection<Object[]> parameters() {
         Collection<Object[]> parameters = new ArrayList<>();
         parameters.add(new Object[]{"zero", Hash.zero()});
         parameters.add(new Object[]{"seed1", Hash.from("seed1")});
@@ -31,83 +29,84 @@ public class CronTabEventualityTest {
         return limit;
     }
 
-    private String name;
-    private Hash hash;
-
-    public CronTabEventualityTest(String name, Hash hash) {
-        this.name = name;
-        this.hash = hash;
-    }
-
-    @Test
+    @ParameterizedTest
+    @MethodSource("parameters")
     @Issue("JENKINS-12388")
-    public void testYearlyWillBeEventuallyTriggeredWithinOneYear() {
+    void testYearlyWillBeEventuallyTriggeredWithinOneYear(String name, Hash hash) {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.YEAR, 1);
-        checkEventuality(start, "@yearly", limit);
+        checkEventuality(name, hash, start, "@yearly", limit);
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("parameters")
     @Issue("JENKINS-12388")
-    public void testAnnuallyWillBeEventuallyTriggeredWithinOneYear() {
+    void testAnnuallyWillBeEventuallyTriggeredWithinOneYear(String name, Hash hash) {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.YEAR, 1);
-        checkEventuality(start, "@annually", limit);
+        checkEventuality(name, hash, start, "@annually", limit);
     }
 
-    @Test
-    public void testMonthlyWillBeEventuallyTriggeredWithinOneMonth() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    void testMonthlyWillBeEventuallyTriggeredWithinOneMonth(String name, Hash hash) {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.MONTH, 1);
-        checkEventuality(start, "@monthly", limit);
+        checkEventuality(name, hash, start, "@monthly", limit);
     }
 
-    @Test
-    public void testWeeklyWillBeEventuallyTriggeredWithinOneWeek() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    void testWeeklyWillBeEventuallyTriggeredWithinOneWeek(String name, Hash hash) {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.WEEK_OF_YEAR, 1);
-        checkEventuality(start, "@weekly", limit);
+        checkEventuality(name, hash, start, "@weekly", limit);
     }
 
-    @Test
-    public void testDailyWillBeEventuallyTriggeredWithinOneDay() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    void testDailyWillBeEventuallyTriggeredWithinOneDay(String name, Hash hash) {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.DAY_OF_MONTH, 1);
-        checkEventuality(start, "@daily", limit);
+        checkEventuality(name, hash, start, "@daily", limit);
     }
 
-    @Test
-    public void testMidnightWillBeEventuallyTriggeredWithinOneDay() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    void testMidnightWillBeEventuallyTriggeredWithinOneDay(String name, Hash hash) {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.DAY_OF_MONTH, 1);
-        checkEventuality(start, "@midnight", limit);
+        checkEventuality(name, hash, start, "@midnight", limit);
     }
 
-    @Test
-    public void testHourlyWillBeEventuallyTriggeredWithinOneHour() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    void testHourlyWillBeEventuallyTriggeredWithinOneHour(String name, Hash hash) {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.HOUR, 1);
-        checkEventuality(start, "@hourly", limit);
+        checkEventuality(name, hash, start, "@hourly", limit);
     }
 
-    @Test
-    public void testFirstDayOfMonthWillBeEventuallyTriggeredWithinOneMonth() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    void testFirstDayOfMonthWillBeEventuallyTriggeredWithinOneMonth(String name, Hash hash) {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.MONTH, 1);
-        checkEventuality(start, "H H 1 * *", limit);
+        checkEventuality(name, hash, start, "H H 1 * *", limit);
     }
 
-    @Test
-    public void testFirstSundayOfMonthWillBeEventuallyTriggeredWithinOneMonthAndOneWeek() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    void testFirstSundayOfMonthWillBeEventuallyTriggeredWithinOneMonthAndOneWeek(String name, Hash hash) {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.DAY_OF_MONTH, 31 + 7);
         // If both day of month and day of week are specified:
         //     UNIX: triggered when either matches
         //     Jenkins: triggered when both match
-        checkEventuality(start, "H H 1-7 * 0", limit);
+        checkEventuality(name, hash, start, "H H 1-7 * 0", limit);
     }
 
-    private void checkEventuality(Calendar start, String crontabFormat, Calendar limit) {
+    private void checkEventuality(String name, Hash hash, Calendar start, String crontabFormat, Calendar limit) {
         CronTab cron = new CronTab(crontabFormat, hash);
         Calendar next = cron.ceil(start);
         if (next.after(limit)) {

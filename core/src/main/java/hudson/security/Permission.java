@@ -26,6 +26,7 @@ package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Hudson;
 import java.util.Collections;
 import java.util.Comparator;
@@ -105,6 +106,7 @@ public final class Permission {
      *
      * @since 1.325
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public boolean enabled;
 
     /**

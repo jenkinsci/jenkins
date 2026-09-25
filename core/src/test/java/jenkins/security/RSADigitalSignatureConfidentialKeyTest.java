@@ -24,23 +24,25 @@
 
 package jenkins.security;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Signature;
 import java.util.Base64;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class RSADigitalSignatureConfidentialKeyTest {
-
-    @Rule
-    public ConfidentialStoreRule store = new ConfidentialStoreRule();
+class RSADigitalSignatureConfidentialKeyTest {
 
     private final RSADigitalSignatureConfidentialKey key = new RSADigitalSignatureConfidentialKey("test");
 
+    @BeforeEach
+    void setUp() {
+        ConfidentialStore.Mock.INSTANCE.clear();
+    }
+
     @Test
-    public void dsigSignAndVerify() throws Exception {
+    void dsigSignAndVerify() throws Exception {
         String plainText = "Hello world";
         String msg = key.sign(plainText);
         System.out.println(msg);

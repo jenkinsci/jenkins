@@ -334,7 +334,6 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Deletes a directory if it's empty.
      */
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", justification = "https://github.com/spotbugs/spotbugs/issues/756")
     private void deleteIfEmpty(File dir) {
         try {
             if (Files.isDirectory(dir.toPath())) {

@@ -24,24 +24,25 @@
 
 package hudson.util;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.FilePath;
 import java.io.File;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * @author Christoph Thelen
  */
-public class DirScannerTest {
+class DirScannerTest {
 
-    @Rule public TemporaryFolder tmpRule = new TemporaryFolder();
+    @TempDir
+    private File tmpRule;
 
-    @Test public void globShouldUseDefaultExcludes() throws Exception {
-        FilePath tmp = new FilePath(tmpRule.getRoot());
+    @Test
+    void globShouldUseDefaultExcludes() throws Exception {
+        FilePath tmp = new FilePath(tmpRule);
         try {
             tmp.child(".gitignore").touch(0);
             FilePath git = tmp.child(".git");
@@ -63,8 +64,9 @@ public class DirScannerTest {
         }
     }
 
-    @Test public void globShouldIgnoreDefaultExcludesByRequest() throws Exception {
-        FilePath tmp = new FilePath(tmpRule.getRoot());
+    @Test
+    void globShouldIgnoreDefaultExcludesByRequest() throws Exception {
+        FilePath tmp = new FilePath(tmpRule);
         try {
             tmp.child(".gitignore").touch(0);
             FilePath git = tmp.child(".git");

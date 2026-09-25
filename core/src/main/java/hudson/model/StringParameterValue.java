@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.util.VariableResolver;
@@ -40,6 +41,7 @@ import org.kohsuke.stapler.export.Exported;
 public class StringParameterValue extends ParameterValue {
     @Exported(visibility = 4)
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public String value;
 
     @DataBoundConstructor

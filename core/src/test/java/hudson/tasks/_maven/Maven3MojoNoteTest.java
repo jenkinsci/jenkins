@@ -1,31 +1,31 @@
 package hudson.tasks._maven;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.MarkupText;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class Maven3MojoNoteTest {
+class Maven3MojoNoteTest {
 
     @Test
-    public void testAnnotateMavenPlugin() {
+    void testAnnotateMavenPlugin() {
         check("[INFO] <b class=maven-mojo>--- maven-clean-plugin:2.4.1:clean (default-clean) @ jobConfigHistory ---</b>", "[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ jobConfigHistory ---");
     }
 
     @Test
-    public void testAnnotateCodehausPlugin() {
+    void testAnnotateCodehausPlugin() {
         check("[INFO] <b class=maven-mojo>--- cobertura-maven-plugin:2.4:instrument (report:cobertura) @ sardine ---</b>", "[INFO] --- cobertura-maven-plugin:2.4:instrument (report:cobertura) @ sardine ---");
 
     }
 
     @Test
-    public void testAnnotateOtherPlugin() {
+    void testAnnotateOtherPlugin() {
         check("[INFO] <b class=maven-mojo>--- gmaven-plugin:1.0-rc-5:generateTestStubs (test-in-groovy) @ jobConfigHistory ---</b>", "[INFO] --- gmaven-plugin:1.0-rc-5:generateTestStubs (test-in-groovy) @ jobConfigHistory ---");
     }
 
     private void check(final String decorated, final String input) {
-        assertTrue(input + " does not match" + Maven3MojoNote.PATTERN, Maven3MojoNote.PATTERN.matcher(input).matches());
+        assertTrue(Maven3MojoNote.PATTERN.matcher(input).matches(), input + " does not match" + Maven3MojoNote.PATTERN);
         assertEquals(decorated, annotate(input));
     }
 

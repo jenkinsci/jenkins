@@ -65,9 +65,7 @@ junit.xml
 
 # Yarn
 # https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
-.pnp.*
 .yarn/*
-.yarnrc.yml
 !.yarn/patches
 !.yarn/plugins
 !.yarn/sdks
@@ -78,4 +76,4 @@ node/
 node_modules/
 
 # Generated JavaScript Bundles
-jsbundles
+war/src/main/webapp/jsbundles/

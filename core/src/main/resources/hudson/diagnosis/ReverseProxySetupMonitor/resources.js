@@ -1,5 +1,7 @@
 (function () {
   var redirectForm = document.getElementById("redirect-error");
+  const redirectData = document.getElementById("redirect-data");
+
   if (!redirectForm) {
     console.warn(
       'This script expects to have an element with id="redirect-error" to be working.',
@@ -7,7 +9,7 @@
     return;
   }
 
-  var urlToTest = redirectForm.getAttribute("data-url");
+  var urlToTest = redirectData.getAttribute("data-url");
   var callUrlToTest = function (testWithContext, callback) {
     var headers = {};
     var body = null;
@@ -28,19 +30,19 @@
   };
 
   var displayWarningMessage = function (withContextMessage) {
-    redirectForm.classList.remove("reverse-proxy__hidden");
+    redirectForm.classList.remove("jenkins-hidden");
     if (withContextMessage === true) {
       redirectForm
         .querySelectorAll(".js-context-message")
         .forEach(function (node) {
-          return node.classList.remove("reverse-proxy__hidden");
+          return node.classList.remove("jenkins-hidden");
         });
     }
   };
 
   callUrlToTest(false, function (response) {
     if (response.status !== 200) {
-      var context = redirectForm.getAttribute("data-context");
+      var context = redirectData.getAttribute("data-context");
       // to cover the case where the JenkinsRootUrl is configured without the context
       if (context) {
         callUrlToTest(true, function (response2) {

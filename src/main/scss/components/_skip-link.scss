@@ -1,0 +1,57 @@
+$skip-link-block-padding: 0.6rem;
+$skip-link-inline-padding: 0.9rem;
+$skip-link-box-shadow: 0 0 50px -15px var(--yellow);
+
+.jenkins-skip-link {
+  position: fixed;
+  top: calc(var(--section-padding) - $skip-link-block-padding);
+  left: calc(var(--section-padding) - $skip-link-inline-padding);
+  z-index: 2000;
+  background: var(--background);
+  box-shadow:
+    0 0 0 1rem transparent,
+    $skip-link-box-shadow;
+  color: var(--text-color) !important;
+  padding: $skip-link-block-padding $skip-link-inline-padding;
+  border-radius: var(--form-input-border-radius);
+  outline: none;
+  text-decoration: none !important;
+  transition:
+    var(--elastic-transition),
+    box-shadow var(--standard-transition) 0.1s;
+  opacity: 0;
+  scale: 80%;
+  pointer-events: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--yellow);
+    opacity: 0.05;
+    transition: inherit;
+  }
+
+  &:hover {
+    &::before {
+      opacity: 0.1;
+    }
+  }
+
+  &:active {
+    &::before {
+      opacity: 0.2;
+    }
+  }
+
+  &:focus-visible {
+    box-shadow:
+      0 0 0 0.2rem var(--yellow),
+      $skip-link-box-shadow;
+    opacity: 1;
+    scale: 100%;
+    text-decoration: none !important;
+    pointer-events: unset;
+  }
+}

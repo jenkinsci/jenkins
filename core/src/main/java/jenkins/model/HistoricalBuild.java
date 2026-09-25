@@ -29,7 +29,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.markup.MarkupFormatter;
 import hudson.model.BallColor;
 import hudson.model.BuildBadgeAction;
-import hudson.model.ModelObject;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
 import hudson.model.Queue;
@@ -45,10 +44,10 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * A {@link Run}-like object as it might be displayed by {@link BuildHistoryWidget}.
  *
- * @since TODO
+ * @since 2.477
  */
 @Restricted(Beta.class)
-public interface HistoricalBuild extends ModelObject {
+public interface HistoricalBuild extends FullyNamedModelObject {
 
     /**
      * @return A build number
@@ -73,12 +72,6 @@ public interface HistoricalBuild extends ModelObject {
      */
     @CheckForNull
     String getDescription();
-
-    /**
-     * @return a human-readable full display name of this build.
-     */
-    @NonNull
-    String getFullDisplayName();
 
     /**
      * Get the {@link Queue.Item#getId()} of the original queue item from where this {@link HistoricalBuild} instance

@@ -24,29 +24,32 @@
 
 package jenkins.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Collections;
 import java.util.logging.Level;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
-import org.jvnet.hudson.test.SmokeTest;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-@Category(SmokeTest.class)
-public class StartupTest {
+@Tag("SmokeTest")
+@WithJenkins
+class StartupTest {
 
-    @ClassRule
-    public static LoggerRule logs = new LoggerRule().record("", Level.WARNING).capture(100);
+    private static LogRecorder logs = new LogRecorder().record("", Level.WARNING).capture(100);
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void noWarnings() throws Exception {
+    void noWarnings() {
         assertEquals(Collections.emptyList(), logs.getMessages());
     }
 

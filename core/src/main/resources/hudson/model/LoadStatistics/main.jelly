@@ -24,11 +24,12 @@ THE SOFTWARE.
 
 <!-- renders an HTML fragment that shows trend graph -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
   <st:adjunct includes="hudson.model.LoadStatistics.resources"/>
-  <h1>
-    ${%title(it.displayName)}
-  </h1>
+
+  <j:if test="${it != app}">
+    <l:app-bar title="${%title(it.displayName)}" />
+  </j:if>
 
   <f:entry title="${%Timespan}" class="jenkins-form-item--small">
     <div class="jenkins-select">
@@ -47,7 +48,7 @@ THE SOFTWARE.
   </div>
   <noscript>
     <!-- The noscript alternative does not have the possibility to adjust the image to the available space -->
-    <img src="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300" srcset="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300&amp;scale=2 2x" alt="[${%Load statistics graph}]" />
+    <img src="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300" srcset="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300&amp;scale=2 2x" alt="[${%Load statistics graph}]" class="jenkins-graph-card" />
   </noscript>
   <p>
     ${%blurb}

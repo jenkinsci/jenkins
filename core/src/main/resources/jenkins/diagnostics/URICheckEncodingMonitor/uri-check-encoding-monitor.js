@@ -7,10 +7,11 @@ Behaviour.specify(
     var params = new URLSearchParams({ value: "\u57f7\u4e8b" });
     fetch(url + "?" + params).then((rsp) => {
       rsp.text().then((responseText) => {
-        var message = document.getElementById(
-          "URICheckEncodingMonitor-message",
-        );
-        message.innerHTML = responseText;
+        if (responseText !== "<div/>") {
+          const alertDiv = element.closest(".app-adminmonitor");
+          alertDiv.classList.remove("jenkins-hidden");
+          element.innerHTML = responseText;
+        }
       });
     });
   },

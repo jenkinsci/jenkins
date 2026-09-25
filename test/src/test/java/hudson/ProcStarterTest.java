@@ -39,24 +39,30 @@ import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Builder;
 import java.io.File;
 import java.io.IOException;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Contains tests for {@link ProcStarter} class.
  * @author Oleg Nenashev, Synopsys Inc.
  * @since 1.568
  */
-public class ProcStarterTest {
+@WithJenkins
+class ProcStarterTest {
 
-    @Rule
-    public JenkinsRule rule = new JenkinsRule();
+    private JenkinsRule rule;
+
+    @BeforeEach
+    void setUp(JenkinsRule j) {
+        rule = j;
+    }
 
     @Test
     @Issue("JENKINS-20559")
-    public void testNonInitializedEnvsNPE() throws Exception {
+    void testNonInitializedEnvsNPE() throws Exception {
         // Create nodes and other test stuff
         rule.jenkins.setNumExecutors(0);
         rule.createSlave();
@@ -72,7 +78,7 @@ public class ProcStarterTest {
 
     @Test
     @Issue("JENKINS-36277")
-    public void testNonExistingPwd() throws Exception {
+    void testNonExistingPwd() throws Exception {
         rule.jenkins.setNumExecutors(0);
         rule.createSlave();
 

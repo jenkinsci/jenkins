@@ -73,7 +73,7 @@ public class GlobalCrumbIssuerConfiguration extends GlobalConfiguration {
         if (DISABLE_CSRF_PROTECTION) {
             return null;
         }
-        return new DefaultCrumbIssuer(SystemProperties.getBoolean(Jenkins.class.getName() + ".crumbIssuerProxyCompatibility", false));
+        return new DefaultCrumbIssuer();
     }
 
     @Restricted(NoExternalUse.class)

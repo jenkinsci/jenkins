@@ -1,37 +1,39 @@
 package jenkins.security;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class HexStringConfidentialKeyTest {
+class HexStringConfidentialKeyTest {
 
-    @Rule
-    public ConfidentialStoreRule store = new ConfidentialStoreRule();
+    @BeforeEach
+    void setUp() {
+        ConfidentialStore.Mock.INSTANCE.clear();
+    }
 
     @Test
-    public void hexStringShouldProduceHexString() {
+    void hexStringShouldProduceHexString() {
         HexStringConfidentialKey key = new HexStringConfidentialKey("test", 8);
         assertTrue(key.get().matches("[A-Fa-f0-9]{8}"));
     }
 
     @Test
-    public void multipleGetsAreIdempotent() {
+    void multipleGetsAreIdempotent() {
         HexStringConfidentialKey key = new HexStringConfidentialKey("test", 8);
         assertEquals(key.get(), key.get());
     }
 
     @Test
-    public void specifyLengthAndMakeSureItTakesEffect() {
+    void specifyLengthAndMakeSureItTakesEffect() {
         for (int n : new int[] {8, 16, 32, 256}) {
             assertEquals(n, new HexStringConfidentialKey("test" + n, n).get().length());
         }
     }
 
     @Test
-    public void loadingExistingKey() {
+    void loadingExistingKey() {
         HexStringConfidentialKey key1 = new HexStringConfidentialKey("test", 8);
         key1.get(); // this causes the ke to be generated
 

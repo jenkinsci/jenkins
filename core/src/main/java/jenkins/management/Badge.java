@@ -66,7 +66,6 @@ public class Badge {
      *
      * @param text  The text to be shown in the badge.
      *      Keep it short, ideally just a number. More than 6 or 7 characters do not look good. Avoid spaces as they will lead to line breaks.
-     *      as this might lead to line breaks.
      * @param tooltip  The tooltip to show for the badge.
      *      Do not include html tags.
      * @param severity  The severity of the badge (danger, warning, info)

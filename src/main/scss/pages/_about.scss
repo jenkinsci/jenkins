@@ -1,0 +1,18 @@
+.app-about-heading {
+  font-weight: 600;
+  font-family: Georgia, serif;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem !important;
+}
+
+.app-about-version {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-bold-weight);
+  color: var(--text-color-secondary);
+  margin: 0;
+}
+
+.app-about-branding {
+  height: 230px;
+  margin-bottom: var(--section-padding);
+}

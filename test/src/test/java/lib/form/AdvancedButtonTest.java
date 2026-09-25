@@ -1,8 +1,8 @@
 package lib.form;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
@@ -11,11 +11,12 @@ import net.sf.json.JSONObject;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlFormUtil;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.StaplerRequest2;
 
 /**
@@ -23,12 +24,18 @@ import org.kohsuke.stapler.StaplerRequest2;
  *
  * @author Kohsuke Kawaguchi
  */
-public class AdvancedButtonTest {
+@WithJenkins
+class AdvancedButtonTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void testNestedOptionalBlock() throws Exception {
+    void testNestedOptionalBlock() throws Exception {
         HtmlPage page = j.createWebClient().goTo("self/testNestedOptionalBlock");
         HtmlForm form = page.getFormByName("config");
         HtmlFormUtil.getButtonByCaption(form, "Advanced").click();
@@ -39,7 +46,7 @@ public class AdvancedButtonTest {
 
     @Issue("JENKINS-14632")
     @Test
-    public void testSectionInsideOfAdvanced() throws Exception {
+    void testSectionInsideOfAdvanced() throws Exception {
         HtmlPage page = j.createWebClient().goTo("self/testSectionInsideOfAdvanced");
         HtmlForm form = page.getFormByName("config");
         assertFalse(form.getInputByName("b").isDisplayed());

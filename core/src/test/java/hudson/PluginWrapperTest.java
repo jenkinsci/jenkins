@@ -32,26 +32,26 @@ import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.stubbing.Answer;
 
-public class PluginWrapperTest {
+class PluginWrapperTest {
 
     private static Locale loc;
 
     @BeforeAll
-    public static void before() {
+    static void before() {
         Jenkins.VERSION = "2.0"; // Some value needed - tests will overwrite if necessary
         loc = Locale.getDefault();
         Locale.setDefault(new Locale("en", "GB"));
     }
 
     @AfterAll
-    public static void after() {
+    static void after() {
         if (loc != null) {
             Locale.setDefault(loc);
         }
     }
 
     @Test
-    public void dependencyTest() {
+    void dependencyTest() {
         String version = "plugin:0.0.2";
         PluginWrapper.Dependency dependency = new PluginWrapper.Dependency(version);
         assertEquals("plugin", dependency.shortName);
@@ -60,7 +60,7 @@ public class PluginWrapperTest {
     }
 
     @Test
-    public void optionalDependencyTest() {
+    void optionalDependencyTest() {
         String version = "plugin:0.0.2;resolution:=optional";
         PluginWrapper.Dependency dependency = new PluginWrapper.Dependency(version);
         assertEquals("plugin", dependency.shortName);
@@ -69,7 +69,7 @@ public class PluginWrapperTest {
     }
 
     @Test
-    public void jenkinsCoreTooOld() {
+    void jenkinsCoreTooOld() {
         PluginWrapper pw = pluginWrapper("fake").requiredCoreVersion("3.0").buildLoaded();
 
         final IOException ex = assertThrows(IOException.class, pw::resolvePluginDependencies);
@@ -77,7 +77,7 @@ public class PluginWrapperTest {
     }
 
     @Test
-    public void dependencyNotInstalled() {
+    void dependencyNotInstalled() {
         PluginWrapper pw = pluginWrapper("dependee").deps("dependency:42").buildLoaded();
 
         final IOException ex = assertThrows(IOException.class, pw::resolvePluginDependencies);
@@ -85,7 +85,7 @@ public class PluginWrapperTest {
     }
 
     @Test
-    public void dependencyOutdated() {
+    void dependencyOutdated() {
         pluginWrapper("dependency").version("3").buildLoaded();
         PluginWrapper pw = pluginWrapper("dependee").deps("dependency:5").buildLoaded();
 
@@ -94,7 +94,7 @@ public class PluginWrapperTest {
     }
 
     @Test
-    public void dependencyFailedToLoad() {
+    void dependencyFailedToLoad() {
         pluginWrapper("dependency").version("5").buildFailed();
         PluginWrapper pw = pluginWrapper("dependee").deps("dependency:3").buildLoaded();
 
@@ -104,7 +104,7 @@ public class PluginWrapperTest {
 
     @Issue("JENKINS-66563")
     @Test
-    public void insertJarsIntoClassPath() throws Exception {
+    void insertJarsIntoClassPath() throws Exception {
         try (URLClassLoader2 cl = new URLClassLoader2("Test", new URL[0])) {
             assertInjectingJarsWorks(cl);
         }
@@ -210,7 +210,7 @@ public class PluginWrapperTest {
 
     @Issue("JENKINS-52665")
     @Test
-    public void isSnapshot() {
+    void isSnapshot() {
         assertFalse(PluginWrapper.isSnapshot("1.0"));
         assertFalse(PluginWrapper.isSnapshot("1.0-alpha-1"));
         assertFalse(PluginWrapper.isSnapshot("1.0-rc9999.abc123def456"));

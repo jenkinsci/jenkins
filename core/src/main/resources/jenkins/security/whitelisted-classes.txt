@@ -54,6 +54,7 @@ java.math.BigInteger
 java.net.URI
 java.net.URL
 java.security.KeyRep
+java.time.LocalDate
 java.time.Ser
 java.util.ArrayDeque
 java.util.ArrayList
@@ -105,6 +106,7 @@ java.util.HashMap
 java.util.HashSet
 java.util.Hashtable
 java.util.ImmutableCollections$List12
+java.util.ImmutableCollections$ListN
 java.util.LinkedHashMap
 java.util.LinkedHashSet
 java.util.LinkedList

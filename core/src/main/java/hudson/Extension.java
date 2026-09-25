@@ -87,7 +87,10 @@ public @interface Extension {
     /**
      * If an extension is optional, don't log any class loading errors when reading it.
      * @since 1.358
+     * @deprecated This is very difficult to use correctly and rarely what you actually wanted.
+     *             Use {@code OptionalExtension} from the {@code variant} plugin instead.
      */
+    @Deprecated
     boolean optional() default false;
 
     /**

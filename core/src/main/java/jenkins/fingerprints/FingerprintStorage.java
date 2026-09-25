@@ -29,7 +29,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Functions;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Fingerprint;
 import hudson.model.TaskListener;
 import java.io.IOException;
@@ -45,7 +45,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * @author Sumit Sarin
  */
 @Restricted(Beta.class)
-public abstract class FingerprintStorage extends AbstractDescribableImpl<FingerprintStorage> implements ExtensionPoint {
+public abstract class FingerprintStorage implements Describable<FingerprintStorage>, ExtensionPoint {
 
     /**
      * Returns the configured {@link FingerprintStorage} engine chosen by the user for the system.
@@ -144,7 +144,7 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
      * @since 2.246
      */
     @Override public FingerprintStorageDescriptor getDescriptor() {
-        return (FingerprintStorageDescriptor) super.getDescriptor();
+        return (FingerprintStorageDescriptor) Describable.super.getDescriptor();
 
     }
 

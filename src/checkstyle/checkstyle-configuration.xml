@@ -10,6 +10,7 @@
     <property name="max" value="240"/>
     <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
   </module>
+  <module name="SuppressWarningsFilter" />
   <module name="TreeWalker">
     <!--
       Annotations: https://checkstyle.sourceforge.io/config_annotation.html
@@ -38,6 +39,7 @@
     <module name="StringLiteralEquality"/>
     <module name="SuperClone"/>
     <module name="SuperFinalize"/>
+    <module name="SuppressWarningsHolder" />
     <module name="UnnecessarySemicolonAfterOuterTypeDeclaration"/>
     <module name="UnnecessarySemicolonAfterTypeMemberDeclaration"/>
     <module name="UnnecessarySemicolonInEnumeration"/>
@@ -105,7 +107,7 @@
     <module name="GenericWhitespace">
       <message key="ws.followed" value="GenericWhitespace ''{0}'' is followed by whitespace."/>
       <message key="ws.preceded" value="GenericWhitespace ''{0}'' is preceded with whitespace."/>
-      <message key="ws.illegalFollow" value="GenericWhitespace ''{0}'' should followed by whitespace."/>
+      <message key="ws.illegalFollow" value="GenericWhitespace ''{0}'' is followed by an illegal character."/>
       <message key="ws.notPreceded" value="GenericWhitespace ''{0}'' is not preceded with whitespace."/>
     </module>
     <module name="MethodParamPad">

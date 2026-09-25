@@ -25,7 +25,6 @@
 package hudson.lifecycle;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.Extension;
 import hudson.util.BootFailure;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,7 +43,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Alon Bar-Lev
  */
 @Restricted(NoExternalUse.class)
-@Extension
 public class ExitLifecycle extends Lifecycle {
 
     private static final Logger LOGGER = Logger.getLogger(ExitLifecycle.class.getName());

@@ -61,8 +61,8 @@ public abstract class HttpSessionListener implements ExtensionPoint, jakarta.ser
 
     @Override
     public void sessionDestroyed(HttpSessionEvent httpSessionEvent) {
-        if (Util.isOverridden(HttpSessionListener.class, getClass(), "sessionCreated", javax.servlet.http.HttpSessionEvent.class)) {
-            sessionCreated(HttpSessionEventWrapper.fromJakartaHttpSessionEvent(httpSessionEvent));
+        if (Util.isOverridden(HttpSessionListener.class, getClass(), "sessionDestroyed", javax.servlet.http.HttpSessionEvent.class)) {
+            sessionDestroyed(HttpSessionEventWrapper.fromJakartaHttpSessionEvent(httpSessionEvent));
         }
     }
 

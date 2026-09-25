@@ -25,10 +25,12 @@
 package jenkins.console;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
+import hudson.model.userproperty.UserPropertyCategory;
 import java.util.List;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -63,6 +65,16 @@ public class ConsoleUrlProviderUserProperty extends UserProperty {
         @Override
         public String getDisplayName() {
             return Messages.consoleUrlProviderDisplayName();
+        }
+
+        @Override
+        public String getDescription() {
+            return Messages.consoleUrlProviderDisplayName_Description();
+        }
+
+        @Override
+        public @NonNull UserPropertyCategory getUserPropertyCategory() {
+            return UserPropertyCategory.get(UserPropertyCategory.Appearance.class);
         }
 
         @Override

@@ -29,7 +29,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DependencyRunner;
-import hudson.DependencyRunner.ProjectRunnable;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -62,6 +61,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.security.XStreamNotDeserializable;
 import jenkins.triggers.TriggeredItem;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
@@ -164,6 +164,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     protected final String spec;
     protected transient CronTabList tabs;
     @CheckForNull
+    @XStreamNotDeserializable
     protected transient J job;
 
     /**
@@ -252,6 +253,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
 
     private static Future previousSynchronousPolling;
 
+    @SuppressFBWarnings(value = "LI_LAZY_INIT_STATIC", justification = "TODO needs triage")
     public static void checkTriggers(final Calendar cal) {
         Jenkins inst = Jenkins.get();
 
@@ -266,18 +268,15 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                 // ignored, only the global setting is honored. The polling job is submitted only if the previous job has
                 // terminated.
                 // FIXME allow to set a global crontab spec
-                previousSynchronousPolling = scmd.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
-                    @Override
-                    public void run(AbstractProject p) {
-                        for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
-                            if (t instanceof SCMTrigger) {
-                                if (t.job != null) {
-                                    LOGGER.fine("synchronously triggering SCMTrigger for project " + t.job.getName());
-                                } else {
-                                    LOGGER.fine("synchronously triggering SCMTrigger for unknown project");
-                                }
-                                t.run();
+                previousSynchronousPolling = scmd.getExecutor().submit(new DependencyRunner(p -> {
+                    for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
+                        if (t instanceof SCMTrigger) {
+                            if (t.job != null) {
+                                LOGGER.fine("synchronously triggering SCMTrigger for project " + t.job.getName());
+                            } else {
+                                LOGGER.fine("synchronously triggering SCMTrigger for unknown project");
                             }
+                            t.run();
                         }
                     }
                 }));

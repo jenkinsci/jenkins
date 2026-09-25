@@ -30,11 +30,12 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.Extension;
 import hudson.Functions;
@@ -46,6 +47,7 @@ import hudson.model.Executor;
 import hudson.model.FileParameterDefinition;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Item;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
@@ -55,45 +57,53 @@ import hudson.model.SimpleParameterDefinition;
 import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.TopLevelItem;
+import hudson.model.User;
+import hudson.security.ACL;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SmokeTest;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * {@link BuildCommand} test.
  */
-public class BuildCommandTest {
+@WithJenkins
+class BuildCommandTest {
 
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
+    private JenkinsRule j;
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Just schedules a build and return.
      */
     @Test
-    public void async() throws Exception {
+    void async() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         OneShotEvent started = new OneShotEvent();
         OneShotEvent completed = new OneShotEvent();
@@ -117,8 +127,8 @@ public class BuildCommandTest {
      * Tests synchronous execution.
      */
     @Test
-    @Category(SmokeTest.class)
-    public void sync() throws Exception {
+    @Tag("SmokeTest")
+    void sync() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping 127.0.0.1") : new Shell("sleep 3"));
 
@@ -130,7 +140,7 @@ public class BuildCommandTest {
      * Tests synchronous execution with retried verbose output
      */
     @Test
-    public void syncWOutputStreaming() throws Exception {
+    void syncWOutputStreaming() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping 127.0.0.1") : new Shell("sleep 3"));
 
@@ -139,7 +149,7 @@ public class BuildCommandTest {
     }
 
     @Test
-    public void parameters() throws Exception {
+    void parameters() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("key", null)));
 
@@ -149,7 +159,7 @@ public class BuildCommandTest {
     }
 
     @Test
-    public void defaultParameters() throws Exception {
+    void defaultParameters() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("key", "default"), new StringParameterDefinition("key2", "default2")));
 
@@ -161,7 +171,7 @@ public class BuildCommandTest {
 
     // TODO randomly fails: Started test0 #1
     @Test
-    public void consoleOutput() throws Exception {
+    void consoleOutput() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         CLICommandInvoker.Result r = new CLICommandInvoker(j, new BuildCommand()).invokeWithArgs("-s", "-v", p.getName());
         assertThat(r, CLICommandInvoker.Matcher.succeeded());
@@ -171,7 +181,7 @@ public class BuildCommandTest {
 
     // TODO randomly fails: Started test0 #1
     @Test
-    public void consoleOutputWhenBuildSchedulingRefused() throws Exception {
+    void consoleOutputWhenBuildSchedulingRefused() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         CLICommandInvoker.Result r = new CLICommandInvoker(j, new BuildCommand()).invokeWithArgs("-s", "-v", p.getName());
         assertThat(r, CLICommandInvoker.Matcher.failedWith(4));
@@ -188,7 +198,7 @@ public class BuildCommandTest {
     }
 
     @Test
-    public void refuseToBuildDisabledProject() throws Exception {
+    void refuseToBuildDisabledProject() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("the-project");
         project.disable();
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
@@ -196,11 +206,11 @@ public class BuildCommandTest {
 
         assertThat(result, failedWith(4));
         assertThat(result.stderr(), containsString("ERROR: Cannot build the-project because it is disabled."));
-        assertNull("Project should not be built", project.getBuildByNumber(1));
+        assertNull(project.getBuildByNumber(1), "Project should not be built");
     }
 
     @Test
-    public void refuseToBuildNewlyCopiedProject() throws Exception {
+    void refuseToBuildNewlyCopiedProject() throws Exception {
         FreeStyleProject original = j.createFreeStyleProject("original");
         FreeStyleProject newOne = (FreeStyleProject) j.jenkins.<TopLevelItem>copy(original, "new-one");
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
@@ -208,11 +218,11 @@ public class BuildCommandTest {
 
         assertThat(result, failedWith(4));
         assertThat(result.stderr(), containsString("ERROR: Cannot build new-one because its configuration has not been saved."));
-        assertNull("Project should not be built", newOne.getBuildByNumber(1));
+        assertNull(newOne.getBuildByNumber(1), "Project should not be built");
     }
 
     @Test
-    public void correctlyParseMapValuesContainingEqualsSign() throws Exception {
+    void correctlyParseMapValuesContainingEqualsSign() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("the-project");
         project.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("expr", null)));
 
@@ -225,7 +235,7 @@ public class BuildCommandTest {
 
     @Issue("JENKINS-15094")
     @Test
-    public void executorsAliveOnParameterWithNullDefaultValue() throws Exception {
+    void executorsAliveOnParameterWithNullDefaultValue() throws Exception {
         DumbSlave slave = j.createSlave();
         FreeStyleProject project = j.createFreeStyleProject("foo");
         project.setAssignedNode(slave);
@@ -244,7 +254,7 @@ public class BuildCommandTest {
 
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> slave.toComputer().getExecutors().stream().map(Executor::isActive).allMatch(Boolean::valueOf));
+                .until(() -> slave.toComputer().getExecutors().stream().allMatch(Executor::isActive));
 
         // Create CLI & run command
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
@@ -253,13 +263,13 @@ public class BuildCommandTest {
         assertThat(result.stderr(), containsString("ERROR: No default value for the parameter 'FOO'."));
 
         Thread.sleep(5000); // Give the job 5 seconds to be submitted
-        assertNull("Build should not be scheduled", j.jenkins.getQueue().getItem(project));
-        assertNull("Build should not be scheduled", project.getBuildByNumber(2));
+        assertNull(j.jenkins.getQueue().getItem(project), "Build should not be scheduled");
+        assertNull(project.getBuildByNumber(2), "Build should not be scheduled");
 
         // Check executors health after a timeout
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> slave.toComputer().getExecutors().stream().map(Executor::isActive).allMatch(Boolean::valueOf));
+                .until(() -> slave.toComputer().getExecutors().stream().allMatch(Executor::isActive));
     }
 
     public static final class NullDefaultValueParameterDefinition extends SimpleParameterDefinition {
@@ -288,9 +298,87 @@ public class BuildCommandTest {
 
     }
 
+    @Test
+    void syncRequiresCancelPermission() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        FreeStyleProject p = j.createFreeStyleProject("protected-job");
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toEveryone()
+                .grant(Item.READ, Item.BUILD).onItems(p).to("builder"));
+
+        CLICommandInvoker.Result result = new CLICommandInvoker(j, new BuildCommand())
+                .asUser("builder")
+                .invokeWithArgs("-s", p.getName());
+
+        assertThat(result, failedWith(6));
+        assertThat(result.stderr(), containsString("ERROR: builder is missing the Job/Cancel permission"));
+        assertNull(p.getBuildByNumber(1), "No build should have been scheduled");
+    }
+
+    @Test
+    void interruptedSyncDoesNotCancelBuildWhenCancelPermissionRevoked() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        FreeStyleProject project = j.createFreeStyleProject("protected-job");
+
+        OneShotEvent buildStarted = new OneShotEvent();
+        OneShotEvent allowFinish = new OneShotEvent();
+        project.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+                buildStarted.signal();
+                allowFinish.block();
+                return true;
+            }
+        });
+
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toEveryone()
+                .grant(Item.READ, Item.BUILD, Item.CANCEL).onItems(project).to("builder"));
+
+        ByteArrayOutputStream cliStdout = new ByteArrayOutputStream();
+        BuildCommand command = new BuildCommand();
+        command.job = project;
+        command.sync = true;
+        command.stdin = InputStream.nullInputStream();
+        command.stdout = new PrintStream(cliStdout);
+        command.stderr = new PrintStream(new ByteArrayOutputStream());
+
+        AtomicReference<Throwable> commandFailure = new AtomicReference<>();
+        Thread commandThread = new Thread(() -> {
+            try (var ignored = ACL.as2(User.getById("builder", true).impersonate2())) {
+                command.run();
+            } catch (Throwable x) {
+                commandFailure.set(x);
+            }
+        });
+        commandThread.start();
+
+        buildStarted.block(TimeUnit.SECONDS.toMillis(30));
+        FreeStyleBuild build = project.getBuildByNumber(1);
+        assertNotNull(build);
+        assertTrue(build.isBuilding());
+
+        // Revoke Job/Cancel while the build is running
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toEveryone()
+                .grant(Item.READ, Item.BUILD).onItems(project).to("builder"));
+
+        commandThread.interrupt();
+        commandThread.join(TimeUnit.SECONDS.toMillis(10));
+        assertFalse(commandThread.isAlive());
+        assertThat(cliStdout.toString(), containsString("Started protected-job #1"));
+
+        assertTrue(build.isBuilding(), "Build must still be running after interrupt with revoked Job/Cancel");
+
+        allowFinish.signal();
+        j.waitForCompletion(build);
+        assertEquals(hudson.model.Result.SUCCESS, build.getResult());
+        assertThat(String.join("\n", build.getLog(Integer.MAX_VALUE)), not(containsString("Aborted by")));
+    }
+
     @Issue("JENKINS-41745")
     @Test
-    public void fileParameter() throws Exception {
+    void fileParameter() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("myjob");
         p.addProperty(new ParametersDefinitionProperty(new FileParameterDefinition("file", null)));
         p.getBuildersList().add(new TestBuilder() {

@@ -26,6 +26,7 @@ package hudson.widgets;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Job;
@@ -40,6 +41,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import jenkins.model.HistoricalBuild;
+import jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag;
 import jenkins.util.SystemProperties;
 import jenkins.widgets.HistoryPageEntry;
 import jenkins.widgets.HistoryPageFilter;
@@ -71,6 +73,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     /**
      * The given data model of records. Newer ones first.
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public Iterable<T> baseList;
 
     /**
@@ -204,7 +207,8 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     }
 
     protected HistoryPageFilter<T> newPageFilter() {
-        HistoryPageFilter<T> historyPageFilter = new HistoryPageFilter<>(THRESHOLD);
+        int maxEntries = new NewJobPageUserExperimentalFlag().getFlagValue() ? NEW_JOB_PAGE_THRESHOLD : THRESHOLD;
+        HistoryPageFilter<T> historyPageFilter = new HistoryPageFilter<>(maxEntries);
         historyPageFilter.widget = this;
 
         if (newerThan != null) {
@@ -262,7 +266,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
                     nn = n;
                 } else {
                     // every record fetched this time is frozen. next fetch should start from the next build
-                    nn = adapter.getNextKey(adapter.getKey(items.get(0)));
+                    nn = adapter.getNextKey(adapter.getKey(items.getFirst()));
                 }
             }
 
@@ -277,6 +281,11 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     }
 
     static final int THRESHOLD = SystemProperties.getInteger(HistoryWidget.class.getName() + ".threshold", 30);
+
+    /**
+     * Maximum number of builds shown in the builds list when the experimental new job page is enabled.
+     */
+    static final int NEW_JOB_PAGE_THRESHOLD = 10;
 
     public String getNextBuildNumberToFetch() {
         return nextBuildNumberToFetch;

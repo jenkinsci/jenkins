@@ -34,12 +34,15 @@ import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.XStreamDeserializable;
 import jenkins.slaves.PingFailureAnalyzer;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
@@ -65,28 +68,27 @@ public class ChannelPinger extends ComputerListener {
     /**
      * Timeout for the ping in seconds.
      */
-    private int pingTimeoutSeconds = SystemProperties.getInteger(TIMEOUT_SECONDS_PROPERTY, PING_TIMEOUT_SECONDS_DEFAULT, Level.WARNING);
+    private Duration pingTimeout = SystemProperties.getDuration(TIMEOUT_SECONDS_PROPERTY, ChronoUnit.SECONDS, Duration.ofSeconds(PING_TIMEOUT_SECONDS_DEFAULT));
 
     /**
      * Interval for the ping in seconds.
      */
-    private int pingIntervalSeconds = PING_INTERVAL_SECONDS_DEFAULT;
+    private Duration pingInterval = Duration.ofSeconds(PING_INTERVAL_SECONDS_DEFAULT);
 
     public ChannelPinger() {
 
-        Integer interval = SystemProperties.getInteger(INTERVAL_SECONDS_PROPERTY, null, Level.WARNING);
+        Duration interval = SystemProperties.getDuration(INTERVAL_SECONDS_PROPERTY, ChronoUnit.SECONDS, null);
 
         // if interval wasn't set we read the deprecated property in minutes
         if (interval == null) {
-            interval = SystemProperties.getInteger(INTERVAL_MINUTES_PROPERTY_DEPRECATED, null, Level.WARNING);
+            interval = SystemProperties.getDuration(INTERVAL_MINUTES_PROPERTY_DEPRECATED, ChronoUnit.MINUTES, null);
             if (interval != null) {
                 LOGGER.warning(INTERVAL_MINUTES_PROPERTY_DEPRECATED + " property is deprecated, " + INTERVAL_SECONDS_PROPERTY + " should be used");
-                interval *= 60; //to seconds
             }
         }
 
         if (interval != null) {
-            pingIntervalSeconds = interval;
+            pingInterval = interval;
         }
     }
 
@@ -105,6 +107,8 @@ public class ChannelPinger extends ComputerListener {
 
     @VisibleForTesting
     /*package*/ void install(Channel channel, @CheckForNull SlaveComputer c) {
+        var pingTimeoutSeconds = (int) pingTimeout.toSeconds();
+        var pingIntervalSeconds = (int) pingInterval.toSeconds();
         if (pingTimeoutSeconds < 1 || pingIntervalSeconds < 1) {
             LOGGER.warning("Agent ping is disabled");
             return;
@@ -127,6 +131,7 @@ public class ChannelPinger extends ComputerListener {
     public static class SetUpRemotePing extends MasterToSlaveCallable<Void, IOException> {
         private static final long serialVersionUID = -2702219700841759872L;
         @Deprecated
+        @XStreamDeserializable
         private transient int pingInterval;
         private final int pingTimeoutSeconds;
         private final int pingIntervalSeconds;

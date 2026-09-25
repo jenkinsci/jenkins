@@ -27,6 +27,7 @@ package hudson.console;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.model.InvisibleAction;
 import hudson.model.Run;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
@@ -35,6 +36,8 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 import org.jvnet.tiger_types.Types;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
@@ -128,5 +131,25 @@ public abstract class ConsoleAnnotatorFactory<T> implements ExtensionPoint {
     @SuppressWarnings("rawtypes")
     public static ExtensionList<ConsoleAnnotatorFactory> all() {
         return ExtensionList.lookup(ConsoleAnnotatorFactory.class);
+    }
+
+    /**
+     * This action makes {@link hudson.console.ConsoleAnnotatorFactory} instances accessible via HTTP.
+     *
+     * @see hudson.Functions#generateConsoleAnnotationScriptAndStylesheet
+     * @see ConsoleAnnotatorFactory#hasStylesheet()
+     * @see ConsoleAnnotatorFactory#hasScript()
+     */
+    @Restricted(NoExternalUse.class)
+    @Extension
+    public static class RootAction extends InvisibleAction implements hudson.model.RootAction {
+        @Override
+        public String getUrlName() {
+            return ConsoleAnnotatorFactory.class.getName();
+        }
+
+        public ConsoleAnnotatorFactory<?> getDynamic(String className) {
+            return all().getDynamic(className);
+        }
     }
 }

@@ -24,6 +24,7 @@
 
 package hudson.cli;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.TopLevelItem;
@@ -47,6 +48,7 @@ public class CopyJobCommand extends CLICommand {
     public TopLevelItem src;
 
     @Argument(metaVar = "DST", usage = "Name of the new job to be created.", index = 1, required = true)
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public String dst;
 
     @Override

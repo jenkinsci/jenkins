@@ -1,8 +1,8 @@
 package hudson;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
@@ -19,25 +19,31 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import jenkins.security.MasterToSlaveCallable;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 @Issue("JENKINS-7809")
-public class ProcTest {
+@WithJenkins
+class ProcTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Makes sure that the output flushing and {@link ProcImpl#join()} is synced.
      */
     @Test
-    public void remoteProcOutputSync() throws Exception {
+    void remoteProcOutputSync() throws Exception {
         VirtualChannel ch = createSlaveChannel();
 
         // keep the pipe fairly busy
@@ -59,7 +65,7 @@ public class ProcTest {
         for (int i = 0; i < 1000; i++) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             if (Functions.isWindows()) {
-                launcher.launch().cmds(new String[] {"cmd", "/c", "echo ", str.toString()}).stdout(baos).join();
+                launcher.launch().cmds("cmd", "/c", "echo ", str.toString()).stdout(baos).join();
             }
             else {
                 launcher.launch().cmds("echo", str.toString()).stdout(baos).join();
@@ -98,14 +104,14 @@ public class ProcTest {
     }
 
     @Test
-    public void ioPumpingWithLocalLaunch() throws Exception {
-        assumeFalse("TODO: Implement this test for Windows", Functions.isWindows());
+    void ioPumpingWithLocalLaunch() throws Exception {
+        assumeFalse(Functions.isWindows(), "TODO: Implement this test for Windows");
         doIoPumpingTest(new LocalLauncher(new StreamTaskListener(System.out, Charset.defaultCharset())));
     }
 
     @Test
-    public void ioPumpingWithRemoteLaunch() throws Exception {
-        assumeFalse("TODO: Implement this test for Windows", Functions.isWindows());
+    void ioPumpingWithRemoteLaunch() throws Exception {
+        assumeFalse(Functions.isWindows(), "TODO: Implement this test for Windows");
         doIoPumpingTest(new RemoteLauncher(
                 new StreamTaskListener(System.out, Charset.defaultCharset()),
                 createSlaveChannel(), true));

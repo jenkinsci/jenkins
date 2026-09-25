@@ -24,7 +24,7 @@
 
 package hudson.scm;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -39,17 +39,23 @@ import org.htmlunit.html.DomNodeList;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlImage;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class AbstractScmTagActionTest {
+@WithJenkins
+class AbstractScmTagActionTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void regularTextDisplayedCorrectly() throws Exception {
+    void regularTextDisplayedCorrectly() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         String tagToKeep = "Nice tag with space";

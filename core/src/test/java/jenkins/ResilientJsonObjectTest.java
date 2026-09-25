@@ -1,15 +1,15 @@
 package jenkins;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import net.sf.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ResilientJsonObjectTest {
+class ResilientJsonObjectTest {
     public static class Foo { public int a; }
 
     /**
@@ -17,7 +17,7 @@ public class ResilientJsonObjectTest {
      */
     @Test
     @Issue("JENKINS-15105")
-    public void databindingShouldIgnoreUnrecognizedJsonProperty() {
+    void databindingShouldIgnoreUnrecognizedJsonProperty() {
         JSONObject o = JSONObject.fromObject("{a:1,b:2}");
         Foo f = (Foo) JSONObject.toBean(o, Foo.class);
         assertEquals(1, f.a);

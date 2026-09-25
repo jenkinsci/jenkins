@@ -34,27 +34,29 @@ import static org.hamcrest.Matchers.equalTo;
 import hudson.model.FreeStyleProject;
 import hudson.model.labels.LabelAtom;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author pjanouse
  */
-public class ClearQueueCommandTest {
+@WithJenkins
+class ClearQueueCommandTest {
 
     private CLICommandInvoker command;
 
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         command = new CLICommandInvoker(j, "clear-queue");
     }
 
-    @Test public void clearQueueShouldFailWithoutAdministerPermission() {
+    @Test
+    void clearQueueShouldFailWithoutAdministerPermission() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ).invoke();
 
@@ -64,7 +66,7 @@ public class ClearQueueCommandTest {
     }
 
     @Test
-    public void clearQueueShouldSucceedOnEmptyQueue() {
+    void clearQueueShouldSucceedOnEmptyQueue() {
         assertThat(j.jenkins.getQueue().isEmpty(), equalTo(true));
 
         final CLICommandInvoker.Result result = command
@@ -75,7 +77,7 @@ public class ClearQueueCommandTest {
     }
 
     @Test
-    public void clearQueueShouldSucceed() throws Exception {
+    void clearQueueShouldSucceed() throws Exception {
         assertThat(j.jenkins.getQueue().isEmpty(), equalTo(true));
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");

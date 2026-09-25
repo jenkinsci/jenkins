@@ -128,7 +128,6 @@ public class SetupWizard extends PageDecorator {
      * @since 2.260 (with NoExternalUse)
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     private static /* not final */ String ADMIN_INITIAL_API_TOKEN = SystemProperties.getString(ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME);
 
     @NonNull
@@ -212,7 +211,6 @@ public class SetupWizard extends PageDecorator {
         }
     }
 
-    @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "only checked against true")
     private void createInitialApiToken(User user) throws IOException, InterruptedException {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
 
@@ -309,8 +307,7 @@ public class SetupWizard extends PageDecorator {
      */
     /*package*/ boolean isUsingSecurityDefaults() {
         Jenkins j = Jenkins.get();
-        if (j.getSecurityRealm() instanceof HudsonPrivateSecurityRealm) {
-            HudsonPrivateSecurityRealm securityRealm = (HudsonPrivateSecurityRealm) j.getSecurityRealm();
+        if (j.getSecurityRealm() instanceof HudsonPrivateSecurityRealm securityRealm) {
             try {
                 if (securityRealm.getAllUsers().size() == 1) {
                     HudsonPrivateSecurityRealm.Details details = securityRealm.load(SetupWizard.initialSetupAdminUserName);
@@ -635,14 +632,12 @@ public class SetupWizard extends PageDecorator {
         JSONArray pluginCategories = JSONArray.fromObject(getPlatformPluginList().toString());
         for (Iterator<?> categoryIterator = pluginCategories.iterator(); categoryIterator.hasNext();) {
             Object category = categoryIterator.next();
-            if (category instanceof JSONObject) {
-                JSONObject cat = (JSONObject) category;
+            if (category instanceof JSONObject cat) {
                 JSONArray plugins = cat.getJSONArray("plugins");
 
                 nextPlugin: for (Iterator<?> pluginIterator = plugins.iterator(); pluginIterator.hasNext();) {
                     Object pluginData = pluginIterator.next();
-                    if (pluginData instanceof JSONObject) {
-                        JSONObject plugin = (JSONObject) pluginData;
+                    if (pluginData instanceof JSONObject plugin) {
                         if (plugin.has("added")) {
                             String sinceVersion = plugin.getString("added");
                             if (sinceVersion != null) {
@@ -766,8 +761,7 @@ public class SetupWizard extends PageDecorator {
         @SuppressFBWarnings(value = "UNVALIDATED_REDIRECT", justification = "TODO needs triage")
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
             // Force root requests to the setup wizard
-            if (request instanceof HttpServletRequest && !Jenkins.get().getInstallState().isSetupComplete()) {
-                HttpServletRequest req = (HttpServletRequest) request;
+            if (request instanceof HttpServletRequest req && !Jenkins.get().getInstallState().isSetupComplete()) {
                 String requestURI = req.getRequestURI();
                 if (requestURI.equals(req.getContextPath()) && !requestURI.endsWith("/")) {
                     ((HttpServletResponse) response).sendRedirect(req.getContextPath() + "/");

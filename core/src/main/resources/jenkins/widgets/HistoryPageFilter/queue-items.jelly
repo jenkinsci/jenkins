@@ -32,7 +32,7 @@ THE SOFTWARE.
     <j:set var="queuedItems" value="${it.queueItems}"/>
     <j:if test="${!queuedItems.isEmpty()}">
         <span class="app-builds-container__heading">${%Pending}</span>
-        <j:forEach var="pageEntry" items="${queuedItems}">
+        <j:forEach var="pageEntry" items="${queuedItems}" indexVar="i">
             <j:set var="item" value="${pageEntry.entry}"/>
             <j:set var="id" value="${h.generateId()}"/>
 

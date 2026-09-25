@@ -25,6 +25,7 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -45,6 +46,7 @@ import org.kohsuke.stapler.ClassDescriptor;
  * @author Kohsuke Kawaguchi
  * @since 1.351
  */
+@SuppressFBWarnings(value = "NM_SAME_SIMPLE_NAME_AS_SUPERCLASS", justification = "Used for backward compatibility and extending utility classes")
 public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
     /**
      * Finds a public method of the given name, regardless of its parameter definitions,

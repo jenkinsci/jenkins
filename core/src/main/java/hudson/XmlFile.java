@@ -351,8 +351,7 @@ public final class XmlFile {
 
                 private void attempt() throws Eureka {
                     if (loc == null)   return;
-                    if (loc instanceof Locator2) {
-                        Locator2 loc2 = (Locator2) loc;
+                    if (loc instanceof Locator2 loc2) {
                         String e = loc2.getEncoding();
                         if (e != null)
                             throw new Eureka(e);

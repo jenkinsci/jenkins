@@ -487,7 +487,7 @@ public class XStreamDOM {
 
         public XStreamDOM getOutput() {
             if (pendings.size() != 1)     throw new IllegalStateException();
-            return pendings.peek().children.get(0);
+            return pendings.peek().children.getFirst();
         }
     }
 

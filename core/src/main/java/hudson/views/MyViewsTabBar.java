@@ -28,7 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.MyViewsProperty;
 import hudson.model.View;
@@ -58,8 +58,10 @@ import org.kohsuke.stapler.StaplerRequest2;
  * @author Winston Prakash
  * @since 1.378
  * @see MyViewsTabBarDescriptor
+ * @deprecated Implement {@link ViewsTabBar}
  */
-public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBar> implements ExtensionPoint {
+@Deprecated
+public abstract class MyViewsTabBar implements Describable<MyViewsTabBar>, ExtensionPoint {
     /**
      * Returns all the registered {@link ListViewColumn} descriptors.
      */
@@ -69,7 +71,7 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
 
     @Override
     public MyViewsTabBarDescriptor getDescriptor() {
-        return (MyViewsTabBarDescriptor) super.getDescriptor();
+        return (MyViewsTabBarDescriptor) Describable.super.getDescriptor();
     }
 
     /**

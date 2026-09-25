@@ -111,7 +111,7 @@ div {
             section(class: "empty-state-section") {
                 ul(class: "empty-state-section-list") {
                     li(class: "content-block") {
-                        a(href: "${rootURL}/${app.securityRealm.loginUrl}?from=${request.requestURI}",
+                        a(href: "${rootURL}/${app.securityRealm.loginUrl}?from=${request2.requestURI}",
                                 class: "content-block__link") {
                             span(_("Log in to Jenkins"))
                             span(class: "trailing-icon") {

@@ -1,41 +1,42 @@
 package hudson.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
-public class SecretUtilTest {
+class SecretUtilTest {
 
     @Issue("JENKINS-47500")
     @Test
-    public void decrypt() {
+    void decrypt() {
         String data = "{}";
         Secret secret = Secret.decrypt(data);
-        Assert.assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
+        assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
     }
 
 
     @Issue("JENKINS-47500")
     @Test
-    public void decryptJustSpace() {
+    void decryptJustSpace() {
         String data = " ";
         Secret secret = Secret.decrypt(data);
-        Assert.assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
+        assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
     }
 
     @Issue("JENKINS-47500")
     @Test
-    public void decryptWithSpace() {
+    void decryptWithSpace() {
         String data = "{ }";
         Secret secret = Secret.decrypt(data);
-        Assert.assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
+        assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
     }
 
     @Issue("JENKINS-47500")
     @Test
-    public void decryptWithSpaces() {
+    void decryptWithSpaces() {
         String data = "{     }";
         Secret secret = Secret.decrypt(data);
-        Assert.assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
+        assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
     }
 }

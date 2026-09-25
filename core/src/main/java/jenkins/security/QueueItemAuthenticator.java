@@ -3,10 +3,10 @@ package jenkins.security;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionPoint;
 import hudson.Util;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.CauseAction;
+import hudson.model.Describable;
 import hudson.model.Queue;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
@@ -25,7 +25,7 @@ import org.springframework.security.core.Authentication;
  * @see Item#authenticate()
  * @see Tasks#getAuthenticationOf
  */
-public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<QueueItemAuthenticator> implements ExtensionPoint {
+public abstract class QueueItemAuthenticator implements Describable<QueueItemAuthenticator>, ExtensionPoint {
     /**
      * Determines the identity in which the {@link hudson.model.Queue.Executable} will run as.
      * The default implementation delegates to {@link #authenticate2(hudson.model.Queue.Task)}.
@@ -102,6 +102,6 @@ public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<Que
 
     @Override
     public QueueItemAuthenticatorDescriptor getDescriptor() {
-        return (QueueItemAuthenticatorDescriptor) super.getDescriptor();
+        return (QueueItemAuthenticatorDescriptor) Describable.super.getDescriptor();
     }
 }

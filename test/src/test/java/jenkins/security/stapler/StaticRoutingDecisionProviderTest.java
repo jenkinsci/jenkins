@@ -24,8 +24,8 @@
 
 package jenkins.security.stapler;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
@@ -37,15 +37,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
 
 @Issue("SECURITY-400")
-public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
+@WithJenkins
+class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     @TestExtension
     public static class ContentProvider extends AbstractUnprotectedRootAction {
         // simulate side effect
@@ -83,45 +85,45 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
         }
     }
 
-    @Before
-    public void preparation() throws Exception {
+    @BeforeEach
+    void preparation() {
         ContentProvider.called = false;
         ContentProvider.called2 = false;
     }
 
-    @Before
-    public void resetWhitelist() throws Exception {
+    @BeforeEach
+    void resetWhitelist() {
         ExtensionList.lookupSingleton(StaticRoutingDecisionProvider.class).resetAndSave();
     }
 
     @Test
-    public void test_job_index() throws Exception {
+    void test_job_index() throws Exception {
         j.createFreeStyleProject("testProject");
         assertReachableWithoutOk("contentProvider/job/");
         assertTrue(ContentProvider.called);
     }
 
     @Test
-    public void test_string() throws Exception {
+    void test_string() {
         assertNotReachable("contentProvider/string/");
         assertFalse(ContentProvider.called);
     }
 
     @Test
-    public void test_objectString() throws Exception {
+    void test_objectString() {
         assertNotReachable("contentProvider/objectString/");
         assertFalse(ContentProvider.called);
     }
 
     @Test
-    public void test_objectCustom() throws Exception {
+    void test_objectCustom() {
         assertNotReachable("contentProvider/objectCustom/");
         assertFalse(ContentProvider.called);
     }
 
     //for more test about the whitelist initial loading, please refer to StaticRoutingDecisionProvider2Test
     @Test
-    public void test_objectCustom_withUserControlledSavedWhitelist() throws Throwable {
+    void test_objectCustom_withUserControlledSavedWhitelist() throws Throwable {
         String whitelist = ContentProvider.OBJECT_CUSTOM_SIGNATURE + "\n";
         Path whitelistFile = j.jenkins.getRootDir().toPath().resolve("stapler-whitelist.txt");
         Files.writeString(whitelistFile, whitelist, StandardCharsets.UTF_8);
@@ -139,7 +141,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void test_objectCustom_withUserControlledEditedWhitelist() throws Exception {
+    void test_objectCustom_withUserControlledEditedWhitelist() throws Exception {
         try {
             assertNotReachable("contentProvider/objectString/");
             assertFalse(ContentProvider.called);
@@ -173,7 +175,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void test_objectCustom_withStandardWhitelist() throws Exception {
+    void test_objectCustom_withStandardWhitelist() throws Exception {
         assertNotReachable("contentProvider/objectString/");
         assertFalse(ContentProvider.called);
         assertGetMethodRequestWasBlockedAndResetFlag();
@@ -253,7 +255,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void doAction_regular() throws Exception {
+    void doAction_regular() throws Exception {
         assertReachable("do-action/action/");
 
         ExtensionList.lookupSingleton(StaticRoutingDecisionProvider.class).add(ActionWithWhitelist.DO_ACTION_SIGNATURE);
@@ -275,7 +277,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void doAction_actionWithStaplerDispatchable() throws Exception {
+    void doAction_actionWithStaplerDispatchable() throws Exception {
         assertReachable("do-action/actionWithStaplerDispatchable/");
 
         ExtensionList.lookupSingleton(StaticRoutingDecisionProvider.class).addBlacklistSignature(ActionWithWhitelist.DO_ACTION_STAPLER_ROUTABLE_SIGNATURE);
@@ -284,7 +286,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void doAction_actionWithWebMethod() throws Exception {
+    void doAction_actionWithWebMethod() throws Exception {
         assertReachable("do-action/actionWithWebMethod/");
 
         ExtensionList.lookupSingleton(StaticRoutingDecisionProvider.class).addBlacklistSignature(ActionWithWhitelist.DO_ACTION_STAPLER_WEBMETHOD_SIGNATURE);
@@ -322,7 +324,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getItem_regular() throws Exception {
+    void getItem_regular() throws Exception {
         assertReachable("getter/item/");
         assertReachable("getter/item/valid");
 
@@ -335,7 +337,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getItem_getterWithStaplerDispatchable() throws Exception {
+    void getItem_getterWithStaplerDispatchable() throws Exception {
         assertReachable("getter/itemWithStaplerDispatchable/");
         assertReachable("getter/itemWithStaplerDispatchable/valid");
 
@@ -347,7 +349,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void getItem_getterWithStaplerNotDispatchable() throws Exception {
+    void getItem_getterWithStaplerNotDispatchable() {
         assertNotReachable("getter/itemWithStaplerNotDispatchable/");
         assertGetMethodRequestWasBlockedAndResetFlag();
         assertNotReachable("getter/itemWithStaplerNotDispatchable/valid");
@@ -399,7 +401,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void field_regular() throws Exception {
+    void field_regular() throws Exception {
         assertReachable("field/renderable/");
         assertReachable("field/renderable/valid");
 
@@ -412,7 +414,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void field_regular_returnType() throws Exception {
+    void field_regular_returnType() throws Exception {
         assertReachable("field/renderable/");
         assertReachable("field/renderable/valid");
 
@@ -449,7 +451,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void field_withStaplerDispatchable() throws Exception {
+    void field_withStaplerDispatchable() throws Exception {
         assertReachable("field/renderableWithStaplerDispatchable/");
         assertReachable("field/renderableWithStaplerDispatchable/valid");
 
@@ -459,7 +461,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void field_withStaplerNotDispatchable() throws Exception {
+    void field_withStaplerNotDispatchable() {
         assertNotReachable("field/renderableWithStaplerNotDispatchable/");
         assertFieldRequestWasBlockedAndResetFlag();
         assertNotReachable("field/renderableWithStaplerNotDispatchable/valid");
@@ -474,7 +476,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void fieldStatic_regular() throws Exception {
+    void fieldStatic_regular() throws Exception {
         assertNotReachable("field/staticRenderable/");
         assertFieldRequestWasBlockedAndResetFlag();
         assertNotReachable("field/staticRenderable/valid");
@@ -487,7 +489,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void fieldStatic_withStaplerDispatchable() throws Exception {
+    void fieldStatic_withStaplerDispatchable() throws Exception {
         assertReachable("field/staticRenderableWithStaplerDispatchable/");
         assertReachable("field/staticRenderableWithStaplerDispatchable/valid");
 
@@ -498,7 +500,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     }
 
     @Test
-    public void fieldStatic_withStaplerNotDispatchable() throws Exception {
+    void fieldStatic_withStaplerNotDispatchable() {
         assertNotReachable("field/staticRenderableWithStaplerNotDispatchable/");
         assertFieldRequestWasBlockedAndResetFlag();
         assertNotReachable("field/staticRenderableWithStaplerNotDispatchable/valid");

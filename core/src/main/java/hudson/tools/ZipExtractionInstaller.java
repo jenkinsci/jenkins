@@ -43,6 +43,8 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.Path;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
@@ -116,6 +118,14 @@ public class ZipExtractionInstaller extends ToolInstaller {
                 uri = new URI(value);
             } catch (URISyntaxException e) {
                 return FormValidation.error(e, Messages.ZipExtractionInstaller_malformed_url());
+            }
+            if (uri.getScheme() != null && !uri.getScheme().startsWith("http")) {
+                try {
+                    Path.of(uri);
+                    return FormValidation.ok();
+                } catch (FileSystemNotFoundException | IllegalArgumentException e) {
+                    return FormValidation.error(e, Messages.ZipExtractionInstaller_malformed_url());
+                }
             }
             HttpClient httpClient = ProxyConfiguration.newHttpClient();
             HttpRequest httpRequest;

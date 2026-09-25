@@ -27,9 +27,9 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,31 +39,38 @@ import java.net.HttpURLConnection;
 import net.sf.json.JSONObject;
 import org.htmlunit.Page;
 import org.htmlunit.WebResponse;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ApiTest {
+@WithJenkins
+class ApiTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-2828")
-    public void xpath() throws Exception {
+    void xpath() throws Exception {
         j.createWebClient().goTo("api/xml?xpath=/*[1]", "application/xml");
     }
 
     @Issue("JENKINS-27607")
-    @Test public void json() throws Exception {
+    @Test
+    void json() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("p");
         JenkinsRule.WebClient wc = j.createWebClient();
         WebResponse response = wc.goTo(p.getUrl() + "api/json?tree=name", "application/json").getWebResponse();
@@ -79,7 +86,7 @@ public class ApiTest {
 
     @Test
     @Issue("JENKINS-3267")
-    public void wrappedZeroItems() throws Exception {
+    void wrappedZeroItems() throws Exception {
         Page page = j.createWebClient().goTo("api/xml?wrapper=root&xpath=/hudson/nonexistent", "application/xml");
         assertEquals("<root/>", page.getWebResponse().getContentAsString());
     }
@@ -90,7 +97,8 @@ public class ApiTest {
      * @throws Exception if so
      */
     @Issue("SECURITY-165")
-    @Test public void xPathDocumentFunction() throws Exception {
+    @Test
+    void xPathDocumentFunction() throws Exception {
         File f = new File(j.jenkins.getRootDir(), "queue.xml");
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
@@ -103,13 +111,13 @@ public class ApiTest {
 
     @Test
     @Issue("JENKINS-3267")
-    public void wrappedOneItem() throws Exception {
+    void wrappedOneItem() throws Exception {
         Page page = j.createWebClient().goTo("api/xml?wrapper=root&xpath=/hudson/view/name", "application/xml");
         assertEquals("<root><name>" + AllView.DEFAULT_VIEW_NAME + "</name></root>", page.getWebResponse().getContentAsString());
     }
 
     @Test
-    public void wrappedMultipleItems() throws Exception {
+    void wrappedMultipleItems() throws Exception {
         j.createFreeStyleProject();
         j.createFreeStyleProject();
         Page page = j.createWebClient().goTo("api/xml?wrapper=root&xpath=/hudson/job/name", "application/xml");
@@ -117,18 +125,18 @@ public class ApiTest {
     }
 
     @Test
-    public void unwrappedZeroItems() throws Exception {
+    void unwrappedZeroItems() throws Exception {
         j.createWebClient().assertFails("api/xml?xpath=/hudson/nonexistent", HttpURLConnection.HTTP_NOT_FOUND);
     }
 
     @Test
-    public void unwrappedOneItem() throws Exception {
+    void unwrappedOneItem() throws Exception {
         Page page = j.createWebClient().goTo("api/xml?xpath=/hudson/view/name", "application/xml");
         assertEquals("<name>" + AllView.DEFAULT_VIEW_NAME + "</name>", page.getWebResponse().getContentAsString());
     }
 
     @Test
-    public void unwrappedLongString() throws Exception {
+    void unwrappedLongString() throws Exception {
         j.jenkins.setSystemMessage(
                 "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor"
                     + " incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis"
@@ -144,7 +152,7 @@ public class ApiTest {
     }
 
     @Test
-    public void unwrappedMultipleItems() throws Exception {
+    void unwrappedMultipleItems() throws Exception {
         j.createFreeStyleProject();
         j.createFreeStyleProject();
         j.createWebClient().assertFails("api/xml?xpath=/hudson/job/name", HttpURLConnection.HTTP_INTERNAL_ERROR);
@@ -152,7 +160,7 @@ public class ApiTest {
 
     @Issue("JENKINS-22566")
     @Test
-    public void parameter() throws Exception {
+    void parameter() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("p");
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("foo", "")));
         j.assertBuildStatusSuccess(p.scheduleBuild2(0, new ParametersAction(new StringParameterValue("foo", "bar"))));
@@ -166,9 +174,9 @@ public class ApiTest {
     }
 
     @Issue("JENKINS-22566")
-    @Ignore("TODO currently fails with: org.dom4j.DocumentException: Error on line 1 of document  : An invalid XML character (Unicode: 0x1b) was found in the element content of the document")
+    @Disabled("TODO currently fails with: org.dom4j.DocumentException: Error on line 1 of document  : An invalid XML character (Unicode: 0x1b) was found in the element content of the document")
     @Test
-    public void escapedParameter() throws Exception {
+    void escapedParameter() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("p");
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("foo", "")));
         j.assertBuildStatusSuccess(p.scheduleBuild2(0, new ParametersAction(new StringParameterValue("foo", "bar\u001B"))));
@@ -183,7 +191,7 @@ public class ApiTest {
 
     @Test
     @Issue("SECURITY-1704")
-    public void project_notExposedToIFrame() throws Exception {
+    void project_notExposedToIFrame() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("p");
         ensureXmlIsNotExposedToIFrame(p.getUrl());
         ensureJsonIsNotExposedToIFrame(p.getUrl());
@@ -192,7 +200,7 @@ public class ApiTest {
 
     @Test
     @Issue("SECURITY-1704")
-    public void custom_notExposedToIFrame() throws Exception {
+    void custom_notExposedToIFrame() throws Exception {
         ensureXmlIsNotExposedToIFrame("custom/");
         ensureJsonIsNotExposedToIFrame("custom/");
         ensurePythonIsNotExposedToIFrame("custom/");
@@ -204,7 +212,7 @@ public class ApiTest {
      */
     @Issue("SECURITY-1129")
     @Test
-    public void wrapperXss() throws Exception {
+    void wrapperXss() throws Exception {
         String wrapper = "html%20xmlns=\"http://www.w3.org/1999/xhtml\"><script>alert(%27XSS%20Detected%27)</script></html><!--";
 
         checkWrapperParam(wrapper, HttpServletResponse.SC_BAD_REQUEST, Messages.Api_WrapperParamInvalid());
@@ -216,7 +224,7 @@ public class ApiTest {
      */
     @Issue("SECURITY-1129")
     @Test
-    public void wrapperBadName() throws Exception {
+    void wrapperBadName() throws Exception {
         String wrapper = "-badname";
         checkWrapperParam(wrapper, HttpServletResponse.SC_BAD_REQUEST, Messages.Api_WrapperParamInvalid());
 
@@ -228,7 +236,7 @@ public class ApiTest {
      */
     @Issue("SECURITY-1129")
     @Test
-    public void wrapperGoodName() throws Exception {
+    void wrapperGoodName() throws Exception {
         String wrapper = "__GoodName-..-OK";
         checkWrapperParam(wrapper, HttpServletResponse.SC_OK, null);
 

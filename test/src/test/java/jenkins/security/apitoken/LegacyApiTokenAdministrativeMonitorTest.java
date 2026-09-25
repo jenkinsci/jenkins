@@ -25,10 +25,10 @@
 package jenkins.security.apitoken;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.AdministrativeMonitor;
 import hudson.model.User;
@@ -44,23 +44,29 @@ import org.htmlunit.html.HtmlDivision;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlElementUtil;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 
-public class LegacyApiTokenAdministrativeMonitorTest {
+@WithJenkins
+class LegacyApiTokenAdministrativeMonitorTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     private enum SelectFilter {
         ALL(0),
         ONLY_FRESH(1),
         ONLY_RECENT(2);
 
-        int index;
+        final int index;
 
         SelectFilter(int index) {
             this.index = index;
@@ -68,7 +74,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
     }
 
     @Test
-    public void isActive() throws Exception {
+    void isActive() throws Exception {
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
         config.setCreationOfLegacyTokenEnabled(true);
         config.setTokenGenerationOnCreationEnabled(false);
@@ -94,7 +100,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
 
     @Test
     @Issue("JENKINS-52441")
-    public void takeCareOfUserWithIdNull() throws Exception {
+    void takeCareOfUserWithIdNull() throws Exception {
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
         config.setCreationOfLegacyTokenEnabled(true);
         config.setTokenGenerationOnCreationEnabled(false);
@@ -127,7 +133,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
     }
 
     @Test
-    public void listOfUserWithLegacyTokenIsCorrect() throws Exception {
+    void listOfUserWithLegacyTokenIsCorrect() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
@@ -198,7 +204,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
     }
 
     @Test
-    public void monitorManagePageFilterAreWorking() throws Exception {
+    void monitorManagePageFilterAreWorking() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
@@ -285,7 +291,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
     }
 
     @Test
-    public void monitorManagePageCanRevokeToken() throws Exception {
+    void monitorManagePageCanRevokeToken() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
@@ -363,7 +369,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
 
     private void checkUserWithLegacyTokenListHasSizeOf(
             Page page,
-            int countOfToken, int countOfFreshToken, int countOfRecentToken) throws Exception {
+            int countOfToken, int countOfFreshToken, int countOfRecentToken) {
         String pageContent = page.getWebResponse().getContentAsString();
 
         int actualCountOfToken = StringUtils.countMatches(pageContent, "token-to-revoke");

@@ -1,6 +1,6 @@
 package jenkins.security;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.GroupDetails;
@@ -10,13 +10,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.FactorGrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,12 +27,18 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class LastGrantedAuthoritiesPropertyTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class LastGrantedAuthoritiesPropertyTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void basicFlow() throws Exception {
+    void basicFlow() throws Exception {
         j.jenkins.setSecurityRealm(new TestSecurityRealm());
 
         // login, and make sure it leaves the LastGrantedAuthoritiesProperty object
@@ -73,7 +81,7 @@ public class LastGrantedAuthoritiesPropertyTest {
     }
 
     private void _assertAuthorities(Collection<? extends GrantedAuthority> grantedAuthorities, String expected) {
-        List<String> authorities = grantedAuthorities.stream().map(GrantedAuthority::getAuthority).sorted().collect(Collectors.toList());
+        List<String> authorities = grantedAuthorities.stream().map(GrantedAuthority::getAuthority).filter(authority -> !authority.equals(FactorGrantedAuthority.PASSWORD_AUTHORITY)).sorted().collect(Collectors.toList());
 
         assertEquals(expected, String.join(":", authorities));
     }

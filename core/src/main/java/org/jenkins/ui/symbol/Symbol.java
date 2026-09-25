@@ -2,7 +2,6 @@ package org.jenkins.ui.symbol;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import hudson.PluginWrapper;
 import hudson.Util;
@@ -91,7 +90,6 @@ public final class Symbol {
     }
 
 
-    @SuppressFBWarnings(value = {"NP_LOAD_OF_KNOWN_NULL_VALUE", "RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE"}, justification = "Spotbugs doesn't grok try-with-resources")
     private static String loadSymbol(String namespace, String name) {
         String markup = PLACEHOLDER_SVG;
         ClassLoader classLoader = getClassLoader(namespace);

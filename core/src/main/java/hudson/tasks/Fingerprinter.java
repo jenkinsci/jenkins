@@ -66,6 +66,7 @@ import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
+import jenkins.security.XStreamNotDeserializable;
 import jenkins.tasks.SimpleBuildStep;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
@@ -366,6 +367,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
      */
     public static final class FingerprintAction implements RunAction2 {
 
+        @XStreamNotDeserializable
         private transient Run build;
 
         /**
@@ -485,6 +487,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
          *  the result, even if it doesn't exist
          * @since 1.430
          */
+        @SuppressFBWarnings(value = "EC_UNRELATED_TYPES_USING_POINTER_EQUALITY", justification = "TODO needs triage")
         public Map<AbstractProject, Integer> getDependencies(boolean includeMissing) {
             Map<AbstractProject, Integer> r = new HashMap<>();
 

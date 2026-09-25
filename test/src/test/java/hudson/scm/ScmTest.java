@@ -24,7 +24,7 @@
 
 package hudson.scm;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.FilePath;
 import hudson.Launcher;
@@ -35,18 +35,24 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Node;
 import hudson.model.Result;
 import java.io.File;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ScmTest {
+@WithJenkins
+class ScmTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Makes sure that {@link SCM#processWorkspaceBeforeDeletion(AbstractProject, FilePath, Node)} is called
@@ -54,7 +60,7 @@ public class ScmTest {
      */
     @Test
     @Issue("JENKINS-2271")
-    public void projectDeletionAndCallback() throws Exception {
+    void projectDeletionAndCallback() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         final boolean[] callback = new boolean[1];
         p.setScm(new NullSCM() {
@@ -75,7 +81,7 @@ public class ScmTest {
 
     @Test
     @Issue("JENKINS-4605")
-    public void abortDuringCheckoutMarksBuildAsAborted() throws Exception {
+    void abortDuringCheckoutMarksBuildAsAborted() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(new NullSCM() {
             @Override

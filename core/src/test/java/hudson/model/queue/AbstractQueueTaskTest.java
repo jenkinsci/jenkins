@@ -24,20 +24,20 @@
 
 package hudson.model.queue;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import hudson.model.Queue;
 import java.io.IOException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
 @SuppressWarnings("deprecation")
-public class AbstractQueueTaskTest {
+class AbstractQueueTaskTest {
 
     @Issue("JENKINS-47517")
     @Test
-    public void causeOfBlockageOverrides() {
+    void causeOfBlockageOverrides() {
         Queue.Task t = new LegacyTask();
         assertFalse(t.isBuildBlocked());
         assertNull(t.getWhyBlocked());

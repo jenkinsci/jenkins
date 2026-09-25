@@ -24,19 +24,19 @@
 
 package hudson.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import hudson.model.Run;
 import java.util.ArrayList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Ignacio Albors
  */
-public class RunListTest {
+class RunListTest {
 
     // RunList for byTimestamp tests
     private RunList rlist;
@@ -60,7 +60,7 @@ public class RunListTest {
     }
 
     @Test
-    public void byTimestampAllRuns() {
+    void byTimestampAllRuns() {
         setUpByTimestampRuns();
 
         RunList<Run> tested = rlist.byTimestamp(0, 400);
@@ -70,7 +70,7 @@ public class RunListTest {
     @Issue("JENKINS-21159")
     @Test
     @SuppressWarnings("deprecation")
-    public void byTimestampFirstRun() {
+    void byTimestampFirstRun() {
         setUpByTimestampRuns();
         // Only r1
         RunList<Run> tested = rlist.byTimestamp(150, 250);
@@ -80,7 +80,7 @@ public class RunListTest {
 
     @Test
     @SuppressWarnings("deprecation")
-    public void byTimestampLastRun() {
+    void byTimestampLastRun() {
         setUpByTimestampRuns();
         // Only r2
         RunList<Run> tested = rlist.byTimestamp(250, 350);

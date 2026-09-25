@@ -30,6 +30,7 @@ import hudson.model.ManagementLink;
 import hudson.model.UpdateCenter;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
+import jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag;
 import org.jenkinsci.Symbol;
 
 /**
@@ -40,6 +41,12 @@ public class PluginsLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
+        var flagEnabled = new NewManageJenkinsUserExperimentalFlag().getFlagValue();
+
+        if (flagEnabled) {
+            return null;
+        }
+
         return "plugin.svg";
     }
 

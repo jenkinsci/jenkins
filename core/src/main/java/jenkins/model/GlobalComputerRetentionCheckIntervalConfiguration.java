@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Configures check interval for computer retention.
@@ -56,7 +56,7 @@ public class GlobalComputerRetentionCheckIntervalConfiguration extends GlobalCon
     }
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         try {
             final int interval = json.getInt("computerRetentionCheckInterval");
             setComputerRetentionCheckInterval(interval);

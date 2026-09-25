@@ -26,8 +26,8 @@ package hudson.model.labels;
 
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.Action;
+import hudson.model.Describable;
 import java.util.Collection;
 import java.util.Collections;
 import jenkins.model.Jenkins;
@@ -46,7 +46,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @since 1.373
  */
 @ExportedBean
-public class LabelAtomProperty extends AbstractDescribableImpl<LabelAtomProperty> implements ExtensionPoint {
+public class LabelAtomProperty implements Describable<LabelAtomProperty>, ExtensionPoint {
     /**
      * Contributes {@link Action}s to the label.
      *

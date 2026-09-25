@@ -27,9 +27,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${%Builds}" />
     <l:main-panel>
-      <h1>
-        ${%title(it)}
-      </h1>
+      <l:app-bar title="${%Builds}" />
 
       <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>

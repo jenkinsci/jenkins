@@ -25,11 +25,11 @@
 package hudson.cli.handlers;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.cli.declarative.OptionHandlerExtension;
 import hudson.model.View;
 import hudson.model.ViewGroup;
 import java.util.StringTokenizer;
 import jenkins.model.Jenkins;
-import org.kohsuke.MetaInfServices;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
@@ -58,7 +58,7 @@ import org.springframework.security.access.AccessDeniedException;
  * @author ogondza
  * @since 1.538
  */
-@MetaInfServices
+@OptionHandlerExtension
 public class ViewOptionHandler extends OptionHandler<View> {
 
     public ViewOptionHandler(CmdLineParser parser, OptionDef option, Setter<View> setter) {

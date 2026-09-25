@@ -27,7 +27,7 @@ package hudson.markup;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -35,11 +35,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Collections;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -62,9 +59,14 @@ import org.kohsuke.stapler.verb.POST;
  * This is an extension point in Hudson, allowing plugins to implement different markup formatters.
  *
  * <p>
- * Implement the following methods to enable and control CodeMirror syntax highlighting
- * public String getCodeMirrorMode() // return null to disable CodeMirror dynamically
- * public String getCodeMirrorConfig()
+ * Implement the following methods to enable and control CodeMirror syntax highlighting:
+ * <ul>
+ *     <li><code>public String getCodeMirrorMode()</code> (return <code>null</code> to disable CodeMirror dynamically)</li>
+ *     <li>
+ *         <code>public String getCodeMirrorConfig()</code> (JSON snippet without surrounding curly braces, e.g., <code>"mode": "text/css"</code>.
+ *         Historically this allowed invalid JSON, but since TODO it needs to be properly quoted etc.
+ *     </li>
+ * </ul>
  *
  * <h2>Views</h2>
  * <p>
@@ -76,7 +78,7 @@ import org.kohsuke.stapler.verb.POST;
  * @since 1.391
  * @see jenkins.model.Jenkins#getMarkupFormatter()
  */
-public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupFormatter> implements ExtensionPoint {
+public abstract class MarkupFormatter implements Describable<MarkupFormatter>, ExtensionPoint {
     private static final Logger LOGGER = Logger.getLogger(MarkupFormatter.class.getName());
 
     private static /* non-final */ boolean PREVIEWS_ALLOW_GET = SystemProperties.getBoolean(MarkupFormatter.class.getName() + ".previewsAllowGET");
@@ -115,7 +117,7 @@ public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupForm
 
     @Override
     public MarkupFormatterDescriptor getDescriptor() {
-        return (MarkupFormatterDescriptor) super.getDescriptor();
+        return (MarkupFormatterDescriptor) Describable.super.getDescriptor();
     }
 
     /**
@@ -128,7 +130,7 @@ public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupForm
         translate(text, w);
         Map<String, String> extraHeaders = Collections.emptyMap();
         if (PREVIEWS_SET_CSP) {
-            extraHeaders = Stream.of("Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy").collect(Collectors.toMap(Function.identity(), v -> "default-src 'none';"));
+            extraHeaders = Map.of("Content-Security-Policy", "default-src 'none';");
         }
         return html(200, w.toString(), extraHeaders);
     }

@@ -36,7 +36,7 @@ THE SOFTWARE.
         <st:setHeader name="Referrer-Policy" value="same-origin" />
         <st:setHeader name="Cross-Origin-Opener-Policy" value="same-origin" />
         <x:doctype name="html" />
-        <st:statusCode value="${response.getStatus()}" />
+        <st:statusCode value="${response2.getStatus()}" />
         <html>
             <head>
                 <title>${%title(jakarta.servlet.error.message?:'Not Found')}</title>
@@ -53,7 +53,7 @@ THE SOFTWARE.
                 </h1>
                 <div style="text-align: center">
                     <h2>${%title(jakarta.servlet.error.message?:'Not Found')}</h2>
-                    <a href="${h.inferHudsonURL(request)}">${%Back to Jenkins}</a>
+                    <a href="${h.inferHudsonURL(request2)}">${%Back to Jenkins}</a>
                 </div>
             </body>
         </html>

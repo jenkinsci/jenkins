@@ -55,7 +55,8 @@ public class WhoAmI implements UnprotectedRootAction {
 
     // @Exported removed due to leak of sessionId with some SecurityRealm
     public String getDetails() {
-        return auth().getDetails() != null ? auth().getDetails().toString() : null;
+        var details = auth().getDetails();
+        return details != null ? details.toString() : null;
     }
 
     // @Exported removed due to leak of sessionId with some SecurityRealm
