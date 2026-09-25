@@ -30,6 +30,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.AbstractBuild;
 import hudson.model.Job;
 import hudson.model.ParameterValue;
+import hudson.model.Result;
 import hudson.search.UserSearchProperty;
 import hudson.util.Iterators;
 import hudson.widgets.HistoryWidget;
@@ -318,8 +319,11 @@ public class HistoryPageFilter<T> {
                 if (run.isBuilding()) {
                     return true;
                 }
-            } else if (!run.isBuilding() && run.getResult() != null && status.equals(run.getResult().toString())) {
-                return true;
+            } else if (!run.isBuilding()) {
+                Result result = run.getResult();
+                if (result != null && status.equals(result.toString())) {
+                    return true;
+                }
             }
         }
         return false;
