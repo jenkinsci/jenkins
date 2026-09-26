@@ -39,13 +39,13 @@ class CommandInstallerTest {
         rule.assertStringContains(obj.getCommand(), "echo A\necho B\necho C");
     }
 
-    private String javaHome = "/opt/jdk-25"; // ci.jenkins.io Java 25 directory
+    private static final String JAVA_HOME = "/opt/jdk-25"; // ci.jenkins.io Java 25 directory
 
     private static boolean missingTestConfiguration() {
-        // Test requires the '" + javaHome + "' directory to exist
+        // Test requires the '" + JAVA_HOME + "' directory to exist
         // Use a Unix installation dir that exists and is not writeable
-        File javaHomeDir = new File(javaHome);
-        return !javaHomeDir.exists() || Files.isWritable(javaHomeDir.toPath());
+        File JAVA_HOMEDir = new File(JAVA_HOME);
+        return !JAVA_HOMEDir.exists() || Files.isWritable(JAVA_HOMEDir.toPath());
     }
 
     @Issue("https://github.com/jenkinsci/jenkins/issues/13136")
@@ -53,9 +53,9 @@ class CommandInstallerTest {
     @DisabledIf(value = "missingTestConfiguration")
     @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void commandInstallerDoesNotRequireWritePermissionOnToolDir() throws Exception {
-        JDK jdk = new JDK("my-jdk", javaHome);
-        CommandInstaller installer = new CommandInstaller("unused-label", "echo 'Using " + javaHome + " as Java home'", javaHome);
+        JDK jdk = new JDK("my-jdk", JAVA_HOME);
+        CommandInstaller installer = new CommandInstaller("unused-label", "echo 'Using " + JAVA_HOME + " as Java home'", JAVA_HOME);
         FilePath filePath = installer.performInstallation(jdk, Jenkins.get(), TaskListener.NULL);
-        assertThat(filePath.getRemote(), is(javaHome));
+        assertThat(filePath.getRemote(), is(JAVA_HOME));
     }
 }
