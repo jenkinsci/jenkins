@@ -219,11 +219,6 @@
   }
 
   &__item {
-    &--active::before {
-      background-color: var(--item-background--hover);
-      border: var(--jenkins-border);
-    }
-
     &--muted {
       opacity: 0.5;
     }
