@@ -42,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.Functions;
 import hudson.diagnosis.OldDataMonitor;
@@ -53,17 +54,22 @@ import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
+import jenkins.model.TransientActionFactory;
 import jenkins.widgets.ExecutorsWidget;
 import jenkins.widgets.HasWidgetHelper;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
+import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.xml.XmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -75,6 +81,7 @@ import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @Tag("SmokeTest")
@@ -358,5 +365,59 @@ class ComputerTest {
         await("disconnected agent is not available for scheduling").until(computer::isOnline, is(false));
         assertThat(computer.isConnected(), is(false));
         assertThat(computer.isOffline(), is(true));
+    }
+
+    @Issue("https://github.com/jenkinsci/jenkins/issues/26003")
+    @Test
+    void deleteLinkIsAbsoluteOnActionPages() throws Exception {
+        Computer c = j.createSlave().toComputer();
+
+        HtmlPage page = j.createWebClient().goTo(c.getUrl() + "sidePanelAction/");
+        DomElement deleteLink = page.querySelector("a.confirmation-link[data-url$='doDelete']");
+
+        assertEquals(j.contextPath + "/" + c.getUrl() + "doDelete", deleteLink.getAttribute("data-url"));
+    }
+
+    @TestExtension("deleteLinkIsAbsoluteOnActionPages")
+    public static final class SidePanelActionFactory extends TransientActionFactory<Computer> {
+
+        @Override
+        public Class<Computer> type() {
+            return Computer.class;
+        }
+
+        @NonNull
+        @Override
+        public Collection<? extends Action> createFor(@NonNull Computer target) {
+            return Set.of(new SidePanelAction(target));
+        }
+    }
+
+    public static final class SidePanelAction implements Action {
+
+        private final Computer computer;
+
+        SidePanelAction(Computer computer) {
+            this.computer = computer;
+        }
+
+        public Computer getComputer() {
+            return computer;
+        }
+
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Side Panel Action";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "sidePanelAction";
+        }
     }
 }
