@@ -681,6 +681,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private final transient ConcurrentHashMap<String, Label> labels = new ConcurrentHashMap<>();
 
     /**
+     * Label expressions keyed by their canonical name, so that whitespace variants resolve to the same instance.
+     * Kept apart from {@link #labels} because a quoted {@link LabelAtom} may have the same name as an expression.
+     */
+    private final transient ConcurrentHashMap<String, Label> labelExpressions = new ConcurrentHashMap<>();
+
+    /**
      * Load statistics of the entire system.
      *
      * This includes every executor and every job in the system.
@@ -2020,20 +2026,51 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (expr == null)  return null;
         expr = QuotedStringTokenizer.unquote(expr);
         while (true) {
+            Label exprLabel = labelExpressions.get(expr);
+            if (exprLabel != null) {
+                return exprLabel;
+            }
+
             Label l = labels.get(expr);
-            if (l != null)
+            if (l != null && (!l.isAtom() || !containsOperator(expr))) {
                 return l;
+            }
 
             // non-existent
+            Label parsed;
             try {
-                // For the record, this method creates temporary labels but there is a periodic task
-                // calling "trimLabels" to remove unused labels running every 5 minutes.
-                labels.putIfAbsent(expr, Label.parseExpression(expr));
+                parsed = Label.parseExpression(expr);
             } catch (IllegalArgumentException e) {
                 // laxly accept it as a single label atom for backward compatibility
                 return getLabelAtom(expr);
             }
+            if (!parsed.isAtom()) {
+                Label existing = labelExpressions.putIfAbsent(parsed.getName(), parsed);
+                if (existing != null) {
+                    parsed = existing;
+                }
+                if (!expr.equals(parsed.getName())) {
+                    Label existingAlias = labels.putIfAbsent(expr, parsed);
+                    if (existingAlias != null) {
+                        return existingAlias;
+                    }
+                }
+                return parsed;
+            }
+            // For the record, this method creates temporary labels but there is a periodic task
+            // calling "trimLabels" to remove unused labels running every 5 minutes.
+            labels.putIfAbsent(expr, parsed);
         }
+    }
+
+    private static boolean containsOperator(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            if (ch == '&' || ch == '|' || ch == '!' || ch == '<' || ch == '>' || ch == '(' || ch == ')') {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -2283,6 +2320,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     // if the cloud has been removed, or its labels updated such that it can not handle this, this is handle in later calls
                     // resetLabel will remove the agents, and clouds from the label, and they will be repopulated later.
                     // not checking `cloud.canProvision()` here prevents a potential call that will only be repeated later
+                    resetLabel(l);
+                } else {
+                    itr.remove();
+                    labelExpressions.remove(l.getName(), l);
+                }
+            }
+        }
+        for (Iterator<Label> itr = labelExpressions.values().iterator(); itr.hasNext();) {
+            Label l = itr.next();
+            if (includedLabels == null || includedLabels.contains(l) || l.matches(includedLabels)) {
+                if (nodeLabels.stream().anyMatch(l::matches) || !l.getClouds().isEmpty()) {
                     resetLabel(l);
                 } else {
                     itr.remove();

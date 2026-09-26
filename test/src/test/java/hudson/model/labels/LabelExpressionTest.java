@@ -27,6 +27,7 @@ package hudson.model.labels;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -349,6 +350,83 @@ class LabelExpressionTest {
     void expression_and_withoutSpaces() {
         Label label = Label.parseExpression("a&&b");
         assertThat(label, instanceOf(LabelExpression.And.class));
+    }
+
+    @Test
+    @Issue("27403")
+    void labelWhitespaceVariantsShareSameInstance() {
+        String canonical = "linux&&ssd&&(rack1||rack2)&&!maintenance";
+        String spacedNot = "linux&&ssd&&(rack1||rack2)&& !maintenance";
+        String fullySpaced = "linux && ssd && (rack1 || rack2) && !maintenance";
+
+        Label l1 = j.jenkins.getLabel(canonical);
+        Label l2 = j.jenkins.getLabel(spacedNot);
+        Label l3 = j.jenkins.getLabel(fullySpaced);
+
+        assertSame(l1, l2);
+        assertSame(l1, l3);
+        assertSame(l1.loadStatistics, l2.loadStatistics);
+        assertSame(l1.loadStatistics, l3.loadStatistics);
+    }
+
+    @Test
+    @Issue("27403")
+    void labelWhitespaceVariantsShareSameInstanceWhenSpacedFirst() {
+        String canonical = "win&&fast&&(zone1||zone2)&&!offline";
+        String fullySpaced = "win && fast && (zone1 || zone2) && !offline";
+        String spacedNot = "win&&fast&&(zone1||zone2)&& !offline";
+
+        // Query non-canonical first to verify cache resolution works before canonical key exists
+        Label l1 = j.jenkins.getLabel(fullySpaced);
+        Label l2 = j.jenkins.getLabel(canonical);
+        Label l3 = j.jenkins.getLabel(spacedNot);
+
+        assertSame(l1, l2);
+        assertSame(l1, l3);
+        assertSame(l1.loadStatistics, l2.loadStatistics);
+    }
+
+    @Test
+    @Issue("27403")
+    void spacedExpressionDoesNotResolveToAtomWithCanonicalName() {
+        LabelAtom atom = j.jenkins.getLabelAtom("a&&b");
+
+        Label expression = j.jenkins.getLabel("a && b");
+        Label canonicalExpr = j.jenkins.getLabel("a&&b");
+
+        assertThat(expression, instanceOf(LabelExpression.And.class));
+        assertThat(canonicalExpr, instanceOf(LabelExpression.And.class));
+        assertSame(expression, canonicalExpr);
+        assertNotSame(atom, expression);
+        assertSame(atom, j.jenkins.getLabelAtom("a&&b"));
+    }
+
+    @Test
+    @Issue("27403")
+    void atomWithCanonicalNameCanBeCreatedAfterSpacedExpression() {
+        Label expression = j.jenkins.getLabel("c && d");
+
+        LabelAtom atom = j.jenkins.getLabelAtom("c&&d");
+
+        assertNotSame(expression, atom);
+        assertSame(expression, j.jenkins.getLabel("c  &&  d"));
+        assertSame(expression, j.jenkins.getLabel("c&&d"));
+        assertSame(atom, j.jenkins.getLabelAtom("c&&d"));
+    }
+
+    @Test
+    @Issue("27403")
+    void canonicalExpressionFirstDoesNotResolveToAtom() {
+        LabelAtom atom = j.jenkins.getLabelAtom("x&&y");
+
+        Label canonicalExpr = j.jenkins.getLabel("x&&y");
+        Label spacedExpr = j.jenkins.getLabel("x && y");
+
+        assertThat(canonicalExpr, instanceOf(LabelExpression.And.class));
+        assertThat(spacedExpr, instanceOf(LabelExpression.And.class));
+        assertSame(canonicalExpr, spacedExpr);
+        assertNotSame(atom, canonicalExpr);
+        assertSame(atom, j.jenkins.getLabelAtom("x&&y"));
     }
 
     private void parseShouldFail(String expr, String message) {
