@@ -76,15 +76,15 @@ THE SOFTWARE.
             </div>
           </j:if>
         </div>
-      </div>
 
-      <j:set var="entryDecorators" value="${it.widget.getEntryDecorators(pageEntry)}" />
-      <div class="app-build-item__supplementary">
-        <j:if test="${!empty(entryDecorators)}">
-          <j:forEach var="entryDecorator" items="${entryDecorators}">
-            <st:include from="${entryDecorator.decorator}" it="${entryDecorator}" page="entry.jelly" optional="true" />
-          </j:forEach>
-        </j:if>
+        <j:set var="entryDecorators" value="${it.widget.getEntryDecorators(pageEntry)}" />
+        <div class="app-build-item__supplementary">
+          <j:if test="${!empty(entryDecorators)}">
+            <j:forEach var="entryDecorator" items="${entryDecorators}">
+              <st:include from="${entryDecorator.decorator}" it="${entryDecorator}" page="entry.jelly" optional="true" />
+            </j:forEach>
+          </j:if>
+        </div>
       </div>
 
       <div class="app-temporary-list__item__actions">

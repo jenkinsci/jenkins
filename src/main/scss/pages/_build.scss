@@ -262,6 +262,10 @@ body:has(.app-settings-container) {
   }
 }
 
+.app-build-item__supplementary {
+  z-index: 1;
+}
+
 .app-build-bar__content {
   display: flex;
   align-items: center;

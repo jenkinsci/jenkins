@@ -34,7 +34,7 @@ BehaviorShim.specify(
 
     // Refresh variables
     let buildRefreshTimeout;
-    const updateBuildsRefreshInterval = 5000;
+    const updateBuildsRefreshInterval = 50000;
 
     // Status filter state. Empty means "show everything".
     let selectedStatuses = new Set();
