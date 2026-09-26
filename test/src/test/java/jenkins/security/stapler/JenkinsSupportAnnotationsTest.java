@@ -1,10 +1,9 @@
 package jenkins.security.stapler;
 
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-
-import hudson.Functions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -25,8 +24,8 @@ class JenkinsSupportAnnotationsTest {
 
     @Test
     @WithPlugin("annotations-test.hpi")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "TODO: Implement this test on Windows")
     void testPluginWithAnnotations() throws Exception {
-        assumeFalse(Functions.isWindows(), "TODO: Implement this test on Windows");
         // test fails if TypedFilter ignores @StaplerDispatchable
         j.createWebClient().goTo("annotationsTest/whatever", "");
 

@@ -415,7 +415,8 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <argLine>@{jacocoSurefireArgs} -Xmx1g @{jenkins.addOpens} @{jenkins.insaneHook} @{jenkins.javaAgent}</argLine>
+          <!-- java.base/java.net=ALL-UNNAMED added for Security637Test#urlSafeDeserialization_inXStreamContext -->
+          <argLine>@{jacocoSurefireArgs} -Xmx1g --add-opens java.base/java.net=ALL-UNNAMED @{jenkins.addOpens} @{jenkins.insaneHook} @{jenkins.javaAgent}</argLine>
           <systemPropertyVariables>
             <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
             <buildDirectory>${project.build.directory}</buildDirectory>

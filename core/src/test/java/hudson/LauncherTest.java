@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.model.StreamBuildListener;
 import hudson.model.TaskListener;
@@ -52,6 +51,8 @@ import jenkins.security.MasterToSlaveCallable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 
@@ -97,9 +98,8 @@ class LauncherTest {
 
     @Issue("JENKINS-4611")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void remoteKill() throws Exception {
-        assumeFalse(Functions.isWindows());
-
         File tmp = File.createTempFile("junit", null, temp);
 
             FilePath f = new FilePath(french, tmp.getPath());

@@ -33,10 +33,8 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.FilePath;
-import hudson.Functions;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -48,9 +46,11 @@ import org.apache.commons.io.FileUtils;
 import org.htmlunit.Page;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.NameValuePair;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -206,8 +206,8 @@ class FileParameterValueTest {
 
     @Test
     @Issue("SECURITY-3927")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Backslash is only an ordinary filename character on non-Windows")
     void fileParameter_cannotCreateFile_outsideOfBuildFolder_backslashOnUnixAgent() throws Exception {
-        assumeFalse(Functions.isWindows(), "Backslash is only an ordinary filename character on non-Windows");
         String location = "..\\..\\..\\..\\..\\root-level.txt";
 
         FilePath root = j.jenkins.getRootPath();
@@ -236,9 +236,8 @@ class FileParameterValueTest {
 
     @Test
     @Issue("SECURITY-1074")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Backslashes are only dangerous on Windows")
     void fileParameter_cannotCreateFile_outsideOfBuildFolder_backslashEdition() throws Exception {
-        Assumptions.assumeTrue(Functions.isWindows(), "Backslashes are only dangerous on Windows");
-
         // you can test the behavior before the correction by setting FileParameterValue.ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE to true
 
         FilePath root = j.jenkins.getRootPath();

@@ -1,4 +1,3 @@
-
 /*
  * The MIT License
  *
@@ -37,16 +36,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import hudson.Functions;
 import hudson.PluginWrapper;
 import java.io.IOException;
 import java.util.function.BiPredicate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -143,8 +142,8 @@ class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin("dependee-0.0.2.hpi")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void restartAfterDisable() {
-        assumeNotWindows();
         assertThat(disablePluginsCLiCommand("-restart", "dependee"), succeeded());
         assertPluginDisabled("dependee");
         assertJenkinsInQuietMode();
@@ -198,8 +197,8 @@ class DisablePluginCommandTest {
     @Test
     @Issue("JENKINS-27177")
     @WithPlugin({"depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void restartAfterDisablePluginsAndErrors() {
-        assumeNotWindows();
         assertThat(disablePluginsCLiCommand("-restart", "dependee", "depender", "plugin-first", "mandatory-depender"), failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
         assertPluginEnabled("dependee");
         assertPluginDisabled("depender");
@@ -392,9 +391,5 @@ class DisablePluginCommandTest {
 
     private void assertJenkinsNotInQuietMode() {
         QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
-    }
-
-    private void assumeNotWindows() {
-        Assumptions.assumeFalse(Functions.isWindows());
     }
 }

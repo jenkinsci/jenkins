@@ -30,10 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import antlr.ANTLRException;
-import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -51,6 +49,8 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -215,8 +215,8 @@ class LabelExpressionTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Windows can't have paths with colons, skipping")
     void dataCompatibilityWithHostNameWithWhitespace() throws Exception {
-        assumeFalse(Functions.isWindows(), "Windows can't have paths with colons, skipping");
         DumbSlave slave = new DumbSlave("abc def (xyz) test", newFolder(tempFolder, "junit").getPath(), j.createComputerLauncher(null));
         slave.setRetentionStrategy(RetentionStrategy.NOOP);
         slave.setNodeDescription("dummy");

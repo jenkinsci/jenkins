@@ -28,7 +28,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.model.UpdateCenter.DownloadJob;
 import hudson.model.UpdateCenter.DownloadJob.Failure;
@@ -64,7 +63,7 @@ class UpdateCenter2Test {
         UpdateSite.neverUpdate = false;
         j.jenkins.pluginManager.doCheckUpdatesServer(); // load the metadata
         UpdateSite.Plugin plugin = j.jenkins.getUpdateCenter().getPlugin("changelog-history");
-        assumeTrue(plugin != null);
+        assertTrue(plugin != null);
         DownloadJob job = (DownloadJob) plugin.deploy().get(); // this seems like one of the smallest plugin
         System.out.println(job.status);
         assertThat(job.status, instanceOf(Success.class));
@@ -87,7 +86,7 @@ class UpdateCenter2Test {
 
         // usually the problem is the file having a wrong checksum, but changing the expected one works just the same
         UpdateSite.Plugin plugin = j.jenkins.getUpdateCenter().getSite("default").getPlugin("changelog-history");
-        assumeTrue(plugin != null);
+        assertTrue(plugin != null);
         plugin.sha512 = wrongChecksum;
         DownloadJob job = (DownloadJob) plugin.deploy().get();
         assertThat(job.status, instanceOf(Failure.class));

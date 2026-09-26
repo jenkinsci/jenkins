@@ -41,7 +41,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
@@ -78,6 +77,8 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.Issue;
 
 class VirtualFileTest {
@@ -91,8 +92,8 @@ class VirtualFileTest {
 
     @Issue("SECURITY-162")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void outsideSymlinks() throws Exception {
-        assumeFalse(Functions.isWindows());
         File ws = newFolder(tmp, "ws");
         Files.writeString(ws.toPath().resolve("safe"), "safe", StandardCharsets.US_ASCII);
         Util.createSymlink(ws, "safe", "supported", TaskListener.NULL);
@@ -255,8 +256,8 @@ class VirtualFileTest {
 
     @Test
     @Issue("SECURITY-1452")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void list_Glob_NoFollowLinks_FilePathVF() throws Exception {
-        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp);
 
         File root = tmp;
@@ -421,8 +422,8 @@ class VirtualFileTest {
 
     @Issue("JENKINS-26810")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void readLink() throws Exception {
-        assumeFalse(Functions.isWindows());
         File root = tmp;
         FilePath rootF = new FilePath(root);
         rootF.child("plain").write("", null);
@@ -484,8 +485,8 @@ class VirtualFileTest {
 
     @Test
     @Issue("SECURITY-1452")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void simpleList_WithSymlink_FileVF() throws Exception {
-        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp);
 
         File root = tmp;
@@ -502,8 +503,8 @@ class VirtualFileTest {
 
     @Test
     @Issue("SECURITY-1452")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void list_NoFollowLinks_ExternalSymlink_FileVF() throws Exception {
-        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp);
         File root = tmp;
         String symlinkName = "symlink";
@@ -519,8 +520,8 @@ class VirtualFileTest {
 
     @Test
     @Issue("SECURITY-1452")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void list_NoFollowLinks_ExternalSymlink_FilePathVF() throws Exception {
-        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp);
         File root = tmp;
         String symlinkName = "symlink";
@@ -536,8 +537,8 @@ class VirtualFileTest {
 
     @Test
     @Issue("SECURITY-1452")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void list_Glob_NoFollowLinks_ExternalSymlink_FilePathVF() throws Exception {
-        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp);
         File root = tmp;
         String symlinkName = "symlink";
@@ -553,8 +554,8 @@ class VirtualFileTest {
 
     @Test
     @Issue("SECURITY-1452")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void list_Glob_NoFollowLinks_ExternalSymlink_FileVF() throws Exception {
-        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp);
         File root = tmp;
         String symlinkName = "symlink";
@@ -675,8 +676,8 @@ class VirtualFileTest {
 
     @Test
     @Issue("SECURITY-1452")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void simpleList_WithSymlink_FilePathVF() throws Exception {
-        assumeFalse(Functions.isWindows());
         prepareFileStructureForIsDescendant(tmp);
 
         File root = tmp;
@@ -735,8 +736,8 @@ class VirtualFileTest {
 
     @Test
     @Issue("SECURITY-1452")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void simpleList_WithSymlink_AbstractBase() throws Exception {
-        assumeFalse(Functions.isWindows());
         // This test checks the method's behavior in the abstract base class,
         // which has limited behavior.
         prepareFileStructureForIsDescendant(tmp);
@@ -755,8 +756,8 @@ class VirtualFileTest {
 
     @Test
     @Issue("SECURITY-1452")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void list_NoFollowLinks_WithSymlink_AbstractBase() throws Exception {
-        assumeFalse(Functions.isWindows());
         // This test checks the method's behavior in the abstract base class,
         // which generally does nothing.
         prepareFileStructureForIsDescendant(tmp);
@@ -832,8 +833,8 @@ class VirtualFileTest {
 
     @Issue("SECURITY-904")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void forFile_isDescendant() throws Exception {
-        assumeFalse(Functions.isWindows());
         this.prepareFileStructureForIsDescendant(tmp);
 
         File root = tmp;
@@ -849,8 +850,8 @@ class VirtualFileTest {
 
     @Test
     @Issue("SECURITY-904")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void forFilePath_isDescendant() throws Exception {
-        assumeFalse(Functions.isWindows());
         this.prepareFileStructureForIsDescendant(tmp);
 
         File root = tmp;
@@ -922,8 +923,8 @@ class VirtualFileTest {
 
     @Test
     @Issue("JENKINS-55050")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void forFile_listOnlyDescendants_withoutIllegal() throws Exception {
-        assumeFalse(Functions.isWindows());
         this.prepareFileStructureForIsDescendant(tmp);
 
         File root = tmp;
@@ -938,8 +939,8 @@ class VirtualFileTest {
 
     @Test
     @Issue("SECURITY-904")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void forFilePath_listOnlyDescendants_withoutIllegal() throws Exception {
-        assumeFalse(Functions.isWindows());
         this.prepareFileStructureForIsDescendant(tmp);
 
         File root = tmp;
@@ -1174,8 +1175,8 @@ class VirtualFileTest {
 
     @Test
     @Issue("SECURITY-1452")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void testOpenNoFollowLinks_FollowsLink_AbstractBase() throws Exception {
-        assumeFalse(Functions.isWindows());
         // This test checks the method's behavior in the abstract base class,
         // which generally does nothing.
         File ws = newFolder(tmp, "ws");
@@ -1497,8 +1498,8 @@ class VirtualFileTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void hasSymlink_True_FilePathVF() throws IOException, InterruptedException {
-        assumeFalse(Functions.isWindows());
         FilePath rootPath = new FilePath(tmp);
         FilePath childPath = rootPath.child("child");
         childPath.touch(0);
@@ -1515,8 +1516,8 @@ class VirtualFileTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void hasSymlink_True_FileVF() throws IOException, InterruptedException {
-        assumeFalse(Functions.isWindows());
         FilePath rootPath = new FilePath(tmp);
         FilePath childPath = rootPath.child("child");
         childPath.touch(0);

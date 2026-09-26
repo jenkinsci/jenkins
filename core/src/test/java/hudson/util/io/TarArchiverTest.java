@@ -28,11 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.FilePath;
-import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.model.TaskListener;
@@ -45,13 +42,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarInputStream;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 
@@ -65,9 +63,8 @@ class TarArchiverTest {
      */
     @Issue("JENKINS-9397")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Requires features not available on Windows")
     void permission() throws Exception {
-        assumeFalse(Functions.isWindows());
-
         File tar = File.createTempFile("test", "tar");
         File zip = File.createTempFile("test", "zip");
 
@@ -116,18 +113,14 @@ class TarArchiverTest {
         }
     }
 
-    private static void run(FilePath dir, String... cmds) throws InterruptedException {
-        try {
-            assertEquals(0, new LocalLauncher(StreamTaskListener.fromStdout()).launch().cmds(cmds).pwd(dir).join());
-        } catch (IOException x) { // perhaps restrict to x.message.contains("Cannot run program")? or "error=2, No such file or directory"?
-            assumeTrue(false, "failed to run " + Arrays.toString(cmds) + ": " + x);
-        }
+    private static void run(FilePath dir, String... cmds) throws Exception {
+        assertEquals(0, new LocalLauncher(StreamTaskListener.fromStdout()).launch().cmds(cmds).pwd(dir).join());
     }
 
     @Issue("JENKINS-14922")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Requires features not available on Windows")
     void brokenSymlinks() throws Exception {
-        assumeFalse(Functions.isWindows());
         File dir = tmp;
         Util.createSymlink(dir, "nonexistent", "link", TaskListener.NULL);
         try (OutputStream out = OutputStream.nullOutputStream()) {
@@ -137,9 +130,8 @@ class TarArchiverTest {
 
     @Issue("https://github.com/jenkinsci/jenkins/issues/27188")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Requires features not available on Windows")
     void unreadableFileDoesNotLeaveIncompleteEntry() throws Exception {
-        assumeFalse(Functions.isWindows());
-
         File unreadable = new File(tmp, "unreadable.txt");
         Files.writeString(unreadable.toPath(), "contents", StandardCharsets.UTF_8);
         assertTrue(unreadable.setReadable(false));
