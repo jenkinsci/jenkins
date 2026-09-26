@@ -87,10 +87,6 @@ THE SOFTWARE.
         </j:if>
       </div>
 
-      <div class="app-temp-list__item__actions">
-        <l:actions it="${build}" url="${rootURL}/${build.url}" compact="true" />
-      </div>
-
       <div class="app-temporary-list__item__actions">
         <button class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link" data-href="${link}">
           <l:icon src="symbol-menu" />
