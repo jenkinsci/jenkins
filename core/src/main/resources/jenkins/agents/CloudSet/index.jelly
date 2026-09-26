@@ -34,10 +34,12 @@ THE SOFTWARE.
       <l:app-bar title="${managementLink.displayName}">
         <j:if test="${it.cloudAvailable and it.hasClouds()}">
           <l:isAdmin>
-            <a class="jenkins-button jenkins-button--primary" href="new">
+            <button class="jenkins-button jenkins-button--primary"
+                    data-type="dialog-opener"
+                    data-dialog-url="newDialog">
               <l:icon src="symbol-add"/>
               ${%newCloud}
-            </a>
+            </button>
           </l:isAdmin>
         </j:if>
         <t:help href="https://www.jenkins.io/redirect/distributed-builds" />
@@ -105,9 +107,11 @@ THE SOFTWARE.
         <j:choose>
           <j:when test="${it.cloudAvailable}">
             <l:notice title="${%noCloudAvailable}" icon="symbol-cloud">
-              <a href="new">
+              <button data-type="dialog-opener"
+                      data-dialog-url="newDialog">
+                <l:icon src="symbol-add"/>
                 ${%newCloud}
-              </a>
+              </button>
             </l:notice>
           </j:when>
           <j:otherwise>
