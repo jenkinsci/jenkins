@@ -1,5 +1,6 @@
 package jenkins.diagnosis;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Util;
@@ -96,6 +97,7 @@ public class HsErrPidList extends AdministrativeMonitor {
     }
 
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private void scan(String pattern) {
         LOGGER.fine("Scanning " + pattern + " for hs_err_pid files");
 
