@@ -24,11 +24,8 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.displayName} Load Statistics">
-    <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Load Statistics}" />
-    <l:main-panel>
-      <st:include page="main.jelly" from="${it.loadStatistics}" />
-    </l:main-panel>
-  </l:layout>
+  <l:agent-subpage title="${%Load Statistics}" agent="${it}">
+    <l:app-bar title="${%Load Statistics}" />
+    <st:include page="main.jelly" from="${it.loadStatistics}" />
+  </l:agent-subpage>
 </j:jelly>

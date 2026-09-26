@@ -24,12 +24,27 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <div class="${it.statusClass}">
-    <div class="timestamp">
-      <i:formatDate value="${it.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+  <div class="jenkins-alert jenkins-alert-${it.statusClass}" style="display: flex; align-items: center; gap: 0.5rem;">
+    <div style="align-self: flex-start;">
+      <j:choose>
+        <j:when test="${it.statusClass == 'error'}">
+          <l:icon src="symbol-alert-circle-outline" class="icon-sm"/>
+        </j:when>
+        <j:when test="${it.statusClass == 'warning'}">
+          <l:icon src="symbol-warning-outline" class="icon-sm"/>
+        </j:when>
+        <j:otherwise>
+          <l:icon src="symbol-information-circle" class="icon-sm"/>
+        </j:otherwise>
+      </j:choose>
     </div>
-    <div class="message">
-      ${it}
+    <div>
+      <div class="timestamp">
+        <i:formatDate value="${it.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+      </div>
+      <div class="message">
+        ${it}
+      </div>
     </div>
   </div>
 </j:jelly>
