@@ -16,7 +16,7 @@ class GNUCLibraryTest {
     private static final int O_CREAT = "Linux".equals(System.getProperty("os.name")) ? 64 : 512;
     private static final int O_RDWR = 2;
 
-    private boolean isGlibcSupported() {
+    private static boolean isGlibcSupported() {
         return hudson.Functions.isGlibcSupported();
     }
 

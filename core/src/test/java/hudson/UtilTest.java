@@ -713,7 +713,7 @@ class UtilTest {
         assertEquals(a1.resolve("new6"), Util.createDirectories(b.resolve("a2").resolve("new6")).toRealPath());
     }
 
-    private boolean runningAsRoot() throws Exception {
+    private static boolean runningAsRoot() throws Exception {
         if (Functions.isWindows()) {
             // Don't run tests on Windows that require root access on Linux
             return false;

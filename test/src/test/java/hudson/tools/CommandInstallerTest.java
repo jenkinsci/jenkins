@@ -41,7 +41,7 @@ class CommandInstallerTest {
 
     private String javaHome = "/opt/jdk-25"; // ci.jenkins.io Java 25 directory
 
-    private boolean missingTestConfiguration() {
+    private static boolean missingTestConfiguration() {
         // Test requires the '" + javaHome + "' directory to exist
         // Use a Unix installation dir that exists and is not writeable
         File javaHomeDir = new File(javaHome);

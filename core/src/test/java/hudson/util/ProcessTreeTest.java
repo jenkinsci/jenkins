@@ -72,7 +72,7 @@ class ProcessTreeTest {
         private static final long serialVersionUID = 1L;
     }
 
-    private boolean usesDefaultProcessTree() {
+    private static boolean usesDefaultProcessTree() {
         return ProcessTree.get() == ProcessTree.DEFAULT;
     }
 

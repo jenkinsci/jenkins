@@ -130,7 +130,7 @@ class ProcessTreeTest {
         }
     }
 
-    private boolean usesDefaultProcessTree() {
+    private static boolean usesDefaultProcessTree() {
         return ProcessTree.get() == ProcessTree.DEFAULT;
     }
 
