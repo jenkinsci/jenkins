@@ -677,6 +677,13 @@ function fireEvent(element, event) {
   );
 }
 
+function formatValidationResponse(response, responseText) {
+  // TODO Add i18n support
+  return response.ok
+    ? responseText
+    : `<div class="error">An internal error occurred during form field validation (HTTP ${response.status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
+}
+
 // Behavior rules
 //========================================================
 // using tag names in CSS selector makes the processing faster
@@ -2719,7 +2726,10 @@ function validateButton(checkUrl, paramList, button) {
     rsp.text().then((responseText) => {
       spinner.style.display = "none";
       target.innerHTML = `<div class="validation-error-area" />`;
-      updateValidationArea(target.children[0], responseText);
+      updateValidationArea(
+        target.children[0],
+        formatValidationResponse(rsp, responseText),
+      );
       layoutUpdateCallback.call();
       let json = rsp.headers.get("X-Jenkins-ValidateButton-Callback");
       if (json != null) {
