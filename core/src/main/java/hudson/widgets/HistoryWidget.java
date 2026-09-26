@@ -36,10 +36,13 @@ import hudson.util.AlternativeUiTextProvider;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import jenkins.model.HistoricalBuild;
 import jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag;
 import jenkins.util.SystemProperties;
@@ -95,6 +98,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     final Long newerThan;
     final Long olderThan;
     final String searchString;
+    final String status;
 
     /**
      * First transient build record. Everything >= this will be discarded when AJAX call is made.
@@ -114,6 +118,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
         this.newerThan = getPagingParam(currentRequest, "newer-than");
         this.olderThan = getPagingParam(currentRequest, "older-than");
         this.searchString = currentRequest.getParameter("search");
+        this.status = currentRequest.getParameter("status");
     }
 
     @Override
@@ -219,6 +224,11 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
 
         if (searchString != null) {
             historyPageFilter.setSearchString(searchString);
+        }
+
+        if (status != null && !status.isEmpty()) {
+            Set<String> statuses = new HashSet<>(Arrays.asList(status.split(",")));
+            historyPageFilter.setStatuses(statuses);
         }
 
         return historyPageFilter;

@@ -30,6 +30,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.AbstractBuild;
 import hudson.model.Job;
 import hudson.model.ParameterValue;
+import hudson.model.Result;
 import hudson.search.UserSearchProperty;
 import hudson.util.Iterators;
 import hudson.widgets.HistoryWidget;
@@ -44,6 +45,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import jenkins.model.HistoricalBuild;
 import jenkins.model.queue.QueueItem;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * History page filter.
@@ -56,6 +59,7 @@ public class HistoryPageFilter<T> {
     private Long newerThan;
     private Long olderThan;
     private String searchString;
+    private Set<String> statuses;
 
     // Need to use different Lists for QueueItem and HistoricalBuilds because
     // we need access to them separately in the jelly files for rendering.
@@ -112,6 +116,19 @@ public class HistoryPageFilter<T> {
      */
     public void setSearchString(@NonNull String searchString) {
         this.searchString = searchString;
+    }
+
+    /**
+     * Set the build statuses to narrow the filtered set of builds to. A build matching any
+     * one of the given statuses is included (i.e. the statuses are OR'd together). Each
+     * status is one of the {@link hudson.model.Result} names (e.g. {@code SUCCESS},
+     * {@code FAILURE}), or {@code BUILDING} to match builds currently in progress. Queue
+     * items don't have a result yet, so they are only included when {@code BUILDING} is given.
+     * @param statuses The statuses to filter by.
+     */
+    @Restricted(NoExternalUse.class)
+    public void setStatuses(@NonNull Set<String> statuses) {
+        this.statuses = statuses;
     }
 
     /**
@@ -280,14 +297,37 @@ public class HistoryPageFilter<T> {
             if (searchString != null && !fitsSearchParams(item)) {
                 return false;
             }
+            // Queue items don't have a result yet, so they only match the in-progress filter.
+            if (statuses != null && !statuses.isEmpty() && !statuses.contains(BuildStatusFilter.BUILDING.getValue())) {
+                return false;
+            }
             addQueueItem(item);
             return true;
         } else if (entry instanceof HistoricalBuild run) {
             if (searchString != null && !fitsSearchParams(run)) {
                 return false;
             }
+            if (statuses != null && !statuses.isEmpty() && !fitsStatus(run)) {
+                return false;
+            }
             addRun(run);
             return true;
+        }
+        return false;
+    }
+
+    private boolean fitsStatus(@NonNull HistoricalBuild run) {
+        for (String status : statuses) {
+            if (BuildStatusFilter.BUILDING.getValue().equals(status)) {
+                if (run.isBuilding()) {
+                    return true;
+                }
+            } else if (!run.isBuilding()) {
+                Result result = run.getResult();
+                if (result != null && status.equals(result.toString())) {
+                    return true;
+                }
+            }
         }
         return false;
     }
