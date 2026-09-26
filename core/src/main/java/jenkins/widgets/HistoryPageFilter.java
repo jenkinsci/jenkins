@@ -45,6 +45,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import jenkins.model.HistoricalBuild;
 import jenkins.model.queue.QueueItem;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * History page filter.
@@ -121,9 +123,10 @@ public class HistoryPageFilter<T> {
      * one of the given statuses is included (i.e. the statuses are OR'd together). Each
      * status is one of the {@link hudson.model.Result} names (e.g. {@code SUCCESS},
      * {@code FAILURE}), or {@code BUILDING} to match builds currently in progress. Queue
-     * items never have a build status, so setting any statuses excludes them entirely.
+     * items don't have a result yet, so they are only included when {@code BUILDING} is given.
      * @param statuses The statuses to filter by.
      */
+    @Restricted(NoExternalUse.class)
     public void setStatuses(@NonNull Set<String> statuses) {
         this.statuses = statuses;
     }
@@ -294,8 +297,8 @@ public class HistoryPageFilter<T> {
             if (searchString != null && !fitsSearchParams(item)) {
                 return false;
             }
-            // Queue items don't have a build status, so they never match a status filter.
-            if (statuses != null && !statuses.isEmpty()) {
+            // Queue items don't have a result yet, so they only match the in-progress filter.
+            if (statuses != null && !statuses.isEmpty() && !statuses.contains(BuildStatusFilter.BUILDING.getValue())) {
                 return false;
             }
             addQueueItem(item);

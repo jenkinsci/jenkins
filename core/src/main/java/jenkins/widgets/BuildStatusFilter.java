@@ -28,6 +28,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.BallColor;
 import hudson.model.Result;
 import java.util.List;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * A status a build can be filtered by in the builds list's status filter panel. Each
@@ -39,6 +41,7 @@ import java.util.List;
  * already used for build status elsewhere (e.g. status icon tooltips). {@link #BUILDING}
  * has no corresponding {@link Result}, since a build in progress hasn't produced one yet.
  */
+@Restricted(NoExternalUse.class)
 public enum BuildStatusFilter {
     BUILDING(BallColor.BLUE_ANIME),
     SUCCESS(Result.SUCCESS),

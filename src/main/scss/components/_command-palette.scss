@@ -78,29 +78,26 @@
     z-index: -1;
   }
 
-  &__search {
+  &__search.jenkins-search {
     @include mixins.overlay-surface;
 
     --search-bar-height: 3rem !important;
+    --input-border: transparent;
+    --input-border-hover: transparent;
 
     margin-bottom: var(--section-padding);
     border-radius: 1rem;
     transition: var(--standard-transition);
     max-width: unset;
 
+    .jenkins-search__icon {
+      translate: none;
+      margin-right: -2px;
+    }
+
     input {
-      padding: 0 0.5rem 0 45px;
-      background: transparent !important;
-
-      --input-border: transparent;
-      --input-border-hover: transparent;
-
-      border-radius: inherit;
-
-      &::before,
-      &::after {
-        border-radius: inherit;
-      }
+      // Combined with the search bar's own trailing padding, gives 0.5rem
+      padding: 0 0.125rem 0 0;
     }
 
     &::before {
