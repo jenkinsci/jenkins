@@ -21,6 +21,7 @@ Behaviour.specify(
       Where to retrieve additional text from
   */
     function fetchNext(e, href, onFinishEvent) {
+      const start = e.fetchedBytes;
       var headers = crumb.wrap({
         "Content-Type": "application/x-www-form-urlencoded",
         Accept: "multipart/form-data, */*",
@@ -33,7 +34,7 @@ Behaviour.specify(
         method: "post",
         headers,
         body: new URLSearchParams({
-          start: e.fetchedBytes,
+          start,
         }),
       }).then((rsp) => {
         if (rsp.status >= 500 || rsp.status === 0) {
@@ -81,11 +82,11 @@ Behaviour.specify(
         }
         /* append text and do autoscroll if applicable */
         parse.then(({ text, end, consoleAnnotator, completed }) => {
-          e.fetchedBytes = end;
           // An empty chunk carries no annotator state; keep the current one.
-          if (consoleAnnotator !== undefined) {
+          if (start !== end) {
             e.consoleAnnotator = consoleAnnotator;
           }
+          e.fetchedBytes = end;
           if (text !== "") {
             var p = document.createElement("DIV");
             e.appendChild(p); // Needs to be first for IE
