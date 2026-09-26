@@ -1,8 +1,7 @@
 import debounce from "lodash/debounce";
 import BehaviorShim from "@/util/behavior-shim";
 
-const STATUS_ITEM_CLASS = "app-temporary-list__filter-panel__item";
-const ACTIVE_STATUS_ITEM_CLASS = `${STATUS_ITEM_CLASS}--active`;
+const STATUS_ITEM_CLASS = "jenkins-search__filter-item";
 const MUTED_STATUS_ITEM_CLASS = `${STATUS_ITEM_CLASS}--muted`;
 const STATUS_ITEM_ID_PREFIX = "build-status-filter-";
 const RESET_BUTTON_ID = "build-status-filter-reset";
@@ -220,7 +219,6 @@ BehaviorShim.specify(
         .querySelectorAll(`.${STATUS_ITEM_CLASS}`)
         .forEach((item) => {
           const isSelected = selectedStatuses.has(statusOf(item));
-          item.classList.toggle(ACTIVE_STATUS_ITEM_CLASS, isSelected);
           item.classList.toggle(
             MUTED_STATUS_ITEM_CLASS,
             hasSelection && !isSelected,

@@ -165,6 +165,21 @@
     }
   }
 
+  &__filter-item--muted {
+    opacity: 0.5;
+  }
+
+  &__filter-reset {
+    appearance: none;
+    border: none;
+    background: transparent;
+    padding: 0;
+    color: var(--accent-color);
+    font-size: 0.8125rem;
+    font-weight: var(--font-bold-weight);
+    cursor: pointer;
+  }
+
   &:not(:has(.jenkins-search__charms)) {
     padding-right: 0.375rem;
   }

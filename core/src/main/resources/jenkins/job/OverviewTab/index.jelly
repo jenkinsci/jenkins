@@ -40,12 +40,12 @@ THE SOFTWARE.
                 ${%Filter}
                 <button type="button"
                         id="build-status-filter-reset"
-                        class="app-temporary-list__filter-panel__reset jenkins-hidden">${%Reset}</button>
+                        class="jenkins-search__filter-reset jenkins-hidden">${%Reset}</button>
               </p>
             </dd:custom>
             <j:forEach var="status" items="${tab.statusFilters}">
               <dd:item id="build-status-filter-${status.value}"
-                       clazz="app-temporary-list__filter-panel__item"
+                       clazz="jenkins-search__filter-item"
                        icon="${status.icon}"
                        text="${status.displayName}" />
             </j:forEach>

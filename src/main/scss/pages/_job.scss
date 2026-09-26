@@ -206,25 +206,6 @@
   animation: pulse-skeleton 2s both ease-in-out infinite;
 }
 
-.app-temporary-list__filter-panel {
-  &__reset {
-    appearance: none;
-    border: none;
-    background: transparent;
-    padding: 0;
-    color: var(--accent-color);
-    font-size: 0.8125rem;
-    font-weight: var(--font-bold-weight);
-    cursor: pointer;
-  }
-
-  &__item {
-    &--muted {
-      opacity: 0.5;
-    }
-  }
-}
-
 .app-temporary-list {
   display: flex;
   flex-direction: column;
