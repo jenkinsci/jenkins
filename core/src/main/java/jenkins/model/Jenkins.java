@@ -2032,9 +2032,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (expr == null)  return null;
         expr = QuotedStringTokenizer.unquote(expr);
         while (true) {
+            Label exprLabel = labelExpressions.get(expr);
+            if (exprLabel != null) {
+                return exprLabel;
+            }
+
             Label l = labels.get(expr);
-            if (l != null)
+            if (l != null && (!l.isAtom() || !containsOperator(expr))) {
                 return l;
+            }
 
             // non-existent
             Label parsed;
@@ -2049,11 +2055,25 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 if (existing != null) {
                     parsed = existing;
                 }
+                if (!expr.equals(parsed.getName())) {
+                    labels.putIfAbsent(expr, parsed);
+                }
+                return parsed;
             }
             // For the record, this method creates temporary labels but there is a periodic task
             // calling "trimLabels" to remove unused labels running every 5 minutes.
             labels.putIfAbsent(expr, parsed);
         }
+    }
+
+    private static boolean containsOperator(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            if (ch == '&' || ch == '|' || ch == '!' || ch == '<' || ch == '>' || ch == '(' || ch == ')') {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -2307,6 +2327,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 } else {
                     itr.remove();
                     labelExpressions.remove(l.getName(), l);
+                }
+            }
+        }
+        for (Iterator<Label> itr = labelExpressions.values().iterator(); itr.hasNext();) {
+            Label l = itr.next();
+            if (includedLabels == null || includedLabels.contains(l) || l.matches(includedLabels)) {
+                if (nodeLabels.stream().anyMatch(l::matches) || !l.getClouds().isEmpty()) {
+                    resetLabel(l);
+                } else {
+                    itr.remove();
                 }
             }
         }

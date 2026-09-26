@@ -392,8 +392,11 @@ class LabelExpressionTest {
         LabelAtom atom = j.jenkins.getLabelAtom("a&&b");
 
         Label expression = j.jenkins.getLabel("a && b");
+        Label canonicalExpr = j.jenkins.getLabel("a&&b");
 
         assertThat(expression, instanceOf(LabelExpression.And.class));
+        assertThat(canonicalExpr, instanceOf(LabelExpression.And.class));
+        assertSame(expression, canonicalExpr);
         assertNotSame(atom, expression);
         assertSame(atom, j.jenkins.getLabelAtom("a&&b"));
     }
@@ -407,6 +410,23 @@ class LabelExpressionTest {
 
         assertNotSame(expression, atom);
         assertSame(expression, j.jenkins.getLabel("c  &&  d"));
+        assertSame(expression, j.jenkins.getLabel("c&&d"));
+        assertSame(atom, j.jenkins.getLabelAtom("c&&d"));
+    }
+
+    @Test
+    @Issue("27403")
+    void canonicalExpressionFirstDoesNotResolveToAtom() {
+        LabelAtom atom = j.jenkins.getLabelAtom("x&&y");
+
+        Label canonicalExpr = j.jenkins.getLabel("x&&y");
+        Label spacedExpr = j.jenkins.getLabel("x && y");
+
+        assertThat(canonicalExpr, instanceOf(LabelExpression.And.class));
+        assertThat(spacedExpr, instanceOf(LabelExpression.And.class));
+        assertSame(canonicalExpr, spacedExpr);
+        assertNotSame(atom, canonicalExpr);
+        assertSame(atom, j.jenkins.getLabelAtom("x&&y"));
     }
 
     private void parseShouldFail(String expr, String message) {
