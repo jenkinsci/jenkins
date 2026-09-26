@@ -45,6 +45,8 @@ THE SOFTWARE.
     <jacocoSurefireArgs />
     <!-- Not managed by jenkins-bom, so referenced from annotationProcessorPaths via this property -->
     <core-annotation-processors.version>59.ve181f58722c6</core-annotation-processors.version>
+    <!-- TODO: Remove after https://github.com/apache/maven-surefire/issues/3492 is fixed -->
+    <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
   </properties>
 
   <dependencyManagement>
