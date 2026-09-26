@@ -2056,7 +2056,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     parsed = existing;
                 }
                 if (!expr.equals(parsed.getName())) {
-                    labels.putIfAbsent(expr, parsed);
+                    Label existingAlias = labels.putIfAbsent(expr, parsed);
+                    if (existingAlias != null) {
+                        return existingAlias;
+                    }
                 }
                 return parsed;
             }
