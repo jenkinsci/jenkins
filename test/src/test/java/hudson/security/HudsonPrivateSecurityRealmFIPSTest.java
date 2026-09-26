@@ -66,10 +66,6 @@ class HudsonPrivateSecurityRealmFIPSTest {
     private final RealJenkinsExtension rjr = new RealJenkinsExtension().includeTestClasspathPlugins(false)
                                                        .javaOptions("-Xmx256M", "-Djenkins.security.FIPS140.COMPLIANCE=true");
 
-    @BeforeEach
-    void skipTestsOnWindowsCI() {
-    }
-
     @Test
     @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
                                    matches = "^[C-Z]:.*", // Windows CI workspace path
