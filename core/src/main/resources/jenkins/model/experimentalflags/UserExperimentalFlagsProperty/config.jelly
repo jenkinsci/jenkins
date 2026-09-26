@@ -39,7 +39,7 @@ THE SOFTWARE.
                 <table class="jenkins-table sortable jenkins-!-margin-0 experimental-flags-table">
                     <thead>
                         <tr>
-                            <th>${%FlagDisplayName}</th>
+                            <th width="30%">${%FlagDisplayName}</th>
                             <th width="45%">${%FlagDescription}</th>
                             <th>${%FlagConfig}</th>
                         </tr>
