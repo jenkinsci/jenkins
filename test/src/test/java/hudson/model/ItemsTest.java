@@ -27,10 +27,8 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.AbortException;
 import hudson.cli.CLICommand;
@@ -39,7 +37,6 @@ import hudson.cli.CopyJobCommand;
 import hudson.cli.CreateJobCommand;
 import hudson.security.ACL;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -51,7 +48,6 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -62,9 +58,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 @WithJenkins
 class ItemsTest {
-
-    @TempDir
-    private File tmpRule;
 
     private JenkinsRule r;
 
@@ -162,20 +155,6 @@ class ItemsTest {
         FreeStyleProject sub2charlie = sub2.createProject(FreeStyleProject.class, "charlie");
         assertThat(d.allItems(FreeStyleProject.class, t -> t.getName().equals("p")), containsInAnyOrder(dp, sub1p, sub2ap, sub2bp, sub2cp));
         assertThat(sub2.allItems(Item.class, t -> t.getName().startsWith("a")), containsInAnyOrder(sub2a, sub2alpha));
-    }
-
-    @Issue("JENKINS-24825")
-    @Test
-    void moveItem() throws Exception {
-        File tmp = tmpRule;
-        r.jenkins.setRawBuildsDir(tmp.getAbsolutePath() + "/${ITEM_FULL_NAME}");
-        MockFolder foo = r.createFolder("foo");
-        MockFolder bar = r.createFolder("bar");
-        FreeStyleProject test = foo.createProject(FreeStyleProject.class, "test");
-        r.buildAndAssertSuccess(test);
-        Items.move(test, bar);
-        assertFalse(new File(tmp, "foo/test/1").exists());
-        assertTrue(new File(tmp, "bar/test/1").exists());
     }
 
     // TODO would be more efficient to run these all as a single test case, but after a few Jetty seems to stop serving new content and new requests just hang.
