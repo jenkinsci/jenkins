@@ -150,7 +150,6 @@ class UtilTest {
         finally { Locale.setDefault(saveLocale); }
     }
 
-
     /**
      * Test that Strings that contain spaces are correctly URL encoded.
      */
@@ -251,7 +250,6 @@ class UtilTest {
                 System.err.println("log output: " + log);
 
             assertEquals(buf.toString(), Util.resolveSymlink(new File(d, "x")));
-
 
             // test linking from another directory
             File anotherDir = new File(d, "anotherDir");
@@ -720,15 +718,21 @@ class UtilTest {
             // Don't run tests on Windows that require root access on Linux
             return false;
         }
-        Path rootProbe = Paths.get("/new-dir-in-root-2");
-        Path created = rootProbe.resolve("new2");
+        Path rootProbe = null;
+        Path created = null;
         try {
+            rootProbe = Files.createTempDirectory(Path.of("/"), "new-dir-in-root-");
+            created = rootProbe.resolve("new2");
             Util.createDirectories(created);
         } catch (IOException e) {
             return false; // Not running as root
         } finally {
-            Files.deleteIfExists(created);
-            Files.deleteIfExists(rootProbe);
+            if (created != null) {
+                Files.deleteIfExists(created);
+            }
+            if (rootProbe != null) {
+                Files.deleteIfExists(rootProbe);
+            }
         }
         return true;
     }
@@ -737,12 +741,16 @@ class UtilTest {
     @Issue("JENKINS-67372")
     @EnabledIf(value = "runningAsRoot", disabledReason = "Insufficient operating system permissions for this test")
     void createDirectoriesInRoot() throws Exception {
-        Path newDirInRoot = Paths.get("/new-dir-in-root");
+        Path newDirInRoot = Files.createTempDirectory(Path.of("/"), "new-dir-in-root-");
         Path newSymlinkInRoot = Paths.get("/new-symlink-in-root");
         Util.createDirectories(newDirInRoot.resolve("new1"));
         assertEquals(newDirInRoot.resolve("new1"), Util.createDirectories(newDirInRoot.resolve("new1")).toRealPath());
         Util.createSymlink(newSymlinkInRoot.getParent().toFile(), newDirInRoot.getFileName().toString(), newSymlinkInRoot.getFileName().toString(), TaskListener.NULL);
         assertEquals(newDirInRoot.resolve("new2"), Util.createDirectories(newSymlinkInRoot.resolve("new2")).toRealPath());
+        /* If the test reached this location, the directory exists. Remove it */
+        Util.deleteRecursive(newDirInRoot.toFile());
+        /* If the test reached this location, the symlink exists. Remove it */
+        Util.deleteRecursive(newSymlinkInRoot.toFile());
     }
 
     @Test
