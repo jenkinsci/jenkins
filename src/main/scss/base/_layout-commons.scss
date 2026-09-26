@@ -76,10 +76,23 @@
 }
 
 .app-full-screen-page-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+
+  & > .app-page-body__contents {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0;
+  }
+
   .app-main-panel {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    flex-grow: 1;
+    min-height: 0;
+    margin-bottom: 0;
   }
 }
 
