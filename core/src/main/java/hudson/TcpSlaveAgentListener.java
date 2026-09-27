@@ -41,12 +41,14 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.AgentProtocol;
@@ -82,6 +84,7 @@ public final class TcpSlaveAgentListener extends Thread {
 
     private ServerSocketChannel serverSocket;
     private volatile boolean shuttingDown;
+    private final AtomicInteger activeConnectionHandlers = new AtomicInteger();
 
     public final int configuredPort;
 
@@ -179,12 +182,28 @@ public final class TcpSlaveAgentListener extends Thread {
             try {
                 Socket s = serverSocket.accept().socket();
 
+                int activeCount = activeConnectionHandlers.incrementAndGet();
+                if (activeCount > MAX_CONNECTION_HANDLERS) {
+                    activeConnectionHandlers.decrementAndGet();
+                    LOGGER.log(Level.WARNING, "Refusing TCP agent connection from {0}: connection handler limit of {1} reached",
+                            new Object[]{s.getRemoteSocketAddress(), MAX_CONNECTION_HANDLERS});
+                    try {
+                        s.close();
+                    } catch (IOException e) {
+                        // ignore
+                    }
+                    continue;
+                }
+
                 // this prevents a connection from silently terminated by the router in between or the other peer
                 // and that goes without unnoticed. However, the time out is often very long (for example 2 hours
                 // by default in Linux) that this alone is enough to prevent that.
                 s.setKeepAlive(true);
                 // we take care of buffering on our own
                 s.setTcpNoDelay(true);
+                if (HANDSHAKE_TIMEOUT > 0) {
+                    s.setSoTimeout(HANDSHAKE_TIMEOUT);
+                }
 
                 new ConnectionHandler(s).start();
             } catch (Throwable e) {
@@ -275,6 +294,9 @@ public final class TcpSlaveAgentListener extends Thread {
                     AgentProtocol p = AgentProtocol.of(protocol);
                     if (p != null) {
                         LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, () -> "Accepted " + protocol + " connection " + connectionInfo);
+                        if (HANDSHAKE_TIMEOUT > 0) {
+                            this.s.setSoTimeout(0);
+                        }
                         p.handle(this.s);
                     } else {
                         error("Unknown protocol:", this.s);
@@ -290,7 +312,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     // try to clean up the socket
                 }
             } catch (Throwable e) {
-                if (e instanceof EOFException) {
+                if (e instanceof EOFException || e instanceof SocketTimeoutException) {
                     LOGGER.log(Level.INFO, () -> "Connection " + connectionInfo + " failed: " + e.getMessage());
                 } else {
                     LOGGER.log(Level.WARNING, e, () -> "Connection " + connectionInfo + " failed");
@@ -300,6 +322,8 @@ public final class TcpSlaveAgentListener extends Thread {
                 } catch (IOException ex) {
                     // try to clean up the socket
                 }
+            } finally {
+                activeConnectionHandlers.decrementAndGet();
             }
         }
 
@@ -422,6 +446,19 @@ public final class TcpSlaveAgentListener extends Thread {
     private static int iotaGen = 1;
 
     private static final Logger LOGGER = Logger.getLogger(TcpSlaveAgentListener.class.getName());
+
+    @Restricted(NoExternalUse.class)
+    public int getActiveConnectionHandlers() {
+        return activeConnectionHandlers.get();
+    }
+
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+    @Restricted(NoExternalUse.class)
+    public static int HANDSHAKE_TIMEOUT = SystemProperties.getInteger(TcpSlaveAgentListener.class.getName() + ".handshakeTimeoutMillis", 10000);
+
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+    @Restricted(NoExternalUse.class)
+    public static int MAX_CONNECTION_HANDLERS = SystemProperties.getInteger(TcpSlaveAgentListener.class.getName() + ".maxConnectionHandlers", 1000);
 
     /**
      * Host name that we advertise protocol clients to connect to.
