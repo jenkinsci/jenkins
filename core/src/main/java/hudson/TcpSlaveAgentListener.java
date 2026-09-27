@@ -198,14 +198,27 @@ public final class TcpSlaveAgentListener extends Thread {
                 // this prevents a connection from silently terminated by the router in between or the other peer
                 // and that goes without unnoticed. However, the time out is often very long (for example 2 hours
                 // by default in Linux) that this alone is enough to prevent that.
-                s.setKeepAlive(true);
-                // we take care of buffering on our own
-                s.setTcpNoDelay(true);
-                if (HANDSHAKE_TIMEOUT > 0) {
-                    s.setSoTimeout(HANDSHAKE_TIMEOUT);
-                }
+                boolean started = false;
+                try {
+                    s.setKeepAlive(true);
+                    // we take care of buffering on our own
+                    s.setTcpNoDelay(true);
+                    if (HANDSHAKE_TIMEOUT > 0) {
+                        s.setSoTimeout(HANDSHAKE_TIMEOUT);
+                    }
 
-                new ConnectionHandler(s).start();
+                    new ConnectionHandler(s).start();
+                    started = true;
+                } finally {
+                    if (!started) {
+                        activeConnectionHandlers.decrementAndGet();
+                        try {
+                            s.close();
+                        } catch (IOException e) {
+                            // ignore
+                        }
+                    }
+                }
             } catch (Throwable e) {
                 if (!shuttingDown) {
                     LOGGER.log(Level.SEVERE, "Failed to accept TCP connections", e);
@@ -270,6 +283,7 @@ public final class TcpSlaveAgentListener extends Thread {
         @Override
         public void run() {
             String connectionInfo = "#" + id + " from " + s.getRemoteSocketAddress();
+            boolean slotReleased = false;
             try {
                 LOGGER.log(Level.FINE, () -> "Accepted connection " + connectionInfo);
 
@@ -297,6 +311,8 @@ public final class TcpSlaveAgentListener extends Thread {
                         if (HANDSHAKE_TIMEOUT > 0) {
                             this.s.setSoTimeout(0);
                         }
+                        activeConnectionHandlers.decrementAndGet();
+                        slotReleased = true;
                         p.handle(this.s);
                     } else {
                         error("Unknown protocol:", this.s);
@@ -323,7 +339,9 @@ public final class TcpSlaveAgentListener extends Thread {
                     // try to clean up the socket
                 }
             } finally {
-                activeConnectionHandlers.decrementAndGet();
+                if (!slotReleased) {
+                    activeConnectionHandlers.decrementAndGet();
+                }
             }
         }
 

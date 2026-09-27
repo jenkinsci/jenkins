@@ -85,7 +85,8 @@ class TcpSlaveAgentListenerTest {
         try {
             TcpSlaveAgentListener.MAX_CONNECTION_HANDLERS = 2;
             r.getInstance().setSlaveAgentPort(0);
-            int port = r.jenkins.getTcpSlaveAgentListener().getPort();
+            TcpSlaveAgentListener listener = r.jenkins.getTcpSlaveAgentListener();
+            int port = listener.getPort();
 
             try (Socket s1 = new Socket("localhost", port);
                  Socket s2 = new Socket("localhost", port)) {
@@ -94,6 +95,10 @@ class TcpSlaveAgentListenerTest {
                 s1.getOutputStream().flush();
                 s2.getOutputStream().write("GET".getBytes());
                 s2.getOutputStream().flush();
+
+                while (listener.getActiveConnectionHandlers() < 2) {
+                    Thread.sleep(10);
+                }
 
                 try (Socket s3 = new Socket("localhost", port)) {
                     assertEquals(-1, s3.getInputStream().read());
