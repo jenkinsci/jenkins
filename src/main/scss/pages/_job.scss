@@ -446,3 +446,42 @@
     }
   }
 }
+
+// Build rows split into columns: the build itself, then one column per
+// HistoryPageEntryDecorator, then the overflow button pinned to the end
+.app-build-item--columns {
+  display: flex;
+  align-items: stretch;
+
+  & > .app-build-item__column {
+    display: flex;
+    align-items: center;
+    flex: none;
+    min-width: 0;
+
+    // The first column is at most 600px wide, the second at most 400px,
+    // the rest size to their content
+    &:nth-child(1) {
+      flex: 0 1 700px;
+    }
+
+    &:nth-child(2) {
+      flex: 0 1 155px;
+    }
+
+    &:not(.app-build-item__column--primary) {
+      z-index: 1;
+      border-left: var(--jenkins-border);
+      padding: 0.75rem 0.875rem;
+    }
+  }
+
+  & > .app-build-item__column--primary {
+    align-items: start;
+  }
+
+  & > .app-temporary-list__item__actions {
+    flex: none;
+    margin-left: auto;
+  }
+}

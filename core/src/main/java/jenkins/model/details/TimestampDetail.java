@@ -1,5 +1,6 @@
 package jenkins.model.details;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Run;
 
 /**
@@ -14,5 +15,10 @@ public class TimestampDetail extends Detail {
     @Override
     public int getOrder() {
         return Integer.MAX_VALUE - 1;
+    }
+
+    @Override
+    public @NonNull Visibility getVisibility() {
+        return Visibility.BOTH;
     }
 }

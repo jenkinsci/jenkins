@@ -1,5 +1,6 @@
 package jenkins.model.details;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Run;
@@ -29,5 +30,10 @@ public class CauseDetail extends Detail {
             return Collections.emptyMap();
         }
         return causeAction.getCauseCounts();
+    }
+
+    @Override
+    public @NonNull Visibility getVisibility() {
+        return Visibility.BOTH;
     }
 }

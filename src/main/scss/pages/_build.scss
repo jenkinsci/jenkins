@@ -262,24 +262,6 @@ body:has(.app-settings-container) {
   }
 }
 
-.app-build-item__supplementary {
-  display: flex;
-  z-index: 1;
-
-  & > * {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-left: var(--jenkins-border);
-    padding: 0.75rem;
-    margin-block: -0.75rem;
-
-    &:last-of-type {
-      border-right: var(--jenkins-border);
-    }
-  }
-}
-
 .app-build-bar__content {
   display: flex;
   align-items: center;
