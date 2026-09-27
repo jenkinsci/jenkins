@@ -466,13 +466,14 @@
     }
 
     &:nth-child(2) {
-      flex: 0 1 155px;
+      flex: 0 1 168px;
     }
 
     &:not(.app-build-item__column--primary) {
       z-index: 1;
-      border-left: var(--jenkins-border);
-      padding: 0.75rem 0.875rem;
+      border-left: var(--jenkins-border--subtle);
+      padding: 0 1.5rem;
+      margin-block: 0.75rem;
     }
   }
 
