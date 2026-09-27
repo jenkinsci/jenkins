@@ -19,10 +19,22 @@ function loadTable() {
   return filterBehaviour;
 }
 
-function pluginRow({ id, name, description = "", dependencies = [] }) {
+function pluginRow({
+  id,
+  name,
+  description = "",
+  dependencies = [],
+  categories = [],
+}) {
   const dependencySpans = dependencies
     .map((dependency) => `<span data-plugin-id="x">${dependency}</span>`)
     .join("");
+  // same markup as updates.jelly renders for the plugin categories
+  const categoryBadges = categories.length
+    ? `<div class="app-plugin-manager__categories">${categories
+        .map((category) => `<a href="#" class="jenkins-badge">${category}</a>`)
+        .join("")}</div>`
+    : "";
   return `
     <tr class="plugin" data-plugin-id="${id}">
       <td class="details">
@@ -34,6 +46,7 @@ function pluginRow({ id, name, description = "", dependencies = [] }) {
           </span>
         </a>
         <div class="dependency-list">${dependencySpans}</div>
+        ${categoryBadges}
         <div class="app-plugin-manager__description">${description}</div>
       </td>
     </tr>`;
@@ -61,6 +74,7 @@ describe("plugin manager table filter", () => {
           id: "git",
           name: "Git",
           description: "Integrates Jenkins with GIT SCM.",
+          categories: ["Build Tools"],
         })}
       </tbody></table>`;
     filterBox = document.getElementById("filter-box");
@@ -98,6 +112,11 @@ describe("plugin manager table filter", () => {
 
   it("matches the description", () => {
     search("scm");
+    expect(visibleIds()).toEqual(["git"]);
+  });
+
+  it("matches a category", () => {
+    search("build tools");
     expect(visibleIds()).toEqual(["git"]);
   });
 
