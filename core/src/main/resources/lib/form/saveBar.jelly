@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2023 Jenkins contributors
+Copyright (c) 2026, Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,21 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
   <st:documentation>
-    <st:attribute name="title" use="required">
-      Sets the title for the notice. HTML isn't supported.
-    </st:attribute>
-    <st:attribute name="icon" use="required">
-      Sets the icon for the notice. Supports Jenkins Symbols and regular images.
-    </st:attribute>
-    <st:attribute name="id" use="optional">
-      If set, id will be the identifier for the component.
-    </st:attribute>
-    <st:attribute name="clazz" use="optional">
-      Additional CSS class(es) to add.
+    Creates the bottom bar for the "Save" button.
+    In read only mode (&lt;j:set var="readOnlyMode" value="true"/&gt;) the button is not displayed.
+
+    <st:attribute name="hidden">
+      Optionally hides the save bar, can then be made visible with JavaScript.
+      Defaults to false.
     </st:attribute>
   </st:documentation>
 
-  <div class="jenkins-notice ${attrs.clazz}" id="${attrs.id}">
-    <l:icon src="${attrs.icon}" />
-    <div>${attrs.title}</div>
-    <div class="jenkins-notice__description">
-      <d:invokeBody />
-    </div>
-  </div>
+  <j:if test="${!readOnlyMode}">
+    <f:bottomButtonBar hidden="${attrs.hidden}">
+      <f:submit value="${%Save}" />
+    </f:bottomButtonBar>
+    <st:adjunct includes="lib.form.confirm" />
+  </j:if>
 </j:jelly>

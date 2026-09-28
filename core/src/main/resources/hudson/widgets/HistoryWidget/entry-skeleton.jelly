@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2023 Jenkins contributors
+Copyright (c) 2026, Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,23 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:d="jelly:define">
-  <st:documentation>
-    <st:attribute name="title" use="required">
-      Sets the title for the notice. HTML isn't supported.
-    </st:attribute>
-    <st:attribute name="icon" use="required">
-      Sets the icon for the notice. Supports Jenkins Symbols and regular images.
-    </st:attribute>
-    <st:attribute name="id" use="optional">
-      If set, id will be the identifier for the component.
-    </st:attribute>
-    <st:attribute name="clazz" use="optional">
-      Additional CSS class(es) to add.
-    </st:attribute>
-  </st:documentation>
+<j:jelly xmlns:j="jelly:core">
+  <div class="app-temporary-list__item" style="height: 71px">
+    <div class="app-build-item">
+      <div class="app-build-item__icon">
+        <div style="width: 1.25rem; height: 1.25rem; border-radius: 100px" class="app-temporary-skeleton" />
+      </div>
 
-  <div class="jenkins-notice ${attrs.clazz}" id="${attrs.id}">
-    <l:icon src="${attrs.icon}" />
-    <div>${attrs.title}</div>
-    <div class="jenkins-notice__description">
-      <d:invokeBody />
+      <div class="app-temporary-list__item__details">
+        <div class="app-temporary-list__item__details__text">
+          <div class="app-temporary-list__item__label">
+            <div style="width: 3rem; height: 1rem;" class="app-temporary-skeleton" />
+          </div>
+          <div class="app-temporary-list__item__description" style="gap: 0.25rem">
+            <div style="width: 20rem; height: 1rem;" class="app-temporary-skeleton" />
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </j:jelly>
