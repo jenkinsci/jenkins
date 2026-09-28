@@ -15,7 +15,7 @@ import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.SecureRandom;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -29,7 +29,7 @@ class DefaultConfidentialStoreTest {
     private static String masterKeyFileAbsolutePath = null;
     private static String masterKeyReadonlySystemPropertyName = null;
 
-    @BeforeEach
+    @AfterEach
     public void resetSystemProperties() {
         System.clearProperty(DefaultConfidentialStore.MASTER_KEY_FILE_SYSTEM_PROPERTY);
         System.clearProperty(DefaultConfidentialStore.MASTER_KEY_READONLY_SYSTEM_PROPERTY_NAME);
