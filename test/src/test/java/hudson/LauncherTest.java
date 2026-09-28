@@ -29,7 +29,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.console.LineTransformationOutputStream;
@@ -62,6 +61,8 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -250,6 +251,8 @@ class LauncherTest {
 
     @Issue("JENKINS-52729")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS,
+                  disabledReason = "should not be platform-dependent, not bothering for now")
     void multipleStdioCalls() throws Exception {
         Node master = rule.jenkins;
         Node agent = rule.createOnlineSlave();
@@ -284,7 +287,6 @@ class LauncherTest {
         message = node.getDisplayName() + ": " + message;
         Launcher launcher = node.createLauncher(StreamTaskListener.fromStderr());
         Launcher.ProcStarter ps = launcher.launch();
-        assumeFalse(Functions.isWindows(), "should not be platform-dependent, not bothering for now");
         if (emitStderr) {
             ps.cmds("sh", "-c", "echo hello >&2").quiet(true);
         } else {

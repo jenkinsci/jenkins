@@ -4,11 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.FilePath;
-import hudson.Functions;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +22,8 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 
@@ -68,7 +67,7 @@ class ZipArchiverTest {
             largeFile.setLength(length);
         } catch (IOException e) {
             // We probably don't have enough free disk space. That's ok, we'll skip this test...
-            assumeTrue(false, e.toString());
+            return;
         }
 
         // a file to store the zip archive in
@@ -89,10 +88,9 @@ class ZipArchiverTest {
     }
 
     @Issue("https://github.com/jenkinsci/jenkins/issues/27188")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Requires features not available on Windows")
     @Test
     void unreadableFileDoesNotCreateEntry() throws Exception {
-        assumeFalse(Functions.isWindows());
-
         File unreadable = new File(tmp, "unreadable.txt");
         Files.writeString(unreadable.toPath(), "contents", StandardCharsets.UTF_8);
         assertTrue(unreadable.setReadable(false));

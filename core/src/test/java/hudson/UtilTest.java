@@ -36,8 +36,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.model.TaskListener;
 import hudson.os.WindowsUtil;
@@ -47,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -63,6 +60,10 @@ import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 
@@ -149,7 +150,6 @@ class UtilTest {
         finally { Locale.setDefault(saveLocale); }
     }
 
-
     /**
      * Test that Strings that contain spaces are correctly URL encoded.
      */
@@ -228,9 +228,8 @@ class UtilTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void testSymlink() throws Exception {
-        assumeFalse(Functions.isWindows());
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener l = new StreamTaskListener(baos, Charset.defaultCharset());
         File d = tmp;
@@ -251,7 +250,6 @@ class UtilTest {
                 System.err.println("log output: " + log);
 
             assertEquals(buf.toString(), Util.resolveSymlink(new File(d, "x")));
-
 
             // test linking from another directory
             File anotherDir = new File(d, "anotherDir");
@@ -276,9 +274,8 @@ class UtilTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void testIsSymlink() throws IOException, InterruptedException {
-        assumeFalse(Functions.isWindows());
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener l = new StreamTaskListener(baos, Charset.defaultCharset());
         File d = tmp;
@@ -306,8 +303,8 @@ class UtilTest {
     }
 
     @Test
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Uses Windows-specific features")
     void testIsSymlink_onWindows_junction() throws Exception {
-        assumeTrue(Functions.isWindows(), "Uses Windows-specific features");
         File targetDir = newFolder(tmp, "targetDir");
         File d = newFolder(tmp, "dir");
         File junction = WindowsUtil.createJunction(new File(d, "junction"), targetDir);
@@ -316,8 +313,8 @@ class UtilTest {
 
     @Test
     @Issue("JENKINS-55448")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Uses Windows-specific features")
     void testIsSymlink_ParentIsJunction() throws IOException, InterruptedException {
-        assumeTrue(Functions.isWindows(), "Uses Windows-specific features");
         File targetDir = newFolder(tmp, "junit");
         File file = new File(targetDir, "test-file");
         new FilePath(file).touch(System.currentTimeMillis());
@@ -330,8 +327,8 @@ class UtilTest {
 
     @Test
     @Issue("JENKINS-55448")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void testIsSymlink_ParentIsSymlink() throws IOException, InterruptedException {
-        assumeFalse(Functions.isWindows());
         File folder = newFolder(tmp, "junit");
         File file = new File(folder, "test-file");
         new FilePath(file).touch(System.currentTimeMillis());
@@ -648,8 +645,8 @@ class UtilTest {
 
     @Test
     @Issue("SECURITY-904")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void resolveSymlinkToFile() throws Exception {
-        assumeFalse(Functions.isWindows());
         //  root
         //      /a
         //          /aa
@@ -687,8 +684,8 @@ class UtilTest {
 
     @Test
     @Issue("JENKINS-67372")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void createDirectories() throws Exception {
-        assumeFalse(Functions.isWindows());
         //  root
         //      /a
         //          /a1
@@ -716,20 +713,44 @@ class UtilTest {
         assertEquals(a1.resolve("new6"), Util.createDirectories(b.resolve("a2").resolve("new6")).toRealPath());
     }
 
+    private static boolean runningAsRoot() throws Exception {
+        if (Functions.isWindows()) {
+            // Don't run tests on Windows that require root access on Linux
+            return false;
+        }
+        Path rootProbe = null;
+        Path created = null;
+        try {
+            rootProbe = Files.createTempDirectory(Path.of("/"), "new-dir-in-root-");
+            created = rootProbe.resolve("new2");
+            Util.createDirectories(created);
+        } catch (IOException e) {
+            return false; // Not running as root
+        } finally {
+            if (created != null) {
+                Files.deleteIfExists(created);
+            }
+            if (rootProbe != null) {
+                Files.deleteIfExists(rootProbe);
+            }
+        }
+        return true;
+    }
+
     @Test
     @Issue("JENKINS-67372")
+    @EnabledIf(value = "runningAsRoot", disabledReason = "Insufficient operating system permissions for this test")
     void createDirectoriesInRoot() throws Exception {
-        assumeFalse(Functions.isWindows());
-        Path newDirInRoot = Paths.get("/new-dir-in-root");
+        Path newDirInRoot = Files.createTempDirectory(Path.of("/"), "new-dir-in-root-");
         Path newSymlinkInRoot = Paths.get("/new-symlink-in-root");
-        try {
-            assertEquals(newDirInRoot.resolve("new1"), Util.createDirectories(newDirInRoot.resolve("new1")).toRealPath());
-            Util.createSymlink(newSymlinkInRoot.getParent().toFile(), newDirInRoot.getFileName().toString(), newSymlinkInRoot.getFileName().toString(), TaskListener.NULL);
-            assertEquals(newDirInRoot.resolve("new2"), Util.createDirectories(newSymlinkInRoot.resolve("new2")).toRealPath());
-        } catch (FileSystemException e) {
-            // Not running as root
-            assumeTrue(false, e.toString());
-        }
+        Util.createDirectories(newDirInRoot.resolve("new1"));
+        assertEquals(newDirInRoot.resolve("new1"), Util.createDirectories(newDirInRoot.resolve("new1")).toRealPath());
+        Util.createSymlink(newSymlinkInRoot.getParent().toFile(), newDirInRoot.getFileName().toString(), newSymlinkInRoot.getFileName().toString(), TaskListener.NULL);
+        assertEquals(newDirInRoot.resolve("new2"), Util.createDirectories(newSymlinkInRoot.resolve("new2")).toRealPath());
+        /* If the test reached this location, the directory exists. Remove it */
+        Util.deleteRecursive(newDirInRoot.toFile());
+        /* If the test reached this location, the symlink exists. Remove it */
+        Util.deleteRecursive(newSymlinkInRoot.toFile());
     }
 
     @Test
