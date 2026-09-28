@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-java@1d018f9b8b9b505bb578a83b230fabcce01af93b #v 5.0.0
         with:
           distribution: "temurin"
-          java-version: 21
+          java-version: 25
           cache: "maven"
       - name: Set version
         id: set-version
