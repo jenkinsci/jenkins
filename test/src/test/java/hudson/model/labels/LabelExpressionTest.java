@@ -248,6 +248,8 @@ class LabelExpressionTest {
         l = j.jenkins.getLabel("label1||label2"); // create label expression
         l = j.jenkins.getLabel("\"label1||label2\"");
         assertEquals("label1||label2", l.getName());
+        assertThat(l, instanceOf(LabelAtom.class));
+        assertSame(l, j.jenkins.getLabelAtom("label1||label2"));
     }
 
     /**
@@ -407,6 +409,36 @@ class LabelExpressionTest {
 
         assertNotSame(expression, atom);
         assertSame(expression, j.jenkins.getLabel("c  &&  d"));
+    }
+
+    @Test
+    @Issue("27452")
+    void unspacedExpressionDoesNotResolveToExistingAtom() {
+        LabelAtom atom = j.jenkins.getLabelAtom("a&&b");
+
+        Label expression = j.jenkins.getLabel("a&&b");
+
+        assertThat(expression, instanceOf(LabelExpression.And.class));
+        assertNotSame(atom, expression);
+        assertSame(expression, j.jenkins.getLabel("a && b"));
+        assertSame(atom, j.jenkins.getLabelAtom("a&&b"));
+    }
+
+    @Test
+    @Issue("27452")
+    void quotedAtomDoesNotPolluteAtomCacheWithExpression() {
+        Label atomLabel = j.jenkins.getLabel("\"x&&y\"");
+
+        assertThat(atomLabel, instanceOf(LabelAtom.class));
+        assertEquals("x&&y", atomLabel.getName());
+
+        LabelAtom atom = j.jenkins.getLabelAtom("x&&y");
+        assertSame(atomLabel, atom);
+
+        Label expression = j.jenkins.getLabel("x&&y");
+        assertThat(expression, instanceOf(LabelExpression.And.class));
+        assertNotSame(atom, expression);
+        assertSame(expression, j.jenkins.getLabel("x && y"));
     }
 
     private void parseShouldFail(String expr, String message) {
