@@ -34,11 +34,13 @@ import hudson.model.Node;
 import hudson.model.Slave;
 import hudson.util.DescriptorList;
 import hudson.util.FormValidation;
+import hudson.util.QuotedStringTokenizer;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
@@ -102,6 +104,42 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
             Jenkins.checkGoodName(name);
         } catch (Failure f) {
             return FormValidation.error(f.getMessage());
+        }
+        return FormValidation.ok();
+    }
+
+    /*package*/ static /* Script Console modifiable */ boolean ALLOW_OPERATOR_CHARACTERS_IN_LABELS =
+            SystemProperties.getBoolean(NodeDescriptor.class.getName() + ".allowOperatorCharactersInLabels");
+
+    /**
+     * Performs syntactical check on the label string for nodes.
+     *
+     * @param value
+     *      Labels entered by user (space-separated, with optional quotes).
+     * @return
+     *      Validation result.
+     * @since TODO
+     */
+    public FormValidation doCheckLabelString(@QueryParameter String value) {
+        if (Util.fixEmptyAndTrim(value) == null) {
+            return FormValidation.ok();
+        }
+        QuotedStringTokenizer tokenizer = new QuotedStringTokenizer(value);
+        List<String> problematicLabels = new ArrayList<>();
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+            if (token.indexOf('&') != -1 || token.indexOf('|') != -1 || token.indexOf('!') != -1
+                    || token.indexOf('(') != -1 || token.indexOf(')') != -1) {
+                problematicLabels.add(token);
+            }
+        }
+        if (!problematicLabels.isEmpty()) {
+            String labels = String.join(", ", problematicLabels);
+            if (ALLOW_OPERATOR_CHARACTERS_IN_LABELS) {
+                return FormValidation.warning(Messages.NodeDescriptor_CheckLabelString_ExpressionOperatorWarning(labels));
+            } else {
+                return FormValidation.error(Messages.NodeDescriptor_CheckLabelString_ExpressionOperatorError(labels));
+            }
         }
         return FormValidation.ok();
     }
