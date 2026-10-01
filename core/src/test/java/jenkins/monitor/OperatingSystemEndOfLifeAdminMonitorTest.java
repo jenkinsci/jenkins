@@ -81,7 +81,12 @@ class OperatingSystemEndOfLifeAdminMonitorTest {
 
     @Test
     void testGetEndOfLifeDate() {
-        assertThat(monitor.getEndOfLifeDate(), is("2099-12-31"));
+        // TODO: Use newer operating system for testing - Ubuntu 22.04 is EOL 2027-04-01
+        String expectedDate = "2099-12-31";
+        if (monitor.getOperatingSystemName().contains("Ubuntu") && monitor.getOperatingSystemName().contains("22.04")) {
+            expectedDate = "2027-04-01";
+        }
+        assertThat(monitor.getEndOfLifeDate(), is(expectedDate));
     }
 
     @Test
@@ -102,8 +107,13 @@ class OperatingSystemEndOfLifeAdminMonitorTest {
 
     @Test
     void testIsActivated() {
-        // Will fail if operating system running the test is reaching end of life soon
-        assertFalse(monitor.isActivated());
+        // TODO: Use newer operating system for testing - Ubuntu 22.04 is EOL 2027-04-01
+        if (monitor.getOperatingSystemName().contains("Ubuntu") && monitor.getOperatingSystemName().contains("22.04")) {
+            assertTrue(monitor.isActivated());
+        } else {
+            // Will fail if operating system running the test is reaching end of life soon
+            assertFalse(monitor.isActivated());
+        }
     }
 
     @Test
