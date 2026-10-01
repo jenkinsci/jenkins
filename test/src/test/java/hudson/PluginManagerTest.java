@@ -39,7 +39,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.PluginManager.UberClassLoader;
 import hudson.model.DownloadService;
@@ -97,6 +96,8 @@ import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
@@ -301,9 +302,9 @@ class PluginManagerTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "TODO: Implement this test on Windows")
     void prevalidateConfig() throws Throwable {
         session.then(r -> {
-            assumeFalse(Functions.isWindows(), "TODO: Implement this test on Windows");
             PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
             sites.clear();
             URL url = PluginManagerTest.class.getResource("/plugins/htmlpublisher-update-center.json");
@@ -590,9 +591,9 @@ class PluginManagerTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "TODO: Implement this test on Windows")
     void uploadDependencyResolution() throws Throwable {
         session.then(r -> {
-            assumeFalse(Functions.isWindows(), "TODO: Implement this test for Windows");
             PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
             sites.clear();
             URL url = PluginManagerTest.class.getResource("/plugins/upload-test-update-center.json");
@@ -688,9 +689,9 @@ class PluginManagerTest {
 
     @Test
     @Issue("JENKINS-64840")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "TODO: Implement this test on Windows")
     void searchMultipleUpdateSites() throws Throwable {
         session.then(r -> {
-            assumeFalse(Functions.isWindows(), "TODO: Implement this test for Windows");
             PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
             sites.clear();
             URL url = PluginManagerTest.class.getResource("/plugins/search-test-update-center1.json");
@@ -793,9 +794,8 @@ class PluginManagerTest {
 
     @Test
     @Issue("SECURITY-2823")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Requires capabilities not available on Windows")
     void verifyUploadedPluginPermission() throws Throwable {
-        assumeFalse(Functions.isWindows());
-
         session.then(r -> {
             HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
             HtmlForm f = page.getFormByName("uploadPlugin");
@@ -887,9 +887,8 @@ class PluginManagerTest {
 
     @Test
     @Issue("SECURITY-3072")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Requires capabilities not available on Windows")
     void verifyUploadedPluginFromURLPermission() throws Throwable {
-        assumeFalse(Functions.isWindows());
-
         session.then(r -> {
             HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
             HtmlForm f = page.getFormByName("uploadPlugin");

@@ -3,9 +3,7 @@ package hudson.tasks;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import hudson.Functions;
 import hudson.Launcher.ProcStarter;
 import hudson.Proc;
 import hudson.model.FreeStyleBuild;
@@ -16,9 +14,10 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.FakeLauncher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -54,9 +53,8 @@ class ShellTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "If we're on Windows, don't bother doing this")
     void testBasic() throws Exception {
-        Assumptions.assumeFalse(Functions.isWindows(), "If we're on Windows, don't bother doing this");
-
         // TODO: define a FakeLauncher implementation with easymock so that this kind of assertions can be simplified.
         PretendSlave s = rule.createPretendSlave(p -> {
             // test the command line argument.
@@ -114,8 +112,8 @@ class ShellTest {
 
     @Test
     @Issue("JENKINS-23786")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void unixExitCodes1To255ShouldMakeBuildUnstable() throws Exception {
-        assumeFalse(Functions.isWindows());
         for (int exitCode : new int [] {1, 2, 255}) {
             nonZeroExitCodeShouldMakeBuildUnstable(exitCode);
         }
@@ -139,9 +137,8 @@ class ShellTest {
 
     @Test
     @Issue("JENKINS-23786")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void unixExitCodes1To255ShouldBreakTheBuildByDefault() throws Exception {
-        assumeFalse(Functions.isWindows());
-
         for (int exitCode : new int [] {1, 2, 255}) {
             nonZeroExitCodeShouldBreakTheBuildByDefault(exitCode);
         }
@@ -160,8 +157,8 @@ class ShellTest {
 
     @Test
     @Issue("JENKINS-23786")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void unixExitCodes1To255ShouldBreakTheBuildIfNotMatching() throws Exception {
-        assumeFalse(Functions.isWindows());
         for (int exitCode : new int [] {1, 2, 255}) {
             nonZeroExitCodeShouldBreakTheBuildIfNotMatching(exitCode);
         }
@@ -169,9 +166,8 @@ class ShellTest {
 
     @Test
     @Issue("JENKINS-23786")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void unixExitCodes0ShouldNeverMakeTheBuildUnstable() throws Exception {
-        assumeFalse(Functions.isWindows());
-
         PretendSlave slave = rule.createPretendSlave(new ReturnCodeFakeLauncher(0));
         for (Integer unstableReturn : new Integer [] {null, 0, 1}) {
             FreeStyleProject p = rule.createFreeStyleProject();
@@ -183,9 +179,8 @@ class ShellTest {
 
     @Issue("JENKINS-23786")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void unixUnstableCodeZeroIsSameAsUnset() {
-        assumeFalse(Functions.isWindows());
-
         /* Creating unstable=0 produces unstable=null */
         assertNull(createNewShell("", 0).getUnstableReturn());
     }
