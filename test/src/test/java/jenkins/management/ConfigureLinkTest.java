@@ -131,7 +131,7 @@ class ConfigureLinkTest {
         clearOtherMonitors();
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.READ).everywhere().to("alice")
+                .grant(Jenkins.READ, Jenkins.SYSTEM_READ).everywhere().to("alice")
         );
 
         User alice = User.getById("alice", true);
