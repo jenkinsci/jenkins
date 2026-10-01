@@ -33,20 +33,20 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
-import hudson.Functions;
 import hudson.model.Result;
 import hudson.model.Run;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -620,12 +620,13 @@ class XStream2Test {
     void nullsWithoutEncodingDeclaration() {
         Bar b = new Bar();
         b.s = "x\u0000y";
-        try {
-            new XStream2().toXML(b, new StringWriter());
-            fail("expected to fail fast; not supported to read either");
-        } catch (RuntimeException x) {
-            assertThat("cause is com.thoughtworks.xstream.io.StreamException: Invalid character 0x0 in XML stream", Functions.printThrowable(x), containsString("0x0"));
-        }
+        StringWriter w = new StringWriter();
+        XStream2 xs = new XStream2();
+        xs.toXML(b, w);
+        String xml = w.toString();
+        assertThat(xml, is("<hudson.util.XStream2Test_-Bar>\n  <s>x&#xfffd;y</s>\n</hudson.util.XStream2Test_-Bar>"));
+        b = (Bar) xs.fromXML(xml);
+        assertEquals("x\ufffdy", b.s);
     }
 
     @Issue("JENKINS-71139")
@@ -633,12 +634,28 @@ class XStream2Test {
     void nullsWithEncodingDeclaration() throws Exception {
         Bar b = new Bar();
         b.s = "x\u0000y";
-        try {
-            new XStream2().toXMLUTF8(b, new ByteArrayOutputStream());
-            fail("expected to fail fast; not supported to read either");
-        } catch (RuntimeException x) {
-            assertThat("cause is com.thoughtworks.xstream.io.StreamException: Invalid character 0x0 in XML stream", Functions.printThrowable(x), containsString("0x0"));
-        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        XStream2 xs = new XStream2();
+        xs.toXMLUTF8(b, baos);
+        String xml = baos.toString(StandardCharsets.UTF_8);
+        assertThat(xml, containsString("version=\"1.1\""));
+        assertThat(xml, containsString("<s>x&#xfffd;y</s>"));
+        b = (Bar) xs.fromXML(new ByteArrayInputStream(baos.toByteArray()));
+        assertEquals("x\ufffdy", b.s);
+    }
+
+    @Issue("https://github.com/jenkinsci/jenkins/issues/27458")
+    @Test
+    void invalidXml11CharactersReplaced() {
+        Bar b = new Bar();
+        b.s = "a\ufffeb\uffffc";
+        StringWriter w = new StringWriter();
+        XStream2 xs = new XStream2();
+        xs.toXML(b, w);
+        String xml = w.toString();
+        assertThat(xml, is("<hudson.util.XStream2Test_-Bar>\n  <s>a&#xfffd;b&#xfffd;c</s>\n</hudson.util.XStream2Test_-Bar>"));
+        b = (Bar) xs.fromXML(xml);
+        assertEquals("a\ufffdb\ufffdc", b.s);
     }
 
 }
