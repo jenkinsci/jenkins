@@ -6,7 +6,9 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import hudson.model.InvisibleAction;
+import hudson.model.Item;
 import hudson.model.UnprotectedRootAction;
+import hudson.model.View;
 import java.io.IOException;
 import org.htmlunit.Page;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,6 +85,23 @@ public class Security3594Test {
             assertThat(content, containsString("Build Queue"));
             assertThat(content, containsString("Build History"));
             assertThat(content, containsString("RSS 2.0")); // Feed links in header
+        }
+    }
+
+    @Issue("JENKINS-27469")
+    @Test
+    public void buildHistoryVisibleForNonAdminWithReadPermissions() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("alice")
+                .grant(View.READ).everywhere().to("alice")
+                .grant(Item.READ).everywhere().to("alice"));
+
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            wc.login("alice");
+            Page page = wc.goTo("");
+            String content = page.getWebResponse().getContentAsString();
+            assertThat(content, containsString("Build History"));
         }
     }
 
