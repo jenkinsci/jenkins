@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.BulkChange;
@@ -52,6 +53,7 @@ import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.Builder;
 import io.jenkins.lib.support_log_formatter.SupportLogFormatter;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -62,6 +64,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -88,7 +92,10 @@ class NodeProvisionerTest {
         rr.javaOptions(
                 "-Dhudson.model.LoadStatistics.clock=" + TimeUnit.SECONDS.toMillis(1),
                 "-Dhudson.slaves.NodeProvisioner.initialDelay=" + TimeUnit.SECONDS.toMillis(10),
-                "-Dhudson.slaves.NodeProvisioner.recurrencePeriod=" + TimeUnit.SECONDS.toMillis(1));
+                "-Dhudson.slaves.NodeProvisioner.recurrencePeriod=" + TimeUnit.SECONDS.toMillis(1),
+                // short enough to keep the timeout test below fast, long enough that none of the other
+                // (fast-returning) DummyCloudImpl-based tests in this class come anywhere close to it
+                "-Dhudson.slaves.NodeProvisioner.provisionTimeoutMillis=" + TimeUnit.SECONDS.toMillis(5));
     }
 
     /**
@@ -315,6 +322,104 @@ class NodeProvisionerTest {
 
         assertEquals(1, cloud1.numProvisioned);
         assertEquals(0, cloud2.numProvisioned);
+    }
+
+    /**
+     * A {@link Cloud#provision} implementation that blocks past the configured
+     * {@code hudson.slaves.NodeProvisioner.provisionTimeoutMillis} should not keep
+     * {@code NodeProvisioner}'s internal lock (and thus the calling thread) blocked for the
+     * duration of the call; the lock must be released once the timeout elapses, and the deferred
+     * result must still be applied once the call eventually completes.
+     */
+    @Issue("JENKINS-27308")
+    @Test
+    void slowCloudProvisionDoesNotBlockProvisioningLock() throws Throwable {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
+        rr.then(NodeProvisionerTest::_slowCloudProvisionDoesNotBlockProvisioningLock);
+    }
+
+    private static void _slowCloudProvisionDoesNotBlockProvisioningLock(JenkinsRule r) throws Exception {
+        CountDownLatch provisionStarted = new CountDownLatch(1);
+        CountDownLatch unblockProvision = new CountDownLatch(1);
+        CountDownLatch provisionCompleted = new CountDownLatch(1);
+        AtomicInteger provisionCallCount = new AtomicInteger(0);
+
+        SlowCloudImpl cloud = new SlowCloudImpl(r, provisionStarted, unblockProvision, provisionCompleted, provisionCallCount);
+        r.jenkins.clouds.add(cloud);
+        r.jenkins.setNumExecutors(0);
+        r.jenkins.setNodes(Collections.emptyList());
+
+        FreeStyleProject p = createJob(new SleepBuilder(1), r);
+        p.scheduleBuild2(0);
+
+        assertTrue(provisionStarted.await(30, TimeUnit.SECONDS), "cloud.provision() should have been invoked");
+
+        // provisioningLock must be released once provision()'s timeout elapses, well before
+        // unblockProvision is counted down below, proving the calling thread does not stay blocked
+        // for the whole duration of a slow/hung Cloud#provision call.
+        Field lockField = NodeProvisioner.class.getDeclaredField("provisioningLock");
+        lockField.setAccessible(true);
+        Lock provisioningLock = (Lock) lockField.get(r.jenkins.unlabeledNodeProvisioner);
+        assertTrue(provisioningLock.tryLock(15, TimeUnit.SECONDS),
+                "provisioningLock should be released once provision() exceeds its configured timeout, "
+                        + "not held until the slow provision() call actually returns");
+        provisioningLock.unlock();
+
+        // provision() is still running in the background at this point; let it finish and confirm its
+        // (late) result is still applied rather than silently dropped.
+        unblockProvision.countDown();
+        assertTrue(provisionCompleted.await(30, TimeUnit.SECONDS), "provision() should eventually complete in the background");
+        assertEquals(1, provisionCallCount.get(), "provision() should not be invoked more than once for the same demand");
+    }
+
+    private static class SlowCloudImpl extends Cloud {
+        private final transient JenkinsRule caller;
+        private final transient CountDownLatch provisionStarted;
+        private final transient CountDownLatch unblockProvision;
+        private final transient CountDownLatch provisionCompleted;
+        private final transient AtomicInteger provisionCallCount;
+
+        SlowCloudImpl(JenkinsRule caller, CountDownLatch provisionStarted, CountDownLatch unblockProvision,
+                      CountDownLatch provisionCompleted, AtomicInteger provisionCallCount) {
+            super("SlowCloudImpl");
+            this.caller = caller;
+            this.provisionStarted = provisionStarted;
+            this.unblockProvision = unblockProvision;
+            this.provisionCompleted = provisionCompleted;
+            this.provisionCallCount = provisionCallCount;
+        }
+
+        @Override
+        public Collection<NodeProvisioner.PlannedNode> provision(Label label, int excessWorkload) {
+            provisionCallCount.incrementAndGet();
+            provisionStarted.countDown();
+            try {
+                unblockProvision.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return List.of();
+            }
+            List<NodeProvisioner.PlannedNode> result = new ArrayList<>();
+            Future<Node> f = Computer.threadPoolForRemoting.submit(() -> {
+                DumbSlave slave = caller.createSlave(label);
+                Computer computer = slave.toComputer();
+                computer.connect(false).get();
+                return slave;
+            });
+            result.add(new NodeProvisioner.PlannedNode(name + " #1", f, 1));
+            provisionCompleted.countDown();
+            return result;
+        }
+
+        @Override
+        public boolean canProvision(Label label) {
+            return true;
+        }
+
+        @Override
+        public Descriptor<Cloud> getDescriptor() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     private static class DummyCloudImpl3 extends Cloud {
