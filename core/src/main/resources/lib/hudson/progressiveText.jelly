@@ -33,9 +33,13 @@ THE SOFTWARE.
     <st:attribute name="spinner">ID of the HTML element in which the spinner is displayed</st:attribute>
     <st:attribute name="startOffset">Skip this many bytes rather than showing from start of data</st:attribute>
     <st:attribute name="onFinishEvent">JS custom event to be fired when progress is finished</st:attribute>
+    <st:attribute name="maxChunks">Maximum number of DOM chunks to retain before pruning older output during live tailing</st:attribute>
   </st:documentation>
   <div class="progressiveText-holder" data-href="${href}" data-idref="${idref}" data-spinner="${spinner}" data-start-offset="${startOffset}"
        data-on-finish-event="${empty(onFinishEvent) ? '' : onFinishEvent}"
-       data-error-message="${%errorMessage}"/>
+       data-max-chunks="${maxChunks}"
+       data-error-message="${%errorMessage}"
+       data-show-earlier-text="${%showEarlierText}"
+       data-hidden-chunks-message="${%hiddenChunksMessage}"/>
   <st:adjunct includes="lib.hudson.progressive-text"/>
 </j:jelly>
