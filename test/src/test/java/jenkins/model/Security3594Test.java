@@ -65,7 +65,7 @@ public class Security3594Test {
     @Test
     public void sidepanelIsEmptyWithoutOverallRead() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("authenticated"));
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().to("authenticated"));
 
 
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
