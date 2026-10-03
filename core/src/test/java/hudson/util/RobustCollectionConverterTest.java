@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.security.InputManipulationException;
 import hudson.model.Saveable;
 import java.io.IOException;
@@ -246,6 +247,36 @@ class RobustCollectionConverterTest {
         @Override
         public void save() throws IOException {
             // We only implement Saveable so that RobustReflectionConverter logs deserialization problems.
+        }
+    }
+
+    @Test
+    void testStrictLoadingMode() throws Exception {
+        XStream2 xstream2 = new XStream2();
+        List<Object> payload = new ArrayList<>();
+        payload.add("valid");
+
+        // Construct XML with an invalid element that causes an exception during unmarshalling
+        String xml = xstream2.toXML(payload);
+        final String finalXml = xml.replace("</list>", "  <this-class-does-not-exist/>\n</list>");
+
+        // We need to access the private static field
+        java.lang.reflect.Field field = RobustCollectionConverter.class.getDeclaredField("FAIL_ON_LOAD_ERROR");
+        field.setAccessible(true);
+        boolean originalValue = (boolean) field.get(null);
+
+        try {
+            // Case 1: Default behavior (false) - should swallow error
+            field.set(null, false);
+            List<?> result = (List<?>) xstream2.fromXML(finalXml);
+            assertEquals(1, result.size());
+            assertEquals("valid", result.get(0));
+
+            // Case 2: Strict mode (true) - should throw exception
+            field.set(null, true);
+            assertThrows(ConversionException.class, () -> xstream2.fromXML(finalXml));
+        } finally {
+            field.set(null, originalValue);
         }
     }
 }
