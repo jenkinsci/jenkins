@@ -58,9 +58,12 @@ public class QueryParameterMap {
     public QueryParameterMap(String queryString) {
         if (queryString == null || queryString.isEmpty())   return;
         for (String param : queryString.split("&")) {
-            String[] kv = param.split("=");
+            if (param.isEmpty()) {
+                continue;
+            }
+            String[] kv = param.split("=", 2);
             String key = URLDecoder.decode(kv[0], StandardCharsets.UTF_8);
-            String value = URLDecoder.decode(kv[1], StandardCharsets.UTF_8);
+            String value = kv.length > 1 ? URLDecoder.decode(kv[1], StandardCharsets.UTF_8) : "";
             List<String> values = store.computeIfAbsent(key, k -> new ArrayList<>());
             values.add(value);
         }
