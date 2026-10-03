@@ -114,7 +114,7 @@ THE SOFTWARE.
                           data-id="${h.xmlEscape(p.name+':'+p.version)}">
                         <div>
                           <a href="${p.wiki}" class="jenkins-table__link" rel="noopener noreferrer" target="_blank">
-                            <st:out value="${p.displayName}"/>
+                            <span class="app-plugin-manager__name"><st:out value="${p.displayName}"/></span>
                             <span class="jenkins-label jenkins-label--tertiary" style="margin-left: 1ch;">
                               <span class="jenkins-visually-hidden">${%Version}</span>
                               ${p.version}
@@ -134,7 +134,7 @@ THE SOFTWARE.
                           </div>
                         </j:if>
                         <j:if test="${p.excerpt!=null}">
-                          <div>
+                          <div class="app-plugin-manager__description">
                             <j:out value="${p.excerpt}"/>
                           </div>
                         </j:if>
