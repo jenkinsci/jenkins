@@ -127,6 +127,12 @@ public class BasicAuthenticationFilter implements CompatibleFilter {
             return;
         }
 
+        if (!authorization.regionMatches(true, 0, "Basic ", 0, 6)) {
+            // Not a Basic authentication header; let the container handle it
+            chain.doFilter(request, response);
+            return;
+        }
+
         // authenticate the user
         String username = null;
         String password = null;
