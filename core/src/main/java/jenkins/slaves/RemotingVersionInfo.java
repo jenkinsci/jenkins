@@ -84,7 +84,7 @@ public class RemotingVersionInfo {
             return new VersionNumber(prop);
         } catch (RuntimeException ex) {
             throw new ExceptionInInitializerError(new IOException(
-                    String.format("Failed to parse version for for property %s in %s. Raw Value: %s",
+                    String.format("Failed to parse version for property %s in %s. Raw Value: %s",
                     propertyName, RESOURCE_NAME, prop), ex));
         }
     }
