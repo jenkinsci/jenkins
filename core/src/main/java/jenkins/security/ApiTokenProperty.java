@@ -36,9 +36,13 @@ import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import hudson.model.userproperty.UserPropertyCategory;
 import hudson.security.ACL;
+import hudson.security.Permission;
+import hudson.security.PermissionGroup;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.Period;
@@ -46,11 +50,17 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -194,18 +204,23 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     public boolean matchesPassword(String token) {
+        return findMatchingToken(token) != null;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public ApiTokenStore.HashedToken findMatchingToken(String token) {
         if (token == null || token.isBlank()) {
-            return false;
+            return null;
         }
 
         ApiTokenStore.HashedToken matchingToken = tokenStore.findMatchingToken(token);
         if (matchingToken == null) {
-            return false;
+            return null;
         }
 
         tokenStats.updateUsageForId(matchingToken.getUuid());
 
-        return true;
+        return matchingToken;
     }
 
     /**
@@ -262,6 +277,8 @@ public class ApiTokenProperty extends UserProperty {
         public final String expirationDate;
         public final boolean expired;
         public final boolean aboutToExpire;
+        public final boolean scoped;
+        public final Set<String> scopes;
 
         public TokenInfoAndStats(@NonNull ApiTokenStore.HashedToken token, @NonNull ApiTokenStats.SingleTokenStats stats) {
             this.uuid = token.getUuid();
@@ -271,6 +288,8 @@ public class ApiTokenProperty extends UserProperty {
             this.isLegacy = token.isLegacy();
             this.expired = token.isExpired();
             this.aboutToExpire = token.isAboutToExpire();
+            this.scoped = token.isScoped();
+            this.scopes = token.getScopes() == null ? Collections.emptySet() : token.getScopes();
 
             LocalDate expirationDate = token.getExpirationDate();
             if (expirationDate == null) {
@@ -314,6 +333,33 @@ public class ApiTokenProperty extends UserProperty {
                 return Messages.ApiTokenProperty_createdYesterday();
             }
             return Messages.ApiTokenProperty_createdDaysAgo(period.getDays());
+        }
+
+        // getter added for reliable Jelly EL resolution; JEXL's property lookup on a
+        // plain boolean field can fall through ambiguously otherwise.
+        public boolean isScoped() {
+            return scoped;
+        }
+
+        /**
+         * Human-readable names for the token's scope permissions, formatted as
+         * {@code "Group/Permission"} (e.g. {@code "Job/Read"}). Falls back to the raw
+         * ID if the permission can no longer be resolved (plugin uninstalled, etc.).
+         */
+        public @NonNull List<String> getScopeLabels() {
+            if (!scoped || scopes.isEmpty()) {
+                return Collections.emptyList();
+            }
+            List<String> labels = new ArrayList<>(scopes.size());
+            for (String id : scopes) {
+                Permission p = Permission.fromId(id);
+                if (p == null) {
+                    labels.add(id);
+                } else {
+                    labels.add(p.group.title + "/" + p.name);
+                }
+            }
+            return labels;
         }
 
         public String lastUsedDaysAgo() {
@@ -464,7 +510,13 @@ public class ApiTokenProperty extends UserProperty {
     // essentially meant for scripting
     @Restricted(Beta.class)
     public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate) throws IOException {
-        TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name, expirationDate);
+        return generateNewToken(name, expirationDate, null);
+    }
+
+    @Restricted(Beta.class)
+    public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate, @CheckForNull Set<String> scopes) throws IOException {
+        // Pre-checking user.hasPermission(p) is wrong for per-object permissions; the ACL gate enforces it at request time.
+        TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name, expirationDate, scopes);
         user.save();
         return tokenUuidAndPlainValue;
     }
@@ -600,7 +652,8 @@ public class ApiTokenProperty extends UserProperty {
 
         @RequirePOST
         public HttpResponse doGenerateNewToken(@AncestorInPath User u, @QueryParameter String newTokenName,
-                                               @QueryParameter String tokenExpiration, @QueryParameter String expirationDuration) throws IOException {
+                                               @QueryParameter String tokenExpiration, @QueryParameter String expirationDuration,
+                                               @QueryParameter String scopes) throws IOException {
             if (!hasCurrentUserRightToGenerateNewToken(u)) {
                 return HttpResponses.forbidden();
             }
@@ -613,6 +666,13 @@ public class ApiTokenProperty extends UserProperty {
             }
 
             LocalDate expirationDate = getExpirationDate(tokenExpiration, expirationDuration);
+
+            Set<String> parsedScopes;
+            try {
+                parsedScopes = parseAndCheckScopes(scopes);
+            } catch (IllegalArgumentException e) {
+                return HttpResponses.errorJSON(e.getMessage());
+            }
 
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
@@ -631,14 +691,106 @@ public class ApiTokenProperty extends UserProperty {
                 return HttpResponses.errorJSON(Messages.ApiTokenProperty_expirationInPast());
             }
 
-            TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName, expirationDate);
+            TokenUuidAndPlainValue tokenUuidAndPlainValue;
+            try {
+                tokenUuidAndPlainValue = p.generateNewToken(tokenName, expirationDate, parsedScopes);
+            } catch (IllegalArgumentException e) {
+                return HttpResponses.errorJSON(e.getMessage());
+            }
 
             data.put("tokenUuid", tokenUuidAndPlainValue.tokenUuid);
             data.put("tokenName", tokenName);
             data.put("tokenValue", tokenUuidAndPlainValue.plainValue);
             data.put("expirationDate", expirationDateString);
             data.put("aboutToExpire", tokenUuidAndPlainValue.aboutToExpire);
+            data.put("scopeCount", parsedScopes == null ? 0 : parsedScopes.size());
+            if (parsedScopes != null && !parsedScopes.isEmpty()) {
+                List<String> labels = new ArrayList<>(parsedScopes.size());
+                for (String id : parsedScopes) {
+                    Permission resolved = Permission.fromId(id);
+                    labels.add(resolved == null ? id : resolved.group.title + "/" + resolved.name);
+                }
+                data.put("scopeLabels", String.join(", ", labels));
+            }
             return HttpResponses.okJSON(data);
+        }
+
+        private static @CheckForNull Set<String> parseAndCheckScopes(@CheckForNull String scopes) {
+            if (scopes == null || scopes.isBlank()) {
+                return null;
+            }
+            Set<String> ids = Arrays.stream(scopes.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            if (ids.isEmpty()) {
+                return null;
+            }
+            // Existence check only. User-holds-permission is enforced at request time.
+            for (String id : ids) {
+                if (Permission.fromId(id) == null) {
+                    throw new IllegalArgumentException("Unknown permission: " + id);
+                }
+            }
+            return ids;
+        }
+
+        @Restricted(NoExternalUse.class)
+        public @NonNull Map<PermissionGroup, List<Permission>> getAvailableScopes() {
+            Map<PermissionGroup, List<Permission>> grouped = new LinkedHashMap<>();
+            for (PermissionGroup group : PermissionGroup.getAll()) {
+                // Skip Permission.GROUP: its members are generic root permissions used only
+                // as impliedBy targets (GenericRead, FullControl, etc.), not user-facing.
+                if (group.owner == Permission.class) {
+                    continue;
+                }
+                List<Permission> permissions = new ArrayList<>();
+                for (Permission permission : group.getPermissions()) {
+                    if (!permission.getEnabled()) {
+                        continue;
+                    }
+                    if (isDeprecatedPermission(permission)) {
+                        continue;
+                    }
+                    permissions.add(permission);
+                }
+                if (!permissions.isEmpty()) {
+                    grouped.put(group, permissions);
+                }
+            }
+            return grouped;
+        }
+
+        // Core-deprecated permissions whose @Deprecated static fields are not declared on
+        // their PermissionGroup owner class (so reflection on the owner can't find them).
+        // Sourced from Jenkins 2.222+ deprecations. Update if more are deprecated later.
+        private static final Set<String> DEPRECATED_CORE_PERMISSION_IDS = Set.of(
+                Jenkins.RUN_SCRIPTS.getId(),
+                hudson.PluginManager.UPLOAD_PLUGINS.getId(),
+                hudson.PluginManager.CONFIGURE_UPDATECENTER.getId());
+
+        private static boolean isDeprecatedPermission(@NonNull Permission permission) {
+            if (DEPRECATED_CORE_PERMISSION_IDS.contains(permission.getId())) {
+                return true;
+            }
+            // Fallback: detect @Deprecated plugin permissions where the static field IS on
+            // the owner class.
+            for (Field f : permission.owner.getDeclaredFields()) {
+                if (!Modifier.isStatic(f.getModifiers()) || !Modifier.isPublic(f.getModifiers())) {
+                    continue;
+                }
+                if (!Permission.class.isAssignableFrom(f.getType())) {
+                    continue;
+                }
+                try {
+                    if (f.get(null) == permission && f.isAnnotationPresent(Deprecated.class)) {
+                        return true;
+                    }
+                } catch (IllegalAccessException ignore) {
+                    // skip
+                }
+            }
+            return false;
         }
 
         private LocalDate getExpirationDate(String tokenExpiration, String expirationDuration) {
