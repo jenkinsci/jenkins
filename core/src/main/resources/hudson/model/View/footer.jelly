@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2026, Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,30 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
-  <st:documentation>
-    Generates a left side content as part of a Jenkins page. Typically known as two-column or left-side +  main-content layouts
-  </st:documentation>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
+  <footer class="page-footer">
+    <div class="page-footer__flex-row">
+      <div class="page-footer__footer-id-placeholder" id="footer"></div>
 
-  <j:if test="${mode=='side-panel'}">
-    <div id="side-panel" class="app-page-body__sidebar">
-      <d:invokeBody />
+      <div class="page-footer__links">
+        <l:overflowButton text="Jenkins ${h.version}"
+                          clazz="jenkins-button--tertiary jenkins_ver"
+                          icon="${null}"
+                          tooltip="${null}">
+          <l:hasPermission permission="${app.SYSTEM_READ}">
+            <dd:item icon="symbol-jenkins"
+                     text="${%About Jenkins}"
+                     href="${rootURL}/manage/about" />
+            <dd:separator />
+          </l:hasPermission>
+          <dd:item icon="symbol-heart"
+                   text="${%Get involved}"
+                   href="https://www.jenkins.io/participate/" />
+          <dd:item icon="symbol-external"
+                   text="${%Website}"
+                   href="${h.getFooterURL()}" />
+        </l:overflowButton>
+      </div>
     </div>
-  </j:if>
+  </footer>
 </j:jelly>
