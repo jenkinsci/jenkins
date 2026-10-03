@@ -46,7 +46,15 @@ THE SOFTWARE.
             </l:task>
           </j:when>
           <j:otherwise>
-            <l:task icon="${icon}" title="${action.displayName}" href="${h.getActionUrl(it.url,action)}" contextMenu="${h.isContextMenuVisible(action)}" badge="${action.badge}"/>
+            <j:set var="eventType" value="${h.getActionEventType(action)}"/>
+            <j:choose>
+              <j:when test="${eventType == 'ConfirmationEvent'}">
+                <l:task confirmationMessage="${action.event.title}" icon="${icon}" title="${action.displayName}" href="${rootURL}/${it.url}${action.event.postTo}" post="true" requiresConfirmation="true" destructive="${action.semantic == 'DESTRUCTIVE'}"/>
+              </j:when>
+              <j:otherwise>
+                <l:task icon="${icon}" title="${action.displayName}" href="${h.getActionUrl(it.url,action)}" contextMenu="${h.isContextMenuVisible(action)}" badge="${action.badge}"/>
+              </j:otherwise>
+            </j:choose>
           </j:otherwise>
         </j:choose>
       </j:if>
