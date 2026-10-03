@@ -33,15 +33,6 @@ $background-outset: 0.5rem;
 
   & > #tasks > .jenkins-search-container {
     margin: 0 0 1rem #{-$background-outset};
-
-    .jenkins-search__icon {
-      width: 2.625rem;
-      aspect-ratio: unset;
-    }
-
-    .jenkins-search__input {
-      padding-left: 2.5rem;
-    }
   }
 }
 
