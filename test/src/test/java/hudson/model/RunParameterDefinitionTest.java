@@ -32,7 +32,9 @@ import hudson.model.RunParameterDefinition.RunParameterFilter;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.util.LogTaskListener;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,6 +95,19 @@ class RunParameterDefinitionTest {
         assertEquals("dir/sub dir/some project", env.get("build_JOBNAME"));
         assertEquals("2", env.get("build.number"));
         assertEquals("2", env.get("build_NUMBER"));
+    }
+
+    @Issue("JENKINS-46257")
+    @Test
+    void autoCompleteProjectNameInFoldersUsesLocalContext() throws Exception {
+        MockFolder folder = j.createFolder("folder");
+        FreeStyleProject self = folder.createProject(FreeStyleProject.class, "self");
+        folder.createProject(FreeStyleProject.class, "sibling");
+
+        RunParameterDefinition.DescriptorImpl descriptor = j.jenkins.getDescriptorByType(RunParameterDefinition.DescriptorImpl.class);
+        AutoCompletionCandidates candidates = descriptor.doAutoCompleteProjectName("si", self, self.getParent());
+
+        assertContains(candidates, "sibling");
     }
 
     @Test
@@ -300,5 +315,9 @@ class RunParameterDefinitionTest {
         public Descriptor<Publisher> getDescriptor() {
             return new Descriptor<>(ResultPublisher.class) {};
         }
+    }
+
+    private void assertContains(AutoCompletionCandidates candidates, String... values) {
+        assertEquals(new TreeSet<>(Arrays.asList(values)), new TreeSet<>(candidates.getValues()));
     }
 }
