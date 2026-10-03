@@ -9,12 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.FilePath;
-import hudson.Functions;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
@@ -30,6 +28,8 @@ import org.htmlunit.Page;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.CreateFileBuilder;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
@@ -376,8 +376,8 @@ class ResourceDomainTest {
 
     @Test
     @Issue("JENKINS-59849")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "TODO: Implement this test on Windows")
     void testMoreUrlEncoding() throws Exception {
-        assumeFalse(Functions.isWindows(), "TODO: Implement this test on Windows");
         JenkinsRule.WebClient webClient = j.createWebClient();
         webClient.setThrowExceptionOnFailingStatusCode(false);
         webClient.setRedirectEnabled(true);
