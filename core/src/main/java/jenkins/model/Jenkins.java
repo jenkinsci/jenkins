@@ -4479,7 +4479,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void doSimulateOutOfMemory() throws IOException {
         checkPermission(ADMINISTER);
 
-        System.out.println("Creating artificial OutOfMemoryError situation");
+        LOGGER.log(Level.WARNING, "Creating artificial OutOfMemoryError situation");
         List<Object> args = new ArrayList<>();
         //noinspection InfiniteLoopStatement
         while (true)
