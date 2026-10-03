@@ -42,7 +42,7 @@
     "mini-css-extract-plugin": "2.10.2",
     "postcss": "8.5.28",
     "postcss-loader": "8.2.1",
-    "postcss-preset-env": "11.5.3",
+    "postcss-preset-env": "11.5.4",
     "postcss-scss": "4.0.9",
     "prettier": "3.9.9",
     "sass": "1.105.0",
@@ -52,7 +52,7 @@
     "stylelint-checkstyle-reporter": "1.1.1",
     "stylelint-config-standard-scss": "17.0.0",
     "vite": "^8.2.2",
-    "vitest": "5.0.1",
+    "vitest": "5.0.2",
     "webpack": "5.111.1",
     "webpack-cli": "7.2.3",
     "webpack-remove-empty-scripts": "1.1.1"
