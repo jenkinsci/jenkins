@@ -45,9 +45,11 @@ import java.util.Date;
 import java.util.List;
 import jenkins.model.Jenkins;
 import org.htmlunit.xml.XmlPage;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.FailureBuilder;
+import org.jvnet.hudson.test.FakeChangeLogSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -70,9 +72,31 @@ class RSSTest {
 
     private JenkinsRule j;
 
+    private static final String RSS_CHANGELOG_MAX_ENTRIES = Job.class.getName() + ".rssChangelogMaxEntries";
+    private static final String RSS_CHANGELOG_HARD_LIMIT = Job.class.getName() + ".rssChangelogHardLimit";
+
+    private String originalRssChangelogMaxEntries;
+    private String originalRssChangelogHardLimit;
+
     @BeforeEach
     void setUp(JenkinsRule rule) {
         j = rule;
+        originalRssChangelogMaxEntries = System.getProperty(RSS_CHANGELOG_MAX_ENTRIES);
+        originalRssChangelogHardLimit = System.getProperty(RSS_CHANGELOG_HARD_LIMIT);
+    }
+
+    @AfterEach
+    void restoreRssChangelogSystemProperties() {
+        restoreSystemProperty(RSS_CHANGELOG_MAX_ENTRIES, originalRssChangelogMaxEntries);
+        restoreSystemProperty(RSS_CHANGELOG_HARD_LIMIT, originalRssChangelogHardLimit);
+    }
+
+    private static void restoreSystemProperty(String key, String original) {
+        if (original == null) {
+            System.clearProperty(key);
+        } else {
+            System.setProperty(key, original);
+        }
     }
 
     @Test
@@ -346,6 +370,73 @@ class RSSTest {
         checkAtomBasicNodes(documentElement, "Jenkins:log (WARNING entries)", expectedNodes);
     }
 
+    @Test
+    @Issue("JENKINS-18992")
+    void rssChangelogIsLimitedByDefault() throws Exception {
+        createJobWithChangelogEntries("rssChangelogDefault", 25);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        assertEquals(20, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogDefault", "", true), true));
+        assertEquals(20, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogDefault", "", false), false));
+    }
+
+    @Test
+    @Issue("JENKINS-18992")
+    void rssChangelogMaxParameter() throws Exception {
+        // More than the default (20) so we prove ?max= can raise the limit, not only lower it.
+        createJobWithChangelogEntries("rssChangelogMax", 25);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        assertEquals(5, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogMax", "max=5", true), true));
+        assertEquals(5, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogMax", "max=5", false), false));
+        assertEquals(25, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogMax", "max=50", true), true));
+        assertEquals(25, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogMax", "max=50", false), false));
+    }
+
+    @Test
+    @Issue("JENKINS-18992")
+    void rssChangelogMaxParameterIsHardCapped() throws Exception {
+        System.setProperty(RSS_CHANGELOG_HARD_LIMIT, "10");
+        createJobWithChangelogEntries("rssChangelogHardCap", 20);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        assertEquals(
+                10, countChangelogEntries(getRssChangelogPage(wc, "rssChangelogHardCap", "max=1000000", true), true));
+        // Values outside 32-bit int range should clamp to the hard limit, not fall back to default.
+        assertEquals(
+                10,
+                countChangelogEntries(
+                        getRssChangelogPage(wc, "rssChangelogHardCap", "max=999999999999", true), true));
+    }
+
+    @Test
+    @Issue("JENKINS-18992")
+    void rssChangelogSystemProperty() throws Exception {
+        System.setProperty(RSS_CHANGELOG_MAX_ENTRIES, "5");
+        createJobWithChangelogEntries("rssChangelogProp", 10);
+        assertEquals(
+                5,
+                countChangelogEntries(
+                        getRssChangelogPage(j.createWebClient(), "rssChangelogProp", "", true), true));
+    }
+
+    @Test
+    @Issue("JENKINS-18992")
+    void rssChangelogSystemPropertyClampedToAtLeastOne() throws Exception {
+        System.setProperty(RSS_CHANGELOG_MAX_ENTRIES, "0");
+        createJobWithChangelogEntries("rssChangelogZeroProp", 5);
+        assertEquals(
+                1,
+                countChangelogEntries(
+                        getRssChangelogPage(j.createWebClient(), "rssChangelogZeroProp", "", true), true));
+    }
+
+    @Test
+    @Issue("JENKINS-18992")
+    void rssChangelogFewerThanLimit() throws Exception {
+        createJobWithChangelogEntries("rssChangelogFew", 3);
+        assertEquals(
+                3,
+                countChangelogEntries(getRssChangelogPage(j.createWebClient(), "rssChangelogFew", "", true), true));
+    }
+
     private JenkinsRule.WebClient loginAsUser(String userId) throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(userId));
@@ -468,6 +559,31 @@ class RSSTest {
     private XmlPage getRssLatestPage(JenkinsRule.WebClient webClient, String pathPrefix) throws Exception {
         String prefix = computeAdjustedPathPrefix(pathPrefix);
         return (XmlPage) webClient.goTo(prefix + "rssLatest?flavor=rss20", "text/xml");
+    }
+
+    private XmlPage getRssChangelogPage(JenkinsRule.WebClient wc, String job, String query, boolean atom)
+            throws Exception {
+        String path = "job/" + job + "/rssChangelog";
+        if (atom) {
+            return (XmlPage) wc.goTo(query.isEmpty() ? path : path + "?" + query, "application/atom+xml");
+        }
+        String q = query.isEmpty() ? "flavor=rss20" : query + "&flavor=rss20";
+        return (XmlPage) wc.goTo(path + "?" + q, "text/xml");
+    }
+
+    private int countChangelogEntries(XmlPage page, boolean atom) {
+        return page.getXmlDocument().getElementsByTagName(atom ? "entry" : "item").getLength();
+    }
+
+    private void createJobWithChangelogEntries(String name, int n) throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject(name);
+        FakeChangeLogSCM scm = new FakeChangeLogSCM();
+        p.setScm(scm);
+        // Batch all entries into one build — assertions only need entry count, not N builds.
+        for (int i = 0; i < n; i++) {
+            scm.addChange().withAuthor("u" + i);
+        }
+        j.buildAndAssertSuccess(p);
     }
 
     private FreeStyleProject runSuccessfulBuild() throws Exception {

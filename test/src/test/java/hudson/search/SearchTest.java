@@ -125,6 +125,21 @@ public class SearchTest {
         assertTrue(contents.contains(String.format("<title>%s - Jenkins</title>", projectName)));
     }
 
+    @Test
+    void shouldRedirectToSingleSuggestedItem() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject("job-config-scroll-test");
+
+        Page result = j.search("job-config-scroll");
+
+        assertNotNull(result);
+        j.assertGoodStatus(result);
+
+        assertEquals(
+                j.getURL().toString() + project.getUrl(),
+                result.getUrl().toString()
+        );
+    }
+
     @Issue("JENKINS-24433")
     @Test
     void testSearchByProjectNameBehindAFolder() throws Exception {
@@ -348,6 +363,7 @@ public class SearchTest {
     @Test
     void testCompletionOutsideView() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo-bar");
+        p.setDisplayName("display-name-only");
         ListView v = new ListView("empty1", j.jenkins);
         ListView w = new ListView("empty2", j.jenkins);
         j.jenkins.addView(v);
@@ -360,6 +376,7 @@ public class SearchTest {
         assertFalse(j.jenkins.getPrimaryView().contains(p));
 
         assertTrue(suggest(j.jenkins.getSearchIndex(), "foo").contains(p));
+        assertTrue(suggest(j.jenkins.getSearchIndex(), "display-name").contains(p));
     }
 
     @Issue("SECURITY-385")

@@ -318,7 +318,10 @@ var FormChecker = {
           x.text()
             .then((responseText) => {
               if (!(next.signal && next.signal.aborted)) {
-                updateValidationArea(next.target, responseText);
+                updateValidationArea(
+                  next.target,
+                  formatValidationResponse(x, responseText),
+                );
                 layoutUpdateCallback.call();
               }
             })
@@ -681,6 +684,13 @@ function fireEvent(element, event) {
 //========================================================
 // using tag names in CSS selector makes the processing faster
 
+function formatValidationResponse(response, responseText) {
+  // TODO Add i18n support
+  return response.ok
+    ? responseText
+    : `<div class="error">An internal error occurred during form field validation (HTTP ${response.status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
+}
+
 /**
  * Updates the validation area for a form element
  * @param {HTMLElement} validationArea The validation area for a given form element
@@ -778,12 +788,10 @@ function registerValidator(e) {
     FormChecker.sendRequest(this.targetUrl(), {
       method: method,
       onComplete: function (response) {
-        // TODO Add i18n support
         response.text().then((responseText) => {
-          const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${response.status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
           updateValidationArea(
             validationArea,
-            response.status === 200 ? responseText : errorMessage,
+            formatValidationResponse(response, responseText),
           );
         });
       },
@@ -2138,6 +2146,51 @@ function AutoScroller(scrollContainer) {
   };
 }
 
+/**
+ * Replaces the element with the given ID with fresh content retrieved from the given URL, once.
+ *
+ * Useful to reflect a change immediately instead of waiting for the next periodic refresh, see
+ * {@link refreshPart}.
+ *
+ * @return a promise resolving to false if the element to refresh no longer exists, true otherwise.
+ */
+function refreshPartNow(id, url) {
+  return fetch(url, {
+    headers: crumb.wrap({}),
+    method: "post",
+  }).then((rsp) => {
+    if (!rsp.ok) {
+      return true;
+    }
+    return rsp.text().then((responseText) => {
+      var hist = document.getElementById(id);
+      if (hist == null) {
+        console.log("There's no element that has ID of " + id);
+        return false;
+      }
+      if (!responseText) {
+        console.log(
+          "Failed to retrieve response for ID " +
+            id +
+            ", perhaps Jenkins is unavailable",
+        );
+        return true;
+      }
+      var p = hist.parentNode;
+
+      var div = document.createElement("div");
+      div.innerHTML = responseText;
+
+      var node = div.firstElementChild;
+      p.replaceChild(node, hist);
+
+      Behaviour.applySubtree(node);
+      layoutUpdateCallback.call();
+      return true;
+    });
+  });
+}
+
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
 // eslint-disable-next-line no-unused-vars
@@ -2145,39 +2198,9 @@ function refreshPart(id, url) {
   var intervalID = null;
   var f = function () {
     if (isPageVisible()) {
-      fetch(url, {
-        headers: crumb.wrap({}),
-        method: "post",
-      }).then((rsp) => {
-        if (rsp.ok) {
-          rsp.text().then((responseText) => {
-            var hist = document.getElementById(id);
-            if (hist == null) {
-              console.log("There's no element that has ID of " + id);
-              if (intervalID !== null) {
-                window.clearInterval(intervalID);
-              }
-              return;
-            }
-            if (!responseText) {
-              console.log(
-                "Failed to retrieve response for ID " +
-                  id +
-                  ", perhaps Jenkins is unavailable",
-              );
-              return;
-            }
-            var p = hist.parentNode;
-
-            var div = document.createElement("div");
-            div.innerHTML = responseText;
-
-            var node = div.firstElementChild;
-            p.replaceChild(node, hist);
-
-            Behaviour.applySubtree(node);
-            layoutUpdateCallback.call();
-          });
+      refreshPartNow(id, url).then((exists) => {
+        if (!exists && intervalID !== null) {
+          window.clearInterval(intervalID);
         }
       });
     }

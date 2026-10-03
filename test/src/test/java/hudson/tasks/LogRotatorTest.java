@@ -31,9 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -55,6 +53,8 @@ import java.util.logging.Logger;
 import jenkins.model.GlobalBuildDiscarderListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -109,9 +109,9 @@ public class LogRotatorTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS,
+                  disabledReason = "Deleting the current build while it is completing does not work consistently on Windows")
     void ableToDeleteCurrentBuild() throws Exception {
-        assumeFalse(Functions.isWindows(),
-                "Deleting the current build while is is completing does not work consistently on Windows");
         var p = j.createFreeStyleProject();
         // Keep 0 builds, i.e. immediately delete builds as they complete.
         LogRotator logRotator = new LogRotator(-1, 0, -1, -1);

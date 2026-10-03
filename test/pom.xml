@@ -52,6 +52,8 @@ THE SOFTWARE.
 
     <!-- Filled in by maven-hpi-plugin with "-javaagent:/path/to/mockito-core-<version>.jar" -->
     <jenkins.javaAgent />
+    <!-- Intentionally run only one test to reduce cycle time -->
+    <test>hudson.AboutJenkinsTest</test>
   </properties>
 
   <dependencyManagement>
@@ -244,7 +246,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1431.vc0d98912a_756</version>
+      <version>1432.v3f9a_b_73dd986</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -407,7 +409,8 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <argLine>@{jacocoSurefireArgs} -Xmx1g @{jenkins.addOpens} @{jenkins.insaneHook} @{jenkins.javaAgent}</argLine>
+          <!-- java.base/java.net=ALL-UNNAMED added for Security637Test#urlSafeDeserialization_inXStreamContext -->
+          <argLine>@{jacocoSurefireArgs} -Xmx1g --add-opens java.base/java.net=ALL-UNNAMED @{jenkins.addOpens} @{jenkins.insaneHook} @{jenkins.javaAgent}</argLine>
           <systemPropertyVariables>
             <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
             <buildDirectory>${project.build.directory}</buildDirectory>

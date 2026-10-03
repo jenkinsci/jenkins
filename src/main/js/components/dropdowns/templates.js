@@ -208,7 +208,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
     }
   }
 
-  const url = tag === "a" ? context + xmlEscape(itemOptions.event.url) : null;
+  const url = tag === "a" ? context + itemOptions.event.url : null;
 
   const item = createElementFromHtml(`
       <${tag}
@@ -257,7 +257,7 @@ function tryOnClickEvent(element, opt) {
  * If scripts have been provided with the menu item, load them
  */
 function tryLoadScripts(element, opt, context) {
-  if (!opt.event || !opt.event.attributes || !opt.event.javascriptUrl) {
+  if (!opt.event || !opt.event.attributes) {
     return;
   }
 
@@ -270,6 +270,10 @@ function tryLoadScripts(element, opt, context) {
 
   // Dialog URLs should open relative to the context path, not the base URL
   element.dataset.dialogUrl = context + element.dataset.dialogUrl;
+
+  if (!opt.event.javascriptUrl) {
+    return;
+  }
 
   loadScriptIfNotLoaded(opt.event.javascriptUrl, element);
 }
@@ -293,9 +297,9 @@ function tryConfirmationPost(element, opt, context) {
           const form = document.createElement("form");
           form.setAttribute("method", "POST");
           if (opt.event.postTo.startsWith("/")) {
-            form.setAttribute("action", xmlEscape(opt.event.postTo));
+            form.setAttribute("action", opt.event.postTo);
           } else {
-            form.setAttribute("action", context + xmlEscape(opt.event.postTo));
+            form.setAttribute("action", context + opt.event.postTo);
           }
           crumb.appendToForm(form);
           document.body.appendChild(form);
@@ -320,7 +324,7 @@ function tryPost(element, opt, context) {
   }
 
   element.addEventListener("click", () => {
-    fetch(context + xmlEscape(opt.event.url), {
+    fetch(context + opt.event.url, {
       method: "post",
       headers: crumb.wrap({}),
     });

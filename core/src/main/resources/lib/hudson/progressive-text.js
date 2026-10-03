@@ -9,10 +9,85 @@ Behaviour.specify(
     let startOffset = holder.getAttribute("data-start-offset");
     let onFinishEvent = holder.getAttribute("data-on-finish-event");
     let errorMessage = holder.getAttribute("data-error-message");
+    let maxChunksAttr = holder.getAttribute("data-max-chunks");
+    let maxChunks =
+      maxChunksAttr !== null && maxChunksAttr !== ""
+        ? Number(maxChunksAttr)
+        : 1000;
+    let showEarlierText =
+      holder.getAttribute("data-show-earlier-text") || "Load earlier output";
+    let hiddenChunksMessage =
+      holder.getAttribute("data-hidden-chunks-message") ||
+      "Earlier output hidden to prevent browser lag ({0} chunks).";
 
     var scroller = new AutoScroller(
       holder.closest(".progressive-text-container") || document.body,
     );
+
+    const activeChunks = [];
+    const prunedChunks = [];
+    let banner = null;
+
+    function updateBanner(e) {
+      if (prunedChunks.length === 0) {
+        if (banner) {
+          banner.style.display = "none";
+        }
+        return;
+      }
+      if (!banner) {
+        banner = document.createElement("button");
+        banner.type = "button";
+        banner.className =
+          "jenkins-button jenkins-!-accent-color jenkins-!-padding-2 jenkins-!-margin-bottom-2 progressive-text-expand-button";
+        banner.style.width = "100%";
+        banner.style.justifyContent = "start";
+        banner.addEventListener("click", () => {
+          restoreEarlierChunks(e);
+        });
+        if (e.parentNode) {
+          e.parentNode.insertBefore(banner, e);
+        }
+      }
+      banner.style.display = "";
+      const count = prunedChunks.length;
+      banner.textContent = `${hiddenChunksMessage.replace("{0}", count)} ${showEarlierText}`;
+    }
+
+    function restoreEarlierChunks(e) {
+      if (prunedChunks.length === 0) {
+        return;
+      }
+      const frag = document.createDocumentFragment();
+      const restored = [];
+      while (prunedChunks.length > 0) {
+        const chunk = prunedChunks.shift();
+        frag.appendChild(chunk);
+        restored.push(chunk);
+      }
+      activeChunks.unshift(...restored);
+
+      const scrollContainer =
+        holder.closest(".progressive-text-container") ||
+        document.scrollingElement ||
+        document.documentElement;
+      const prevScrollHeight = scrollContainer
+        ? scrollContainer.scrollHeight
+        : 0;
+      const prevScrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
+
+      e.insertBefore(frag, e.firstChild);
+
+      if (scrollContainer && prevScrollTop > 0) {
+        const heightDiff = scrollContainer.scrollHeight - prevScrollHeight;
+        if (heightDiff > 0) {
+          scrollContainer.scrollTop = prevScrollTop + heightDiff;
+        }
+      }
+
+      updateBanner(e);
+    }
+
     /*
   fetches the latest update from the server
   @param e
@@ -82,12 +157,27 @@ Behaviour.specify(
         /* append text and do autoscroll if applicable */
         parse.then(({ text, end, consoleAnnotator, completed }) => {
           e.fetchedBytes = end;
-          e.consoleAnnotator = consoleAnnotator;
+          if (consoleAnnotator !== undefined && consoleAnnotator !== null) {
+            e.consoleAnnotator = consoleAnnotator;
+          }
           if (text !== "") {
             var p = document.createElement("DIV");
             e.appendChild(p); // Needs to be first for IE
             p.innerHTML = text;
             Behaviour.applySubtree(p);
+            activeChunks.push(p);
+
+            if (maxChunks > 0 && stickToBottom) {
+              while (activeChunks.length > maxChunks) {
+                const oldest = activeChunks.shift();
+                if (oldest.parentNode === e) {
+                  e.removeChild(oldest);
+                }
+                prunedChunks.push(oldest);
+              }
+              updateBanner(e);
+            }
+
             if (stickToBottom) {
               scroller.scrollToBottom();
             }
@@ -107,8 +197,10 @@ Behaviour.specify(
         });
       });
     }
-    document.getElementById(idref).fetchedBytes =
-      startOffset !== "" ? Number(startOffset) : 0;
-    fetchNext(document.getElementById(idref), href, onFinishEvent);
+    const targetElement = document.getElementById(idref);
+    if (targetElement) {
+      targetElement.fetchedBytes = startOffset !== "" ? Number(startOffset) : 0;
+      fetchNext(targetElement, href, onFinishEvent);
+    }
   },
 );

@@ -27,13 +27,12 @@ package hudson.model.labels;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import antlr.ANTLRException;
-import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -51,6 +50,8 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -215,8 +216,8 @@ class LabelExpressionTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Windows can't have paths with colons, skipping")
     void dataCompatibilityWithHostNameWithWhitespace() throws Exception {
-        assumeFalse(Functions.isWindows(), "Windows can't have paths with colons, skipping");
         DumbSlave slave = new DumbSlave("abc def (xyz) test", newFolder(tempFolder, "junit").getPath(), j.createComputerLauncher(null));
         slave.setRetentionStrategy(RetentionStrategy.NOOP);
         slave.setNodeDescription("dummy");
@@ -349,6 +350,63 @@ class LabelExpressionTest {
     void expression_and_withoutSpaces() {
         Label label = Label.parseExpression("a&&b");
         assertThat(label, instanceOf(LabelExpression.And.class));
+    }
+
+    @Test
+    @Issue("27403")
+    void labelWhitespaceVariantsShareSameInstance() {
+        String canonical = "linux&&ssd&&(rack1||rack2)&&!maintenance";
+        String spacedNot = "linux&&ssd&&(rack1||rack2)&& !maintenance";
+        String fullySpaced = "linux && ssd && (rack1 || rack2) && !maintenance";
+
+        Label l1 = j.jenkins.getLabel(canonical);
+        Label l2 = j.jenkins.getLabel(spacedNot);
+        Label l3 = j.jenkins.getLabel(fullySpaced);
+
+        assertSame(l1, l2);
+        assertSame(l1, l3);
+        assertSame(l1.loadStatistics, l2.loadStatistics);
+        assertSame(l1.loadStatistics, l3.loadStatistics);
+    }
+
+    @Test
+    @Issue("27403")
+    void labelWhitespaceVariantsShareSameInstanceWhenSpacedFirst() {
+        String canonical = "win&&fast&&(zone1||zone2)&&!offline";
+        String fullySpaced = "win && fast && (zone1 || zone2) && !offline";
+        String spacedNot = "win&&fast&&(zone1||zone2)&& !offline";
+
+        // Query non-canonical first to verify cache resolution works before canonical key exists
+        Label l1 = j.jenkins.getLabel(fullySpaced);
+        Label l2 = j.jenkins.getLabel(canonical);
+        Label l3 = j.jenkins.getLabel(spacedNot);
+
+        assertSame(l1, l2);
+        assertSame(l1, l3);
+        assertSame(l1.loadStatistics, l2.loadStatistics);
+    }
+
+    @Test
+    @Issue("27403")
+    void spacedExpressionDoesNotResolveToAtomWithCanonicalName() {
+        LabelAtom atom = j.jenkins.getLabelAtom("a&&b");
+
+        Label expression = j.jenkins.getLabel("a && b");
+
+        assertThat(expression, instanceOf(LabelExpression.And.class));
+        assertNotSame(atom, expression);
+        assertSame(atom, j.jenkins.getLabelAtom("a&&b"));
+    }
+
+    @Test
+    @Issue("27403")
+    void atomWithCanonicalNameCanBeCreatedAfterSpacedExpression() {
+        Label expression = j.jenkins.getLabel("c && d");
+
+        LabelAtom atom = j.jenkins.getLabelAtom("c&&d");
+
+        assertNotSame(expression, atom);
+        assertSame(expression, j.jenkins.getLabel("c  &&  d"));
     }
 
     private void parseShouldFail(String expr, String message) {

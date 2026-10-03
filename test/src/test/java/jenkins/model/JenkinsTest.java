@@ -41,10 +41,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.ExtensionList;
-import hudson.Functions;
 import hudson.XmlFile;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
@@ -104,6 +102,9 @@ import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.Issue;
@@ -149,9 +150,8 @@ public class JenkinsTest {
 
     @Test
     @Issue("SECURITY-3073")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Uses features not available on Windows")
     void verifyUploadedFingerprintFilePermission() throws Exception {
-        assumeFalse(Functions.isWindows());
-
         HtmlPage page = j.createWebClient().goTo("fingerprintCheck");
         HtmlForm form = page.getForms().getFirst();
         File dir = newFolder(tmp, "junit");
@@ -558,8 +558,10 @@ public class JenkinsTest {
     public static final ComputerListener listenerMock = Mockito.mock(ComputerListener.class);
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "TODO: Test fails on CI Windows VM since transition to AWS")
     void runScriptOnOfflineComputer() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Test fails on CI Windows VM since transition to AWS");
         DumbSlave slave = j.createSlave(true);
         j.disconnectSlave(slave);
 
@@ -791,6 +793,24 @@ public class JenkinsTest {
         j.createWebClient().goTo("manage/");
         assertThat(j.jenkins.getPrimaryView(), isA(AllView.class));
         assertThat(j.jenkins.getViews(), contains(isA(AllView.class)));
+    }
+
+    @Test
+    void checkNumExecutorsWarnsAboutBuildingOnBuiltInNode() {
+        Jenkins.DescriptorImpl descriptor = Jenkins.DescriptorImpl.INSTANCE;
+
+        // Not building on the built-in node is the recommended configuration.
+        assertEquals(FormValidation.Kind.OK, descriptor.doCheckNumExecutors("0").kind);
+
+        // Any executors on the built-in node mean builds get controller file system access.
+        FormValidation warning = descriptor.doCheckNumExecutors("1");
+        assertEquals(FormValidation.Kind.WARNING, warning.kind);
+        assertThat(warning.renderHtml(), containsString("https://www.jenkins.io/redirect/building-on-controller/"));
+        assertEquals(FormValidation.Kind.WARNING, descriptor.doCheckNumExecutors("2").kind);
+
+        // Invalid values are still reported as errors, not warnings.
+        assertEquals(FormValidation.Kind.ERROR, descriptor.doCheckNumExecutors("-1").kind);
+        assertEquals(FormValidation.Kind.ERROR, descriptor.doCheckNumExecutors("nope").kind);
     }
 
     private static File newFolder(File root, String... subDirs) throws IOException {

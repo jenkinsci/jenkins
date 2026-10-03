@@ -39,7 +39,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.PluginManager.UberClassLoader;
 import hudson.model.DownloadService;
@@ -97,6 +96,8 @@ import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
@@ -301,9 +302,9 @@ class PluginManagerTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "TODO: Implement this test on Windows")
     void prevalidateConfig() throws Throwable {
         session.then(r -> {
-            assumeFalse(Functions.isWindows(), "TODO: Implement this test on Windows");
             PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
             sites.clear();
             URL url = PluginManagerTest.class.getResource("/plugins/htmlpublisher-update-center.json");
@@ -541,6 +542,36 @@ class PluginManagerTest {
         });
     }
 
+    @Issue("https://github.com/jenkinsci/jenkins/issues/21047")
+    @WithPlugin("htmlpublisher.jpi")
+    @Test
+    void pluginManagerApiJsonReturnsPluginDetails() throws Throwable {
+        session.then(r -> {
+            JSONObject response = r.getJSON("pluginManager/api/json").getJSONObject();
+            JSONArray plugins = response.getJSONArray("plugins");
+            assertThat(plugins, not(empty()));
+
+            // Find the htmlpublisher plugin in the response
+            JSONObject htmlPublisher = null;
+            for (int i = 0; i < plugins.size(); i++) {
+                JSONObject plugin = plugins.getJSONObject(i);
+                if ("htmlpublisher".equals(plugin.optString("shortName"))) {
+                    htmlPublisher = plugin;
+                    break;
+                }
+            }
+            assertNotNull(htmlPublisher, "htmlpublisher plugin should be present in API response");
+
+            // Verify key properties are present at default depth (visibility = 2)
+            assertNotNull(htmlPublisher.optString("shortName", null), "shortName should be exported at default depth");
+            assertNotNull(htmlPublisher.optString("version", null), "version should be exported at default depth");
+            assertNotNull(htmlPublisher.optString("displayName", null), "displayName should be exported at default depth");
+            assertTrue(htmlPublisher.has("active"), "active should be exported at default depth");
+            assertTrue(htmlPublisher.has("enabled"), "enabled should be exported at default depth");
+            assertTrue(htmlPublisher.has("hasUpdate"), "hasUpdate should be exported at default depth");
+        });
+    }
+
     @Issue("JENKINS-41684")
     @Test
     void requireSystemDuringLoad() throws Throwable {
@@ -590,9 +621,9 @@ class PluginManagerTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "TODO: Implement this test on Windows")
     void uploadDependencyResolution() throws Throwable {
         session.then(r -> {
-            assumeFalse(Functions.isWindows(), "TODO: Implement this test for Windows");
             PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
             sites.clear();
             URL url = PluginManagerTest.class.getResource("/plugins/upload-test-update-center.json");
@@ -688,9 +719,9 @@ class PluginManagerTest {
 
     @Test
     @Issue("JENKINS-64840")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "TODO: Implement this test on Windows")
     void searchMultipleUpdateSites() throws Throwable {
         session.then(r -> {
-            assumeFalse(Functions.isWindows(), "TODO: Implement this test for Windows");
             PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
             sites.clear();
             URL url = PluginManagerTest.class.getResource("/plugins/search-test-update-center1.json");
@@ -793,9 +824,8 @@ class PluginManagerTest {
 
     @Test
     @Issue("SECURITY-2823")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Requires capabilities not available on Windows")
     void verifyUploadedPluginPermission() throws Throwable {
-        assumeFalse(Functions.isWindows());
-
         session.then(r -> {
             HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
             HtmlForm f = page.getFormByName("uploadPlugin");
@@ -887,9 +917,8 @@ class PluginManagerTest {
 
     @Test
     @Issue("SECURITY-3072")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Requires capabilities not available on Windows")
     void verifyUploadedPluginFromURLPermission() throws Throwable {
-        assumeFalse(Functions.isWindows());
-
         session.then(r -> {
             HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
             HtmlForm f = page.getFormByName("uploadPlugin");
