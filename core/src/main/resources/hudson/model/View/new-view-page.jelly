@@ -69,11 +69,11 @@ THE SOFTWARE.
         </div>
 
         <div class="app-build-bar__controls">
-          <j:if test="${it.hasPermission(it.CREATE)}">
+          <j:if test="${h.isInstanceOf(it.owner, 'jenkins.model.ModifiableTopLevelItemGroup') and it.owner.hasPermission(it.itemCreatePermission)}">
             <a class="jenkins-button"
                href="${rootURL}/${it.viewUrl}newJob">
               <l:icon src="symbol-add" />
-              New Item
+              ${%New Item}
             </a>
           </j:if>
 
