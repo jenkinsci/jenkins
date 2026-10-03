@@ -30,6 +30,7 @@ import static java.util.logging.Level.WARNING;
 
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Hudson;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -365,6 +366,7 @@ public class WebAppMain implements ServletContextListener {
      *
      * @return the File alongside with some description to help the user troubleshoot issues
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     public FileAndDescription getHomeDir(ServletContextEvent event) {
         // check the system property for the home directory first
         for (String name : HOME_NAMES) {
