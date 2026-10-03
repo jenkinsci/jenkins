@@ -98,14 +98,14 @@ $min-button-size: 2.375rem;
       grid-template-columns: auto 1fr;
       gap: 1rem;
       text-decoration: none !important;
-      overflow: hidden;
+      overflow: hidden visible;
     }
 
     &__details__text {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-      overflow: hidden;
+      overflow: hidden visible;
     }
 
     &__actions {
@@ -209,4 +209,44 @@ div.listview-jobs {
     display: flex;
     flex-direction: column;
   }
+}
+
+#main-panel {
+  padding-top: 0.75rem;
+}
+
+.app-build-bar {
+  padding-bottom: 1rem;
+}
+
+.app-build-content {
+  padding-top: 1rem;
+}
+
+.app-build-content > *:first-child {
+  margin-top: 1rem;
+}
+
+/* System and shutdown messages styling */
+#main-panel #shutdown-msg,
+#main-panel #safe-restart-msg {
+  position: relative;
+  z-index: 150;
+  display: block;
+  visibility: visible;
+  margin: 1.25rem var(--section-padding);
+  padding: 1.25rem 1.75rem;
+  border-radius: var(--form-input-border-radius);
+  background: var(--alert-danger-bg, #f00);
+  border: 1px solid var(--alert-danger-border, #f1f1f1);
+  color: var(--alert-danger-text, #721c24);
+}
+
+:where(#main-panel) :where(.alert, .jenkins-alert, [class*="message"]) {
+  position: relative;
+  z-index: 150;
+  display: block;
+  visibility: visible;
+  overflow: visible;
+  max-height: none;
 }
