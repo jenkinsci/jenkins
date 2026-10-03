@@ -273,7 +273,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     /**
      * Represents a file change. Contains filename, edit type, etc.
      *
-     * I checked the API names against some some major SCMs and most SCMs
+     * I checked the API names against some major SCMs and most SCMs
      * can adapt to this interface with very little changes
      *
      * @see ChangeLogSet.Entry#getAffectedFiles()
