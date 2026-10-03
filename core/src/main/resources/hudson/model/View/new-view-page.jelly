@@ -139,6 +139,8 @@ THE SOFTWARE.
 
         <j:set var="items" value="${it.items}"/>
         <st:include page="main.jelly" />
+
+        <st:include page="footer.jelly" />
       </div>
     </l:main-panel>
   </l:layout>

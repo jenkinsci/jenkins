@@ -1,19 +1,14 @@
 @use "../abstracts/mixins";
 @use "../base/breakpoints";
 
-$background-outset: 0.5rem;
+$inset: 0.6875rem;
 
 #tasks,
 .tasks,
 .subtasks {
   display: flex;
   flex-direction: column;
-  margin: 0 var(--section-padding) var(--section-padding) var(--section-padding);
   gap: 0.125rem;
-
-  @media (min-width: breakpoints.$tablet-breakpoint) {
-    margin-right: calc($background-outset);
-  }
 }
 
 .subtasks {
@@ -27,12 +22,11 @@ $background-outset: 0.5rem;
 
 #side-panel {
   .jenkins-app-bar {
-    margin-left: var(--section-padding);
-    margin-right: var(--section-padding);
+    margin-inline: $inset;
   }
 
   & > #tasks > .jenkins-search-container {
-    margin: 0 0 1rem #{-$background-outset};
+    margin: 0 0 1rem;
 
     .jenkins-search__icon {
       width: 2.625rem;
@@ -45,10 +39,6 @@ $background-outset: 0.5rem;
   }
 }
 
-#tasks .task {
-  margin: 0 0 0 calc($background-outset * -1);
-}
-
 #tasks,
 .tasks {
   .task .task-link {
@@ -57,7 +47,7 @@ $background-outset: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    padding: 0.5rem 0.6875rem;
+    padding: 0.5rem $inset;
     gap: 0.625rem;
     width: 100%;
     font-size: var(--font-size-sm);
@@ -115,7 +105,7 @@ $background-outset: 0.5rem;
   font-size: var(--font-size-sm);
   color: var(--text-color-secondary);
   font-weight: var(--font-bold-weight);
-  margin: 1rem 0 0.375rem;
+  margin: 1rem 0 0.375rem $inset;
 
   &:first-of-type {
     margin-top: 0.375rem;
