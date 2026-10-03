@@ -105,6 +105,21 @@ public class Security3594Test {
         }
     }
 
+    @Issue("JENKINS-27469")
+    @Test
+    public void buildHistoryHiddenForUserWithoutViewRead() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("bob"));
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false)) {
+            wc.login("bob");
+            Page page = wc.goTo("");
+            String content = page.getWebResponse().getContentAsString();
+            assertThat(content, not(containsString("Build History")));
+        }
+    }
+
     private static String getSecurity3594ActionContent(JenkinsRule.WebClient wc) throws IOException, SAXException {
         Page page = wc.goTo(ROOT_ACTION_URL_NAME);
         String content = page.getWebResponse().getContentAsString();
