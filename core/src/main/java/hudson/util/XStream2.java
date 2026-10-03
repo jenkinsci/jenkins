@@ -136,7 +136,7 @@ public class XStream2 extends XStream {
 
         @Override
         public HierarchicalStreamWriter createWriter(Writer out) {
-            return new PrettyPrintWriter(out, PrettyPrintWriter.XML_1_1, getNameCoder());
+            return new PrettyPrintWriter(out, PrettyPrintWriter.XML_1_1_REPLACEMENT, getNameCoder());
         }
 
         @Override
