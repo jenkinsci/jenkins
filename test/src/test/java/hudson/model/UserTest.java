@@ -26,11 +26,14 @@
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.core.IsIterableContaining.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -147,7 +150,18 @@ class UserTest {
       }
     }
 
-    @Issue("JENKINS-2331")
+    @Test
+    void userPropertiesCanBeRemoved() throws Exception {
+        UserProperty testProperty = new UserPropertyImpl("Needle");
+
+        User user = User.getById("user-test-case", true);
+        int numberOfProperties = user.getAllProperties().size();
+        user.addProperty(testProperty);
+        assertThat(user.getAllProperties(), allOf(hasSize(numberOfProperties+1), hasItem(testProperty)));
+        user.removeProperty(UserPropertyImpl.class);
+        assertThat(user.getAllProperties(), allOf(hasSize(numberOfProperties), not(hasItem(testProperty))));
+    }
+
     @Test
     void userPropertySummaryAndActionAreShownInUserPage() throws Exception {
 
@@ -163,6 +177,7 @@ class UserTest {
         WebAssert.assertTextPresentInElement(page, ((Action) property).getDisplayName(), "side-panel");
 
     }
+
 
     /**
      * Asserts that the default user avatar can be fetched (ie no 404)
