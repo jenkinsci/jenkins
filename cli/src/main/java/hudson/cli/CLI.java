@@ -354,6 +354,7 @@ public class CLI {
                 if (factory.authorization != null) {
                     headers.put("Authorization", List.of(factory.authorization));
                 }
+                headers.put("User-Agent", List.of("Jenkins-cli-" + computeVersion()));
             }
 
             @Override
@@ -522,7 +523,7 @@ public class CLI {
 
     }
 
-    private static String computeVersion() {
+    static String computeVersion() {
         Properties props = new Properties();
         try (InputStream is = CLI.class.getResourceAsStream("/jenkins/cli/jenkins-cli-version.properties")) {
             if (is != null) {
