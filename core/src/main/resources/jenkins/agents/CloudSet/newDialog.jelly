@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2023, CloudBees Inc.
+Copyright (c) 2026, Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,22 +22,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  "New cloud" page.
-
-  The flow of this is:
-
-    new.jelly -> CloudSet.doCreate -> _new2.jelly -> CloudSet.doDoCreate
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <j:getStatic var="createPermission" className="jenkins.model.Jenkins" field="ADMINISTER"/>
-  <l:layout title="${%New cloud}" permission="${app.ADMINISTER}" type="one-column">
-    <l:breadcrumb title="${%New cloud}" />
-    <l:main-panel>
-      <j:invokeStatic var="clouds" className="hudson.slaves.Cloud" method="all" />
-      <n:form title="${%New cloud}" nameTitle="${%Cloud name}" copyTitle="${%Copy Existing Cloud}" showCopyOption="${it.hasClouds()}" action="create"
-              descriptors="${clouds}" checkUrl="checkName" xmlns:n="/lib/hudson/newFromList" />
-    </l:main-panel>
-  </l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:n="/lib/hudson/newFromList">
+  <st:setHeader name="X-Dialog-Title" value="${%New cloud}" />
+
+  <l:ajax>
+    <!-- TODO - check permission -->
+    <j:getStatic var="createPermission" className="jenkins.model.Jenkins" field="ADMINISTER"/>
+    <j:invokeStatic var="clouds" className="hudson.slaves.Cloud" method="all" />
+    <n:form nameTitle="${%Cloud name}"
+            showCopyOption="${it.hasClouds()}"
+            copyTitle="${%Copy Existing Cloud}"
+            copyDescription="${%copyDescription}"
+            action="create"
+            descriptors="${clouds}"
+            checkUrl="checkName"
+            defaultIcon="symbol-cloud"
+            submitButtonText="${%Next}" />
+  </l:ajax>
 </j:jelly>
