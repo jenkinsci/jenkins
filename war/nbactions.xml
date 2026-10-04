@@ -30,16 +30,17 @@ Ensures that NetBeans knows which goals to run when Run Project is selected.
     <action>
         <actionName>run</actionName>
         <goals>
-            <goal>jetty:run</goal>
+            <goal>hpi:run</goal>
         </goals>
     </action>
     <action>
         <actionName>debug</actionName>
         <goals>
-            <goal>jetty:run</goal>
+            <goal>hpi:run</goal>
         </goals>
         <properties>
-            <jpda.listen>maven</jpda.listen>
+            <!-- Jenkins runs in a forked JVM, so suspend it and attach to the port it prints. -->
+            <maven.hpi.debug>true</maven.hpi.debug>
         </properties>
     </action>
 </actions>

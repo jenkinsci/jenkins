@@ -11,9 +11,7 @@ Behaviour.specify(
     let errorMessage = holder.getAttribute("data-error-message");
 
     var scroller = new AutoScroller(
-      holder.closest(".progressive-text-container, #main-panel, #page-body") ||
-        document.scrollingElement ||
-        document.documentElement,
+      holder.closest(".progressive-text-container") || document.body,
     );
     /*
   fetches the latest update from the server

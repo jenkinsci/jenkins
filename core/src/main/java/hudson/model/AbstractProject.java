@@ -107,6 +107,7 @@ import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
 import jenkins.scm.SCMDecisionHandler;
+import jenkins.security.XStreamNotDeserializable;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
@@ -156,6 +157,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      */
     private transient volatile SCMRevisionState pollingBaseline = null;
 
+    @XStreamNotDeserializable
     private transient LazyBuildMixIn<P, R> buildMixIn;
 
     /**
@@ -165,6 +167,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      * {@link Run#getPreviousBuild()}
      */
     @Restricted(NoExternalUse.class)
+    @XStreamNotDeserializable
     protected transient RunMap<R> builds;
 
     /**
@@ -244,6 +247,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      * come and go as configuration change, so it's kept separate.
      */
     @CopyOnWrite
+    @XStreamNotDeserializable
     protected transient volatile List<Action> transientActions = new Vector<>();
 
     private boolean concurrentBuild;

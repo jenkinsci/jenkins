@@ -94,6 +94,8 @@ $dropdown-padding: 0.375rem;
   }
 
   &__heading {
+    display: grid;
+    grid-template-columns: 1fr auto;
     color: var(--text-color-secondary) !important;
     margin: $dropdown-padding 0.65rem;
     font-size: 0.8125rem;
@@ -227,7 +229,7 @@ $dropdown-padding: 0.375rem;
 .jenkins-dropdown__item--selected {
   &::before {
     background: var(--item-background--hover);
-    border: var(--jenkins-border--subtle) !important;
+    border: var(--jenkins-border) !important;
     animation: pulse 1s ease-in-out forwards;
   }
 

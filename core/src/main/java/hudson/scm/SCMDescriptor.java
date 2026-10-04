@@ -52,6 +52,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * If this SCM has corresponding {@link RepositoryBrowser},
      * that type. Otherwise this SCM will not have any repository browser.
      */
+    // TODO Mark @XStreamDeserializable and clean up code in #load()
     public final transient Class<? extends RepositoryBrowser> repositoryBrowser;
 
     private final transient AtomicInteger atomicGeneration = new AtomicInteger(1);

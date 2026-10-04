@@ -44,7 +44,6 @@ import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 import static jenkins.model.Messages.Hudson_Computer_IncorrectNumberOfExecutors;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
@@ -286,6 +285,7 @@ import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.security.ResourceDomainConfiguration;
 import jenkins.security.SecurityListener;
+import jenkins.security.XStreamDeserializable;
 import jenkins.security.stapler.DoActionFilter;
 import jenkins.security.stapler.StaplerDispatchValidator;
 import jenkins.security.stapler.StaplerDispatchable;
@@ -382,6 +382,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The Jenkins instance startup type i.e. NEW, UPGRADE etc
      */
+    // TODO Mark @XStreamNotDeserializable and clean up #readResolve
     private transient String installStateName;
 
     @Deprecated
@@ -457,14 +458,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * This value will be variable-expanded as per {@link #expandVariablesForDirectory}.
      * @see #getWorkspaceFor(TopLevelItem)
      */
-    private String workspaceDir = OLD_DEFAULT_WORKSPACES_DIR;
+    private final transient String rawWorkspaceDir = SystemProperties.getString(WORKSPACES_DIR_PROP, DEFAULT_WORKSPACES_DIR);
 
     /**
      * Root directory for the builds.
      * This value will be variable-expanded as per {@link #expandVariablesForDirectory}.
      * @see #getBuildDirFor(Job)
      */
-    private String buildsDir = DEFAULT_BUILDS_DIR;
+    private final transient String rawBuildsDir = SystemProperties.getString(BUILDS_DIR_PROP, DEFAULT_BUILDS_DIR);
 
     /**
      * Message displayed in the top page.
@@ -582,6 +583,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @deprecated in favour of {@link Nodes}
      */
     @Deprecated
+    @XStreamDeserializable
     protected transient volatile NodeList slaves;
 
     /**
@@ -911,11 +913,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new IllegalStateException("second instance");
             theInstance = this;
 
-            if (!new File(root, "jobs").exists()) {
-                // if this is a fresh install, use more modern default layout that's consistent with agents
-                workspaceDir = DEFAULT_WORKSPACES_DIR;
-            }
-
             // doing this early allows InitStrategy to set environment upfront
             final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
 
@@ -1057,6 +1054,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressWarnings("unused")
     protected Object readResolve() {
+        Jenkins existing = Jenkins.getInstanceOrNull();
+        if (existing != null && existing != this) {
+            throw new IllegalStateException(
+                    "A Jenkins singleton already exists; refusing to deserialize a second Jenkins instance."
+                    + " This is likely an attempted exploit via a forged configuration document.");
+        }
         if (jdks == null) {
             jdks = new ArrayList<>();
         }
@@ -1074,6 +1077,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         _setLabelString(label);
 
         return this;
+    }
+
+    protected Object writeReplace() {
+        return XmlFile.replaceIfNotAtTopLevel(this, Replacer::new);
+    }
+
+    private static class Replacer {
+        private Object readResolve() {
+            return Jenkins.get();
+        }
     }
 
     /**
@@ -2581,26 +2594,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         }
 
-        return new FilePath(expandVariablesForDirectory(workspaceDir, item));
+        return new FilePath(expandVariablesForDirectory(rawWorkspaceDir, item));
     }
 
     public File getBuildDirFor(Job job) {
-        return expandVariablesForDirectory(buildsDir, job);
+        return expandVariablesForDirectory(rawBuildsDir, job);
     }
 
     /**
-     * If the configured buildsDir has it's default value or has been changed.
-     *
-     * @return true if default value.
+     * @return true if {@link #getRawBuildsDir} has its default value
+     * @see hudson.model.Job.SubItemBuildsLocationImpl
      */
     @Restricted(NoExternalUse.class)
     public boolean isDefaultBuildDir() {
-        return DEFAULT_BUILDS_DIR.equals(buildsDir);
-    }
-
-    @Restricted(NoExternalUse.class)
-    boolean isDefaultWorkspaceDir() {
-        return OLD_DEFAULT_WORKSPACES_DIR.equals(workspaceDir) || DEFAULT_WORKSPACES_DIR.equals(workspaceDir);
+        return DEFAULT_BUILDS_DIR.equals(rawBuildsDir);
     }
 
     private File expandVariablesForDirectory(String base, Item item) {
@@ -2619,16 +2626,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public String getRawWorkspaceDir() {
-        return workspaceDir;
+        return rawWorkspaceDir;
     }
 
     public String getRawBuildsDir() {
-        return buildsDir;
-    }
-
-    @Restricted(NoExternalUse.class)
-    public void setRawBuildsDir(String buildsDir) {
-        this.buildsDir = buildsDir;
+        return rawBuildsDir;
     }
 
     @Override public @NonNull FilePath getRootPath() {
@@ -3376,53 +3378,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         clouds.setOwner(this);
         configLoaded = true;
         try {
-            checkRawBuildsDir(buildsDir);
-            setBuildsAndWorkspacesDir();
-            resetFilter(securityRealm, null);
+            checkRawBuildsDir(rawBuildsDir);
         } catch (InvalidBuildsDir invalidBuildsDir) {
             throw new IOException(invalidBuildsDir);
         }
+        resetFilter(securityRealm, null);
         updateComputers(this);
     }
 
-    private void setBuildsAndWorkspacesDir() throws IOException, InvalidBuildsDir {
-        boolean mustSave = false;
-        String newBuildsDir = SystemProperties.getString(BUILDS_DIR_PROP);
-        boolean freshStartup = STARTUP_MARKER_FILE.isOff();
-        if (newBuildsDir != null && !buildsDir.equals(newBuildsDir)) {
-
-            checkRawBuildsDir(newBuildsDir);
-            Level level = freshStartup ? Level.INFO : Level.WARNING;
-            LOGGER.log(level, "Changing builds directories from {0} to {1}. Beware that no automated data migration will occur.",
-                       new String[]{buildsDir, newBuildsDir});
-            buildsDir = newBuildsDir;
-            mustSave = true;
-        } else if (!isDefaultBuildDir()) {
-            LOGGER.log(Level.INFO, "Using non default builds directories: {0}.", buildsDir);
-        }
-
-        String newWorkspacesDir = SystemProperties.getString(WORKSPACES_DIR_PROP);
-        if (newWorkspacesDir != null && !workspaceDir.equals(newWorkspacesDir)) {
-            Level level = freshStartup ? Level.INFO : Level.WARNING;
-            LOGGER.log(level, "Changing workspaces directories from {0} to {1}. Beware that no automated data migration will occur.",
-                       new String[]{workspaceDir, newWorkspacesDir});
-            workspaceDir = newWorkspacesDir;
-            mustSave = true;
-        } else if (!isDefaultWorkspaceDir()) {
-            LOGGER.log(Level.INFO, "Using non default workspaces directories: {0}.", workspaceDir);
-        }
-
-        if (mustSave) {
-            save();
-        }
-    }
-
     /**
-     * Checks the correctness of the newBuildsDirValue for use as {@link #buildsDir}.
-     * @param newBuildsDirValue the candidate newBuildsDirValue for updating {@link #buildsDir}.
+     * Checks the correctness of the newBuildsDirValue for use as {@link #rawBuildsDir}.
+     * @param newBuildsDirValue the candidate newBuildsDirValue for updating {@link #rawBuildsDir}.
      */
-    @VisibleForTesting
-    /*private*/ static void checkRawBuildsDir(String newBuildsDirValue) throws InvalidBuildsDir {
+    @Restricted(NoExternalUse.class) // for tests
+    public static void checkRawBuildsDir(String newBuildsDirValue) throws InvalidBuildsDir {
 
         // do essentially what expandVariablesForDirectory does, without an Item
         String replacedValue = expandVariablesForDirectory(newBuildsDirValue,
@@ -4045,7 +4014,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             save();
             updateComputers(this);
             if (result)
-                FormApply.success(req.getContextPath() + '/').generateResponse(req, rsp, null);
+                FormApply.success(req.getContextPath() + "/manage/configure").generateResponse(req, rsp, null);
             else
                 FormApply.success("configure").generateResponse(req, rsp, null);    // back to config
 
@@ -4454,6 +4423,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (isUseCrumbs() && !getCrumbIssuer().validateCrumb(req, p)) {
                 // TODO investigate whether this check can be removed
                 rsp.sendError(HttpServletResponse.SC_FORBIDDEN, "No crumb found");
+                return; // without this, the redirect below would write to the committed response and yield a 500 (IllegalStateException)
             }
             rsp.sendRedirect2(req.getContextPath() + "/fingerprint/" +
                 Util.getDigestOf(p.getFileItem2("name").getInputStream()) + '/');
@@ -4510,7 +4480,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void doSimulateOutOfMemory() throws IOException {
         checkPermission(ADMINISTER);
 
-        System.out.println("Creating artificial OutOfMemoryError situation");
+        LOGGER.log(Level.WARNING, "Creating artificial OutOfMemoryError situation");
         List<Object> args = new ArrayList<>();
         //noinspection InfiniteLoopStatement
         while (true)
@@ -5173,7 +5143,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (link.getIconFileName() == null) {
                 continue;
             }
-            if (!Jenkins.get().hasPermission(link.getRequiredPermission())) {
+            if (!link.hasRequiredPermission()) {
                 continue;
             }
             byCategory.computeIfAbsent(link.getCategory(), c -> new ArrayList<>()).add(link);
@@ -5787,26 +5757,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @see #getRawBuildsDir()
      */
     private static final String DEFAULT_BUILDS_DIR = "${ITEM_ROOTDIR}/builds";
-    /**
-     * Old layout for workspaces.
-     * @see #DEFAULT_WORKSPACES_DIR
-     */
-    private static final String OLD_DEFAULT_WORKSPACES_DIR = "${ITEM_ROOTDIR}/" + WORKSPACE_DIRNAME;
 
     /**
      * Default value for the workspace's directories layout.
-     * @see #workspaceDir
+     * @see #rawWorkspaceDir
      */
     private static final String DEFAULT_WORKSPACES_DIR = "${JENKINS_HOME}/workspace/${ITEM_FULL_NAME}";
 
     /**
-     * System property name to set {@link #buildsDir}.
+     * System property name to set {@link #rawBuildsDir}.
      * @see #getRawBuildsDir()
      */
     static final String BUILDS_DIR_PROP = Jenkins.class.getName() + ".buildsDir";
 
     /**
-     * System property name to set {@link #workspaceDir}.
+     * System property name to set {@link #rawWorkspaceDir}.
      * @see #getRawWorkspaceDir()
      */
     static final String WORKSPACES_DIR_PROP = Jenkins.class.getName() + ".workspacesDir";
@@ -5860,6 +5825,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             new PermissionScope[]{PermissionScope.JENKINS});
 
     @Restricted(NoExternalUse.class) // called by jelly
+    @SuppressFBWarnings(value = "MS_MUTABLE_ARRAY", justification = "Not for external use")
     public static final Permission[] MANAGE_AND_SYSTEM_READ =
             new Permission[] { MANAGE, SYSTEM_READ };
 

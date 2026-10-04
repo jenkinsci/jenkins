@@ -678,7 +678,9 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
             apf.setAuthenticationFailureHandler(new SimpleUrlAuthenticationFailureHandler("/loginError"));
             filters.add(apf);
         }
-        filters.add(new RememberMeAuthenticationFilter(sc.manager2, sc.rememberMe2));
+        final RememberMeAuthenticationFilter rememberMe = new RememberMeAuthenticationFilter(sc.manager2, sc.rememberMe2);
+        rememberMe.setSessionAuthenticationStrategy(new SessionFixationProtectionStrategy());
+        filters.add(rememberMe);
         filters.addAll(commonFilters());
         return new ChainedServletFilter2(filters);
     }

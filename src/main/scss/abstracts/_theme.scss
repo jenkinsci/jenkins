@@ -78,13 +78,19 @@ $semantics: (
   // Background colors
   --background: rgb(254 254 254);
 
+  // Body
+  --body-background-top: color-mix(
+    in oklch,
+    white 1.5%,
+    var(--card-background)
+  );
+
   // Header
   --header-background: color-mix(
     in sRGB,
     var(--background),
     var(--text-color-secondary) 2.5%
   );
-  --header-border: var(--text-color-secondary);
   --header-color: var(--text-color);
   --header-height: 3.5rem;
 
@@ -156,7 +162,6 @@ $semantics: (
     var(--jenkins-border-color--subtle);
 
   @media (prefers-contrast: more) {
-    --header-border: var(--text-color);
     --focus-input-border: var(--text-color);
     --jenkins-border-color: var(--text-color);
     --jenkins-border-color--subtle: var(--text-color);

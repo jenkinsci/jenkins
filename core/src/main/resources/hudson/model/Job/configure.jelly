@@ -43,7 +43,7 @@ THE SOFTWARE.
       </div>
     </l:side-panel>
 
-    <l:main-panel>
+    <l:main-panel width="narrow">
       <f:form method="post" class="jenkins-form" action="configSubmit" name="config" tableClass="config-table">
         <l:app-bar title="${%General}" headingLevel="h2">
           <p:config-disableBuild />

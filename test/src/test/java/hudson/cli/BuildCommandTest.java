@@ -30,6 +30,7 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -46,6 +47,7 @@ import hudson.model.Executor;
 import hudson.model.FileParameterDefinition;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Item;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
@@ -55,15 +57,22 @@ import hudson.model.SimpleParameterDefinition;
 import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.TopLevelItem;
+import hudson.model.User;
+import hudson.security.ACL;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -71,6 +80,7 @@ import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -286,6 +296,84 @@ class BuildCommandTest {
         @Extension
         public static class DescriptorImpl extends ParameterDescriptor {}
 
+    }
+
+    @Test
+    void syncRequiresCancelPermission() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        FreeStyleProject p = j.createFreeStyleProject("protected-job");
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toEveryone()
+                .grant(Item.READ, Item.BUILD).onItems(p).to("builder"));
+
+        CLICommandInvoker.Result result = new CLICommandInvoker(j, new BuildCommand())
+                .asUser("builder")
+                .invokeWithArgs("-s", p.getName());
+
+        assertThat(result, failedWith(6));
+        assertThat(result.stderr(), containsString("ERROR: builder is missing the Job/Cancel permission"));
+        assertNull(p.getBuildByNumber(1), "No build should have been scheduled");
+    }
+
+    @Test
+    void interruptedSyncDoesNotCancelBuildWhenCancelPermissionRevoked() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        FreeStyleProject project = j.createFreeStyleProject("protected-job");
+
+        OneShotEvent buildStarted = new OneShotEvent();
+        OneShotEvent allowFinish = new OneShotEvent();
+        project.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+                buildStarted.signal();
+                allowFinish.block();
+                return true;
+            }
+        });
+
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toEveryone()
+                .grant(Item.READ, Item.BUILD, Item.CANCEL).onItems(project).to("builder"));
+
+        ByteArrayOutputStream cliStdout = new ByteArrayOutputStream();
+        BuildCommand command = new BuildCommand();
+        command.job = project;
+        command.sync = true;
+        command.stdin = InputStream.nullInputStream();
+        command.stdout = new PrintStream(cliStdout);
+        command.stderr = new PrintStream(new ByteArrayOutputStream());
+
+        AtomicReference<Throwable> commandFailure = new AtomicReference<>();
+        Thread commandThread = new Thread(() -> {
+            try (var ignored = ACL.as2(User.getById("builder", true).impersonate2())) {
+                command.run();
+            } catch (Throwable x) {
+                commandFailure.set(x);
+            }
+        });
+        commandThread.start();
+
+        buildStarted.block(TimeUnit.SECONDS.toMillis(30));
+        FreeStyleBuild build = project.getBuildByNumber(1);
+        assertNotNull(build);
+        assertTrue(build.isBuilding());
+
+        // Revoke Job/Cancel while the build is running
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toEveryone()
+                .grant(Item.READ, Item.BUILD).onItems(project).to("builder"));
+
+        commandThread.interrupt();
+        commandThread.join(TimeUnit.SECONDS.toMillis(10));
+        assertFalse(commandThread.isAlive());
+        assertThat(cliStdout.toString(), containsString("Started protected-job #1"));
+
+        assertTrue(build.isBuilding(), "Build must still be running after interrupt with revoked Job/Cancel");
+
+        allowFinish.signal();
+        j.waitForCompletion(build);
+        assertEquals(hudson.model.Result.SUCCESS, build.getResult());
+        assertThat(String.join("\n", build.getLog(Integer.MAX_VALUE)), not(containsString("Aborted by")));
     }
 
     @Issue("JENKINS-41745")

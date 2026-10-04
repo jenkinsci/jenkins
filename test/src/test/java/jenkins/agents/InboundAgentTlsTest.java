@@ -1,5 +1,8 @@
 package jenkins.agents;
 
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+
+import hudson.Functions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -16,6 +19,7 @@ class InboundAgentTlsTest {
 
     @BeforeEach
     void setUp() throws Throwable {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Expensive to run and not Windows specific");
         rjr.startJenkins();
     }
 

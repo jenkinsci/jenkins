@@ -123,7 +123,7 @@ axes.values().combinations {
               mavenOptions.add(0, "-Dsurefire.excludesFile=${excludesFile}")
             }
             withChecks(name: 'Tests', includeStage: true) {
-              realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
+              realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,target/vitest-reports/*.xml') {
                 infra.runMaven(mavenOptions, jdk)
                 if (isUnix()) {
                   sh 'git add . && git diff --exit-code HEAD'
