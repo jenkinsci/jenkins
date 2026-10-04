@@ -18,7 +18,7 @@ Behaviour.specify(
       holder.getAttribute("data-show-earlier-text") || "Load earlier output";
     let hiddenChunksMessage =
       holder.getAttribute("data-hidden-chunks-message") ||
-      "Earlier output hidden to prevent browser lag ({0} chunks).";
+      "Earlier output hidden to prevent browser lag ({0} chunk(s)).";
 
     var scroller = new AutoScroller(
       holder.closest(".progressive-text-container") || document.body,

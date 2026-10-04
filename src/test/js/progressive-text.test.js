@@ -60,7 +60,7 @@ describe("progressive-text", () => {
     holder.setAttribute("data-max-chunks", maxChunks);
     holder.setAttribute(
       "data-hidden-chunks-message",
-      "Earlier output hidden ({0} chunks).",
+      "Earlier output hidden ({0} chunk(s)).",
     );
     holder.setAttribute("data-show-earlier-text", "Show all");
     holder.setAttribute("data-error-message", "Error loading log");
@@ -145,7 +145,7 @@ describe("progressive-text", () => {
     const banner = container.querySelector(".progressive-text-expand-button");
     expect(banner).not.toBeNull();
     expect(banner.style.display).toBe("");
-    expect(banner.textContent).toContain("Earlier output hidden (1 chunks)");
+    expect(banner.textContent).toContain("Earlier output hidden (1 chunk(s))");
 
     // Clicking banner restores the first chunk
     banner.click();
@@ -319,7 +319,7 @@ describe("progressive-text", () => {
     const banner = container.querySelector(".progressive-text-expand-button");
     expect(banner).not.toBeNull();
     expect(banner.style.display).toBe("");
-    expect(banner.textContent).toContain("Earlier output hidden (2 chunks)");
+    expect(banner.textContent).toContain("Earlier output hidden (2 chunk(s))");
   });
 
   it("enforces pruning on log completion when sticking to bottom", async () => {
