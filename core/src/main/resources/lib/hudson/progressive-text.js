@@ -60,12 +60,15 @@ Behaviour.specify(
         return;
       }
       const frag = document.createDocumentFragment();
-      const restored = [];
-      while (prunedChunks.length > 0) {
-        const chunk = prunedChunks.shift();
-        frag.appendChild(chunk);
-        restored.push(chunk);
+      const restored = new Array(prunedChunks.length);
+      for (let i = 0; i < prunedChunks.length; i++) {
+        const p = document.createElement("DIV");
+        p.innerHTML = prunedChunks[i];
+        Behaviour.applySubtree(p);
+        frag.appendChild(p);
+        restored[i] = p;
       }
+      prunedChunks.length = 0;
       activeChunks = restored.concat(activeChunks);
 
       const scrollContainer =
@@ -174,7 +177,7 @@ Behaviour.specify(
                 if (oldest.parentNode === e) {
                   e.removeChild(oldest);
                 }
-                prunedChunks.push(oldest);
+                prunedChunks.push(oldest.innerHTML);
               }
               updateBanner(e);
             }
