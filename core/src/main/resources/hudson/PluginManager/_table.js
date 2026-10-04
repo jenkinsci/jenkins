@@ -1,67 +1,47 @@
 Behaviour.specify("#filter-box", "_table", 0, function (e) {
+  /**
+   * Returns the text a plugin row is matched against when filtering: the
+   * plugin id plus the visible name, description and categories. Other
+   * content of the row (e.g. the hidden list of dependencies) is deliberately
+   * not searched.
+   */
+  function getPluginSearchText(row) {
+    var parts = [row.getAttribute("data-plugin-id")];
+    row
+      .querySelectorAll(
+        ".app-plugin-manager__name, .app-plugin-manager__description, .app-plugin-manager__categories",
+      )
+      .forEach(function (element) {
+        parts.push(element.textContent);
+      });
+    return parts.join(" ").toLowerCase();
+  }
+
   function applyFilter() {
-    var filter = e.value.toLowerCase().trim();
-    var filterParts = filter.split(/ +/).filter(function (word) {
-      return word.length > 0;
-    });
-    var items = document
-      .getElementsBySelector("TR.plugin")
-      .concat(document.getElementsBySelector("TR.unavailable"));
-    var anyVisible = false;
-    for (var i = 0; i < items.length; i++) {
-      if (
-        (filterParts.length < 1 || filter.length < 2) &&
-        items[i].classList.contains("hidden-by-default")
-      ) {
-        items[i].classList.add("jenkins-hidden");
-        continue;
-      }
-      var makeVisible = true;
-
-      var pluginId = items[i].getAttribute("data-plugin-id");
-      var content = (
-        items[i].querySelector(".details").innerText +
-        " " +
-        pluginId
-      ).toLowerCase();
-
-      for (var j = 0; j < filterParts.length; j++) {
-        var part = filterParts[j];
-        if (content.indexOf(part) < 0) {
-          makeVisible = false;
-          break;
-        }
-      }
-
+    var filterParts = e.value
+      .toLowerCase()
+      .trim()
+      .split(/ +/)
+      .filter(function (word) {
+        return word.length > 0;
+      });
+    document.querySelectorAll("tr.plugin").forEach(function (row) {
+      var content = getPluginSearchText(row);
+      var makeVisible = filterParts.every(function (part) {
+        return content.indexOf(part) >= 0;
+      });
       if (makeVisible) {
-        items[i].classList.remove("jenkins-hidden");
-        anyVisible = true;
+        row.classList.remove("jenkins-hidden");
       } else {
-        items[i].classList.add("jenkins-hidden");
+        row.classList.add("jenkins-hidden");
       }
-    }
-    var instructions = document.getElementById(
-      "hidden-by-default-instructions",
-    );
-    if (instructions) {
-      instructions.style.display = anyVisible ? "none" : "";
-    }
+    });
 
     layoutUpdateCallback.call();
   }
   e.addEventListener("input", () => applyFilter());
 
-  (function () {
-    var instructionsTd = document.getElementById(
-      "hidden-by-default-instructions-td",
-    );
-    if (instructionsTd) {
-      // only on Available tab
-      instructionsTd.innerText =
-        instructionsTd.getAttribute("data-loaded-text");
-    }
-    applyFilter();
-  })();
+  applyFilter();
 });
 
 /**
