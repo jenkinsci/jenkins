@@ -4423,6 +4423,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (isUseCrumbs() && !getCrumbIssuer().validateCrumb(req, p)) {
                 // TODO investigate whether this check can be removed
                 rsp.sendError(HttpServletResponse.SC_FORBIDDEN, "No crumb found");
+                return; // without this, the redirect below would write to the committed response and yield a 500 (IllegalStateException)
             }
             rsp.sendRedirect2(req.getContextPath() + "/fingerprint/" +
                 Util.getDigestOf(p.getFileItem2("name").getInputStream()) + '/');
