@@ -31,9 +31,15 @@ THE SOFTWARE.
     <st:attribute name="icon" use="required">
       Sets the icon for the notice. Supports Jenkins Symbols and regular images.
     </st:attribute>
+    <st:attribute name="id" use="optional">
+      If set, id will be the identifier for the component.
+    </st:attribute>
+    <st:attribute name="clazz" use="optional">
+      Additional CSS class(es) to add.
+    </st:attribute>
   </st:documentation>
 
-  <div class="jenkins-notice">
+  <div class="jenkins-notice ${attrs.clazz}" id="${attrs.id}">
     <l:icon src="${attrs.icon}" />
     <div>${attrs.title}</div>
     <div class="jenkins-notice__description">

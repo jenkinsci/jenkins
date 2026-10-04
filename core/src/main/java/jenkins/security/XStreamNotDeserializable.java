@@ -63,7 +63,7 @@ import java.lang.annotation.Target;
  *
  * @see XStreamDeserializable
  * @see hudson.util.RobustReflectionConverter
- * @since TODO
+ * @since 2.580
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

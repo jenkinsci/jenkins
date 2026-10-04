@@ -40,7 +40,7 @@ THE SOFTWARE.
 
   <properties>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
-    <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>3256.3258.v858f3c9a_f69d</remoting.minimum.supported.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
     <!-- Not managed by jenkins-bom, so referenced from annotationProcessorPaths via this property -->
@@ -59,7 +59,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.xmlunit</groupId>
         <artifactId>xmlunit-bom</artifactId>
-        <version>2.13.0</version>
+        <version>2.14.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -153,6 +153,7 @@ THE SOFTWARE.
       <artifactId>commons-codec</artifactId>
     </dependency>
     <dependency>
+      <!-- Jenkins core does not use this directly, but it remains a transitive dependency through BeanUtils, Jelly, and JSON-lib, and plugins rely on core providing it. -->
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
     </dependency>
