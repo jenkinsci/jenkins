@@ -242,6 +242,16 @@ public class Functions {
         return o instanceof ModelObjectWithChildren;
     }
 
+    @Restricted(NoExternalUse.class)
+    public static boolean isInstanceOf(Object o, String className) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            return clazz.isInstance(o);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
     @Deprecated
     public static boolean isMatrixProject(Object o) {
         return o != null && o.getClass().getName().equals("hudson.matrix.MatrixProject");
