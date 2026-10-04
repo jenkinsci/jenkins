@@ -34,7 +34,7 @@ BehaviorShim.specify(
 
     // Refresh variables
     let buildRefreshTimeout;
-    const updateBuildsRefreshInterval = 50000;
+    const updateBuildsRefreshInterval = 5000;
 
     // Status filter state. Empty means "show everything".
     let selectedStatuses = new Set();
@@ -188,8 +188,18 @@ BehaviorShim.specify(
       load();
     }, 150);
 
+    /**
+     * Forces the next call to load() to fetch the first page. Used whenever the
+     * search term or status filter changes, since the current page boundaries
+     * were computed against the previous, now stale, filter criteria.
+     */
+    function resetPaging() {
+      buildHistoryPage.dataset.pageHasUp = "false";
+    }
+
     pageSearchInput.addEventListener("input", function () {
       container.classList.add("app-temporary-list--loading");
+      resetPaging();
       debouncedSpinner();
       debouncedLoad();
     });
@@ -209,8 +219,9 @@ BehaviorShim.specify(
     /**
      * Applies the current selection to the dropdown's rows, the Reset link, and
      * the funnel trigger button. The rows are only created the first time the
-     * dropdown is opened, so this does nothing until then - which is fine, as a
-     * status can only be picked from the dropdown itself.
+     * dropdown is opened; the observer below re-applies the (initially empty)
+     * selection as soon as they exist, so assistive technologies always see an
+     * up to date aria-pressed state.
      */
     function renderStatusSelection() {
       const hasSelection = selectedStatuses.size > 0;
@@ -223,6 +234,7 @@ BehaviorShim.specify(
             MUTED_STATUS_ITEM_CLASS,
             hasSelection && !isSelected,
           );
+          item.setAttribute("aria-pressed", String(isSelected));
         });
 
       const resetButton = statusFilterDropdown.querySelector(
@@ -269,8 +281,22 @@ BehaviorShim.specify(
 
       renderStatusSelection();
       container.classList.add("app-temporary-list--loading");
+      resetPaging();
       debouncedSpinner();
       load();
+    });
+
+    // The status rows are generated lazily (on hover/focus/click of the
+    // trigger), so initialize their aria-pressed state as soon as they exist.
+    const statusItemsObserver = new MutationObserver(() => {
+      if (statusFilterDropdown.querySelector(`.${STATUS_ITEM_CLASS}`)) {
+        renderStatusSelection();
+        statusItemsObserver.disconnect();
+      }
+    });
+    statusItemsObserver.observe(statusFilterDropdown, {
+      childList: true,
+      subtree: true,
     });
 
     container.classList.add("app-temporary-list--loading");
