@@ -280,4 +280,95 @@ describe("progressive-text", () => {
     await vi.advanceTimersByTimeAsync(1000);
     expect(pre.consoleAnnotator).toBe("token-abc");
   });
+
+  it("prunes accumulated chunks when scrolling back to bottom", async () => {
+    isStickingValue = false; // user is scrolled up
+    const { pre, holder, container } = createFixture({ maxChunks: "2" });
+
+    const chunks = ["Chunk 1", "Chunk 2", "Chunk 3", "Chunk 4"];
+    let callIdx = 0;
+
+    globalThis.fetch = vi.fn(() => {
+      const text = chunks[callIdx] || "";
+      callIdx++;
+      const completed = callIdx >= chunks.length;
+      return mockTextResponse({
+        text,
+        end: String(callIdx * 100),
+        completed,
+      });
+    });
+
+    behaviorCallback(holder);
+
+    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(pre.children.length).toBe(4);
+
+    // User scrolls back to bottom
+    isStickingValue = true;
+    container.dispatchEvent(new Event("scroll"));
+
+    expect(pre.children.length).toBe(2);
+    expect(pre.children[0].innerHTML).toBe("Chunk 3");
+    expect(pre.children[1].innerHTML).toBe("Chunk 4");
+
+    const banner = container.querySelector(".progressive-text-expand-button");
+    expect(banner).not.toBeNull();
+    expect(banner.style.display).toBe("");
+    expect(banner.textContent).toContain("Earlier output hidden (2 chunks)");
+  });
+
+  it("enforces pruning on log completion when sticking to bottom", async () => {
+    isStickingValue = false; // user was scrolled up during fetches
+    const { pre, holder } = createFixture({ maxChunks: "2" });
+
+    let callIdx = 0;
+    globalThis.fetch = vi.fn(() => {
+      callIdx++;
+      if (callIdx === 1) {
+        return mockTextResponse({
+          text: "First",
+          end: "100",
+          completed: false,
+        });
+      }
+      if (callIdx === 2) {
+        return mockTextResponse({
+          text: "Second",
+          end: "200",
+          completed: false,
+        });
+      }
+      if (callIdx === 3) {
+        return mockTextResponse({
+          text: "Third",
+          end: "300",
+          completed: false,
+        });
+      }
+      isStickingValue = true;
+      return mockTextResponse({
+        text: "",
+        end: "300",
+        completed: true,
+      });
+    });
+
+    behaviorCallback(holder);
+
+    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(pre.children.length).toBe(3);
+
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(pre.children.length).toBe(2);
+    expect(pre.children[0].innerHTML).toBe("Second");
+    expect(pre.children[1].innerHTML).toBe("Third");
+  });
 });

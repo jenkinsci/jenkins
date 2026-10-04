@@ -27,6 +27,7 @@ Behaviour.specify(
     let activeChunks = [];
     const prunedChunks = [];
     let banner = null;
+    let userRestored = false;
 
     function updateBanner(e) {
       if (prunedChunks.length === 0) {
@@ -55,10 +56,27 @@ Behaviour.specify(
         hiddenChunksMessage.replace("{0}", count) + " " + showEarlierText;
     }
 
+    function pruneIfSticking(e) {
+      if (userRestored) {
+        return;
+      }
+      if (maxChunks > 0 && scroller.isSticking()) {
+        while (activeChunks.length > maxChunks) {
+          const oldest = activeChunks.shift();
+          if (oldest.parentNode === e) {
+            e.removeChild(oldest);
+          }
+          prunedChunks.push(oldest.innerHTML);
+        }
+        updateBanner(e);
+      }
+    }
+
     function restoreEarlierChunks(e) {
       if (prunedChunks.length === 0) {
         return;
       }
+      userRestored = true;
       const frag = document.createDocumentFragment();
       const restored = new Array(prunedChunks.length);
       for (let i = 0; i < prunedChunks.length; i++) {
@@ -171,16 +189,7 @@ Behaviour.specify(
             Behaviour.applySubtree(p);
             activeChunks.push(p);
 
-            if (maxChunks > 0 && stickToBottom) {
-              while (activeChunks.length > maxChunks) {
-                const oldest = activeChunks.shift();
-                if (oldest.parentNode === e) {
-                  e.removeChild(oldest);
-                }
-                prunedChunks.push(oldest.innerHTML);
-              }
-              updateBanner(e);
-            }
+            pruneIfSticking(e);
 
             if (stickToBottom) {
               scroller.scrollToBottom();
@@ -191,6 +200,7 @@ Behaviour.specify(
               fetchNext(e, href, onFinishEvent);
             }, 1000);
           } else {
+            pruneIfSticking(e);
             if (spinner !== "") {
               document.getElementById(spinner).style.display = "none";
             }
@@ -203,6 +213,11 @@ Behaviour.specify(
     }
     const targetElement = document.getElementById(idref);
     if (targetElement) {
+      const scrollElement =
+        holder.closest(".progressive-text-container") || window;
+      scrollElement.addEventListener("scroll", function () {
+        pruneIfSticking(targetElement);
+      });
       targetElement.fetchedBytes = startOffset !== "" ? Number(startOffset) : 0;
       fetchNext(targetElement, href, onFinishEvent);
     }
