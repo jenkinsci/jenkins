@@ -24,7 +24,7 @@ Behaviour.specify(
       holder.closest(".progressive-text-container") || document.body,
     );
 
-    const activeChunks = [];
+    let activeChunks = [];
     const prunedChunks = [];
     let banner = null;
 
@@ -51,7 +51,8 @@ Behaviour.specify(
       }
       banner.style.display = "";
       const count = prunedChunks.length;
-      banner.textContent = `${hiddenChunksMessage.replace("{0}", count)} ${showEarlierText}`;
+      banner.textContent =
+        hiddenChunksMessage.replace("{0}", count) + " " + showEarlierText;
     }
 
     function restoreEarlierChunks(e) {
@@ -65,7 +66,7 @@ Behaviour.specify(
         frag.appendChild(chunk);
         restored.push(chunk);
       }
-      activeChunks.unshift(...restored);
+      activeChunks = restored.concat(activeChunks);
 
       const scrollContainer =
         holder.closest(".progressive-text-container") ||
