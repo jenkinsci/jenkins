@@ -242,6 +242,7 @@ public class Functions {
         return o instanceof ModelObjectWithChildren;
     }
 
+    @Restricted(NoExternalUse.class)
     public static boolean isInstanceOf(Object o, String className) {
         try {
             Class<?> clazz = Class.forName(className);
