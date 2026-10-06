@@ -34,10 +34,6 @@ document.addEventListener("DOMContentLoaded", function () {
         (el) => el.tagName === "DIV",
       );
 
-      messageDivs.forEach((el) => {
-        el.style.marginBottom = "";
-      });
-
       const visibleDivs = messageDivs.filter((el) => {
         const style = window.getComputedStyle(el);
         return (
@@ -49,9 +45,13 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       const lastVisible = visibleDivs[visibleDivs.length - 1];
-      if (lastVisible) {
-        lastVisible.style.marginBottom = "var(--section-padding)";
-      }
+      messageDivs.forEach((el) => {
+        const margin = el === lastVisible ? "var(--section-padding)" : "";
+        // This observer also watches style changes, so avoid redundant writes.
+        if (el.style.marginBottom !== margin) {
+          el.style.marginBottom = margin;
+        }
+      });
     };
 
     let rafId = null;
