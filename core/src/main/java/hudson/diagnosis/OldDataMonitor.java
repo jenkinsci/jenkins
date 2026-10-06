@@ -185,9 +185,9 @@ public class OldDataMonitor extends AdministrativeMonitor {
      */
     public static void report(Saveable obj, Collection<Throwable> errors) {
         if (obj instanceof Run<?, ?>) {
-            for (var error : errors) {
-                if (!(error instanceof ReportException)) {
-                    LOGGER.log(Level.INFO, "Trouble loading " + obj, error);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                for (var error : errors) {
+                    LOGGER.log(Level.FINE, "Trouble loading " + obj, error);
                 }
             }
             return; // somewhat ephemeral
