@@ -30,6 +30,8 @@ import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
 import jenkins.model.menu.event.Event;
 import jenkins.model.menu.event.LinkEvent;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Object that contributes additional information, behaviors, and UIs to {@link ModelObject}
@@ -168,10 +170,20 @@ public interface Action extends ModelObject {
      * Returns the event associated with this item.
      * By default, this creates a link event pointing to the item's URL name.
      *
-     * @return the event representing this item
+     * @return the event representing this item, or {@code null} if the item has no URL
      */
-    default Event getEvent() {
-        return LinkEvent.of(getUrlName());
+    default @CheckForNull Event getEvent() {
+        String urlName = getUrlName();
+        if (urlName == null) {
+            return null;
+        }
+        if (urlName.startsWith("/") && !urlName.startsWith("//")) {
+            StaplerRequest2 req = Stapler.getCurrentRequest2();
+            if (req != null) {
+                return LinkEvent.of(Functions.joinPath(req.getContextPath(), urlName));
+            }
+        }
+        return LinkEvent.of(urlName);
     }
 
     /**

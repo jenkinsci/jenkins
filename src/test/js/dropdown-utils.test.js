@@ -72,4 +72,58 @@ describe("Utils.convertHtmlToItems", () => {
     expect(badge.classList.contains("jenkins-!-warning-color")).toBe(true);
     expect(badge.getAttribute("tooltip")).toBe("1 token about to expire");
   });
+
+  it("resolves root-relative URLs with document.head.dataset.rooturl", () => {
+    document.head.dataset.rooturl = "/jenkins";
+    try {
+      const items = [
+        {
+          type: "ITEM",
+          displayName: "Absolute Link",
+          event: { url: "/manage", type: "GET" },
+        },
+        {
+          type: "ITEM",
+          displayName: "Already Prefixed Link",
+          event: { url: "/jenkins/manage", type: "GET" },
+        },
+        {
+          type: "ITEM",
+          displayName: "Relative Link",
+          event: { url: "configure", type: "GET" },
+        },
+        {
+          type: "ITEM",
+          displayName: "External Link",
+          event: { url: "https://example.com", type: "GET" },
+        },
+        {
+          type: "ITEM",
+          displayName: "No URL",
+          event: { url: null, type: "GET" },
+        },
+      ];
+
+      const dropdown = Utils.generateDropdownItems(
+        items,
+        false,
+        "/jenkins/job/built/",
+      );
+      const links = dropdown.querySelectorAll("a.jenkins-dropdown__item");
+      expect(links[0].getAttribute("href")).toBe("/jenkins/manage");
+      expect(links[1].getAttribute("href")).toBe("/jenkins/manage");
+      expect(links[2].getAttribute("href")).toBe(
+        "/jenkins/job/built/configure",
+      );
+      expect(links[3].getAttribute("href")).toBe("https://example.com");
+
+      const buttons = dropdown.querySelectorAll(
+        "button.jenkins-dropdown__item",
+      );
+      expect(buttons).toHaveLength(1);
+      expect(buttons[0].getAttribute("href")).toBeNull();
+    } finally {
+      delete document.head.dataset.rooturl;
+    }
+  });
 });

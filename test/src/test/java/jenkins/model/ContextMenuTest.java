@@ -28,6 +28,8 @@ import static jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import static jenkins.model.ModelObjectWithContextMenu.ContextMenuVisibility;
 import static jenkins.model.ModelObjectWithContextMenu.MenuItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import hudson.model.AbstractProject;
@@ -74,6 +76,52 @@ class ContextMenuTest {
         menu = j.executeOnServer(doContextMenu);
         parsed = parse(menu);
         assertNull(parsed.get("testing"), parsed.toString());
+    }
+
+    @Test
+    void rootRelativeActionUrl() throws Exception {
+        final FreeStyleProject p = j.createFreeStyleProject("p-root");
+        Callable<ContextMenu> doContextMenu = () -> p.doContextMenu(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2());
+        RootActionFactory f = j.jenkins.getExtensionList(TransientProjectActionFactory.class).get(RootActionFactory.class);
+        f.urlName = "/manage";
+        ContextMenu menu = j.executeOnServer(doContextMenu);
+        MenuItem item = menu.items.stream()
+                .filter(mi -> "Root Link".equals(mi.displayName))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(item);
+        assertInstanceOf(LinkEvent.class, item.getEvent());
+        assertEquals(j.contextPath + "/manage", ((LinkEvent) item.getEvent()).getUrl());
+
+        f.urlName = null;
+        menu = j.executeOnServer(doContextMenu);
+        item = menu.items.stream()
+                .filter(mi -> "Root Link".equals(mi.displayName))
+                .findFirst()
+                .orElse(null);
+        assertNull(item);
+    }
+
+    @TestExtension public static class RootActionFactory extends TransientProjectActionFactory {
+
+        String urlName = "/manage";
+
+        @SuppressWarnings("rawtypes")
+        @Override public Collection<? extends Action> createFor(AbstractProject target) {
+            return Collections.singleton(new Action() {
+                @Override public String getIconFileName() {
+                    return "symbol-settings";
+                }
+
+                @Override public String getDisplayName() {
+                    return "Root Link";
+                }
+
+                @Override public String getUrlName() {
+                    return urlName;
+                }
+            });
+        }
     }
 
     @TestExtension public static class ActionFactory extends TransientProjectActionFactory {
