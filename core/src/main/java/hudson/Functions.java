@@ -86,6 +86,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.tasks.UserAvatarResolver;
 import hudson.util.Area;
+import hudson.util.FormApply;
 import hudson.util.FormValidation.CheckMethod;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
@@ -142,6 +143,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -169,7 +171,10 @@ import jenkins.model.SimplePageDecorator;
 import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DetailGroup;
+import jenkins.model.menu.Group;
+import jenkins.telemetry.impl.PasswordMasking;
 import jenkins.util.SystemProperties;
+import net.sf.json.JSONObject;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -178,6 +183,7 @@ import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
+import org.jenkins.ui.icon.IconSpec;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -203,7 +209,18 @@ public class Functions {
     private static final AtomicLong iota = new AtomicLong();
     private static Logger LOGGER = Logger.getLogger(Functions.class.getName());
 
+    /**
+     * Escape hatch to use the non-recursive f:password masking.
+     */
+    private static /* non-final */ boolean NON_RECURSIVE_PASSWORD_MASKING_PERMISSION_CHECK = SystemProperties.getBoolean(Functions.class.getName() + ".nonRecursivePasswordMaskingPermissionCheck");
+
+
     public Functions() {
+    }
+
+    @Restricted(NoExternalUse.class)
+    public @CheckForNull FormApply.Notification getFormApplyNotification() {
+        return FormApply.getAndClearNotification(Stapler.getCurrentRequest2());
     }
 
     /**
@@ -223,6 +240,16 @@ public class Functions {
 
     public static boolean isModelWithChildren(Object o) {
         return o instanceof ModelObjectWithChildren;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static boolean isInstanceOf(Object o, String className) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            return clazz.isInstance(o);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     @Deprecated
@@ -571,7 +598,8 @@ public class Functions {
         String[] oldParts = prior == null ? new String[4] : logRecordPreformat(prior);
         String[] newParts = logRecordPreformat(r);
         for (int i = 0; i < /* not 4 */3; i++) {
-            newParts[i] = "<span class='" + (newParts[i].equals(oldParts[i]) ? "logrecord-metadata-old" : "logrecord-metadata-new") + "'>" + newParts[i] + "</span>";
+            String cls = newParts[i].equals(oldParts[i]) ? "logrecord-metadata-old" : "logrecord-metadata-new";
+            newParts[i] = "<span class='" + cls + "'>" + Util.xmlEscape(newParts[i]) + "</span>";
         }
         newParts[3] = Util.xmlEscape(newParts[3]);
         return newParts;
@@ -1272,11 +1300,7 @@ public class Functions {
             return hasAnyPermission((AccessControlled) object, permissions);
         else {
             AccessControlled ac = Stapler.getCurrentRequest2().findAncestorObject(AccessControlled.class);
-            if (ac != null) {
-                return hasAnyPermission(ac, permissions);
-            }
-
-            return hasAnyPermission(Jenkins.get(), permissions);
+            return hasAnyPermission(Objects.requireNonNullElseGet(ac, Jenkins::get), permissions);
         }
     }
 
@@ -1990,7 +2014,7 @@ public class Functions {
             else
                 buf.append('_');    // escape
         }
-        return String.valueOf(buf);
+        return buf.toString();
     }
 
     /**
@@ -2252,13 +2276,70 @@ public class Functions {
         StaplerRequest2 req = Stapler.getCurrentRequest2();
         if (o instanceof Secret || Secret.BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE) {
             if (req != null) {
-                Item item = req.findAncestorObject(Item.class);
-                if (item != null && !item.hasPermission(Item.CONFIGURE)) {
-                    return "********";
-                }
-                Computer computer = req.findAncestorObject(Computer.class);
-                if (computer != null && !computer.hasPermission(Computer.CONFIGURE)) {
-                    return "********";
+                if (NON_RECURSIVE_PASSWORD_MASKING_PERMISSION_CHECK) {
+                    List<Ancestor> ancestors = req.getAncestors();
+                    String closestAncestor = ancestors.isEmpty() ? "unknown" :
+                        ancestors.getLast().getObject().getClass().getName();
+
+                    Item item = req.findAncestorObject(Item.class);
+                    if (item != null && !item.hasPermission(Item.CONFIGURE)) {
+                        PasswordMasking.recordMasking(
+                            item.getClass().getName(),
+                            closestAncestor,
+                            getJellyViewsInformationForCurrentRequest()
+                        );
+                        return "********";
+                    }
+                    Computer computer = req.findAncestorObject(Computer.class);
+                    if (computer != null && !computer.hasPermission(Computer.CONFIGURE)) {
+                        PasswordMasking.recordMasking(
+                            computer.getClass().getName(),
+                            closestAncestor,
+                            getJellyViewsInformationForCurrentRequest()
+                        );
+                        return "********";
+                    }
+                } else {
+                    List<Ancestor> ancestors = req.getAncestors();
+                    String closestAncestor = ancestors.isEmpty() ? "unknown" :
+                        ancestors.getLast().getObject().getClass().getName();
+
+                    for (Ancestor ancestor : Iterators.reverse(ancestors)) {
+                        Object type = ancestor.getObject();
+                        if (type instanceof Item item) {
+                            if (!item.hasPermission(Item.CONFIGURE)) {
+                                PasswordMasking.recordMasking(
+                                    item.getClass().getName(),
+                                    closestAncestor,
+                                    getJellyViewsInformationForCurrentRequest()
+                                );
+                                return "********";
+                            }
+                            break;
+                        }
+                        if (type instanceof Computer computer) {
+                            if (!computer.hasPermission(Computer.CONFIGURE)) {
+                                PasswordMasking.recordMasking(
+                                    computer.getClass().getName(),
+                                    closestAncestor,
+                                    getJellyViewsInformationForCurrentRequest()
+                                );
+                                return "********";
+                            }
+                            break;
+                        }
+                        if (type instanceof View view) {
+                            if (!view.hasPermission(View.CONFIGURE)) {
+                                PasswordMasking.recordMasking(
+                                    view.getClass().getName(),
+                                    closestAncestor,
+                                    getJellyViewsInformationForCurrentRequest()
+                                );
+                                return "********";
+                            }
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -2314,6 +2395,13 @@ public class Functions {
     }
 
     /**
+     * Returns true if we are in development mode.
+     */
+    public static boolean isDevelopmentMode() {
+        return Main.isDevelopmentMode;
+    }
+
+    /**
      * Returns {@code true} if the {@link Run#ARTIFACTS} permission is enabled,
      * {@code false} otherwise.
      *
@@ -2341,6 +2429,17 @@ public class Functions {
      */
     public static boolean isWipeOutPermissionEnabled() {
         return SystemProperties.getBoolean("hudson.security.WipeOutPermission");
+    }
+
+    /**
+     * Returns whether sticky positioning of UI elements should be disabled via the
+     * {@code disableStickyPositioning} cookie (primarily for UI acceptance tests).
+     * Sticky elements can otherwise float over the element under test and intercept clicks.
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean isStickyPositioningDisabled() {
+        String cookieValue = Functions.getCookie(Stapler.getCurrentRequest2(), "disableStickyPositioning", null);
+        return Boolean.valueOf(cookieValue);
     }
 
     @Deprecated
@@ -2470,7 +2569,6 @@ public class Functions {
      * Advertises the minimum set of HTTP headers that assist programmatic
      * discovery of Jenkins.
      */
-    @SuppressFBWarnings(value = "UC_USELESS_VOID_METHOD", justification = "TODO needs triage")
     public static void advertiseHeaders(HttpServletResponse rsp) {
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j != null) {
@@ -2601,6 +2699,24 @@ public class Functions {
     }
 
     /**
+     * Converts the given actions to a JSON object
+     */
+    @Restricted(NoExternalUse.class)
+    public static String convertActionsToJson(String baseUrl, List<Action> actions) {
+        ModelObjectWithContextMenu.ContextMenu contextMenu = new ModelObjectWithContextMenu.ContextMenu();
+        contextMenu.addAll(actions
+                .stream()
+                .filter(action ->
+                        action.getIconFileName() != null
+                                || (action instanceof IconSpec iconSpec && iconSpec.getIconClassName() != null)
+                ).filter(action -> action.getGroup().getOrder() < Group.FIRST_IN_MENU.getOrder())
+                .toList());
+        JSONObject jsonObject = JSONObject.fromObject(contextMenu);
+        jsonObject.put("url", Util.ensureEndsWith(baseUrl, "/"));
+        return jsonObject.toString();
+    }
+
+    /**
      * Returns a grouped list of Detail objects for the given Actionable object
      */
     @Restricted(NoExternalUse.class)
@@ -2621,7 +2737,7 @@ public class Functions {
 
         for (Map.Entry<DetailGroup, List<Detail>> entry : result.entrySet()) {
             List<Detail> detailList = entry.getValue();
-            detailList.sort(Comparator.comparingInt(Detail::getOrder));
+            detailList.sort(Comparator.comparingInt(Detail::getOrder).reversed());
         }
 
         return result;

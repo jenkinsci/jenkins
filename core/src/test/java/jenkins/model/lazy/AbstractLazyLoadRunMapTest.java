@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -306,21 +307,21 @@ class AbstractLazyLoadRunMapTest {
         a.purgeCache();
         assertEquals("[]", a.getLoadedBuilds().keySet().toString());
         Iterator<Map.Entry<Integer, Build>> iterator = entries.iterator();
-        assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("[]", a.getLoadedBuilds().keySet().toString());
         assertTrue(iterator.hasNext());
         assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
         Map.Entry<Integer, Build> entry = iterator.next();
-        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
         assertEquals(5, entry.getKey().intValue());
-        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
         assertEquals(5, entry.getValue().n);
-        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
         assertTrue(iterator.hasNext());
         entry = iterator.next();
         assertEquals(3, entry.getKey().intValue());
-        assertEquals("[5, 3, 1]", a.getLoadedBuilds().keySet().toString(), ".next() precomputes the one after that too");
+        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
         assertEquals(3, entry.getValue().n);
-        assertEquals("[5, 3, 1]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
         assertTrue(iterator.hasNext());
         entry = iterator.next();
         assertEquals(1, entry.getKey().intValue());
@@ -409,6 +410,19 @@ class AbstractLazyLoadRunMapTest {
         assertThat(c.toArray(), arrayWithSize(3));
         assertThat(c.toArray(Object[]::new), arrayWithSize(3));
         // TODO check behavior of subMap
+    }
+
+    @Test
+    void streamLoadedBuilds() {
+        a.getByNumber(1);
+        a.getByNumber(3);
+        a.getByNumber(5);
+
+        var fromStream = a.streamLoadedBuilds().map(b -> b.n).toList();
+        assertEquals(List.of(5, 3, 1), fromStream);
+
+        var firstTwo = a.streamLoadedBuilds().limit(2).map(b -> b.n).toList();
+        assertEquals(List.of(5, 3), firstTwo);
     }
 
     @Issue("JENKINS-22767")

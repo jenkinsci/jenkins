@@ -278,13 +278,22 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         CopyOnWriteList.ConverterImpl copyOnWriteListConverter;
 
         public ConverterImpl(Mapper mapper) {
+            this(mapper, null);
+        }
+
+        ConverterImpl(Mapper mapper, Class<?> elementType) {
             super(mapper);
-            copyOnWriteListConverter = new CopyOnWriteList.ConverterImpl(mapper());
+            copyOnWriteListConverter = new CopyOnWriteList.ConverterImpl(mapper(), elementType);
         }
 
         @Override
         public boolean canConvert(Class type) {
             // handle subtypes in case the onModified method is overridden.
+            return canConvertRobust(type);
+        }
+
+        static boolean canConvertRobust(Class<?> type) {
+            // Unlike PersistedList.ConverterImpl, this converter is manually registered in XStream2, so subtypes use it.
             return DescribableList.class.isAssignableFrom(type);
         }
 
@@ -315,16 +324,12 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
                 throw x;
             } catch (InvocationTargetException e) {
                 Throwable t = e.getCause();
-                if (t instanceof RuntimeException) {
-                    throw (RuntimeException) t;
-                } else if (t instanceof IOException) {
-                    throw new UncheckedIOException((IOException) t);
-                } else if (t instanceof Exception) {
-                    throw new RuntimeException(t);
-                } else if (t instanceof Error) {
-                    throw (Error) t;
-                } else {
-                    throw new Error(e);
+                switch (t) {
+                    case RuntimeException runtimeException -> throw runtimeException;
+                    case IOException ioException -> throw new UncheckedIOException(ioException);
+                    case Exception exception -> throw new RuntimeException(t);
+                    case Error error -> throw error;
+                    case null, default -> throw new Error(e);
                 }
             }
         }

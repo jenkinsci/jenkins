@@ -97,7 +97,7 @@ class ToolLocationNodePropertyTest {
         ToolLocationNodeProperty prop = slave.getNodeProperties().get(ToolLocationNodeProperty.class);
         assertEquals(3, prop.getLocations().size());
 
-        ToolLocationNodeProperty.ToolLocation location = prop.getLocations().get(0);
+        ToolLocationNodeProperty.ToolLocation location = prop.getLocations().getFirst();
         assertEquals(jdkDescriptor, location.getType());
         assertEquals("jdk", location.getName());
         assertEquals("foobar", location.getHome());

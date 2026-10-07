@@ -46,7 +46,7 @@ THE SOFTWARE.
             </l:task>
           </j:when>
           <j:otherwise>
-            <l:task icon="${icon}" title="${action.displayName}" href="${h.getActionUrl(it.url,action)}" contextMenu="${h.isContextMenuVisible(action)}"/>
+            <l:task icon="${icon}" title="${action.displayName}" href="${h.getActionUrl(it.url,action)}" contextMenu="${h.isContextMenuVisible(action)}" badge="${action.badge}"/>
           </j:otherwise>
         </j:choose>
       </j:if>

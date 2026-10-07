@@ -35,6 +35,7 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -324,6 +325,18 @@ public class Iterators {
      */
     public static <T> Iterator<T> removeNull(final Iterator<T> itr) {
         return com.google.common.collect.Iterators.filter(itr, Objects::nonNull);
+    }
+
+    /**
+     * Wraps another iterator and map iterable objects.
+     */
+    public static <T, U> Iterator<U> map(final Iterator<T> itr, Function<T, U> mapper) {
+        return new AdaptedIterator<>(itr) {
+            @Override
+            protected U adapt(T item) {
+                return mapper.apply(item);
+            }
+        };
     }
 
     /**

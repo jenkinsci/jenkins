@@ -35,35 +35,48 @@ THE SOFTWARE.
     <l:breadcrumb title="${%NewJob(it.newPronoun)}" />
 
     <l:main-panel>
+      <template id="i18n" data-empty-name="${%ItemName.validation.required}" />
+
     <div id="add-item-panel" style="display: none;">
-      <h1>${%NewJob(it.newPronoun)}</h1>
+      <l:app-bar title="${%NewJob(it.newPronoun)}" />
+
           <form method="post" action="createItem" name="createItem" id="createItem">
             <div class="header">
-              <div class="add-item-name">
+              <div class="jenkins-form-item add-item-name">
                 <label for="name" class="jenkins-form-label">${%ItemName.label}</label>
                 <input name="name" class="jenkins-input" id="name" data-valid="false" type="text" tabindex="0" />
-                <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
-                <div id="itemname-invalid" class="input-validation-message input-message-disabled"></div>
-                <div id="itemtype-required" class="input-validation-message input-message-disabled">&#187; ${%ItemType.validation.required}</div>
+                <div class="validation-error-area" />
               </div>
             </div>
 
-            <div>
-              <div class="jenkins-form-label">${%ItemType.label}</div>
-              <div id="items" class="categories flat" role="radiogroup" aria-labelledby="Items" data-valid="false" />
-            </div>
+            <fieldset class="jenkins-!-display-contents">
+              <div class="jenkins-form-item">
+                <legend class="jenkins-form-label">${%ItemType.label}</legend>
+                <div id="items" class="jenkins-choice-list categories" data-valid="false" />
 
-            <j:if test="${!empty(app.items)}">
-              <div class="item-copy">
-                <p class="jenkins-form-label">${%CopyOption.description}</p>
-                <div class="add-item-copy">
-                  <input type="radio" name="mode" value="copy" />
-                  <label>${%CopyOption.label}</label>
-                  <j:set var="descriptor" value="${it.descriptor}" />
-                  <s:textbox id="from" data-valid="false" name="from" placeholder="${%CopyOption.placeholder}" field="copyNewItemFrom"/>
-                </div>
+                <j:if test="${!empty(app.items)}">
+                  <div class="jenkins-choice-list jenkins-!-margin-top-2">
+                    <div class="jenkins-choice-list__item">
+                      <label id="duplicate-job">
+                        <div class="jenkins-choice-list__item__icon">
+                          <l:icon src="symbol-duplicate" />
+                        </div>
+                        <input type="radio" name="mode" value="copy" />
+                        <div class="jenkins-choice-list__item__label">
+                          ${%CopyOption.label}
+                        </div>
+                        <div class="jenkins-choice-list__item__description">${%CopyOption.description}</div>
+                      </label>
+
+                      <div class="jenkins-choice-list__item__conditional">
+                        <j:set var="descriptor" value="${it.descriptor}" />
+                        <s:textbox id="from" data-valid="false" name="from" placeholder="${%CopyOption.placeholder}" field="copyNewItemFrom"/>
+                      </div>
+                    </div>
+                  </div>
+                </j:if>
               </div>
-            </j:if>
+            </fieldset>
 
             <s:bottomButtonBar>
               <st:include page="newJobButtonBar.jelly"/>

@@ -1,0 +1,78 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:local="local">
+  <l:userExperimentalFlag var="newDashboardPage" flagClassName="jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag" />
+
+  <d:taglib uri="local">
+    <d:tag name="view">
+      <j:choose>
+        <j:when test="${items == null}">
+          <p>${%broken}</p>
+        </j:when>
+
+        <j:when test="${items.isEmpty()}">
+          <j:if test="${!app.items.isEmpty()}">
+            <j:set var="views" value="${it.owner.views}" />
+            <j:set var="currentView" value="${it}" />
+
+            <j:if test="${!newDashboardPage}">
+              <j:choose>
+                <j:when test="${it.isMyViewsProperty()}">
+                  <st:include it="${it.owner.viewsTabBar}" page="viewTabs" />
+                </j:when>
+                <j:otherwise>
+                  <st:include it="${it.owner.userViewsTabBar}" page="viewTabs" />
+                </j:otherwise>
+              </j:choose>
+            </j:if>
+          </j:if>
+          <st:include it="${it}" page="noJob.jelly" />
+        </j:when>
+
+        <j:otherwise>
+          <t:projectView
+              jobs="${items}"
+              showViewTabs="true"
+              columnExtensions="${it.columns}"
+              indenter="${it.indenter}"
+              itemGroup="${it.owner.itemGroup}">
+
+            <j:set var="views" value="${it.owner.views}" />
+            <j:set var="currentView" value="${it}" />
+
+            <j:if test="${!newDashboardPage}">
+              <j:choose>
+                <j:when test="${it.isMyViewsProperty()}">
+                  <st:include it="${it.owner.viewsTabBar}" page="viewTabs" />
+                </j:when>
+                <j:otherwise>
+                  <st:include it="${it.owner.userViewsTabBar}" page="viewTabs" />
+                </j:otherwise>
+              </j:choose>
+            </j:if>
+          </t:projectView>
+        </j:otherwise>
+      </j:choose>
+    </d:tag>
+  </d:taglib>
+
+  <j:choose>
+    <j:when test="${newDashboardPage}">
+      <div class="jenkins-inline-page">
+        <div class="jenkins-inline-page__side-panel">
+          <j:if test="${h.hasPermission(app.READ)}">
+            <j:forEach var="w" items="${it.widgets}">
+              <j:set var="view" value="${it}" />
+              <st:include it="${w}" page="index.jelly" />
+            </j:forEach>
+          </j:if>
+        </div>
+        <div>
+          <local:view />
+        </div>
+      </div>
+    </j:when>
+    <j:otherwise>
+      <local:view />
+    </j:otherwise>
+  </j:choose>
+</j:jelly>

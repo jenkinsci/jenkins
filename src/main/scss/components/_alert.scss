@@ -1,9 +1,9 @@
 .alert,
 .jenkins-alert {
   font-size: var(--font-size-sm);
-  padding: 15px;
+  padding: 1rem;
   margin-bottom: var(--section-padding);
-  border: var(--jenkins-border--inherit-subtle);
+  border: var(--jenkins-border-width) solid rgb(from currentColor r g b / 0.1);
   border-radius: var(--form-input-border-radius);
 
   strong {

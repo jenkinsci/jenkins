@@ -24,28 +24,29 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RealJenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-public class QueueRestartTest {
+class QueueRestartTest {
 
-    @Rule public RealJenkinsRule rr = new RealJenkinsRule();
+    @RegisterExtension
+    private final RealJenkinsExtension rr = new RealJenkinsExtension();
 
-    @Ignore("Pending JENKINS-68319 sometimes fails, in CI & locally")
+    @Disabled("Pending JENKINS-68319 sometimes fails, in CI & locally")
     @Issue("JENKINS-68319")
     @LocalData("quietDown")
     @Test
-    public void persistQueueOnRestart() throws Throwable {
+    void persistQueueOnRestart() throws Throwable {
         // Avoid periodic save in order to test that the cleanup process saves the queue.
         rr.javaOptions("-Dhudson.model.Queue.Saver.DELAY_SECONDS=" + TimeUnit.DAYS.toSeconds(1));
 
@@ -53,11 +54,11 @@ public class QueueRestartTest {
         rr.then(QueueRestartTest::assertBuildFinishes);
     }
 
-    @Ignore("Pending JENKINS-68319 sometimes fails, in CI & locally")
+    @Disabled("Pending JENKINS-68319 sometimes fails, in CI & locally")
     @Issue("JENKINS-68319")
     @LocalData("quietDown")
     @Test
-    public void persistQueueOnConsecutiveRestarts() throws Throwable {
+    void persistQueueOnConsecutiveRestarts() throws Throwable {
         // Avoid periodic save in order to test that the cleanup process saves the queue.
         rr.javaOptions("-Dhudson.model.Queue.Saver.DELAY_SECONDS=" + TimeUnit.DAYS.toSeconds(1));
 

@@ -39,7 +39,6 @@ import hudson.model.MultiStageTimeSeries;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.Node;
 import hudson.model.PeriodicWork;
-import hudson.model.Queue;
 import java.awt.Color;
 import java.io.IOException;
 import java.time.Duration;
@@ -208,8 +207,8 @@ public class NodeProvisioner {
      * Periodically invoked to keep track of the load.
      * Launches additional nodes if necessary.
      *
-     * Note: This method will obtain a lock on {@link #provisioningLock} first (to ensure that one and only one
-     * instance of this provisioner is running at a time) and then a lock on {@link Queue#lock}
+     * Note: This method will obtain a lock on {@link #provisioningLock} to ensure that one and only one
+     * instance of this provisioner is running at a time.
      */
     private void update() {
         long start = LOGGER.isLoggable(Level.FINER) ? System.nanoTime() : 0;
@@ -251,7 +250,7 @@ public class NodeProvisioner {
                                 LOGGER.log(Level.INFO,
                                         "{0} provisioning successfully completed. "
                                                 + "We have now {1,number,integer} computer(s)",
-                                        new Object[]{f.displayName, jenkins.getComputers().length});
+                                        new Object[]{f.displayName, jenkins.getComputersCollection().size()});
                                 fireOnCommit(f, node);
                             } catch (IOException e) {
                                 LOGGER.log(Level.WARNING,

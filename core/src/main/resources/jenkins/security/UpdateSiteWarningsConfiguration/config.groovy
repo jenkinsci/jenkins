@@ -38,11 +38,16 @@ def printEntry(warning, title, checked) {
         div(class: "setting-description") {
             a(warning.url, href: warning.url)
         }
+        if (!warning.isFixable()) {
+            div(class: "error") {
+                text(_("No fix available"))
+            }
+        }
     }
 }
 
 f.section(title:_("Hidden security warnings")) {
-
+    div(id: "hidden-security-warnings")
     f.advanced(title: _("Security warnings"), align:"left") {
         f.block {
             text(_("blurb"))

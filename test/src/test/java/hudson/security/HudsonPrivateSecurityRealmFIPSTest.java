@@ -29,8 +29,10 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
+import hudson.Functions;
 import hudson.logging.LogRecorder;
 import hudson.logging.LogRecorderManager;
 import hudson.model.User;
@@ -45,29 +47,34 @@ import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPasswordInput;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.jvnet.hudson.test.RealJenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-
 @For(HudsonPrivateSecurityRealm.class)
-public class HudsonPrivateSecurityRealmFIPSTest {
+class HudsonPrivateSecurityRealmFIPSTest {
 
     // the bcrypt encoded form of "passwordpassword" without the quotes
     private static final String JBCRYPT_ENCODED_PASSWORD = "#jbcrypt:$2a$10$Nm37vwdZwJ5T2QTBwYuBYONHD3qKilgd5UO7wuDXI83z5dAdrgi4i";
 
     private static final String LOG_RECORDER_NAME = "HPSR_LOG_RECORDER";
 
-    @Rule
-    public RealJenkinsRule rjr = new RealJenkinsRule().includeTestClasspathPlugins(false)
+    @RegisterExtension
+    private final RealJenkinsExtension rjr = new RealJenkinsExtension().includeTestClasspathPlugins(false)
                                                        .javaOptions("-Xmx256M", "-Djenkins.security.FIPS140.COMPLIANCE=true");
 
+    @BeforeEach
+    void skipTestsOnWindowsCI() {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Expensive to run and not Windows specific");
+    }
+
     @Test
-    public void generalLogin() throws Throwable {
+    void generalLogin() throws Throwable {
         rjr.then(HudsonPrivateSecurityRealmFIPSTest::generalLoginStep);
     }
 
@@ -90,7 +97,7 @@ public class HudsonPrivateSecurityRealmFIPSTest {
     }
 
     @Test
-    public void userCreationWithHashedPasswords() throws Throwable {
+    void userCreationWithHashedPasswords() throws Throwable {
         rjr.then(HudsonPrivateSecurityRealmFIPSTest::userCreationWithHashedPasswordsStep);
     }
 
@@ -112,11 +119,11 @@ public class HudsonPrivateSecurityRealmFIPSTest {
 
     @Test
     @LocalData
-    public void userLoginAfterEnablingFIPS() throws Throwable {
+    void userLoginAfterEnablingFIPS() throws Throwable {
         rjr.then(HudsonPrivateSecurityRealmFIPSTest::userLoginAfterEnablingFIPSStep);
     }
 
-    private static void userLoginAfterEnablingFIPSStep(JenkinsRule j) throws Exception {
+    private static void userLoginAfterEnablingFIPSStep(JenkinsRule j) {
         setupLogRecorder();
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
@@ -130,12 +137,12 @@ public class HudsonPrivateSecurityRealmFIPSTest {
     }
 
     @Test
-    public void userCreationWithJBCryptPasswords() throws Throwable {
+    void userCreationWithJBCryptPasswords() throws Throwable {
         rjr.then(HudsonPrivateSecurityRealmFIPSTest::userCreationWithJBCryptPasswordsStep);
 
     }
 
-    private static void userCreationWithJBCryptPasswordsStep(JenkinsRule j) throws Exception {
+    private static void userCreationWithJBCryptPasswordsStep(JenkinsRule j) {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
 
         IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
@@ -145,7 +152,7 @@ public class HudsonPrivateSecurityRealmFIPSTest {
     }
 
     @Test
-    public void validatePasswordLengthForFIPS() throws Throwable {
+    void validatePasswordLengthForFIPS() throws Throwable {
         rjr.then(HudsonPrivateSecurityRealmFIPSTest::validatePasswordLengthForFIPSStep);
     }
 
@@ -166,13 +173,12 @@ public class HudsonPrivateSecurityRealmFIPSTest {
         password2.setText("mockPassword");
 
         HtmlForm form = configurePage.getFormByName("config");
-        assertThrows(FailingHttpStatusCodeException.class, () -> {
-            j.submit(form);
-        });
+        assertThrows(FailingHttpStatusCodeException.class, () ->
+            j.submit(form));
     }
 
     @Test
-    public void validatePasswordMismatchForFIPS() throws Throwable {
+    void validatePasswordMismatchForFIPS() throws Throwable {
         rjr.then(HudsonPrivateSecurityRealmFIPSTest::validatePasswordMismatchForFIPSStep);
     }
 
@@ -194,13 +200,12 @@ public class HudsonPrivateSecurityRealmFIPSTest {
         password2.setText("14charPa$$word");
 
         HtmlForm form = configurePage.getFormByName("config");
-        assertThrows(FailingHttpStatusCodeException.class, () -> {
-            j.submit(form);
-        });
+        assertThrows(FailingHttpStatusCodeException.class, () ->
+            j.submit(form));
     }
 
     @Test
-    public void validatePasswordSuccessForFIPS() throws Throwable {
+    void validatePasswordSuccessForFIPS() throws Throwable {
         rjr.then(HudsonPrivateSecurityRealmFIPSTest::validatePasswordSuccessForFIPSStep);
     }
 

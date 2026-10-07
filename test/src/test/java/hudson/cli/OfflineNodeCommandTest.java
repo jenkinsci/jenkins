@@ -41,37 +41,38 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.util.OneShotEvent;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
-import org.jvnet.hudson.test.InboundAgentRule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.BuildWatcherExtension;
+import org.jvnet.hudson.test.junit.jupiter.InboundAgentExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author pjanouse
  */
-public class OfflineNodeCommandTest {
+@WithJenkins
+class OfflineNodeCommandTest {
 
     private CLICommandInvoker command;
 
-    @ClassRule
-    public static final BuildWatcher buildWatcher = new BuildWatcher();
+    @RegisterExtension
+    private static final BuildWatcherExtension buildWatcher = new BuildWatcherExtension();
 
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
+    @RegisterExtension
+    private final InboundAgentExtension inboundAgents = new InboundAgentExtension();
 
-    @Rule
-    public InboundAgentRule inboundAgents = new InboundAgentRule();
+    private JenkinsRule j;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         command = new CLICommandInvoker(j, "offline-node");
     }
 
     @Test
-    public void offlineNodeShouldFailWithoutComputerDisconnectPermission() throws Exception {
+    void offlineNodeShouldFailWithoutComputerDisconnectPermission() throws Exception {
         j.createSlave("aNode", "", null);
 
         final CLICommandInvoker.Result result = command
@@ -84,7 +85,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldFailIfNodeDoesNotExist() {
+    void offlineNodeShouldFailIfNodeDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("never_created");
@@ -95,7 +96,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldSucceedOnOnlineNode() throws Exception {
+    void offlineNodeShouldSucceedOnOnlineNode() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
         assertThat(slave.toComputer().isOnline(), equalTo(true));
@@ -113,8 +114,8 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldSucceedOnOfflineNode() throws Exception {
-        Slave slave = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().name("aNode").skipStart().build());
+    void offlineNodeShouldSucceedOnOfflineNode() throws Exception {
+        Slave slave = inboundAgents.createAgent(j, InboundAgentExtension.Options.newBuilder().name("aNode").skipStart().build());
         slave.toComputer().setTemporarilyOffline(true, null);
         assertThat(slave.toComputer().isOffline(), equalTo(true));
         assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
@@ -131,7 +132,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldSucceedOnDisconnectedNode() throws Exception {
+    void offlineNodeShouldSucceedOnDisconnectedNode() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
         assertThat(slave.toComputer().isOnline(), equalTo(true));
@@ -154,7 +155,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldSucceedOnOnlineNodeWithCause() throws Exception {
+    void offlineNodeShouldSucceedOnOnlineNodeWithCause() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
         assertThat(slave.toComputer().isOnline(), equalTo(true));
@@ -172,8 +173,8 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldSucceedOnOfflineNodeWithCause() throws Exception {
-        Slave slave = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().name("aNode").skipStart().build());
+    void offlineNodeShouldSucceedOnOfflineNodeWithCause() throws Exception {
+        Slave slave = inboundAgents.createAgent(j, InboundAgentExtension.Options.newBuilder().name("aNode").skipStart().build());
         slave.toComputer().setTemporarilyOffline(true, null);
         assertThat(slave.toComputer().isOffline(), equalTo(true));
         assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
@@ -190,7 +191,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldSucceedOnDisconnectedNodeWithCause() throws Exception {
+    void offlineNodeShouldSucceedOnDisconnectedNodeWithCause() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
         assertThat(slave.toComputer().isOnline(), equalTo(true));
@@ -213,7 +214,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldSucceedOnBuildingNode() throws Exception {
+    void offlineNodeShouldSucceedOnBuildingNode() throws Exception {
         final OneShotEvent finish = new OneShotEvent();
         DumbSlave slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
@@ -239,7 +240,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldSucceedOnBuildingNodeWithCause() throws Exception {
+    void offlineNodeShouldSucceedOnBuildingNodeWithCause() throws Exception {
         final OneShotEvent finish = new OneShotEvent();
         DumbSlave slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
@@ -265,7 +266,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeManyShouldSucceed() throws Exception {
+    void offlineNodeManyShouldSucceed() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
         DumbSlave slave3 = j.createSlave("aNode3", "", null);
@@ -295,7 +296,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeManyShouldSucceedWithCause() throws Exception {
+    void offlineNodeManyShouldSucceedWithCause() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
         DumbSlave slave3 = j.createSlave("aNode3", "", null);
@@ -325,7 +326,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
+    void offlineNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
         slave1.toComputer().waitUntilOnline();
@@ -351,7 +352,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeManyShouldFailIfANodeDoesNotExistWithCause() throws Exception {
+    void offlineNodeManyShouldFailIfANodeDoesNotExistWithCause() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
         slave1.toComputer().waitUntilOnline();
@@ -377,7 +378,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
+    void offlineNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
         slave1.toComputer().waitUntilOnline();
@@ -400,7 +401,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeManyShouldSucceedEvenANodeIsSpecifiedTwiceWithCause() throws Exception {
+    void offlineNodeManyShouldSucceedEvenANodeIsSpecifiedTwiceWithCause() throws Exception {
         DumbSlave slave1 = j.createSlave("aNode1", "", null);
         DumbSlave slave2 = j.createSlave("aNode2", "", null);
         slave1.toComputer().waitUntilOnline();
@@ -423,7 +424,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldSucceedOnMaster() {
+    void offlineNodeShouldSucceedOnMaster() {
         final Computer masterComputer = Jenkins.get().getComputer("");
 
         final CLICommandInvoker.Result result = command
@@ -437,7 +438,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldSucceedOnMasterWithCause() {
+    void offlineNodeShouldSucceedOnMasterWithCause() {
         final Computer masterComputer = Jenkins.get().getComputer("");
 
         final CLICommandInvoker.Result result = command

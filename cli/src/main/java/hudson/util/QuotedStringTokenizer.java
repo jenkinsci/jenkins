@@ -361,9 +361,9 @@ public class QuotedStringTokenizer
 
     /* ------------------------------------------------------------ */
     /** Quote a string.
-     * The string is quoted only if quoting is required due to
-     * embedded delimiters, quote characters or the
-     * empty string.
+     * The string is always quoted, even when quoting is not required.
+     * Use {@link #quote(String, String)} to quote only when required due to
+     * embedded delimiters, quote characters or the empty string.
      * @param s The string to quote.
      * @return quoted string
      */
@@ -430,7 +430,7 @@ public class QuotedStringTokenizer
     /* ------------------------------------------------------------ */
     /** Unquote a string.
      * @param s The string to unquote.
-     * @return quoted string
+     * @return unquoted string
      */
     public static String unquote(String s)
     {
@@ -471,11 +471,13 @@ public class QuotedStringTokenizer
                         b.append('\b');
                         break;
                     case 'u':
+                        if (i + 4 >= s.length() - 1)
+                            throw new IllegalArgumentException("Incomplete Unicode escape sequence in " + s);
                         b.append((char) (
-                                (convertHexDigit((byte) s.charAt(i++)) << 24) +
-                                (convertHexDigit((byte) s.charAt(i++)) << 16) +
-                                (convertHexDigit((byte) s.charAt(i++)) << 8) +
-                                convertHexDigit((byte) s.charAt(i++))
+                                (parseHexDigit(s.charAt(++i)) << 12) +
+                                (parseHexDigit(s.charAt(++i)) << 8) +
+                                (parseHexDigit(s.charAt(++i)) << 4) +
+                                parseHexDigit(s.charAt(++i))
                                 )
                         );
                         break;
@@ -540,6 +542,13 @@ public class QuotedStringTokenizer
         if (b >= 'a' && b <= 'f') return (byte) (b - 'a' + 10);
         if (b >= 'A' && b <= 'F') return (byte) (b - 'A' + 10);
         return 0;
+    }
+
+    private static int parseHexDigit(char c) {
+        int digit = Character.digit(c, 16);
+        if (digit < 0)
+            throw new IllegalArgumentException("Invalid hex digit '" + c + "' in Unicode escape sequence");
+        return digit;
     }
 
     /**

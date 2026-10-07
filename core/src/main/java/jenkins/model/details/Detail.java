@@ -60,9 +60,9 @@ public abstract class Detail implements ModelObject, IconSpec {
     }
 
     /**
-     * @return order in the group, zero is first, MAX_VALUE is any order
+     * @return order in the group, MAX_VALUE is first, zero is any order
      */
     public int getOrder() {
-        return Integer.MAX_VALUE;
+        return 0;
     }
 }

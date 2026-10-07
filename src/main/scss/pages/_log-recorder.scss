@@ -1,0 +1,41 @@
+.jenkins-alert + .logrecord-container {
+  margin-top: calc((var(--section-padding) * -1) + 1.125rem);
+}
+
+.logrecord-container {
+  border-radius: var(--form-input-border-radius);
+  overflow: hidden;
+  border: var(--jenkins-border);
+
+  pre {
+    padding-top: 0;
+    padding-bottom: 0.1rem;
+    margin-bottom: 0;
+    border-radius: 0;
+    border: none;
+
+    &:first-of-type {
+      padding-top: 0.8rem;
+    }
+
+    &:last-of-type {
+      padding-bottom: 0.8rem;
+    }
+  }
+
+  &:empty {
+    display: none;
+  }
+}
+
+.logrecord-metadata {
+  font-size: var(--font-size-xs);
+}
+
+.logrecord-metadata-new {
+  color: var(--green);
+}
+
+.logrecord-metadata-old {
+  color: var(--text-color-secondary);
+}

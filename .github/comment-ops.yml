@@ -1,4 +1,8 @@
 commands:
+  close:
+    enabled: true
+  reopen:
+    enabled: true
   label:
     enabled: true
   removeLabel:

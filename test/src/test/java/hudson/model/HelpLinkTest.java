@@ -147,7 +147,7 @@ class HelpLinkTest {
             clickAllHelpLinks(webclient, p);
 
             statusListener.assertHasResponses();
-            String contentAsString = statusListener.getResponses().get(0).getContentAsString();
+            String contentAsString = statusListener.getResponses().getFirst().getContentAsString();
             assertTrue(contentAsString.contains(d.getHelpFile()));
         } finally {
             Publisher.all().remove(d);

@@ -1,0 +1,18 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+  <f:entry title="${%Minimum password length}" field="minimumLength">
+    <f:number default="8" min="0" step="1" clazz="non-negative-number-required"/>
+  </f:entry>
+  <f:entry field="requireUppercase">
+    <f:checkbox default="false" title="${%Require at least one uppercase letter (A-Z)}" />
+  </f:entry>
+  <f:entry field="requireLowercase">
+    <f:checkbox default="false" title="${%Require at least one lowercase letter (a-z)}" />
+  </f:entry>
+  <f:entry field="requireDigit">
+    <f:checkbox default="false" title="${%Require at least one digit (0-9)}" />
+  </f:entry>
+  <f:entry field="requireSpecialCharacter">
+    <f:checkbox default="false" title="${%Require at least one special character}" />
+  </f:entry>
+</j:jelly>

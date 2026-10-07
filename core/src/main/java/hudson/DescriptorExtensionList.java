@@ -34,16 +34,10 @@ import hudson.model.Hudson;
 import hudson.model.ViewDescriptor;
 import hudson.slaves.NodeDescriptor;
 import hudson.tasks.Publisher;
-import hudson.util.AdaptedIterator;
-import hudson.util.Iterators.FlattenIterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.ExtensionComponentSet;
@@ -106,7 +100,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     }
 
     protected DescriptorExtensionList(Jenkins jenkins, Class<T> describableType) {
-        super(jenkins, (Class) Descriptor.class, (CopyOnWriteArrayList) getLegacyDescriptors(describableType));
+        super(jenkins, (Class) Descriptor.class);
         this.describableType = describableType;
     }
 
@@ -238,46 +232,19 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     }
 
     /**
-     * Stores manually registered Descriptor instances. Keyed by the {@link Describable} type.
+     * @deprecated Now always empty.
      */
-    @SuppressWarnings("rawtypes")
-    private static final Map<Class, CopyOnWriteArrayList<ExtensionComponent<Descriptor>>> legacyDescriptors = new ConcurrentHashMap<>();
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private static <T extends Describable<T>> CopyOnWriteArrayList<ExtensionComponent<Descriptor>> getLegacyDescriptors(Class<T> type) {
-        return legacyDescriptors.computeIfAbsent(type, key -> new CopyOnWriteArrayList());
-    }
-
-    /**
-     * List up all the legacy instances currently in use.
-     */
+    @Deprecated
     public static Iterable<Descriptor> listLegacyInstances() {
-        return new Iterable<>() {
-            @Override
-            public Iterator<Descriptor> iterator() {
-                return new AdaptedIterator<ExtensionComponent<Descriptor>, Descriptor>(
-                    new FlattenIterator<ExtensionComponent<Descriptor>, CopyOnWriteArrayList<ExtensionComponent<Descriptor>>>(legacyDescriptors.values()) {
-                        @Override
-                        protected Iterator<ExtensionComponent<Descriptor>> expand(CopyOnWriteArrayList<ExtensionComponent<Descriptor>> v) {
-                            return v.iterator();
-                        }
-                    }) {
-
-                    @Override
-                    protected Descriptor adapt(ExtensionComponent<Descriptor> item) {
-                        return item.getInstance();
-                    }
-                };
-            }
-        };
+        return List.of();
     }
 
     /**
-     * Exposed just for the test harness. Clear legacy instances.
+     * @deprecated No longer does anything.
      */
-    @SuppressFBWarnings(value = "HSM_HIDING_METHOD", justification = "TODO needs triage")
+    @SuppressFBWarnings(value = "HSM_HIDING_METHOD", justification = "irrelevant now")
+    @Deprecated
     public static void clearLegacyInstances() {
-        legacyDescriptors.clear();
     }
 
     private static final Logger LOGGER = Logger.getLogger(DescriptorExtensionList.class.getName());

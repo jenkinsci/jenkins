@@ -40,14 +40,15 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.util.FullDuplexHttpService;
 import jenkins.util.SystemProperties;
 import jenkins.websocket.WebSocketSession;
@@ -80,7 +81,13 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
      */
     /* package-private for testing */ static /* non-final for Script Console */ Boolean ALLOW_WEBSOCKET = SystemProperties.optBoolean(CLIAction.class.getName() + ".ALLOW_WEBSOCKET");
 
-    private final transient Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
+    /**
+     * If this is set to {@code true}, {@link Jenkins#getRootUrlFromRequest()} is used to validate the {@code Origin} header.
+     * This can be a security issue if Jenkins is running on a local network without authentication as it allows DNS rebinding attacks.
+     */
+    /* package-private for testing */ static /* non-final for Script Console */ boolean ACCEPT_URL_FROM_REQUEST = SystemProperties.getBoolean(CLIAction.class.getName() + ".ACCEPT_URL_FROM_REQUEST");
+
+    private final transient Map<UUID, FullDuplexHttpService> duplexServices = new ConcurrentHashMap<>();
 
     @Override
     public String getIconFileName() {
@@ -142,7 +149,14 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
         if (ALLOW_WEBSOCKET == null) {
             final String actualOrigin = req.getHeader("Origin");
 
-            String o = Jenkins.get().getRootUrlFromRequest();
+            // If Jenkins URL is not configured, Jenkins#getRootUrl falls back to Jenkins#getRootUrlFromRequest, so look this up directly
+            String o = JenkinsLocationConfiguration.get().getUrl();
+            if (ACCEPT_URL_FROM_REQUEST) {
+                o = Jenkins.get().getRootUrlFromRequest();
+            }
+            if (o == null) {
+                return statusWithExplanation(HttpServletResponse.SC_FORBIDDEN, "Jenkins URL is not configured (set Jenkins URL in the configuration)");
+            }
             String removeSuffix1 = "/";
             if (o.endsWith(removeSuffix1)) {
                 o = o.substring(0, o.length() - removeSuffix1.length());
@@ -154,7 +168,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
             final String expectedOrigin = o;
 
             if (actualOrigin == null || !actualOrigin.equals(expectedOrigin)) {
-                LOGGER.log(Level.FINE, () -> "Rejecting origin: " + actualOrigin + "; expected was from request: " + expectedOrigin);
+                LOGGER.log(Level.FINE, () -> "Rejecting origin: " + actualOrigin + "; expected was: " + expectedOrigin);
                 return statusWithExplanation(HttpServletResponse.SC_FORBIDDEN, "Unexpected request origin (check your reverse proxy settings)");
             }
         } else if (!ALLOW_WEBSOCKET) {
@@ -315,8 +329,13 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
         void run() throws IOException, InterruptedException {
             synchronized (this) {
-                while (!ready) {
-                    wait();
+                long end = System.currentTimeMillis() + FullDuplexHttpService.CONNECTION_TIMEOUT;
+                while (!ready && System.currentTimeMillis() < end) {
+                    wait(1000);
+                }
+                if (!ready) {
+                    LOGGER.log(Level.FINE, "CLI timeout waiting for client");
+                    return;
                 }
             }
             PrintStream stdout = new PrintStream(streamStdout(), false, encoding);
@@ -326,7 +345,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                 sendExit(2);
                 return;
             }
-            String commandName = args.get(0);
+            String commandName = args.getFirst();
             CLICommand command = CLICommand.clone(commandName);
             if (command == null) {
                 stderr.println("No such command " + commandName);

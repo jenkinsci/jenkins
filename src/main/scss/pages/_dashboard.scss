@@ -194,3 +194,19 @@ div.listview-jobs {
     padding-left: 22px;
   }
 }
+
+.jenkins-inline-page {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 1rem;
+
+  @media (width <= 800px) {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  &__side-panel {
+    display: flex;
+    flex-direction: column;
+  }
+}

@@ -75,8 +75,7 @@ public class CharacterEncodingFilter implements CompatibleFilter {
             throws IOException, ServletException {
 
         if (!DISABLE_FILTER) {
-            if (request instanceof HttpServletRequest) {
-                HttpServletRequest req = (HttpServletRequest) request;
+            if (request instanceof HttpServletRequest req) {
                 if (shouldSetCharacterEncoding(req)) {
                     req.setCharacterEncoding(ENCODING);
                 }

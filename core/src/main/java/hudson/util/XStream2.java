@@ -74,7 +74,6 @@ import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
@@ -142,11 +141,7 @@ public class XStream2 extends XStream {
 
         @Override
         public HierarchicalStreamWriter createWriter(OutputStream out) {
-            /*
-             * While it is tempting to use StandardCharsets.UTF_8 here, this would break
-             * hudson.util.XStream2EncodingTest#toXMLUnspecifiedEncoding.
-             */
-            return createWriter(new OutputStreamWriter(out, Charset.defaultCharset()));
+            return createWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
         }
 
         /*
@@ -286,6 +281,7 @@ public class XStream2 extends XStream {
         super.setupConverters();
         // replace default reflection converter
         reflectionConverter = new RobustReflectionConverter(getMapper(), JVM.newReflectionProvider(), new PluginClassOwnership());
+        reflectionConverter.setConverterLookup(getConverterLookup());
         registerConverter(reflectionConverter, PRIORITY_VERY_LOW + 1);
     }
 
@@ -368,7 +364,7 @@ public class XStream2 extends XStream {
     }
 
     /**
-     * @deprecated Uses default encoding yet fails to write an encoding header. Prefer {@link #toXMLUTF8}.
+     * @deprecated Uses UTF-8 (default encoding) yet fails to write an encoding header. Prefer {@link #toXMLUTF8}.
      */
     @Deprecated
     @Override public void toXML(Object obj, OutputStream out) {

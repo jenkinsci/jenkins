@@ -101,7 +101,7 @@ public abstract class RetentionStrategy<T extends Computer> implements Describab
      * @since 1.275
      */
     public void start(final @NonNull T c) {
-        Queue.withLock((Runnable) () -> check(c));
+        Queue.runWithLock(() -> check(c));
     }
 
     /**

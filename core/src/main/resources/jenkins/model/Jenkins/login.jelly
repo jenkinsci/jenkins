@@ -70,6 +70,8 @@ THE SOFTWARE.
             <st:include it="${simpleDecorator}" page="simple-branding.jelly" />
             <main id="main-panel" class="app-sign-in-register__content">
               <div class="app-sign-in-register__content-inner">
+                <img src="${imagesURL}/svgs/logo.svg" aria-hidden="true" class="app-sign-in-register__content-logo" />
+
                 <h1>${%Sign in to Jenkins}</h1>
 
                 <st:include it="${simpleDecorator}" page="simple-header.jelly" />
@@ -116,6 +118,7 @@ THE SOFTWARE.
                     </div>
                   </j:if>
                   <input type="hidden" name="from" value="${from}"/>
+                  <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request2)}"/>
                   <button type="submit"
                       name="Submit"
                       class="jenkins-button jenkins-button--primary">

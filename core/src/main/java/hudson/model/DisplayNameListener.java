@@ -50,8 +50,7 @@ public class DisplayNameListener extends ItemListener {
     @Override
     public void onCopied(Item src, Item item) {
         // bug 5056825 - Display name field should be cleared when you copy a job within the same folder.
-        if (item instanceof AbstractItem && src.getParent() == item.getParent()) {
-            AbstractItem dest = (AbstractItem) item;
+        if (item instanceof AbstractItem dest && src.getParent() == item.getParent()) {
             try {
                 dest.setDisplayName(null);
             } catch (IOException ioe) {
@@ -71,8 +70,7 @@ public class DisplayNameListener extends ItemListener {
     @Override
     public void onRenamed(Item item, String oldName, String newName) {
         // bug 5077308 - Display name field should be cleared when you rename a job.
-        if (item instanceof AbstractItem) {
-            AbstractItem abstractItem = (AbstractItem) item;
+        if (item instanceof AbstractItem abstractItem) {
             if (oldName.equals(abstractItem.getDisplayName())) {
                 // the user renamed the job, but the old project name which is shown as the
                 // displayname if no displayname was set, has been set into the displayname field.

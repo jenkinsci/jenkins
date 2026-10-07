@@ -27,4 +27,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 interface PasswordHashEncoder extends PasswordEncoder {
      boolean isHashValid(String hash);
+
+     default String encode2(CharSequence rawPassword) {
+         return encode(rawPassword);
+     }
 }

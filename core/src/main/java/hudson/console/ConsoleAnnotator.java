@@ -112,11 +112,11 @@ public abstract class ConsoleAnnotator<T> implements Serializable {
                 }
             }
 
-            switch (list.size()) {
-                case 0:     return null;    // no more annotator left
-                case 1:     return list.get(0); // no point in aggregating
-                default:    return this;
-            }
+            return switch (list.size()) {
+                case 0 -> null;             // no more annotator left
+                case 1 -> list.getFirst();  // no point in aggregating
+                default -> this;
+            };
         }
 
         @Override
@@ -129,11 +129,11 @@ public abstract class ConsoleAnnotator<T> implements Serializable {
      * Bundles all the given {@link ConsoleAnnotator} into a single annotator.
      */
     public static <T> ConsoleAnnotator<T> combine(Collection<? extends ConsoleAnnotator<? super T>> all) {
-        switch (all.size()) {
-        case 0:     return null;    // none
-        case 1:     return  cast(all.iterator().next()); // just one
-        default:    return new ConsoleAnnotatorAggregator<>(all);
-        }
+        return switch (all.size()) {
+            case 0 -> null;                         // none
+            case 1 -> cast(all.iterator().next());  // just one
+            default -> new ConsoleAnnotatorAggregator<>(all);
+        };
     }
 
     /**

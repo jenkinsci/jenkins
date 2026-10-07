@@ -29,7 +29,7 @@ package hudson.model;
  *
  * @author Kohsuke Kawaguchi
  */
-public interface ResourceActivity {
+public interface ResourceActivity extends ModelObject {
     /**
      * Gets the list of {@link Resource}s that this task requires.
      * Used to make sure no two conflicting tasks run concurrently.
@@ -47,9 +47,4 @@ public interface ResourceActivity {
     default ResourceList getResourceList() {
         return ResourceList.EMPTY;
     }
-
-    /**
-     * Used for rendering HTML.
-     */
-    String getDisplayName();
 }

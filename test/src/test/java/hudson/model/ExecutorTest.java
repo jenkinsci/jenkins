@@ -100,7 +100,7 @@ public class ExecutorTest {
         j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
         InterruptedBuildAction iba = b.getAction(InterruptedBuildAction.class);
         assertEquals(1, iba.getCauses().size());
-        assertEquals(((UserInterruption) iba.getCauses().get(0)).getUser(), johnny);
+        assertEquals(((UserInterruption) iba.getCauses().getFirst()).getUser(), johnny);
 
         // make sure it shows up in the log
         j.assertLogContains(johnny.getId(), b);
@@ -241,7 +241,7 @@ public class ExecutorTest {
     }
 
     @Test
-    public void recordCauseOfInterruption() throws Exception {
+    void recordCauseOfInterruption() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(TestBuilder.of((build, launcher, listener) -> {
             Executor exec = build.getExecutor();

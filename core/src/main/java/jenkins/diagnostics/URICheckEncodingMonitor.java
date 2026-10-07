@@ -32,6 +32,11 @@ public class URICheckEncodingMonitor extends AdministrativeMonitor {
     }
 
     @Override
+    public boolean isActivationFake() {
+        return true;
+    }
+
+    @Override
     public String getDisplayName() {
         return Messages.URICheckEncodingMonitor_DisplayName();
     }

@@ -50,6 +50,7 @@ import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.AgentProtocol;
+import jenkins.health.HealthCheck;
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.security.stapler.StaplerAccessibleType;
@@ -211,8 +212,7 @@ public final class TcpSlaveAgentListener extends Thread {
         shuttingDown = true;
         try {
             SocketAddress localAddress = serverSocket.getLocalAddress();
-            if (localAddress instanceof InetSocketAddress) {
-                InetSocketAddress address = (InetSocketAddress) localAddress;
+            if (localAddress instanceof InetSocketAddress address) {
                 Socket client = new Socket(address.getHostName(), address.getPort());
                 client.setSoTimeout(1000); // waking the acceptor loop should be quick
                 new PingAgentProtocol().connect(client);
@@ -228,10 +228,12 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     private final class ConnectionHandler extends Thread {
-        private static final String DEFAULT_RESPONSE_404 = "HTTP/1.0 404 Not Found\r\n" +
-                        "Content-Type: text/plain;charset=UTF-8\r\n" +
-                        "\r\n" +
-                        "Not Found\r\n";
+        private static final String DEFAULT_RESPONSE_404 = """
+                HTTP/1.0 404 Not Found
+                Content-Type: text/plain;charset=UTF-8
+
+                Not Found
+                """;
         private final Socket s;
         /**
          * Unique number to identify this connection. Used in the log.
@@ -445,4 +447,14 @@ public final class TcpSlaveAgentListener extends Thread {
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     @Restricted(NoExternalUse.class)
     public static Integer CLI_PORT = SystemProperties.getInteger(TcpSlaveAgentListener.class.getName() + ".port");
+
+    @Extension
+    public static final class EnforcedPortHealthCheck implements HealthCheck {
+        @Override
+        public boolean check() {
+            var j = Jenkins.get();
+            return !j.isSlaveAgentPortEnforced() || j.getSlaveAgentPort() <= 0 || j.getTcpSlaveAgentListener() != null;
+        }
+    }
+
 }

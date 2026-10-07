@@ -182,12 +182,10 @@ public abstract class ToolInstallation implements Describable<ToolInstallation>,
      */
     public ToolInstallation translate(@NonNull Node node, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
         ToolInstallation t = this;
-        if (t instanceof NodeSpecific) {
-            NodeSpecific n = (NodeSpecific) t;
+        if (t instanceof NodeSpecific n) {
             t = (ToolInstallation) n.forNode(node, listener);
         }
-        if (t instanceof EnvironmentSpecific) {
-            EnvironmentSpecific e = (EnvironmentSpecific) t;
+        if (t instanceof EnvironmentSpecific e) {
             t = (ToolInstallation) e.forEnvironment(envs);
         }
         return t;

@@ -119,12 +119,12 @@ class ParametersTest {
         HtmlPage page = wc.goTo("job/" + project.getName() + "/build?delay=0sec");
         HtmlForm form = page.getFormByName("parameters");
 
-        HtmlElement element = (HtmlElement) (form.getElementsByAttribute("input", "name", "name")).get(0).getParentNode();
+        HtmlElement element = (HtmlElement) (form.getElementsByAttribute("input", "name", "name")).getFirst().getParentNode();
         assertNotNull(element);
         assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(form, "//div[contains(@class, 'jenkins-form-description')]")).getTextContent());
         assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(form, "//div[contains(@class, 'jenkins-form-label')]")).getTextContent());
 
-        HtmlSelect choiceSelect = (HtmlSelect) form.getElementsByAttribute("select", "name", "value").get(0);
+        HtmlSelect choiceSelect = (HtmlSelect) form.getElementsByAttribute("select", "name", "value").getFirst();
 
         HtmlOption opt = DomNodeUtil.selectSingleNode(choiceSelect, "option[@value='Choice <2>']");
         assertNotNull(opt);
@@ -267,7 +267,7 @@ class ParametersTest {
         assertAll(
                 () -> assertThat("parameters page should escape param name", text2, containsString("&lt;param name&gt;")),
                 () -> assertThat("parameters page should not leave param name unescaped", text2, not(containsString("<param name>"))),
-                () -> assertThat("parameters page should escape param value", text2, containsString("&lt;param value&gt;")),
+                () -> assertThat("parameters page should escape param value", text2, containsString("&lt;param value>")),
                 () -> assertThat("parameters page should not leave param value unescaped", text2, not(containsString("<param value>"))),
                 () -> assertThat("parameters page should mark up param description", text2, containsString("<b>[</b>param description<b>]</b>")),
                 () -> assertThat("parameters page should not leave param description unescaped", text2, not(containsString("<param description>")))

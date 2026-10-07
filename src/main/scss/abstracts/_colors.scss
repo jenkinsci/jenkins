@@ -22,9 +22,9 @@
 
 @each $key, $value in theme.$semantics {
   .jenkins-\!-#{$key}-color {
-    --color: #{$value};
+    --color: var(--#{$key}-color);
 
-    color: #{$value} !important;
+    color: var(--#{$key}-color) !important;
   }
 }
 

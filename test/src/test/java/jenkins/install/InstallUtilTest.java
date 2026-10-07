@@ -165,16 +165,12 @@ class InstallUtilTest {
                             String statusType = name.split(":")[1];
                             name = name.split(":")[0];
 
-                            InstallationStatus status;
-                            if ("Success".equals(statusType)) {
-                                status = Mockito.mock(Success.class, Mockito.CALLS_REAL_METHODS);
-                            } else if ("Failure".equals(statusType)) {
-                                status = Mockito.mock(Failure.class, Mockito.CALLS_REAL_METHODS);
-                            } else if ("Installing".equals(statusType)) {
-                                status = Mockito.mock(Installing.class, Mockito.CALLS_REAL_METHODS);
-                            } else {
-                                status = Mockito.mock(Pending.class, Mockito.CALLS_REAL_METHODS);
-                            }
+                            InstallationStatus status = switch (statusType) {
+                                case "Success" -> Mockito.mock(Success.class, Mockito.CALLS_REAL_METHODS);
+                                case "Failure" -> Mockito.mock(Failure.class, Mockito.CALLS_REAL_METHODS);
+                                case "Installing" -> Mockito.mock(Installing.class, Mockito.CALLS_REAL_METHODS);
+                                case null, default -> Mockito.mock(Pending.class, Mockito.CALLS_REAL_METHODS);
+                            };
 
                             nameMap.put(statusType, status.getClass().getSimpleName());
 

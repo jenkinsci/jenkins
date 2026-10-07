@@ -31,31 +31,42 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.XmlFile;
+import hudson.model.AsyncPeriodicWork;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.model.Node;
 import hudson.model.Saveable;
 import hudson.model.Slave;
+import hudson.model.User;
 import hudson.model.listeners.SaveableListener;
 import hudson.slaves.ComputerLauncher;
+import hudson.slaves.ComputerRetentionWork;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.OfflineCause;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,6 +79,7 @@ import org.jvnet.hudson.test.recipes.LocalData;
 
 @WithJenkins
 class NodesTest {
+    private static final Logger LOGGER = Logger.getLogger(NodesTest.class.getName());
 
     private JenkinsRule r;
 
@@ -159,12 +171,25 @@ class NodesTest {
     @Test
     @Issue("JENKINS-56403")
     void replaceNodeShouldRemoveOldNode() throws Exception {
-        Node oldNode = r.createSlave("foo", "", null);
-        Node newNode = r.createSlave("foo-new", "", null);
+        // Manually creating agents because we don't want then #add'ed to the nodes list before we do that
+        DumbSlave oldNode = new DumbSlave("foo",
+                new File(r.jenkins.getRootDir(), "agent-work-dirs/foo").getAbsolutePath(),
+                r.createComputerLauncher(null));
+        oldNode.setRetentionStrategy(RetentionStrategy.NOOP);
+
+        final String newRemoteFs = new File(r.jenkins.getRootDir(), "agent-work-dirs/foo-new").getAbsolutePath();
+        DumbSlave newNode = new DumbSlave("foo-new",
+                newRemoteFs,
+                r.createComputerLauncher(null));
+        newNode.setRetentionStrategy(RetentionStrategy.NOOP);
+
         r.jenkins.addNode(oldNode);
         r.jenkins.getNodesObject().replaceNode(oldNode, newNode);
         r.jenkins.getNodesObject().load();
         assertNull(r.jenkins.getNode("foo"));
+        final Node newAfterReload = r.jenkins.getNode("foo-new");
+        assertNotNull(newAfterReload);
+        assertThat(((DumbSlave) newAfterReload).getRemoteFS(), is(newRemoteFs));
     }
 
     @Test
@@ -181,6 +206,7 @@ class NodesTest {
     @Test
     @Issue("JENKINS-33704")
     void replacingSecondNodeIsLocal() throws Exception {
+        disableCronRetentionCheck();
         DumbSlave nodeA = r.createSlave("nodeA", "temp", null);
         var retentionStrategyA = new MockRetentionStrategy();
         nodeA.setRetentionStrategy(retentionStrategyA);
@@ -199,6 +225,7 @@ class NodesTest {
     @Test
     @Issue("JENKINS-33704")
     void removingSecondNodeIsLocal() throws Exception {
+        disableCronRetentionCheck();
         DumbSlave nodeA = r.createSlave("nodeA", "temp", null);
         var retentionStrategyA = new MockRetentionStrategy();
         nodeA.setRetentionStrategy(retentionStrategyA);
@@ -217,6 +244,7 @@ class NodesTest {
     @Test
     @Issue("JENKINS-33704")
     void changingBuiltInNodeDoesntChangeOtherNodes() throws Exception {
+        disableCronRetentionCheck();
         DumbSlave nodeA = r.createSlave("nodeA", "temp", null);
         var retentionStrategyA = new MockRetentionStrategy();
         nodeA.setRetentionStrategy(retentionStrategyA);
@@ -226,11 +254,43 @@ class NodesTest {
         assertThat(retentionStrategyA.checkCount, equalTo(0));
     }
 
+    private static void disableCronRetentionCheck() {
+        // Disable cron-based retention checks to avoid messing with the counts
+        ExtensionList.lookup(AsyncPeriodicWork.class).remove(ExtensionList.lookupSingleton(ComputerRetentionWork.class));
+    }
+
+    @Test
+    void addIfAbsentAddsNewNode() throws Exception {
+        Node newNode = r.createSlave("foo", "", null);
+        r.jenkins.removeNode(newNode);
+        assertThat(r.jenkins.getNodesObject().getNodes().size(), equalTo(0));
+        boolean result = r.jenkins.getNodesObject().addNodeIfAbsent(newNode);
+        assertTrue(result);
+        assertThat(r.jenkins.getNodesObject().getNodes().size(), equalTo(1));
+        assertNotNull(r.jenkins.getNode("foo"));
+    }
+
+    @Test
+    void addIfAbsentDoesNotReplaceOldNode() throws Exception {
+        Node oldNode = r.createSlave("foo", "labels1", null);
+        r.jenkins.removeNode(oldNode);
+        Node newNode = r.createSlave("foo", "labels2", null);
+        r.jenkins.removeNode(newNode);
+        assertThat(r.jenkins.getNodesObject().getNodes().size(), equalTo(0));
+        r.jenkins.addNode(oldNode);
+        assertThat(r.jenkins.getNodesObject().getNodes().size(), equalTo(1));
+        boolean result = r.jenkins.getNodesObject().addNodeIfAbsent(newNode);
+        assertFalse(result);
+        r.jenkins.getNodesObject().load();
+        assertThat(r.jenkins.getNode("foo").getLabelString(), equalTo("labels1"));
+    }
+
     public static class MockRetentionStrategy extends RetentionStrategy.Always {
         private int checkCount = 0;
 
         @Override
         public long check(SlaveComputer c) {
+            LOGGER.log(Level.INFO, new Throwable(), () -> "MockRetentionStrategy.check called on " + c.getName());
             checkCount++;
             return super.check(c);
         }
@@ -312,6 +372,21 @@ class NodesTest {
             // Don't allow loading any node.
             return false;
         }
+    }
+
+    @Test
+    void setNodesRetainsOfflineCause() throws URISyntaxException, IOException, Descriptor.FormException {
+        var agentA = new DumbSlave("nodeA", "temp", r.createComputerLauncher(null));
+        var agentB = new DumbSlave("nodeB", "temp", r.createComputerLauncher(null));
+        Jenkins.get().setNodes(List.of(agentA, agentB));
+        User user = User.getOrCreateByIdOrFullName("user");
+        agentA.setTemporaryOfflineCause(new OfflineCause.UserCause(user, "unitTest"));
+        agentA = new DumbSlave("nodeA", "temp", r.createComputerLauncher(null));
+        Jenkins.get().setNodes(List.of(agentA, agentB));
+        var nodeA = Jenkins.get().getNode("nodeA");
+        assertThat(nodeA, notNullValue());
+        assertThat(nodeA.getTemporaryOfflineCause(), notNullValue());
+        assertThat(nodeA.getTemporaryOfflineCause().getReason(), equalTo("unitTest"));
     }
 
     @Test

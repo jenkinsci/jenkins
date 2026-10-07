@@ -176,14 +176,11 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * {@link LabelAtom}s.
      */
     public final boolean matches(final Collection<LabelAtom> labels) {
-        return matches(new VariableResolver<>() {
-            @Override
-            public Boolean resolve(String name) {
-                for (LabelAtom a : labels)
-                    if (a.getName().equals(name))
-                        return true;
-                return false;
-            }
+        return matches(name -> {
+            for (LabelAtom a : labels)
+                if (a.getName().equals(name))
+                    return true;
+            return false;
         });
     }
 

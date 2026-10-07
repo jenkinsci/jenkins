@@ -49,21 +49,8 @@ THE SOFTWARE.
   <f:slave-mode name="mode" node="${it}" />
 
   <!-- TODO: should be packaged as a tag -->
-  <j:set var="itDescriptor" value="${descriptor}"/>
-  <f:dropdownList name="slave.launcher" title="${%Launch method}"
-                  help="${descriptor.getHelpFile('launcher')}">
-    <j:forEach var="d" items="${descriptor.computerLauncherDescriptors(it)}">
-      <f:dropdownListBlock value="${d.clazz.name}" name="${d.displayName}"
-                           selected="${it.launcher.descriptor==d}"
-                           title="${d.displayName}">
-        <j:set var="descriptor" value="${d}"/>
-        <j:set var="instance"
-               value="${it.launcher.descriptor==d ? it.launcher : null}"/>
-        <f:class-entry descriptor="${d}" />
-        <st:include from="${d}" page="${d.configPage}" optional="true"/>
-      </f:dropdownListBlock>
-    </j:forEach>
-  </f:dropdownList>
+  <j:set var="computerLauncherDescriptors" value="${descriptor.computerLauncherDescriptors(it)}"/>
+  <f:dropdownDescriptorSelector title="${%Launch method}" field="launcher" descriptors="${computerLauncherDescriptors}"/>
 
   <!-- pointless to show this if there's only one option, which is the default -->
   <j:set var="retentionStrategies" value="${descriptor.retentionStrategyDescriptors(it)}"/>

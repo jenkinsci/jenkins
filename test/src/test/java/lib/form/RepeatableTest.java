@@ -634,7 +634,7 @@ class RepeatableTest {
     private static HtmlButton getHtmlButton(HtmlForm form, String buttonCaption, boolean isTopButton) {
         List<?> buttons = getButtonsList(form, buttonCaption);
         if (buttons.size() == 1) {
-            return (HtmlButton) buttons.get(0);
+            return (HtmlButton) buttons.getFirst();
         }
         return (HtmlButton) buttons.get(isTopButton ? 0 : 1);
     }
@@ -647,7 +647,7 @@ class RepeatableTest {
      */
     private static List<?> getButtonsList(HtmlForm form, String buttonCaption) {
         return form.getByXPath(
-                String.format("//button[text() = '%s'] | //button[@tooltip = '%s']", buttonCaption, buttonCaption)
+                String.format("//button[normalize-space(string(.)) = '%s'] | //button[@tooltip = '%s']", buttonCaption, buttonCaption)
         );
     }
 

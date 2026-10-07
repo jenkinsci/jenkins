@@ -66,8 +66,7 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
 
     @Override
     public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
-        if (defaultValue instanceof PasswordParameterValue) {
-            PasswordParameterValue value = (PasswordParameterValue) defaultValue;
+        if (defaultValue instanceof PasswordParameterValue value) {
             return new PasswordParameterDefinition(getName(), Secret.toString(value.getValue()), getDescription());
         } else {
             return this;

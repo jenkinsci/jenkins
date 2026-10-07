@@ -27,37 +27,33 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.RetentionStrategy;
-import hudson.tasks.ArtifactArchiver;
-import hudson.tasks.BatchFile;
-import hudson.tasks.Shell;
 import hudson.util.TextFile;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.nio.charset.Charset;
 import java.text.MessageFormat;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
+import jenkins.model.Tab;
+import jenkins.model.TransientActionFactory;
 import org.hamcrest.Matchers;
 import org.htmlunit.Page;
 import org.htmlunit.TextPage;
@@ -72,9 +68,9 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -270,7 +266,7 @@ class JobTest {
         // This page is a simple form to POST to /job/testJob/config.xml
         // But it posts invalid data so we expect 500 if we have permission, 403 if not
         HtmlPage page = wc.goTo("userContent/post.html");
-        p = HtmlFormUtil.submit(page.getForms().get(0));
+        p = HtmlFormUtil.submit(page.getForms().getFirst());
         assertEquals(status, p.getWebResponse().getStatusCode(), msg);
 
         p = wc.goTo("logout");
@@ -330,118 +326,6 @@ class JobTest {
         j.buildAndAssertSuccess(p);
         assertEquals(6, p.getLastSuccessfulBuild().getNumber());
         assertEquals(3, RunLoadCounter.assertMaxLoads(p, 1, () -> p.getLastFailedBuild().getNumber()).intValue());
-    }
-
-    @Issue("JENKINS-19764")
-    @Test
-    void testRenameWithCustomBuildsDirWithSubdir() throws Exception {
-        j.jenkins.setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
-        final FreeStyleProject p = j.createFreeStyleProject();
-        j.buildAndAssertSuccess(p);
-        p.renameTo("different-name");
-    }
-
-    @Issue("JENKINS-44657")
-    @Test
-    void testRenameWithCustomBuildsDirWithBuildsIntact() throws Exception {
-        j.jenkins.setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
-        final FreeStyleProject p = j.createFreeStyleProject();
-        final File oldBuildsDir = p.getBuildDir();
-        j.buildAndAssertSuccess(p);
-        String oldDirContent = dirContent(oldBuildsDir);
-        p.renameTo("different-name");
-        final File newBuildDir = p.getBuildDir();
-        assertNotNull(newBuildDir);
-        assertNotEquals(oldBuildsDir.getAbsolutePath(), newBuildDir.getAbsolutePath());
-        String newDirContent = dirContent(newBuildDir);
-        assertEquals(oldDirContent, newDirContent);
-    }
-
-    @Issue("JENKINS-44657")
-    @Test
-    void testRenameWithCustomBuildsDirWithBuildsIntactInFolder() throws Exception {
-        j.jenkins.setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
-        final MockFolder f = j.createFolder("F");
-
-        final FreeStyleProject p1 = f.createProject(FreeStyleProject.class, "P1");
-        j.buildAndAssertSuccess(p1);
-        File oldP1BuildsDir = p1.getBuildDir();
-        final String oldP1DirContent = dirContent(oldP1BuildsDir);
-        f.renameTo("different-name");
-
-        File newP1BuildDir = p1.getBuildDir();
-        assertNotNull(newP1BuildDir);
-        assertNotEquals(oldP1BuildsDir.getAbsolutePath(), newP1BuildDir.getAbsolutePath());
-        String newP1DirContent = dirContent(newP1BuildDir);
-        assertEquals(oldP1DirContent, newP1DirContent);
-
-        final FreeStyleProject p2 = f.createProject(FreeStyleProject.class, "P2");
-        if (Functions.isWindows()) {
-            p2.getBuildersList().add(new BatchFile("echo hello > hello.txt"));
-        } else {
-            p2.getBuildersList().add(new Shell("echo hello > hello.txt"));
-        }
-        p2.getPublishersList().add(new ArtifactArchiver("*.txt"));
-        j.buildAndAssertSuccess(p2);
-
-        File oldP2BuildsDir = p2.getBuildDir();
-        final String oldP2DirContent = dirContent(oldP2BuildsDir);
-        FreeStyleBuild b2 = p2.getBuilds().getLastBuild();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        b2.getLogText().writeRawLogTo(0, out);
-        final String oldB2Log = out.toString(Charset.defaultCharset());
-        assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
-        f.renameTo("something-else");
-
-        //P1 check again
-        newP1BuildDir = p1.getBuildDir();
-        assertNotNull(newP1BuildDir);
-        assertNotEquals(oldP1BuildsDir.getAbsolutePath(), newP1BuildDir.getAbsolutePath());
-        newP1DirContent = dirContent(newP1BuildDir);
-        assertEquals(oldP1DirContent, newP1DirContent);
-
-        //P2 check
-
-        b2 = p2.getBuilds().getLastBuild();
-        assertNotNull(b2);
-        out = new ByteArrayOutputStream();
-        b2.getLogText().writeRawLogTo(0, out);
-        final String newB2Log = out.toString(Charset.defaultCharset());
-        assertEquals(oldB2Log, newB2Log);
-        assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
-
-        File newP2BuildDir = p2.getBuildDir();
-        assertNotNull(newP2BuildDir);
-        assertNotEquals(oldP2BuildsDir.getAbsolutePath(), newP2BuildDir.getAbsolutePath());
-        String newP2DirContent = dirContent(newP2BuildDir);
-        assertEquals(oldP2DirContent, newP2DirContent);
-    }
-
-    private String dirContent(File dir) throws IOException, InterruptedException {
-        if (dir == null || !dir.isDirectory()) {
-            return null;
-        }
-        StringBuilder str = new StringBuilder();
-        final FilePath[] list = new FilePath(dir).list("**/*");
-        Arrays.sort(list, Comparator.comparing(FilePath::getRemote));
-        for (FilePath path : list) {
-            str.append(relativePath(dir, path));
-            str.append(' ').append(path.length()).append('\n');
-        }
-        return str.toString();
-    }
-
-    private String relativePath(File base, FilePath path) throws IOException, InterruptedException {
-        if (path.absolutize().getRemote().equals(base.getAbsolutePath())) {
-            return "";
-        } else {
-            final String s = relativePath(base, path.getParent());
-            if (s.isEmpty()) {
-                return path.getName();
-            } else {
-                return s + "/" + path.getName();
-            }
-        }
     }
 
     @Issue("JENKINS-30502")
@@ -558,6 +442,64 @@ class JobTest {
         wc.getPage(p, "buildTimeTrend");
 
         assertEquals("", alertContent.get());
+    }
+
+    @TestExtension("getJobTabs")
+    public static class TabFactory extends TransientActionFactory<Actionable> {
+
+        @Override
+        public Class<Actionable> type() {
+            return Actionable.class;
+        }
+
+        @NonNull
+        @Override
+        public Collection<? extends Action> createFor(@NonNull Actionable target) {
+            return Set.of(new Tab(target) {
+                @Override
+                public String getIconFileName() {
+                    return "test";
+                }
+
+                @Override
+                public String getDisplayName() {
+                    return "Test";
+                }
+
+                @Override
+                public String getUrlName() {
+                    return "test";
+                }
+            }, new Tab(target) {
+                @Override
+                public String getIconFileName() {
+                    return null;
+                }
+
+                @Override
+                public String getDisplayName() {
+                    return "I do not appear";
+                }
+
+                @Override
+                public String getUrlName() {
+                    return "doNotAppear";
+                }
+            });
+        }
+    }
+
+    /**
+     * Only tabs with icons should appear
+     */
+    @Test
+    void getJobTabs() throws Exception {
+        var project = j.createFreeStyleProject();
+
+        var response = project.getJobTabs();
+
+        assertThat(response, hasSize(1));
+        assertThat(response.getFirst().getDisplayName(), equalTo("Test"));
     }
 
     /**

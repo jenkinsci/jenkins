@@ -48,7 +48,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  *  It implements the {@link #loadUserByUsername2(String)} method which simply returns the user from the
  *  in memory storage based on username passed.
  *  <p>
- *  A dummy implementation for {@link InMemorySecurityRealm} is provided in class {@link InMemorySecurityRealm}
+ *  A dummy implementation of {@link UserDetails} is provided in nested class {@link InMemoryUserDetails}
  *  which contains no roles and only username is returned.
  *
  */

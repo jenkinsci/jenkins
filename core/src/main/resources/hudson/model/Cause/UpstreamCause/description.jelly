@@ -41,11 +41,14 @@ THE SOFTWARE.
         </j:otherwise>
       </j:choose>
 
-        <j:if test="${!it.upstreamCauses.isEmpty()}">
+        <j:set var="causeCounts" value="${it.causeCounts}" />
+        <j:if test="${!causeCounts.isEmpty()}">
             <br />${%caused_by}
             <ul>
-	        <j:forEach var="c" items="${it.upstreamCauses}">
-	          <li><st:include page="description.jelly" it="${c}" /></li>
+	        <j:forEach var="c" items="${causeCounts.entrySet()}">
+	          <li><st:include page="description.jelly" it="${c.key}" />
+              <j:if test="${c.value > 1}"><st:nbsp/>${%Ntimes(c.value)}</j:if><br/>
+            </li>
 	        </j:forEach>
             </ul>
         </j:if>

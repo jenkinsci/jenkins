@@ -85,6 +85,7 @@ import java.nio.channels.ClosedByInterruptException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -109,6 +110,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jenkins.console.WithConsoleUrl;
+import jenkins.model.FullyNamed;
+import jenkins.model.FullyNamedModelObject;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.AsynchronousExecution;
 import jenkins.model.queue.CompositeCauseOfBlockage;
@@ -120,16 +123,21 @@ import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.AtmostOneTaskExecutor;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
+import jenkins.util.ThrowingCallable;
+import jenkins.util.ThrowingRunnable;
 import jenkins.util.Timer;
+import jenkins.util.xstream.CriticalXStreamException;
 import net.jcip.annotations.GuardedBy;
 import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.CancelRequestHandlingException;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -421,21 +429,17 @@ public class Queue extends ResourceController implements Saveable {
                     if (o instanceof Task) {
                         // backward compatibility
                         schedule((Task) o, 0);
-                    } else if (o instanceof Item) {
-                        Item item = (Item) o;
+                    } else if (o instanceof Item item) {
 
                         if (item.task == null) {
                             continue;   // botched persistence. throw this one away
                         }
 
-                        if (item instanceof WaitingItem) {
-                            item.enter(this);
-                        } else if (item instanceof BlockedItem) {
-                            item.enter(this);
-                        } else if (item instanceof BuildableItem) {
-                            item.enter(this);
-                        } else {
-                            throw new IllegalStateException("Unknown item type! " + item);
+                        switch (item) {
+                            case WaitingItem waitingItem -> item.enter(this);
+                            case BlockedItem blockedItem -> item.enter(this);
+                            case BuildableItem buildableItem -> item.enter(this);
+                            default -> throw new IllegalStateException("Unknown item type! " + item);
                         }
                     }
                 }
@@ -448,6 +452,8 @@ public class Queue extends ResourceController implements Saveable {
                 File bk = new File(queueFile.getPath() + ".bak");
                 Files.move(queueFile.toPath(), bk.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
+        } catch (CriticalXStreamException e) {
+            LOGGER.log(Level.WARNING, "Failed to load the queue file due to a security policy violation; starting with an empty queue. " + getXMLQueueFile(), e);
         } catch (IOException | InvalidPathException e) {
             LOGGER.log(Level.WARNING, "Failed to load the queue file " + getXMLQueueFile(), e);
         } finally { updateSnapshot(); } } finally {
@@ -668,7 +674,7 @@ public class Queue extends ResourceController implements Saveable {
             // whether the new one should affect all existing ones or not is debatable. I for myself
             // thought this would only affect one, so the code was bit of surprise, but I'm keeping the current
             // behaviour.
-            return ScheduleResult.existing(duplicatesInQueue.get(0));
+            return ScheduleResult.existing(duplicatesInQueue.getFirst());
         } finally { updateSnapshot(); } } finally {
             lock.unlock();
         }
@@ -823,8 +829,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private static boolean hasReadPermission(Queue.Task t, boolean valueIfNotAccessControlled) {
-        if (t instanceof AccessControlled) {
-            AccessControlled taskAC = (AccessControlled) t;
+        if (t instanceof AccessControlled taskAC) {
             if (taskAC.hasPermission(hudson.model.Item.READ)
                     || taskAC.hasPermission(Permission.READ)) { // TODO should be unnecessary given the 'implies' relationship
                 return true;
@@ -864,8 +869,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private List<StubItem> filterDiscoverableItemListBasedOnPermissions(List<StubItem> r, Item t) {
-        if (t.task instanceof hudson.model.Item) {
-            hudson.model.Item taskAsItem = (hudson.model.Item) t.task;
+        if (t.task instanceof hudson.model.Item taskAsItem) {
             if (!taskAsItem.hasPermission(hudson.model.Item.READ)
                     && taskAsItem.hasPermission(hudson.model.Item.DISCOVER)) {
                 r.add(new StubItem(new StubTask(t.task)));
@@ -1272,6 +1276,22 @@ public class Queue extends ResourceController implements Saveable {
      * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
      * than locking directly on Queue in order to allow for future refactoring.
      * @param runnable the operation to perform.
+     * @throws T if the runnable throws an exception.
+     * @since 2.534
+     */
+    public static <T extends Throwable> void runWithLock(ThrowingRunnable<T> runnable) throws T {
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
+        final Queue queue = jenkins == null ? null : jenkins.getQueue();
+        if (queue == null) {
+            runnable.run();
+        } else {
+            queue._runWithLock(runnable);
+        }
+    }
+
+    /**
+     * Prefer {@link #runWithLock}.
      * @since 1.592
      */
     public static void withLock(Runnable runnable) {
@@ -1294,6 +1314,21 @@ public class Queue extends ResourceController implements Saveable {
      * @param <T>      the type of exception.
      * @return the result of the callable.
      * @throws T the exception of the callable
+     * @since 2.534
+     */
+    public static <V, T extends Throwable> V callWithLock(ThrowingCallable<V, T> callable) throws T {
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
+        final Queue queue = jenkins == null ? null : jenkins.getQueue();
+        if (queue == null) {
+            return callable.call();
+        } else {
+            return queue._callWithLock(callable);
+        }
+    }
+
+    /**
+     * Prefer {@link #callWithLock}.
      * @since 1.592
      */
     public static <V, T extends Throwable> V withLock(hudson.remoting.Callable<V, T> callable) throws T {
@@ -1308,13 +1343,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
-     * than locking directly on Queue in order to allow for future refactoring.
-     *
-     * @param callable the operation to perform.
-     * @param <V>      the type of return value
-     * @return the result of the callable.
-     * @throws Exception if the callable throws an exception.
+     * Prefer {@link #callWithLock}.
      * @since 1.592
      */
     public static <V> V withLock(java.util.concurrent.Callable<V> callable) throws Exception {
@@ -1346,6 +1375,26 @@ public class Queue extends ResourceController implements Saveable {
             return queue._tryWithLock(runnable);
         }
     }
+
+    /**
+     * Invokes the supplied {@link Runnable} if the {@link Queue} lock was obtained within the given timeout.
+     *
+     * @param runnable the operation to perform.
+     * @return {@code true} if the lock was acquired within the timeout and the operation was performed.
+     * @since 2.529
+     */
+    public static boolean tryWithLock(Runnable runnable, Duration timeout) throws InterruptedException {
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
+        final Queue queue = jenkins == null ? null : jenkins.getQueue();
+        if (queue == null) {
+            runnable.run();
+            return true;
+        } else {
+            return queue._tryWithLock(runnable, timeout);
+        }
+    }
+
     /**
      * Wraps a {@link Runnable} with the  {@link Queue} lock held.
      *
@@ -1400,6 +1449,25 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
      * than locking directly on Queue in order to allow for future refactoring.
+     *
+     * @param runnable the operation to perform.
+     * @param <T>      the type of exception.
+     * @throws T the exception of the runnable
+     * @since 2.534
+     */
+    @Override
+    protected <T extends Throwable> void _runWithLock(ThrowingRunnable<T> runnable) throws T {
+        lock.lock();
+        try {
+            runnable.run();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
+     * than locking directly on Queue in order to allow for future refactoring.
      * @param runnable the operation to perform.
      * @since 1.592
      */
@@ -1430,6 +1498,47 @@ public class Queue extends ResourceController implements Saveable {
             return true;
         } else {
             return false;
+        }
+    }
+
+    /**
+     * Invokes the supplied {@link Runnable} if the {@link Queue} lock was obtained within the given timeout
+     *
+     * @param runnable the operation to perform.
+     * @return {@code true} if the lock was acquired within the timeout and the operation was performed.
+     * @since 2.529
+     */
+    protected boolean _tryWithLock(Runnable runnable, Duration timeout) throws InterruptedException {
+        if (lock.tryLock(timeout.toNanos(), TimeUnit.NANOSECONDS)) {
+            try {
+                runnable.run();
+            } finally {
+                lock.unlock();
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
+     * than locking directly on Queue in order to allow for future refactoring.
+     *
+     * @param callable the operation to perform.
+     * @param <V>      the type of return value
+     * @param <T>      the type of exception.
+     * @return the result of the callable.
+     * @throws T the exception of the callable
+     * @since 2.534
+     */
+    @Override
+    protected <V, T extends Throwable> V _callWithLock(ThrowingCallable<V, T> callable) throws T {
+        lock.lock();
+        try {
+            return callable.call();
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -1571,7 +1680,13 @@ public class Queue extends ResourceController implements Saveable {
                             updateSnapshot();
                         }
                     } else {
-                        p.setCauseOfBlockage(causeOfBlockage);
+                        if (causeOfBlockage.isFatal()) {
+                            cancel(p);
+                        } else {
+                            p.leave(this);
+                            new BlockedItem(p, causeOfBlockage).enter(this);
+                            updateSnapshot();
+                        }
                     }
                 }
             }
@@ -1584,10 +1699,9 @@ public class Queue extends ResourceController implements Saveable {
                     LOGGER.log(Level.FINEST, "Finished moving all ready items from queue.");
                     break; // finished moving all ready items from queue
                 }
-
-                top.leave(this);
                 CauseOfBlockage causeOfBlockage = getCauseOfBlockageForItem(top);
                 if (causeOfBlockage == null) {
+                    top.leave(this);
                     // ready to be executed immediately
                     Runnable r = makeBuildable(new BuildableItem(top));
                     String topTaskDisplayName = LOGGER.isLoggable(Level.FINEST) ? top.task.getFullDisplayName() : null;
@@ -1599,9 +1713,14 @@ public class Queue extends ResourceController implements Saveable {
                         new BlockedItem(top, CauseOfBlockage.fromMessage(Messages._Queue_HudsonIsAboutToShutDown())).enter(this);
                     }
                 } else {
-                    // this can't be built now because another build is in progress
-                    // set this project aside.
-                    new BlockedItem(top, causeOfBlockage).enter(this);
+                    if (causeOfBlockage.isFatal()) {
+                        cancel(top);
+                    } else {
+                        top.leave(this);
+                        // this can't be built now because another build is in progress
+                        // set this project aside.
+                        new BlockedItem(top, causeOfBlockage).enter(this);
+                    }
                 }
             }
 
@@ -1624,12 +1743,16 @@ public class Queue extends ResourceController implements Saveable {
                 // one last check to make sure this build is not blocked.
                 CauseOfBlockage causeOfBlockage = getCauseOfBlockageForItem(p);
                 if (causeOfBlockage != null) {
-                    p.leave(this);
-                    new BlockedItem(p, causeOfBlockage).enter(this);
-                    LOGGER.log(Level.FINE, "Catching that {0} is blocked in the last minute", p);
-                    // JENKINS-28926 we have moved an unblocked task into the blocked state, update snapshot
-                    // so that other buildables which might have been blocked by this can see the state change
-                    updateSnapshot();
+                    if (causeOfBlockage.isFatal()) {
+                        cancel(p);
+                    } else {
+                        p.leave(this);
+                        new BlockedItem(p, causeOfBlockage).enter(this);
+                        LOGGER.log(Level.FINE, "Catching that {0} is blocked in the last minute", p);
+                        // JENKINS-28926 we have moved an unblocked task into the blocked state, update snapshot
+                        // so that other buildables which might have been blocked by this can see the state change
+                        updateSnapshot();
+                    }
                     continue;
                 }
 
@@ -1882,7 +2005,7 @@ public class Queue extends ResourceController implements Saveable {
      * design, a {@link Task} must have at least one sub-task.)
      * Most of the time, the primary subtask is the only sub task.
      */
-    public interface Task extends ModelObject, SubTask {
+    public interface Task extends FullyNamedModelObject, SubTask {
         /**
          * Returns true if the execution should be blocked
          * for temporary reasons.
@@ -1929,20 +2052,21 @@ public class Queue extends ResourceController implements Saveable {
         String getName();
 
         /**
-         * @see hudson.model.Item#getFullDisplayName()
-         */
-        String getFullDisplayName();
-
-        /**
          * Returns task-specific key which is used by the {@link LoadBalancer} to choose one particular executor
          * amongst all the free executors on all possibly suitable nodes.
          * NOTE: To be able to re-use the same node during the next run this key should not change from one run to
          * another. You probably want to compute that key based on the job's name.
          *
-         * @return by default: {@link #getFullDisplayName()}
+         * @return by default: {@link FullyNamed#getFullName()} if implements {@link FullyNamed} or {@link #getFullDisplayName()} otherwise.
          * @see hudson.model.LoadBalancer
          */
-        default String getAffinityKey() { return getFullDisplayName(); }
+        default String getAffinityKey() {
+            if (this instanceof FullyNamed fullyNamed) {
+                return fullyNamed.getFullName();
+            } else {
+                return getFullDisplayName();
+            }
+        }
 
         /**
          * Checks the permission to see if the current user can abort this executable.
@@ -2138,7 +2262,7 @@ public class Queue extends ResourceController implements Saveable {
      * Item in a queue.
      */
     @ExportedBean(defaultVisibility = 999)
-    public abstract static class Item extends Actionable implements QueueItem {
+    public abstract static class Item extends Actionable implements QueueItem, StaplerProxy {
 
         private final long id;
 
@@ -2280,14 +2404,25 @@ public class Queue extends ResourceController implements Saveable {
             return Collections.emptyList();
         }
 
+        private Map<Cause, Integer> getCauseCounts() {
+            CauseAction ca = getAction(CauseAction.class);
+            if (ca != null)
+                return ca.getCauseCounts();
+            return Collections.emptyMap();
+        }
+
         @Restricted(DoNotUse.class) // used from Jelly
         @Override
         public String getCausesDescription() {
-            List<Cause> causes = getCauses();
+            Map<Cause, Integer> causeCounts = getCauseCounts();
             StringBuilder s = new StringBuilder();
-            for (Cause c : causes) {
-                s.append(c.getShortDescription()).append('\n');
-            }
+            causeCounts.forEach((ca, count) -> {
+                s.append(ca.getShortDescription());
+                if (count > 1) {
+                    s.append(" ").append(Messages._Queue_Ntimes(count));
+                }
+                s.append('\n');
+            });
             return s.toString();
         }
 
@@ -2361,6 +2496,9 @@ public class Queue extends ResourceController implements Saveable {
         @Deprecated
         @RequirePOST
         public HttpResponse doCancelQueue() {
+            if (!hasReadPermission(this, true)) {
+                throw new CancelRequestHandlingException();
+            }
             if (hasCancelPermission()) {
                 Jenkins.get().getQueue().cancel(this);
             }
@@ -2396,10 +2534,24 @@ public class Queue extends ResourceController implements Saveable {
             return org.acegisecurity.Authentication.fromSpring(authenticate2());
         }
 
+        @Restricted(DoNotUse.class) // Stapler
+        @Override
+        public Object getTarget() {
+            if (!(task instanceof AccessControlled ac)) {
+                return this;
+            }
+            if (!ac.hasPermission(hudson.model.Item.DISCOVER)) {
+                return null;
+            }
+            if (!ac.hasPermission(hudson.model.Item.READ)) {
+                throw new AccessDeniedException("Please log in to access " + task.getUrl());
+            }
+            return this;
+        }
+
         @Restricted(DoNotUse.class) // only for Stapler export
         public Api getApi() throws AccessDeniedException {
-            if (task instanceof AccessControlled) {
-                AccessControlled ac = (AccessControlled) task;
+            if (task instanceof AccessControlled ac) {
                 if (!ac.hasPermission(hudson.model.Item.DISCOVER)) {
                     return null; // same as getItem(long) returning null (details are printed only in case of -Dstapler.trace=true)
                 } else if (!ac.hasPermission(hudson.model.Item.READ)) {
@@ -2614,15 +2766,7 @@ public class Queue extends ResourceController implements Saveable {
      * {@link Item} in the {@link Queue#blockedProjects} stage.
      */
     public final class BlockedItem extends NotWaitingItem {
-        private transient CauseOfBlockage causeOfBlockage = null;
-
-        public BlockedItem(WaitingItem wi) {
-            this(wi, null);
-        }
-
-        public BlockedItem(NotWaitingItem ni) {
-            this(ni, null);
-        }
+        private final transient CauseOfBlockage causeOfBlockage;
 
         BlockedItem(WaitingItem wi, CauseOfBlockage causeOfBlockage) {
             super(wi);
@@ -2631,10 +2775,6 @@ public class Queue extends ResourceController implements Saveable {
 
         BlockedItem(NotWaitingItem ni, CauseOfBlockage causeOfBlockage) {
             super(ni);
-            this.causeOfBlockage = causeOfBlockage;
-        }
-
-        void setCauseOfBlockage(CauseOfBlockage causeOfBlockage) {
             this.causeOfBlockage = causeOfBlockage;
         }
 

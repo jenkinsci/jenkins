@@ -1,6 +1,5 @@
 // Converts a page's section headings into clickable tabs, see 'About Jenkins' page for example
 const tabPanes = document.querySelectorAll(".jenkins-tab-pane");
-const content = document.querySelector("#main-panel");
 
 // Hide tab panes
 tabPanes.forEach((tabPane) => {
@@ -47,4 +46,4 @@ tabPanes.forEach((tabPane, index) => {
   tabBar.append(tab);
 });
 
-content.insertBefore(tabBar, tabPanes[0]);
+tabPanes[0].parentElement.insertBefore(tabBar, tabPanes[0]);

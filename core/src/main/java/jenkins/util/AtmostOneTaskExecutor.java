@@ -93,32 +93,29 @@ public class AtmostOneTaskExecutor<V> {
      * but {@link #inprogress} is null (meaning none is executing right now),
      * get one going.
      */
-    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "method signature does not permit plumbing through the return value")
+    @SuppressFBWarnings(value = {"RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", "IS2_INCONSISTENT_SYNC"}, justification = "method signature does not permit plumbing through the return value")
     private synchronized void maybeRun() {
         if (inprogress == null && pending != null) {
-            base.submit(new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                    synchronized (AtmostOneTaskExecutor.this) {
-                        // everyone who submits after this should form a next batch
-                        inprogress = pending;
-                        pending = null;
-                    }
-
-                    try {
-                        inprogress.complete(task.call());
-                    } catch (Throwable t) {
-                        LOGGER.log(Level.WARNING, null, t);
-                        inprogress.completeExceptionally(t);
-                    } finally {
-                        synchronized (AtmostOneTaskExecutor.this) {
-                            // if next one is pending, get that scheduled
-                            inprogress = null;
-                            maybeRun();
-                        }
-                    }
-                    return null;
+            base.submit((Callable<Void>) () -> {
+                synchronized (AtmostOneTaskExecutor.this) {
+                    // everyone who submits after this should form a next batch
+                    inprogress = pending;
+                    pending = null;
                 }
+
+                try {
+                    inprogress.complete(task.call());
+                } catch (Throwable t) {
+                    LOGGER.log(Level.WARNING, null, t);
+                    inprogress.completeExceptionally(t);
+                } finally {
+                    synchronized (AtmostOneTaskExecutor.this) {
+                        // if next one is pending, get that scheduled
+                        inprogress = null;
+                        maybeRun();
+                    }
+                }
+                return null;
             });
         }
     }

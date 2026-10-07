@@ -13,23 +13,23 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jenkins.util.java.JavaUtils;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MemoryAssert;
-import org.jvnet.hudson.test.RealJenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 
-public class JenkinsLogRecordsTest {
+class JenkinsLogRecordsTest {
 
-    @Rule
-    public RealJenkinsRule rr = new RealJenkinsRule();
+    @RegisterExtension
+    private final RealJenkinsExtension rr = new RealJenkinsExtension();
 
     @Test
-    public void logRecordsArePresentOnController() throws Throwable {
+    void logRecordsArePresentOnController() throws Throwable {
         rr.then(JenkinsLogRecordsTest::_logRecordsArePresentOnController);
     }
 
-    private static void _logRecordsArePresentOnController(JenkinsRule r) throws Throwable {
+    private static void _logRecordsArePresentOnController(JenkinsRule r) {
         List<LogRecord> logRecords = Jenkins.logRecords;
         assertThat(logRecords, not(empty()));
         assertThat("Records are displayed in reverse order",

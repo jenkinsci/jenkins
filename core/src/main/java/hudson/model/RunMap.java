@@ -25,8 +25,6 @@
 package hudson.model;
 
 import static java.util.logging.Level.FINEST;
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -40,7 +38,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.SortedMap;
 import java.util.function.IntPredicate;
@@ -95,7 +92,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      *      Used to create new instance of {@link Run}.
      * @since 2.451
      */
-    public RunMap(@NonNull Job<?, ?> job, Constructor cons) {
+    public RunMap(@NonNull Job<?, ?> job, Constructor<R> cons) {
         this.job = Objects.requireNonNull(job);
         this.cons = cons;
         initBaseDir(job.getBuildDir());
@@ -105,7 +102,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      * @deprecated Use {@link #RunMap(Job, Constructor)}.
      */
     @Deprecated
-    public RunMap(File baseDir, Constructor cons) {
+    public RunMap(File baseDir, Constructor<R> cons) {
         job = null;
         this.cons = cons;
         initBaseDir(baseDir);
@@ -120,32 +117,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      */
     @Override
     public Iterator<R> iterator() {
-        return new Iterator<>() {
-            R last = null;
-            R next = newestBuild();
-
-            @Override
-            public boolean hasNext() {
-                return next != null;
-            }
-
-            @Override
-            public R next() {
-                last = next;
-                if (last != null)
-                    next = last.getPreviousBuild();
-                else
-                    throw new NoSuchElementException();
-                return last;
-            }
-
-            @Override
-            public void remove() {
-                if (last == null)
-                    throw new UnsupportedOperationException();
-                removeValue(last);
-            }
-        };
+        return values().iterator();
     }
 
     @Override
@@ -165,14 +137,14 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      * This is the newest build (with the biggest build number)
      */
     public R newestValue() {
-        return search(Integer.MAX_VALUE, DESC);
+        return newestBuild();
     }
 
     /**
      * This is the oldest build (with the smallest build number)
      */
     public R oldestValue() {
-        return search(Integer.MIN_VALUE, ASC);
+        return oldestBuild();
     }
 
     /**
@@ -187,6 +159,8 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      */
     public interface Constructor<R extends Run<?, R>> {
         R create(File dir) throws IOException;
+
+        Class<R> getBuildClass();
     }
 
     @Override
@@ -201,7 +175,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
 
     /**
      * Add a <em>new</em> build to the map.
-     * Do not use when loading existing builds (use {@link #put(Integer, Object)}).
+     * Do not use when loading existing builds (use {@link #putAll(Map)}).
      */
     @Override
     public R put(R r) {
@@ -296,6 +270,11 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
         }
         LOGGER.fine(() -> "no config.xml in " + d);
         return null;
+    }
+
+    @Override
+    protected Class<R> getBuildClass() {
+        return cons.getBuildClass();
     }
 
     /**

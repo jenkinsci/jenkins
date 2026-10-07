@@ -61,13 +61,13 @@ public class MorphTagLibrary extends TagLibrary {
 
             private Collection<?> getExclusions(JellyContext context) {
                 Object exclusion = evalAttribute(EXCEPT_ATTRIBUTES, context);
-                if (exclusion == null)
-                    return Collections.emptySet();
-                if (exclusion instanceof String)
-                    return Arrays.asList(exclusion.toString().split("\\s+")); // split by whitespace
-                if (exclusion instanceof Collection)
-                    return (Collection) exclusion;
-                throw new IllegalArgumentException("Expected collection for exclusion but found :" + exclusion);
+                return switch (exclusion) {
+                    case null -> Collections.emptySet();
+                    case String s -> Arrays.asList(exclusion.toString().split("\\s+")); // split by whitespace
+                    case Collection collection -> collection;
+                    default ->
+                            throw new IllegalArgumentException("Expected collection for exclusion but found :" + exclusion);
+                };
             }
 
             @Override

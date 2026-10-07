@@ -25,6 +25,7 @@
 package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.ModelObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
@@ -34,13 +35,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * @since 2.480
  */
 @Restricted(Beta.class)
-public interface IDisplayExecutor {
-    /**
-     * @return The UI label for this executor.
-     */
-    @NonNull
-    String getDisplayName();
-
+public interface IDisplayExecutor extends ModelObject {
     /**
      * @return the URL where to reach specifically this executor, relative to Jenkins URL.
      */

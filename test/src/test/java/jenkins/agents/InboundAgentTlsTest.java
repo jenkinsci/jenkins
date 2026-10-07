@@ -1,27 +1,31 @@
 package jenkins.agents;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.InboundAgentRule;
-import org.jvnet.hudson.test.RealJenkinsRule;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-public class InboundAgentTlsTest {
+import hudson.Functions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.jvnet.hudson.test.junit.jupiter.InboundAgentExtension;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 
-    @Rule
-    public final RealJenkinsRule rjr = new RealJenkinsRule().https();
+class InboundAgentTlsTest {
 
-    @Rule
-    public InboundAgentRule iar = new InboundAgentRule();
+    @RegisterExtension
+    private final RealJenkinsExtension rjr = new RealJenkinsExtension().https();
 
-    @Before
-    public void setUp() throws Throwable {
+    @RegisterExtension
+    private final InboundAgentExtension iar = new InboundAgentExtension();
+
+    @BeforeEach
+    void setUp() throws Throwable {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Expensive to run and not Windows specific");
         rjr.startJenkins();
     }
 
     @Test
-    public void webSocketNoCertificateCheck() throws Throwable {
-        var options = InboundAgentRule.Options
+    void webSocketNoCertificateCheck() throws Throwable {
+        var options = InboundAgentExtension.Options
             .newBuilder()
             .webSocket()
             .noCertificateCheck();
@@ -29,8 +33,8 @@ public class InboundAgentTlsTest {
     }
 
     @Test
-    public void webSocketWithCertByValue() throws Throwable {
-        var options = InboundAgentRule.Options
+    void webSocketWithCertByValue() throws Throwable {
+        var options = InboundAgentExtension.Options
             .newBuilder()
             .webSocket()
             .cert(rjr.getRootCAPem());
@@ -38,16 +42,16 @@ public class InboundAgentTlsTest {
     }
 
     @Test
-    public void tcpWithNoCertificateCheck() throws Throwable {
-        var options = InboundAgentRule.Options
+    void tcpWithNoCertificateCheck() throws Throwable {
+        var options = InboundAgentExtension.Options
             .newBuilder()
             .noCertificateCheck();
         iar.createAgent(rjr, options.build());
     }
 
     @Test
-    public void tcpWithCertByValue() throws Throwable {
-        var options = InboundAgentRule.Options
+    void tcpWithCertByValue() throws Throwable {
+        var options = InboundAgentExtension.Options
             .newBuilder()
             .cert(rjr.getRootCAPem());
         iar.createAgent(rjr, options.build());

@@ -8,17 +8,24 @@ import static org.hamcrest.Matchers.lessThan;
 import hudson.ExtensionList;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class AsyncPeriodicWorkTest {
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+@WithJenkins
+class AsyncPeriodicWorkTest {
+
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
-    public void extraCallGetsIgnored() {
+    void extraCallGetsIgnored() {
         var instance = ExtensionList.lookupSingleton(AsyncPeriodicWorkTestImpl.class);
         assertThat(instance.getCount(), is(0));
         instance.run();
@@ -29,7 +36,7 @@ public class AsyncPeriodicWorkTest {
     }
 
     @Test
-    public void extraCallGetsQueued() {
+    void extraCallGetsQueued() {
         var instance = ExtensionList.lookupSingleton(AsyncPeriodicWorkTestImpl.class);
         instance.setQueueIfAlreadyRunning(true);
         assertThat(instance.getCount(), is(0));
@@ -44,6 +51,7 @@ public class AsyncPeriodicWorkTest {
         private boolean queueIfAlreadyRunning;
         private int count = 0;
 
+        @SuppressWarnings(value = "checkstyle:redundantmodifier")
         public AsyncPeriodicWorkTestImpl() {
             super(AsyncPeriodicWorkTestImpl.class.getSimpleName());
         }

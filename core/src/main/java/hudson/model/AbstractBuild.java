@@ -75,7 +75,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1196,18 +1195,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
     public Iterable<AbstractBuild<?, ?>> getDownstreamBuilds(final AbstractProject<?, ?> that) {
         final Iterable<Integer> nums = getDownstreamRelationship(that).listNumbers();
 
-        return new Iterable<>() {
-            @Override
-            public Iterator<AbstractBuild<?, ?>> iterator() {
-                return Iterators.removeNull(
-                    new AdaptedIterator<>(nums) {
-                        @Override
-                        protected AbstractBuild<?, ?> adapt(Integer item) {
-                            return that.getBuildByNumber(item);
-                        }
-                    });
-            }
-        };
+        return () -> Iterators.removeNull(
+            new AdaptedIterator<>(nums) {
+                @Override
+                protected AbstractBuild<?, ?> adapt(Integer item) {
+                    return that.getBuildByNumber(item);
+                }
+            });
     }
 
     /**

@@ -24,20 +24,20 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:new var="managementLink" className="jenkins.management.CliLink" />
-
-  <l:layout title="${managementLink.displayName}" permission="${app.READ}" type="one-column">
-    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-
-    <l:main-panel>
-      <l:app-bar title="${managementLink.displayName}">
+  <j:set var="header">
+    <l:view>
+      <l:app-bar title="${it.displayName}">
         <t:help href="https://www.jenkins.io/redirect/cli" />
       </l:app-bar>
 
       <div class="jenkins-page-description">
         ${%description}
       </div>
+    </l:view>
+  </j:set>
 
+  <l:settings-subpage header="${header}" permission="${app.READ}">
+    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
       <f:section title="${%Getting started}">
         <ol class="jenkins-instructions">
           <li>
@@ -79,6 +79,5 @@ THE SOFTWARE.
           </tbody>
         </table>
       </f:section>
-    </l:main-panel>
-  </l:layout>
+  </l:settings-subpage>
 </j:jelly>

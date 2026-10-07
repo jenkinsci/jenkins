@@ -68,12 +68,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
+import org.opentest4j.MultipleFailuresError;
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS)
 class PathRemoverTest {
@@ -94,7 +94,11 @@ class PathRemoverTest {
                 exceptions.add(e);
             }
         }
-        assertTrue(exceptions.isEmpty(), "Could not unlock all files" + StringUtils.join(exceptions, '\n'));
+        if (!exceptions.isEmpty()) {
+            MultipleFailuresError e = new MultipleFailuresError("Could not unlock all files", exceptions);
+            exceptions.forEach(e::addSuppressed);
+            throw e;
+        }
     }
 
     private synchronized void acquireLock(@NonNull File file) throws IOException {
@@ -270,6 +274,35 @@ class PathRemoverTest {
         assertFalse(d2.exists());
         assertFalse(f1.exists());
         assertFalse(d2f2.exists());
+    }
+
+    @Test
+    void testForceRemoveFile_PausingGCRetryStrategyFailureMessageSingular() throws IOException {
+        // A non-empty directory cannot be removed by Files.deleteIfExists (DirectoryNotEmptyException),
+        // which exhausts the PausingGCRetryStrategy deterministically on every platform (no lock needed).
+        File dir = newFolder(tmp, "junit-" + System.currentTimeMillis());
+        File child = new File(dir, "child");
+        touchWithFileName(child);
+        PathRemover remover = PathRemover.newFilteredRobustRemover(PathRemover.PathChecker.ALLOW_ALL, 0, false, 0);
+        Exception e = assertThrows(IOException.class, () -> remover.forceRemoveFile(dir.toPath()));
+        assertThat(e.getMessage(), allOf(
+                containsString(dir.getPath()),
+                containsString("Tried 1 time."),
+                not(containsString("Tried 1 times"))));
+    }
+
+    @Test
+    void testForceRemoveFile_PausingGCRetryStrategyFailureMessagePlural() throws IOException {
+        File dir = newFolder(tmp, "junit-" + System.currentTimeMillis());
+        File child = new File(dir, "child");
+        touchWithFileName(child);
+        PathRemover remover = PathRemover.newFilteredRobustRemover(PathRemover.PathChecker.ALLOW_ALL, 1, false, 0);
+        Exception e = assertThrows(IOException.class, () -> remover.forceRemoveFile(dir.toPath()));
+        assertThat(e.getMessage(), allOf(
+                containsString(dir.getPath()),
+                containsString("Tried 2 times"),
+                not(containsString("Tried 2 time ")),
+                not(containsString("Tried 2 time."))));
     }
 
     @Test

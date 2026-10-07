@@ -61,6 +61,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.logging.Level;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
@@ -72,12 +73,14 @@ import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.WebConnectionWrapper;
 import org.jenkinsci.plugins.matrixauth.PermissionEntry;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -99,6 +102,9 @@ class UserTest {
     void setUp(JenkinsRule rule) {
         j = rule;
     }
+
+    @AutoClose
+    LogRecorder logging = new LogRecorder().record(User.class, Level.FINE);
 
     public static class UserPropertyImpl extends UserProperty implements Action {
 
@@ -209,7 +215,7 @@ class UserTest {
         User user3 = User.get("John Smith");
         user3.setFullName("Alice Smith");
         assertEquals("John Smith", user3.getId(), "What was this asserting exactly?");
-        User user4 = User.get("Marie", false, Collections.EMPTY_MAP);
+        User user4 = User.get("Marie", false, Collections.emptyMap());
         assertNull(user4, "User should not be created because Marie does not exists.");
         }
     }

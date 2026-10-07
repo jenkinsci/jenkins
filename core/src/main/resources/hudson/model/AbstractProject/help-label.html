@@ -143,8 +143,11 @@
       evaluating expressions.
     </li>
     <li>
-      Matching labels or agent names with wildcards or regular expressions is
-      not supported.
+      Matching labels or agent names with wildcards (such as
+      <code>*</code>
+      or
+      <code>?</code>
+      ) or regular expressions is not supported.
     </li>
     <li>
       An empty expression will always evaluate to
@@ -166,6 +169,20 @@
       (or on any machine that happens to have a label called
       <code>linux-machine-42</code>
       )
+    </dd>
+
+    <dt><code>linux || macos</code></dt>
+    <dd>
+      Builds of this project may be executed on any agent that has either the
+      <code>linux</code>
+      label
+      <i>or</i>
+      the
+      <code>macos</code>
+      label (assuming that agents running Linux and macOS have been given the
+      appropriate labels). Note that the separator is
+      <code>||</code>
+      , not a comma
     </dd>
 
     <dt><code>windows &amp;&amp; jdk9</code></dt>

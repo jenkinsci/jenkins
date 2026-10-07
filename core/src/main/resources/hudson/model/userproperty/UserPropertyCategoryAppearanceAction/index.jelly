@@ -30,11 +30,9 @@ THE SOFTWARE.
     <l:layout permission="${app.ADMINISTER}" title="${%title}">
         <st:include page="sidepanel.jelly" it="${it.targetUser}" />
         <l:main-panel>
+            <l:app-bar title="${%title}" />
+
             <f:form method="post" action="configSubmit" name="config" class="jenkins-form">
-                <h1>
-                    ${%title}
-                </h1>
-    
                 <j:set var="instance" value="${it}"/>
                 <j:set var="descriptors" value="${it.myCategoryDescriptors}" />
                 <j:set var="instances" value="${it.targetUser.properties}" />

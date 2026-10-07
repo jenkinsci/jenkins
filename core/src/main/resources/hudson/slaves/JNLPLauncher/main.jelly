@@ -103,10 +103,10 @@ ${copy_java_cmd_secret2_windows}
           </p>
       </j:if>
     </j:when>
-    <j:otherwise>
+    <j:when test="${!it.offline}">
       <p>
         ${%slaveAgent.connected}
       </p>
-    </j:otherwise>
+    </j:when>
   </j:choose>
 </j:jelly>

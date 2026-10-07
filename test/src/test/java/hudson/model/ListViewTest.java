@@ -283,7 +283,7 @@ class ListViewTest {
         v.doCreateItem(req, rsp);
         List<TopLevelItem> items = v.getItems();
         assertEquals(1, items.size());
-        assertEquals("job1", items.get(0).getName());
+        assertEquals("job1", items.getFirst().getName());
     }
 
     @Issue("JENKINS-23411")
@@ -297,7 +297,7 @@ class ListViewTest {
 
         List<TopLevelItem> items = view.getItems();
         assertEquals(1, items.size());
-        assertEquals("job1", items.get(0).getName());
+        assertEquals("job1", items.getFirst().getName());
 
         // remove a contained job
         view.doRemoveJobFromView("job1");

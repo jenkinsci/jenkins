@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
+import jenkins.model.menu.event.LinkEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.For;
@@ -104,8 +105,8 @@ class ContextMenuTest {
 
     private static Map<String, String> parse(ContextMenu menu) {
         Map<String, String> r = new TreeMap<>();
-        for (MenuItem mi : menu.items) {
-            r.put(mi.url.replaceFirst("^.*/(.)", "$1"), mi.displayName);
+        for (MenuItem mi : menu.items.stream().filter(e -> e.getEvent() instanceof LinkEvent).toList()) {
+            r.put(((LinkEvent) mi.getEvent()).getUrl().replaceFirst("^.*/(.)", "$1"), mi.displayName);
         }
         return r;
     }

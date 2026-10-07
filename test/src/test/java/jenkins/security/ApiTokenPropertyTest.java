@@ -25,6 +25,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
@@ -503,6 +504,62 @@ class ApiTokenPropertyTest {
     }
 
     @Test
+    @Issue("JENKINS-75492")
+    void script_generateNewExpiringToken() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+        User user = User.getById("user", true);
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+
+        Collection<ApiTokenStore.HashedToken> beforeTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+
+        TokenUuidAndPlainValue token1 = apiTokenProperty.generateNewToken("token1", tomorrow);
+
+        Collection<ApiTokenStore.HashedToken> afterTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertEquals(beforeTokenList.size() + 1, afterTokenList.size());
+
+        checkTokenIsWorking(user.getId(), token1.plainValue);
+
+        TokenUuidAndPlainValue token2 = apiTokenProperty.generateNewToken("token2", tomorrow);
+        checkTokenIsWorking(user.getId(), token2.plainValue);
+        TokenUuidAndPlainValue token3 = apiTokenProperty.generateNewToken("token3", tomorrow);
+        checkTokenIsWorking(user.getId(), token3.plainValue);
+
+        Collection<ApiTokenStore.HashedToken> afterTokenList2 = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertEquals(beforeTokenList.size() + 3, afterTokenList2.size());
+    }
+
+    @Test
+    @Issue("JENKINS-75492")
+    void script_expiredTokenIsInvalid() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
+        LocalDate expired = LocalDate.now().minusDays(1);
+
+        User user = User.getById("user", true);
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+
+        Collection<ApiTokenStore.HashedToken> beforeTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+
+        TokenUuidAndPlainValue token1 = apiTokenProperty.generateNewToken("token1", expired);
+
+        Collection<ApiTokenStore.HashedToken> afterTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertEquals(beforeTokenList.size() + 1, afterTokenList.size());
+
+        checkTokenIsNotWorking(user.getId(), token1.plainValue);
+
+        TokenUuidAndPlainValue token2 = apiTokenProperty.generateNewToken("token2", expired);
+        checkTokenIsNotWorking(user.getId(), token2.plainValue);
+        TokenUuidAndPlainValue token3 = apiTokenProperty.generateNewToken("token3", expired);
+        checkTokenIsNotWorking(user.getId(), token3.plainValue);
+
+        Collection<ApiTokenStore.HashedToken> afterTokenList2 = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertEquals(beforeTokenList.size() + 3, afterTokenList2.size());
+    }
+
+    @Test
     @Issue("JENKINS-57484")
     void script_generateNewToken() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -545,6 +602,13 @@ class ApiTokenPropertyTest {
         assertThat(tokenList, empty());
 
         apiTokenProperty.generateNewToken("token1");
+        apiTokenProperty.revokeAllTokens();
+        tokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertThat(tokenList, empty());
+
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+        apiTokenProperty.generateNewToken("token2", tomorrow);
         apiTokenProperty.revokeAllTokens();
         tokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
         assertThat(tokenList, empty());
