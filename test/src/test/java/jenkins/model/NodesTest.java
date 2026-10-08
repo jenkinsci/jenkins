@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
@@ -59,6 +60,7 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -169,12 +171,25 @@ class NodesTest {
     @Test
     @Issue("JENKINS-56403")
     void replaceNodeShouldRemoveOldNode() throws Exception {
-        Node oldNode = r.createSlave("foo", "", null);
-        Node newNode = r.createSlave("foo-new", "", null);
+        // Manually creating agents because we don't want then #add'ed to the nodes list before we do that
+        DumbSlave oldNode = new DumbSlave("foo",
+                new File(r.jenkins.getRootDir(), "agent-work-dirs/foo").getAbsolutePath(),
+                r.createComputerLauncher(null));
+        oldNode.setRetentionStrategy(RetentionStrategy.NOOP);
+
+        final String newRemoteFs = new File(r.jenkins.getRootDir(), "agent-work-dirs/foo-new").getAbsolutePath();
+        DumbSlave newNode = new DumbSlave("foo-new",
+                newRemoteFs,
+                r.createComputerLauncher(null));
+        newNode.setRetentionStrategy(RetentionStrategy.NOOP);
+
         r.jenkins.addNode(oldNode);
         r.jenkins.getNodesObject().replaceNode(oldNode, newNode);
         r.jenkins.getNodesObject().load();
         assertNull(r.jenkins.getNode("foo"));
+        final Node newAfterReload = r.jenkins.getNode("foo-new");
+        assertNotNull(newAfterReload);
+        assertThat(((DumbSlave) newAfterReload).getRemoteFS(), is(newRemoteFs));
     }
 
     @Test

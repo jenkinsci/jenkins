@@ -30,6 +30,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.text.IsEmptyString.emptyOrNullString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -91,6 +93,47 @@ class AbstractItemSecurityTest {
         FreeStyleProject project = jenkinsRule.createFreeStyleProject("security-167");
         project.updateByXml((Source) new StreamSource(new StringReader(xml)));
         assertThat(project.getDescription(), is("&")); // the entity is transformed
+    }
+
+    @Test
+    void updateByXmlDoesNotOverwriteItemName() throws Exception {
+        FreeStyleProject carrier = jenkinsRule.createFreeStyleProject("carrier");
+        FreeStyleProject target = jenkinsRule.createFreeStyleProject("target");
+        target.setDescription("target-secret");
+
+        String carrierXml = carrier.getConfigFile().asString();
+        String poisoned = carrierXml.replace("<project>", "<project><name>target</name>");
+
+        carrier.updateByXml((Source) new StreamSource(new StringReader(poisoned)));
+
+        assertEquals("carrier", carrier.getName(),
+                "name must not be overwritten by submitted XML");
+        assertEquals("carrier", carrier.getParent().getItemName(carrier.getRootDir(), carrier),
+                "root directory must still resolve to 'carrier'");
+
+        FreeStyleProject stillTarget = jenkinsRule.jenkins.getItemByFullName("target", FreeStyleProject.class);
+        assertNotNull(stillTarget, "target job must still exist under its original name");
+        assertEquals("target-secret", stillTarget.getDescription(),
+                "target job must be unaffected");
+    }
+
+    @Test
+    void updateByXmlDoesNotEnableRenameToArbitraryName() throws Exception {
+        FreeStyleProject carrier = jenkinsRule.createFreeStyleProject("carrier");
+        jenkinsRule.createFreeStyleProject("target");
+
+        String carrierXml = carrier.getConfigFile().asString();
+        String poisoned = carrierXml.replace("<project>", "<project><name>target</name>");
+        carrier.updateByXml((Source) new StreamSource(new StringReader(poisoned)));
+
+        // Even after the malicious updateByXml, a rename of "carrier" must rename from "carrier",
+        // not from the injected name "target".
+        carrier.renameTo("new-name");
+
+        assertEquals("new-name", carrier.getName());
+        // The target job must still exist — the rename must not have evicted it.
+        assertNotNull(jenkinsRule.jenkins.getItemByFullName("target", FreeStyleProject.class),
+                "target job must still exist after carrier rename");
     }
 
 }

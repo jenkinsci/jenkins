@@ -100,6 +100,9 @@ public class BuildCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
         job.checkPermission(Item.BUILD);
+        if (sync) {
+            job.checkPermission(Item.CANCEL);
+        }
 
         ParametersAction a = null;
         if (!parameters.isEmpty()) {
@@ -206,8 +209,9 @@ public class BuildCommand extends CLICommand {
                     if (follow) {
                         return 125;
                     } else {
-                        // if the CLI is aborted, try to abort the build as well
-                        f.cancel(true);
+                        if (job.hasPermission(Item.CANCEL)) {
+                            f.cancel(true);
+                        }
                         Exception myException = new AbortException();
                         myException.initCause(e);
                         throw myException;

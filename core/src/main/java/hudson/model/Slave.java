@@ -75,6 +75,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.XStreamDeserializable;
 import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
@@ -160,6 +161,7 @@ public abstract class Slave extends Node implements Serializable {
      * @deprecated Removed with no replacement.
      */
     @Deprecated
+    @XStreamDeserializable
     private transient String userId;
 
     /**
@@ -746,6 +748,7 @@ public abstract class Slave extends Node implements Serializable {
      * @deprecated in 1.216
      */
     @Deprecated
+    @XStreamDeserializable
     private transient String agentCommand; // this was called 'agentCommand' from the beginning; not an accidental 2016 rename
 
     /**

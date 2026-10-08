@@ -86,6 +86,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.tasks.UserAvatarResolver;
 import hudson.util.Area;
+import hudson.util.FormApply;
 import hudson.util.FormValidation.CheckMethod;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
@@ -217,6 +218,11 @@ public class Functions {
     public Functions() {
     }
 
+    @Restricted(NoExternalUse.class)
+    public @CheckForNull FormApply.Notification getFormApplyNotification() {
+        return FormApply.getAndClearNotification(Stapler.getCurrentRequest2());
+    }
+
     /**
      * Generates an unique ID.
      */
@@ -234,6 +240,16 @@ public class Functions {
 
     public static boolean isModelWithChildren(Object o) {
         return o instanceof ModelObjectWithChildren;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static boolean isInstanceOf(Object o, String className) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            return clazz.isInstance(o);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     @Deprecated
@@ -582,7 +598,8 @@ public class Functions {
         String[] oldParts = prior == null ? new String[4] : logRecordPreformat(prior);
         String[] newParts = logRecordPreformat(r);
         for (int i = 0; i < /* not 4 */3; i++) {
-            newParts[i] = "<span class='" + (newParts[i].equals(oldParts[i]) ? "logrecord-metadata-old" : "logrecord-metadata-new") + "'>" + newParts[i] + "</span>";
+            String cls = newParts[i].equals(oldParts[i]) ? "logrecord-metadata-old" : "logrecord-metadata-new";
+            newParts[i] = "<span class='" + cls + "'>" + Util.xmlEscape(newParts[i]) + "</span>";
         }
         newParts[3] = Util.xmlEscape(newParts[3]);
         return newParts;

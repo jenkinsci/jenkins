@@ -25,9 +25,8 @@
 package hudson.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -49,15 +48,11 @@ class UpdateCenterPluginInstallTest {
     private JenkinsRule jenkinsRule;
 
     @BeforeEach
-    void setUp(JenkinsRule rule) {
-        try {
-            jenkinsRule = rule;
-            jenkinsRule.jenkins.getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(false);
-        } catch (Exception x) {
-            assumeTrue(false, x.toString());
-        }
+    void setUp(JenkinsRule rule) throws Exception {
+        jenkinsRule = rule;
+        jenkinsRule.jenkins.getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(false);
         InetSocketAddress address = new InetSocketAddress("updates.jenkins-ci.org", 80);
-        assumeFalse(address.isUnresolved(), "Unable to resolve updates.jenkins-ci.org. Skip test.");
+        assertFalse(address.isUnresolved(), "Unable to resolve updates.jenkins-ci.org");
     }
 
     @Test

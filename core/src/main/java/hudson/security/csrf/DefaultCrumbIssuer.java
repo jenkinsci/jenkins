@@ -24,6 +24,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.security.HexStringConfidentialKey;
+import jenkins.security.XStreamDeserializable;
+import jenkins.security.XStreamNotDeserializable;
 import jenkins.util.ClientHttpRedirect;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
@@ -45,7 +47,9 @@ import org.springframework.security.core.Authentication;
  */
 public class DefaultCrumbIssuer extends CrumbIssuer {
 
+    @XStreamNotDeserializable
     private transient MessageDigest md;
+    @XStreamDeserializable // may still appear in configs and is harmless, do not warn about it
     private transient boolean excludeClientIPFromCrumb;
 
     @Restricted(NoExternalUse.class)
