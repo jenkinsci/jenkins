@@ -24,9 +24,10 @@
 
 package hudson.security;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.User;
 import jenkins.model.Jenkins;
@@ -62,43 +63,58 @@ class ManageUserLinksReadOnlyModeTest {
         j = rule;
     }
 
+    private void setUpRealm() throws Exception {
+        HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(realm);
+        realm.createAccount("admin", "admin");
+        realm.createAccount("viewer", "viewer");
+        realm.createAccount("nobody", "nobody");
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().to("admin")
+                .grant(Jenkins.READ, Jenkins.SYSTEM_READ).everywhere().to("viewer")
+                .grant(Jenkins.READ).everywhere().to("nobody"));
+    }
+
+    @Issue("JENKINS-62430")
+    @Test
+    void systemReadViewerSeesUsersLinkOnManagePage() throws Exception {
+        setUpRealm();
+        JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("viewer", "viewer");
+        HtmlPage manage = wc.goTo("manage/");
+        assertNotNull(manage.querySelector("a[href$='/manage/securityRealm/']"),
+                "a SYSTEM_READ viewer must see the 'Users' link on /manage");
+    }
+
     @Issue("JENKINS-62430")
     @Test
     void systemReadViewerCanSeePageWithoutMutatingControls() throws Exception {
-        HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
-        j.jenkins.setSecurityRealm(realm);
-        realm.createAccount("viewer", "viewer");
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.ADMINISTER).everywhere().to("admin")
-                .grant(Jenkins.READ, Jenkins.SYSTEM_READ).everywhere().to("viewer"));
-
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.withBasicCredentials("viewer", "viewer");
+        setUpRealm();
+        JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("viewer", "viewer");
         HtmlPage page = wc.goTo("manage/securityRealm/");
 
         assertNull(page.querySelector("[data-dialog-url='addUserDialog']"),
                 "a SYSTEM_READ-only viewer must not see the 'Create User' button");
-        assertNull(page.querySelector("a[class*='destructive-color']"),
+        assertNull(page.querySelector("#people a[class*='destructive-color']"),
                 "a SYSTEM_READ-only viewer must not see any delete button");
-        assertTrue(page.asNormalizedText().contains("viewer"),
+        assertNotNull(page.querySelector("#people a[href='user/admin/']"),
                 "the user list itself should still be visible to the SYSTEM_READ viewer");
+        assertNull(page.querySelector("#people a[href='user/admin/account']"),
+                "a SYSTEM_READ-only viewer must not see account settings links for other users");
+        assertNotNull(page.querySelector("#people a[href='user/viewer/account']"),
+                "a SYSTEM_READ-only viewer should still see the account settings link for their own account");
     }
 
     @Issue("JENKINS-62430")
     @Test
     void viewerWithoutSystemReadIsDenied() throws Exception {
-        HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
-        j.jenkins.setSecurityRealm(realm);
-        realm.createAccount("nobody", "nobody");
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.ADMINISTER).everywhere().to("admin")
-                .grant(Jenkins.READ).everywhere().to("nobody"));
-
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.withBasicCredentials("nobody", "nobody");
-
+        setUpRealm();
+        JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("nobody", "nobody");
         FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class,
                 () -> wc.goTo("manage/securityRealm/"));
-        assertTrue(ex.getStatusCode() == 403, "expected 403 for a viewer without SYSTEM_READ or ADMINISTER");
+        assertEquals(403, ex.getStatusCode());
+        HtmlPage manage = j.createWebClient().withBasicCredentials("nobody", "nobody")
+                .withThrowExceptionOnFailingStatusCode(false).goTo("manage/");
+        assertNull(manage.querySelector("a[href$='/manage/securityRealm/']"));
     }
+
 }

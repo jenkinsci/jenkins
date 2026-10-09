@@ -65,11 +65,13 @@ THE SOFTWARE.
               ${user.fullName}
             </td>
             <td>
-              <div class="jenkins-table__cell__button-wrapper">
-                <a href="${user.url}/account" class="jenkins-button jenkins-button--tertiary">
-                  <l:icon src="symbol-settings" />
-                </a>
-              </div>
+              <j:if test="${user.hasPermission(app.ADMINISTER)}">
+                <div class="jenkins-table__cell__button-wrapper">
+                  <a href="${user.url}/account" class="jenkins-button jenkins-button--tertiary">
+                    <l:icon src="symbol-settings" />
+                  </a>
+                </div>
+              </j:if>
             </td>
             <td>
               <j:if test="${user.canDelete()}">
