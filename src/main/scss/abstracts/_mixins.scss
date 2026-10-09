@@ -137,7 +137,7 @@
     var(--overlay-surface-background) $opacity,
     transparent
   );
-  box-shadow: var(--overlay-surface-box-shadow);
+  box-shadow: var(--elevation-3-box-shadow);
   border: none;
   outline: none;
 

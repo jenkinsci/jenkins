@@ -74,6 +74,7 @@ $inset: 0.6875rem;
     &--active {
       font-weight: var(--font-bold-weight);
       cursor: default;
+      box-shadow: var(--elevation-2-box-shadow);
 
       &::before {
         background-color: var(--item-background--active) !important;

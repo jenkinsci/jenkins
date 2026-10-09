@@ -207,6 +207,7 @@
   background: var(--card-background);
   border: var(--jenkins-border);
   margin-bottom: var(--section-padding);
+  box-shadow: var(--elevation-2-box-shadow);
 
   &__item {
     --tertiary-color: var(--text-color-secondary);
