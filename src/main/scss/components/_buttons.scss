@@ -57,7 +57,7 @@
 
   color: var(--color) !important;
   // Keep in sync with theme.scss' --elevation-2-box-shadow
-  box-shadow: inset 0 10px 10px color-mix(in srgb, white 1.5%, transparent), 0 2px 2px color-mix(in sRGB, var(--color) 3%, transparent);
+  box-shadow: inset 0 10px 10px color-mix(in srgb, white 1.5%, transparent), 0 2px 2px color-mix(in sRGB, var(--color) 4%, transparent);
 }
 
 .jenkins-button--primary[class*="color"] {
