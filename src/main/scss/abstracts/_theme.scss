@@ -79,7 +79,7 @@ $semantics: (
   --background: rgb(254 254 254);
 
   // Elevation
-  --elevation-1-box-shadow: 0 1.5px 1px color-mix(in sRGB, var(--color, var(--black)) 100%, transparent);
+  --elevation-1-box-shadow: 0 2px 2px color-mix(in sRGB, var(--black) 3%, transparent);
 
   --elevation-2-box-shadow: var(--elevation-1-box-shadow);
 
