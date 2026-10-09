@@ -219,7 +219,7 @@
     transition: var(--standard-transition);
     box-shadow:
       0 0 0 0 transparent,
-      0 0 0 0.5rem transparent;
+      var(--focus-ring--hidden);
 
     &:not(:last-of-type) {
       border-bottom: var(--jenkins-border);
@@ -264,7 +264,7 @@
 
       &:has(.app-temporary-list__item__label:focus-visible) {
         background: var(--button-background--hover);
-        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+        box-shadow: var(--focus-ring--keyboard) !important;
       }
     }
 
@@ -428,10 +428,10 @@
     &:is(a) {
       border-radius: 100px;
       transition: var(--standard-transition);
-      box-shadow: 0 0 0 0.5rem transparent;
+      box-shadow: var(--focus-ring--hidden);
 
       &:focus-visible {
-        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+        box-shadow: var(--focus-ring--keyboard) !important;
       }
     }
 
