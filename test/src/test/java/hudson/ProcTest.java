@@ -2,7 +2,6 @@ package hudson;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
@@ -21,6 +20,8 @@ import java.nio.charset.Charset;
 import jenkins.security.MasterToSlaveCallable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -104,14 +105,14 @@ class ProcTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "TODO: Implement this test for Windows")
     void ioPumpingWithLocalLaunch() throws Exception {
-        assumeFalse(Functions.isWindows(), "TODO: Implement this test for Windows");
         doIoPumpingTest(new LocalLauncher(new StreamTaskListener(System.out, Charset.defaultCharset())));
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "TODO: Implement this test for Windows")
     void ioPumpingWithRemoteLaunch() throws Exception {
-        assumeFalse(Functions.isWindows(), "TODO: Implement this test for Windows");
         doIoPumpingTest(new RemoteLauncher(
                 new StreamTaskListener(System.out, Charset.defaultCharset()),
                 createSlaveChannel(), true));
