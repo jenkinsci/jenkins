@@ -76,33 +76,23 @@ $semantics: (
   --unstable-build-icon-color: var(--orange);
 
   // Background colors
-  --background: rgb(250 250 250);
+  --background: rgb(254 254 254);
 
   // Elevation
-  --elevation-1-background: rgb(252 252 252); // Page frame
-  --elevation-1-box-shadow: 0 2px 2px color-mix(in sRGB, black 4%, transparent);
+  --elevation-1-box-shadow: 0 1.5px 1px color-mix(in sRGB, var(--color, var(--black)) 100%, transparent);
 
-  --elevation-2-background: rgb(254 254 254); // Cards, lists, inputs
   --elevation-2-box-shadow: var(--elevation-1-box-shadow);
 
-  --elevation-3-background: rgb(255 255 255); // Dropdowns, tooltips, modals
   --elevation-3-box-shadow:
           0 0 0 1px color-mix(in sRGB, var(--black) 5%, transparent),
           0 15px 40px color-mix(in sRGB, var(--black) 15%, transparent),
           0 2px 8px color-mix(in sRGB, var(--black) 7.5%, transparent);
 
-  --elevation-4-background: rgb(255 255 255); // Cards, lists, inputs inside of elevation-3
-
   // Body
   --body-background-top: color-mix(
     in oklch,
     white 1.5%,
-    var(--elevation-1-background)
-  );
-  --body-background-bottom: color-mix(
-          in oklch,
-          black 0.5%,
-          var(--elevation-1-background)
+    var(--card-background)
   );
 
   // Header
@@ -189,8 +179,13 @@ $semantics: (
   }
 
   // Table
+  --table-background: color-mix(
+    in oklch,
+    var(--text-color-secondary) 7.5%,
+    var(--white)
+  );
   --table-header-foreground: var(--text-color);
-  --table-body-background: var(--elevation-2-background);
+  --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
   --table-border-radius: var(--form-input-border-radius);
   --table-row-border-radius: 0.3125rem;
@@ -219,6 +214,13 @@ $semantics: (
 
   // Tooltips
   --tooltip-color: var(--text-color);
+
+  // Overlay surfaces
+  --overlay-surface-background: color-mix(
+    in sRGB,
+    var(--card-background),
+    var(--white) 2.5%
+  );
 
   ::backdrop {
     --dialog-backdrop-backdrop-filter: blur(0.25px);
@@ -251,7 +253,7 @@ $semantics: (
   --pane-link-color--visited: black;
 
   // Cards
-  --card-background: var(--elevation-2-background);
+  --card-background: var(--white);
   --card-background--hover: transparent;
   --card-background--active: transparent;
   --card-border-color: var(--jenkins-border-color);
@@ -273,7 +275,7 @@ $semantics: (
     var(--text-color-secondary),
     var(--text-color)
   );
-  --tabs-item-background--selected: var(--elevation-2-background);
+  --tabs-item-background--selected: var(--white);
 
   // Side panel
   --side-panel-width: 340px;
@@ -282,7 +284,7 @@ $semantics: (
 
   // Form
   --section-padding: 1.25rem;
-  --input-color: var(--elevation-2-background);
+  --input-color: var(--white);
   --input-border: color-mix(
     in sRGB,
     var(--text-color-secondary) 25%,
