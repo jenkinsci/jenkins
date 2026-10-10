@@ -126,6 +126,7 @@
 
   &::after {
     border: var(--jenkins-border);
+    box-shadow: var(--elevation-1-box-shadow);
     z-index: 1;
   }
 }

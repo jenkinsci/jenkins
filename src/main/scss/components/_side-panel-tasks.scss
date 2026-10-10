@@ -52,8 +52,8 @@ $inset: 0.6875rem;
 
       svg,
       img {
-        width: 1.25rem !important;
-        height: 1.25rem !important;
+        width: 1.125rem !important;
+        height: 1.125rem !important;
         color: var(--text-color);
 
         * {
@@ -74,9 +74,10 @@ $inset: 0.6875rem;
     &--active {
       font-weight: var(--font-bold-weight);
       cursor: default;
+      box-shadow: var(--elevation-2-box-shadow);
 
       &::before {
-        background-color: var(--item-background--active) !important;
+        background-color: var(--button-background) !important;
       }
 
       &::after {
@@ -95,7 +96,6 @@ $inset: 0.6875rem;
 .jenkins-side-nav__heading {
   font-size: var(--font-size-sm);
   color: var(--text-color-secondary);
-  font-weight: var(--font-bold-weight);
   margin: 1rem 0 0.375rem $inset;
 
   &:first-of-type {

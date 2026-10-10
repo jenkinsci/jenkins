@@ -47,7 +47,7 @@ $skip-link-box-shadow: 0 0 50px -15px var(--yellow);
 
   &:focus-visible {
     box-shadow:
-      0 0 0 0.2rem var(--yellow),
+      0 0 0 var(--focus-ring-width--keyboard) var(--yellow),
       $skip-link-box-shadow;
     opacity: 1;
     scale: 100%;
