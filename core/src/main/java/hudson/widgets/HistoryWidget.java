@@ -47,6 +47,7 @@ import jenkins.model.HistoricalBuild;
 import jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag;
 import jenkins.util.SystemProperties;
 import jenkins.widgets.HistoryPageEntry;
+import jenkins.widgets.HistoryPageEntryDecorator;
 import jenkins.widgets.HistoryPageFilter;
 import jenkins.widgets.WidgetFactory;
 import org.jenkinsci.Symbol;
@@ -140,6 +141,22 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
 
     public String getFirstTransientBuildKey() {
         return firstTransientBuildKey;
+    }
+
+    /**
+     * Returns one entry per registered {@link HistoryPageEntryDecorator}, in extension order, so that every row
+     * renders the same columns. Decorators that aren't applicable to the build are {@code null}.
+     */
+    @Restricted(DoNotUse.class)
+    public @NonNull List<HistoryPageEntryDecorator.EntryContext> getEntryDecorators(@NonNull HistoryPageEntry<HistoricalBuild> pageEntry) {
+        List<HistoryPageEntryDecorator.EntryContext> entryDecorators = new ArrayList<>();
+        HistoricalBuild build = pageEntry.getEntry();
+        for (HistoryPageEntryDecorator decorator : HistoryPageEntryDecorator.all()) {
+            entryDecorators.add(decorator.isApplicable(this, build)
+                    ? new HistoryPageEntryDecorator.EntryContext(decorator, this, pageEntry)
+                    : null);
+        }
+        return entryDecorators;
     }
 
     /**
