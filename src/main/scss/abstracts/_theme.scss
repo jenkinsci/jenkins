@@ -79,14 +79,15 @@ $semantics: (
   --background: rgb(254 254 254);
 
   // Elevation
-  --elevation-1-box-shadow: 0 2px 2px color-mix(in sRGB, var(--black) 3.5%, transparent);
+  --elevation-1-box-shadow: 0 2px 2px
+    color-mix(in sRGB, var(--black) 3.5%, transparent);
 
   --elevation-2-box-shadow: var(--elevation-1-box-shadow);
 
   --elevation-3-box-shadow:
-          0 0 0 1px color-mix(in sRGB, var(--black) 5%, transparent),
-          0 15px 40px color-mix(in sRGB, var(--black) 15%, transparent),
-          0 2px 8px color-mix(in sRGB, var(--black) 7.5%, transparent);
+    0 0 0 1px color-mix(in sRGB, var(--black) 5%, transparent),
+    0 15px 40px color-mix(in sRGB, var(--black) 15%, transparent),
+    0 2px 8px color-mix(in sRGB, var(--black) 7.5%, transparent);
 
   // Body
   --body-background-top: color-mix(
@@ -310,13 +311,15 @@ $semantics: (
   --focus-ring-width: 0.1875rem;
   --focus-ring--hidden: 0 0 0 0.375rem transparent;
   --focus-ring-width--keyboard: 0.2rem;
-  --focus-ring--keyboard: 0 0 0 var(--focus-ring-width--keyboard) var(--text-color);
+  --focus-ring--keyboard: 0 0 0 var(--focus-ring-width--keyboard)
+    var(--text-color);
 
   --form-label-font-weight: var(--font-bold-weight);
   --form-input-padding: 0.5rem 0.625rem;
   --form-input-border-radius: 0.6875rem;
   --form-input-glow: var(--focus-ring--hidden);
-  --form-input-glow--focus: 0 0 0 var(--focus-ring-width) var(--focus-input-glow);
+  --form-input-glow--focus: 0 0 0 var(--focus-ring-width)
+    var(--focus-input-glow);
   --pre-background: var(--button-background);
   --pre-color: var(--text-color);
   --selection-color: oklch(from var(--accent-color) l c h / 0.2);
