@@ -96,22 +96,13 @@ public abstract class AuthorizationStrategy implements Describable<Authorization
      * Implementation can choose to provide different ACL for different views.
      * This can be used as a basis for more fine-grained access control.
      *
-     * <p>
-     * The default implementation makes the view visible if any of the items are visible
-     * or the view is configurable.
-     *
      * @since 1.220
      */
     public @NonNull ACL getACL(final @NonNull View item) {
         return ACL.lambda2((a, permission) -> {
                 ACL base = item.getOwner().getACL();
 
-                boolean hasPermission = base.hasPermission2(a, permission);
-                if (!hasPermission && permission == View.READ) {
-                    return base.hasPermission2(a, View.CONFIGURE) || !item.getItems().isEmpty();
-                }
-
-                return hasPermission;
+                return base.hasPermission2(a, permission);
         });
     }
 
