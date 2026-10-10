@@ -28,11 +28,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div class="jenkins-section">
-    <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html">
-      <f:textarea name="nodeDescription" value="${it.nodeDescription}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
-    </f:entry>
-  </div>
+  <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html">
+    <f:textarea name="nodeDescription" value="${it.nodeDescription}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+  </f:entry>
 
   <f:entry title="${%Number of executors}" field="numExecutors">
     <f:number clazz="positive-number-required" min="1" step="1" default="1"/>
@@ -51,7 +49,6 @@ THE SOFTWARE.
   <!-- TODO: should be packaged as a tag -->
   <j:set var="computerLauncherDescriptors" value="${descriptor.computerLauncherDescriptors(it)}"/>
   <f:dropdownDescriptorSelector title="${%Launch method}" field="launcher" descriptors="${computerLauncherDescriptors}"/>
-
   <!-- pointless to show this if there's only one option, which is the default -->
   <j:set var="retentionStrategies" value="${descriptor.retentionStrategyDescriptors(it)}"/>
   <j:if test="${retentionStrategies.size() gt 1}">
@@ -61,5 +58,4 @@ THE SOFTWARE.
   <f:descriptorList title="${%Node Properties}"
                     descriptors="${descriptor.nodePropertyDescriptors(it)}"
                     field="nodeProperties" />
-
 </j:jelly>
