@@ -498,8 +498,9 @@ class JobTest {
 
         var response = project.getJobTabs();
 
-        assertThat(response, hasSize(1));
-        assertThat(response.getFirst().getDisplayName(), equalTo("Test"));
+        assertThat(response, hasSize(2));
+        assertThat(response.get(0).getDisplayName(), equalTo("Overview"));
+        assertThat(response.get(1).getDisplayName(), equalTo("Test"));
     }
 
     /**
