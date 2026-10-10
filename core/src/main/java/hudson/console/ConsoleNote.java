@@ -194,7 +194,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * encoding is ASCII compatible.
      */
     public void encodeTo(Writer out) throws IOException {
-        out.write(encodeToBytes().toString());
+        out.write(encodeToBytes().toString(StandardCharsets.UTF_8));
     }
 
     private ByteArrayOutputStream encodeToBytes() throws IOException {
@@ -224,7 +224,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * Works like {@link #encodeTo(Writer)} but obtain the result as a string.
      */
     public String encode() throws IOException {
-        return encodeToBytes().toString();
+        return encodeToBytes().toString(StandardCharsets.UTF_8);
     }
 
     /**
