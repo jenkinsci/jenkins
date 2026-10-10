@@ -196,15 +196,27 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
   }
 
   const tag =
-    itemOptions.event && itemOptions.event.type === "GET" ? "a" : "button";
+    itemOptions.event &&
+    itemOptions.event.url &&
+    itemOptions.event.type === "GET"
+      ? "a"
+      : "button";
 
-  // Do not prepend the context path for root-relative or absolute URLs
   if (tag === "a") {
-    if (
-      itemOptions.event.url.startsWith("/") ||
-      itemOptions.event.url.startsWith("http")
-    ) {
+    const itemUrl = itemOptions.event.url;
+    if (itemUrl.startsWith("http") || itemUrl.startsWith("//")) {
       context = "";
+    } else if (itemUrl.startsWith("/")) {
+      const rootUrl = document.head.dataset.rooturl;
+      if (
+        rootUrl &&
+        !itemUrl.startsWith(rootUrl + "/") &&
+        itemUrl !== rootUrl
+      ) {
+        context = rootUrl;
+      } else {
+        context = "";
+      }
     }
   }
 
@@ -292,8 +304,20 @@ function tryConfirmationPost(element, opt, context) {
         () => {
           const form = document.createElement("form");
           form.setAttribute("method", "POST");
-          if (opt.event.postTo.startsWith("/")) {
+          if (
+            opt.event.postTo.startsWith("http") ||
+            opt.event.postTo.startsWith("//")
+          ) {
             form.setAttribute("action", xmlEscape(opt.event.postTo));
+          } else if (opt.event.postTo.startsWith("/")) {
+            const rootUrl = document.head.dataset.rooturl;
+            const prefix =
+              rootUrl &&
+              !opt.event.postTo.startsWith(rootUrl + "/") &&
+              opt.event.postTo !== rootUrl
+                ? rootUrl
+                : "";
+            form.setAttribute("action", prefix + xmlEscape(opt.event.postTo));
           } else {
             form.setAttribute("action", context + xmlEscape(opt.event.postTo));
           }
@@ -314,9 +338,16 @@ function tryPost(element, opt, context) {
     return;
   }
 
-  // Do not prepend the context path for root-relative URLs
-  if (opt.event.url.startsWith("/")) {
+  const itemUrl = opt.event.url;
+  if (itemUrl.startsWith("http") || itemUrl.startsWith("//")) {
     context = "";
+  } else if (itemUrl.startsWith("/")) {
+    const rootUrl = document.head.dataset.rooturl;
+    if (rootUrl && !itemUrl.startsWith(rootUrl + "/") && itemUrl !== rootUrl) {
+      context = rootUrl;
+    } else {
+      context = "";
+    }
   }
 
   element.addEventListener("click", () => {
