@@ -482,9 +482,15 @@
   }
 }
 
-// Stop columns shrinking while their natural widths are measured
+// While natural widths are measured, stop columns shrinking, and have their
+// content report its natural width too, whatever flex-basis it uses to fill
+// the column (a 0 basis would otherwise only report its min-width)
 .app-build-columns--measuring
   .app-build-item--columns
   > .app-build-item__column {
   flex-shrink: 0;
+
+  & > * {
+    flex-basis: auto !important;
+  }
 }

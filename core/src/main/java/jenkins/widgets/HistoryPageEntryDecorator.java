@@ -37,6 +37,11 @@ import jenkins.model.HistoricalBuild;
  *
  * <p>Implementations may define an {@code entry.jelly} view. That view is rendered with {@link EntryContext}
  * as {@code it}.
+ *
+ * <p>Each decorator is rendered in its own column, sized to fit its widest entry. When there isn't room for
+ * every column, later ones are hidden. Like a flex item, a decorator's content can't shrink below its natural
+ * width by default; to let its column shrink rather than be hidden, give the view's root element an explicit
+ * CSS {@code min-width}, and the column will be shrunk down to that first.
  */
 public abstract class HistoryPageEntryDecorator implements ExtensionPoint {
 
