@@ -125,6 +125,29 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.5.6</version>
+        <!--
+          ShadedJarCryptoIT guards the BouncyCastle excludes in the shade filter below. It has to
+          run after package, against the shaded jar: the ordinary test classpath still carries the
+          untrimmed bcprov, so a surefire test would pass no matter what the filter removed.
+        -->
+        <configuration>
+          <systemPropertyVariables>
+            <shaded.cli.jar>${project.build.directory}/${project.build.finalName}.jar</shaded.cli.jar>
+          </systemPropertyVariables>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <version>3.6.2</version>
         <executions>
@@ -184,6 +207,61 @@
                       defeat compile avoidance. A runtime CLI jar has no compile-time processor.
                     -->
                     <exclude>META-INF/services/javax.annotation.processing.Processor</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <!--
+                    BouncyCastle is here only for Apache MINA SSHD, which negotiates post-quantum
+                    key exchange by default. Everything sshd can negotiate is kept: of the pqc tree
+                    it names only pqc/crypto/ntruprime (sntrup761), and ML-KEM lives in
+                    crypto/{params,kems,generators}, outside pqc. The families excluded below are
+                    ones sshd never asks for. They are not obsolete crypto, just unreachable here.
+
+                    Two things to keep in mind when bumping mina-sshd or bcprov:
+                      - Revisit this list. If sshd gains post-quantum host key signatures it will
+                        need mldsa/slhdsa/falcon back. CliCryptoTest asserts that every key
+                        exchange sshd offers by default is still supported, so a miss fails the
+                        build rather than silently downgrading the connection. sshd swallows the
+                        NoClassDefFoundError and just reports isSupported() == false.
+                      - Do not exclude pqc/jcajce. BouncyCastleProvider's constructor calls
+                        loadPQCKeys(), which does a hard "new" on every KeyFactorySpi there, so
+                        removing it stops the provider registering and takes Ed25519 with it. The
+                        algorithm implementations behind those shells resolve lazily and are the
+                        part that is safe to drop.
+
+                    Paths are pre-relocation, since filters are applied as source artifacts are read.
+                  -->
+                  <artifact>org.bouncycastle:bcprov-jdk18on</artifact>
+                  <excludes>
+                    <!-- Deprecated by BouncyCastle itself: Rainbow was broken in 2022, Picnic did
+                         not survive NIST selection. Picnic alone is over a megabyte. -->
+                    <exclude>org/bouncycastle/pqc/legacy/**</exclude>
+                    <!-- Signature and KEM families sshd never asks for. -->
+                    <exclude>org/bouncycastle/pqc/crypto/aimer/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/cmce/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/faest/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/falcon/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/frodo/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/haetae/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/hawk/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/hqc/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/lms/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/mayo/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/mldsa/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/mqom/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/newhope/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/ntru/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/ntruplus/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/qruov/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/saber/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/sdith/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/slhdsa/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/snova/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/sphincs/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/sqisign/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/uov/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/xmss/**</exclude>
+                    <exclude>org/bouncycastle/pqc/crypto/xwing/**</exclude>
                   </excludes>
                 </filter>
               </filters>
