@@ -464,11 +464,12 @@
     }
   }
 
-  // The first column gives up space before the row overflows
+  // The first column fits its content, only giving up space (and wrapping)
+  // when the row is too narrow for it
   & > .app-build-item__column--primary {
     align-items: start;
     flex-shrink: 1;
-    max-width: max(500px, 30vw);
+    max-width: none;
   }
 
   & > .app-build-item__column--hidden {

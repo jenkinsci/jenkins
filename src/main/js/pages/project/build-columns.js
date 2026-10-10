@@ -8,7 +8,8 @@ const MEASURING_CLASS = "app-build-columns--measuring";
  * Widest each build's cells have been, by page entry ID. Rows are re-rendered
  * on every refresh and some decorators fill themselves in client-side after
  * that, so without this a column would briefly shrink (and the columns after
- * it fit) until they do.
+ * it fit) until they do. It also stops content that adapts to the width it's
+ * given from settling on a smaller size after its column was hidden.
  * @type {WeakMap<HTMLElement, Map<string, number[]>>}
  */
 const rememberedWidths = new WeakMap();
@@ -18,6 +19,10 @@ const rememberedWidths = new WeakMap();
  * column is as wide as its widest cell (capped by the stylesheet) and lines up
  * across rows. The first column is always shown; later columns are shown in
  * order for as long as they fit, and the rest are hidden.
+ *
+ * A column whose cells have content but haven't rendered anything yet, e.g. a
+ * decorator that renders client-side, is given its full max-width so it can
+ * render into that space. The next layout then shrinks it to what it used.
  * @param {HTMLElement} container
  */
 export function layoutBuildColumns(container) {
@@ -43,9 +48,12 @@ export function layoutBuildColumns(container) {
   const widthsByRow = rows.map((row, r) => {
     const id = row.closest("[page-entry-id]")?.getAttribute("page-entry-id");
     const previous = (id && previousWidths.get(id)) || [];
-    const rowWidths = cellsByRow[r].map((cell, i) =>
-      Math.max(Math.ceil(cell.getBoundingClientRect().width), previous[i] ?? 0),
-    );
+    const rowWidths = cellsByRow[r].map((cell, i) => {
+      const width = isPending(cell)
+        ? 0
+        : Math.ceil(cell.getBoundingClientRect().width);
+      return Math.max(width, previous[i] ?? 0);
+    });
     if (id) {
       widths.set(id, rowWidths);
     }
@@ -58,6 +66,7 @@ export function layoutBuildColumns(container) {
   for (let i = 0; i < columnCount; i++) {
     let width = 0;
     let hasContent = i === 0;
+    let maxWidth = Infinity;
     cellsByRow.forEach((cells, r) => {
       const cell = cells[i];
       if (!cell) {
@@ -66,7 +75,12 @@ export function layoutBuildColumns(container) {
       width = Math.max(width, widthsByRow[r][i]);
       hasContent ||=
         cell.childElementCount > 0 || cell.textContent.trim() !== "";
+      maxWidth = parseFloat(getComputedStyle(cell).maxWidth) || Infinity;
     });
+    // Nothing has rendered in this column yet, so offer it all the room it may use
+    if (hasContent && width === 0 && Number.isFinite(maxWidth)) {
+      width = maxWidth;
+    }
     columns.push({ width, hasContent });
   }
 
@@ -103,6 +117,24 @@ export function layoutBuildColumns(container) {
 }
 
 /**
+ * Whether a cell has content that hasn't taken up any space yet.
+ * @param {HTMLElement} cell
+ * @return {boolean}
+ */
+function isPending(cell) {
+  if (cell.childElementCount === 0) {
+    return false;
+  }
+  const style = getComputedStyle(cell);
+  const chrome =
+    parseFloat(style.paddingLeft) +
+    parseFloat(style.paddingRight) +
+    parseFloat(style.borderLeftWidth) +
+    parseFloat(style.borderRightWidth);
+  return cell.getBoundingClientRect().width - chrome < 1;
+}
+
+/**
  * Lays out the build columns whenever the container's width or contents change.
  * Contents can change after the rows are inserted, e.g. when a decorator
  * renders itself client-side, so the layout can't only run on insertion.
@@ -118,8 +150,6 @@ export function observeBuildColumns(container) {
     const width = entry.contentRect.width;
     if (width !== lastWidth) {
       lastWidth = width;
-      // Remembered widths may be capped by the old viewport size, so measure afresh
-      rememberedWidths.delete(container);
       layout();
     }
   }).observe(container);
