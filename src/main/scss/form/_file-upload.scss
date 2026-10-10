@@ -42,7 +42,10 @@
     white-space: nowrap;
     background: var(--button-background);
     transition: var(--standard-transition);
-    box-shadow: var(--form-input-glow);
+    box-shadow:
+      inset 0 10px 10px color-mix(in sRGB, white 1.5%, transparent),
+      var(--elevation-2-box-shadow),
+      var(--form-input-glow);
     border: var(--jenkins-border);
 
     &:hover {
@@ -51,7 +54,10 @@
 
     &:active {
       background: var(--button-background--active);
-      box-shadow: 0 0 0 4px var(--button-box-shadow--focus);
+      box-shadow:
+        inset 0 10px 10px color-mix(in sRGB, white 1.5%, transparent),
+        var(--elevation-2-box-shadow),
+        0 0 0 var(--focus-ring-width) var(--button-box-shadow--focus);
     }
   }
 
