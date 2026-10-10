@@ -27,10 +27,13 @@ package hudson.scm;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Job;
 import hudson.util.DescriptorList;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
 import java.util.List;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
 
@@ -56,12 +59,23 @@ public class SCMS {
      */
     @SuppressWarnings("deprecation")
     public static SCM parseSCM(StaplerRequest2 req, AbstractProject target) throws FormException, ServletException {
-        SCM scm = SCM.all().newInstanceFromRadioList(req.getSubmittedForm().getJSONObject("scm"));
+        List<SCMDescriptor<?>> applicableDescriptors = SCM._for((Job) target);
+        SCM scm = newInstanceFromRadioList(applicableDescriptors, req.getSubmittedForm().getJSONObject("scm"));
         if (scm == null) {
             scm = new NullSCM(); // JENKINS-36043 workaround for AbstractMultiBranchProject.submit
         }
         scm.getDescriptor().incrementGeneration();
         return scm;
+    }
+
+    private static SCM newInstanceFromRadioList(List<SCMDescriptor<?>> descriptors, JSONObject config) throws FormException {
+        if (config.isNullObject())
+            return null;
+        int idx = config.getInt("value");
+        if (idx < 0 || idx >= descriptors.size()) {
+            throw new FormException("Invalid SCM index: " + idx, "scm");
+        }
+        return descriptors.get(idx).newInstance(Stapler.getCurrentRequest2(), config);
     }
 
     /**
