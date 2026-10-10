@@ -51,12 +51,14 @@ import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -66,7 +68,8 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
 /**
- * Creates {@link Node}s to dynamically expand/shrink the agents attached to Hudson.
+ * Creates {@link Node}s to dynamically expand/shrink the agents attached to
+ * Hudson.
  *
  * <p>
  * Put another way, this class encapsulates different communication protocols
@@ -74,18 +77,25 @@ import org.kohsuke.stapler.verb.POST;
  *
  * <h2>Notes for implementers</h2>
  * <h3>Automatically delete idle agents</h3>
- * Nodes provisioned from a cloud do not automatically get released just because it's created from {@link Cloud}.
- * Doing so requires a use of {@link RetentionStrategy}. Instantiate your {@link Slave} subtype with something
- * like {@link CloudSlaveRetentionStrategy} so that it gets automatically deleted after some idle time.
+ * Nodes provisioned from a cloud do not automatically get released just because
+ * it's created from {@link Cloud}.
+ * Doing so requires a use of {@link RetentionStrategy}. Instantiate your
+ * {@link Slave} subtype with something
+ * like {@link CloudSlaveRetentionStrategy} so that it gets automatically
+ * deleted after some idle time.
  *
  * <h3>Freeing an external resource when an agent is removed</h3>
- * Whether you do auto scale-down or not, you often want to release an external resource tied to a cloud-allocated
+ * Whether you do auto scale-down or not, you often want to release an external
+ * resource tied to a cloud-allocated
  * agent when it is removed.
  *
  * <p>
- * To do this, have your {@link Slave} subtype remember the necessary handle (such as EC2 instance ID)
- * as a field. Such fields need to survive the user-initiated re-configuration of {@link Slave}, so you'll need to
- * expose it in your {@link Slave} {@code configure-entries.jelly} and read it back in through {@link DataBoundConstructor}.
+ * To do this, have your {@link Slave} subtype remember the necessary handle
+ * (such as EC2 instance ID)
+ * as a field. Such fields need to survive the user-initiated re-configuration
+ * of {@link Slave}, so you'll need to
+ * expose it in your {@link Slave} {@code configure-entries.jelly} and read it
+ * back in through {@link DataBoundConstructor}.
  *
  * <p>
  * You then implement your own {@link Computer} subtype, override {@link Slave#createComputer()}, and instantiate
@@ -110,10 +120,15 @@ import org.kohsuke.stapler.verb.POST;
 public abstract class Cloud extends Actionable implements ExtensionPoint, Describable<Cloud>, AccessControlled {
 
     /**
-     * Uniquely identifies this {@link Cloud} instance among other instances in {@link jenkins.model.Jenkins#clouds}.
-     *
-     * This is expected to be short ID-like string that does not contain any character unsafe as variable name or
-     * URL path token.
+     * Unique identifier for this cloud instance.
+     * Used for stable URL routing when multiple clouds have the same name.
+     */
+    private volatile String uniqueId;
+
+    /**
+     * Display name for this cloud, shown in the UI.
+     * Note: Multiple clouds may share the same name. Use {@link #getUniqueId()} for
+     * stable identification across renames, reordering, or duplicate names.
      */
     public String name;
 
@@ -128,6 +143,49 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         return name;
     }
 
+    /**
+     * Called after XStream deserialization to ensure uniqueId exists.
+     * This handles migration of existing configurations that don't have IDs.
+     */
+    @SuppressWarnings("unused")
+    private Object readResolve() {
+        if (uniqueId == null) {
+            uniqueId = UUID.randomUUID().toString();
+        }
+        return this;
+    }
+
+    /**
+     * Gets the unique identifier for this cloud.
+     * Thread-safe with double-checked locking for performance.
+     * @return unique identifier string, never null
+     */
+    @NonNull
+    public String getUniqueId() {
+        String id = uniqueId;
+        if (id == null) {
+            synchronized (this) {
+                id = uniqueId;
+                if (id == null) {
+                    uniqueId = id = UUID.randomUUID().toString();
+                }
+            }
+        }
+        return id;
+    }
+
+    /**
+     * Sets the unique ID from form submission.
+     * Only sets if the current uniqueId is null and the provided id is valid.
+     * @param id the unique identifier from form data
+     */
+    @DataBoundSetter
+    public void setUniqueId(String id) {
+        if (this.uniqueId == null && id != null && !id.trim().isEmpty()) {
+            this.uniqueId = id;
+        }
+    }
+
     @Override
     public String getDisplayName() {
         return name;
@@ -140,7 +198,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      * @return Jenkins relative URL.
      */
     public @NonNull String getUrl() {
-        return "cloud/" + Util.rawEncode(name) + "/";
+        return "cloud/" + Util.rawEncode(getUniqueId()) + "/";
     }
 
     @Override
@@ -316,6 +374,17 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         return new HttpRedirect("..");
     }
 
+    /*
+     * Accepts the update to the node configuration.
+     */
+    /**
+     * Generates a new unique ID for this cloud instance.
+     * Useful when copying a cloud to ensure the copy has a distinct identity.
+     */
+    public synchronized void provisionNewId() {
+        uniqueId = UUID.randomUUID().toString();
+    }
+
     /**
      * Accepts the update to the node configuration.
      */
@@ -324,21 +393,29 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         checkPermission(Jenkins.ADMINISTER);
 
         Jenkins j = Jenkins.get();
-        Cloud cloud = j.getCloud(this.name);
-        if (cloud == null) {
-            throw new ServletException("No such cloud " + this.name);
+
+        Cloud reconfigured = this.reconfigure(req, req.getSubmittedForm());
+
+        if (reconfigured == null) {
+            j.clouds.remove(this);
+            j.save();
+            return FormApply.success("../");
         }
-        Cloud result = cloud.reconfigure(req, req.getSubmittedForm());
-        String proposedName = result.name;
+
+        // The uniqueId should be set via @DataBoundSetter from the hidden form field
+        if (!this.getUniqueId().equals(reconfigured.getUniqueId())) {
+            throw new Descriptor.FormException("Cloud identity mismatch. The cloud may have been modified by another user.", "uniqueId");
+        }
+
+        String proposedName = reconfigured.name;
         if (!proposedName.equals(this.name)
                 && j.getCloud(proposedName) != null) {
             throw new Descriptor.FormException(jenkins.agents.Messages.CloudSet_CloudAlreadyExists(proposedName), "name");
         }
-        j.clouds.replace(this, result);
-        j.save();
-        // take the user back to the cloud top page.
-        return FormApply.success("../" + result.name + '/');
 
+        j.clouds.replace(this, reconfigured);
+        j.save();
+        return FormApply.success("../" + Util.rawEncode(reconfigured.getUniqueId()) + '/');
     }
 
     /**
