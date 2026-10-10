@@ -53,6 +53,8 @@ function init() {
   }
 
   function updateSuggestions(e) {
+    e.autoCompleteRequestId = (e.autoCompleteRequestId || 0) + 1;
+    const requestId = e.autoCompleteRequestId;
     const text = e.value.trim();
     const delimiter = e.getAttribute("autoCompleteDelimChar");
     const word = delimiter ? text.split(delimiter).reverse()[0].trim() : text;
@@ -87,7 +89,16 @@ function init() {
       body: parameters,
     })
       .then((rsp) => (rsp.ok ? rsp.json() : {}))
-      .then((response) => createAndShowDropdown(e, response.suggestions || []));
+      .then((response) => {
+        // Discard responses for an outdated value or once the field lost focus
+        if (
+          requestId !== e.autoCompleteRequestId ||
+          document.activeElement !== e
+        ) {
+          return;
+        }
+        createAndShowDropdown(e, response.suggestions || []);
+      });
   }
 
   behaviorShim.specify(
