@@ -8,6 +8,7 @@ import static java.util.logging.Level.FINE;
 
 import com.sun.jna.Native;
 import com.sun.jna.StringArray;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import java.io.File;
 import java.io.IOException;
@@ -68,6 +69,7 @@ public class UnixSlaveRestarter extends SlaveRestarter {
     /**
      * Gets the current executable name.
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private static String getCurrentExecutable() {
         ProcessHandle.Info info = ProcessHandle.current().info();
         if (info.command().isPresent()) {

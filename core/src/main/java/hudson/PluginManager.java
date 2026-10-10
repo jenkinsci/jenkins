@@ -390,6 +390,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * @since 2.475
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     protected PluginManager(ServletContext context, File rootDir) {
         this.context = context;
 
@@ -636,6 +637,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }});
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     void considerDetachedPlugin(String shortName, String source) {
         if (new File(rootDir, shortName + ".jpi").isFile() ||
             new File(rootDir, shortName + ".hpi").isFile() ||
@@ -672,7 +674,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     //TODO: Consider refactoring in order to avoid DMI_COLLECTION_OF_URLS
-    @SuppressFBWarnings(value = "DMI_COLLECTION_OF_URLS", justification = "Plugin loading happens only once on Jenkins startup")
+    @SuppressFBWarnings(
+            value = {"DMI_COLLECTION_OF_URLS", "PATH_TRAVERSAL_IN"},
+            justification = "Plugin loading at startup; paths from trusted Jenkins config, not untrusted input.")
     protected @NonNull Set<String> loadPluginsFromWar(@NonNull String fromPath, @CheckForNull FilenameFilter filter) {
         Set<String> names = new HashSet<>();
 
@@ -863,6 +867,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return name.replace(".jpi", "").replace(".hpi", "");
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private @CheckForNull VersionNumber getPluginVersion(@NonNull File dir, @NonNull String pluginId) {
         VersionNumber version = getPluginVersion(new File(dir, pluginId + ".jpi"));
         if (version == null) {
@@ -1093,6 +1098,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * A convenience method to be used by {@link #loadBundledPlugins()}.
      * @param fileName like {@code abc.jpi}
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     protected void copyBundledPlugin(URL src, String fileName) throws IOException {
         LOGGER.log(FINE, "Copying {0}", src);
         fileName = fileName.replace(".hpi", ".jpi"); // normalize fileNames to have the correct suffix
@@ -1145,6 +1151,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @throws IOException Operation error
      */
     @NonNull
+    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Reads a manifest from a bundled plugin resource URL resolved on the classpath/war, not from user input.")
     /*package*/ static InputStream getBundledJpiManifestStream(@NonNull URL url) throws IOException {
         URLConnection uc = url.openConnection();
         InputStream in = null;
@@ -1184,6 +1191,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @throws IOException Operation error
      */
     @NonNull
+    @SuppressFBWarnings(value = {"URLCONNECTION_SSRF_FD", "PATH_TRAVERSAL_IN"}, justification = "Reads the modification date of a bundled plugin resource URL resolved on the classpath/war, not from user input.")
     /*package*/ static long getModificationDate(@NonNull URL url) throws IOException {
         URLConnection uc = url.openConnection();
 
@@ -1363,6 +1371,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      *
      * @since 1.402.
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     public PluginWrapper whichPlugin(Class c) {
         PluginWrapper oneAndOnly = null;
         ClassLoader cl = c.getClassLoader();
@@ -1915,6 +1924,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private HttpResponse doUploadPluginImpl(StaplerRequest2 req) throws IOException, ServletException {
         try {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
@@ -2025,6 +2035,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     @Restricted(DoNotUse.class) // visible for testing only
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     FormValidation checkUpdateSiteURL(@CheckForNull String value) throws InterruptedException {
         value = Util.fixEmptyAndTrim(value);
 

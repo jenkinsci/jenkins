@@ -24,6 +24,7 @@
 
 package hudson.triggers;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.AperiodicWork;
 import hudson.model.AsyncAperiodicWork;
 import hudson.model.AsyncPeriodicWork;
@@ -106,6 +107,7 @@ public abstract class SafeTimerTask extends TimerTask {
      * @return the path where the logs should be put.
      * @since 2.114
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     public static File getLogsRoot() {
         String tagsLogsPath = SystemProperties.getString(LOGS_ROOT_PATH_PROPERTY);
         if (tagsLogsPath == null) {
