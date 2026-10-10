@@ -167,6 +167,22 @@ class ComputerLauncherTest {
                 OpenJDK 64-Bit Server VM Zulu11.35+15-CA (build 11.0.5+10-LTS, mixed mode)""", "11.0.5");
     }
 
+    @Test
+    void openJDK21() throws IOException {
+        assertChecked("""
+                openjdk version "21.0.2" 2024-01-16
+                OpenJDK Runtime Environment Temurin-21.0.2+13 (build 21.0.2+13)
+                OpenJDK 64-Bit Server VM Temurin-21.0.2+13 (build 21.0.2+13, mixed mode, sharing)""", "21.0.2");
+    }
+
+    @Test
+    void openJDK25() throws IOException {
+        assertChecked("""
+                openjdk version "25.0.1" 2026-10-20
+                OpenJDK Runtime Environment Temurin-25.0.1+8 (build 25.0.1+8)
+                OpenJDK 64-Bit Server VM Temurin-25.0.1+8 (build 25.0.1+8, mixed mode, sharing)""", "25.0.1");
+    }
+
     private static void assertChecked(String text, String spec) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ComputerLauncher.checkJavaVersion(new PrintStream(os, false, Charset.defaultCharset()), "bin/java", new BufferedReader(new StringReader(text)));
