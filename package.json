@@ -26,8 +26,8 @@
   },
   "devDependencies": {
     "@babel/cli": "8.0.6",
-    "@babel/core": "8.0.6",
-    "@babel/preset-env": "8.0.6",
+    "@babel/core": "8.0.7",
+    "@babel/preset-env": "8.0.7",
     "@eslint/js": "10.0.1",
     "babel-loader": "10.1.1",
     "clean-webpack-plugin": "4.0.0",
