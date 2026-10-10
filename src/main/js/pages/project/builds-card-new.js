@@ -1,5 +1,6 @@
 import debounce from "lodash/debounce";
 import BehaviorShim from "@/util/behavior-shim";
+import { observeBuildColumns } from "@/pages/project/build-columns";
 
 const STATUS_ITEM_CLASS = "jenkins-search__filter-item";
 const MUTED_STATUS_ITEM_CLASS = `${STATUS_ITEM_CLASS}--muted`;
@@ -298,6 +299,8 @@ BehaviorShim.specify(
       childList: true,
       subtree: true,
     });
+
+    observeBuildColumns(contents);
 
     container.classList.add("app-temporary-list--loading");
     load();

@@ -80,9 +80,12 @@ THE SOFTWARE.
         </div>
       </div>
 
+      <!-- Every row renders a cell per decorator so columns line up; widths are set by build-columns.js -->
       <j:forEach var="entryDecorator" items="${it.widget.getEntryDecorators(pageEntry)}">
         <div class="app-build-item__column">
-          <st:include from="${entryDecorator.decorator}" it="${entryDecorator}" page="entry.jelly" optional="true" />
+          <j:if test="${entryDecorator != null}">
+            <st:include from="${entryDecorator.decorator}" it="${entryDecorator}" page="entry.jelly" optional="true" />
+          </j:if>
         </div>
       </j:forEach>
 

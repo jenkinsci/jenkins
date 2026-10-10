@@ -447,21 +447,14 @@
   display: flex;
   align-items: stretch;
 
+  // Widths are set by build-columns.js so that columns line up across rows,
+  // each as wide as its widest cell up to the max-width
   & > .app-build-item__column {
     display: flex;
     align-items: center;
     flex: none;
     min-width: 0;
-
-    // The first column is at most 600px wide, the second at most 400px,
-    // the rest size to their content
-    &:nth-child(1) {
-      flex: 0 1 700px;
-    }
-
-    &:nth-child(2) {
-      flex: 0 1 168px;
-    }
+    max-width: 500px;
 
     &:not(.app-build-item__column--primary) {
       z-index: 1;
@@ -471,12 +464,26 @@
     }
   }
 
+  // The first column gives up space before the row overflows
   & > .app-build-item__column--primary {
     align-items: start;
+    flex-shrink: 1;
+    max-width: max(500px, 30vw);
+  }
+
+  & > .app-build-item__column--hidden {
+    display: none;
   }
 
   & > .app-temporary-list__item__actions {
     flex: none;
     margin-left: auto;
   }
+}
+
+// Stop columns shrinking while their natural widths are measured
+.app-build-columns--measuring
+  .app-build-item--columns
+  > .app-build-item__column {
+  flex-shrink: 0;
 }

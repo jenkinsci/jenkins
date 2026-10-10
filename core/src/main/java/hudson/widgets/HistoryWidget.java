@@ -143,14 +143,18 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
         return firstTransientBuildKey;
     }
 
+    /**
+     * Returns one entry per registered {@link HistoryPageEntryDecorator}, in extension order, so that every row
+     * renders the same columns. Decorators that aren't applicable to the build are {@code null}.
+     */
     @Restricted(DoNotUse.class)
     public @NonNull List<HistoryPageEntryDecorator.EntryContext> getEntryDecorators(@NonNull HistoryPageEntry<HistoricalBuild> pageEntry) {
         List<HistoryPageEntryDecorator.EntryContext> entryDecorators = new ArrayList<>();
         HistoricalBuild build = pageEntry.getEntry();
         for (HistoryPageEntryDecorator decorator : HistoryPageEntryDecorator.all()) {
-            if (decorator.isApplicable(this, build)) {
-                entryDecorators.add(new HistoryPageEntryDecorator.EntryContext(decorator, this, pageEntry));
-            }
+            entryDecorators.add(decorator.isApplicable(this, build)
+                    ? new HistoryPageEntryDecorator.EntryContext(decorator, this, pageEntry)
+                    : null);
         }
         return entryDecorators;
     }
