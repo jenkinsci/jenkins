@@ -1,6 +1,7 @@
 import debounce from "lodash/debounce";
 import BehaviorShim from "@/util/behavior-shim";
 import { observeBuildColumns } from "@/pages/project/build-columns";
+import { updateEntries } from "@/pages/project/build-entries";
 
 const STATUS_ITEM_CLASS = "jenkins-search__filter-item";
 const MUTED_STATUS_ITEM_CLASS = `${STATUS_ITEM_CLASS}--muted`;
@@ -112,8 +113,8 @@ BehaviorShim.specify(
               return;
             }
 
-            // Show the refreshed builds list
-            contents.innerHTML = responseText;
+            // Show the refreshed builds list, only redrawing the builds that changed
+            const insertedEntries = updateEntries(contents, responseText);
             container.classList.remove("jenkins-hidden");
             noBuilds.classList.add("jenkins-hidden");
             if (!isFiltered) {
@@ -121,7 +122,7 @@ BehaviorShim.specify(
               setSearchControlsVisible(true);
             }
             loadingBuilds.style.display = "none";
-            BehaviorShim.applySubtree(contents);
+            BehaviorShim.applySubtree(insertedEntries, true);
 
             // Show the card controls
             const dataset = contents.firstElementChild.dataset;
