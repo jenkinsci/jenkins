@@ -27,7 +27,6 @@ package hudson.cli;
 import static java.util.logging.Level.FINE;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.util.QuotedStringTokenizer;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
@@ -77,7 +76,7 @@ class SSHCLI {
         StringBuilder command = new StringBuilder();
 
         for (String arg : args) {
-            command.append(QuotedStringTokenizer.quote(arg));
+            command.append(quoteArgument(arg));
             command.append(' ');
         }
 
@@ -121,6 +120,28 @@ class SSHCLI {
                 client.stop();
             }
         }
+    }
+
+    /**
+     * Quotes a single argument for the SSH exec command line.
+     * The server splits that line with {@link hudson.util.QuotedStringTokenizer#tokenize(String)},
+     * which decodes only a few escapes (such as {@code \\} and {@code \"}) and leaves sequences
+     * like {@code \n} literal, so control characters such as newlines are sent as-is.
+     * For arguments without control characters the result is identical to
+     * {@link hudson.util.QuotedStringTokenizer#quote(String)}.
+     */
+    static String quoteArgument(String arg) {
+        StringBuilder b = new StringBuilder(arg.length() + 2);
+        b.append('"');
+        for (int i = 0; i < arg.length(); i++) {
+            char c = arg.charAt(i);
+            if (c == '"' || c == '\\') {
+                b.append('\\');
+            }
+            b.append(c);
+        }
+        b.append('"');
+        return b.toString();
     }
 
     @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Client-side code doesn't involve SSRF.")
