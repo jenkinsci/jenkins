@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.BulkChange;
@@ -44,19 +45,25 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
+import hudson.model.Executor;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.Node;
+import hudson.model.Queue;
+import hudson.model.queue.CauseOfBlockage;
+import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.Builder;
 import io.jenkins.lib.support_log_formatter.SupportLogFormatter;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -315,6 +322,147 @@ class NodeProvisionerTest {
 
         assertEquals(1, cloud1.numProvisioned);
         assertEquals(0, cloud2.numProvisioned);
+    }
+
+    /**
+     * Scenario: a node of the label still has a free executor, but every queued item is refused on that
+     * node, for example because throttle-concurrent-builds only lets one build of a category run per node.
+     * Such an executor is not capacity that can serve the queue, so a second node has to be provisioned
+     * rather than letting the queue wait for the running build to finish.
+     */
+    @Test
+    void provisionWhenFreeExecutorsRefuseTheQueue() throws Throwable {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
+        rr.then(NodeProvisionerTest::_provisionWhenFreeExecutorsRefuseTheQueue);
+    }
+
+    private static void _provisionWhenFreeExecutorsRefuseTheQueue(JenkinsRule r) throws Exception {
+        // no build on the built-in node, to make sure we get everything from the cloud
+        r.jenkins.setNumExecutors(0);
+        r.jenkins.setNodes(Collections.emptyList());
+
+        Label label = Label.get("leased");
+        LeasedNodeCloud cloud = new LeasedNodeCloud(r, label);
+        r.jenkins.clouds.add(cloud);
+        QueueTaskDispatcher dispatcher = new OneBuildOfTheCategoryPerNode();
+        QueueTaskDispatcher.all().add(0, dispatcher);
+
+        FreeStyleBuild first = null;
+        FreeStyleBuild second = null;
+        try {
+            FreeStyleProject a = createCategoryJob("a", label, r);
+            FreeStyleProject b = createCategoryJob("b", label, r);
+
+            first = a.scheduleBuild2(0).waitForStart();
+            // the first node has a free executor left, but it refuses b, so a second node is required
+            second = b.scheduleBuild2(0).getStartCondition().get(2, TimeUnit.MINUTES);
+            assertEquals(2, cloud.numProvisioned);
+            assertNotEquals(first.getExecutor().getOwner().getName(), second.getExecutor().getOwner().getName());
+        } finally {
+            QueueTaskDispatcher.all().remove(dispatcher);
+            if (first != null) {
+                first.doStop();
+                r.waitForCompletion(first);
+            }
+            if (second != null) {
+                second.doStop();
+                r.waitForCompletion(second);
+            }
+        }
+    }
+
+    private static FreeStyleProject createCategoryJob(String name, Label label, JenkinsRule r) throws IOException {
+        FreeStyleProject p = r.createFreeStyleProject(name);
+        p.setAssignedLabel(label);
+        p.getBuildersList().add(new SleepBuilder(Long.MAX_VALUE));
+        return p;
+    }
+
+    /**
+     * Stands in for the throttle-concurrent-builds plugin: at most one build of the category may run on a
+     * given node at a time. Note that this is a {@link QueueTaskDispatcher#canTake(Node, Queue.BuildableItem)} veto, i.e. "this node
+     * is not the right place for this work", not a {@link QueueTaskDispatcher#canRun(Queue.Item)} veto.
+     */
+    private static final class OneBuildOfTheCategoryPerNode extends QueueTaskDispatcher {
+
+        private static final Set<String> CATEGORY = Set.of("a", "b");
+
+        @Override
+        public CauseOfBlockage canTake(Node node, Queue.BuildableItem item) {
+            if (!CATEGORY.contains(item.task.getName())) {
+                return null;
+            }
+            Computer c = node.toComputer();
+            if (c == null) {
+                return null;
+            }
+            for (Executor e : c.getExecutors()) {
+                Queue.Executable executable = e.getCurrentExecutable();
+                if (executable != null && CATEGORY.contains(executable.getParent().getOwnerTask().getName())) {
+                    return new CauseOfBlockage() {
+                        @Override
+                        public String getShortDescription() {
+                            return "the category is already running on " + node.getDisplayName();
+                        }
+                    };
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Cloud that provisions agents with two executors each, like a leased machine that can run two builds.
+     */
+    private static final class LeasedNodeCloud extends Cloud {
+
+        private static final int EXECUTORS = 2;
+
+        private final transient JenkinsRule caller;
+        private final transient Label label;
+        public int numProvisioned;
+
+        LeasedNodeCloud(JenkinsRule caller, Label label) {
+            super("leasedNodeCloud");
+            this.caller = caller;
+            this.label = label;
+        }
+
+        @Override
+        public Collection<NodeProvisioner.PlannedNode> provision(CloudState state, int excessWorkload) {
+            List<NodeProvisioner.PlannedNode> r = new ArrayList<>();
+            if (!canProvision(state)) {
+                return r;
+            }
+            while (excessWorkload > 0) {
+                int index = ++numProvisioned;
+                Future<Node> f = Computer.threadPoolForRemoting.submit((Callable<Node>) () -> {
+                    String nodeName = "leased-" + index;
+                    DumbSlave agent = new DumbSlave(
+                            nodeName,
+                            new File(caller.jenkins.getRootDir(), "agent-work-dirs/" + nodeName).getAbsolutePath(),
+                            caller.createComputerLauncher(null));
+                    agent.setNumExecutors(EXECUTORS);
+                    agent.setLabelString(label.getName());
+                    caller.jenkins.addNode(agent);
+                    caller.waitOnline(agent);
+                    return agent;
+                });
+                r.add(new NodeProvisioner.PlannedNode(name + " #" + index, f, EXECUTORS));
+                excessWorkload -= EXECUTORS;
+            }
+            return r;
+        }
+
+        @Override
+        public boolean canProvision(CloudState state) {
+            return state.getLabel() != null && state.getLabel().matches(label.listAtoms());
+        }
+
+        @Override
+        public Descriptor<Cloud> getDescriptor() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     private static class DummyCloudImpl3 extends Cloud {
