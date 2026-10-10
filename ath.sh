@@ -11,6 +11,9 @@ export ATH_VERSION=6724.va_7c5c4b_fcf9c
 if [[ $# -eq 0 ]]; then
 	export JDK=21
 	export BROWSER=firefox
+elif [[ $# -eq 1 ]]; then
+	export JDK=$1
+	export BROWSER=firefox
 else
 	export JDK=$1
 	export BROWSER=$2
