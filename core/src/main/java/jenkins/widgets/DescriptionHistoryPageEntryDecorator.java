@@ -38,6 +38,7 @@ public class DescriptionHistoryPageEntryDecorator extends HistoryPageEntryDecora
 
     @Override
     public boolean isApplicable(@NonNull HistoryWidget<?, ?> widget, @NonNull HistoricalBuild build) {
-        return Util.fixEmptyAndTrim(build.getTruncatedDescription()) != null;
+        return Util.fixEmptyAndTrim(build.getTruncatedDescription()) != null
+                || !build.getBadgeActions().isEmpty();
     }
 }

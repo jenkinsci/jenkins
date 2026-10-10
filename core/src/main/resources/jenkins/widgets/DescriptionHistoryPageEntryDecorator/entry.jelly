@@ -23,8 +23,21 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core">
-  <div class="app-build-item__description">
-    <j:out value="${app.markupFormatter.translate(it.build.truncatedDescription)}" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <j:set var="badges" value="${it.build.badgeActions}" />
+  <j:set var="description" value="${it.build.truncatedDescription}" />
+  <div class="app-build-item__summary">
+    <j:if test="${!empty(badges)}">
+      <div class="app-build-item__badges">
+        <j:forEach var="badge" items="${badges}">
+          <st:include it="${badge}" page="badge.jelly" />
+        </j:forEach>
+      </div>
+    </j:if>
+    <j:if test="${!empty(description.trim())}">
+      <div class="app-build-item__description">
+        <j:out value="${app.markupFormatter.translate(description)}" />
+      </div>
+    </j:if>
   </div>
 </j:jelly>

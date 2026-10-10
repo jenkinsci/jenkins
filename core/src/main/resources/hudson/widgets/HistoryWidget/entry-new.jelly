@@ -56,21 +56,10 @@ THE SOFTWARE.
             <div class="app-temporary-list__item__description">
               <l:details-bar it="${build}" context="compact" />
             </div>
-
-            <j:set var="badges" value="${build.badgeActions}"/>
-            <j:if test="${!empty(badges)}">
-              <div class="app-temporary-list__item__description">
-                <j:forEach var="badge" items="${badges}">
-                  <st:include it="${badge}" page="badge.jelly" />
-                </j:forEach>
-              </div>
-            </j:if>
-
           </div>
         </div>
       </div>
 
-      <!-- Every row renders a cell per decorator so columns line up; widths are set by build-columns.js -->
       <j:forEach var="entryDecorator" items="${it.widget.getEntryDecorators(pageEntry)}">
         <div class="app-build-item__column">
           <j:if test="${entryDecorator != null}">
