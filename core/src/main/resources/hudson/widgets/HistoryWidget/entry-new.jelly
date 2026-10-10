@@ -66,16 +66,6 @@ THE SOFTWARE.
               </div>
             </j:if>
 
-            <j:if test="${!empty build.truncatedDescription}">
-              <div class="app-temporary-list__item__description">
-                <div class="jenkins-details__item">
-                  <div class="jenkins-details__item__icon">
-                    <l:icon src="symbol-description" />
-                  </div>
-                  <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}"/>
-                </div>
-              </div>
-            </j:if>
           </div>
         </div>
       </div>
