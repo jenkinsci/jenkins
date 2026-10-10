@@ -58,6 +58,8 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
@@ -118,6 +120,8 @@ import org.kohsuke.stapler.StaplerResponse2;
  * @since 1.294
  */
 public abstract class FormValidation extends IOException implements HttpResponse {
+    private static final Logger LOGGER =
+        Logger.getLogger(FormValidation.class.getName());
     /* package */ static /* non-final for Groovy */ boolean APPLY_CONTENT_SECURITY_POLICY_HEADERS = SystemProperties.getBoolean(FormValidation.class.getName() + ".applyContentSecurityPolicyHeaders", true);
     /**
      * Indicates the kind of result.
@@ -641,6 +645,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
             if (method != null) {
                 names = new ArrayList<>();
                 findParameters(method);
+                warnIfMissingValueParameter(fieldName);
             } else {
                 names = null;
             }
@@ -670,6 +675,36 @@ public abstract class FormValidation extends IOException implements HttpResponse
 
                 Method m = ReflectionUtils.getPublicMethodNamed(p.type(), "fromStapler");
                 if (m != null)    findParameters(m);
+            }
+        }
+
+        /**
+         * Warns if the validation method's primary parameter is not named {@code value}.
+         * Such a naming deviation causes the parameter to be treated as a dependency
+         * rather than the field's own value, which can trigger duplicate client-side
+         * validation requests.
+         */
+        private void warnIfMissingValueParameter(String fieldName) {
+            boolean hasQueryParameter = false;
+            boolean hasValueParameter = false;
+            for (Parameter p : ReflectionUtils.getParameters(method)) {
+                QueryParameter qp = p.annotation(QueryParameter.class);
+                if (qp != null) {
+                    hasQueryParameter = true;
+                    String name = qp.value();
+                    if (name.isEmpty()) name = p.name();
+                    if ("value".equals(name)) {
+                        hasValueParameter = true;
+                        break;
+                    }
+                }
+            }
+            if (hasQueryParameter && !hasValueParameter) {
+                LOGGER.log(Level.WARNING,
+                    "{0}#{1}: no @QueryParameter named ''value'' found for field ''{2}''. "
+                  + "The primary validated parameter should be named ''value''; otherwise it is treated "
+                  + "as a dependency and can cause duplicate client-side validation requests.",
+                    new Object[]{descriptor.getClass().getName(), method.getName(), fieldName});
             }
         }
 
