@@ -13,8 +13,19 @@
         <st:attribute name="submissionUrl">
             Optional submission URL. If not specified, will use 'submitDescription'.
         </st:attribute>
+        <st:attribute name="mode">
+            Rendering variant. One of:
+            - 'default' (or unset): full button with icon and label, plus the editing infrastructure.
+            - 'compact': icon-only button with tooltip, plus the editing infrastructure.
+            - 'overflow': button styled as a dropdown item (no infrastructure, since it is rendered inside an
+              overflow menu whose contents are wrapped in an inert &lt;template&gt;). Pair with a separate
+              invocation using mode="template-only" placed outside the overflow menu so the adjuncts and
+              hidden template land in the live DOM.
+            - 'template-only': renders only the adjuncts and the hidden template, no button. Use alongside
+              mode="overflow" or when the caller renders its own trigger element with id="description-link".
+        </st:attribute>
         <st:attribute name="compact">
-            If set, the button becomes compact and the button label hides.
+            Deprecated. Use mode="compact" instead. If set to true and mode is unset, behaves as mode="compact".
         </st:attribute>
     </st:documentation>
 
@@ -31,14 +42,9 @@
         </j:choose>
     </j:set>
 
-    <l:hasPermission permission="${permission}">
-        <st:adjunct includes="lib.form.textarea.textarea"/>
-        <j:if test="${app.markupFormatter.codeMirrorMode != null}">
-            <st:adjunct includes="
-            org.kohsuke.stapler.codemirror.mode.${app.markupFormatter.codeMirrorMode}.${app.markupFormatter.codeMirrorMode},
-            org.kohsuke.stapler.codemirror.theme.default"/>
-        </j:if>
+    <j:set var="effectiveMode" value="${attrs.mode != null ? attrs.mode : (attrs.compact == 'true' ? 'compact' : 'default')}"/>
 
+    <l:hasPermission permission="${permission}">
         <j:set var="submissionUrl" value="${args.submissionUrl}" defaultValue="submitDescription"/>
         <j:invokeStatic className="hudson.Util" method="isSafeToRedirectTo" var="isSafeToRedirectTo">
             <j:arg value="${submissionUrl}"/>
@@ -47,31 +53,51 @@
             <j:set var="submissionUrl" value="submitDescription"/>
         </j:if>
 
-        <template id="edit-description-template" data-description="${actualDescription}">
-            <f:form method="post" action="${submissionUrl}">
-                <f:entry help="${app.markupFormatter.helpUrl}">
-                        <f:textarea name="description" id="description-textarea"
-                                codemirror-mode="${app.markupFormatter.codeMirrorMode}"
-                                codemirror-config="${app.markupFormatter.codeMirrorConfig}"
-                                previewEndpoint="/markupFormatter/previewDescription"
-                    />
-                </f:entry>
-            </f:form>
-        </template>
-        <st:adjunct includes="lib.hudson.editable-description" />
-        <a class="jenkins-button jenkins-hidden ${attrs.compact ? 'jenkins-details__button' : ''}"
-             id="description-link"
-             href="editDescription"
-             data-title="${label}"
-             data-url="${submissionUrl}"
-             data-add-label="${%add description}"
-             data-edit-label="${%edit description}"
-             data-compact="${attrs.compact}"
-             tooltip="${attrs.compact ? label : null}">
-            <l:icon src="symbol-description" />
-            <j:if test="${!attrs.compact}">
-                <span>${label}</span>
+        <j:if test="${effectiveMode != 'overflow'}">
+            <st:adjunct includes="lib.form.textarea.textarea"/>
+            <j:if test="${app.markupFormatter.codeMirrorMode != null}">
+                <st:adjunct includes="
+                org.kohsuke.stapler.codemirror.mode.${app.markupFormatter.codeMirrorMode}.${app.markupFormatter.codeMirrorMode},
+                org.kohsuke.stapler.codemirror.theme.default"/>
             </j:if>
-        </a>
+            <template id="edit-description-template" data-description="${actualDescription}">
+                <f:form method="post" action="${submissionUrl}">
+                    <f:entry help="${app.markupFormatter.helpUrl}">
+                            <f:textarea name="description" id="description-textarea"
+                                    codemirror-mode="${app.markupFormatter.codeMirrorMode}"
+                                    codemirror-config="${app.markupFormatter.codeMirrorConfig}"
+                                    previewEndpoint="/markupFormatter/previewDescription"
+                        />
+                    </f:entry>
+                </f:form>
+            </template>
+            <st:adjunct includes="lib.hudson.editable-description" />
+        </j:if>
+
+        <j:if test="${effectiveMode != 'template-only'}">
+            <j:set var="buttonClass">
+                <j:choose>
+                    <j:when test="${effectiveMode == 'overflow'}">jenkins-dropdown__item</j:when>
+                    <j:when test="${effectiveMode == 'compact'}">jenkins-button jenkins-hidden jenkins-details__button</j:when>
+                    <j:otherwise>jenkins-button jenkins-hidden</j:otherwise>
+                </j:choose>
+            </j:set>
+            <button type="button"
+                    class="${buttonClass}"
+                    id="description-link"
+                    data-title="${label}"
+                    data-url="${submissionUrl}"
+                    data-add-label="${%add description}"
+                    data-edit-label="${%edit description}"
+                    data-mode="${effectiveMode}"
+                    tooltip="${effectiveMode == 'compact' ? label : null}">
+                <div class="jenkins-dropdown__item__icon">
+                    <l:icon src="symbol-description" />
+                </div>
+                <j:if test="${effectiveMode != 'compact'}">
+                    <span>${label}</span>
+                </j:if>
+            </button>
+        </j:if>
     </l:hasPermission>
 </j:jelly>
