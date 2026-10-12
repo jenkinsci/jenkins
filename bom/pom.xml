@@ -41,7 +41,7 @@ THE SOFTWARE.
     <commons-fileupload2.version>2.0.0-M5</commons-fileupload2.version>
     <groovy.version>2.4.21</groovy.version>
     <jelly.version>1.1-jenkins-20260418</jelly.version>
-    <stapler.version>2119.v8544a_3749d39</stapler.version>
+    <stapler.version>2123.v539a_775c45c3</stapler.version>
   </properties>
 
   <dependencyManagement>
@@ -321,7 +321,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
-        <version>9.10.1</version>
+        <version>9.11</version>
       </dependency>
       <dependency>
         <!-- provided by jcl-over-slf4j -->
