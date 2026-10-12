@@ -49,7 +49,7 @@ THE SOFTWARE.
     <!-- executable/Main is a plain bootstrap class; nothing here needs annotation processing. -->
     <maven.compiler.proc>none</maven.compiler.proc>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
-    <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>3256.3258.v858f3c9a_f69d</remoting.minimum.supported.version>
 
   </properties>
 
