@@ -105,6 +105,22 @@ describe("autocomplete", () => {
     expect(input.dropdown.popper.textContent).not.toContain("hudson");
   });
 
+  it("ignores a response that arrives before the newer request is sent", async () => {
+    const input = createInput();
+    await type(input, "hud");
+    input.value = "jen";
+    input.dispatchEvent(new Event("input"));
+    await respond(0, ["hudson"]);
+
+    expect(isVisible(input)).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(300);
+    await respond(1, ["jenkins"]);
+
+    expect(isVisible(input)).toBe(true);
+    expect(input.dropdown.popper.textContent).toContain("jenkins");
+  });
+
   it("does not open the dropdown when the field was cleared meanwhile", async () => {
     const input = createInput();
     await type(input, "hud");

@@ -53,7 +53,6 @@ function init() {
   }
 
   function updateSuggestions(e) {
-    e.autoCompleteRequestId = (e.autoCompleteRequestId || 0) + 1;
     const requestId = e.autoCompleteRequestId;
     const text = e.value.trim();
     const delimiter = e.getAttribute("autoCompleteDelimChar");
@@ -121,12 +120,14 @@ function init() {
         }
         setTimeout(() => e.dropdown && e.dropdown.hide(), 200);
       });
-      e.addEventListener(
-        "input",
-        Utils.debounce(() => {
-          updateSuggestions(e);
-        }),
-      );
+      const debouncedUpdateSuggestions = Utils.debounce(() => {
+        updateSuggestions(e);
+      });
+      e.addEventListener("input", () => {
+        // Invalidate pending responses right away, not after the debounce delay
+        e.autoCompleteRequestId = (e.autoCompleteRequestId || 0) + 1;
+        debouncedUpdateSuggestions();
+      });
     },
   );
 }
