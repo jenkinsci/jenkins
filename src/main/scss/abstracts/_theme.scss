@@ -312,6 +312,7 @@ $semantics: (
   --focus-ring--keyboard: 0 0 0 var(--focus-ring-width--keyboard)
     var(--text-color);
 
+  // Forms
   --form-label-font-weight: var(--font-bold-weight);
   --form-input-padding: 0.5rem 0.625rem;
   --form-input-border-radius: 0.6875rem;
