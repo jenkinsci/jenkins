@@ -365,8 +365,16 @@ class NodeProvisionerTest {
                         + "not held until the slow provision() call actually returns");
         provisioningLock.unlock();
 
-        // provision() is still running in the background at this point; let it finish and confirm its
-        // (late) result is still applied rather than silently dropped.
+        // provision() is still running in the background at this point. NodeProvisionerInvoker keeps
+        // recurring every second (see recurrencePeriod above), so give it several more cycles' worth of
+        // time and confirm none of them call provision() again for the same still-outstanding demand.
+        Thread.sleep(TimeUnit.SECONDS.toMillis(3));
+        assertEquals(1, provisionCallCount.get(),
+                "provision() should not be invoked again for the same cloud/label while a previous call "
+                        + "for it is still outstanding in the background");
+
+        // Let the original call finish and confirm its (late) result is still applied rather than
+        // silently dropped.
         unblockProvision.countDown();
         assertTrue(provisionCompleted.await(30, TimeUnit.SECONDS), "provision() should eventually complete in the background");
         assertEquals(1, provisionCallCount.get(), "provision() should not be invoked more than once for the same demand");
