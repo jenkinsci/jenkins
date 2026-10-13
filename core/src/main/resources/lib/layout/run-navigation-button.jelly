@@ -32,7 +32,7 @@ THE SOFTWARE.
     <st:attribute name="menu" use="required">
       URL that serves the list of nearby runs via 'contextMenu'
     </st:attribute>
-    <st:attribute name="tooltip" use="required">
+    <st:attribute name="label" use="required">
       Accessible label for the button
     </st:attribute>
     <st:attribute name="icon" use="required">
@@ -45,7 +45,7 @@ THE SOFTWARE.
 
   <a href="${attrs.href}"
      class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link"
-     aria-label="${attrs.tooltip}"
+     aria-label="${attrs.label}"
      disabled="${attrs.disabled ? true : null}"
      data-href="${attrs.menu}"
      data-tippy-trigger="mouseenter"

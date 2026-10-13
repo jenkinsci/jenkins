@@ -47,12 +47,12 @@ THE SOFTWARE.
               <div class="app-build__navigation">
                 <l:run-navigation-button href="${buildUrl.previousBuildUrl}"
                                          menu="${rootURL}/${it.object.url}previousBuildsMenu"
-                                         tooltip="${%Previous build}"
+                                         label="${%Previous build}"
                                          icon="symbol-arrow-down"
                                          disabled="${it.object.previousBuild == null}" />
                 <l:run-navigation-button href="${buildUrl.nextBuildUrl}"
                                          menu="${rootURL}/${it.object.url}nextBuildsMenu"
-                                         tooltip="${%Next build}"
+                                         label="${%Next build}"
                                          icon="symbol-arrow-up"
                                          disabled="${it.object.nextBuild == null}" />
               </div>
