@@ -106,6 +106,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -118,6 +119,8 @@ import jenkins.model.BuildDiscarder;
 import jenkins.model.HistoricalBuild;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
+import jenkins.model.ModelObjectWithContextMenu.MenuItem;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.Tab;
@@ -804,6 +807,43 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public @CheckForNull RunT getPreviousBuild() {
         // TODO could be implemented for benefit of ExternalRun
         return null;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public BuildsMenu getPreviousBuildsMenu() {
+        return new BuildsMenu(Messages.Run_PreviousBuilds(), getPreviousBuild(), Run::getPreviousBuild);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public BuildsMenu getNextBuildsMenu() {
+        return new BuildsMenu(Messages.Run_NextBuilds(), getNextBuild(), Run::getNextBuild);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static final class BuildsMenu {
+        private static final int BUILD_COUNT = 5;
+
+        private final String title;
+        private final Run<?, ?> first;
+        private final UnaryOperator<Run<?, ?>> step;
+
+        private BuildsMenu(String title, Run<?, ?> first, UnaryOperator<Run<?, ?>> step) {
+            this.title = title;
+            this.first = first;
+            this.step = step;
+        }
+
+        public ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) {
+            ContextMenu menu = new ContextMenu().addHeader(title);
+            Run<?, ?> build = first;
+            for (int i = 0; i < BUILD_COUNT && build != null; i++, build = step.apply(build)) {
+                menu.add(new MenuItem()
+                        .withDisplayName(build.getDisplayName())
+                        .withIconClass("symbol-status-" + build.getIconColor().getIconName())
+                        .withContextRelativeUrl(build.getUrl()));
+            }
+            return menu;
+        }
     }
 
     /**

@@ -46,15 +46,23 @@ THE SOFTWARE.
               <h1>${it.object.displayName}</h1>
               <div class="app-build__navigation">
                 <a href="${buildUrl.previousBuildUrl}"
-                   class="jenkins-button jenkins-button--tertiary app-build__navigation__previous"
+                   class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link app-build__navigation__previous"
                    aria-label="${%Previous build}"
-                   disabled="${it.object.previousBuild == null}">
+                   disabled="${it.object.previousBuild == null ? true : null}"
+                   data-href="${rootURL}/${it.object.url}previousBuildsMenu"
+                   data-tippy-trigger="mouseenter"
+                   data-tippy-delay="[400, null]"
+                   data-tippy-touch="false">
                   <l:icon class="symbol-arrow-down" />
                 </a>
                 <a href="${buildUrl.nextBuildUrl}"
-                   class="jenkins-button jenkins-button--tertiary app-build__navigation__next"
+                   class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link app-build__navigation__next"
                    aria-label="${%Next build}"
-                   disabled="${it.object.nextBuild == null}">
+                   disabled="${it.object.nextBuild == null ? true : null}"
+                   data-href="${rootURL}/${it.object.url}nextBuildsMenu"
+                   data-tippy-trigger="mouseenter"
+                   data-tippy-delay="[400, null]"
+                   data-tippy-touch="false">
                   <l:icon class="symbol-arrow-up" />
                 </a>
               </div>
