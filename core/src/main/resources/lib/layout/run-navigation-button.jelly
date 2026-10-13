@@ -1,0 +1,57 @@
+<!--
+The MIT License
+
+Copyright (c) 2026, Jan Faracik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
+  <st:documentation>
+    A button for navigating between runs, which reveals a list of nearby runs on hover.
+    <st:attribute name="href" use="required">
+      Link to the adjacent run
+    </st:attribute>
+    <st:attribute name="menu" use="required">
+      URL that serves the list of nearby runs via 'contextMenu'
+    </st:attribute>
+    <st:attribute name="tooltip" use="required">
+      Accessible label for the button
+    </st:attribute>
+    <st:attribute name="icon" use="required">
+      Icon for the button
+    </st:attribute>
+    <st:attribute name="disabled" type="boolean">
+      Whether there is no adjacent run to navigate to
+    </st:attribute>
+  </st:documentation>
+
+  <a href="${attrs.href}"
+     class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link"
+     aria-label="${attrs.tooltip}"
+     disabled="${attrs.disabled ? true : null}"
+     data-href="${attrs.menu}"
+     data-tippy-trigger="mouseenter"
+     data-tippy-delay="[400, null]"
+     data-tippy-offset="[0, 5]"
+     data-tippy-touch="false">
+    <l:icon src="${attrs.icon}" />
+  </a>
+</j:jelly>

@@ -45,26 +45,16 @@ THE SOFTWARE.
               </a>
               <h1>${it.object.displayName}</h1>
               <div class="app-build__navigation">
-                <a href="${buildUrl.previousBuildUrl}"
-                   class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link app-build__navigation__previous"
-                   aria-label="${%Previous build}"
-                   disabled="${it.object.previousBuild == null ? true : null}"
-                   data-href="${rootURL}/${it.object.url}previousBuildsMenu"
-                   data-tippy-trigger="mouseenter"
-                   data-tippy-delay="[400, null]"
-                   data-tippy-touch="false">
-                  <l:icon class="symbol-arrow-down" />
-                </a>
-                <a href="${buildUrl.nextBuildUrl}"
-                   class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link app-build__navigation__next"
-                   aria-label="${%Next build}"
-                   disabled="${it.object.nextBuild == null ? true : null}"
-                   data-href="${rootURL}/${it.object.url}nextBuildsMenu"
-                   data-tippy-trigger="mouseenter"
-                   data-tippy-delay="[400, null]"
-                   data-tippy-touch="false">
-                  <l:icon class="symbol-arrow-up" />
-                </a>
+                <l:run-navigation-button href="${buildUrl.previousBuildUrl}"
+                                         menu="${rootURL}/${it.object.url}previousBuildsMenu"
+                                         tooltip="${%Previous build}"
+                                         icon="symbol-arrow-down"
+                                         disabled="${it.object.previousBuild == null}" />
+                <l:run-navigation-button href="${buildUrl.nextBuildUrl}"
+                                         menu="${rootURL}/${it.object.url}nextBuildsMenu"
+                                         tooltip="${%Next build}"
+                                         icon="symbol-arrow-up"
+                                         disabled="${it.object.nextBuild == null}" />
               </div>
             </div>
 

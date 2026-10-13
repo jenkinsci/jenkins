@@ -834,13 +834,19 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         public ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) {
-            ContextMenu menu = new ContextMenu().addHeader(title);
+            List<Run<?, ?>> builds = new ArrayList<>();
             Run<?, ?> build = first;
             for (int i = 0; i < BUILD_COUNT && build != null; i++, build = step.apply(build)) {
+                builds.add(build);
+            }
+            builds.sort(Comparator.comparingInt(Run<?, ?>::getNumber).reversed());
+
+            ContextMenu menu = new ContextMenu().addHeader(title);
+            for (Run<?, ?> b : builds) {
                 menu.add(new MenuItem()
-                        .withDisplayName(build.getDisplayName())
-                        .withIconClass("symbol-status-" + build.getIconColor().getIconName())
-                        .withContextRelativeUrl(build.getUrl()));
+                        .withDisplayName(b.getDisplayName())
+                        .withIconClass("symbol-status-" + b.getIconColor().getIconName())
+                        .withContextRelativeUrl(b.getUrl()));
             }
             return menu;
         }
