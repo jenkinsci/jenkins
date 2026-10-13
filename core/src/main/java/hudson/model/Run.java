@@ -833,6 +833,9 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             this.step = step;
         }
 
+        /**
+         * Lists up to five builds adjacent to this run, newest first, for the run navigation dropdown.
+         */
         public ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) {
             List<Run<?, ?>> builds = new ArrayList<>();
             Run<?, ?> build = first;
