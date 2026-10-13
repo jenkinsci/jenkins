@@ -114,7 +114,6 @@ import hudson.model.Label;
 import hudson.model.ListView;
 import hudson.model.LoadBalancer;
 import hudson.model.LoadStatistics;
-import hudson.model.ManageJenkinsAction;
 import hudson.model.ManagementLink;
 import hudson.model.Messages;
 import hudson.model.ModifiableViewGroup;
@@ -4423,6 +4422,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (isUseCrumbs() && !getCrumbIssuer().validateCrumb(req, p)) {
                 // TODO investigate whether this check can be removed
                 rsp.sendError(HttpServletResponse.SC_FORBIDDEN, "No crumb found");
+                return; // without this, the redirect below would write to the committed response and yield a 500 (IllegalStateException)
             }
             rsp.sendRedirect2(req.getContextPath() + "/fingerprint/" +
                 Util.getDigestOf(p.getFileItem2("name").getInputStream()) + '/');
@@ -4444,14 +4444,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws IOException, JellyException {
-        ContextMenu menu = new ContextMenu().from(this, request, response);
-        for (MenuItem i : menu.items) {
-            if (i.url.equals(request.getContextPath() + "/manage")) {
-                // add "Manage Jenkins" subitems
-                i.subMenu = new ContextMenu().from(ExtensionList.lookupSingleton(ManageJenkinsAction.class), request, response, "index");
-            }
-        }
-        return menu;
+        return new ContextMenu().from(this, request, response);
     }
 
     @Override

@@ -1,11 +1,5 @@
 @use "../abstracts/mixins";
 
-#side-panel {
-  #buildHistoryPage {
-    margin: 10px 0 10px 10px;
-  }
-}
-
 #buildHistoryPage {
   .jenkins-search {
     margin-inline: -0.25rem;
@@ -213,6 +207,7 @@
   background: var(--card-background);
   border: var(--jenkins-border);
   margin-bottom: var(--section-padding);
+  box-shadow: var(--elevation-2-box-shadow);
 
   &__item {
     --tertiary-color: var(--text-color-secondary);
@@ -224,7 +219,7 @@
     transition: var(--standard-transition);
     box-shadow:
       0 0 0 0 transparent,
-      0 0 0 0.5rem transparent;
+      var(--focus-ring--hidden);
 
     &:not(:last-of-type) {
       border-bottom: var(--jenkins-border);
@@ -269,7 +264,7 @@
 
       &:has(.app-temporary-list__item__label:focus-visible) {
         background: var(--button-background--hover);
-        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+        box-shadow: var(--focus-ring--keyboard) !important;
       }
     }
 
@@ -433,10 +428,10 @@
     &:is(a) {
       border-radius: 100px;
       transition: var(--standard-transition);
-      box-shadow: 0 0 0 0.5rem transparent;
+      box-shadow: var(--focus-ring--hidden);
 
       &:focus-visible {
-        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+        box-shadow: var(--focus-ring--keyboard) !important;
       }
     }
 
