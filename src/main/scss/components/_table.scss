@@ -5,27 +5,15 @@
 
   position: relative;
   width: 100%;
-  background: var(--table-background);
+  background: var(--elevation-2-background);
   border-radius: calc(
     var(--table-border-radius) + (var(--jenkins-border-width) * 2)
   );
-  border: calc(var(--jenkins-border-width) * 2) solid var(--table-background);
+  border: var(--jenkins-border);
   border-bottom-width: var(--jenkins-border-width);
   border-spacing: 0 var(--jenkins-border-width);
   background-clip: padding-box;
   margin-bottom: var(--section-padding);
-
-  // The '::before' pseudo-element is causing overflow issues in Firefox, so disable it for that browser
-  @supports (not (-moz-appearance: none)) {
-    &::before {
-      content: "";
-      position: absolute;
-      inset: -2px -2px -1px;
-      border: var(--jenkins-border);
-      border-radius: inherit;
-      pointer-events: none;
-    }
-  }
 
   * {
     -webkit-border-horizontal-spacing: 0;
@@ -42,6 +30,7 @@
         padding-left: 1.6rem;
         font-size: var(--font-size-sm);
         font-weight: var(--font-bold-weight);
+        border-bottom: var(--jenkins-border);
 
         &[align="center"] {
           text-align: center;
@@ -82,7 +71,6 @@
       color: var(--table-body-foreground);
 
       & > td {
-        background: var(--table-body-background);
         vertical-align: middle;
         padding: var(--table-padding) 0 var(--table-padding) 1.6rem;
         height: 3rem;
@@ -96,36 +84,9 @@
         }
       }
 
-      // Style the rows so that the first and last have a larger border radius
-      & > td:first-of-type {
-        border-top-left-radius: var(--table-row-border-radius);
-        border-bottom-left-radius: var(--table-row-border-radius);
-      }
-
-      & > td:last-of-type {
-        border-top-right-radius: var(--table-row-border-radius);
-        border-bottom-right-radius: var(--table-row-border-radius);
-      }
-
-      // First row
-      &:first-of-type {
-        & > td:first-of-type {
-          border-top-left-radius: var(--table-border-radius);
-        }
-
-        & > td:last-of-type {
-          border-top-right-radius: var(--table-border-radius);
-        }
-      }
-
-      // Last row
-      &:last-of-type {
-        & > td:first-of-type {
-          border-bottom-left-radius: var(--table-border-radius);
-        }
-
-        & > td:last-of-type {
-          border-bottom-right-radius: var(--table-border-radius);
+      &:not(:last-of-type) {
+        & > td {
+          border-bottom: var(--jenkins-border);
         }
       }
     }

@@ -23,8 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:dd="/lib/layout/dropdowns"
-         xmlns:st="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
   <st:documentation>
     A reusable container for subpages relating to Runs in Jenkins.
     Renders a tabbed layout for runs, including build status and actions.
@@ -44,21 +43,21 @@ THE SOFTWARE.
                 <l:icon alt="${it.iconColor.description}"
                         src="symbol-status-${it.object.iconColor.iconName}" />
               </a>
-              <j:if test="${it.object.previousBuild != null}">
-                <a href="${buildUrl.previousBuildUrl}"
-                   class="jenkins-button jenkins-button--tertiary app-build__navigation-previous"
-                   aria-label="${%Previous build}">
-                  <l:icon class="symbol-arrow-left" />
-                </a>
-              </j:if>
               <h1>${it.object.displayName}</h1>
-              <j:if test="${it.object.nextBuild != null}">
-                <a href="${buildUrl.nextBuildUrl}"
-                   class="jenkins-button jenkins-button--tertiary app-build__navigation-next"
-                   aria-label="${%Next build}">
-                  <l:icon class="symbol-arrow-right" />
+              <div class="app-build__navigation">
+                <a href="${buildUrl.previousBuildUrl}"
+                   class="jenkins-button jenkins-button--tertiary app-build__navigation__previous"
+                   aria-label="${%Previous build}"
+                   disabled="${it.object.previousBuild == null}">
+                  <l:icon class="symbol-arrow-down" />
                 </a>
-              </j:if>
+                <a href="${buildUrl.nextBuildUrl}"
+                   class="jenkins-button jenkins-button--tertiary app-build__navigation__next"
+                   aria-label="${%Next build}"
+                   disabled="${it.object.nextBuild == null}">
+                  <l:icon class="symbol-arrow-up" />
+                </a>
+              </div>
             </div>
 
             <j:set var="url" value="${h.getNearestAncestorUrl(request2, it.object)}"/>
