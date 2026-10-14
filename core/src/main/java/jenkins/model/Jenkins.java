@@ -680,8 +680,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private final transient ConcurrentHashMap<String, LabelAtom> labels = new ConcurrentHashMap<>();
 
     /**
-     * Label expressions keyed by their expression string, so that expressions resolve without polluting {@link #labels}.
-     * Also includes canonical name mappings to deduplicate whitespace variants.
+     * Cache of parsed label expressions, keyed both by the string passed to {@link #getLabel(String)}
+     * and by the canonical name of composite expressions, so that whitespace variants share one instance.
+     * Kept apart from {@link #labels} because an atom such as {@code "a&&b"} has the same name as the expression {@code a&&b}.
+     * Values may be {@link LabelAtom}s (e.g. for the input {@code "\"a&&b\""}); those are always resolved through {@link #labels}.
      */
     private final transient ConcurrentHashMap<String, Label> labelExpressions = new ConcurrentHashMap<>();
 
@@ -2023,9 +2025,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @CheckForNull
     public Label getLabel(String expr) {
         if (expr == null)  return null;
-        Label l = labelExpressions.get(expr);
-        if (l != null)
-            return l;
+        Label cached = labelExpressions.get(expr);
+        if (cached != null) {
+            // atoms are owned by #labels; resolve through it so a trimmed atom is never handed out
+            return cached.isAtom() ? getLabelAtom(cached.getName()) : cached;
+        }
 
         // non-existent
         Label parsed;
@@ -2033,12 +2037,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             parsed = Label.parseExpression(expr);
         } catch (IllegalArgumentException e) {
             // laxly accept it as a single label atom for backward compatibility
-            LabelAtom la = getLabelAtom(QuotedStringTokenizer.unquote(expr));
-            if (la != null) {
-                Label existing = labelExpressions.putIfAbsent(expr, la);
-                return existing != null ? existing : la;
-            }
-            return null;
+            parsed = getLabelAtom(QuotedStringTokenizer.unquote(expr));
         }
         if (!parsed.isAtom()) {
             Label existing = labelExpressions.putIfAbsent(parsed.getName(), parsed);
@@ -2048,8 +2047,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         // For the record, this method creates temporary labels but there is a periodic task
         // calling "trimLabels" to remove unused labels running every 5 minutes.
-        Label existingRaw = labelExpressions.putIfAbsent(expr, parsed);
-        return existingRaw != null ? existingRaw : parsed;
+        labelExpressions.put(expr, parsed);
+        return parsed;
     }
 
     /**
@@ -2089,13 +2088,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets all the active labels in the current system.
      */
     public Set<Label> getLabels() {
-        Set<Label> r = new TreeSet<>();
+        // An atom and an expression can share a name (the atom "a&&b" and the expression a&&b),
+        // so break ties by expression to keep both.
+        Set<Label> r = new TreeSet<>(Comparator.<Label>naturalOrder().thenComparing(Label::getExpression));
         for (LabelAtom l : labels.values()) {
             if (!l.isEmpty())
                 r.add(l);
         }
         for (Label l : labelExpressions.values()) {
-            if (!l.isEmpty())
+            if (!l.isAtom() && !l.isEmpty())
                 r.add(l);
         }
         return r;
@@ -2309,6 +2310,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         for (Iterator<Label> itr = labelExpressions.values().iterator(); itr.hasNext();) {
             Label l = itr.next();
+            if (l.isAtom()) {
+                // atom entries follow #labels: drop them once the atom itself has been trimmed
+                if (labels.get(l.getName()) != l) {
+                    itr.remove();
+                }
+                continue;
+            }
             if (includedLabels == null || l.matches(includedLabels)) {
                 if (nodeLabels.stream().anyMatch(l::matches) || !l.getClouds().isEmpty()) {
                     resetLabel(l);
