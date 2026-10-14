@@ -270,7 +270,8 @@
     min-height: 0;
     border-radius: 0;
 
-    &::before, &::after {
+    &::before,
+    &::after {
       border-radius: 100px;
     }
 
@@ -278,7 +279,7 @@
       color: var(--text-color-secondary) !important;
     }
 
-    &[disabled='true'] {
+    &[disabled="true"] {
       pointer-events: none;
 
       svg {
