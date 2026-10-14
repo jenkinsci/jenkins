@@ -80,27 +80,17 @@ $semantics: (
 
   // Elevation
   --elevation-1-background: rgb(252 252 252); // Page frame
-  --elevation-1-box-shadow: 0 2px 2px color-mix(in sRGB, black 4%, transparent);
-
+  --elevation-1-box-shadow: 0 2px 2px color-mix(in sRGB, var(--black) 4%, transparent);
   --elevation-2-background: rgb(254 254 254); // Cards, lists, inputs
   --elevation-2-box-shadow: var(--elevation-1-box-shadow);
-
   --elevation-3-background: rgb(255 255 255); // Dropdowns, tooltips, modals
-  --elevation-3-box-shadow:
-          0 0 0 1px color-mix(in sRGB, var(--black) 5%, transparent),
-          0 15px 40px color-mix(in sRGB, var(--black) 15%, transparent),
-          0 2px 8px color-mix(in sRGB, var(--black) 7.5%, transparent);
-
-  --elevation-4-background: rgb(255 255 255); // Cards, lists, inputs inside of elevation-3
-
-  // Elevation
-  --elevation-1-box-shadow: 0 2px 2px
-    color-mix(in sRGB, var(--black) 3.5%, transparent);
-  --elevation-2-box-shadow: var(--elevation-1-box-shadow);
   --elevation-3-box-shadow:
     0 0 0 1px color-mix(in sRGB, var(--black) 5%, transparent),
     0 15px 40px color-mix(in sRGB, var(--black) 15%, transparent),
     0 2px 8px color-mix(in sRGB, var(--black) 7.5%, transparent);
+  --elevation-4-background: rgb(
+    255 255 255
+  ); // Cards, lists, inputs inside of elevation-3
 
   // Body
   --body-background-top: color-mix(
@@ -109,9 +99,9 @@ $semantics: (
     var(--elevation-1-background)
   );
   --body-background-bottom: color-mix(
-          in oklch,
-          black 0.5%,
-          var(--elevation-1-background)
+    in oklch,
+    black 0.5%,
+    var(--elevation-1-background)
   );
 
   // Header
