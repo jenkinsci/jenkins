@@ -6,9 +6,7 @@
   position: relative;
   width: 100%;
   background: var(--elevation-2-background);
-  border-radius: calc(
-    var(--table-border-radius) + (var(--jenkins-border-width) * 2)
-  );
+  border-radius: var(--form-input-border-radius);
   border: var(--jenkins-border);
   border-bottom-width: var(--jenkins-border-width);
   border-spacing: 0 var(--jenkins-border-width);
