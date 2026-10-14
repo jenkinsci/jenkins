@@ -105,7 +105,7 @@ $semantics: (
   // Body
   --body-background-top: color-mix(
     in oklch,
-    white 1.5%,
+    white 2%,
     var(--elevation-1-background)
   );
   --body-background-bottom: color-mix(
