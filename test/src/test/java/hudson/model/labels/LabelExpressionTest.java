@@ -25,7 +25,9 @@
 package hudson.model.labels;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -355,7 +357,7 @@ class LabelExpressionTest {
     }
 
     @Test
-    @Issue("27403")
+    @Issue("#27403")
     void labelWhitespaceVariantsShareSameInstance() {
         String canonical = "linux&&ssd&&(rack1||rack2)&&!maintenance";
         String spacedNot = "linux&&ssd&&(rack1||rack2)&& !maintenance";
@@ -372,7 +374,7 @@ class LabelExpressionTest {
     }
 
     @Test
-    @Issue("27403")
+    @Issue("#27403")
     void labelWhitespaceVariantsShareSameInstanceWhenSpacedFirst() {
         String canonical = "win&&fast&&(zone1||zone2)&&!offline";
         String fullySpaced = "win && fast && (zone1 || zone2) && !offline";
@@ -389,7 +391,7 @@ class LabelExpressionTest {
     }
 
     @Test
-    @Issue("27403")
+    @Issue("#27403")
     void spacedExpressionDoesNotResolveToAtomWithCanonicalName() {
         LabelAtom atom = j.jenkins.getLabelAtom("a&&b");
 
@@ -401,7 +403,7 @@ class LabelExpressionTest {
     }
 
     @Test
-    @Issue("27403")
+    @Issue("#27403")
     void atomWithCanonicalNameCanBeCreatedAfterSpacedExpression() {
         Label expression = j.jenkins.getLabel("c && d");
 
@@ -412,7 +414,7 @@ class LabelExpressionTest {
     }
 
     @Test
-    @Issue("27452")
+    @Issue("#27452")
     void unspacedExpressionDoesNotResolveToExistingAtom() {
         LabelAtom atom = j.jenkins.getLabelAtom("a&&b");
 
@@ -425,7 +427,7 @@ class LabelExpressionTest {
     }
 
     @Test
-    @Issue("27452")
+    @Issue("#27452")
     void quotedAtomDoesNotPolluteAtomCacheWithExpression() {
         Label atomLabel = j.jenkins.getLabel("\"x&&y\"");
 
@@ -439,6 +441,19 @@ class LabelExpressionTest {
         assertThat(expression, instanceOf(LabelExpression.And.class));
         assertNotSame(atom, expression);
         assertSame(expression, j.jenkins.getLabel("x && y"));
+    }
+
+    @Test
+    @Issue("#27452")
+    void getLabelsKeepsAtomAndExpressionWithSameName() throws Exception {
+        j.createSlave("agent", "\"a&&b\" a b", null);
+        LabelAtom atom = j.jenkins.getLabelAtom("a&&b");
+        Label expression = j.jenkins.getLabel("a&&b");
+        assertThat(expression, instanceOf(LabelExpression.And.class));
+
+        Set<Label> labels = j.jenkins.getLabels();
+        assertThat(labels, hasItem(sameInstance(atom)));
+        assertThat(labels, hasItem(sameInstance(expression)));
     }
 
     private void parseShouldFail(String expr, String message) {
