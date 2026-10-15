@@ -29,10 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import hudson.Functions;
-import hudson.Platform;
 import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelClosedException;
@@ -48,6 +45,8 @@ import java.util.concurrent.TimeoutException;
 import jenkins.security.MasterToSlaveCallable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
@@ -65,9 +64,8 @@ class PingThreadTest {
     }
 
     @Test
+    @DisabledOnOs(value = {OS.WINDOWS, OS.MAC}, disabledReason = "We simulate hung agent by sending the SIGSTOP signal")
     void failedPingThreadResetsComputerChannel() throws Exception {
-        assumeFalse(Functions.isWindows() || Platform.isDarwin(), "We simulate hung agent by sending the SIGSTOP signal");
-
         DumbSlave slave = j.createOnlineSlave();
         Computer computer = slave.toComputer();
         Channel channel = (Channel) slave.getChannel();
