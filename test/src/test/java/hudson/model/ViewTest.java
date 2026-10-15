@@ -997,10 +997,10 @@ class ViewTest {
             wc.login("dev");
 
             HtmlPage rootPage = wc.goTo("");
-            assertNotNull(rootPage.getAnchorByHref(wc.getContextPath() + "/builds"));
+            assertNotNull(rootPage.getAnchorByHref(j.getURL().getPath() + j.jenkins.getPrimaryView().getViewUrl() + "builds"));
 
             HtmlPage folderPage = wc.goTo("job/team-folder/");
-            assertNotNull(folderPage.getAnchorByHref(wc.getContextPath() + "/job/team-folder/builds"));
+            assertNotNull(folderPage.getAnchorByHref(j.getURL().getPath() + folder.getPrimaryView().getViewUrl() + "builds"));
         }
     }
 
