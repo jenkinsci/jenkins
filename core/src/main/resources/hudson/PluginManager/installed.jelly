@@ -100,7 +100,7 @@ THE SOFTWARE.
                   <td class="details">
                     <div class="plugin-name success-plugin">
                       <a href="${p.url}" class="jenkins-table__link" target="_blank" rel="noopener noreferrer">
-                        ${p.updateInfo.displayName?:p.displayName}
+                        <span class="app-plugin-manager__name">${p.updateInfo.displayName?:p.displayName}</span>
                         <span class="jenkins-label jenkins-label--tertiary" style="margin-left: 1ch;">
                           <span class="jenkins-visually-hidden">${%Version}</span>
                           ${p.version}
@@ -114,7 +114,7 @@ THE SOFTWARE.
                         </j:forEach>
                       </div>
                     </j:if>
-                    <div class="jenkins-!-margin-top-1">
+                    <div class="app-plugin-manager__description jenkins-!-margin-top-1">
                       <j:set var="indexPage" value="${p.indexPage.toString()}"/>
                       <j:set var="excerpt"
                              value="${app.updateCenter.getPlugin(p.shortName).excerpt}"/>
