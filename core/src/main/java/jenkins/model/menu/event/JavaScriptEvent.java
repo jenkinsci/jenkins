@@ -30,9 +30,14 @@ public final class JavaScriptEvent implements Event {
      * Create a JavaScriptEvent.
      * @param attributes attributes to add to the element as data-attributes.
      * @param javascriptUrl the script to load relative from the jenkins root url.
+     *        A blank value means no script is loaded. It must not become the static-resource root,
+     *        which the menu would otherwise request as a script.
      * @return the event
      */
     public static JavaScriptEvent of(Map<String, String> attributes, String javascriptUrl) {
+        if (javascriptUrl == null || javascriptUrl.isBlank()) {
+            return new JavaScriptEvent(attributes, "");
+        }
         StaplerRequest2 req = Stapler.getCurrentRequest2();
         String prefix = (req != null ? req.getContextPath() : "") + Jenkins.RESOURCE_PATH + "/";
         return new JavaScriptEvent(attributes, prefix + javascriptUrl);
