@@ -47,7 +47,7 @@ THE SOFTWARE.
        -->
       <input type="hidden" name="statusCode" value="303" />
       <input type="hidden" name="redirectTo" value="." />
-      <!-- TODO - when the legacy UI is no longer default, the ordering of these buttons should be switched around -->
+      <!-- TODO - when the legacy UI is no l  onger default, the ordering of these buttons should be switched around -->
       <button class="jenkins-button jenkins-button--primary jenkins-!-build-color">
         <l:icon src="symbol-play" />
         ${it.buildButtonText}
