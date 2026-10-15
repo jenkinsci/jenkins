@@ -38,6 +38,12 @@
       "matchPackageNames": ["com.google.inject:guice-bom"]
     },
     {
+      "description": "Apache Commons Codec 1.23.0 breaks some Base64 parsing. See https://github.com/jenkinsci/jenkins/issues/27539",
+      "matchManagers": ["maven"],
+      "allowedVersions": "<1.23.0",
+      "matchPackageNames": ["commons-codec:commons-codec"]
+    },
+    {
       "matchFileNames": ["core/pom.xml", "test/pom.xml", "war/pom.xml"],
       "matchPackageNames": ["org.jenkins-ci.main:remoting"],
       "description": "Avoid updating the remoting.minimum.supported.version property but still update latest one by not placing this property in the parent pom.xml",
