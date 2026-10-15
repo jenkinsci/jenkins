@@ -27,6 +27,7 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -426,7 +427,7 @@ class UserTest {
         SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         HtmlForm form = j.createWebClient().withBasicCredentials(user.getId(), "password").goTo(user2.getUrl() + "/account/").getFormByName("config");
         form.getInputByName("_.fullName").setValue("Alice Smith");
-        j.submit(form);
+        assertThat(j.submit(form).getUrl().getPath(), endsWith(user2.getUrl() + "/account/"));
         assertEquals("Alice Smith", user2.getFullName(), "User should have full name Alice Smith.");
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
         try (JenkinsRule.WebClient webClient = j.createWebClient().withBasicCredentials(user2.getId(), "password")) {
