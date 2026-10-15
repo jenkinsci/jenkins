@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.586</revision>
+    <revision>2.587</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2026-10-06T06:08:30Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-10-13T06:10:31Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -103,7 +103,7 @@ THE SOFTWARE.
     <!-- Skips node installation, "yarn install" and "yarn build". Only safe when
          war/src/main/webapp/jsbundles is already populated from an earlier build. -->
     <skip.frontend>false</skip.frontend>
-    <winstone.version>8.1050.veb_a_0d2124285</winstone.version>
+    <winstone.version>8.1053.v85e6c1a_3b_278</winstone.version>
     <node.version>24.21.0</node.version>
   </properties>
 
