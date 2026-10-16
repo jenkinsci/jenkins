@@ -74,7 +74,7 @@ THE SOFTWARE.
                   <div>
                     <input type="hidden" name="name" value="${cloud.name}" />
                     <a href="${it.getCloudUrl(request2,app,cloud)}">
-                      ${cloud.name}
+                      ${cloud.displayName}
                     </a>
                   </div>
                   <div class="app-cloud-item__actions ignore-dirty-panel">
