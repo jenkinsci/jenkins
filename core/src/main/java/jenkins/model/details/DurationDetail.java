@@ -1,5 +1,6 @@
 package jenkins.model.details;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Run;
 
 /**
@@ -9,5 +10,10 @@ public class DurationDetail extends Detail {
 
     public DurationDetail(Run<?, ?> run) {
         super(run);
+    }
+
+    @Override
+    public @NonNull Visibility getVisibility() {
+        return Visibility.BOTH;
     }
 }

@@ -1,5 +1,6 @@
 package jenkins.model.details;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Run;
 import org.jspecify.annotations.Nullable;
 
@@ -22,5 +23,10 @@ public class KeptForeverDetail extends Detail {
     public @Nullable String getIconClassName() {
         Run<?, ?> run = (Run<?, ?>) getObject();
         return run.isKeepLog() ? "symbol-lock-closed" : null;
+    }
+
+    @Override
+    public @NonNull Visibility getVisibility() {
+        return Visibility.BOTH;
     }
 }
