@@ -198,6 +198,17 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         public abstract String getMsg();
 
         /**
+         * Returns the comment for this change entry.
+         * By default, returns the same value as {@link #getMsg()}.
+         *
+         * @since 2.552
+         */
+        @Exported
+        public String getComment() {
+        return getMsg();
+        }
+
+        /**
          * The user who made this change.
          *
          * @return
