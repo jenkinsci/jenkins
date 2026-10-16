@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.htmlunit.AlertHandler;
@@ -73,6 +74,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -418,6 +420,107 @@ class ListViewTest {
                     return a.equals(SYSTEM2);
                 }
             };
+        }
+    }
+
+    @Issue("JENKINS-27461")
+    @Test
+    void deleteDoesNotVisitViewGroupsThatCannotListTheItem() throws Exception {
+        CountingFolder ancestor = j.jenkins.createProject(CountingFolder.class, "ancestor");
+        FreeStyleProject doomed = ancestor.createProject(FreeStyleProject.class, "doomed");
+        List<CountingFolder> unrelated = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            unrelated.add(j.jenkins.createProject(CountingFolder.class, "unrelated" + i));
+        }
+        CountingFolder.counted = Thread.currentThread();
+        try {
+            doomed.delete();
+        } finally {
+            CountingFolder.counted = null;
+        }
+        assertTrue(ancestor.viewReads.get() > 0, "the views of an ancestor are still cleaned up");
+        for (CountingFolder folder : unrelated) {
+            assertEquals(0, folder.viewReads.get(), "a view in " + folder.getFullName() + " cannot list the deleted item");
+        }
+    }
+
+    @Issue("JENKINS-27461")
+    @Test
+    void deleteRemovesTheItemFromTheViewsOfAllItsAncestors() throws Exception {
+        MockFolder a = j.createFolder("a");
+        MockFolder b = a.createProject(MockFolder.class, "b");
+        FreeStyleProject doomed = b.createProject(FreeStyleProject.class, "doomed");
+        FreeStyleProject kept = b.createProject(FreeStyleProject.class, "kept");
+        ListView rootView = recursiveViewWith(j.jenkins, "rootView", doomed, kept);
+        ListView viewInA = recursiveViewWith(a, "viewInA", doomed, kept);
+        ListView viewInB = recursiveViewWith(b, "viewInB", doomed, kept);
+        doomed.delete();
+        assertEquals(Set.of("a/b/kept"), new HashSet<>(rootView.getJobNames()));
+        assertEquals(Set.of("b/kept"), new HashSet<>(viewInA.getJobNames()));
+        assertEquals(Set.of("kept"), new HashSet<>(viewInB.getJobNames()));
+    }
+
+    @Issue("JENKINS-27461")
+    @Test
+    void deletingAFolderRemovesItsDescendantsFromTheViewsOfItsAncestors() throws Exception {
+        MockFolder top = j.createFolder("top");
+        MockFolder sub = top.createProject(MockFolder.class, "sub");
+        FreeStyleProject inSub = sub.createProject(FreeStyleProject.class, "inSub");
+        FreeStyleProject sibling = top.createProject(FreeStyleProject.class, "sibling");
+        ListView rootView = recursiveViewWith(j.jenkins, "rootView", inSub, sibling);
+        ListView topView = recursiveViewWith(top, "topView", inSub, sibling);
+        sub.delete();
+        assertEquals(Set.of("top/sibling"), new HashSet<>(rootView.getJobNames()));
+        assertEquals(Set.of("sibling"), new HashSet<>(topView.getJobNames()));
+    }
+
+    private static ListView recursiveViewWith(ModifiableViewGroup owner, String name, TopLevelItem... items) throws IOException {
+        ListView view = new ListView(name, owner);
+        view.setRecurse(true);
+        owner.addView(view);
+        for (TopLevelItem item : items) {
+            view.add(item);
+        }
+        return view;
+    }
+
+    /** A folder which counts how often its views are asked for by one thread, to tell which groups are visited. */
+    public static class CountingFolder extends MockFolder {
+
+        /** Only calls made by this thread are counted, so that background work does not disturb the test. */
+        static volatile Thread counted;
+
+        final transient AtomicInteger viewReads = new AtomicInteger();
+
+        CountingFolder(ItemGroup parent, String name) {
+            super(parent, name);
+        }
+
+        @Override
+        public Collection<View> getViews() {
+            if (Thread.currentThread() == counted) {
+                viewReads.incrementAndGet();
+            }
+            return super.getViews();
+        }
+
+        @Override
+        public TopLevelItemDescriptor getDescriptor() {
+            return Jenkins.get().getDescriptorByType(DescriptorImpl.class);
+        }
+
+        @TestExtension("deleteDoesNotVisitViewGroupsThatCannotListTheItem")
+        public static class DescriptorImpl extends TopLevelItemDescriptor {
+
+            @Override
+            public TopLevelItem newInstance(ItemGroup parent, String name) {
+                return new CountingFolder(parent, name);
+            }
+
+            @Override
+            public String getDisplayName() {
+                return "CountingFolder";
+            }
         }
     }
 
