@@ -38,8 +38,6 @@ import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkins.ui.symbol.Symbol;
 import org.jenkins.ui.symbol.SymbolRequest;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -179,7 +177,6 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          *
          * @since 2.231
          */
-        @Restricted(DoNotUse.class) // manage.jelly only
         public ContextMenu addHeader(String title) {
             final MenuItem item = new MenuItem().withDisplayName(title);
             item.type = MenuItemType.HEADER;
