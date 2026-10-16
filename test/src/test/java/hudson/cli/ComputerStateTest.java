@@ -32,7 +32,6 @@ import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -43,8 +42,6 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import jenkins.model.Jenkins;
 import org.htmlunit.ElementNotFoundException;
-import org.htmlunit.html.DomElement;
-import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -175,16 +172,7 @@ class ComputerStateTest {
 
     private void assertConnected(WebClient wc, DumbSlave slave) throws Exception {
         HtmlPage main = wc.getPage(slave);
-        ((HtmlButton) main.getByXPath("//div[@class='jenkins-split-button']/button[2]").getFirst()).click();
-        HtmlButton button = null;
-        for (DomElement b : main.getElementsByTagName("button")) {
-            if (b.getTextContent().trim().equals("Disconnect")) {
-                if (b.isDisplayed()) {
-                    button = (HtmlButton) b;
-                }
-            }
-        }
-        assertNotNull(button);
+        main.getAnchorByText("Disconnect");
 
         main.getAnchorByText("Script Console");
         HtmlPage script = wc.getPage(slave, "script");
