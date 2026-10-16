@@ -24,6 +24,7 @@
 
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -71,6 +72,7 @@ public class CompressedFile {
      */
     private final File gz;
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     public CompressedFile(File file) {
         this.file = file;
         this.gz = new File(file.getParentFile(), file.getName() + ".gz");
