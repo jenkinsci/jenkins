@@ -134,7 +134,7 @@
   position: relative;
   background-color: color-mix(
     in sRGB,
-    var(--overlay-surface-background) $opacity,
+    var(--elevation-3-background) $opacity,
     transparent
   );
   box-shadow: var(--elevation-3-box-shadow);
