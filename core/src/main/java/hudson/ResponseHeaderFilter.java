@@ -39,7 +39,7 @@ import org.kohsuke.stapler.CompatibleFilter;
  * that are out of your control.  The particular headers you wish to change are configured
  * in web.xml.
  * <p>
- * One particular header you you may wish to deal with is "Cache-Control: no-cache"
+ * One particular header you may wish to deal with is "Cache-Control: no-cache"
  * This is a problem with Tomcat when security is used.  Continue reading for further details.
  * <p>
  * If a web app has a &lt;security-constraint&gt; in its web.xml, Tomcat will

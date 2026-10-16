@@ -111,7 +111,7 @@ public class LogRotatorTest {
     @Test
     void ableToDeleteCurrentBuild() throws Exception {
         assumeFalse(Functions.isWindows(),
-                "Deleting the current build while is is completing does not work consistently on Windows");
+                "Deleting the current build while it is completing does not work consistently on Windows");
         var p = j.createFreeStyleProject();
         // Keep 0 builds, i.e. immediately delete builds as they complete.
         LogRotator logRotator = new LogRotator(-1, 0, -1, -1);
