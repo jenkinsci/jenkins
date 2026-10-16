@@ -64,72 +64,74 @@ THE SOFTWARE.
     <j:set var="monitors" value="${it._monitors}"/>
     <j:set var="tableWidth" value="${3}"/>
     <t:setIconSize/>
-    <table id="computers" class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable">
-      <thead>
-        <tr>
-          <th class="jenkins-table__cell--tight">S</th>
-          <th initialSortDir="down">${%Name}</th>
-          <j:forEach var="m" items="${monitors}">
-            <j:if test="${m.columnCaption!=null}">
-              <j:set var="tableWidth" value="${tableWidth+1}"/>
-              <th align="right" tooltip="${m.descriptor.timestampString}">${m.columnCaption}</th>
-            </j:if>
-          </j:forEach>
-          <th class="jenkins-table__cell--tight" data-sort-disable="true" />
-        </tr>
-      </thead>
-      <tbody>
-      <j:getStatic var="extendedReadPermission" className="hudson.model.Computer" field="EXTENDED_READ"/>
-      <j:forEach var="c" items="${it.computers}">
-        <tr id="node_${c.name}">
-          <td data="${c.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
-            <div class="jenkins-table__cell__button-wrapper">
-              <l:icon src="${c.iconClassName}" alt="${c.iconAltText}" tooltip="${c.tooltip}"/>
-            </div>
-          </td>
-
-          <td>
-            <a href="../${c.url}" class="jenkins-table__link model-link inside">${c.displayName}</a>
-          </td>
-
-          <j:forEach var="m" items="${monitors}">
-            <j:if test="${m.columnCaption!=null}">
-              <j:set var="data" value="${m.data(c)}"/>
-              <st:include page="column.jelly" from="${m}" />
-            </j:if>
-          </j:forEach>
-
-          <td class="jenkins-table__cell--tight">
-            <j:if test="${c.hasPermission(extendedReadPermission)}">
+    <div class="jenkins-table-wrapper">
+      <table id="computers" class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable">
+        <thead>
+          <tr>
+            <th class="jenkins-table__cell--tight">S</th>
+            <th initialSortDir="down">${%Name}</th>
+            <j:forEach var="m" items="${monitors}">
+              <j:if test="${m.columnCaption!=null}">
+                <j:set var="tableWidth" value="${tableWidth+1}"/>
+                <th align="right" tooltip="${m.descriptor.timestampString}">${m.columnCaption}</th>
+              </j:if>
+            </j:forEach>
+            <th class="jenkins-table__cell--tight" data-sort-disable="true" />
+          </tr>
+        </thead>
+        <tbody>
+        <j:getStatic var="extendedReadPermission" className="hudson.model.Computer" field="EXTENDED_READ"/>
+        <j:forEach var="c" items="${it.computers}">
+          <tr id="node_${c.name}">
+            <td data="${c.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
               <div class="jenkins-table__cell__button-wrapper">
-                <a href="../${c.url}configure" class="jenkins-button jenkins-button--tertiary">
-                  <l:icon src="symbol-settings" />
-                </a>
+                <l:icon src="${c.iconClassName}" alt="${c.iconAltText}" tooltip="${c.tooltip}"/>
               </div>
-            </j:if>
-          </td>
-        </tr>
-      </j:forEach>
+            </td>
 
-      <!-- let clouds contribute fragments here -->
-      <j:forEach var="cloud" items="${app.clouds}">
-        <st:include it="${cloud}" page="computerSet.jelly" optional="true" />
-      </j:forEach>
+            <td>
+              <a href="../${c.url}" class="jenkins-table__link model-link inside">${c.displayName}</a>
+            </td>
 
-      <tr class="sortbottom">
-        <th />
-        <th>${%Data obtained}</th>
-        <j:forEach var="m" items="${monitors}">
-          <j:if test="${m.columnCaption!=null}">
-            <th align="right">
-              ${m.descriptor.timestampString}
-            </th>
-          </j:if>
+            <j:forEach var="m" items="${monitors}">
+              <j:if test="${m.columnCaption!=null}">
+                <j:set var="data" value="${m.data(c)}"/>
+                <st:include page="column.jelly" from="${m}" />
+              </j:if>
+            </j:forEach>
+
+            <td class="jenkins-table__cell--tight">
+              <j:if test="${c.hasPermission(extendedReadPermission)}">
+                <div class="jenkins-table__cell__button-wrapper">
+                  <a href="../${c.url}configure" class="jenkins-button jenkins-button--tertiary">
+                    <l:icon src="symbol-settings" />
+                  </a>
+                </div>
+              </j:if>
+            </td>
+          </tr>
         </j:forEach>
-        <th />
-      </tr>
-      </tbody>
-    </table>
+
+        <!-- let clouds contribute fragments here -->
+        <j:forEach var="cloud" items="${app.clouds}">
+          <st:include it="${cloud}" page="computerSet.jelly" optional="true" />
+        </j:forEach>
+
+        <tr class="sortbottom">
+          <th />
+          <th>${%Data obtained}</th>
+          <j:forEach var="m" items="${monitors}">
+            <j:if test="${m.columnCaption!=null}">
+              <th align="right">
+                ${m.descriptor.timestampString}
+              </th>
+            </j:if>
+          </j:forEach>
+          <th />
+        </tr>
+        </tbody>
+      </table>
+    </div>
     <t:iconSize>
       <div class="jenkins-buttons-row jenkins-buttons-row--invert">
         <button class="jenkins-button jenkins-button--tertiary" id="button-computer-icon-legend">
