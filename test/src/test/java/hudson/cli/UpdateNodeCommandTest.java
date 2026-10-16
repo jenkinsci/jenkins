@@ -143,7 +143,7 @@ class UpdateNodeCommandTest {
 
         assertThat(result.stderr(), containsString(Messages.Hudson_UnsafeChar('/')));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(8));
 
         assertEquals(okName, node.getNodeName());
         // ensure the other data were not saved

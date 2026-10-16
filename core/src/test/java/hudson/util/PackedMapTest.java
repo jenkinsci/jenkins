@@ -1,6 +1,7 @@
 package hudson.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,19 @@ class PackedMapTest {
                 xml);
 
         xs.fromXML(xml);
+    }
+
+    @Test
+    void entryEqualityAndHashCode() {
+        Map<String, String> source = Map.of("a", "b", "c", "d");
+        PackedMap<String, String> packed = PackedMap.of(source);
+
+        assertEquals(source.entrySet(), packed.entrySet());
+        assertEquals(packed.entrySet(), source.entrySet());
+        assertEquals(source.hashCode(), packed.hashCode());
+        assertEquals(packed.hashCode(), packed.hashCode());
+        assertThrows(UnsupportedOperationException.class,
+                () -> packed.entrySet().iterator().next().setValue("changed"));
     }
 
     @Test

@@ -25,7 +25,9 @@
 package hudson.util.io;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -140,8 +142,8 @@ class TarArchiverTest {
 
         File unreadable = new File(tmp, "unreadable.txt");
         Files.writeString(unreadable.toPath(), "contents", StandardCharsets.UTF_8);
-        assumeTrue(unreadable.setReadable(false));
-        assumeFalse(unreadable.canRead());
+        assertTrue(unreadable.setReadable(false));
+        assertFalse(unreadable.canRead());
 
         try (TarArchiver archiver = new TarArchiver(OutputStream.nullOutputStream(), StandardCharsets.UTF_8)) {
             assertThrows(AccessDeniedException.class, () -> archiver.visit(unreadable, unreadable.getName()));
