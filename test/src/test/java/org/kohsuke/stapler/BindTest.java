@@ -59,7 +59,7 @@ class BindTest {
             final Page script = wc.goTo(Strings.CS.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
             final String content = script.getWebResponse().getContentAsString();
             assertThat(content, startsWith("varname = makeStaplerProxy('" + j.contextPath + "/$stapler/bound/"));
-            assertThat(content, endsWith("','test',['annotatedJsMethod1','byName1']);"));
+            assertThat(content, endsWith("',document.head.dataset.crumbValue,['annotatedJsMethod1','byName1']);"));
         }
         assertThat(root.invocations, is(1));
     }
@@ -78,7 +78,7 @@ class BindTest {
                     .getAttribute("src");
 
             final Page script = wc.goTo(Strings.CS.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
-            assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath + "/theWellKnownRoot','test',['annotatedJsMethod2','byName2']);"));
+            assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath + "/theWellKnownRoot',document.head.dataset.crumbValue,['annotatedJsMethod2','byName2']);"));
         }
         assertThat(root.invocations, is(1));
     }
@@ -97,7 +97,8 @@ class BindTest {
                     .getAttribute("src");
 
             final Page script = wc.goTo(Strings.CS.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
-            assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath + "/the\\'Well\\'Known\\\\\\'Root\\'With\\'Quotes','test',['annotatedJsMethod2','byName2']);"));
+            assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath
+                    + "/the\\'Well\\'Known\\\\\\'Root\\'With\\'Quotes',document.head.dataset.crumbValue,['annotatedJsMethod2','byName2']);"));
         }
         assertThat(root.invocations, is(1));
     }
@@ -135,7 +136,7 @@ class BindTest {
                     .getTextContent();
 
             assertThat(content, startsWith("window['varname']=makeStaplerProxy('" + j.contextPath + "/$stapler/bound/"));
-            assertThat(content, endsWith("','test',['annotatedJsMethod1','byName1']);"));
+            assertThat(content, endsWith("',document.head.dataset.crumbValue,['annotatedJsMethod1','byName1']);"));
         }
         assertThat(root.invocations, is(1));
     }
