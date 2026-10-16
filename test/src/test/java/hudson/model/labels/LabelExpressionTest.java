@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 import org.junit.jupiter.api.BeforeEach;
@@ -454,6 +455,16 @@ class LabelExpressionTest {
         Set<Label> labels = j.jenkins.getLabels();
         assertThat(labels, hasItem(sameInstance(atom)));
         assertThat(labels, hasItem(sameInstance(expression)));
+    }
+
+    @Test
+    @Issue("JENKINS-17587")
+    void quotedAtomsJoinedByOperatorParseAsExpression() {
+        Label l = j.jenkins.getLabel("\"Slave1(box1)\"||\"Slave3(box3)\"");
+
+        assertThat(l, instanceOf(LabelExpression.Or.class));
+        assertSame(l, j.jenkins.getLabel("\"Slave1(box1)\" || \"Slave3(box3)\""));
+        assertTrue(l.matches(List.of(j.jenkins.getLabelAtom("Slave1(box1)"))));
     }
 
     private void parseShouldFail(String expr, String message) {
