@@ -99,6 +99,7 @@ import jenkins.model.item_category.ItemCategory;
 import jenkins.search.SearchGroup;
 import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.stapler.StaplerNotDispatchable;
+import jenkins.util.SystemProperties;
 import jenkins.util.xml.XMLUtils;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONObject;
@@ -991,7 +992,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     private HttpResponse doConfigDotXmlImpl(StaplerRequest2 req) throws IOException {
         if (req.getMethod().equals("GET")) {
             // read
-            checkPermission(READ);
+            checkPermission(EXTENDED_READ);
             return new HttpResponse() {
                 @Override
                 public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
@@ -1129,7 +1130,31 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static final Permission CREATE = new Permission(PERMISSIONS, "Create", Messages._View_CreatePermission_Description(), Permission.CREATE, PermissionScope.ITEM_GROUP);
     public static final Permission DELETE = new Permission(PERMISSIONS, "Delete", Messages._View_DeletePermission_Description(), Permission.DELETE, PermissionScope.ITEM_GROUP);
     public static final Permission CONFIGURE = new Permission(PERMISSIONS, "Configure", Messages._View_ConfigurePermission_Description(), Permission.CONFIGURE, PermissionScope.ITEM_GROUP);
-    public static final Permission READ = new Permission(PERMISSIONS, "Read", Messages._View_ReadPermission_Description(), Permission.READ, PermissionScope.ITEM_GROUP);
+
+    /**
+     * This permission is no longer used.
+     *
+     * @deprecated This permission is no longer used. Use {@link #EXTENDED_READ} instead to gate access to reading view configuration.
+     */
+    @Deprecated
+    public static final Permission READ = new Permission(
+            PERMISSIONS,
+            "Read",
+            Messages._View_ReadPermission_Description(),
+            Permission.READ,
+            SystemProperties.getBoolean("hudson.model.View.READ"),
+            new PermissionScope[]{ PermissionScope.ITEM_GROUP });
+
+    /**
+     * @since TODO
+     */
+    public static final Permission EXTENDED_READ = new Permission(
+            PERMISSIONS,
+            "ExtendedRead",
+            Messages._View_ExtendedReadPermission_Description(),
+            CONFIGURE,
+            SystemProperties.getBoolean("hudson.security.ExtendedReadPermission"),
+            new PermissionScope[]{ PermissionScope.ITEM_GROUP });
 
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", justification = "to guard against potential future compiler optimizations")
     @Initializer(before = InitMilestone.SYSTEM_CONFIG_LOADED)
@@ -1141,7 +1166,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         // construction of static permission objects (and therefore their calls to
         // PermissionGroup#register), there is nothing further to do in this method. We call
         // Objects.hash() to guard against potential future compiler optimizations.
-        Objects.hash(PERMISSIONS, CREATE, DELETE, CONFIGURE, READ);
+        Objects.hash(PERMISSIONS, CREATE, DELETE, CONFIGURE, EXTENDED_READ);
     }
 
     // to simplify access from Jelly
