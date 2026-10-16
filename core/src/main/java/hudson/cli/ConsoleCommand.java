@@ -95,6 +95,12 @@ public class ConsoleCommand extends CLICommand {
      * Find the byte offset in the log input stream that marks "last N lines".
      */
     private long seek(Run<?, ?> run) throws IOException {
+        if (n == 0) {
+            try (InputStream in = run.getLogInputStream()) {
+                return IOUtils.skip(in, Long.MAX_VALUE);
+            }
+        }
+
         class RingBuffer {
             long[] lastNlines = new long[n];
             int ptr = 0;
@@ -117,6 +123,7 @@ public class ConsoleCommand extends CLICommand {
         }
 
         RingBuffer rb = new RingBuffer();
+        rb.add(0);
 
         try (InputStream in = run.getLogInputStream()) {
             byte[] buf = new byte[4096];
