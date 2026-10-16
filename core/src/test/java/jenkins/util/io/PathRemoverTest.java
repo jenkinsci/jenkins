@@ -37,8 +37,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -71,6 +69,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.opentest4j.MultipleFailuresError;
@@ -189,8 +190,8 @@ class PathRemoverTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void testForceRemoveFile_SymbolicLink() throws IOException {
-        assumeFalse(Functions.isWindows());
         File file = File.createTempFile("junit", null, tmp);
         touchWithFileName(file);
         Path link = Files.createSymbolicLink(tmp.toPath().resolve("test-link"), file.toPath());
@@ -220,8 +221,8 @@ class PathRemoverTest {
 
     @Test
     @Issue("JENKINS-55448")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void testForceRemoveFile_ParentIsSymbolicLink() throws IOException {
-        assumeFalse(Functions.isWindows());
         Path realParent = newFolder(tmp, "junit-" + System.currentTimeMillis()).toPath();
         Path path = realParent.resolve("test-file");
         touchWithFileName(path.toFile());
@@ -257,8 +258,8 @@ class PathRemoverTest {
     }
 
     @Test
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void testForceRemoveDirectoryContents_LockedFile() throws Exception {
-        assumeTrue(Functions.isWindows());
         File dir = newFolder(tmp, "junit-" + System.currentTimeMillis());
         File d1 = new File(dir, "d1");
         File d2 = new File(dir, "d2");
@@ -323,8 +324,8 @@ class PathRemoverTest {
     }
 
     @Test
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void testForceRemoveRecursive_DeletesAsMuchAsPossibleWithLockedFiles() throws Exception {
-        assumeTrue(Functions.isWindows());
         File dir = newFolder(tmp, "junit-" + System.currentTimeMillis());
         File d1 = new File(dir, "d1");
         File d2 = new File(dir, "d2");
@@ -347,8 +348,8 @@ class PathRemoverTest {
     }
 
     @Test
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void testForceRemoveRecursive_RetryOnFailure() throws Exception {
-        assumeTrue(Functions.isWindows());
         File dir = newFolder(tmp, "junit-" + System.currentTimeMillis());
         File d1 = new File(dir, "d1");
         File d2 = new File(dir, "d2");
@@ -390,8 +391,8 @@ class PathRemoverTest {
     }
 
     @Test
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void testForceRemoveRecursive_FailsWhenInterrupted() throws Exception {
-        assumeTrue(Functions.isWindows());
         File dir = newFolder(tmp, "junit-" + System.currentTimeMillis());
         File d1 = new File(dir, "d1");
         File d2 = new File(dir, "d2");
@@ -432,8 +433,8 @@ class PathRemoverTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void testForceRemoveRecursive_ContainsSymbolicLinks() throws IOException {
-        assumeFalse(Functions.isWindows());
         File folder = newFolder(tmp, "junit" + System.currentTimeMillis());
         File d1 = new File(folder, "d1");
         File d1f1 = new File(d1, "d1f1");
@@ -472,8 +473,8 @@ class PathRemoverTest {
 
     @Test
     @Issue("JENKINS-55448")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void testForceRemoveRecursive_ParentIsSymbolicLink() throws IOException {
-        assumeFalse(Functions.isWindows());
         File folder = newFolder(tmp, "junit" + System.currentTimeMillis());
         File d1 = new File(folder, "d1");
         File d1f1 = new File(d1, "d1f1");
@@ -492,8 +493,8 @@ class PathRemoverTest {
 
     @Test
     @Issue("JENKINS-55448")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void testForceRemoveRecursive_TruncatesNumberOfExceptions() throws IOException {
-        assumeTrue(Functions.isWindows());
         final int maxExceptions = CompositeIOException.EXCEPTION_LIMIT;
         final int lockedFiles = maxExceptions + 5;
         final int totalFiles = lockedFiles + 5;

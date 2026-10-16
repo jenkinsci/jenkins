@@ -8,11 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
-import hudson.Functions;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -26,6 +23,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 
@@ -48,17 +48,17 @@ class AtomicFileWriterTest {
         final File tempDir = newFolder(tmp, "junit");
         final File newFile = new File(tempDir, "blah");
         assertThat(newFile.createNewFile(), is(true));
-        if (!isPosixSupported(newFile)) {
+        if (!isPosixSupported()) {
             return;
         }
         DEFAULT_GIVEN_PERMISSIONS = Files.getPosixFilePermissions(newFile.toPath());
     }
 
-    private static boolean isPosixSupported(File newFile) throws IOException {
+    private static boolean isPosixSupported() throws IOException {
         // Check Posix calls are supported (to avoid running this test on Windows for instance)
         boolean posixSupported = true;
         try {
-            Files.getPosixFilePermissions(newFile.toPath());
+            Files.getPosixFilePermissions(tmp.toPath());
         } catch (UnsupportedOperationException e) {
             posixSupported = false;
         }
@@ -78,8 +78,8 @@ class AtomicFileWriterTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Needs features not available on Windows")
     void symlinkToDirectory() throws Exception {
-        assumeFalse(Functions.isWindows());
         final File folder = newFolder(tmp, "junit");
         final File containingSymlink = newFolder(tmp, "junit");
         final Path zeSymlink = Files.createSymbolicLink(Paths.get(containingSymlink.getAbsolutePath(), "ze_symlink"),
@@ -161,12 +161,10 @@ class AtomicFileWriterTest {
 
     @Issue("JENKINS-48407")
     @Test
+    @EnabledIf(value = "isPosixSupported", disabledReason = "Test requires POSIX file system calls")
     void checkPermissionsRespectUmask() throws IOException {
 
         final File newFile = File.createTempFile("junit", null, tmp);
-        boolean posixSupported = isPosixSupported(newFile);
-
-        assumeTrue(posixSupported);
 
         // given
         Path filePath = newFile.toPath();

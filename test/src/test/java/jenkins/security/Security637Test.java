@@ -30,7 +30,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.EnvVars;
 import hudson.Launcher;
@@ -189,11 +188,7 @@ class Security637Test {
                 assertNotNull(project);
 
                 Field handlerField = URL.class.getDeclaredField("handler");
-                try {
-                    handlerField.setAccessible(true);
-                } catch (RuntimeException e) {
-                    assumeTrue(false, e.getMessage());
-                }
+                handlerField.setAccessible(true);
 
                 URLJobProperty urlJobProperty = project.getProperty(URLJobProperty.class);
                 for (URL url : urlJobProperty.urlSet) {

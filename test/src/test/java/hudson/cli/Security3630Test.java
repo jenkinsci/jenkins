@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.jvnet.hudson.test.LoggerRule.recorded;
 
 import hudson.Functions;
@@ -37,6 +36,7 @@ import org.htmlunit.WebRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.platform.commons.util.ExceptionUtils;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
@@ -80,9 +80,10 @@ public class Security3630Test {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void testConcurrentCliSessionPairing() throws InterruptedException, IOException {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Expensive to run and not Windows specific");
-
         // This test simulates the Jenkins CLI full-duplex HTTP protocol natively using CLI._main.
         // It concurrently establishes 'download' and 'upload' connections
         // to verify that the FullDuplexHttpService's session map handles concurrent put/get
