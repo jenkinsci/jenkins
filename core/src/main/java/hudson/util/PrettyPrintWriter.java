@@ -1,4 +1,7 @@
 // TODO adapted from https://github.com/x-stream/xstream/blob/32e52a6519a25366bbb5774bb536b5e290b64a42/xstream/src/java/com/thoughtworks/xstream/io/xml/PrettyPrintWriter.java pending release of https://github.com/jenkinsci/jenkins/pull/7924
+// XML_1_0_REPLACEMENT and XML_1_1_REPLACEMENT ported from XStream 1.4.21 (https://github.com/x-stream/xstream/pull/335).
+// The upstream 1.4.21 writer still iterates UTF-16 chars and would replace both halves of a surrogate pair (e.g. an emoji);
+// switch back to com.thoughtworks.xstream.io.xml.PrettyPrintWriter once a release includes https://github.com/x-stream/xstream/pull/337.
 
 /*
  * Copyright (C) 2004, 2005, 2006 Joe Walnes.
@@ -46,7 +49,9 @@ import java.io.Writer;
  * XML specification for version <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#charsets">1.0</a> or <a
  * href="http://www.w3.org/TR/2006/REC-xml11-20060816/#charsets">1.1</a>. If a character is not supported, a
  * {@link StreamException} is thrown. Select a proper parser implementation that respects the version in the XML header
- * (the Xpp3 parser will also read character entities of normally invalid characters).
+ * (the Xpp3 parser will also read character entities of normally invalid characters). You may also switch to
+ * XML_1_0_REPLACEMENT or XML_1_1_REPLACEMENT mode, which will replace the invalid characters with a U+FFFD replacement
+ * character.
  * </p>
  *
  * @author Joe Walnes

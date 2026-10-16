@@ -644,7 +644,7 @@ class XStream2Test {
         assertEquals("x\ufffdy", b.s);
     }
 
-    @Issue("https://github.com/jenkinsci/jenkins/issues/27458")
+    @Issue("#27458")
     @Test
     void invalidXml11CharactersReplaced() {
         Bar b = new Bar();
@@ -656,6 +656,20 @@ class XStream2Test {
         assertThat(xml, is("<hudson.util.XStream2Test_-Bar>\n  <s>a&#xfffd;b&#xfffd;c</s>\n</hudson.util.XStream2Test_-Bar>"));
         b = (Bar) xs.fromXML(xml);
         assertEquals("a\ufffdb\ufffdc", b.s);
+    }
+
+    @Issue("#27458")
+    @Test
+    void unpairedSurrogatesReplacedWithoutCorruptingEmoji() {
+        Bar b = new Bar();
+        b.s = "\ud800 Fox \ud83e\udd8a \udfff";
+        StringWriter w = new StringWriter();
+        XStream2 xs = new XStream2();
+        xs.toXML(b, w);
+        String xml = w.toString();
+        assertThat(xml, is("<hudson.util.XStream2Test_-Bar>\n  <s>&#xfffd; Fox \ud83e\udd8a &#xfffd;</s>\n</hudson.util.XStream2Test_-Bar>"));
+        b = (Bar) xs.fromXML(xml);
+        assertEquals("\ufffd Fox \ud83e\udd8a \ufffd", b.s);
     }
 
 }
