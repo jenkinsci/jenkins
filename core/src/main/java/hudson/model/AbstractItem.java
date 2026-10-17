@@ -59,6 +59,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.transform.Source;
@@ -67,6 +68,7 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
+import jenkins.model.ItemUuids;
 import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
 import jenkins.model.queue.ItemDeletion;
@@ -79,6 +81,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -123,6 +126,11 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
      */
     protected volatile String description;
 
+    /**
+     * This item's identity once it is pinned; null (and so not saved) until then. See {@link #getItemUuid}.
+     */
+    private volatile String itemUuid;
+
     @XStreamNotDeserializable
     private transient ItemGroup parent;
 
@@ -131,6 +139,9 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     protected AbstractItem(ItemGroup parent, String name) {
         this.parent = parent;
         doSetName(name);
+        if (ItemUuids.pinsNewItems()) { // a new item: loading one does not run the constructor
+            itemUuid = UUID.randomUUID().toString();
+        }
     }
 
     @NonNull
@@ -521,6 +532,62 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         this.parent = parent;
         doSetName(name);
+    }
+
+    /**
+     * An identity of this item that renames and moves do not change once it is pinned, unlike {@link #getFullName}.
+     * Until then it is derived from the full name. See {@link Item#getItemUuid}.
+     *
+     * @since TODO
+     */
+    @Override
+    @Restricted(Beta.class)
+    public @NonNull String getItemUuid() {
+        String id = itemUuid;
+        return id != null ? id : derivedItemUuid(getFullName());
+    }
+
+    /** Whether {@link #getItemUuid} is pinned, and so saved with this item. */
+    @Restricted(NoExternalUse.class)
+    public boolean isItemUuidPinned() {
+        return itemUuid != null;
+    }
+
+    /**
+     * Pins {@link #getItemUuid} at what it answers now, saving this item if it was not pinned.
+     * Use {@link ItemUuids#pin}.
+     */
+    @Restricted(NoExternalUse.class)
+    public synchronized @NonNull String pinItemUuid() throws IOException {
+        String id = itemUuid;
+        if (id != null) {
+            return id;
+        }
+        id = itemUuid = derivedItemUuid(getFullName());
+        try {
+            save();
+        } catch (IOException | RuntimeException e) {
+            itemUuid = null; // as it was, and as it is saved
+            throw e;
+        }
+        return id;
+    }
+
+    /** Gives this item a new, pinned identity (as for one that has another item's); the caller saves it. */
+    @Restricted(NoExternalUse.class)
+    public void newItemUuid() {
+        itemUuid = UUID.randomUUID().toString();
+    }
+
+    /** Unpins this item's identity, which is then derived from its name again (as for a copy of a pinned item); the caller saves it. */
+    void unpinItemUuid() {
+        itemUuid = null;
+    }
+
+    /** The identity an unpinned item of this full name has. */
+    @Restricted(NoExternalUse.class)
+    public static @NonNull String derivedItemUuid(@NonNull String fullName) {
+        return UUID.nameUUIDFromBytes(("jenkins-item:" + fullName).getBytes(StandardCharsets.UTF_8)).toString();
     }
 
     /**
@@ -937,12 +1004,16 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
             throw new IOException("Failed to process config.xml", e);
         }
 
+        String uuid = itemUuid; // configuration posted without it, as most is, keeps the item's identity
         // try to reflect the changes by reloading
         Object o = Items.XSTREAM2.unmarshal(XStream2.getDefaultDriver().createReader(new StringReader(out.getBuffer().toString())), this, null, true);
         if (o != this) {
             // ensure that we've got the same job type. extending this code to support updating
             // to different job type requires destroying & creating a new job type
             throw new IOException("Expecting " + this.getClass() + " but got " + o.getClass() + " instead");
+        }
+        if (itemUuid == null) {
+            itemUuid = uuid;
         }
 
         Items.runWhileUpdatingByXml(() -> onLoad(getParent(), getRootDir().getName()));
