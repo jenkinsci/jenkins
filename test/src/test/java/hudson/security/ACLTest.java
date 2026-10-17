@@ -154,7 +154,7 @@ class ACLTest {
         try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
             Exception e = assertThrows(AccessDeniedException.class,
                     () -> jenkins.getACL().checkAnyPermission(Item.WIPEOUT, Run.ARTIFACTS));
-            assertEquals("manager is missing a permission, one of Job/WipeOut, Run/Artifacts is required", e.getMessage());
+            assertEquals("manager is missing a permission, one of Job/WipeOut, Job/Artifacts is required", e.getMessage());
         }
     }
 
