@@ -28,6 +28,8 @@ import static jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import static jenkins.model.ModelObjectWithContextMenu.ContextMenuVisibility;
 import static jenkins.model.ModelObjectWithContextMenu.MenuItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import hudson.model.AbstractProject;
@@ -39,6 +41,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
+import jenkins.model.menu.event.Event;
 import jenkins.model.menu.event.LinkEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,6 +77,77 @@ class ContextMenuTest {
         menu = j.executeOnServer(doContextMenu);
         parsed = parse(menu);
         assertNull(parsed.get("testing"), parsed.toString());
+    }
+
+    @Test
+    void rootRelativeActionUrl() throws Exception {
+        final FreeStyleProject p = j.createFreeStyleProject("p-root");
+        Callable<ContextMenu> doContextMenu = () -> p.doContextMenu(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2());
+        RootActionFactory f = j.jenkins.getExtensionList(TransientProjectActionFactory.class).get(RootActionFactory.class);
+        f.urlName = "/manage";
+
+        // Direct assertion of Action#getEvent() inside the server request
+        Event directEvent = j.executeOnServer(() -> f.createFor(p).iterator().next().getEvent());
+        assertInstanceOf(LinkEvent.class, directEvent);
+        assertEquals(j.contextPath + "/manage", ((LinkEvent) directEvent).getUrl());
+
+        ContextMenu menu = j.executeOnServer(doContextMenu);
+        MenuItem item = menu.items.stream()
+                .filter(mi -> "Root Link".equals(mi.displayName))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(item);
+        assertInstanceOf(LinkEvent.class, item.getEvent());
+        assertEquals(j.contextPath + "/manage", ((LinkEvent) item.getEvent()).getUrl());
+
+        // Test already-prefixed URL with query (? boundary)
+        f.urlName = j.contextPath + "?view=all";
+        directEvent = j.executeOnServer(() -> f.createFor(p).iterator().next().getEvent());
+        assertInstanceOf(LinkEvent.class, directEvent);
+        assertEquals(j.contextPath + "?view=all", ((LinkEvent) directEvent).getUrl());
+
+        menu = j.executeOnServer(doContextMenu);
+        item = menu.items.stream()
+                .filter(mi -> "Root Link".equals(mi.displayName))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(item);
+        assertInstanceOf(LinkEvent.class, item.getEvent());
+        assertEquals(j.contextPath + "?view=all", ((LinkEvent) item.getEvent()).getUrl());
+
+        // Test null URL
+        f.urlName = null;
+        directEvent = j.executeOnServer(() -> f.createFor(p).iterator().next().getEvent());
+        assertNull(directEvent);
+
+        menu = j.executeOnServer(doContextMenu);
+        item = menu.items.stream()
+                .filter(mi -> "Root Link".equals(mi.displayName))
+                .findFirst()
+                .orElse(null);
+        assertNull(item);
+    }
+
+    @TestExtension public static class RootActionFactory extends TransientProjectActionFactory {
+
+        String urlName = "/manage";
+
+        @SuppressWarnings("rawtypes")
+        @Override public Collection<? extends Action> createFor(AbstractProject target) {
+            return Collections.singleton(new Action() {
+                @Override public String getIconFileName() {
+                    return "symbol-settings";
+                }
+
+                @Override public String getDisplayName() {
+                    return "Root Link";
+                }
+
+                @Override public String getUrlName() {
+                    return urlName;
+                }
+            });
+        }
     }
 
     @TestExtension public static class ActionFactory extends TransientProjectActionFactory {

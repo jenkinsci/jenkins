@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 /**
  * The dropdown modules call into Behaviour (a global published by
@@ -71,5 +71,220 @@ describe("Utils.convertHtmlToItems", () => {
     expect(badge.textContent).toBe("1");
     expect(badge.classList.contains("jenkins-!-warning-color")).toBe(true);
     expect(badge.getAttribute("tooltip")).toBe("1 token about to expire");
+  });
+
+  it("resolves root-relative URLs with document.head.dataset.rooturl", () => {
+    document.head.dataset.rooturl = "/jenkins";
+    try {
+      const items = [
+        {
+          type: "ITEM",
+          displayName: "Absolute Link",
+          event: { url: "/manage", type: "GET" },
+        },
+        {
+          type: "ITEM",
+          displayName: "Already Prefixed Link",
+          event: { url: "/jenkins/manage", type: "GET" },
+        },
+        {
+          type: "ITEM",
+          displayName: "Relative Link",
+          event: { url: "configure", type: "GET" },
+        },
+        {
+          type: "ITEM",
+          displayName: "External Link",
+          event: { url: "https://example.com", type: "GET" },
+        },
+        {
+          type: "ITEM",
+          displayName: "Query Boundary Link",
+          event: { url: "/jenkins?view=all", type: "GET" },
+        },
+        {
+          type: "ITEM",
+          displayName: "Fragment Boundary Link",
+          event: { url: "/jenkins#top", type: "GET" },
+        },
+        {
+          type: "ITEM",
+          displayName: "No URL",
+          event: { url: null, type: "GET" },
+        },
+      ];
+
+      const dropdown = Utils.generateDropdownItems(
+        items,
+        false,
+        "/jenkins/job/built/",
+      );
+      const links = dropdown.querySelectorAll("a.jenkins-dropdown__item");
+      expect(links[0].getAttribute("href")).toBe("/jenkins/manage");
+      expect(links[1].getAttribute("href")).toBe("/jenkins/manage");
+      expect(links[2].getAttribute("href")).toBe(
+        "/jenkins/job/built/configure",
+      );
+      expect(links[3].getAttribute("href")).toBe("https://example.com");
+      expect(links[4].getAttribute("href")).toBe("/jenkins?view=all");
+      expect(links[5].getAttribute("href")).toBe("/jenkins#top");
+
+      const buttons = dropdown.querySelectorAll(
+        "button.jenkins-dropdown__item",
+      );
+      expect(buttons).toHaveLength(1);
+      expect(buttons[0].getAttribute("href")).toBeNull();
+    } finally {
+      delete document.head.dataset.rooturl;
+    }
+  });
+
+  it("resolves and posts correctly for tryPost on click without double-prefixing and rejects cross-origin", () => {
+    document.head.dataset.rooturl = "/jenkins";
+    const fetchMock = vi.fn().mockResolvedValue({});
+    globalThis.fetch = fetchMock;
+    globalThis.crumb = {
+      wrap: vi.fn((headers) => ({ ...headers, "Jenkins-Crumb": "123" })),
+    };
+
+    try {
+      const items = [
+        {
+          type: "ITEM",
+          displayName: "Post Relative Root",
+          event: { url: "/manage", type: "POST" },
+        },
+        {
+          type: "ITEM",
+          displayName: "Post Already Prefixed Query",
+          event: { url: "/jenkins?view=all", type: "POST" },
+        },
+        {
+          type: "ITEM",
+          displayName: "Post Cross Origin",
+          event: { url: "https://evil.com/leak", type: "POST" },
+        },
+      ];
+
+      const dropdown = Utils.generateDropdownItems(
+        items,
+        false,
+        "/jenkins/job/test/",
+      );
+      const buttons = dropdown.querySelectorAll(
+        "button.jenkins-dropdown__item",
+      );
+      expect(buttons).toHaveLength(3);
+
+      // 1. Post root-relative
+      buttons[0].click();
+      expect(fetchMock).toHaveBeenCalledWith("/jenkins/manage", {
+        method: "post",
+        headers: { "Jenkins-Crumb": "123" },
+      });
+      fetchMock.mockClear();
+
+      // 2. Post already prefixed with query
+      buttons[1].click();
+      expect(fetchMock).toHaveBeenCalledWith("/jenkins?view=all", {
+        method: "post",
+        headers: { "Jenkins-Crumb": "123" },
+      });
+      fetchMock.mockClear();
+
+      // 3. Post cross-origin must be rejected
+      buttons[2].click();
+      expect(fetchMock).not.toHaveBeenCalled();
+    } finally {
+      delete document.head.dataset.rooturl;
+      delete globalThis.crumb;
+    }
+  });
+
+  it("resolves and confirms form submit for tryConfirmationPost on click without double-prefixing and rejects cross-origin", async () => {
+    document.head.dataset.rooturl = "/jenkins";
+    const confirmMock = vi.fn().mockResolvedValue(true);
+    globalThis.dialog = { confirm: confirmMock };
+    const appendToFormMock = vi.fn();
+    globalThis.crumb = { appendToForm: appendToFormMock };
+
+    const submitSpy = vi
+      .spyOn(HTMLFormElement.prototype, "submit")
+      .mockImplementation(function () {});
+
+    try {
+      const items = [
+        {
+          type: "ITEM",
+          displayName: "Confirm Root Relative",
+          event: {
+            title: "Delete",
+            description: "Are you sure?",
+            postTo: "/manage",
+          },
+        },
+        {
+          type: "ITEM",
+          displayName: "Confirm Already Prefixed Query",
+          event: {
+            title: "Configure",
+            description: "Are you sure?",
+            postTo: "/jenkins?mode=x",
+          },
+        },
+        {
+          type: "ITEM",
+          displayName: "Confirm Cross Origin",
+          event: {
+            title: "External",
+            description: "Are you sure?",
+            postTo: "https://evil.com/leak",
+          },
+        },
+      ];
+
+      const dropdown = Utils.generateDropdownItems(
+        items,
+        false,
+        "/jenkins/job/test/",
+      );
+      const buttons = dropdown.querySelectorAll(
+        "button.jenkins-dropdown__item",
+      );
+      expect(buttons).toHaveLength(3);
+
+      // 1. Confirm root-relative
+      buttons[0].click();
+      await vi.waitFor(() => expect(submitSpy).toHaveBeenCalledTimes(1));
+      let submittedForm = submitSpy.mock.contexts[0];
+      expect(submittedForm.getAttribute("action")).toBe("/jenkins/manage");
+      expect(appendToFormMock).toHaveBeenCalledWith(submittedForm);
+      submittedForm.remove();
+      submitSpy.mockClear();
+      appendToFormMock.mockClear();
+      confirmMock.mockClear();
+
+      // 2. Confirm already prefixed with query
+      buttons[1].click();
+      await vi.waitFor(() => expect(submitSpy).toHaveBeenCalledTimes(1));
+      submittedForm = submitSpy.mock.contexts[0];
+      expect(submittedForm.getAttribute("action")).toBe("/jenkins?mode=x");
+      expect(appendToFormMock).toHaveBeenCalledWith(submittedForm);
+      submittedForm.remove();
+      submitSpy.mockClear();
+      appendToFormMock.mockClear();
+      confirmMock.mockClear();
+
+      // 3. Confirm cross-origin must be rejected before confirmation dialog or submit
+      buttons[2].click();
+      expect(confirmMock).not.toHaveBeenCalled();
+      expect(submitSpy).not.toHaveBeenCalled();
+      expect(appendToFormMock).not.toHaveBeenCalled();
+    } finally {
+      submitSpy.mockRestore();
+      delete document.head.dataset.rooturl;
+      delete globalThis.dialog;
+      delete globalThis.crumb;
+    }
   });
 });

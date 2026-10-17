@@ -133,20 +133,38 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * @see ContextMenuVisibility
          */
         public ContextMenu add(Action action) {
+            if (!Functions.isContextMenuVisible(action)) {
+                return this;
+            }
+
+            Event event = action.getEvent();
+            if (event == null) {
+                return this;
+            }
+
+            if (event instanceof LinkEvent linkEvent) {
+                String url = linkEvent.getUrl();
+                if (url != null && url.startsWith("/") && !url.startsWith("//")) {
+                    StaplerRequest2 req = Stapler.getCurrentRequest2();
+                    if (req != null) {
+                        String contextPath = req.getContextPath();
+                        if (contextPath != null && !contextPath.isEmpty() && !isPrefixedWithContextPath(url, contextPath)) {
+                            event = LinkEvent.of(Functions.joinPath(contextPath, url), linkEvent.getType());
+                        }
+                    }
+                }
+            }
+
             MenuItem menuItem = new MenuItem()
                     .withDisplayName(action.getDisplayName());
 
             menuItem.semantic = action.getSemantic();
             menuItem.description = action.getDescription();
             menuItem.group = action.getGroup();
-            menuItem.event = action.getEvent();
-
-            if (!Functions.isContextMenuVisible(action)) {
-                return this;
-            }
+            menuItem.event = event;
 
             // Move actions to subMenu so we can access them from JavaScript
-            if (action.getEvent() instanceof DropdownEvent dropdownEvent) {
+            if (event instanceof DropdownEvent dropdownEvent) {
                 menuItem.subMenu = new ContextMenu();
                 menuItem.subMenu.addAll(dropdownEvent.getActions());
             }
@@ -172,6 +190,20 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             }
 
             return add(menuItem);
+        }
+
+        private static boolean isPrefixedWithContextPath(String url, String contextPath) {
+            if (contextPath == null || contextPath.isEmpty()) {
+                return false;
+            }
+            if (url.equals(contextPath)) {
+                return true;
+            }
+            if (url.startsWith(contextPath)) {
+                char nextChar = url.charAt(contextPath.length());
+                return nextChar == '/' || nextChar == '?' || nextChar == '#';
+            }
+            return false;
         }
 
         /**
