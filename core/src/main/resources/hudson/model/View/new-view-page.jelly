@@ -69,11 +69,11 @@ THE SOFTWARE.
         </div>
 
         <div class="app-build-bar__controls">
-          <j:if test="${it.hasPermission(it.CREATE)}">
+          <j:if test="${h.isInstanceOf(it.owner.itemGroup, 'jenkins.model.ModifiableTopLevelItemGroup') and it.owner.itemGroup.hasPermission(it.itemCreatePermission)}">
             <a class="jenkins-button"
                href="${rootURL}/${it.viewUrl}newJob">
               <l:icon src="symbol-add" />
-              New Item
+              ${%New Item}
             </a>
           </j:if>
 
@@ -139,6 +139,8 @@ THE SOFTWARE.
 
         <j:set var="items" value="${it.items}"/>
         <st:include page="main.jelly" />
+
+        <st:include page="footer.jelly" />
       </div>
     </l:main-panel>
   </l:layout>
