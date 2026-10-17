@@ -129,6 +129,52 @@ function badge(opt) {
 }
 
 /**
+ * Checks whether a URL is prefixed with the rootUrl.
+ * A URL is considered already prefixed if it exactly equals rootUrl,
+ * or if it starts with rootUrl followed by '/', '?', or '#'.
+ */
+function isPrefixedWithRoot(url, rootUrl) {
+  if (!rootUrl) {
+    return false;
+  }
+  if (url === rootUrl) {
+    return true;
+  }
+  if (url.startsWith(rootUrl)) {
+    const nextChar = url.charAt(rootUrl.length);
+    return nextChar === "/" || nextChar === "?" || nextChar === "#";
+  }
+  return false;
+}
+
+/**
+ * Checks whether a URL target has the same origin as the current page.
+ */
+function isSameOrigin(url) {
+  try {
+    return new URL(url, window.location.href).origin === window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Resolves a POST target URL, prefixing root-relative URLs with rootUrl if needed.
+ */
+function resolvePostUrl(postTo, context) {
+  if (postTo.startsWith("http") || postTo.startsWith("//")) {
+    return postTo;
+  }
+  if (postTo.startsWith("/")) {
+    const rootUrl = document.head.dataset.rooturl;
+    const prefix =
+      rootUrl && !isPrefixedWithRoot(postTo, rootUrl) ? rootUrl : "";
+    return prefix + postTo;
+  }
+  return context + postTo;
+}
+
+/**
  * Generates the contents for the dropdown
  * @param {DropdownItem}  dropdownItem
  * @param {'jenkins-dropdown__item' | 'jenkins-button'}  type
@@ -208,11 +254,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
       context = "";
     } else if (itemUrl.startsWith("/")) {
       const rootUrl = document.head.dataset.rooturl;
-      if (
-        rootUrl &&
-        !itemUrl.startsWith(rootUrl + "/") &&
-        itemUrl !== rootUrl
-      ) {
+      if (rootUrl && !isPrefixedWithRoot(itemUrl, rootUrl)) {
         context = rootUrl;
       } else {
         context = "";
@@ -295,6 +337,12 @@ function tryConfirmationPost(element, opt, context) {
   }
 
   element.addEventListener("click", () => {
+    const targetUrl = resolvePostUrl(opt.event.postTo, context);
+    if (!isSameOrigin(targetUrl)) {
+      console.warn("Cross-origin POST target rejected:", opt.event.postTo);
+      return;
+    }
+
     dialog
       .confirm(opt.event.title, {
         message: opt.event.description,
@@ -304,23 +352,7 @@ function tryConfirmationPost(element, opt, context) {
         () => {
           const form = document.createElement("form");
           form.setAttribute("method", "POST");
-          if (
-            opt.event.postTo.startsWith("http") ||
-            opt.event.postTo.startsWith("//")
-          ) {
-            form.setAttribute("action", xmlEscape(opt.event.postTo));
-          } else if (opt.event.postTo.startsWith("/")) {
-            const rootUrl = document.head.dataset.rooturl;
-            const prefix =
-              rootUrl &&
-              !opt.event.postTo.startsWith(rootUrl + "/") &&
-              opt.event.postTo !== rootUrl
-                ? rootUrl
-                : "";
-            form.setAttribute("action", prefix + xmlEscape(opt.event.postTo));
-          } else {
-            form.setAttribute("action", context + xmlEscape(opt.event.postTo));
-          }
+          form.setAttribute("action", xmlEscape(targetUrl));
           crumb.appendToForm(form);
           document.body.appendChild(form);
           form.submit();
@@ -338,20 +370,14 @@ function tryPost(element, opt, context) {
     return;
   }
 
-  const itemUrl = opt.event.url;
-  if (itemUrl.startsWith("http") || itemUrl.startsWith("//")) {
-    context = "";
-  } else if (itemUrl.startsWith("/")) {
-    const rootUrl = document.head.dataset.rooturl;
-    if (rootUrl && !itemUrl.startsWith(rootUrl + "/") && itemUrl !== rootUrl) {
-      context = rootUrl;
-    } else {
-      context = "";
-    }
-  }
-
   element.addEventListener("click", () => {
-    fetch(context + xmlEscape(opt.event.url), {
+    const targetUrl = resolvePostUrl(opt.event.url, context);
+    if (!isSameOrigin(targetUrl)) {
+      console.warn("Cross-origin POST target rejected:", opt.event.url);
+      return;
+    }
+
+    fetch(xmlEscape(targetUrl), {
       method: "post",
       headers: crumb.wrap({}),
     });

@@ -148,7 +148,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                     StaplerRequest2 req = Stapler.getCurrentRequest2();
                     if (req != null) {
                         String contextPath = req.getContextPath();
-                        if (contextPath != null && !contextPath.isEmpty() && !url.startsWith(contextPath + "/") && !url.equals(contextPath)) {
+                        if (contextPath != null && !contextPath.isEmpty() && !isPrefixedWithContextPath(url, contextPath)) {
                             event = LinkEvent.of(Functions.joinPath(contextPath, url), linkEvent.getType());
                         }
                     }
@@ -190,6 +190,20 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             }
 
             return add(menuItem);
+        }
+
+        private static boolean isPrefixedWithContextPath(String url, String contextPath) {
+            if (contextPath == null || contextPath.isEmpty()) {
+                return false;
+            }
+            if (url.equals(contextPath)) {
+                return true;
+            }
+            if (url.startsWith(contextPath)) {
+                char nextChar = url.charAt(contextPath.length());
+                return nextChar == '/' || nextChar == '?' || nextChar == '#';
+            }
+            return false;
         }
 
         /**

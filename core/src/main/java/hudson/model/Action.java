@@ -180,10 +180,27 @@ public interface Action extends ModelObject {
         if (urlName.startsWith("/") && !urlName.startsWith("//")) {
             StaplerRequest2 req = Stapler.getCurrentRequest2();
             if (req != null) {
-                return LinkEvent.of(Functions.joinPath(req.getContextPath(), urlName));
+                String contextPath = req.getContextPath();
+                if (contextPath != null && !contextPath.isEmpty() && !isPrefixedWithContextPath(urlName, contextPath)) {
+                    return LinkEvent.of(Functions.joinPath(contextPath, urlName));
+                }
             }
         }
         return LinkEvent.of(urlName);
+    }
+
+    private static boolean isPrefixedWithContextPath(String url, String contextPath) {
+        if (contextPath == null || contextPath.isEmpty()) {
+            return false;
+        }
+        if (url.equals(contextPath)) {
+            return true;
+        }
+        if (url.startsWith(contextPath)) {
+            char nextChar = url.charAt(contextPath.length());
+            return nextChar == '/' || nextChar == '?' || nextChar == '#';
+        }
+        return false;
     }
 
     /**

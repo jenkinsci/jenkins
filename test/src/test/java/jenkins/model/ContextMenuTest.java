@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
+import jenkins.model.menu.event.Event;
 import jenkins.model.menu.event.LinkEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -84,6 +85,12 @@ class ContextMenuTest {
         Callable<ContextMenu> doContextMenu = () -> p.doContextMenu(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2());
         RootActionFactory f = j.jenkins.getExtensionList(TransientProjectActionFactory.class).get(RootActionFactory.class);
         f.urlName = "/manage";
+
+        // Direct assertion of Action#getEvent() inside the server request
+        Event directEvent = j.executeOnServer(() -> f.createFor(p).iterator().next().getEvent());
+        assertInstanceOf(LinkEvent.class, directEvent);
+        assertEquals(j.contextPath + "/manage", ((LinkEvent) directEvent).getUrl());
+
         ContextMenu menu = j.executeOnServer(doContextMenu);
         MenuItem item = menu.items.stream()
                 .filter(mi -> "Root Link".equals(mi.displayName))
@@ -93,7 +100,26 @@ class ContextMenuTest {
         assertInstanceOf(LinkEvent.class, item.getEvent());
         assertEquals(j.contextPath + "/manage", ((LinkEvent) item.getEvent()).getUrl());
 
+        // Test already-prefixed URL with query (? boundary)
+        f.urlName = j.contextPath + "?view=all";
+        directEvent = j.executeOnServer(() -> f.createFor(p).iterator().next().getEvent());
+        assertInstanceOf(LinkEvent.class, directEvent);
+        assertEquals(j.contextPath + "?view=all", ((LinkEvent) directEvent).getUrl());
+
+        menu = j.executeOnServer(doContextMenu);
+        item = menu.items.stream()
+                .filter(mi -> "Root Link".equals(mi.displayName))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(item);
+        assertInstanceOf(LinkEvent.class, item.getEvent());
+        assertEquals(j.contextPath + "?view=all", ((LinkEvent) item.getEvent()).getUrl());
+
+        // Test null URL
         f.urlName = null;
+        directEvent = j.executeOnServer(() -> f.createFor(p).iterator().next().getEvent());
+        assertNull(directEvent);
+
         menu = j.executeOnServer(doContextMenu);
         item = menu.items.stream()
                 .filter(mi -> "Root Link".equals(mi.displayName))
