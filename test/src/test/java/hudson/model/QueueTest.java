@@ -540,6 +540,114 @@ public class QueueTest {
         }
     }
 
+        /**
+     * A handler that blocks inside shouldSchedule for one specific task until released,
+     * to prove whether other queue operations are blocked meanwhile.
+     */
+    @TestExtension({"slowDecisionHandlerBlocksQueueByDefault", "slowDecisionHandlerDoesNotBlockQueueWhenOutsideLock"})
+    public static class BlockingDecisionHandler extends Queue.QueueDecisionHandler {
+        static volatile Queue.Task target;
+        static volatile CountDownLatch entered;
+        static volatile CountDownLatch release;
+
+        @Override
+        public boolean shouldSchedule(Queue.Task p, List<Action> actions) {
+            if (p == target) {
+                entered.countDown();
+                try {
+                    release.await(30, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            return true;
+        }
+    }
+
+    /**
+     * Schedules a task whose decision handler blocks, then checks whether an unrelated
+     * queue-lock operation can complete in the meantime.
+     * @return true if the other operation completed while the handler was still blocked
+     */
+    private boolean otherQueueOperationCompletesWhileHandlerBlocked(boolean outsideLock) throws Exception {
+        boolean old = Queue.DECISION_HANDLERS_OUTSIDE_LOCK;
+        Queue.DECISION_HANDLERS_OUTSIDE_LOCK = outsideLock;
+        r.jenkins.setNumExecutors(0); // keep the scheduled item in the queue
+        FreeStyleProject p = r.createFreeStyleProject();
+        BlockingDecisionHandler.target = p;
+        BlockingDecisionHandler.entered = new CountDownLatch(1);
+        BlockingDecisionHandler.release = new CountDownLatch(1);
+        ExecutorService ex = Executors.newFixedThreadPool(2);
+        try {
+            Future<?> scheduling = ex.submit(() -> {
+                r.jenkins.getQueue().schedule2(p, 0);
+            });
+            assertTrue(BlockingDecisionHandler.entered.await(10, TimeUnit.SECONDS), "handler should have been entered");
+
+            Future<?> other = ex.submit(() -> {
+                Queue.withLock(() -> { });
+            });
+            boolean completed;
+            try {
+                other.get(3, TimeUnit.SECONDS);
+                completed = true;
+            } catch (TimeoutException e) {
+                completed = false;
+            }
+
+            BlockingDecisionHandler.release.countDown();
+            scheduling.get(10, TimeUnit.SECONDS);
+            return completed;
+        } finally {
+            BlockingDecisionHandler.release.countDown();
+            ex.shutdownNow();
+            Queue.DECISION_HANDLERS_OUTSIDE_LOCK = old;
+            r.jenkins.getQueue().clear();
+        }
+    }
+
+    @Test
+    void slowDecisionHandlerBlocksQueueByDefault() throws Exception {
+        assertFalse(otherQueueOperationCompletesWhileHandlerBlocked(false),
+                "legacy behavior: handler runs under the queue lock, so other operations wait");
+    }
+
+    @Test
+    void slowDecisionHandlerDoesNotBlockQueueWhenOutsideLock() throws Exception {
+        assertTrue(otherQueueOperationCompletesWhileHandlerBlocked(true),
+                "with the option enabled, other queue operations must not wait for the handler");
+    }
+
+    @TestExtension({"vetoStillRefusesSchedulingByDefault", "vetoStillRefusesSchedulingOutsideLock"})
+    public static class VetoDecisionHandler extends Queue.QueueDecisionHandler {
+        @Override
+        public boolean shouldSchedule(Queue.Task p, List<Action> actions) {
+            return false;
+        }
+    }
+
+    private void assertVetoRefuses(boolean outsideLock) throws Exception {
+        boolean old = Queue.DECISION_HANDLERS_OUTSIDE_LOCK;
+        Queue.DECISION_HANDLERS_OUTSIDE_LOCK = outsideLock;
+        try {
+            FreeStyleProject p = r.createFreeStyleProject();
+            assertTrue(r.jenkins.getQueue().schedule2(p, 0).isRefused());
+            assertTrue(r.jenkins.getQueue().isEmpty());
+        } finally {
+            Queue.DECISION_HANDLERS_OUTSIDE_LOCK = old;
+        }
+    }
+
+    @Test
+    void vetoStillRefusesSchedulingByDefault() throws Exception {
+        assertVetoRefuses(false);
+    }
+
+    @Test
+    void vetoStillRefusesSchedulingOutsideLock() throws Exception {
+        assertVetoRefuses(true);
+    }
+
     @Issue("JENKINS-27256")
     @Test
     void inQueueTaskLookupByAPI() throws Exception {
