@@ -149,6 +149,7 @@ import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
+import hudson.search.UserSearchProperty;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
@@ -241,6 +242,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -678,6 +680,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * as much as possible, even though that's not a strict requirement.
      */
     private final transient ConcurrentHashMap<String, Label> labels = new ConcurrentHashMap<>();
+
+    /**
+     * Label expressions keyed by their canonical name, so that whitespace variants resolve to the same instance.
+     * Kept apart from {@link #labels} because a quoted {@link LabelAtom} may have the same name as an expression.
+     */
+    private final transient ConcurrentHashMap<String, Label> labelExpressions = new ConcurrentHashMap<>();
 
     /**
      * Load statistics of the entire system.
@@ -2024,14 +2032,22 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return l;
 
             // non-existent
+            Label parsed;
             try {
-                // For the record, this method creates temporary labels but there is a periodic task
-                // calling "trimLabels" to remove unused labels running every 5 minutes.
-                labels.putIfAbsent(expr, Label.parseExpression(expr));
+                parsed = Label.parseExpression(expr);
             } catch (IllegalArgumentException e) {
                 // laxly accept it as a single label atom for backward compatibility
                 return getLabelAtom(expr);
             }
+            if (!parsed.isAtom()) {
+                Label existing = labelExpressions.putIfAbsent(parsed.getName(), parsed);
+                if (existing != null) {
+                    parsed = existing;
+                }
+            }
+            // For the record, this method creates temporary labels but there is a periodic task
+            // calling "trimLabels" to remove unused labels running every 5 minutes.
+            labels.putIfAbsent(expr, parsed);
         }
     }
 
@@ -2285,6 +2301,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     resetLabel(l);
                 } else {
                     itr.remove();
+                    labelExpressions.remove(l.getName(), l);
                 }
             }
         }
@@ -2418,6 +2435,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     @Override
                     protected Iterable<TopLevelItem> allAsIterable() {
                         return allItems(TopLevelItem.class);
+                    }
+
+                    @Override
+                    public void suggest(String token, List<SearchItem> result) {
+                        boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
+                        String searchToken = caseInsensitive ? token.toLowerCase(Locale.ROOT) : token;
+                        for (TopLevelItem item : allAsIterable()) {
+                            if (item != null && (contains(item.getName(), searchToken, caseInsensitive)
+                                    || contains(item.getDisplayName(), searchToken, caseInsensitive))) {
+                                result.add(item);
+                            }
+                        }
+                    }
+
+                    private boolean contains(String value, String token, boolean caseInsensitive) {
+                        if (value == null) {
+                            return false;
+                        }
+                        if (caseInsensitive) {
+                            value = value.toLowerCase(Locale.ROOT);
+                        }
+                        return value.contains(token);
                     }
                 })
                 .add(getPrimaryView().makeSearchIndex())
