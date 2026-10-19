@@ -883,7 +883,7 @@ public class SlaveComputer extends Computer {
                 "The JNLP file endpoint (jenkins-agent.jnlp) is deprecated."
                         + " Launch agents with \"-url\" and \"-name\" instead, and retrieve the connection secret"
                         + " through a supported API once available"
-                        + " (https://www.jenkins.io/doc/book/operating/agents/).");
+                        + " (https://www.jenkins.io/doc/book/using/using-agents/).");
         return new EncryptedSlaveAgentJnlpFile(this, "jenkins-agent.jnlp.jelly", getName(), CONNECT);
     }
 
