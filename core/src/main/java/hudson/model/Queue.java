@@ -598,13 +598,14 @@ public class Queue extends ResourceController implements Saveable {
         actions = new ArrayList<>(actions);
         actions.removeIf(Objects::isNull);
 
-                 if (DECISION_HANDLERS_OUTSIDE_LOCK && !askDecisionHandlers(p, actions)) {
+        final boolean handlersOutsideLock = DECISION_HANDLERS_OUTSIDE_LOCK;
+        if (handlersOutsideLock && !askDecisionHandlers(p, actions)) {
             return ScheduleResult.refused();    // veto, evaluated without holding the queue lock
         }
 
         lock.lock();
         try { try {
-            if (!DECISION_HANDLERS_OUTSIDE_LOCK && !askDecisionHandlers(p, actions)) {
+            if (!handlersOutsideLock && !askDecisionHandlers(p, actions)) {
                 return ScheduleResult.refused();    // veto (legacy behavior: under the lock)
             }
 

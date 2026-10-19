@@ -540,7 +540,7 @@ public class QueueTest {
         }
     }
 
-        /**
+    /**
      * A handler that blocks inside shouldSchedule for one specific task until released,
      * to prove whether other queue operations are blocked meanwhile.
      */
