@@ -70,7 +70,7 @@ describe("validateButton", () => {
     const container = createContainer();
     const button = container.querySelector("button");
 
-    validateButton("/check-url", "", button);
+    globalThis.validateButton("/check-url", "", button);
     await respondWith(requests[0], "<div>ok</div>", 200);
 
     expect(requests[0].url).toBe("/check-url");
@@ -81,7 +81,7 @@ describe("validateButton", () => {
     const container = createContainer();
     const button = container.querySelector("button");
 
-    validateButton("/check-url", "", button);
+    globalThis.validateButton("/check-url", "", button);
     await respondWith(requests[0], "<div>all good</div>", 200);
 
     expect(validationArea(container).innerHTML).toBe("<div>all good</div>");
@@ -91,7 +91,7 @@ describe("validateButton", () => {
     const container = createContainer();
     const button = container.querySelector("button");
 
-    validateButton("/check-url", "", button);
+    globalThis.validateButton("/check-url", "", button);
     await respondWith(
       requests[0],
       "<div>java.lang.NullPointerException stack trace</div>",
@@ -109,7 +109,7 @@ describe("validateButton", () => {
     const container = createContainer();
     const button = container.querySelector("button");
 
-    validateButton("/check-url", "", button);
+    globalThis.validateButton("/check-url", "", button);
     expect(container.querySelector(".spinner").style.display).toBe("block");
 
     await respondWith(requests[0], "<div>ok</div>", 200);
