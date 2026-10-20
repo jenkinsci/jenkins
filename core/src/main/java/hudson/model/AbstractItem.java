@@ -129,8 +129,9 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
 
     /**
      * This item's identity once it is pinned; null (and so not saved) until then. See {@link #getItemUuid}.
+     * A {@link UUID}, so that one read from configuration (posted or on disk) is a UUID in its usual form, or is not kept.
      */
-    private volatile String itemUuid;
+    private volatile UUID itemUuid;
 
     @XStreamNotDeserializable
     private transient ItemGroup parent;
@@ -141,7 +142,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
         this.parent = parent;
         doSetName(name);
         if (ItemUuids.pinsNewItems()) { // a new item: loading one does not run the constructor
-            itemUuid = UUID.randomUUID().toString();
+            itemUuid = UUID.randomUUID();
         }
     }
 
@@ -544,8 +545,8 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     @Override
     @Restricted(Beta.class)
     public @NonNull String getItemUuid() {
-        String id = itemUuid;
-        return id != null ? id : derivedItemUuid(getFullName());
+        UUID id = itemUuid;
+        return id != null ? id.toString() : derivedItemUuid(getFullName());
     }
 
     /** Whether {@link #getItemUuid} is pinned, and so saved with this item. */
@@ -557,16 +558,18 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     /**
      * Pins {@link #getItemUuid} as this identity, or unpins it given null, without saving this item.
      * Use {@link ItemUuids#pin}, which saves it.
+     *
+     * @throws IllegalArgumentException if it is not a UUID
      */
     @Restricted(NoExternalUse.class)
     public void setItemUuid(@CheckForNull String id) {
-        itemUuid = id;
+        itemUuid = id == null ? null : UUID.fromString(id);
     }
 
     /** Gives this item a new, pinned identity (as for one that has another item's); the caller saves it. */
     @Restricted(NoExternalUse.class)
     public void newItemUuid() {
-        itemUuid = UUID.randomUUID().toString();
+        itemUuid = UUID.randomUUID();
     }
 
     /** Unpins this item's identity, which is then derived from its name again (as for a copy of a pinned item); the caller saves it. */
@@ -996,7 +999,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
 
         Object o;
         synchronized (this) { // as ItemUuids.pin is: a pin made meanwhile is not undone
-            String uuid = itemUuid; // configuration posted without it, as most is, keeps the item's identity
+            UUID uuid = itemUuid; // configuration posted without it (as most is), or with one that is not a UUID, keeps the item's identity
             // try to reflect the changes by reloading
             o = Items.XSTREAM2.unmarshal(XStream2.getDefaultDriver().createReader(new StringReader(out.getBuffer().toString())), this, null, true);
             if (itemUuid == null) {

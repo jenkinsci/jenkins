@@ -188,7 +188,7 @@ public interface Item extends PersistenceRoot, FullyNamedModelObject, Searchable
      * An identity of this item that renames and moves do not change, for data kept about it elsewhere (such as build
      * records in a shared store, or test results in a database); null if this kind of item has none.
      *
-     * <p>For {@link AbstractItem}s it is a UUID kept once the item is <em>pinned</em>: from creation (or copy or import)
+     * <p>For {@link AbstractItem}s it is a UUID, in its usual (lower case) form, kept once the item is <em>pinned</em>: from creation (or copy or import)
      * where new items are pinned (see {@link jenkins.model.ItemUuids#pin}), otherwise once some consumer calls
      * {@link jenkins.model.ItemUuids#pin}. Only a pinned identity is saved with the item. An unpinned item answers a
      * UUID derived from its full name, which is stable across restarts but changes on rename or move, and is not

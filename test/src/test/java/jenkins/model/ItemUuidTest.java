@@ -34,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.XmlFile;
@@ -54,6 +55,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CyclicBarrier;
@@ -478,6 +480,41 @@ class ItemUuidTest {
         assertThat(config(mine), containsString("<itemUuid>" + pinned + "</itemUuid>"));
         assertSame(hidden, ItemUuids.get(id));
         assertSame(mine, ItemUuids.get(pinned));
+    }
+
+    @Test
+    void anIdentityThatIsNotAUuidIsNotKept() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("p");
+        String id = ItemUuids.pin(p);
+        String other = ItemUuids.pin(r.createFreeStyleProject("other"));
+        FreeStyleProject unpinned = r.createFreeStyleProject("unpinned");
+        for (String posted : List.of(other + "/builds", "../" + other, "not-a-uuid", "")) {
+            byte[] xml = ("<project><itemUuid>" + posted + "</itemUuid></project>").getBytes(StandardCharsets.UTF_8);
+            p.updateByXml(new StreamSource(new ByteArrayInputStream(xml)));
+            assertEquals(id, p.getItemUuid(), posted);
+            assertThat(config(p), containsString("<itemUuid>" + id + "</itemUuid>"));
+            unpinned.updateByXml(new StreamSource(new ByteArrayInputStream(xml)));
+            assertFalse(unpinned.isItemUuidPinned(), posted);
+            assertEquals(derived("unpinned"), unpinned.getItemUuid());
+        }
+        assertSame(p, ItemUuids.get(id));
+
+        // one in another form is kept in the usual one
+        String upper = UUID.randomUUID().toString().toUpperCase(Locale.ROOT);
+        p.updateByXml(new StreamSource(new ByteArrayInputStream(("<project><itemUuid>" + upper + "</itemUuid></project>").getBytes(StandardCharsets.UTF_8))));
+        assertEquals(upper.toLowerCase(Locale.ROOT), p.getItemUuid());
+        assertSame(p, ItemUuids.get(upper.toLowerCase(Locale.ROOT)));
+
+        // nor is one on disk
+        Path dir = r.jenkins.getRootDir().toPath().resolve("jobs/added");
+        Files.createDirectories(dir);
+        Files.writeString(dir.resolve("config.xml"), "<project><itemUuid>" + other + "/builds</itemUuid></project>");
+        r.jenkins.reload();
+        FreeStyleProject added = (FreeStyleProject) r.jenkins.getItem("added");
+        assertNotNull(added, "loaded all the same");
+        assertFalse(added.isItemUuidPinned());
+        assertEquals(derived("added"), added.getItemUuid());
+        assertThrows(IllegalArgumentException.class, () -> added.setItemUuid(other + "/builds"));
     }
 
     @Test
