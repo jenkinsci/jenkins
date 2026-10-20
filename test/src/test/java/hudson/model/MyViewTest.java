@@ -29,7 +29,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.io.IOException;
@@ -92,7 +91,6 @@ class MyViewTest {
         itemType.click();
         rule.submit(form);
         Item item = rule.jenkins.getItem("job");
-        assumeTrue(item != null, "TODO sometimes on Windows CI the submission does not seem to be really processed (most log messages are missing)");
         assertThat(view.getItems(), contains(equalTo(item)));
     }
 

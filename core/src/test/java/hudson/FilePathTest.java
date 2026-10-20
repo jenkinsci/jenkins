@@ -32,8 +32,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -88,6 +86,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
@@ -271,8 +273,10 @@ class FilePathTest {
 
     @Issue("JENKINS-9540")
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void errorMessageInRemoteCopyRecursive() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Expensive to run and not Windows specific");
         File src = newFolder(temp, "src");
         File dst = newFolder(temp, "dst");
             FilePath from = new FilePath(src);
@@ -539,9 +543,8 @@ class FilePathTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void symlinkInTar() throws Exception {
-        assumeFalse(Functions.isWindows());
-
         FilePath tmp = new FilePath(temp);
             FilePath in = tmp.child("in");
             in.mkdirs();
@@ -889,8 +892,8 @@ class FilePathTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void chmod() throws Exception {
-        assumeFalse(Functions.isWindows());
         File f = File.createTempFile("file", null, temp);
         FilePath fp = new FilePath(f);
         int prevMode = fp.mode();
@@ -901,8 +904,8 @@ class FilePathTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void chmodInvalidPermissions() throws Exception {
-        assumeFalse(Functions.isWindows());
         File f = newFolder(temp, "folder");
         FilePath fp = new FilePath(f);
         int invalidMode = 01770; // Full permissions for owner and group plus sticky bit.
@@ -934,8 +937,8 @@ class FilePathTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void deleteRecursiveOnUnix() throws Exception {
-        assumeFalse(Functions.isWindows());
         Path targetDir = newFolder(temp, "target").toPath();
         Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
         Path toDelete = newFolder(temp, "toDelete").toPath();
@@ -964,8 +967,8 @@ class FilePathTest {
     }
 
     @Test
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void deleteRecursiveOnWindows() throws Exception {
-        assumeTrue(Functions.isWindows(), "Uses Windows-specific features");
         Path targetDir = newFolder(temp, "targetDir").toPath();
         Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
         Path toDelete = newFolder(temp, "toDelete").toPath();
@@ -982,8 +985,8 @@ class FilePathTest {
 
     @Issue("JENKINS-13128")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void copyRecursivePreservesPosixFilePermissions() throws Exception {
-        assumeFalse(Functions.isWindows());
         File src = newFolder(temp, "src");
         File dst = newFolder(temp, "dst");
         Path sourceFile = Files.createFile(src.toPath().resolve("test-file"));
@@ -1064,8 +1067,8 @@ class FilePathTest {
 
     @Test
     @Issue("SECURITY-904")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void isDescendant_regularSymlinks() throws IOException, InterruptedException {
-        assumeFalse(Functions.isWindows());
         //  root
         //      /workspace
         //          /a
@@ -1128,8 +1131,9 @@ class FilePathTest {
 
     @Test
     @Issue("SECURITY-904")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
+    @DisabledIfEnvironmentVariable(named = "DISABLE_SYMLINK_TESTS", matches = "true")
     void isDescendant_windowsSpecificSymlinks() throws Exception {
-        assumeTrue(Functions.isWindows() && !"true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         //  root
         //      /workspace
         //          /a
@@ -1192,8 +1196,8 @@ class FilePathTest {
     }
 
     @Issue("SECURITY-904")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     public void isDescendant_throwIfParentDoesNotExist_symlink() throws Exception {
-        assumeFalse(Functions.isWindows());
         FilePath rootFolder = new FilePath(newFolder(temp, "root"));
         FilePath aFolder = rootFolder.child("a");
         aFolder.mkdirs();
@@ -1220,8 +1224,8 @@ class FilePathTest {
 
     @Test
     @Issue("SECURITY-904")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void isDescendant_worksEvenInSymbolicWorkspace() throws Exception {
-        assumeFalse(Functions.isWindows());
         //  root
         //      /w
         //          /_workspace => symlink to ../workspace

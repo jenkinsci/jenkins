@@ -2,10 +2,8 @@ package hudson.util.io;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.FilePath;
-import hudson.Functions;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -13,6 +11,8 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 
@@ -44,9 +44,10 @@ class RewindableRotatingFileOutputStreamTest {
 
     @Issue("JENKINS-16634")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS,
+                  disabledReason = "Windows does not allow deleting a directory with a "
+                  + "file open, so this case should never occur")
     void deletedFolder() throws Exception {
-        assumeFalse(Functions.isWindows(), "Windows does not allow deleting a directory with a "
-            + "file open, so this case should never occur");
         File dir = newFolder(tmp, "dir");
         File base = new File(dir, "x.log");
         RewindableRotatingFileOutputStream os = new RewindableRotatingFileOutputStream(base, 3);
