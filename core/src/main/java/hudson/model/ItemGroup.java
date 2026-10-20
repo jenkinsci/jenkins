@@ -97,6 +97,18 @@ public interface ItemGroup<T extends Item> extends FullyNamed, FullyNamedModelOb
     @CheckForNull T getItem(String name) throws AccessDeniedException;
 
     /**
+     * Like {@link #getItem(String)}, but treats an item that the current user can only {@link Item#DISCOVER} as absent.
+     * @return the item, or null if there is no such item or the current user cannot {@link Item#READ} it
+     */
+    default @CheckForNull T getItemOrNull(String name) {
+        try {
+            return getItem(name);
+        } catch (AccessDeniedException x) {
+            return null;
+        }
+    }
+
+    /**
      * Assigns the {@link Item#getRootDir() root directory} for children.
      */
     File getRootDirFor(T child);

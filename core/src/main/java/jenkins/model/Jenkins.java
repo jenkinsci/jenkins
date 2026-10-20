@@ -3195,6 +3195,34 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * Like {@link #getItemByFullName(String, Class)}, but never throws {@link AccessDeniedException}:
+     * an item that the current user can only {@link Item#DISCOVER} is treated as absent.
+     */
+    public @CheckForNull <T extends Item> T getItemByFullNameOrNull(@NonNull String fullName, Class<T> type) {
+        try {
+            return getItemByFullName(fullName, type);
+        } catch (AccessDeniedException x) {
+            return null;
+        }
+    }
+
+    public @CheckForNull Item getItemByFullNameOrNull(String fullName) {
+        return getItemByFullNameOrNull(fullName, Item.class);
+    }
+
+    /**
+     * Like {@link #getItem(String, Item, Class)}, but never throws {@link AccessDeniedException}:
+     * an item that the current user can only {@link Item#DISCOVER} is treated as absent.
+     */
+    public @CheckForNull <T extends Item> T getItemOrNull(@NonNull String pathName, Item context, @NonNull Class<T> type) {
+        try {
+            return getItem(pathName, context, type);
+        } catch (AccessDeniedException x) {
+            return null;
+        }
+    }
+
+    /**
      * Gets the user of the given name.
      *
      * @return the user of the given name (which may or may not be an id), if that person exists; else null
