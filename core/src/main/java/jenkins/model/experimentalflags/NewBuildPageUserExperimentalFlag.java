@@ -24,6 +24,7 @@
 
 package jenkins.model.experimentalflags;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import org.kohsuke.accmod.Restricted;
@@ -45,5 +46,10 @@ public class NewBuildPageUserExperimentalFlag extends BooleanUserExperimentalFla
     @Override
     public String getShortDescription() {
         return "Enables a revamped build page. This feature is still a work in progress, so some things might not work perfectly yet.";
+    }
+
+    @Override
+    public @NonNull Boolean getDefaultValue() {
+        return true;
     }
 }
