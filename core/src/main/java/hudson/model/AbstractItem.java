@@ -28,6 +28,7 @@ package hudson.model;
 import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
@@ -554,23 +555,12 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     }
 
     /**
-     * Pins {@link #getItemUuid} at what it answers now, saving this item if it was not pinned.
-     * Use {@link ItemUuids#pin}.
+     * Pins {@link #getItemUuid} as this identity, or unpins it given null, without saving this item.
+     * Use {@link ItemUuids#pin}, which saves it.
      */
     @Restricted(NoExternalUse.class)
-    public synchronized @NonNull String pinItemUuid() throws IOException {
-        String id = itemUuid;
-        if (id != null) {
-            return id;
-        }
-        id = itemUuid = derivedItemUuid(getFullName());
-        try {
-            save();
-        } catch (IOException | RuntimeException e) {
-            itemUuid = null; // as it was, and as it is saved
-            throw e;
-        }
-        return id;
+    public void setItemUuid(@CheckForNull String id) {
+        itemUuid = id;
     }
 
     /** Gives this item a new, pinned identity (as for one that has another item's); the caller saves it. */
@@ -1047,6 +1037,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
         // try to reflect the changes by reloading
         getConfigFile().unmarshal(this);
         Items.runWhileUpdatingByXml(() -> onLoad(getParent(), getParent().getItemName(getRootDir(), this)));
+        ItemUuids.reloaded(this); // its identity may have changed on disk
         Jenkins.get().rebuildDependencyGraphAsync();
     }
 

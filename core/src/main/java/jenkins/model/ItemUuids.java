@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,6 +45,7 @@ import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Finds items by {@link Item#getItemUuid}, the identity renames and moves do not change, and pins that identity.
@@ -63,8 +65,17 @@ public final class ItemUuids {
     @Restricted(NoExternalUse.class)
     public static boolean PIN_NEW_ITEMS = SystemProperties.getBoolean(ItemUuids.class.getName() + ".pinNewItems");
 
-    /** Full names by identity, for the items loaded here. */
-    private static final Map<String, String> fullNames = new ConcurrentHashMap<>();
+    /**
+     * The items loaded here by identity. Kept by item rather than by name, so that an item keeps its identity while
+     * another takes its old name (or the same name in another case), and a reloaded item's object replaces the old one.
+     */
+    private static final Map<String, Item> items = new ConcurrentHashMap<>();
+
+    /**
+     * Held while an identity is checked and indexed, so that two items cannot both take one. Taken after an item's own
+     * lock (as when configuration is submitted), never before it, so an item is not saved while it is held.
+     */
+    private static final Object lock = new Object();
 
     private ItemUuids() {}
 
@@ -76,15 +87,23 @@ public final class ItemUuids {
      */
     @CheckForNull
     public static Item get(@NonNull String uuid) {
-        String fullName = fullNames.get(uuid);
-        Item item = fullName == null ? null : Jenkins.get().getItemByFullName(fullName);
-        return item != null && uuid.equals(item.getItemUuid()) ? item : null;
+        Item item = items.get(uuid);
+        if (item == null || !uuid.equals(item.getItemUuid())) {
+            return null;
+        }
+        try {
+            return Jenkins.get().getItemByFullName(item.getFullName()) == item ? item : null;
+        } catch (AccessDeniedException e) {
+            return null; // may be discovered but not read
+        }
     }
 
     /**
      * Pins an item's identity: from now on {@link Item#getItemUuid} stays what it answers now (the name-derived value
-     * of an unpinned item), across renames and moves, and is saved with the item. Saves the item once if it was not
-     * pinned; does nothing otherwise. Every new item is pinned already where {@link #pinsNewItems} holds.
+     * of an unpinned item), across renames and moves, and is saved with the item. That is unless another item has it,
+     * as one pinned and then renamed has the identity derived from its old name: then this item is given one of its own.
+     * Saves the item once if it was not pinned; does nothing otherwise. Every new item is pinned already where
+     * {@link #pinsNewItems} holds.
      *
      * @return the pinned identity
      * @throws IllegalArgumentException if this kind of item has no identity
@@ -92,9 +111,32 @@ public final class ItemUuids {
     @NonNull
     public static String pin(@NonNull Item item) throws IOException {
         if (item instanceof AbstractItem ai) {
-            String id = ai.pinItemUuid();
-            index(item);
-            return id;
+            synchronized (ai) { // so it is pinned once; before the index lock, as everywhere
+                if (ai.isItemUuidPinned()) {
+                    return ai.getItemUuid();
+                }
+                String id;
+                synchronized (lock) {
+                    id = ai.getItemUuid();
+                    if (heldByAnother(id, ai)) {
+                        id = UUID.randomUUID().toString();
+                    }
+                    ai.setItemUuid(id);
+                    index(ai);
+                }
+                try {
+                    ai.save();
+                } catch (IOException | RuntimeException e) {
+                    synchronized (lock) {
+                        ai.setItemUuid(null); // as it was, and as it is saved
+                        if (!id.equals(ai.getItemUuid())) {
+                            items.remove(id, ai); // a new one, so no longer its
+                        }
+                    }
+                    throw e;
+                }
+                return id;
+            }
         }
         String id = item.getItemUuid();
         if (id == null) {
@@ -112,10 +154,102 @@ public final class ItemUuids {
         return PIN_NEW_ITEMS;
     }
 
+    /**
+     * Indexes every item loaded here again, as at startup, giving one that has another's identity one of its own.
+     * For a reload of the whole configuration, which makes new objects of the items and fires no {@link ItemListener}.
+     */
+    @Restricted(NoExternalUse.class)
+    public static void reindex() {
+        List<AbstractItem> renewed = new ArrayList<>();
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
+            List<Item> all = new ArrayList<>();
+            Jenkins.get().allItems().forEach(all::add);
+            synchronized (lock) {
+                items.clear();
+                // a pinned identity is kept by the item it was pinned for, even if it was derived from a name another
+                // item has now (as when an item is pinned, renamed, and another made with its old name); of two pinned
+                // with the same identity (as when a job's directory is copied), the first found keeps it
+                for (Item item : all) {
+                    if (isPinned(item) && claimLocked(item)) {
+                        renewed.add((AbstractItem) item);
+                    }
+                }
+                for (Item item : all) {
+                    if (!isPinned(item) && claimLocked(item)) {
+                        renewed.add((AbstractItem) item);
+                    }
+                }
+            }
+        }
+        renewed.forEach(ItemUuids::save);
+    }
+
+    /** Indexes an item reloaded from disk, whose identity may have changed there. */
+    @Restricted(NoExternalUse.class)
+    public static void reloaded(@NonNull Item item) {
+        claim(item);
+    }
+
+    /** Indexes an item, after giving it an identity of its own if it has another item's. */
+    private static void claim(Item item) {
+        boolean renewed;
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
+            synchronized (lock) {
+                renewed = claimLocked(item);
+            }
+        }
+        if (renewed) {
+            save((AbstractItem) item);
+        }
+    }
+
+    /**
+     * Indexes an item, first giving it an identity of its own if another item has its identity.
+     *
+     * @return whether it was given one, and so must be saved
+     */
+    private static boolean claimLocked(Item item) {
+        String id = item.getItemUuid();
+        if (id == null) {
+            return false;
+        }
+        if (!heldByAnother(id, item)) {
+            index(item);
+            return false;
+        }
+        if (item instanceof AbstractItem ai) {
+            LOGGER.log(ai.isItemUuidPinned() ? Level.WARNING : Level.FINE, "{0} has the identity of {1}; giving it one of its own",
+                    new Object[] {item.getFullName(), items.get(id).getFullName()});
+            ai.newItemUuid();
+            index(item);
+            return true;
+        }
+        return false; // not taken from the item that has it
+    }
+
+    /**
+     * Whether another item loaded here has this identity: whoever made the change, and whatever they may see, the
+     * identity of an item hidden from them is not theirs. Call with {@link #lock} held, as {@link ACL#SYSTEM2}.
+     */
+    private static boolean heldByAnother(String id, Item item) {
+        Item holder = items.get(id);
+        return holder != null && holder != item && id.equals(holder.getItemUuid())
+                && Jenkins.get().getItemByFullName(holder.getFullName()) == holder;
+    }
+
+    /** Indexes an item under its identity, and no longer under any other. Call with {@link #lock} held. */
     private static void index(Item item) {
         String id = item.getItemUuid();
-        if (id != null) {
-            fullNames.put(id, item.getFullName());
+        if (id != null && items.put(id, item) != item) {
+            items.entrySet().removeIf(e -> e.getValue() == item && !e.getKey().equals(id));
+        }
+    }
+
+    private static void save(AbstractItem item) {
+        try {
+            item.save();
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Could not save the new identity of " + item.getFullName(), e);
         }
     }
 
@@ -129,25 +263,7 @@ public final class ItemUuids {
     public static final class Listener extends ItemListener {
         @Override
         public void onLoaded() {
-            List<Item> derived = new ArrayList<>();
-            try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
-                for (Item item : Jenkins.get().allItems()) {
-                    if (isPinned(item)) {
-                        index(item);
-                    } else {
-                        derived.add(item);
-                    }
-                }
-                // a pinned identity is kept by the item it was pinned for, even if it was derived from a name another
-                // item has now (as when an item is pinned, renamed, and another made with its old name)
-                for (Item item : derived) {
-                    claim(item);
-                }
-                fullNames.entrySet().removeIf(e -> {
-                    Item item = Jenkins.get().getItemByFullName(e.getValue());
-                    return item == null || !e.getKey().equals(item.getItemUuid());
-                });
-            }
+            reindex();
         }
 
         @Override
@@ -160,46 +276,20 @@ public final class ItemUuids {
             claim(item); // as for configuration posted with another item's identity
         }
 
-        /** Indexes an item, after giving it an identity of its own if it has another item's. */
-        private static void claim(Item item) {
-            String id = item.getItemUuid();
-            if (id == null) {
-                return;
-            }
-            String other = fullNames.get(id);
-            boolean clash;
-            try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
-                // whoever made the change, and whatever they may see: the identity of an item hidden from them is not theirs
-                Item holder = other == null || other.equals(item.getFullName()) ? null : Jenkins.get().getItemByFullName(other);
-                clash = holder != null && id.equals(holder.getItemUuid());
-            }
-            if (!clash) {
-                index(item);
-            } else if (item instanceof AbstractItem ai) {
-                LOGGER.fine(() -> item.getFullName() + " has the identity of another item; giving it one of its own");
-                ai.newItemUuid();
-                try {
-                    ai.save();
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Could not save the new identity of " + item.getFullName(), e);
-                }
-                index(item);
-            } // else not taken from the item that has it
-        }
-
         @Override
         public void onLocationChanged(Item item, String oldFullName, String newFullName) {
-            if (!isPinned(item)) {
-                fullNames.remove(AbstractItem.derivedItemUuid(oldFullName), oldFullName);
-            }
-            claim(item);
+            claim(item); // under its new derived identity if it is not pinned
         }
 
         @Override
         public void onDeleted(Item item) {
-            String id = item.getItemUuid();
-            if (id != null) {
-                fullNames.remove(id, item.getFullName());
+            synchronized (lock) {
+                String prefix = item.getFullName() + '/';
+                try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
+                    // and the items in it, which are not told
+                    items.values().removeIf(i -> i == item
+                            || i.getFullName().startsWith(prefix) && Jenkins.get().getItemByFullName(i.getFullName()) != i);
+                }
             }
         }
     }

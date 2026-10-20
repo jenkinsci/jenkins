@@ -4396,6 +4396,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void reload() throws IOException, InterruptedException, ReactorException {
         queue.save();
         executeReactor(null, loadTasks());
+        ItemUuids.reindex(); // the items are new objects, and their identities may have changed on disk
 
         // Ensure we reached the final initialization state. Log the error otherwise
         if (initLevel != InitMilestone.COMPLETED) {

@@ -43,6 +43,7 @@ import hudson.model.Items;
 import hudson.model.Saveable;
 import hudson.model.TopLevelItem;
 import hudson.model.User;
+import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -50,12 +51,19 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import jenkins.util.xml.XMLUtils;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -288,5 +296,165 @@ class ItemUuidTest {
         String id = ItemUuids.pin(p);
         p.delete();
         assertNull(ItemUuids.get(id));
+    }
+
+    @Test
+    void anItemThatMayBeDiscoveredButNotReadIsNotFound() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("p");
+        String id = ItemUuids.pin(p);
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ, Item.DISCOVER).everywhere().to("bob"));
+        try (ACLContext ctx = ACL.as2(User.getById("bob", true).impersonate2())) {
+            assertNull(ItemUuids.get(id));
+        }
+        assertSame(p, ItemUuids.get(id));
+    }
+
+    @Test
+    void anItemPinnedWhenMadeWithThePinnedItemsOldNameGetsAnIdentityOfItsOwn() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("a");
+        String id = ItemUuids.pin(p);
+        p.renameTo("b");
+        PinsWhenCreated.enabled = true;
+        FreeStyleProject again;
+        try {
+            again = r.createFreeStyleProject("a"); // pinned by another listener, before or after the index sees it
+        } finally {
+            PinsWhenCreated.enabled = false;
+        }
+        assertTrue(again.isItemUuidPinned());
+        assertNotEquals(id, again.getItemUuid());
+        assertSame(p, ItemUuids.get(id));
+        assertSame(again, ItemUuids.get(again.getItemUuid()));
+    }
+
+    @TestExtension("anItemPinnedWhenMadeWithThePinnedItemsOldNameGetsAnIdentityOfItsOwn")
+    public static final class PinsWhenCreated extends ItemListener {
+        static volatile boolean enabled;
+
+        @Override
+        public void onCreated(Item item) {
+            if (enabled) {
+                try {
+                    ItemUuids.pin(item);
+                } catch (Exception e) {
+                    throw new AssertionError(e);
+                }
+            }
+        }
+    }
+
+    @Test
+    void anItemMadeWithTheOldNameWhileARenameIsAnnouncedDoesNotTakeTheIdentity() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("a");
+        String id = ItemUuids.pin(p);
+        CreatesOnRename.enabled = true;
+        try {
+            p.renameTo("b"); // "a" made again after the rename, before or after the index is told of it
+        } finally {
+            CreatesOnRename.enabled = false;
+        }
+        Item again = r.jenkins.getItem("a");
+        assertNotNull(again);
+        assertEquals(id, p.getItemUuid(), "the pinned item keeps its identity");
+        assertNotEquals(id, again.getItemUuid());
+        assertSame(p, ItemUuids.get(id));
+        assertSame(again, ItemUuids.get(again.getItemUuid()));
+    }
+
+    @TestExtension("anItemMadeWithTheOldNameWhileARenameIsAnnouncedDoesNotTakeTheIdentity")
+    public static final class CreatesOnRename extends ItemListener {
+        static volatile boolean enabled;
+
+        @Override
+        public void onLocationChanged(Item item, String oldFullName, String newFullName) {
+            if (enabled) {
+                enabled = false;
+                try {
+                    Jenkins.get().createProject(FreeStyleProject.class, oldFullName);
+                } catch (Exception e) {
+                    throw new AssertionError(e);
+                }
+            }
+        }
+    }
+
+    @Test
+    void aRenameChangingOnlyTheCaseKeepsTheIdentity() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("a");
+        String id = ItemUuids.pin(p);
+        p.renameTo("A");
+        assertEquals(id, p.getItemUuid());
+        assertSame(p, ItemUuids.get(id));
+    }
+
+    @Test
+    void reloadsIndexWhatChangedOnDisk() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("p");
+        String id = ItemUuids.pin(p);
+        String changed = UUID.randomUUID().toString();
+        Path config = Items.getConfigFile(p).getFile().toPath();
+        Files.writeString(config, Files.readString(config).replace(id, changed));
+        p.doReload();
+        assertEquals(changed, p.getItemUuid());
+        assertSame(p, ItemUuids.get(changed));
+        assertNull(ItemUuids.get(id));
+
+        // a job added on disk, and a whole reload
+        String added = UUID.randomUUID().toString();
+        Path dir = r.jenkins.getRootDir().toPath().resolve("jobs/added");
+        Files.createDirectories(dir);
+        Files.writeString(dir.resolve("config.xml"), "<project><itemUuid>" + added + "</itemUuid></project>");
+        r.jenkins.reload();
+        Item loaded = ItemUuids.get(added);
+        assertNotNull(loaded);
+        assertSame(r.jenkins.getItem("added"), loaded);
+        assertSame(r.jenkins.getItem("p"), ItemUuids.get(changed));
+    }
+
+    @Test
+    void ofTwoItemsLoadedWithTheSameIdentityOneGetsItsOwn() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("a");
+        String id = ItemUuids.pin(p);
+        // its directory copied while Jenkins is down, then loaded
+        FileUtils.copyDirectory(p.getRootDir(), r.jenkins.getRootDir().toPath().resolve("jobs/c").toFile());
+        r.jenkins.reload();
+        Item a = r.jenkins.getItem("a");
+        Item c = r.jenkins.getItem("c");
+        assertEquals(id, a.getItemUuid(), "the first keeps it");
+        assertNotEquals(id, c.getItemUuid());
+        assertSame(a, ItemUuids.get(id));
+        assertSame(c, ItemUuids.get(c.getItemUuid()));
+        assertThat(config(c), containsString("<itemUuid>" + c.getItemUuid() + "</itemUuid>"));
+    }
+
+    @Test
+    void twoItemsPostedTheSameNewIdentityAtOnceDoNotBothKeepIt() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("p");
+        FreeStyleProject q = r.createFreeStyleProject("q");
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        try {
+            for (int i = 0; i < 20; i++) {
+                byte[] xml = ("<project><itemUuid>" + UUID.randomUUID() + "</itemUuid></project>").getBytes(StandardCharsets.UTF_8);
+                CyclicBarrier together = new CyclicBarrier(2);
+                List<Future<?>> posts = new ArrayList<>();
+                for (FreeStyleProject j : List.of(p, q)) {
+                    posts.add(pool.submit(() -> {
+                        together.await();
+                        j.updateByXml(new StreamSource(new ByteArrayInputStream(xml)));
+                        return null;
+                    }));
+                }
+                for (Future<?> f : posts) {
+                    f.get();
+                }
+                assertNotEquals(p.getItemUuid(), q.getItemUuid());
+                assertSame(p, ItemUuids.get(p.getItemUuid()));
+                assertSame(q, ItemUuids.get(q.getItemUuid()));
+            }
+        } finally {
+            pool.shutdownNow();
+        }
     }
 }
