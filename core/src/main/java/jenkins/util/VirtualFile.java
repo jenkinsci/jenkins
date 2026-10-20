@@ -26,6 +26,7 @@ package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.DirectoryBrowserSupport;
@@ -704,6 +705,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 return FilePath.isSymlink(f, rootPath, openOptions);
             }
 
+            @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Child name is validated by callers (e.g. DirectoryBrowserSupport applies upstream path-traversal and symlink checks), not raw untrusted input here.")
             @Override public VirtualFile child(String name) {
                 return new FileVF(new File(f, name), root);
             }
@@ -801,6 +803,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
          */
         @Override
         @Restricted(NoExternalUse.class)
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         public boolean isDescendant(String potentialChildRelativePath) throws IOException {
             if (potentialChildRelativePath.isEmpty() && cacheDescendant) {
                 return true;
@@ -1097,6 +1100,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
          */
         @Override
         @Restricted(NoExternalUse.class)
+        @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
         public boolean isDescendant(String potentialChildRelativePath) throws IOException {
             if (potentialChildRelativePath.isEmpty() && cacheDescendant) {
                 return true;

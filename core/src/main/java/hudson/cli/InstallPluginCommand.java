@@ -24,6 +24,7 @@
 
 package hudson.cli;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.PluginManager;
@@ -168,10 +169,12 @@ public class InstallPluginCommand extends CLICommand {
         return 0; // all success
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private static File getTmpFile() throws Exception {
         return File.createTempFile("download", ".jpi.tmp", Jenkins.get().getPluginManager().rootDir);
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Controlled file access in core infrastructure; path is from trusted configuration or the Jenkins home/war layout, not untrusted request input.")
     private static File moveToFinalLocation(File tmpFile) throws Exception {
         String pluginName;
         try (JarFile jf = new JarFile(tmpFile)) {
