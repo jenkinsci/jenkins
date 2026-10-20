@@ -51,7 +51,7 @@
       background: transparent;
       box-shadow:
         0 0 0 0.09375rem transparent,
-        0 0 0 0.5rem transparent;
+        var(--focus-ring--hidden);
       pointer-events: none;
     }
 
@@ -111,7 +111,7 @@
 
     &:has(input[type="radio"]:focus-visible) {
       &::before {
-        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+        box-shadow: var(--focus-ring--keyboard) !important;
       }
     }
 
