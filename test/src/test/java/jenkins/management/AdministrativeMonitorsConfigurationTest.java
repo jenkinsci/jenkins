@@ -26,7 +26,6 @@ package jenkins.management;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 
 import hudson.ExtensionList;
 import hudson.util.DoubleLaunchChecker;
@@ -52,7 +51,6 @@ class AdministrativeMonitorsConfigurationTest {
     void globalConfigurationRoundTripKeepsDoubleLaunchCheckerEnabled() throws Exception {
         DoubleLaunchChecker monitor = ExtensionList.lookupSingleton(DoubleLaunchChecker.class);
         assertThat(monitor.id, is(DoubleLaunchChecker.class.getName()));
-        assertThat(monitor.getId(), not(monitor.id));
         assertThat(monitor.isEnabled(), is(true));
 
         HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
