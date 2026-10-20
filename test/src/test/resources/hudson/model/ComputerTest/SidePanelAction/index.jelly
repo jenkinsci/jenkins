@@ -1,0 +1,9 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <l:layout title="Side Panel Action">
+    <st:include it="${it.computer}" page="sidepanel.jelly"/>
+    <l:main-panel>
+      <p>Side panel action.</p>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
