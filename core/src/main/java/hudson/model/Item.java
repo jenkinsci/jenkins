@@ -45,6 +45,8 @@ import jenkins.model.Named;
 import jenkins.search.SearchGroup;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.stapler.StaplerRequest2;
 
 /**
@@ -181,6 +183,25 @@ public interface Item extends PersistenceRoot, FullyNamedModelObject, Searchable
      *      URL that ends with '/'.
      */
     String getShortUrl();
+
+    /**
+     * An identity of this item that renames and moves do not change, for data kept about it elsewhere (such as build
+     * records in a shared store, or test results in a database); null if this kind of item has none.
+     *
+     * <p>For {@link AbstractItem}s it is a UUID, in its usual (lower case) form, kept once the item is <em>pinned</em>: from creation (or copy or import)
+     * where new items are pinned (see {@link jenkins.model.ItemUuids#pin}), otherwise once some consumer calls
+     * {@link jenkins.model.ItemUuids#pin}. Only a pinned identity is saved with the item. An unpinned item answers a
+     * UUID derived from its full name, which is stable across restarts but changes on rename or move, and is not
+     * kept when the item is pinned: key data kept elsewhere only by a pinned identity.
+     * Neither is unique across Jenkins instances: an item copied to another instance with its configuration keeps it,
+     * and items of the same full name on different instances derive the same one.
+     *
+     * @since TODO
+     */
+    @Restricted(Beta.class)
+    default @CheckForNull String getItemUuid() {
+        return null;
+    }
 
     /**
      * Returns the absolute URL of this item. This relies on the current
