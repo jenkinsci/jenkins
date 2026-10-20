@@ -3,6 +3,7 @@ package jenkins.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.springframework.security.access.AccessDeniedException;
 
 @WithJenkins
 class JenkinsItemOrNullTest {
@@ -40,17 +42,56 @@ class JenkinsItemOrNullTest {
         assertThat(
                 asUser("reader", () -> r.jenkins.getItemByFullNameOrNull("p", FreeStyleProject.class)),
                 sameInstance(job));
-        assertThat(asUser("reader", () -> r.jenkins.getItemOrNull("p", null, FreeStyleProject.class)), sameInstance(job));
+        assertThat(
+                asUser("reader", () -> r.jenkins.getItemOrNull("p", null, FreeStyleProject.class)),
+                sameInstance(job));
+
+        // item of another type is null
+        assertThat(
+                asUser("reader", () -> r.jenkins.getItemByFullNameOrNull("p", AbstractTopLevelItem.class)),
+                nullValue());
+        assertThat(
+                asUser("reader", () -> r.jenkins.getItemOrNull("p", null, AbstractTopLevelItem.class)),
+                nullValue());
     }
 
     @Test
-    void discoverOnlyItemIsAbsentWithoutThrowing(JenkinsRule r) throws Exception {
+    void discoverOnlyItemIsAbsentWhileGetItemThrows(JenkinsRule r) throws Exception {
         setUpUsers(r);
+        assertThrows(AccessDeniedException.class, () -> asUser("visitor", () -> r.jenkins.getItem("p")));
+        assertThrows(AccessDeniedException.class, () -> asUser("visitor", () -> r.jenkins.getItemByFullName("p")));
+        assertThrows(
+                AccessDeniedException.class,
+                () -> asUser("visitor", () -> r.jenkins.getItemByFullName("p", FreeStyleProject.class)));
+        assertThrows(
+                AccessDeniedException.class,
+                () -> asUser("visitor", () -> r.jenkins.getItem("p", (Item) null, FreeStyleProject.class)));
         assertThat(asUser("visitor", () -> r.jenkins.getItemOrNull("p")), nullValue());
         assertThat(asUser("visitor", () -> r.jenkins.getItemByFullNameOrNull("p")), nullValue());
         assertThat(
                 asUser("visitor", () -> r.jenkins.getItemByFullNameOrNull("p", FreeStyleProject.class)),
                 nullValue());
-        assertThat(asUser("visitor", () -> r.jenkins.getItemOrNull("p", null, FreeStyleProject.class)), nullValue());
+        assertThat(
+                asUser("visitor", () -> r.jenkins.getItemOrNull("p", null, FreeStyleProject.class)),
+                nullValue());
+    }
+
+    @Test
+    void nestedDiscoverOnlyItemIsAbsent(JenkinsRule r) throws Exception {
+        setUpUsers(r);
+        var folder = r.createFolder("d");
+        var nested = folder.createProject(FreeStyleProject.class, "q");
+        assertThat(asUser("reader", () -> folder.getItemOrNull("q")), sameInstance(nested));
+        // MockFolder.getItem does not check permissions, so folder-level lookups are not asserted here.
+        assertThrows(AccessDeniedException.class, () -> asUser("visitor", () -> r.jenkins.getItemByFullName("d/q")));
+        assertThrows(
+                AccessDeniedException.class,
+                () -> asUser("visitor", () -> r.jenkins.getItemByFullName("d/q", FreeStyleProject.class)));
+        assertThrows(
+                AccessDeniedException.class,
+                () -> asUser("visitor", () -> r.jenkins.getItem("d/q", (Item) null, FreeStyleProject.class)));
+        assertThat(asUser("visitor", () -> r.jenkins.getItemByFullNameOrNull("d/q")), nullValue());
+        assertThat(asUser("visitor", () -> r.jenkins.getItemByFullNameOrNull("d/q", FreeStyleProject.class)), nullValue());
+        assertThat(asUser("visitor", () -> r.jenkins.getItemOrNull("d/q", null, FreeStyleProject.class)), nullValue());
     }
 }

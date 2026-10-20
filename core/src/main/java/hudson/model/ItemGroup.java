@@ -97,8 +97,9 @@ public interface ItemGroup<T extends Item> extends FullyNamed, FullyNamedModelOb
     @CheckForNull T getItem(String name) throws AccessDeniedException;
 
     /**
-     * Like {@link #getItem(String)}, but treats an item that the current user can only {@link Item#DISCOVER} as absent.
-     * @return the item, or null if there is no such item or the current user cannot {@link Item#READ} it
+     * Like {@link #getItem(String)}, but returns null instead of throwing {@link AccessDeniedException}
+     * when the current user has {@link Item#DISCOVER} but not {@link Item#READ}.
+     * @since TODO
      */
     default @CheckForNull T getItemOrNull(String name) {
         try {
