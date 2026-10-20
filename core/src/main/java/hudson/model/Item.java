@@ -191,7 +191,8 @@ public interface Item extends PersistenceRoot, FullyNamedModelObject, Searchable
      * <p>For {@link AbstractItem}s it is a UUID kept once the item is <em>pinned</em>: from creation (or copy or import)
      * where new items are pinned (see {@link jenkins.model.ItemUuids#pin}), otherwise once some consumer calls
      * {@link jenkins.model.ItemUuids#pin}. Only a pinned identity is saved with the item. An unpinned item answers a
-     * UUID derived from its full name, which is stable across restarts but changes on rename or move.
+     * UUID derived from its full name, which is stable across restarts but changes on rename or move, and is not
+     * kept when the item is pinned: key data kept elsewhere only by a pinned identity.
      * Neither is unique across Jenkins instances: an item copied to another instance with its configuration keeps it,
      * and items of the same full name on different instances derive the same one.
      *

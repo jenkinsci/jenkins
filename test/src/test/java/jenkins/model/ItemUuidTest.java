@@ -146,11 +146,12 @@ class ItemUuidTest {
     }
 
     @Test
-    void pinningKeepsTheDerivedIdentityThroughRenamesMovesAndRestarts() throws Exception {
+    void pinningGivesAnIdentityOfItsOwnKeptThroughRenamesMovesAndRestarts() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject("a");
-        String id = p.getItemUuid();
         Saves.items.clear();
-        assertEquals(id, ItemUuids.pin(p), "the identity it had, so data already kept under it stays its");
+        String id = ItemUuids.pin(p);
+        assertNotEquals(derived("a"), id, "not the one derived from its name, which a later item of that name would have");
+        assertEquals(id, p.getItemUuid());
         assertEquals(id, ItemUuids.pin(p));
         assertEquals(List.of("a"), Saves.items, "saved once");
         assertThat(config(p), containsString("<itemUuid>" + id + "</itemUuid>"));
@@ -452,6 +453,63 @@ class ItemUuidTest {
                 assertNotEquals(p.getItemUuid(), q.getItemUuid());
                 assertSame(p, ItemUuids.get(p.getItemUuid()));
                 assertSame(q, ItemUuids.get(q.getItemUuid()));
+            }
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    @Test
+    void pinningAnItemWithTheIdentityOfAnItemItsPinnerCannotSeeGivesItItsOwn() throws Exception {
+        FreeStyleProject hidden = r.createFreeStyleProject("hidden");
+        String id = ItemUuids.pin(hidden);
+        FreeStyleProject mine = r.createFreeStyleProject("mine");
+        mine.setItemUuid(id); // as configuration posted with it, before the index has checked it
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ, Item.DISCOVER).everywhere().to("alice")
+                .grant(Item.READ, Item.CONFIGURE).onPaths("mine").to("alice"));
+        String pinned;
+        try (ACLContext ctx = ACL.as2(User.getById("alice", true).impersonate2())) {
+            pinned = ItemUuids.pin(mine); // alice may discover "hidden", not read it
+        }
+        assertNotEquals(id, pinned);
+        assertEquals(pinned, mine.getItemUuid());
+        assertThat(config(mine), containsString("<itemUuid>" + pinned + "</itemUuid>"));
+        assertSame(hidden, ItemUuids.get(id));
+        assertSame(mine, ItemUuids.get(pinned));
+    }
+
+    @Test
+    void anItemDeletedAndMadeAgainIsPinnedWithANewIdentity() throws Exception {
+        String first = ItemUuids.pin(r.createFreeStyleProject("a"));
+        r.jenkins.getItem("a").delete();
+        String second = ItemUuids.pin(r.createFreeStyleProject("a"));
+        assertNotEquals(first, second);
+        assertNull(ItemUuids.get(first));
+    }
+
+    @Test
+    void aPinMadeWhileConfigurationIsPostedIsKept() throws Exception {
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        try {
+            for (int i = 0; i < 30; i++) {
+                FreeStyleProject p = r.createFreeStyleProject("p" + i);
+                CyclicBarrier together = new CyclicBarrier(2);
+                Future<String> pin = pool.submit(() -> {
+                    together.await();
+                    return ItemUuids.pin(p);
+                });
+                Future<?> post = pool.submit(() -> {
+                    together.await();
+                    p.updateByXml(new StreamSource(new ByteArrayInputStream("<project><description>posted</description></project>".getBytes(StandardCharsets.UTF_8))));
+                    return null;
+                });
+                post.get();
+                String id = pin.get();
+                assertTrue(p.isItemUuidPinned());
+                assertEquals(id, p.getItemUuid());
+                assertThat(config(p), containsString("<itemUuid>" + id + "</itemUuid>"));
             }
         } finally {
             pool.shutdownNow();

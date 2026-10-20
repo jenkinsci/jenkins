@@ -35,6 +35,7 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -71,6 +72,9 @@ public final class ItemUuids {
      */
     private static final Map<String, Item> items = new ConcurrentHashMap<>();
 
+    /** The identity each item is indexed under, so that indexing one under a new one is not a scan. Guarded by {@link #lock}. */
+    private static final Map<Item, String> indexed = new IdentityHashMap<>();
+
     /**
      * Held while an identity is checked and indexed, so that two items cannot both take one. Taken after an item's own
      * lock (as when configuration is submitted), never before it, so an item is not saved while it is held.
@@ -99,11 +103,12 @@ public final class ItemUuids {
     }
 
     /**
-     * Pins an item's identity: from now on {@link Item#getItemUuid} stays what it answers now (the name-derived value
-     * of an unpinned item), across renames and moves, and is saved with the item. That is unless another item has it,
-     * as one pinned and then renamed has the identity derived from its old name: then this item is given one of its own.
-     * Saves the item once if it was not pinned; does nothing otherwise. Every new item is pinned already where
-     * {@link #pinsNewItems} holds.
+     * Pins an item's identity: gives an unpinned item an identity of its own, a new UUID that renames and moves do not
+     * change, saved with the item. The identity an unpinned item derives from its name is not kept, as it would also be
+     * that of a later item of the same name (once this one is deleted or renamed): data kept elsewhere about an item
+     * should be keyed only by its pinned identity. A pinned item keeps its identity, unless another item has it (as
+     * configuration posted with another item's, not yet checked), when it is given a new one too. Saves the item if it
+     * gets an identity; does nothing otherwise. Every new item is pinned already where {@link #pinsNewItems} holds.
      *
      * @return the pinned identity
      * @throws IllegalArgumentException if this kind of item has no identity
@@ -112,25 +117,29 @@ public final class ItemUuids {
     public static String pin(@NonNull Item item) throws IOException {
         if (item instanceof AbstractItem ai) {
             synchronized (ai) { // so it is pinned once; before the index lock, as everywhere
-                if (ai.isItemUuidPinned()) {
-                    return ai.getItemUuid();
-                }
+                String was = ai.isItemUuidPinned() ? ai.getItemUuid() : null;
                 String id;
-                synchronized (lock) {
-                    id = ai.getItemUuid();
-                    if (heldByAnother(id, ai)) {
+                try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
+                    synchronized (lock) {
+                        if (was != null && !heldByAnother(was, ai)) {
+                            index(ai);
+                            return was; // saved with it already
+                        }
                         id = UUID.randomUUID().toString();
+                        ai.setItemUuid(id);
+                        index(ai);
                     }
-                    ai.setItemUuid(id);
-                    index(ai);
                 }
                 try {
                     ai.save();
                 } catch (IOException | RuntimeException e) {
-                    synchronized (lock) {
-                        ai.setItemUuid(null); // as it was, and as it is saved
-                        if (!id.equals(ai.getItemUuid())) {
-                            items.remove(id, ai); // a new one, so no longer its
+                    try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
+                        synchronized (lock) {
+                            ai.setItemUuid(was); // as it was, and as it is saved
+                            unindex(ai);
+                            if (!heldByAnother(ai.getItemUuid(), ai)) {
+                                index(ai);
+                            }
                         }
                     }
                     throw e;
@@ -166,6 +175,7 @@ public final class ItemUuids {
             Jenkins.get().allItems().forEach(all::add);
             synchronized (lock) {
                 items.clear();
+                indexed.clear();
                 // a pinned identity is kept by the item it was pinned for, even if it was derived from a name another
                 // item has now (as when an item is pinned, renamed, and another made with its old name); of two pinned
                 // with the same identity (as when a job's directory is copied), the first found keeps it
@@ -240,8 +250,21 @@ public final class ItemUuids {
     /** Indexes an item under its identity, and no longer under any other. Call with {@link #lock} held. */
     private static void index(Item item) {
         String id = item.getItemUuid();
-        if (id != null && items.put(id, item) != item) {
-            items.entrySet().removeIf(e -> e.getValue() == item && !e.getKey().equals(id));
+        if (id == null) {
+            return;
+        }
+        String old = indexed.put(item, id);
+        if (old != null && !old.equals(id)) {
+            items.remove(old, item);
+        }
+        items.put(id, item);
+    }
+
+    /** No longer indexes an item. Call with {@link #lock} held. */
+    private static void unindex(Item item) {
+        String old = indexed.remove(item);
+        if (old != null) {
+            items.remove(old, item);
         }
     }
 
@@ -286,9 +309,13 @@ public final class ItemUuids {
             synchronized (lock) {
                 String prefix = item.getFullName() + '/';
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
+                    unindex(item);
                     // and the items in it, which are not told
-                    items.values().removeIf(i -> i == item
-                            || i.getFullName().startsWith(prefix) && Jenkins.get().getItemByFullName(i.getFullName()) != i);
+                    for (Item i : new ArrayList<>(indexed.keySet())) {
+                        if (i.getFullName().startsWith(prefix) && Jenkins.get().getItemByFullName(i.getFullName()) != i) {
+                            unindex(i);
+                        }
+                    }
                 }
             }
         }

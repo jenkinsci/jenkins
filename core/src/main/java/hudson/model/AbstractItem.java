@@ -994,16 +994,19 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
             throw new IOException("Failed to process config.xml", e);
         }
 
-        String uuid = itemUuid; // configuration posted without it, as most is, keeps the item's identity
-        // try to reflect the changes by reloading
-        Object o = Items.XSTREAM2.unmarshal(XStream2.getDefaultDriver().createReader(new StringReader(out.getBuffer().toString())), this, null, true);
+        Object o;
+        synchronized (this) { // as ItemUuids.pin is: a pin made meanwhile is not undone
+            String uuid = itemUuid; // configuration posted without it, as most is, keeps the item's identity
+            // try to reflect the changes by reloading
+            o = Items.XSTREAM2.unmarshal(XStream2.getDefaultDriver().createReader(new StringReader(out.getBuffer().toString())), this, null, true);
+            if (itemUuid == null) {
+                itemUuid = uuid;
+            }
+        }
         if (o != this) {
             // ensure that we've got the same job type. extending this code to support updating
             // to different job type requires destroying & creating a new job type
             throw new IOException("Expecting " + this.getClass() + " but got " + o.getClass() + " instead");
-        }
-        if (itemUuid == null) {
-            itemUuid = uuid;
         }
 
         Items.runWhileUpdatingByXml(() -> onLoad(getParent(), getRootDir().getName()));
