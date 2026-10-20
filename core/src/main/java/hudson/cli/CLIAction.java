@@ -176,7 +176,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
         }
         Authentication authentication = Jenkins.getAuthentication2();
         return WebSockets.upgrade(new WebSocketSession() {
-            ServerSideImpl connection;
+            volatile ServerSideImpl connection;
             long sentBytes, sentCount, receivedBytes, receivedCount;
             class OutputImpl implements PlainCLIProtocol.Output {
                 @Override
@@ -202,6 +202,11 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                     connection = new ServerSideImpl(new OutputImpl(), authentication);
                 } catch (IOException x) {
                     error(x);
+                    try {
+                        doClose();
+                    } catch (IOException e) {
+                        LOGGER.log(Level.FINE, "Failed to close websocket on initialization error", e);
+                    }
                     return;
                 }
                 new Thread(() -> {
@@ -219,6 +224,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
             @Override
             protected void binary(byte[] payload, int offset, int len) {
+                if (connection == null) return;
                 try {
                     connection.handle(new DataInputStream(new ByteArrayInputStream(payload, offset, len)));
                     receivedBytes += len;
@@ -237,7 +243,9 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
             protected void closed(int statusCode, String reason) {
                 LOGGER.fine(() -> "closed: " + statusCode + ": " + reason);
                 LOGGER.fine(() -> "received " + receivedCount + " packets of " + receivedBytes + " bytes; sent " + sentCount + " packets of " + sentBytes + " bytes");
-                connection.handleClose();
+                if (connection != null) {
+                    connection.handleClose();
+                }
             }
         });
     }
@@ -268,6 +276,14 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
         private final PipedOutputStream stdinMatch = new PipedOutputStream();
         private final Authentication authentication;
 
+        private static final Map<String, Locale> AVAILABLE_LOCALES = new ConcurrentHashMap<>();
+
+        static {
+            for (Locale l : Locale.getAvailableLocales()) {
+                AVAILABLE_LOCALES.put(l.toString(), l);
+            }
+        }
+
         ServerSideImpl(PlainCLIProtocol.Output out, Authentication authentication) throws IOException {
             super(out);
             stdinMatch.connect(stdin);
@@ -281,11 +297,10 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
         @Override
         protected void onLocale(String text) {
-            for (Locale _locale : Locale.getAvailableLocales()) {
-                if (_locale.toString().equals(text)) {
-                    locale = _locale;
-                    return;
-                }
+            Locale parsed = AVAILABLE_LOCALES.get(text);
+            if (parsed != null) {
+                locale = parsed;
+                return;
             }
             LOGGER.log(Level.WARNING, "unknown client locale {0}", text);
         }
