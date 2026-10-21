@@ -1,0 +1,88 @@
+<!--
+The MIT License
+
+Copyright (c) 2025, Jan Faracik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Render a single build history entry indicated by ${build} (jenkins.model.HistoricalBuild)
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:i="jelly:fmt">
+  <j:set var="build" value="${pageEntry.entry}" />
+  <j:set var="firstTransientBuildKey" value="${it.widget.firstTransientBuildKey}" />
+  <j:set var="transitive" value="${(firstTransientBuildKey!=null and (it.widget.adapter.compare(build,firstTransientBuildKey) ge 0)) ? 'transitive' : null}" />
+  <j:set var="link" value="${it.widget.baseUrl}/${build.number}/" />
+  <j:if test="${h.isUserTimeZoneOverride()}">
+    <i:setTimeZone value="${h.getUserTimeZone()}" />
+   </j:if>
+  
+  <div class="app-temporary-list__item" page-entry-id="${pageEntry.entryId}">
+    <div class="app-build-item">
+      <j:set var="iconTooltip">
+        <div>${build.iconColor.description}</div>
+        <div class="jenkins-!-text-color-secondary">${%JumpToConsole(h.getConsoleProviderFor(build).descriptor.displayName)}</div>
+      </j:set>
+
+      <a href="${h.getConsoleUrl(build)}"
+         class="app-build-item__icon"
+         data-html-tooltip="${iconTooltip}"
+         data-tooltip-delay="500">
+        <l:icon src="symbol-status-${build.iconColor.iconName}" />
+      </a>
+
+      <div class="app-temporary-list__item__details" href="${link}">
+        <div class="app-temporary-list__item__details__text">
+          <a class="app-temporary-list__item__label" href="${rootURL}/${build.url}">${build.displayName}</a>
+          <div class="app-temporary-list__item__description">
+            <l:details-bar it="${build}" />
+          </div>
+
+          <j:set var="badges" value="${build.badgeActions}"/>
+          <j:if test="${!empty(badges)}">
+            <div class="app-temporary-list__item__description">
+              <j:forEach var="badge" items="${badges}">
+                <st:include it="${badge}" page="badge.jelly" />
+              </j:forEach>
+            </div>
+          </j:if>
+
+          <j:if test="${!empty build.truncatedDescription}">
+            <div class="app-temporary-list__item__description">
+              <div class="jenkins-details__item">
+                <div class="jenkins-details__item__icon">
+                  <l:icon src="symbol-description" />
+                </div>
+                <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}"/>
+              </div>
+            </div>
+          </j:if>
+        </div>
+      </div>
+
+      <div class="app-temporary-list__item__actions">
+        <button class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link" data-href="${link}">
+          <l:icon src="symbol-menu" />
+        </button>
+      </div>
+    </div>
+  </div>
+</j:jelly>

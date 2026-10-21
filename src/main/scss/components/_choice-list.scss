@@ -4,13 +4,13 @@
   padding: 0;
   margin: 0;
   border-radius: var(--form-input-border-radius);
-  border: var(--card-border-width) solid var(--card-border-color);
+  border: var(--jenkins-border);
   background: var(--card-background);
 
   &__heading {
     font-size: 1rem;
     padding: 0.875rem;
-    border-bottom: var(--card-border-width) solid var(--card-border-color);
+    border-bottom: var(--jenkins-border);
 
     & > * {
       margin: 0;
@@ -39,7 +39,7 @@
     cursor: pointer;
 
     &:not(:last-of-type) {
-      border-bottom: var(--card-border-width) solid var(--card-border-color);
+      border-bottom: var(--jenkins-border);
     }
 
     &::before {
@@ -51,7 +51,7 @@
       background: transparent;
       box-shadow:
         0 0 0 0.09375rem transparent,
-        0 0 0 0.5rem transparent;
+        var(--focus-ring--hidden);
       pointer-events: none;
     }
 
@@ -111,7 +111,7 @@
 
     &:has(input[type="radio"]:focus-visible) {
       &::before {
-        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+        box-shadow: var(--focus-ring--keyboard) !important;
       }
     }
 

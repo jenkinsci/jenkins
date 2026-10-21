@@ -26,36 +26,35 @@ THE SOFTWARE.
   Show form to adjust log levels
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${%Logger Configuration}" type="one-column">
-    <l:breadcrumb title="${%Log Levels}" />
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:settings-subpage title="${%Log levels}" header="${null}" includeBreadcrumb="true">
+    <l:app-bar title="${%Log levels}">
+      <t:help tooltip="${%Additional information on log levels}" href="${%url}"/>
+    </l:app-bar>
 
-    <l:main-panel>
-      <l:app-bar title="${%Logger Configuration}">
-        <t:help tooltip="${%Additional information on log levels}" href="${%url}"/>
-      </l:app-bar>
+    <p class="jenkins-page-description">${%defaultLoggerMsg}</p>
 
-      <table class="sortable jenkins-table" id="logLevels">
-        <thead>
+    <table class="sortable jenkins-table" id="logLevels">
+      <thead>
+        <tr>
+          <th>${%Name}</th>
+          <th>${%Level}</th>
+        </tr>
+      </thead>
+      <j:invokeStatic var="lm" className="java.util.logging.LogManager" method="getLogManager"/>
+      <j:forEach var="name" items="${h.loggerNames}">
+        <j:set var="logger" value="${lm.getLogger(name)}"/>
+        <j:if test="${logger.level != null}">
           <tr>
-            <th>${%Name}</th>
-            <th>${%Level}</th>
+            <td>${name}</td>
+            <td>${logger.level}</td>
           </tr>
-        </thead>
-        <j:invokeStatic var="lm" className="java.util.logging.LogManager" method="getLogManager"/>
-        <j:forEach var="name" items="${h.loggerNames}">
-          <j:set var="logger" value="${lm.getLogger(name)}"/>
-          <j:if test="${logger.level != null}">
-            <tr>
-              <td>${name}</td>
-              <td>${logger.level}</td>
-            </tr>
-          </j:if>
-        </j:forEach>
-      </table>
-      <p>${%defaultLoggerMsg}</p>
-      <l:isAdmin>
-        <h2>${%Adjust Levels}</h2>
+        </j:if>
+      </j:forEach>
+    </table>
+
+    <l:isAdmin>
+      <f:section title="${%Adjust Levels}">
         <form action="configLogger" method="post" name="configLogger">
           <f:entry>
             <label class="jenkins-form-label" for="name">${%Name}</label>
@@ -82,7 +81,7 @@ THE SOFTWARE.
             <f:submit value="${%Save}"/>
           </f:bottomButtonBar>
         </form>
-      </l:isAdmin>
-    </l:main-panel>
-  </l:layout>
+      </f:section>
+    </l:isAdmin>
+  </l:settings-subpage>
 </j:jelly>

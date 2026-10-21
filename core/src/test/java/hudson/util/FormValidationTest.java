@@ -115,6 +115,34 @@ class FormValidationTest {
         assertTrue(warning_error.renderHtml().contains(warning.getMessage()));
     }
 
+    @Test
+    void aggregateNullValidations() { assertEquals(FormValidation.ok(), FormValidation.aggregate(null)); }
+
+    @Test
+    void aggregatePreservesMessageOrder() {
+        FormValidation first = FormValidation.warning("first_message");
+        FormValidation second = FormValidation.warning("second_message");
+        FormValidation third = FormValidation.warning("third_message");
+
+        String html = aggregate(first, second, third).renderHtml();
+
+        assertTrue(html.indexOf("first_message") < html.indexOf("second_message"));
+        assertTrue(html.indexOf("second_message") < html.indexOf("third_message"));
+    }
+
+    @Test
+    void aggregateRendersAsHtmlList() {
+        FormValidation ok = FormValidation.ok("ok_message");
+        FormValidation error = FormValidation.error("error_message");
+
+        String html = aggregate(ok, error).renderHtml();
+
+        assertThat(html, containsString("<ul"));
+        assertThat(html, containsString("<li>"));
+        assertThat(html, containsString("</li>"));
+        assertThat(html, containsString("</ul>"));
+    }
+
     private FormValidation aggregate(FormValidation... fvs) {
         return FormValidation.aggregate(Arrays.asList(fvs));
     }

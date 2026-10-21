@@ -213,6 +213,19 @@ public class Main {
             }
         }
 
+        File explodedWar = null;
+        for (String arg : args) {
+            if (arg.startsWith("--explodedWar=")) {
+                explodedWar = new File(arg.substring("--explodedWar=".length()));
+                if (!new File(explodedWar, "WEB-INF/web.xml").isFile()) {
+                    System.err.println("The explodedWar value is not an expanded WAR file: no WEB-INF/web.xml in " + explodedWar);
+                    System.exit(1);
+                }
+                // if specified multiple times, the first one wins
+                break;
+            }
+        }
+
         for (String arg : args) {
             if (arg.startsWith("--pluginroot=")) {
                 System.setProperty("hudson.PluginManager.workDir",
@@ -231,14 +244,22 @@ public class Main {
 
         // figure out the arguments
         trimOffOurOptions(arguments);
-        arguments.add(0, "--warfile=" + me.getAbsolutePath());
-        if (!hasOption(arguments, "--webroot=")) {
-            // defaults to ~/.jenkins/war since many users reported that cron job attempts to clean up
-            // the contents in the temporary directory.
-            final File jenkinsHome = getJenkinsHome();
-            final File webRoot = new File(jenkinsHome, "war");
-            System.out.println("webroot: " + webRoot);
-            arguments.add("--webroot=" + webRoot);
+        if (explodedWar != null) {
+            // Serve the directory as it is. Passing --warfile as well would make Winstone extract the
+            // WAR over the top of it, wiping it in the process.
+            arguments.removeIf(arg -> arg.startsWith("--webroot="));
+            System.out.println("webroot: " + explodedWar + " (already expanded)");
+            arguments.add("--webroot=" + explodedWar);
+        } else {
+            arguments.add(0, "--warfile=" + me.getAbsolutePath());
+            if (!hasOption(arguments, "--webroot=")) {
+                // defaults to ~/.jenkins/war since many users reported that cron job attempts to clean up
+                // the contents in the temporary directory.
+                final File jenkinsHome = getJenkinsHome();
+                final File webRoot = new File(jenkinsHome, "war");
+                System.out.println("webroot: " + webRoot);
+                arguments.add("--webroot=" + webRoot);
+            }
         }
 
         // only do a cleanup if you set the extractedFilesFolder property.
@@ -292,6 +313,8 @@ public class Main {
                 "\n" +
                 "Options:\n" +
                 "   --webroot                = folder where the WAR file is expanded into. Default is ${JENKINS_HOME}/war\n" +
+                "   --explodedWar            = folder holding an already expanded WAR file, served as is. No extraction\n" +
+                "                              is performed and --webroot is ignored\n" +
                 "   --pluginroot             = folder where the plugin archives are expanded into. Default is ${JENKINS_HOME}/plugins\n" +
                 "                              (NOTE: this option does not change the directory where the plugin archives are stored)\n" +
                 "   --extractedFilesFolder   = folder where extracted files are to be located. Default is the temp folder\n" +
@@ -348,7 +371,8 @@ public class Main {
 
     private static void trimOffOurOptions(List<String> arguments) {
         arguments.removeIf(arg -> arg.startsWith("--extractedFilesFolder")
-                || arg.startsWith("--pluginroot") || arg.startsWith(ENABLE_FUTURE_JAVA_CLI_SWITCH));
+                || arg.startsWith("--pluginroot") || arg.startsWith("--explodedWar")
+                || arg.startsWith(ENABLE_FUTURE_JAVA_CLI_SWITCH));
     }
 
     /**

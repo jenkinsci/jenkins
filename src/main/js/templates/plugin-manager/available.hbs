@@ -10,11 +10,19 @@
         {{/if}}
         <td>
             <div>
-                <a href="{{ this.wiki }}" class="jenkins-table__link" target="_blank" rel="noopener noreferrer">
-                    {{ this.displayName }}
-                    <span class="jenkins-visually-hidden">Version</span>
-                    <span class="jenkins-label jenkins-label--tertiary" style="margin-left: 1ch;">{{ this.version }}</span>
-                </a>
+                {{#if this.wiki }}
+                    <a href="{{ this.wiki }}" class="jenkins-table__link" target="_blank" rel="noopener noreferrer">
+                        {{ this.displayName }}
+                        <span class="jenkins-visually-hidden">Version</span>
+                        <span class="jenkins-label jenkins-label--tertiary" style="margin-left: 1ch;">{{ this.version }}</span>
+                    </a>
+                {{else}}
+                    <span>
+                        {{ this.displayName }}
+                        <span class="jenkins-visually-hidden">Version</span>
+                        <span class="jenkins-label jenkins-label--tertiary" style="margin-left: 1ch;">{{ this.version }}</span>
+                    </span>
+                {{/if}}
             </div>
             {{#if this.categories }}
                 <div class="app-plugin-manager__categories">
@@ -73,11 +81,17 @@
         <td style="width: 15%">
             <div>
                 {{#if this.healthScore }}
-                    <a href="{{ this.wiki }}/healthScore"
-                       class="jenkins-healthScore--badge jenkins-healthScore--{{ this.healthScoreClass }}"
-                       target="_blank" rel="noopener noreferrer">
-                        {{ this.healthScore }}
-                    </a>
+                    {{#if this.wiki }}
+                        <a href="{{ this.wiki }}/healthScore"
+                           class="jenkins-healthScore--badge jenkins-healthScore--{{ this.healthScoreClass }}"
+                           target="_blank" rel="noopener noreferrer">
+                            {{ this.healthScore }}
+                        </a>
+                    {{else}}
+                        <span class="jenkins-healthScore--badge jenkins-healthScore--{{ this.healthScoreClass }}">
+                            {{ this.healthScore }}
+                        </span>
+                    {{/if}}
                 {{else}}
                   <div class="icon-lg">
                     <!-- symbol: status-aborted -->

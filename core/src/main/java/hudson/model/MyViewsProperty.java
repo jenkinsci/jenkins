@@ -287,6 +287,8 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
             ListBoxModel items = new ListBoxModel();
             user = user == null ? User.current() : user;
             if (user != null) {
+                user.checkPermission(Jenkins.ADMINISTER);
+
                 MyViewsProperty property = user.getProperty(MyViewsProperty.class);
                 if (property == null) {
                     property = new MyViewsProperty();

@@ -108,7 +108,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
             boolean result = configure(req, json);
             LOGGER.log(Level.FINE, "security saved: " + result);
             Jenkins.get().save();
-            FormApply.success(req.getContextPath() + "/manage").generateResponse(req, rsp, null);
+            FormApply.success(req.getContextPath() + "/manage/" + getUrlName()).generateResponse(req, rsp, null);
         } catch (JSONException x) {
             LOGGER.warning(() -> "Bad JSON:\n" + json.toString(2));
             throw x;

@@ -98,16 +98,22 @@ function optionalVals(keyVals) {
     .join(" ");
 }
 
-function icon(opt) {
+function icon(opt, type) {
   if (!opt.icon) {
     return "";
   }
 
-  return `<div class="jenkins-dropdown__item__icon">${
-    opt.iconXml
-      ? opt.iconXml
-      : `<img alt="Icon" aria-hidden="true" src="${opt.icon}" />`
-  }</div>`;
+  const iconMarkup = opt.iconXml
+    ? opt.iconXml
+    : `<img alt="Icon" aria-hidden="true" src="${opt.icon}" />`;
+
+  // Buttons size their icon directly via CSS and don't want the
+  // dropdown item's icon wrapper (and its label-oriented margin)
+  if (type === "jenkins-button") {
+    return iconMarkup;
+  }
+
+  return `<div class="jenkins-dropdown__item__icon">${iconMarkup}</div>`;
 }
 
 function badge(opt) {
@@ -141,6 +147,9 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
   );
 
   const label = xmlEscape(itemOptions.displayName);
+  const description = itemOptions.description
+    ? `<span class="jenkins-dropdown__item__description">${xmlEscape(itemOptions.description)}</span>`
+    : "";
 
   const clazz = [
     type,
@@ -166,7 +175,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
     );
 
     const button = createElementFromHtml(
-      `<button class="${clazz}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M112 184l144 144 144-144"/></svg></button>`,
+      `<button type="button" class="${clazz}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M112 184l144 144 144-144"/></svg></button>`,
     );
     Utils.generateDropdown(
       button,
@@ -208,9 +217,11 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
           href: url,
           id: itemOptions.id,
           "data-html-tooltip": itemOptions.tooltip,
+          type: tag === "button" ? "button" : null,
         })}>
-          ${icon(itemOptions)}
+          ${icon(itemOptions, type)}
           ${label}
+          ${description}
           ${badge(itemOptions)}
           ${
             itemOptions.event &&
@@ -254,7 +265,11 @@ function tryLoadScripts(element, opt, context) {
     element.dataset[kebabToCamelCase(key)] =
       opt.event.attributes[key].toString();
   }
-  element.dataset["baseUrl"] = context;
+
+  element.dataset.baseUrl = context;
+
+  // Dialog URLs should open relative to the context path, not the base URL
+  element.dataset.dialogUrl = context + element.dataset.dialogUrl;
 
   loadScriptIfNotLoaded(opt.event.javascriptUrl, element);
 }

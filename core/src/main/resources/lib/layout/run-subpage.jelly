@@ -30,7 +30,7 @@ THE SOFTWARE.
     Renders a tabbed layout for runs, including build status and actions.
   </st:documentation>
 
-  <l:layout title="${it.displayName} - ${it.object.displayName}">
+  <l:layout title="${it.object.fullDisplayName} ${it.displayName}">
     <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
 
     <j:choose>

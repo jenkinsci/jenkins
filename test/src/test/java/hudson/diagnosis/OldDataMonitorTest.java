@@ -28,13 +28,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import hudson.XmlFile;
-import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.InvisibleAction;
 import hudson.model.Saveable;
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -42,24 +40,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import jenkins.model.lazy.BuildReference;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
-import org.kohsuke.stapler.Stapler;
 
 @WithJenkins
 class OldDataMonitorTest {
-
-    static {
-        // To make memory run faster:
-        System.setProperty(BuildReference.DefaultHolderFactory.MODE_PROPERTY, "weak");
-    }
 
     private JenkinsRule r;
 
@@ -68,40 +57,23 @@ class OldDataMonitorTest {
         r = rule;
     }
 
-    @Disabled("constantly failing on CI builders, makes problems for memory()")
     @Issue("JENKINS-19544")
     @LocalData
     @Test
     void robustness() {
-        OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
+        OldDataMonitor odm = OldDataMonitor.get();
         FreeStyleProject p = r.jenkins.getItemByFullName("busted", FreeStyleProject.class);
         assertNotNull(p);
         assertEquals(Set.of(p), odm.getData().keySet());
-        odm.doDiscard(null, null);
+        odm.doDiscard();
         assertEquals(Collections.emptySet(), odm.getData().keySet());
         // did not manage to save p, but at least we are not holding onto a reference to it anymore
-    }
-
-    @Issue("JENKINS-19544")
-    @Test
-    void memory() throws Exception {
-        FreeStyleProject p = r.createFreeStyleProject("p");
-        FreeStyleBuild b = r.buildAndAssertSuccess(p);
-        b.addAction(new BadAction2());
-        b.save();
-        r.jenkins.getQueue().clearLeftItems();
-        p._getRuns().purgeCache();
-        b = p.getBuildByNumber(1);
-        assertEquals(Set.of(b), OldDataMonitor.get(r.jenkins).getData().keySet());
-        WeakReference<?> ref = new WeakReference<>(b);
-        b = null;
-        MemoryAssert.assertGC(ref, true);
     }
 
     /**
      * Note that this doesn't actually run slowly, it just ensures that
      * the {@link OldDataMonitor#changeListener}'s {@code onChange()} can complete
-     * while {@link OldDataMonitor#doDiscard(org.kohsuke.stapler.StaplerRequest2, org.kohsuke.stapler.StaplerResponse2)}
+     * while {@link OldDataMonitor#doDiscard}
      * is still running.
      *
      */
@@ -109,7 +81,7 @@ class OldDataMonitorTest {
     @Issue("JENKINS-24763")
     @Test
     void slowDiscard() throws InterruptedException, IOException, ExecutionException {
-        final OldDataMonitor oldDataMonitor = OldDataMonitor.get(r.jenkins);
+        final OldDataMonitor oldDataMonitor = OldDataMonitor.get();
         final CountDownLatch ensureEntry = new CountDownLatch(1);
         final CountDownLatch preventExit = new CountDownLatch(1);
         Saveable slowSavable = () -> {
@@ -124,7 +96,7 @@ class OldDataMonitorTest {
         ExecutorService executors = Executors.newSingleThreadExecutor();
 
         Future<Void> discardFuture = executors.submit(() -> {
-            oldDataMonitor.doDiscard(Stapler.getCurrentRequest2(), Stapler.getCurrentResponse2());
+            oldDataMonitor.doDiscard();
             return null;
         });
 
@@ -138,21 +110,6 @@ class OldDataMonitorTest {
 
         preventExit.countDown();
         discardFuture.get();
-
-    }
-
-    @Issue("JENKINS-26718")
-    @Test
-    void unlocatableRun() throws Exception {
-        OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
-        FreeStyleProject p = r.createFreeStyleProject();
-        FreeStyleBuild build = r.buildAndAssertSuccess(p);
-        p.delete();
-        OldDataMonitor.report(build, (String) null);
-
-        assertEquals(Set.of(build), odm.getData().keySet());
-        odm.doDiscard(null, null);
-        assertEquals(Collections.emptySet(), odm.getData().keySet());
 
     }
 

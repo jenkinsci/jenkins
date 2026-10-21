@@ -171,8 +171,10 @@ function generateButtons() {
        */
       function toggleButtonState() {
         const templateCount = templates.length;
-        const selectedCount = Array.from(e.children).filter((e) =>
-          e.classList.contains("repeated-chunk"),
+        const selectedCount = Array.from(e.children).filter(
+          (e) =>
+            e.classList.contains("repeated-chunk") &&
+            !e.classList.contains("fade-out"),
         ).length;
 
         btn.disabled = oneEach && selectedCount >= templateCount;
@@ -180,7 +182,12 @@ function generateButtons() {
       const observer = new MutationObserver(() => {
         toggleButtonState();
       });
-      observer.observe(e, { childList: true });
+      observer.observe(e, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["class"],
+      });
       toggleButtonState();
 
       generateDropDown(btn, (instance) => {
@@ -259,7 +266,7 @@ function generateDropDown(button, callback) {
         instance.popper.addEventListener("click", () => {
           instance.hide();
         });
-        instance.popper.addEventListener("keydown", () => {
+        instance.popper.addEventListener("keydown", (event) => {
           if (event.key === "Escape") {
             instance.hide();
           }

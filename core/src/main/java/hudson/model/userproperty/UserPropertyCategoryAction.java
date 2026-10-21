@@ -59,7 +59,7 @@ public abstract class UserPropertyCategoryAction {
 
         this.targetUser.save();
 
-        // we are in /user/<userLogin>/<category>/, going to /user/<userLogin>/
-        FormApply.success("..").generateResponse(req, rsp, this);
+        // we are in /user/<userLogin>/<category>/, staying there
+        FormApply.success(".").generateResponse(req, rsp, this);
     }
 }

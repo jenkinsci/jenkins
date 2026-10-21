@@ -64,17 +64,44 @@ $semantics: (
   --primary-active: var(--accent-color);
 
   // Status icon colors
+  --status-background-opacity: 0.125;
+  --status-border-opacity: 0.25;
+
+  @media (prefers-contrast: more) {
+    --status-background-opacity: 0;
+    --status-border-opacity: 1;
+  }
+
   --weather-icon-color: var(--accent-color);
   --unstable-build-icon-color: var(--orange);
 
   // Background colors
   --background: rgb(254 254 254);
 
+  // Elevation
+  --elevation-1-box-shadow: 0 2px 2px
+    color-mix(in sRGB, var(--black) 3.5%, transparent);
+  --elevation-2-box-shadow: var(--elevation-1-box-shadow);
+  --elevation-3-box-shadow:
+    0 0 0 1px color-mix(in sRGB, var(--black) 5%, transparent),
+    0 15px 40px color-mix(in sRGB, var(--black) 15%, transparent),
+    0 2px 8px color-mix(in sRGB, var(--black) 7.5%, transparent);
+
+  // Body
+  --body-background-top: color-mix(
+    in oklch,
+    white 1.5%,
+    var(--card-background)
+  );
+
   // Header
-  --header-background: var(--background);
-  --header-border: var(--text-color-secondary);
+  --header-background: color-mix(
+    in sRGB,
+    var(--background),
+    var(--text-color-secondary) 2.5%
+  );
   --header-color: var(--text-color);
-  --header-height: 4.125rem;
+  --header-height: 3.5rem;
 
   // App bar
   --bottom-app-bar-padding: 0.875rem;
@@ -118,18 +145,18 @@ $semantics: (
   --text-color-secondary: var(--secondary);
 
   // Borders
-  --jenkins-border-width: 1.5px;
+  --jenkins-border-width: 1px;
   --jenkins-border-color: color-mix(
     in sRGB,
     var(--text-color-secondary) 17.5%,
-    var(--card-background)
+    transparent
   );
   --jenkins-border-color--subtle: color-mix(
     in sRGB,
     var(--text-color) 3.5%,
     transparent
   );
-  --jenkins-border-color--inherit-subtle: oklch(from currentColor l c h / 0.08);
+  --jenkins-border-color--inherit-subtle: oklch(from currentColor l c h / 0.2);
 
   /* This is a harsher border - for dividers, content blocks and more */
   --jenkins-border: var(--jenkins-border-width) solid
@@ -143,12 +170,7 @@ $semantics: (
   --jenkins-border--subtle-shadow: 0 0 0 var(--jenkins-border-width)
     var(--jenkins-border-color--subtle);
 
-  @media (resolution <= 1dppx) {
-    --jenkins-border-width: 2px;
-  }
-
   @media (prefers-contrast: more) {
-    --header-border: var(--text-color);
     --focus-input-border: var(--text-color);
     --jenkins-border-color: var(--text-color);
     --jenkins-border-color--subtle: var(--text-color);
@@ -164,7 +186,7 @@ $semantics: (
   --table-header-foreground: var(--text-color);
   --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
-  --table-border-radius: 0.75rem;
+  --table-border-radius: var(--form-input-border-radius);
   --table-row-border-radius: 0.3125rem;
 
   // Deprecated
@@ -190,23 +212,14 @@ $semantics: (
   --link-font-weight: var(--font-bold-weight);
 
   // Tooltips
-  --tooltip-backdrop-filter: contrast(1.1) saturate(2) blur(20px);
   --tooltip-color: var(--text-color);
-  --tooltip-box-shadow:
-    0 0 8px 2px rgb(0 0 50 / 0.05), var(--jenkins-border--subtle-shadow),
-    0 10px 50px rgb(0 0 20 / 0.1), inset 0 -1px 2px rgb(255 255 255 / 0.025);
 
-  // Dropdowns
-  --dropdown-backdrop-filter: contrast(1.1) saturate(2) blur(20px);
-  --dropdown-box-shadow:
-    var(--jenkins-border--subtle-shadow), 0 10px 30px rgb(0 0 20 / 0.1),
-    0 2px 10px rgb(0 0 20 / 0.05), inset 0 -1px 2px rgb(255 255 255 / 0.025);
-
-  // Dialogs
-  --dialog-background: var(--card-background);
-  --dialog-box-shadow:
-    var(--jenkins-border--subtle-shadow), 0 5px 25px rgb(0 0 10 / 0.025),
-    0 0 1.5px color-mix(in sRGB, var(--black) 20%, transparent);
+  // Overlay surfaces
+  --overlay-surface-background: color-mix(
+    in sRGB,
+    var(--card-background),
+    var(--white) 2.5%
+  );
 
   ::backdrop {
     --dialog-backdrop-backdrop-filter: blur(0.25px);
@@ -269,7 +282,7 @@ $semantics: (
   --panel-border-color: var(--light-grey);
 
   // Form
-  --section-padding: 1.625rem;
+  --section-padding: 1.25rem;
   --input-color: var(--white);
   --input-border: color-mix(
     in sRGB,
@@ -286,17 +299,26 @@ $semantics: (
   --form-item-max-width--small: min(35vw, 1200px);
 
   @media screen and (max-width: breakpoints.$tablet-breakpoint) {
-    --section-padding: 1.25rem;
+    --section-padding: 1rem;
     --form-item-max-width: 100%;
     --form-item-max-width--medium: 100%;
     --form-item-max-width--small: 100%;
   }
 
+  // Focus
+  --focus-ring-width: 0.1875rem;
+  --focus-ring--hidden: 0 0 0 0.375rem transparent;
+  --focus-ring-width--keyboard: 0.2rem;
+  --focus-ring--keyboard: 0 0 0 var(--focus-ring-width--keyboard)
+    var(--text-color);
+
+  // Forms
   --form-label-font-weight: var(--font-bold-weight);
   --form-input-padding: 0.5rem 0.625rem;
-  --form-input-border-radius: 0.625rem;
-  --form-input-glow: 0 0 0 0.5rem transparent;
-  --form-input-glow--focus: 0 0 0 0.25rem var(--focus-input-glow);
+  --form-input-border-radius: 0.6875rem;
+  --form-input-glow: var(--focus-ring--hidden);
+  --form-input-glow--focus: 0 0 0 var(--focus-ring-width)
+    var(--focus-input-glow);
   --pre-background: var(--button-background);
   --pre-color: var(--text-color);
   --selection-color: oklch(from var(--accent-color) l c h / 0.2);
@@ -304,7 +326,7 @@ $semantics: (
   @media (prefers-contrast: more) {
     --input-border: var(--text-color) !important;
     --input-border-hover: var(--text-color) !important;
-    --form-input-glow--focus: 0 0 0 4px
+    --form-input-glow--focus: 0 0 0 var(--focus-ring-width)
       color-mix(in sRGB, var(--text-color), transparent);
   }
 
@@ -334,6 +356,9 @@ $semantics: (
     from var(--text-color-secondary) l c h / 0.15
   );
   --item-box-shadow--focus: oklch(from var(--text-color-secondary) l c h / 0.1);
+
+  // Page
+  --page-inset: 0.3125rem;
 
   // Deprecated
   --primary: var(--accent-color); // Use var(--accent-color) instead

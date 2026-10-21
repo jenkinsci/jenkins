@@ -1,2 +1,30 @@
-Root CA for the Jenkins community. Used to generate official update center.
-This is the v2 key generated in preparation for the expiration of the v1 key.
+Created for https://issues.jenkins.io/browse/INFRA-1502
+
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            e0:ec:3b:1f:75:2a:86:8c
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C=US, ST=California, L=San Jose, O=Jenkins Project, CN=Kohsuke Kawaguchi, emailAddress=kk@kohsuke.org
+        Validity
+            Not Before: Apr  8 19:57:10 2018 GMT
+            Not After : Apr  5 19:57:10 2028 GMT
+        Subject: C=US, ST=California, L=San Jose, O=Jenkins Project, CN=Kohsuke Kawaguchi, emailAddress=kk@kohsuke.org
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (4096 bit)
+                Modulus:
+                    ...
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Subject Key Identifier:
+                ...
+            X509v3 Authority Key Identifier:
+                ...
+            X509v3 Basic Constraints:
+                CA:TRUE
+    Signature Algorithm: sha256WithRSAEncryption
+    Signature Value:
+        ...
+sha256 Fingerprint=2E:D6:FE:80:E5:7A:F1:6A:2A:26:26:E8:A8:23:5A:6D:13:42:E4:8C:DF:63:4A:1C:FA:BC:E9:34:15:45:E5:B9
