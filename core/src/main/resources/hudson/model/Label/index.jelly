@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler"  xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:label-subpage>
       <j:if test="${it.atom}">
-        <div style="display: flex;align-items: center; justify-content: space-between;" class="jenkins-!-margin-top-1">
+        <div style="display: flex;align-items: flex-start; justify-content: space-between; gap: 5px;" class="jenkins-!-margin-top-1">
           <t:editableDescription permission="${app.ADMINISTER}" hideButton="true"/>
           <t:editDescriptionButton permission="${app.ADMINISTER}" compact="true"/>
         </div>
@@ -37,7 +37,7 @@ THE SOFTWARE.
       </j:forEach>
 
       <div class="jenkins-!-margin-top-1" style="display: flex; gap: var(--section-padding); flex-direction: column;">
-        <l:card title="${%Nodes}" >
+        <l:card title="${%Agents}" >
           <j:forEach var="c" items="${it.computers}">
             <j:set var="url" value="${rootURL}/${c.url}"/>
             <nobr>
@@ -50,19 +50,19 @@ THE SOFTWARE.
           </j:forEach>
         </l:card>
 
-        <l:card title="${%Projects}">
-          <j:set var="jobs" value="${it.tiedJobs}" />
-          <j:choose>
-            <j:when test="${empty(jobs)}">
-              <p>
-                ${%None}
-              </p>
-            </j:when>
-            <j:otherwise>
+        <j:set var="jobs" value="${it.tiedJobs}" />
+        <j:choose>
+          <j:when test="${empty(jobs)}">
+            <l:notice title="${%No projects}" icon="symbol-none">
+              ${%noProjects}
+            </l:notice>
+          </j:when>
+          <j:otherwise>
+            <l:card title="${%Projects}">
               <t:projectView jobs="${jobs}"/>
-            </j:otherwise>
-          </j:choose>
-        </l:card>
+            </l:card>
+          </j:otherwise>
+        </j:choose>
       </div>
   </l:label-subpage>
 </j:jelly>
