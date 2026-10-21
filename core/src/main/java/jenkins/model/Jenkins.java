@@ -2159,6 +2159,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @CheckForNull
     @Restricted(Beta.class)
+    @StaplerNotDispatchable
     public Node getOrLoadNode(String nodeName) {
         return getNodesObject().getOrLoad(nodeName);
     }
