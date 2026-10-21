@@ -51,6 +51,10 @@ import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 import com.thoughtworks.xstream.security.AnyTypePermission;
+import com.thoughtworks.xstream.security.ForbiddenClassException;
+import com.thoughtworks.xstream.security.InterfaceTypePermission;
+import com.thoughtworks.xstream.security.NoTypePermission;
+import com.thoughtworks.xstream.security.NullPermission;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -85,6 +89,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
+import jenkins.util.xstream.CriticalXStreamException;
 import jenkins.util.xstream.SafeURLConverter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -107,6 +112,20 @@ public class XStream2 extends XStream {
     @Restricted(NoExternalUse.class)
     public static final String COLLECTION_UPDATE_LIMIT_PROPERTY_NAME = XStream2.class.getName() + ".collectionUpdateLimit";
     private static final int COLLECTION_UPDATE_LIMIT_DEFAULT_VALUE = 5;
+
+    /**
+     * Escape hatch: set {@code hudson.util.XStream2.SUPPRESS_TYPE_PERMISSION=true} to restore the
+     * pre-SECURITY-4125 behaviour of allowing all types through XStream's TypePermission layer.
+     * The {@link RobustReflectionConverter} {@code resolves-to} check introduced by SECURITY-4125
+     * remains active regardless of this flag and provides a second layer of defence.
+     *
+     * <p>This flag is evaluated once at {@code XStream2} construction time; changing the system
+     * property after the JVM has started has no effect on existing instances (including
+     * {@code Jenkins.XSTREAM2}).  A full restart is required for this escape hatch to take effect.
+     */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @Restricted(NoExternalUse.class)
+    public static /* non-final for tests */ boolean SUPPRESS_TYPE_PERMISSION = SystemProperties.getBoolean(XStream2.class.getName() + ".SUPPRESS_TYPE_PERMISSION");
 
     private RobustReflectionConverter reflectionConverter;
     private final ThreadLocal<Boolean> oldData = new ThreadLocal<>();
@@ -327,7 +346,22 @@ public class XStream2 extends XStream {
         registerConverter(new AssociatedConverterImpl(this), -10);
 
         registerConverter(new BlacklistedTypesConverter(), PRIORITY_VERY_HIGH); // SECURITY-247 defense
-        addPermission(AnyTypePermission.ANY); // covered by JEP-200, avoid securityWarningGiven
+        if (SUPPRESS_TYPE_PERMISSION) {
+            addPermission(AnyTypePermission.ANY); // covered by JEP-200, avoid securityWarningGiven
+        } else {
+            addPermission(NoTypePermission.NONE);
+            addPermission(type -> {
+                // TODO What about abstract classes?
+                String typeName = type.getName();
+                if (ClassFilter.DEFAULT.isBlacklisted(typeName) || ClassFilter.DEFAULT.isBlacklisted(type)) {
+                    throw new CriticalXStreamException(new ForbiddenClassException(type));
+                }
+                // Allow anything allowed by ClassFilter, we still apply Converter-based restrictions
+                return true;
+            });
+            addPermission(NullPermission.NULL);
+            addPermission(InterfaceTypePermission.INTERFACES);
+        }
 
         registerConverter(new DynamicProxyConverter(getMapper(), new ClassLoaderReference(getClassLoader())) { // SECURITY-105 defense
             @Override public boolean canConvert(Class type) {
