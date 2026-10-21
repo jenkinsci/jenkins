@@ -196,7 +196,8 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     private void serveFile(StaplerRequest2 req, StaplerResponse2 rsp, VirtualFile root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
         String path = getPath(req);
-        if (path.replace('\\', '/').contains("/../")) {
+        String slashedPath = path.replace('\\', '/');
+        if (slashedPath.contains("/../") || slashedPath.endsWith("/..")) {
             // don't serve anything other than files in the artifacts dir
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
