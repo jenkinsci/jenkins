@@ -4,9 +4,9 @@ import { createElementFromHtml } from "@/util/dom";
 function init() {
   window.notificationBar = {
     OPACITY: 1,
-    DELAY: 3000, // milliseconds to auto-close the notification
-    div: null, // the main 'notification-bar' DIV
-    token: null, // timer for cancelling auto-close
+    DELAY: 3000,
+    div: null,
+    token: null,
     defaultIcon: Symbols.INFO,
     defaultAlertClass: "jenkins-notification",
 
@@ -37,20 +37,20 @@ function init() {
         this.div.innerHTML = "";
       }
     },
-    // cancel pending auto-hide timeout
+
     clearTimeout: function () {
       if (this.token) {
         window.clearTimeout(this.token);
       }
       this.token = null;
     },
-    // hide the current notification bar, if it's displayed
+
     hide: function () {
       this.clearTimeout();
       this.div.classList.remove("jenkins-notification--visible");
       this.div.classList.add("jenkins-notification--hidden");
     },
-    // show a notification bar
+
     show: function (text, options) {
       options = options || {};
       this.init();
@@ -74,6 +74,8 @@ function init() {
     },
   };
 
+  tryShowPageLoadNotification();
+
   const pending = sessionStorage.getItem("jenkins-dropdown-notification");
 
   if (pending) {
@@ -87,4 +89,18 @@ function init() {
     );
   }
 }
+
+function tryShowPageLoadNotification() {
+  const { notificationMessage, notificationType } = document.body.dataset;
+
+  if (!notificationMessage) {
+    return;
+  }
+
+  window.notificationBar.show(
+    notificationMessage,
+    window.notificationBar[notificationType],
+  );
+}
+
 export default { init };

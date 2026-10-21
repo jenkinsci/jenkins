@@ -25,6 +25,7 @@
 package hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -46,7 +47,6 @@ import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.model.ViewGroup;
-import hudson.util.VersionNumber;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -390,6 +390,36 @@ class FunctionsTest {
         assertEquals("&lt;discarded/&gt;\n", Functions.printLogRecordHtml(lr, null)[3]);
     }
 
+    @Issue("SECURITY-3967")
+    @Test
+    void printLogRecordHtmlEscapesMetadata() {
+        LogRecord lr = new LogRecord(Level.SEVERE, "routine message");
+        lr.setLoggerName("hudson.remoting");
+        lr.setSourceClassName("<svg onload=alert(1)>");
+        lr.setSourceMethodName(null);
+        String[] parts = Functions.printLogRecordHtml(lr, null);
+        // parts[0]=timestamp, parts[1]=source, parts[2]=level — all written unescaped by logRecords.jelly
+        assertThat("source (parts[1]) must not contain raw HTML tags", parts[1], not(containsString("<svg")));
+        assertThat("source (parts[1]) must contain escaped HTML", parts[1], containsString("&lt;svg"));
+
+        // loggerName fallback (sourceClassName == null)
+        LogRecord lr2 = new LogRecord(Level.INFO, "msg");
+        lr2.setSourceClassName(null);
+        lr2.setSourceMethodName(null);
+        lr2.setLoggerName("<img src=x onerror=alert(2)>");
+        String[] parts2 = Functions.printLogRecordHtml(lr2, null);
+        assertThat("loggerName used as source must be escaped", parts2[1], not(containsString("<img")));
+        assertThat("loggerName used as source must contain escaped HTML", parts2[1], containsString("&lt;img"));
+
+        // sourceClassName + sourceMethodName combined path
+        LogRecord lr3 = new LogRecord(Level.INFO, "msg");
+        lr3.setSourceClassName("safe.ClassName");
+        lr3.setSourceMethodName("<script>alert(3)</script>");
+        String[] parts3 = Functions.printLogRecordHtml(lr3, null);
+        assertThat("sourceMethodName must be escaped", parts3[1], not(containsString("<script")));
+        assertThat("sourceMethodName must contain escaped HTML", parts3[1], containsString("&lt;script"));
+    }
+
     @Test
     void extractPluginNameFromIconSrcHandlesNull() {
         String result = Functions.extractPluginNameFromIconSrc(null);
@@ -614,11 +644,7 @@ class FunctionsTest {
         Stack stack2 = new Stack("p.Exc2", "p.C.method2:27");
         stack1.cause(stack2);
         stack2.cause(stack1);
-        //Format changed in 11.0.9 / 8.0.272 (JDK-8226809 / JDK-8252444 / JDK-8252489)
-
-        if (getVersion().isNewerThanOrEqualTo(new VersionNumber("11.0.9")) ||
-                (getVersion().getDigitAt(0) == 8 && getVersion().isNewerThanOrEqualTo(new VersionNumber("8.0.272")))) {
-            assertPrintThrowable(stack1,
+        assertPrintThrowable(stack1,
                     """
                             p.Exc1
                             \tat p.C.method1(C.java:17)
@@ -633,31 +659,6 @@ class FunctionsTest {
                             Caused: p.Exc1
                             \tat p.C.method1(C.java:17)
                             """);
-        } else {
-            assertPrintThrowable(stack1,
-                    """
-                            p.Exc1
-                            \tat p.C.method1(C.java:17)
-                            Caused by: p.Exc2
-                            \tat p.C.method2(C.java:27)
-                            \t[CIRCULAR REFERENCE:p.Exc1]
-                            """,
-                    """
-                            <cycle to p.Exc1>
-                            Caused: p.Exc2
-                            \tat p.C.method2(C.java:27)
-                            Caused: p.Exc1
-                            \tat p.C.method1(C.java:17)
-                            """);
-        }
-    }
-
-    private static VersionNumber getVersion() {
-        String version = System.getProperty("java.version");
-        if (version.startsWith("1.")) {
-            version = version.substring(2).replace("_", ".");
-        }
-        return new VersionNumber(version);
     }
 
     private static void assertPrintThrowable(Throwable t, String traditional, String custom) {

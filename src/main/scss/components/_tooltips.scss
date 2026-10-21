@@ -21,6 +21,13 @@
     background-color: oklch(from var(--text-color-secondary) l c h / 0.075);
     margin: -0.375rem -0.75rem;
     border-radius: var(--form-input-border-radius);
+
+    // Remove the border from tables so they sit flush with the tooltip
+    table {
+      &::before {
+        display: none;
+      }
+    }
   }
 
   .jenkins-table {

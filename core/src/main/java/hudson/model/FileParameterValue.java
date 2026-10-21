@@ -69,7 +69,7 @@ public class FileParameterValue extends ParameterValue {
     private static final Logger LOGGER = Logger.getLogger(FileParameterValue.class.getName());
 
     private static final String FOLDER_NAME = "fileParameters";
-    private static final Pattern PROHIBITED_DOUBLE_DOT = Pattern.compile(".*[\\\\/]\\.\\.[\\\\/].*");
+    private static final Pattern PROHIBITED_DOUBLE_DOT = Pattern.compile(".*[\\\\/]\\.\\.[\\\\/].*", Pattern.DOTALL);
     private static final long serialVersionUID = -143427023159076073L;
 
     /**
@@ -208,12 +208,18 @@ public class FileParameterValue extends ParameterValue {
                         if (ws == null) {
                             throw new IllegalStateException("The workspace should be created when setUp method is called");
                         }
-                        if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE && (PROHIBITED_DOUBLE_DOT.matcher(location).matches() || !ws.isDescendant(location))) {
+                        FilePath locationFilePath = ws.child(location);
+                        FilePath controllerLocation = new FilePath(getLocationUnderBuild(build));
+                        FilePath controllerBase = new FilePath(getFileParameterFolderUnderBuild(build));
+                        if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE
+                                && (PROHIBITED_DOUBLE_DOT.matcher(location).matches()
+                                    || !ws.isDescendant(location)
+                                    || !isWithin(locationFilePath, ws)
+                                    || !isWithin(controllerLocation, controllerBase))) {
                             listener.error("Rejecting file path escaping base directory with relative path: " + location);
                             // force the build to fail
                             return null;
                         }
-                        FilePath locationFilePath = ws.child(location);
                         locationFilePath.getParent().mkdirs();
 
                         // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
@@ -221,7 +227,7 @@ public class FileParameterValue extends ParameterValue {
                             locationFilePath.delete();
                         }
                         locationFilePath.copyFrom(file);
-                        locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
+                        locationFilePath.copyTo(controllerLocation);
                     } finally {
                         if (tmpFileName != null) {
                             File tmp = new File(tmpFileName);
@@ -301,6 +307,20 @@ public class FileParameterValue extends ParameterValue {
 
     private File getFileParameterFolderUnderBuild(AbstractBuild<?, ?> build) {
         return new File(build.getRootDir(), FOLDER_NAME);
+    }
+
+    /**
+     * Checks that {@code candidate} resolves to a location at or below {@code base}, comparing the
+     * paths after {@link FilePath} normalization so the check uses the same semantics as the write
+     * (both {@code /} and {@code \} are treated as separators and {@code ..} segments are collapsed).
+     */
+    private static boolean isWithin(FilePath candidate, FilePath base) {
+        String basePath = base.getRemote();
+        String candidatePath = candidate.getRemote();
+        if (candidatePath.equals(basePath)) {
+            return true;
+        }
+        return candidatePath.startsWith(basePath + "/") || candidatePath.startsWith(basePath + "\\");
     }
 
     @Extension

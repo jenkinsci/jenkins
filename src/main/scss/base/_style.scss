@@ -157,7 +157,7 @@ pre {
   padding: 0.8rem 1rem;
   border-radius: var(--form-input-border-radius);
   background: var(--card-background);
-  border: var(--card-border-width) solid var(--card-border-color);
+  border: var(--jenkins-border);
   color: var(--pre-color);
   font-family: var(--font-family-mono);
   font-weight: 400;
@@ -301,10 +301,10 @@ pre.console {
   word-break: normal;
   border-radius: var(--form-input-border-radius);
   background-color: var(--button-background);
-  border: var(--jenkins-border--subtle);
+  border: var(--jenkins-border);
   z-index: 0;
 
-  --section-padding: 0.8rem;
+  --section-padding: 0.75rem;
 
   p:first-of-type {
     margin-top: 0;

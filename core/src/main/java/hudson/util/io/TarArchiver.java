@@ -98,15 +98,16 @@ final class TarArchiver extends Archiver {
             size = basicFileAttributes.size();
             te.setSize(size);
         }
-        tar.putNextEntry(te);
-        try {
-            if (!basicFileAttributes.isDirectory()) {
-                // ensure we don't write more bytes than the declared when we created the entry
-
-                try (InputStream fin = Files.newInputStream(file.toPath());
-                     BoundedInputStream in = new BoundedInputStream(fin, size)) {
-                    // Separate try block not to wrap exception thrown while opening the input stream into an exception
-                    // indicating a problem while writing
+        if (basicFileAttributes.isDirectory()) {
+            tar.putNextEntry(te);
+            tar.closeEntry();
+        } else {
+            // Open the file before writing its tar header so an unreadable file does not leave an incomplete entry.
+            try (InputStream fin = Files.newInputStream(file.toPath());
+                 BoundedInputStream in = new BoundedInputStream(fin, size)) {
+                tar.putNextEntry(te);
+                try {
+                    // ensure we don't write more bytes than the declared when we created the entry
                     try {
                         int len;
                         while ((len = in.read(buf)) >= 0) {
@@ -115,10 +116,10 @@ final class TarArchiver extends Archiver {
                     } catch (IOException | InvalidPathException e) { // log the exception in any case
                         throw new IOException("Error writing to tar file from: " + file, e);
                     }
+                } finally { // always close the entry
+                    tar.closeEntry();
                 }
             }
-        } finally { // always close the entry
-            tar.closeEntry();
         }
         entriesWritten++;
     }

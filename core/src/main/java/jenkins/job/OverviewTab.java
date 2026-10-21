@@ -25,7 +25,11 @@
 package jenkins.job;
 
 import hudson.model.Actionable;
+import java.util.List;
 import jenkins.model.Tab;
+import jenkins.widgets.BuildStatusFilter;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 public class OverviewTab extends Tab {
 
@@ -46,5 +50,13 @@ public class OverviewTab extends Tab {
     @Override
     public String getUrlName() {
         return null;
+    }
+
+    /**
+     * The statuses offered in the builds list's status filter panel.
+     */
+    @Restricted(NoExternalUse.class)
+    public List<BuildStatusFilter> getStatusFilters() {
+        return BuildStatusFilter.all();
     }
 }
