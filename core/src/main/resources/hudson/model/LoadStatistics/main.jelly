@@ -27,7 +27,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
   <st:adjunct includes="hudson.model.LoadStatistics.resources"/>
 
-  <j:if test="${it != app}">
+  <j:if test="${it != app and not skipAppBar}">
     <l:app-bar title="${%title(it.displayName)}" />
   </j:if>
 
