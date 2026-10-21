@@ -24,9 +24,13 @@
 
 package jenkins.persistence;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
@@ -39,16 +43,23 @@ class PersistenceStoreConfigTest {
     /** The store of the running Jenkins. */
     static volatile InMemoryPersistenceStore STORE;
 
+    /** How many times the provider was asked for a store. */
+    static final AtomicInteger CREATED = new AtomicInteger();
+
     @Test
-    void theProviderIsResolvedOnce() {
-        assertSame(STORE, PersistenceStores.get());
-        assertSame(STORE, PersistenceStores.get());
+    void theProviderIsResolvedOnce(JenkinsRule r) {
+        PersistenceStore store = PersistenceStores.get();
+        assertNotNull(store);
+        assertSame(STORE, store);
+        assertSame(store, PersistenceStores.get());
+        assertEquals(1, CREATED.get());
     }
 
     @TestExtension
     public static final class Provider implements PersistenceStoreProvider {
         @Override
         public PersistenceStore create() {
+            CREATED.incrementAndGet();
             return STORE = new InMemoryPersistenceStore();
         }
     }
