@@ -28,28 +28,27 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}" title="${%title(it.displayName)}">
-    <st:include page="sidepanel.jelly"/>
-    <l:breadcrumb title="${%Configure}" />
-    <l:main-panel>
-      <f:form method="post" action="configSubmit" name="config">
+  <l:label-subpage title="${%Configure}" permission="${app.ADMINISTER}">
+    <l:app-bar title="${%Configure}"/>
+    <f:form method="post" action="configSubmit" name="config">
 
-        <f:entry title="${%Name}">
-          <f:textbox value="${it.name}" readonly="true" />
-        </f:entry>
+      <f:entry title="${%Name}">
+        <j:set var="readOnlyMode" value="true" scope="page"  />
+        <f:textbox value="${it.name}" readonly="true" />
+      </f:entry>
 
-        <f:entry title="${%Description}">
-          <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
-        </f:entry>
+      <f:entry title="${%Description}">
+        <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+      </f:entry>
 
-        <f:descriptorList descriptors="${it.getApplicablePropertyDescriptors()}" instances="${it.properties}" />
+      <f:descriptorList descriptors="${it.getApplicablePropertyDescriptors()}" instances="${it.properties}" />
 
-        <f:block>
-          <f:submit value="${%Save}"/>
-          <f:apply />
-        </f:block>
-      </f:form>
-      <st:adjunct includes="lib.form.confirm" />
-    </l:main-panel>
-  </l:layout>
+      <f:bottomButtonBar borderless="true">
+        <f:submit value="${%Save}"/>
+        <f:apply />
+      </f:bottomButtonBar>
+    </f:form>
+    <st:adjunct includes="lib.form.confirm" />
+
+  </l:label-subpage>
 </j:jelly>

@@ -23,50 +23,46 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.displayName}">
-    <st:include page="sidepanel.jelly" />
-    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-    <l:main-panel>
-      <l:app-bar title="${it.name}">
-        <j:if test="${it.atom}">
-          <t:editDescriptionButton permission="${app.ADMINISTER}"/>
-        </j:if>
-      </l:app-bar>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler"  xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:label-subpage>
       <j:if test="${it.atom}">
-        <t:editableDescription permission="${app.ADMINISTER}" hideButton="true"/>
+        <div style="display: flex;align-items: center; justify-content: space-between;" class="jenkins-!-margin-top-1">
+          <t:editableDescription permission="${app.ADMINISTER}" hideButton="true"/>
+          <t:editDescriptionButton permission="${app.ADMINISTER}" compact="true"/>
+        </div>
       </j:if>
 
       <j:forEach var="a" items="${it.allActions}">
         <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
       </j:forEach>
 
-      <div>
-        <h2>${%Nodes}</h2>
-        <j:forEach var="c" items="${it.computers}">
-          <j:set var="url" value="${rootURL}/${c.url}"/>
-          <nobr>
-            <a href="${url}" class="jenkins-link--with-icon"><l:icon src="${c.iconClassName}" /></a>
-            <st:nbsp/>
-            <a href="${url}" class="model-link inside">${c.displayName}</a>
-          </nobr>
-          <wbr/>
-        </j:forEach>
+      <div class="jenkins-!-margin-top-1" style="display: flex; gap: var(--section-padding); flex-direction: column;">
+        <l:card title="${%Nodes}" >
+          <j:forEach var="c" items="${it.computers}">
+            <j:set var="url" value="${rootURL}/${c.url}"/>
+            <nobr>
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <a href="${url}" class="jenkins-link--with-icon"><l:icon src="${c.iconClassName}" /></a>
+                <a href="${url}" class="model-link inside">${c.displayName}</a>
+              </div>
+            </nobr>
+            <wbr/>
+          </j:forEach>
+        </l:card>
+
+        <l:card title="${%Projects}">
+          <j:set var="jobs" value="${it.tiedJobs}" />
+          <j:choose>
+            <j:when test="${empty(jobs)}">
+              <p>
+                ${%None}
+              </p>
+            </j:when>
+            <j:otherwise>
+              <t:projectView jobs="${jobs}"/>
+            </j:otherwise>
+          </j:choose>
+        </l:card>
       </div>
-
-      <h2>${%Projects}</h2>
-      <j:set var="jobs" value="${it.tiedJobs}" />
-      <j:choose>
-        <j:when test="${empty(jobs)}">
-          <p>
-            ${%None}
-          </p>
-        </j:when>
-        <j:otherwise>
-          <t:projectView jobs="${jobs}"/>
-        </j:otherwise>
-      </j:choose>
-
-    </l:main-panel>
-  </l:layout>
+  </l:label-subpage>
 </j:jelly>
