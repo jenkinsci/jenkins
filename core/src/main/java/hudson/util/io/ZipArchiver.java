@@ -96,15 +96,19 @@ final class ZipArchiver extends Archiver {
             if (mode != -1)   fileZipEntry.setUnixMode(mode);
             fileZipEntry.setTime(basicFileAttributes.lastModifiedTime().toMillis());
             fileZipEntry.setSize(basicFileAttributes.size());
-            zip.putNextEntry(fileZipEntry);
+            // Open the file before writing its ZIP header so an unreadable file does not leave an empty entry.
             try (InputStream in = FilePath.openInputStream(f, openOptions)) {
-                int len;
-                while ((len = in.read(buf)) >= 0)
-                    zip.write(buf, 0, len);
+                zip.putNextEntry(fileZipEntry);
+                try {
+                    int len;
+                    while ((len = in.read(buf)) >= 0)
+                        zip.write(buf, 0, len);
+                } finally {
+                    zip.closeEntry();
+                }
             } catch (InvalidPathException e) {
                 throw new IOException(e);
             }
-            zip.closeEntry();
         }
         entriesWritten++;
     }

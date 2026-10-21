@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,12 +77,12 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     private static final Logger LOG = Logger.getLogger(ArtifactArchiver.class.getName());
 
     /**
-     * Comma- or space-separated list of patterns of files/directories to be archived.
+     * Comma-separated list of patterns of files/directories to be archived.
      */
     private String artifacts;
 
     /**
-     * Possibly null 'excludes' pattern as in Ant.
+     * Possibly null comma-separated 'excludes' pattern, using Ant-style wildcards.
      */
     private String excludes;
 
@@ -288,8 +289,12 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 }
             }
         } catch (AccessDeniedException e) {
-            LOG.log(Level.FINE, "Diagnosing anticipated Exception", e);
-            throw new AbortException(e.toString()); // Message is not enough as that is the filename only
+            String deniedPath = e.getFile() != null
+                    ? e.getFile()
+                    : Objects.toString(e.getMessage(), e.getClass().getName());
+            String message = Messages.ArtifactArchiver_AccessDenied(deniedPath, ws.getRemote());
+            LOG.log(Level.FINE, message, e);
+            throw new AbortException(message);
         }
     }
 

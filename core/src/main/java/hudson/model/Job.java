@@ -108,6 +108,7 @@ import jenkins.model.details.UpstreamProjectsDetail;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.RunWithSCM;
 import jenkins.security.HexStringConfidentialKey;
+import jenkins.security.XStreamNotDeserializable;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.widgets.HasWidgets;
@@ -164,12 +165,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * In 1.28 and earlier, this field was stored in the project configuration
      * file, so even though this is marked as transient, don't move it around.
      */
+    // TODO Mark @XStreamNotDeserializable and review #onLoad
     protected transient volatile int nextBuildNumber = 1;
 
     /**
      * Newly copied jobs get this flag set, so that Hudson doesn't try to run the job until its configuration
      * is saved once.
      */
+    @XStreamNotDeserializable
     private transient volatile boolean holdOffBuildUntilSave;
 
     /**
@@ -177,6 +180,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * {@link #holdOffBuildUntilSave} prematurely. The {@link LastItemListener} is responsible for
      * clearing this flag as the last item listener.
      */
+    @XStreamNotDeserializable
     private transient volatile boolean holdOffBuildUntilUserSave;
 
     /** @deprecated Replaced by {@link BuildDiscarderProperty} */

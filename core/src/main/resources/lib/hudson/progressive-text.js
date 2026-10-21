@@ -11,9 +11,7 @@ Behaviour.specify(
     let errorMessage = holder.getAttribute("data-error-message");
 
     var scroller = new AutoScroller(
-      holder.closest(".progressive-text-container, #main-panel, #page-body") ||
-        document.scrollingElement ||
-        document.documentElement,
+      holder.closest(".progressive-text-container") || document.body,
     );
     /*
   fetches the latest update from the server
@@ -23,6 +21,7 @@ Behaviour.specify(
       Where to retrieve additional text from
   */
     function fetchNext(e, href, onFinishEvent) {
+      const start = e.fetchedBytes;
       var headers = crumb.wrap({
         "Content-Type": "application/x-www-form-urlencoded",
         Accept: "multipart/form-data, */*",
@@ -35,7 +34,7 @@ Behaviour.specify(
         method: "post",
         headers,
         body: new URLSearchParams({
-          start: e.fetchedBytes,
+          start,
         }),
       }).then((rsp) => {
         if (rsp.status >= 500 || rsp.status === 0) {
@@ -83,8 +82,11 @@ Behaviour.specify(
         }
         /* append text and do autoscroll if applicable */
         parse.then(({ text, end, consoleAnnotator, completed }) => {
+          // An empty chunk carries no annotator state; keep the current one.
+          if (start !== end) {
+            e.consoleAnnotator = consoleAnnotator;
+          }
           e.fetchedBytes = end;
-          e.consoleAnnotator = consoleAnnotator;
           if (text !== "") {
             var p = document.createElement("DIV");
             e.appendChild(p); // Needs to be first for IE

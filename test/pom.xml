@@ -39,7 +39,7 @@ THE SOFTWARE.
   <properties>
     <mavenDebug>false</mavenDebug>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
-    <remoting.minimum.supported.version>3176.v207ec082a_8c0</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>3256.3258.v858f3c9a_f69d</remoting.minimum.supported.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
     <!--
@@ -67,12 +67,12 @@ THE SOFTWARE.
         <!-- Required by workflow-support -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>caffeine-api</artifactId>
-        <version>3.2.4-208.v7e2da_a_7db_82b_</version>
+        <version>3.3.0-210.v71b_2985ce530</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-lang3-api</artifactId>
-        <version>3.20.0-109.ve43756e2d2b_4</version>
+        <version>3.21.0-122.v6a_ea_4fd34049</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
@@ -99,7 +99,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>plugin-util-api</artifactId>
-        <version>7.1341.v039f146993d9</version>
+        <version>7.1403.vd380b_c42e90c</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
@@ -109,7 +109,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>bouncycastle-api</artifactId>
-        <version>2.30.1.84-291.v9f17b_21896e2</version>
+        <version>2.30.1.86.2-310.v4655f6742752</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
@@ -127,7 +127,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1402.1405.vc96e74964250</version>
+        <version>1436.v1082791135e4</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -192,7 +192,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2578.v44660312fd37</version>
+      <version>2587.v9791b_4544b_b_2</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -238,13 +238,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1506.v948b_b_b_7dec44</version>
+      <version>1514.vb_01eb_014e7d4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1418.v67a_81935603c</version>
+      <version>1442.vb_b_a_467df2767</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -262,7 +262,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>905.vcc6831e8760a_</version>
+      <version>928.v1effc3f3a_236</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -371,20 +371,12 @@ THE SOFTWARE.
                   <version>3256.v88a_f6e922152</version>
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
-                  <destFileName>remoting-before-SECURITY-3430-fix.jar</destFileName>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.main</groupId>
-                  <artifactId>remoting</artifactId>
-                  <version>3085.vc4c6977c075a</version>
-                  <type>jar</type>
-                  <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
                   <destFileName>remoting-unsupported.jar</destFileName>
                 </artifactItem>
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>444.v568b_174ece88</version>
+                  <version>483.v401c307fdd1b_</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>

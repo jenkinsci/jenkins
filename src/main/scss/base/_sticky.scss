@@ -3,21 +3,19 @@
 // clicks.
 // Keep this list in sync with the `position: sticky` rules across the SCSS sources.
 :root[data-disable-sticky="true"] {
-  .app-page-body {
-    height: auto !important;
-    overflow: visible !important;
+  .app-page-frame__blur,
+  .app-page-frame__mask,
+  .app-page-frame__background {
+    display: none;
   }
 
-  .app-page-body > .app-page-body__sidebar,
-  .app-page-body > .app-page-body__contents {
-    overflow-y: visible !important;
-  }
-
+  .jenkins-header,
   .jenkins-app-bar--sticky,
   .jenkins-bottom-app-bar__shadow,
-  .app-build-bar,
   .bottom-sticker,
-  #bottom-sticker {
+  #bottom-sticker,
+  .app-build-bar,
+  .app-page-body__sidebar {
     position: relative !important;
 
     // Reset the sticky offsets too — with relative positioning these would otherwise
@@ -25,6 +23,12 @@
     // content) and reintroduce the overlap we are trying to avoid.
     top: auto !important;
     bottom: auto !important;
+  }
+
+  // Don't allow for sidebar scrolling
+  .app-page-body__sidebar {
+    overflow-y: visible !important;
+    height: unset !important;
   }
 
   // The bottom app bar shadow uses negative margins to overlap content; reset them so it

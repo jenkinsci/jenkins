@@ -59,10 +59,22 @@ and then attach IDE Debugger to it.
 To launch a development instance, after [building the WAR file](#building-the-war-file), run:
 
 ```sh
-MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED' mvn -pl war jetty:run
+mvn -pl war hpi:run
 ```
 
-(Beware that `maven-plugin` builds will not work in this mode, due to class loading conflicts.)
+This forks a JVM that serves `war/target/jenkins` under Winstone, the same way `jenkins.war` is
+served in production. Jenkins is available on <http://localhost:8080/jenkins/> and uses
+`war/work` as its `JENKINS_HOME`; pass `-Dport=`, `-Dhost=` or `-DjenkinsHome=` to change that.
+
+Edits to `war/src/main/webapp`, and to Jelly views and their sibling `.properties` files under
+`core/src/main/resources`, are picked up on the next page load. Edits to a `Messages.properties`
+take effect when you restart the development instance — no repackaging needed, but the bundle is
+cached for the life of the JVM. Changes to Java code still need a rebuild.
+
+Because Jenkins now runs in its own JVM, starting Maven under a debugger no longer attaches to
+Jenkins. Pass `-Dmaven.hpi.debug=true` to have the forked JVM suspend and wait for a debugger, or
+give the option a JVM debug string of your own; see
+[maven-hpi-plugin#862](https://github.com/jenkinsci/maven-hpi-plugin/pull/862).
 
 ### Running the Yarn frontend build
 
@@ -85,10 +97,10 @@ yarn
 
 To work on the `war` module frontend assets, two processes are needed at the same time:
 
-On one terminal, start a development server that will not process frontend assets:
+On one terminal, start a development server:
 
 ```sh
-MAVEN_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED' mvn -pl war jetty:run -Dskip.frontend
+mvn -pl war hpi:run
 ```
 
 Open another terminal and start a [webpack](https://webpack.js.org/) dev server, after [optionally adding Node and Yarn to your path](#running-the-yarn-frontend-build):
@@ -96,6 +108,9 @@ Open another terminal and start a [webpack](https://webpack.js.org/) dev server,
 ```sh
 yarn start
 ```
+
+`yarn start` writes to `war/src/main/webapp/jsbundles`, which the development server serves
+directly, so a browser reload is enough to pick up the rebuilt bundles.
 
 ### Linting
 
