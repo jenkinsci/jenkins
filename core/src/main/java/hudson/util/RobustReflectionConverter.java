@@ -48,6 +48,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.PersistenceRoot;
 import hudson.model.Saveable;
+import hudson.remoting.ClassFilter;
 import hudson.security.ACL;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -660,8 +661,17 @@ public class RobustReflectionConverter implements Converter {
 
     protected Object instantiateNewInstance(HierarchicalStreamReader reader, UnmarshallingContext context) {
         String readResolveValue = reader.getAttribute(mapper.aliasForAttribute("resolves-to"));
-
-        Class type = readResolveValue != null ? mapper.realClass(readResolveValue) : context.getRequiredType();
+        Class type;
+        if (readResolveValue != null) {
+            type = mapper.realClass(readResolveValue);
+            String name = type.getName();
+            if (ClassFilter.DEFAULT.isBlacklisted(name) || ClassFilter.DEFAULT.isBlacklisted(type)) {
+                final String msg = "Refusing to instantiate resolves-to type '" + name + "'";
+                throw new CriticalXStreamException(new XStreamException(msg));
+            }
+        } else {
+            type = context.getRequiredType();
+        }
 
         Object currentObject = context.currentObject();
         if (currentObject != null) {
