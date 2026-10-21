@@ -2146,6 +2146,59 @@ function AutoScroller(scrollContainer) {
   };
 }
 
+// Selector for elements that can take keyboard focus
+var FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+// Remember which element inside `container` has focus (null if focus is elsewhere)
+function saveFocusState(container) {
+  var active = document.activeElement;
+  if (!active || active === document.body || !container.contains(active)) {
+    return null;
+  }
+  var focusables = Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR));
+  return {
+    id: active.id || null,
+    href: active.getAttribute("href"),
+    tagName: active.tagName,
+    index: focusables.indexOf(active),
+  };
+}
+
+// Put focus back on the equivalent element inside the refreshed `container`
+function restoreFocusState(container, saved) {
+  if (!saved) {
+    return;
+  }
+  var focusables = Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR));
+  var target = null;
+
+  // 1. Same id
+  if (saved.id) {
+    target = container.querySelector("#" + CSS.escape(saved.id));
+  }
+  // 2. Same link
+  if (!target && saved.href) {
+    target = focusables.find(function (el) {
+      return (
+        el.tagName === saved.tagName && el.getAttribute("href") === saved.href
+      );
+    });
+  }
+  // 3. Same position (clamped if the list got shorter)
+  if (!target && focusables.length > 0 && saved.index >= 0) {
+    target = focusables[Math.min(saved.index, focusables.length - 1)];
+  }
+  // 4. Last resort: the container itself, so focus doesn't fall back to <body>
+  if (!target) {
+    target = container;
+    if (!container.hasAttribute("tabindex")) {
+      container.setAttribute("tabindex", "-1");
+    }
+  }
+  target.focus({ preventScroll: true });
+}
+
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
 // eslint-disable-next-line no-unused-vars
@@ -2177,6 +2230,9 @@ function refreshPart(id, url) {
             }
             var p = hist.parentNode;
 
+            // remember focus BEFORE the old node is removed
+            var savedFocus = saveFocusState(hist);
+
             var div = document.createElement("div");
             div.innerHTML = responseText;
 
@@ -2185,6 +2241,9 @@ function refreshPart(id, url) {
 
             Behaviour.applySubtree(node);
             layoutUpdateCallback.call();
+
+            // put focus back after the new content and behaviours are in place
+            restoreFocusState(node, savedFocus);
           });
         }
       });
