@@ -681,10 +681,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private final transient ConcurrentHashMap<String, LabelAtom> labels = new ConcurrentHashMap<>();
 
     /**
-     * Cache of parsed label expressions, keyed both by the string passed to {@link #getLabel(String)}
-     * and by the canonical name of composite expressions, so that whitespace variants share one instance.
-     * Kept apart from {@link #labels} because an atom such as {@code "a&&b"} has the same name as the expression {@code a&&b}.
-     * Values may be {@link LabelAtom}s (e.g. for the input {@code "\"a&&b\""}); those are always resolved through {@link #labels}.
+     * Cache of parsed label expressions, keyed by the input expression and canonical name.
+     * Kept separate from {@link #labels} so an atom (e.g. {@code "a&&b"}) does not collide with the expression {@code a&&b}.
      */
     private final transient ConcurrentHashMap<String, Label> labelExpressions = new ConcurrentHashMap<>();
 
@@ -2028,7 +2026,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (expr == null)  return null;
         Label cached = labelExpressions.get(expr);
         if (cached != null) {
-            // atoms are owned by #labels; resolve through it so a trimmed atom is never handed out
+            // Resolve atoms through labels so trimmed atoms aren't reused
             return cached.isAtom() ? getLabelAtom(cached.getName()) : cached;
         }
 
@@ -2089,8 +2087,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets all the active labels in the current system.
      */
     public Set<Label> getLabels() {
-        // An atom and an expression can share a name (the atom "a&&b" and the expression a&&b),
-        // so break ties by expression to keep both.
+        // An atom and an expression can share a name (e.g. atom "a&&b" and expression a&&b); break ties on expression
         Set<Label> r = new TreeSet<>(Comparator.<Label>naturalOrder().thenComparing(Label::getExpression));
         for (LabelAtom l : labels.values()) {
             if (!l.isEmpty())
@@ -2312,7 +2309,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         for (Iterator<Label> itr = labelExpressions.values().iterator(); itr.hasNext();) {
             Label l = itr.next();
             if (l.isAtom()) {
-                // atom entries follow #labels: drop them once the atom itself has been trimmed
                 if (labels.get(l.getName()) != l) {
                     itr.remove();
                 }
