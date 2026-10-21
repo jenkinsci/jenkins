@@ -114,12 +114,11 @@ public class CrumbFilter implements CompatibleFilter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         CrumbIssuer crumbIssuer = getCrumbIssuer();
-        if (crumbIssuer == null || !(request instanceof HttpServletRequest)) {
+        if (crumbIssuer == null || !(request instanceof HttpServletRequest httpRequest)) {
             chain.doFilter(request, response);
             return;
         }
 
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         if ("POST".equals(httpRequest.getMethod())) {
@@ -134,10 +133,6 @@ public class CrumbFilter implements CompatibleFilter {
 
             boolean valid = false;
             String crumb = extractCrumbFromRequest(httpRequest, crumbFieldName);
-            if (crumb == null) {
-                // compatibility for clients that hard-code the default crumb name up to Jenkins 1.TODO
-                extractCrumbFromRequest(httpRequest, ".crumb");
-            }
 
             // JENKINS-40344: Don't spam the log just because a session is expired
             Level level = Jenkins.getAuthentication2() instanceof AnonymousAuthenticationToken ? Level.FINE : Level.WARNING;

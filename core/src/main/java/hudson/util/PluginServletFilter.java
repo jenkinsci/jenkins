@@ -25,7 +25,6 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import hudson.ExtensionPoint;
 import hudson.security.SecurityRealm;
 import io.jenkins.servlet.FilterWrapper;
 import io.jenkins.servlet.ServletExceptionWrapper;
@@ -51,19 +50,16 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.CompatibleFilter;
 
 /**
- * Servlet {@link Filter} that chains multiple {@link Filter}s, provided by plugins
- *
+ * Servlet {@link Filter} that chains multiple {@link Filter}s, provided by plugins.
  * <p>
- * While this class by itself is not an extension point, I'm marking this class
- * as an extension point so that this class will be more discoverable.
- *
+ * In most cases you should rather use {@link HttpServletFilter}.
  * <p>
  * {@link SecurityRealm} that wants to contribute {@link Filter}s should first
  * check if {@link SecurityRealm#createFilter(FilterConfig)} is more appropriate.
  *
  * @see SecurityRealm
  */
-public final class PluginServletFilter implements CompatibleFilter, ExtensionPoint {
+public final class PluginServletFilter implements CompatibleFilter {
     private final List<Filter> list = new CopyOnWriteArrayList<>();
 
     private /*almost final*/ FilterConfig config;

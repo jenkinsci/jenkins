@@ -29,6 +29,7 @@ import hudson.model.queue.CauseOfBlockage;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -47,9 +48,20 @@ public class CompositeCauseOfBlockage extends CauseOfBlockage {
         }
     }
 
+    private static final int MAX_REASONS_TO_DISPLAY = 5;
+
     @Override
     public String getShortDescription() {
-        return String.join("; ", uniqueReasons.keySet());
+        int totalReasons = uniqueReasons.size();
+        if (totalReasons <= MAX_REASONS_TO_DISPLAY) {
+            return String.join("; ", uniqueReasons.keySet());
+        }
+        // Truncate long lists to avoid extremely verbose tooltips (JENKINS-45927)
+        String truncatedReasons = uniqueReasons.keySet().stream()
+                .limit(MAX_REASONS_TO_DISPLAY)
+                .collect(Collectors.joining("; "));
+        int remaining = totalReasons - MAX_REASONS_TO_DISPLAY;
+        return truncatedReasons + "; ... and " + remaining + " more";
     }
 
     @Override

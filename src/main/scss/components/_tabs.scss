@@ -86,3 +86,75 @@ $border-radius: 19px;
   margin: 2.2rem 0 1.4rem;
   padding: 0;
 }
+
+.app-build-tabs {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+
+  @media (width <= 1200px) {
+    justify-content: start;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: var(--jenkins-border--subtle);
+    border-radius: 22px;
+    opacity: 0;
+    transition: var(--standard-transition);
+  }
+
+  &:hover::before {
+    opacity: 1;
+    inset: -4px;
+    background: var(--card-background);
+  }
+
+  a {
+    border-radius: 100px;
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+
+      * {
+        stroke-width: 40px;
+      }
+    }
+
+    &:not(.jenkins-button--tertiary) {
+      pointer-events: none;
+      font-weight: var(--font-bold-weight);
+    }
+
+    &.jenkins-button--tertiary {
+      color: color-mix(
+        in sRGB,
+        var(--text-color-secondary) 75%,
+        var(--text-color)
+      ) !important;
+
+      &::before,
+      &::after {
+        inset: 3px;
+      }
+    }
+
+    &:hover {
+      color: var(--text-color) !important;
+
+      &::before,
+      &::after {
+        inset: 1.5px;
+      }
+    }
+
+    .jenkins-badge {
+      margin-right: -0.25rem;
+    }
+  }
+}

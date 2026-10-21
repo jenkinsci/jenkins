@@ -153,7 +153,7 @@ public class JenkinsTest {
         assumeFalse(Functions.isWindows());
 
         HtmlPage page = j.createWebClient().goTo("fingerprintCheck");
-        HtmlForm form = page.getForms().get(0);
+        HtmlForm form = page.getForms().getFirst();
         File dir = newFolder(tmp, "junit");
         File plugin = new File(dir, "htmlpublisher.jpi");
         // We're using a plugin to have a file above DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD
@@ -559,6 +559,7 @@ public class JenkinsTest {
 
     @Test
     void runScriptOnOfflineComputer() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Test fails on CI Windows VM since transition to AWS");
         DumbSlave slave = j.createSlave(true);
         j.disconnectSlave(slave);
 

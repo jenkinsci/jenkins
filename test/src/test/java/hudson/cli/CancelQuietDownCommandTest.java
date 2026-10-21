@@ -64,7 +64,7 @@ class CancelQuietDownCommandTest {
                 .invoke();
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: user is missing the Overall/Administer permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Overall/Manage permission"));
     }
 
     @Test

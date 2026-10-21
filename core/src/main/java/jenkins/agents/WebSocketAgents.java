@@ -137,10 +137,10 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "method signature does not permit plumbing through the return value")
         @Override
         protected void opened() {
+            transport = new Transport();
             Computer.threadPoolForRemoting.submit(() -> {
                 LOGGER.fine(() -> "setting up channel for " + agent);
                 state.fireBeforeChannel(new ChannelBuilder(agent, Computer.threadPoolForRemoting));
-                transport = new Transport();
                 try {
                     state.fireAfterChannel(state.getChannelBuilder().build(transport));
                     LOGGER.fine(() -> "set up channel for " + agent);

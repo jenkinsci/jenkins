@@ -1,0 +1,12 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <h2>Create Node</h2>
+  <p>
+    To create a new node, post <code>config.xml</code> to <a href="../createItem">this URL</a>. Optionally include the query
+    parameter <code>name=<i>NODENAME</i></code> if you want to overwrite the node name set in the xml. You need to send
+    a <code>Content-Type: application/xml header</code>. You will get a 200 status code if the creation
+    is successful, or 4xx/5xx code if it fails. <code>config.xml</code> is the format Jenkins uses to store the node in the file
+    system, so you can see examples of them in the Jenkins home directory, or by retrieving the XML configuration of
+    existing nodes from <code>/computer/<i>NODENAME</i>/config.xml</code>.
+  </p>
+</j:jelly>

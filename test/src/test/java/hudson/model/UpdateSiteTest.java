@@ -24,6 +24,8 @@
 
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -200,9 +202,9 @@ public class UpdateSiteTest {
         assertNull(j.jenkins.getUpdateCenter().getSite("default").getData(), "plugin data is not present");
 
         // nothing breaking?
-        j.jenkins.getExtensionList(UpdateSiteWarningsMonitor.class).get(0).getActivePluginWarningsByPlugin();
-        j.jenkins.getExtensionList(UpdateSiteWarningsMonitor.class).get(0).getActiveCoreWarnings();
-        j.jenkins.getExtensionList(UpdateSiteWarningsConfiguration.class).get(0).getAllWarnings();
+        j.jenkins.getExtensionList(UpdateSiteWarningsMonitor.class).getFirst().getActivePluginWarningsByPlugin();
+        j.jenkins.getExtensionList(UpdateSiteWarningsMonitor.class).getFirst().getActiveCoreWarnings();
+        j.jenkins.getExtensionList(UpdateSiteWarningsConfiguration.class).getFirst().getAllWarnings();
     }
 
     @Test
@@ -299,4 +301,45 @@ public class UpdateSiteTest {
                 new ArrayList<>()
         );
     }
+
+    @Test
+    void signatureVerificationFailureIncludesUpdateSiteUrl() throws Exception {
+        // Create an UpdateSite with an invalid/malformed signature that will trigger an error
+        URL url = new URL(baseUrl, "/plugins/invalid-signature-update-center.json");
+        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
+        overrideUpdateSite(site);
+
+        FormValidation validation = site.updateDirectlyNow(true);
+
+        assertEquals(FormValidation.Kind.ERROR, validation.kind);
+
+        String message = validation.getMessage();
+        assertNotNull(message);
+        assertTrue(
+                message.contains(url.toString()),
+                "Signature verification error should include update site URL"
+        );
+        assertThat(message, containsString("Empty input"));
+    }
+
+    @Test
+    void signatureVerificationFailureIncludesUpdateSiteUrlWithoutPath() throws Exception {
+        // Create an UpdateSite with an invalid/malformed signature that will trigger an error that involves Path
+        URL url = new URL(baseUrl, "/plugins/invalid-signature-update-center-core-cm.json");
+        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
+        overrideUpdateSite(site);
+
+        FormValidation validation = site.updateDirectlyNow(true);
+
+        assertEquals(FormValidation.Kind.ERROR, validation.kind);
+
+        String message = validation.getMessage();
+        assertNotNull(message);
+        assertTrue(
+                message.contains(url.toString()),
+                "Signature verification error should include update site URL"
+        );
+        assertThat(message, containsString("Path does not chain with any of the trust anchors"));
+    }
+
 }

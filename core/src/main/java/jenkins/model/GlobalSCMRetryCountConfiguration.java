@@ -51,9 +51,9 @@ public class GlobalSCMRetryCountConfiguration extends GlobalConfiguration {
             Jenkins.get().setScmCheckoutRetryCount(json.getInt("scmCheckoutRetryCount"));
             return true;
         } catch (IOException e) {
-            throw new FormException(e, "quietPeriod");
+            throw new FormException(e, "scmCheckoutRetryCount");
         } catch (JSONException e) {
-            throw new FormException(e.getMessage(), "quietPeriod");
+            throw new FormException(e.getMessage(), "scmCheckoutRetryCount");
         }
     }
 

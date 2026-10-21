@@ -28,18 +28,24 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.cli.CLICommandInvoker;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
+import hudson.slaves.RetentionStrategy;
 import java.net.HttpURLConnection;
 import jenkins.model.Jenkins;
 import jenkins.widgets.ExecutorsWidget;
 import jenkins.widgets.HasWidgetHelper;
+import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
@@ -185,5 +191,61 @@ class ComputerSetTest {
         assertThat(content, not(containsString(message)));
 
         j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
+    }
+
+    @Test
+    void createItemFromXmlNoName() throws Exception {
+        createItemTest(null);
+    }
+
+    @Test
+    void createItemFromXmlWithName() throws Exception {
+        createItemTest("new-name");
+    }
+
+    void createItemTest(String name) throws Exception {
+        String USER = "user";
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                // Grant computer create
+                .grant(Jenkins.READ).everywhere().to(USER)
+                .grant(Computer.CREATE).everywhere().to(USER)
+        );
+
+        String xml = """
+                <slave>
+                  <name>agent-from-xml</name>
+                  <description></description>
+                  <remoteFS>/home/jenkins</remoteFS>
+                  <numExecutors>2</numExecutors>
+                  <mode>NORMAL</mode>
+                  <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+                  <launcher class="hudson.slaves.JNLPLauncher"/>
+                  <label>linux</label>
+                  <nodeProperties/>
+                </slave>
+                """;
+        try (JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false)) {
+            wc.login(USER);
+            String agentCreateUrl = "computer/createItem";
+            if (name != null) {
+                agentCreateUrl += "?name=" + name;
+            }
+            WebRequest req = new WebRequest(wc.createCrumbedUrl(agentCreateUrl), HttpMethod.POST);
+            req.setAdditionalHeader("Content-Type", "application/xml");
+            req.setRequestBody(xml);
+            WebResponse rsp = wc.getPage(req).getWebResponse();
+            assertThat(rsp.getStatusCode(), is(200));
+            if (name == null) {
+                name = "agent-from-xml";
+            }
+            Node node = j.jenkins.getNode(name);
+            assertThat(node, is(notNullValue()));
+            DumbSlave agent = (DumbSlave) node;
+            assertThat(agent.remoteFS, is("/home/jenkins"));
+            assertThat(agent.getNumExecutors(), is(2));
+            assertThat(agent.getLabelString(), is("linux"));
+            assertThat(agent.getRetentionStrategy(), is(instanceOf(RetentionStrategy.Always.class)));
+        }
     }
 }

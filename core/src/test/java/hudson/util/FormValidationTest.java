@@ -32,8 +32,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
@@ -110,6 +115,34 @@ class FormValidationTest {
         assertTrue(warning_error.renderHtml().contains(warning.getMessage()));
     }
 
+    @Test
+    void aggregateNullValidations() { assertEquals(FormValidation.ok(), FormValidation.aggregate(null)); }
+
+    @Test
+    void aggregatePreservesMessageOrder() {
+        FormValidation first = FormValidation.warning("first_message");
+        FormValidation second = FormValidation.warning("second_message");
+        FormValidation third = FormValidation.warning("third_message");
+
+        String html = aggregate(first, second, third).renderHtml();
+
+        assertTrue(html.indexOf("first_message") < html.indexOf("second_message"));
+        assertTrue(html.indexOf("second_message") < html.indexOf("third_message"));
+    }
+
+    @Test
+    void aggregateRendersAsHtmlList() {
+        FormValidation ok = FormValidation.ok("ok_message");
+        FormValidation error = FormValidation.error("error_message");
+
+        String html = aggregate(ok, error).renderHtml();
+
+        assertThat(html, containsString("<ul"));
+        assertThat(html, containsString("<li>"));
+        assertThat(html, containsString("</li>"));
+        assertThat(html, containsString("</ul>"));
+    }
+
     private FormValidation aggregate(FormValidation... fvs) {
         return FormValidation.aggregate(Arrays.asList(fvs));
     }
@@ -122,21 +155,49 @@ class FormValidationTest {
 
     @Test
     void testUrlCheck() throws IOException {
-        FormValidation.URLCheck urlCheck = new FormValidation.URLCheck() {
-            @Override
-            protected FormValidation check() throws IOException {
-                String uri = "https://www.jenkins.io/";
-                try {
-                    if (findText(open(URI.create(uri)), "Jenkins")) {
-                        return FormValidation.ok();
-                    } else {
-                        return FormValidation.error("This is a valid URI but it does not look like Jenkins");
+        HttpServer server = createAndStartMockServer();
+
+        try {
+            String uri = "http://localhost:" + server.getAddress().getPort() + "/";
+
+            FormValidation.URLCheck urlCheck = new FormValidation.URLCheck() {
+                @Override
+                protected FormValidation check() throws IOException {
+                    try {
+                        if (findText(open(URI.create(uri)), "Jenkins")) {
+                            return FormValidation.ok();
+                        } else {
+                            return FormValidation.error("This is a valid URI but it does not look like Jenkins");
+                        }
+                    } catch (IOException e) {
+                        return handleIOException(uri, e);
                     }
-                } catch (IOException e) {
-                    return handleIOException(uri, e);
                 }
+            };
+            assertThat(urlCheck.check(), is(FormValidation.ok()));
+
+        } finally {
+            server.stop(0);
+        }
+    }
+
+
+    private static HttpServer createAndStartMockServer() throws IOException {
+        HttpServer server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+
+        server.createContext("/", exchange -> {
+            byte[] response = "<html>Jenkins</html>".getBytes(StandardCharsets.UTF_8);
+
+            exchange.sendResponseHeaders(200, response.length);
+
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(response);
+            } finally {
+                exchange.close();
             }
-        };
-        assertThat(urlCheck.check(), is(FormValidation.ok()));
+        });
+
+        server.start();
+        return server;
     }
 }

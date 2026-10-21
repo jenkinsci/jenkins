@@ -99,7 +99,7 @@ class IconTest  {
 
         DomElement ballColorAborted = p.getElementById("ballColorAborted");
         assertThat("Aborted", is(ballColorAborted.getTextContent()));
-        HtmlElement symbol = ballColorAborted.getElementsByTagName("svg").get(0);
+        HtmlElement symbol = ballColorAborted.getElementsByTagName("svg").getFirst();
         assertThat("icon-md", is(symbol.getAttribute("class")));
 
         assertIconToSymbolOkay(symbol);
@@ -149,17 +149,17 @@ class IconTest  {
         DomElement tasksDiv = p.getElementById("tasks");
         List<DomElement> taskDivs = StreamSupport.stream(tasksDiv.getChildElements().spliterator(), false).toList();
 
-        assertIconToSymbolOkay(taskDivs.get(0).getElementsByTagName("svg").get(0));
+        assertIconToSymbolOkay(taskDivs.get(0).getElementsByTagName("svg").getFirst());
         // this is loading the png from cloudbees-folder plugin
         // when this is swapped to an SVG and the dep updated this test will need to change
-        assertIconToSvgOkay(taskDivs.get(1).getElementsByTagName("svg").get(0), "icon-folder icon-md");
-        assertIconToImageOkay(taskDivs.get(2).getElementsByTagName("img").get(0), "/images/svgs/package.svg");
-        assertIconToImageOkay(taskDivs.get(3).getElementsByTagName("img").get(0), "/images/svgs/package.svg");
-        assertIconToImageOkay(taskDivs.get(4).getElementsByTagName("img").get(0), "/images/svgs/package.svg");
-        assertIconToSymbolOkay(taskDivs.get(5).getElementsByTagName("svg").get(0));
+        assertIconToSvgOkay(taskDivs.get(1).getElementsByTagName("svg").getFirst(), "icon-folder icon-md");
+        assertIconToImageOkay(taskDivs.get(2).getElementsByTagName("img").getFirst(), "/images/svgs/package.svg");
+        assertIconToImageOkay(taskDivs.get(3).getElementsByTagName("img").getFirst(), "/images/svgs/package.svg");
+        assertIconToImageOkay(taskDivs.get(4).getElementsByTagName("img").getFirst(), "/images/svgs/package.svg");
+        assertIconToSymbolOkay(taskDivs.get(5).getElementsByTagName("svg").getFirst());
 
-        assertIconToImageOkay(taskDivs.get(6).getElementsByTagName("img").get(0), "/plugin/xxx/icon.png");
-        assertIconToImageOkay(taskDivs.get(7).getElementsByTagName("img").get(0), "/plugin/xxx/icon.png");
+        assertIconToImageOkay(taskDivs.get(6).getElementsByTagName("img").getFirst(), "/plugin/xxx/icon.png");
+        assertIconToImageOkay(taskDivs.get(7).getElementsByTagName("img").getFirst(), "/plugin/xxx/icon.png");
     }
 
     @TestExtension("testTasks")

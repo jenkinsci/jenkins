@@ -27,8 +27,8 @@ THE SOFTWARE.
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
     <j:set var="escapeEntryTitleAndDescription" value="false"/>
-    <f:entry description="${it.formattedDescription}">
-      <j:set var="readOnlyMode" value="true"/>
-      <f:checkbox title="${h.escape(it.name)}" name="value" checked="${it.value}"/>
-    </f:entry>
+    <j:set var="readOnlyMode" value="true"/>
+    <div>
+      <f:checkbox title="${h.escape(it.name)}" name="value" checked="${it.value}" description="${it.formattedDescription}" />
+    </div>
 </j:jelly>

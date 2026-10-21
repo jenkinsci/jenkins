@@ -30,7 +30,7 @@ class PluginManagerOverrideTest {
     void testViewOverrides() throws Exception {
         // Verify extension registered correctly and comes back in overrides
         assertEquals(1, PluginManagerStaplerOverride.all().size());
-        assertThat(PluginManagerStaplerOverride.all().get(0), instanceOf(BasicPluginManagerOverride.class));
+        assertThat(PluginManagerStaplerOverride.all().getFirst(), instanceOf(BasicPluginManagerOverride.class));
 
         // Verify we can load untouched resources
         JenkinsRule.WebClient client = j.createWebClient();

@@ -31,7 +31,6 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.Functions;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.OptionHandlerExtension;
@@ -103,7 +102,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * @since 1.302
  * @see CLIMethod
  */
-@LegacyInstancesAreScopedToHudson
 public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     /**
@@ -230,7 +228,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      *      <tr><td>5</td><td>{@link AbortException} is thrown while performing the command.</td></tr>
      *      <tr><td>6</td><td>{@link AccessDeniedException} is thrown while performing the command.</td></tr>
      *      <tr><td>7</td><td>{@link BadCredentialsException} is thrown while performing the command.</td></tr>
-     *      <tr><td>8-15</td><td>are reserved for future usage.</td></tr>
+     *      <tr><td>8</td><td>{@code hudson.model.Failure} is thrown while performing the command.</td></tr>
+     *      <tr><td>9-15</td><td>are reserved for future usage.</td></tr>
      *      <tr><td>16+</td><td>a custom CLI exit error code (meaning defined by the CLI command itself)</td></tr>
      *      </table>
      *      Note: For details - see JENKINS-32273
@@ -279,30 +278,42 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * */
     protected int handleException(Throwable e, CLIContext context, CmdLineParser p) {
         int exitCode;
-        if (e instanceof CmdLineException) {
-            exitCode = 2;
-            printError(e.getMessage());
-            printUsage(stderr, p);
-        } else if (e instanceof IllegalArgumentException) {
-            exitCode = 3;
-            printError(e.getMessage());
-        } else if (e instanceof IllegalStateException) {
-            exitCode = 4;
-            printError(e.getMessage());
-        } else if (e instanceof AbortException) {
-            exitCode = 5;
-            printError(e.getMessage());
-        } else if (e instanceof AccessDeniedException) {
-            exitCode = 6;
-            printError(e.getMessage());
-        } else if (e instanceof BadCredentialsException) {
-            exitCode = 7;
-            printError(
-                    "Bad Credentials. Search the server log for " + context.getCorrelationId() + " for more details.");
-        } else {
-            exitCode = 1;
-            printError("Unexpected exception occurred while performing " + getName() + " command.");
-            Functions.printStackTrace(e, stderr);
+        switch (e) {
+            case CmdLineException cmdLineException -> {
+                exitCode = 2;
+                printError(e.getMessage());
+                printUsage(stderr, p);
+            }
+            case IllegalArgumentException illegalArgumentException -> {
+                exitCode = 3;
+                printError(e.getMessage());
+            }
+            case IllegalStateException illegalStateException -> {
+                exitCode = 4;
+                printError(e.getMessage());
+            }
+            case AbortException abortException -> {
+                exitCode = 5;
+                printError(e.getMessage());
+            }
+            case AccessDeniedException accessDeniedException -> {
+                exitCode = 6;
+                printError(e.getMessage());
+            }
+            case BadCredentialsException badCredentialsException -> {
+                exitCode = 7;
+                printError(
+                        "Bad Credentials. Search the server log for " + context.getCorrelationId() + " for more details.");
+            }
+            case RuntimeException failure when failure.getClass().getName().equals("hudson.model.Failure") -> {
+                exitCode = 8;
+                printError(failure.getMessage());
+            }
+            case null, default -> {
+                exitCode = 1;
+                printError("Unexpected exception occurred while performing " + getName() + " command.");
+                Functions.printStackTrace(e, stderr);
+            }
         }
         return exitCode;
     }

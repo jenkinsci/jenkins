@@ -263,7 +263,6 @@
         top: 0;
         right: 0;
         left: 0;
-        padding: 0 10px;
         height: 2.75em;
         z-index: 100;
         background: rgb(0 0 0 / 0.03);
@@ -442,7 +441,7 @@
             left: 1px;
             width: 14px;
             height: 14px;
-            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M384 224v184a40 40 0 01-40 40H104a40 40 0 01-40-40V168a40 40 0 0140-40h167.48M336 64h112v112M224 288L440 72' fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='32'/%3E%3C/svg%3E");
+            mask-image: url("../images/svgs/setupWizard/external-link.svg");
             mask-size: contain;
             mask-position: center;
             background: $badge-color;
@@ -479,7 +478,7 @@
                 margin: -2px -2px 0 1px;
                 background: $badge-color;
                 vertical-align: middle;
-                mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M184 112l144 144-144 144'/%3E%3C/svg%3E");
+                mask-image: url("../images/svgs/setupWizard/chevron-right.svg");
                 mask-size: contain;
                 mask-position: center;
               }
@@ -528,7 +527,7 @@
                 width: 12px;
                 height: 12px;
                 background: currentColor;
-                mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M384 224v184a40 40 0 01-40 40H104a40 40 0 01-40-40V168a40 40 0 0140-40h167.48M336 64h112v112M224 288L440 72' fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='32'/%3E%3C/svg%3E");
+                mask-image: url("../images/svgs/setupWizard/external-link.svg");
                 mask-size: contain;
                 mask-position: center;
               }
@@ -731,7 +730,7 @@
         height: 16px;
         position: absolute;
         left: 5px;
-        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='192' fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='32'/%3E%3C/svg%3E");
+        mask-image: url("../images/svgs/setupWizard/circle.svg");
         mask-size: contain;
         mask-position: center;
         background: rgb(0 0 0 / 0.1);
@@ -740,7 +739,7 @@
       &.installing {
         &::before {
           background: rgb(0 60 100 / 0.33);
-          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M400 148l-21.12-24.57A191.43 191.43 0 00240 64C134 64 48 150 48 256s86 192 192 192a192.09 192.09 0 00181.07-128' fill='none' stroke='currentColor' stroke-linecap='round' stroke-miterlimit='10' stroke-width='32'/%3E%3Cpath d='M464 97.42V208a16 16 0 01-16 16H337.42c-14.26 0-21.4-17.23-11.32-27.31L436.69 86.1C446.77 76 464 83.16 464 97.42z'/%3E%3C/svg%3E");
+          mask-image: url("../images/svgs/setupWizard/progress.svg");
           mask-size: contain;
           mask-position: center;
 
@@ -753,7 +752,7 @@
 
         &::before {
           background: #3c763d;
-          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='32' d='M416 128L192 384l-96-96'/%3E%3C/svg%3E");
+          mask-image: url("../images/svgs/setupWizard/check.svg");
           mask-size: contain;
           mask-position: center;
 
@@ -766,7 +765,7 @@
 
         &::before {
           background: #a94442;
-          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='32' d='M368 368L144 144M368 144L144 368'/%3E%3C/svg%3E");
+          mask-image: url("../images/svgs/setupWizard/close.svg");
           mask-size: contain;
           mask-position: center;
 

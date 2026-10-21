@@ -72,6 +72,7 @@ THE SOFTWARE.
           <tr>
             <td class="pane pane-grow" style="white-space: normal;">
               <j:set var="stuck" value="${item.isStuck()}"/>
+              <j:set var="stuckContent" value=""/>
               <j:choose>
                 <j:when test="${h.hasPermission(item.task,item.task.READ)}">
                   <a href="${rootURL}/${item.task.url}" class="model-link inside tl-tr"
@@ -81,11 +82,11 @@ THE SOFTWARE.
                   </a>
                   <!-- TODO include estimated number as in BuildHistoryWidget/entries.jelly if possible -->
                 <j:if test="${stuck}">
-                  <td class="pane" width="16" align="center" valign="middle">
-                    <a href="https://www.jenkins.io/redirect/troubleshooting/executor-starvation">
+                  <j:set var="stuckContent">
+                    <a href="https://www.jenkins.io/redirect/troubleshooting/executor-starvation" target="_blank">
                       <l:icon src="symbol-hourglass" class="icon-sm"/>
                     </a>
-                  </td>
+                  </j:set>
                 </j:if>
                 </j:when>
                 <j:otherwise>
@@ -93,9 +94,14 @@ THE SOFTWARE.
                 </j:otherwise>
               </j:choose>
             </td>
+            <td width="16" class="pane" align="center" valign="middle">
+              <j:out value="${stuckContent}"/>
+            </td>
             <td class="pane" width="16" align="center" valign="middle">
               <j:if test="${item.hasCancelPermission()}">
-                <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" confirm="${%confirm(item.displayName)}" alt="${%Cancel this build}"/>
+                <div style="display:flex;">
+                  <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" confirm="${%confirm(item.displayName)}" alt="${%Cancel this build}"/>
+                </div>
               </j:if>
              </td>
           </tr>

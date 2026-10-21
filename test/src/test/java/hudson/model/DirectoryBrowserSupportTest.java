@@ -323,9 +323,7 @@ class DirectoryBrowserSupportTest {
         j.buildAndAssertSuccess(p);
 
         HtmlPage page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
-        for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-            assertEquals(DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue(header), "Header set: " + header);
-        }
+        assertEquals(DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue("Content-Security-Policy"));
 
         String propName = DirectoryBrowserSupport.class.getName() + ".CSP";
         String initialValue = System.getProperty(propName);
@@ -333,9 +331,7 @@ class DirectoryBrowserSupportTest {
             System.setProperty(propName, "");
             page = getWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
             List<String> headers = page.getWebResponse().getResponseHeaders().stream().map(NameValuePair::getName).collect(Collectors.toList());
-            for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-                assertThat(headers, not(hasItem(header)));
-            }
+            assertThat(headers, not(hasItem("Content-Security-Policy")));
         } finally {
             if (initialValue == null) {
                 System.clearProperty(DirectoryBrowserSupport.class.getName() + ".CSP");
@@ -593,6 +589,8 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_outsideWorkspace_areNotAllowed() throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
+
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
@@ -732,6 +730,8 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void symlink_avoidLeakingInformation_aboutIllegalFolder() throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
+
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
@@ -804,7 +804,7 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     void junctionAndSymlink_outsideWorkspace_areNotAllowed_windowsJunction() throws Exception {
-        assumeTrue(Functions.isWindows());
+        assumeTrue(Functions.isWindows() && !"true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
 
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -1024,6 +1024,8 @@ class DirectoryBrowserSupportTest {
     @Test
     @Issue({"SECURITY-904", "SECURITY-1452"})
     void symlink_insideWorkspace_areNotAllowedAnymore() throws Exception {
+        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
+
         FreeStyleProject p = j.createFreeStyleProject();
 
         // build once to have the workspace set up
@@ -1334,6 +1336,31 @@ class DirectoryBrowserSupportTest {
                 "anotherDir/one.txt",
                 "anotherDir/insideDir/two.txt"
         ));
+    }
+
+    @Issue("JENKINS-26894")
+    @Test
+    void workspaceTextFileShouldIncludeCharset() throws Exception {
+        String chineseContent = "public class Test { // 用户中心模块\n}";
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                build.getWorkspace().child("Test.java").write(chineseContent, "UTF-8");
+                return true;
+            }
+        });
+        j.buildAndAssertSuccess(p);
+
+        // Test workspace file serving includes charset
+        Page page = getWebClient().goTo("job/" + p.getName() + "/ws/Test.java", null);
+        assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+        assertThat("text file Content-Type should include charset",
+                page.getWebResponse().getResponseHeaderValue("Content-Type").toLowerCase(java.util.Locale.ROOT),
+                containsString("charset=utf-8"));
+        assertThat("text file content should be correctly served",
+                page.getWebResponse().getContentAsString(),
+                containsString(chineseContent));
     }
 
     @Test

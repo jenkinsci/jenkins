@@ -94,10 +94,6 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         ViewJob.interruptReloadThread();
     }
 
-    protected void killComputer(Computer c) {
-        c.kill();
-    }
-
     private final Set<String> disabledAdministrativeMonitors = new HashSet<>();
 
     /**
@@ -267,12 +263,12 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
             // we need to start the process of reducing the executors on all computers as distinct
             // from the killing action which should not excessively use the Queue lock.
             for (Computer c : old) {
-                c.inflictMortalWound();
+                c.setNumExecutors(0);
             }
         });
         for (Computer c : old) {
             // when we get to here, the number of executors should be zero so this call should not need the Queue.lock
-            killComputer(c);
+            c.kill();
         }
         getQueue().scheduleMaintenance();
         Listeners.notify(ComputerListener.class, false, ComputerListener::onConfigurationChange);

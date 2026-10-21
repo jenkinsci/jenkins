@@ -128,6 +128,19 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     }
 
     /**
+     * Checks if the current user has the minimum required permission to view this Management Link.
+     * <p>
+     * Subclasses may override this method instead of {@link #getRequiredPermission()} to perform more complex permission checks,
+     * for example, checking either {@link Jenkins#MANAGE} or {@link Jenkins#SYSTEM_READ}.
+     * </p>
+     * @see #getRequiredPermission()
+     * @since 2.579
+     */
+    public boolean hasRequiredPermission() {
+        return Jenkins.get().hasPermission(getRequiredPermission());
+    }
+
+    /**
      * Define if the rendered link will use the default GET method or POST.
      * @return true if POST must be used
      * @see RequirePOST
@@ -174,6 +187,12 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
          * Configuration pages that don't fit into a more specific section.
          */
         CONFIGURATION(Messages._ManagementLink_Category_CONFIGURATION()),
+        /**
+         * Configuration pages related to plugin management, including installation,
+         * updates, and administrative actions for maintaining installed plugins.
+         */
+        @Restricted(NoExternalUse.class)
+        PLUGINS(Messages._ManagementLink_Category_PLUGINS()),
         /**
          * Security related options. Useful for plugins providing security related {@code ManagementLink}s (e.g. security realms).
          * Use {@link Category#STATUS} instead if the feature is informational.

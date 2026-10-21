@@ -1,0 +1,35 @@
+updateCenter.post(
+{
+  "connectionCheckUrl": "https://www.google.com/",
+  "core": {
+    "buildDate": "Jun 20, 2026",
+    "name": "core",
+    "sha1": "dummy",
+    "sha256": "dummy",
+    "size": 1,
+    "url": "https://updates.jenkins.io/download/war/2.570/jenkins.war",
+    "version": "2.570"
+  },
+  "generationTimestamp": "2026-06-20T00:00:00Z",
+  "id": "NoWiki",
+  "deprecations": [],
+  "plugins": {
+    "plugin-without-wiki": {
+      "buildDate": "Jun 20, 2026",
+      "dependencies": [],
+      "excerpt": "A plugin without a wiki URL.",
+      "health": 100,
+      "name": "plugin-without-wiki",
+      "popularity": 1,
+      "releaseTimestamp": "2026-06-20T00:00:00.00Z",
+      "requiredCore": "2.0",
+      "sha1": "dummy",
+      "sha256": "dummy",
+      "title": "Plugin Without Wiki",
+      "url": "https://updates.jenkins.io/download/plugins/plugin-without-wiki/1.0/plugin-without-wiki.hpi",
+      "version": "1.0"
+    }
+  },
+  "updateCenterVersion": "1"
+}
+);

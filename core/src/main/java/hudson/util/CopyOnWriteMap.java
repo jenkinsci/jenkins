@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.NavigableSet;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -82,7 +83,7 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
     /**
      * Atomically replaces the entire map by the copy of the specified map.
      */
-    public void replaceBy(Map<? extends K, ? extends V> data) {
+    public synchronized void replaceBy(Map<? extends K, ? extends V> data) {
         Map<K, V> d = copy();
         d.clear();
         d.putAll(data);
@@ -171,16 +172,16 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
     }
 
     @Override public int hashCode() {
-        return copy().hashCode();
+        return core.hashCode();
     }
 
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     @Override public boolean equals(Object obj) {
-        return copy().equals(obj);
+        return core.equals(obj);
     }
 
     @Override public String toString() {
-        return copy().toString();
+        return core.toString();
     }
 
     /**
@@ -197,6 +198,11 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
         @Override
         protected Map<K, V> copy() {
             return new LinkedHashMap<>(core);
+        }
+
+        @Override
+        public synchronized void replaceBy(Map<? extends K, ? extends V> data) {
+            update(new LinkedHashMap<>(data));
         }
 
         public static class ConverterImpl extends MapConverter {
@@ -224,15 +230,15 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
     /**
      * {@link CopyOnWriteMap} backed by {@link TreeMap}.
      */
-    public static final class Tree<K, V> extends CopyOnWriteMap<K, V> implements SortedMap<K, V> {
-        private final Comparator<K> comparator;
+    public static final class Tree<K, V> extends CopyOnWriteMap<K, V> implements NavigableMap<K, V> {
+        private final Comparator<? super K> comparator;
 
         public Tree(Map<K, V> core, Comparator<K> comparator) {
             this(comparator);
             putAll(core);
         }
 
-        public Tree(Comparator<K> comparator) {
+        public Tree(Comparator<? super K> comparator) {
             super(new TreeMap<>(comparator));
             this.comparator = comparator;
         }
@@ -254,17 +260,116 @@ public abstract class CopyOnWriteMap<K, V> implements Map<K, V> {
         }
 
         @Override
+        public synchronized void replaceBy(Map<? extends K, ? extends V> data) {
+            TreeMap<K, V> m = new TreeMap<>(comparator);
+            m.putAll(data);
+            update(m);
+        }
+
+        @Override
         protected NavigableMap<K, V> createView() {
             return Collections.unmodifiableNavigableMap((NavigableMap<K, V>) core);
         }
 
         @Override
-        public NavigableMap<K, V> getView() {
+        protected NavigableMap<K, V> getView() {
             return (NavigableMap<K, V>) super.getView();
         }
 
+        @Override
+        public synchronized Entry<K, V> pollFirstEntry() {
+            TreeMap<K, V> d = copy();
+            Entry<K, V> res = d.pollFirstEntry();
+            update(d);
+            return res;
+        }
+
+        @Override
+        public synchronized Entry<K, V> pollLastEntry() {
+            TreeMap<K, V> d = copy();
+            Entry<K, V> res = d.pollLastEntry();
+            update(d);
+            return res;
+        }
+
+        @Override
+        public Entry<K, V> lowerEntry(K key) {
+            return getView().lowerEntry(key);
+        }
+
+        @Override
+        public K lowerKey(K key) {
+            return getView().lowerKey(key);
+        }
+
+        @Override
+        public Entry<K, V> floorEntry(K key) {
+            return getView().floorEntry(key);
+        }
+
+        @Override
+        public K floorKey(K key) {
+            return getView().floorKey(key);
+        }
+
+        @Override
+        public Entry<K, V> ceilingEntry(K key) {
+            return getView().ceilingEntry(key);
+        }
+
+        @Override
+        public K ceilingKey(K key) {
+            return getView().ceilingKey(key);
+        }
+
+        @Override
+        public Entry<K, V> higherEntry(K key) {
+            return getView().higherEntry(key);
+        }
+
+        @Override
+        public K higherKey(K key) {
+            return getView().higherKey(key);
+        }
+
+        @Override
+        public Entry<K, V> firstEntry() {
+            return getView().firstEntry();
+        }
+
+        @Override
+        public Entry<K, V> lastEntry() {
+            return getView().lastEntry();
+        }
+
+        @Override
         public NavigableMap<K, V> descendingMap() {
             return getView().descendingMap();
+        }
+
+        @Override
+        public NavigableSet<K> navigableKeySet() {
+            return getView().navigableKeySet();
+        }
+
+        @Override
+        public NavigableSet<K> descendingKeySet() {
+            return getView().descendingKeySet();
+        }
+
+        @Override
+        public NavigableMap<K, V> subMap(K fromKey, boolean fromInclusive, K toKey, boolean toInclusive) {
+            return getView().subMap(fromKey, fromInclusive, toKey, toInclusive);
+        }
+
+        @Override
+        public NavigableMap<K, V> headMap(K toKey, boolean inclusive) {
+            return getView().headMap(toKey, inclusive);
+        }
+
+        @Override
+        public NavigableMap<K, V> tailMap(K fromKey, boolean inclusive) {
+            return getView().tailMap(fromKey, inclusive);
         }
 
         @Override

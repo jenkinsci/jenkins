@@ -29,7 +29,7 @@ THE SOFTWARE.
       <i:formatDate value="${it.time}" type="both" dateStyle="medium" timeStyle="medium"/>
     </div>
     <div class="message">
-      <j:out value="${it}" />
+      ${it}
     </div>
   </div>
 </j:jelly>

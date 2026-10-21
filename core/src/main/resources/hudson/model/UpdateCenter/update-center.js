@@ -50,5 +50,4 @@ function refresh() {
   }, 5000);
 }
 
-window.scrollTo(0, 10000);
 refresh();

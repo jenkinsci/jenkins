@@ -46,5 +46,8 @@ THE SOFTWARE.
     <st:include page="jobMain.jelly" it="${a}" optional="true" />
   </j:forEach>
 
-  <p:upstream-downstream />
+  <l:userExperimentalFlag var="newJobPage" flagClassName="jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag" />
+  <j:if test="${!newJobPage}">
+    <p:upstream-downstream />
+  </j:if>
 </j:jelly>

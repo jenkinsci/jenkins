@@ -21,9 +21,9 @@ import jenkins.agents.AgentComputerUtil;
 import jenkins.security.s2m.CallableDirectionChecker;
 import jenkins.util.JenkinsJVM;
 import org.jenkinsci.remoting.RoleChecker;
-import org.junit.function.ThrowingRunnable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -197,13 +197,13 @@ class AgentToControllerSecurityTest {
 
     // ----- Utility methods
 
-    public static SecurityException assertThrowsIOExceptionCausedBySecurityException(ThrowingRunnable runnable) {
+    public static SecurityException assertThrowsIOExceptionCausedBySecurityException(Executable runnable) {
         return assertThrowsIOExceptionCausedBy(SecurityException.class, runnable);
     }
 
-    public static <X extends Throwable> X assertThrowsIOExceptionCausedBy(Class<X> causeClass, ThrowingRunnable runnable) {
+    public static <X extends Throwable> X assertThrowsIOExceptionCausedBy(Class<X> causeClass, Executable runnable) {
         try {
-            runnable.run();
+            runnable.execute();
         } catch (IOException ex) {
             final Throwable cause = ex.getCause();
             assertTrue(cause != null && causeClass.isAssignableFrom(cause.getClass()),

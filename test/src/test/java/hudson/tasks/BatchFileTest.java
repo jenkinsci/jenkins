@@ -158,7 +158,7 @@ class BatchFileTest {
     @LocalData
     void canLoadUnstableReturnFromDisk() {
         FreeStyleProject p = (FreeStyleProject) rule.jenkins.getItemByFullName("batch");
-        BatchFile batchFile = (BatchFile) p.getBuildersList().get(0);
+        BatchFile batchFile = (BatchFile) p.getBuildersList().getFirst();
         assertEquals((Integer) 1, batchFile.getUnstableReturn(), "unstable return");
     }
 }

@@ -42,6 +42,7 @@ import hudson.PluginWrapper;
 import java.io.IOException;
 import java.util.function.BiPredicate;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -252,8 +253,8 @@ class DisablePluginCommandTest {
         assertPluginDisabled("dependee");
         assertPluginDisabled("depender");
 
-        assertTrue(checkResultWith(result, StringUtils::contains, "depender", PluginWrapper.PluginDisableStatus.DISABLED), "An occurrence of the depender plugin in the log says it was successfully disabled");
-        assertTrue(checkResultWith(result, StringUtils::contains, "depender", PluginWrapper.PluginDisableStatus.ALREADY_DISABLED), "An occurrence of the depender plugin in the log says it was already disabled");
+        assertTrue(checkResultWith(result, Strings.CS::contains, "depender", PluginWrapper.PluginDisableStatus.DISABLED), "An occurrence of the depender plugin in the log says it was successfully disabled");
+        assertTrue(checkResultWith(result, Strings.CS::contains, "depender", PluginWrapper.PluginDisableStatus.ALREADY_DISABLED), "An occurrence of the depender plugin in the log says it was already disabled");
     }
 
     /**
@@ -314,7 +315,7 @@ class DisablePluginCommandTest {
         assertPluginDisabled("depender");
         assertPluginDisabled("mandatory-depender");
 
-        assertTrue(checkResultWith(result, StringUtils::startsWith, "badplugin", PluginWrapper.PluginDisableStatus.NO_SUCH_PLUGIN), "Only error NO_SUCH_PLUGIN in quiet mode");
+        assertTrue(checkResultWith(result, Strings.CS::startsWith, "badplugin", PluginWrapper.PluginDisableStatus.NO_SUCH_PLUGIN), "Only error NO_SUCH_PLUGIN in quiet mode");
     }
 
     /**
@@ -331,7 +332,7 @@ class DisablePluginCommandTest {
         assertPluginEnabled("depender");
         assertPluginEnabled("mandatory-depender");
 
-        assertTrue(checkResultWith(result, StringUtils::startsWith, "dependee", PluginWrapper.PluginDisableStatus.NOT_DISABLED_DEPENDANTS), "Only error NOT_DISABLED_DEPENDANTS in quiet mode");
+        assertTrue(checkResultWith(result, Strings.CS::startsWith, "dependee", PluginWrapper.PluginDisableStatus.NOT_DISABLED_DEPENDANTS), "Only error NOT_DISABLED_DEPENDANTS in quiet mode");
     }
 
     /**

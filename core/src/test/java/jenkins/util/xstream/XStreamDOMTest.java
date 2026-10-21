@@ -186,7 +186,7 @@ class XStreamDOMTest {
         String input = getTestData("XStreamDOMTest.data3.xml");
 
         XStreamDOM dom = XStreamDOM.from(new StringReader(input));
-        List<XStreamDOM> children = dom.getChildren().get(0).getChildren().get(0).getChildren();
+        List<XStreamDOM> children = dom.getChildren().getFirst().getChildren().getFirst().getChildren();
         assertNamesAreEscaped(children);
 
         Foo foo = (Foo) xs.fromXML(new StringReader(input));

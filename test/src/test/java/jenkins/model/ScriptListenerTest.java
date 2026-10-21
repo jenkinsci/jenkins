@@ -57,7 +57,7 @@ class ScriptListenerTest {
             final List<String> messages = logging.getMessages();
             assertThat(messages, hasSize(2));
 
-            assertThat(messages.get(0), containsString("Execution of script: '" + script + "' with binding: '[:]' in feature: 'class hudson.util.RemotingDiagnostics' and context: 'hudson.remoting.LocalChannel@"));
+            assertThat(messages.getFirst(), containsString("Execution of script: '" + script + "' with binding: '[:]' in feature: 'class hudson.util.RemotingDiagnostics' and context: 'hudson.remoting.LocalChannel@"));
             assertThat(messages.get(0), containsString("' with correlation: '"));
             assertThat(messages.get(0), containsString("' (no user)"));
 
@@ -92,7 +92,7 @@ class ScriptListenerTest {
             final List<String> messages = logging.getMessages();
             assertThat(messages, hasSize(3));
 
-            assertThat(messages.get(0), containsString("Execution of script: '" + script + "' with binding: '["));
+            assertThat(messages.getFirst(), containsString("Execution of script: '" + script + "' with binding: '["));
             assertThat(messages.get(0), containsString("]' in feature: 'class hudson.cli.GroovyCommand' and context: 'null' with correlation: '"));
             assertThat(messages.get(0), containsString("' (no user)"));
 

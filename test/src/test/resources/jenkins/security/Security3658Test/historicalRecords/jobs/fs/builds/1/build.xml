@@ -1,0 +1,29 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<build>
+    <actions>
+        <hudson.model.ParametersAction>
+            <safeParameters class="sorted-set"/>
+            <parameters>
+                <hudson.model.RunParameterValue>
+                    <name>copy</name>
+                    <runId>nonexistent#1</runId>
+                </hudson.model.RunParameterValue>
+            </parameters>
+            <parameterDefinitionNames>
+                <string>copy</string>
+            </parameterDefinitionNames>
+        </hudson.model.ParametersAction>
+    </actions>
+    <queueId>1</queueId>
+    <timestamp>1769414406434</timestamp>
+    <startTime>1769414406461</startTime>
+    <result>SUCCESS</result>
+    <duration>81</duration>
+    <charset>UTF-8</charset>
+    <keepLog>false</keepLog>
+    <builtOn></builtOn>
+    <scm class="hudson.scm.NullChangeLogParser"/>
+    <culprits class="java.util.Collections$UnmodifiableSet">
+        <c class="sorted-set"/>
+    </culprits>
+</build>

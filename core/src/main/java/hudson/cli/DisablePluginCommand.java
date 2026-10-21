@@ -46,10 +46,11 @@ public class DisablePluginCommand extends CLICommand {
     @Option(name = "-restart", aliases = "-r", usage = "Restart Jenkins after disabling plugins.")
     private boolean restart;
 
-    @Option(name = "-strategy", aliases = "-s", metaVar = "strategy", usage = "How to process the dependent plugins. \n" +
-            "- none: if a mandatory dependent plugin exists and it is enabled, the plugin cannot be disabled (default value).\n" +
-            "- mandatory: all mandatory dependent plugins are also disabled, optional dependent plugins remain enabled.\n" +
-            "- all: all dependent plugins are also disabled, no matter if its dependency is optional or mandatory.")
+    @Option(name = "-strategy", aliases = "-s", metaVar = "strategy", usage = """
+            How to process the dependent plugins.
+            - none: if a mandatory dependent plugin exists and it is enabled, the plugin cannot be disabled (default value).
+            - mandatory: all mandatory dependent plugins are also disabled, optional dependent plugins remain enabled.
+            - all: all dependent plugins are also disabled, no matter if its dependency is optional or mandatory.""")
     private String strategy = PluginWrapper.PluginDisableStrategy.NONE.toString();
 
     @Option(name = "-quiet", aliases = "-q", usage = "Be quiet, print only the error messages")

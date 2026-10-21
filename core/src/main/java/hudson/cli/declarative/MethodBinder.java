@@ -179,10 +179,9 @@ class MethodBinder {
             if (this == o) {
                 return true;
             }
-            if (!(o instanceof ArgumentImpl)) {
+            if (!(o instanceof ArgumentImpl argument)) {
                 return false;
             }
-            ArgumentImpl argument = (ArgumentImpl) o;
             return Objects.equals(base, argument.base) && bias == argument.bias;
         }
 

@@ -53,7 +53,6 @@ import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -361,15 +360,10 @@ public class Fingerprint implements ModelObject, Saveable {
          */
         public Iterable<Integer> listNumbers() {
             final List<Range> ranges = getRanges();
-            return new Iterable<>() {
+            return () -> new Iterators.FlattenIterator<>(ranges) {
                 @Override
-                public Iterator<Integer> iterator() {
-                    return new Iterators.FlattenIterator<>(ranges) {
-                        @Override
-                        protected Iterator<Integer> expand(Range range) {
-                            return Iterators.sequence(range.start, range.end).iterator();
-                        }
-                    };
+                protected Iterator<Integer> expand(Range range) {
+                    return Iterators.sequence(range.start, range.end).iterator();
                 }
             };
         }
@@ -379,15 +373,10 @@ public class Fingerprint implements ModelObject, Saveable {
          */
         public Iterable<Integer> listNumbersReverse() {
             final List<Range> ranges = getRanges();
-            return new Iterable<>() {
+            return () -> new Iterators.FlattenIterator<>(Iterators.reverse(ranges)) {
                 @Override
-                public Iterator<Integer> iterator() {
-                    return new Iterators.FlattenIterator<>(Iterators.reverse(ranges)) {
-                        @Override
-                        protected Iterator<Integer> expand(Range range) {
-                            return Iterators.reverseSequence(range.start, range.end).iterator();
-                        }
-                    };
+                protected Iterator<Integer> expand(Range range) {
+                    return Iterators.reverseSequence(range.start, range.end).iterator();
                 }
             };
         }
@@ -638,7 +627,7 @@ public class Fingerprint implements ModelObject, Saveable {
          * If this range is empty, this method throws an exception.
          */
         public synchronized int min() {
-            return ranges.get(0).start;
+            return ranges.getFirst().start;
         }
 
         /**
@@ -647,7 +636,7 @@ public class Fingerprint implements ModelObject, Saveable {
          * If this range is empty, this method throws an exception.
          */
         public synchronized int max() {
-            return ranges.get(ranges.size() - 1).end;
+            return ranges.getLast().end;
         }
 
         /**
@@ -660,7 +649,7 @@ public class Fingerprint implements ModelObject, Saveable {
         public synchronized boolean isSmallerThan(int n) {
             if (ranges.isEmpty())    return true;
 
-            return ranges.get(ranges.size() - 1).isSmallerThan(n);
+            return ranges.getLast().isSmallerThan(n);
         }
 
         /**
@@ -1207,13 +1196,10 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     public @NonNull Collection<FingerprintFacet> getSortedFacets() {
         List<FingerprintFacet> r = new ArrayList<>(getFacets());
-        r.sort(new Comparator<>() {
-            @Override
-            public int compare(FingerprintFacet o1, FingerprintFacet o2) {
-                long a = o1.getTimestamp();
-                long b = o2.getTimestamp();
-                return Long.compare(a, b);
-            }
+        r.sort((o1, o2) -> {
+            long a = o1.getTimestamp();
+            long b = o2.getTimestamp();
+            return Long.compare(a, b);
         });
         return r;
     }
@@ -1470,8 +1456,7 @@ public class Fingerprint implements ModelObject, Saveable {
             if (canDiscoverTheItem) {
                 ItemGroup<?> current = itemBySystemUser.getParent();
                 do {
-                    if (current instanceof Item) {
-                        final Item i = (Item) current;
+                    if (current instanceof Item i) {
                         current = i.getParent();
                         if (!i.hasPermission2(userAuth, Item.READ)) {
                             canDiscoverTheItem = false;

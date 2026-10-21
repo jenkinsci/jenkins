@@ -183,7 +183,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
         // Now get the 'restOfUrl' after the top-level ancestor (which is the Jenkins singleton).
         // In other words, this is the complete URL after Jenkins handled the top-level request.
-        final String completeUrl = req.getAncestors().get(0).getRestOfUrl();
+        final String completeUrl = req.getAncestors().getFirst().getRestOfUrl();
 
         // And finally, remove the 'restOfPath' suffix from the complete URL, as that's the path from Jenkins to the DBS.
         String dbsUrl = completeUrl.substring(0, completeUrl.length() - dbsFile.length());
@@ -271,6 +271,11 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         @Override
         public String toString() {
             return "[" + super.toString() + ", authentication=" + authenticationName + "; key=" + browserUrl + "]";
+        }
+
+        private Object readResolve() {
+            LOGGER.log(Level.WARNING, "Blocked deserialization of InternalResourceRequest for security reasons", new Exception("stack trace"));
+            throw new SecurityException("Blocked deserialization of InternalResourceRequest for security reasons");
         }
     }
 

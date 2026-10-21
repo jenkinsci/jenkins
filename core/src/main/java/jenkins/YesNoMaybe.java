@@ -47,13 +47,10 @@ public enum YesNoMaybe {
 
     @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "bridge method for backward compatibility")
     public Boolean toBool() {
-        switch (this) {
-        case YES:
-            return true;
-        case NO:
-            return false;
-        default:
-            return null;
-        }
+        return switch (this) {
+            case YES -> true;
+            case NO -> false;
+            default -> null;
+        };
     }
 }

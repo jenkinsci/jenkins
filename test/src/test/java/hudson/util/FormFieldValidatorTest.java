@@ -162,7 +162,7 @@ class FormFieldValidatorTest {
             webclient.getPage(p, "configure");
 
             statusListener.assertHasResponses();
-            String contentAsString = statusListener.getResponses().get(0).getContentAsString();
+            String contentAsString = statusListener.getResponses().getFirst().getContentAsString();
             assertTrue(contentAsString.contains("doCheckXyz is broken"));
         } finally {
             Publisher.all().remove(d);

@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import hudson.ExtensionList;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.htmlunit.Page;
 import org.htmlunit.ScriptException;
 import org.htmlunit.html.HtmlPage;
@@ -56,10 +56,10 @@ class BindTest {
                     .orElseThrow()
                     .getAttribute("src");
 
-            final Page script = wc.goTo(StringUtils.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
+            final Page script = wc.goTo(Strings.CS.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
             final String content = script.getWebResponse().getContentAsString();
             assertThat(content, startsWith("varname = makeStaplerProxy('" + j.contextPath + "/$stapler/bound/"));
-            assertThat(content, endsWith("','test',['annotatedJsMethod1','byName1']);"));
+            assertThat(content, endsWith("',document.head.dataset.crumbValue,['annotatedJsMethod1','byName1']);"));
         }
         assertThat(root.invocations, is(1));
     }
@@ -77,8 +77,8 @@ class BindTest {
                     .orElseThrow()
                     .getAttribute("src");
 
-            final Page script = wc.goTo(StringUtils.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
-            assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath + "/theWellKnownRoot','test',['annotatedJsMethod2','byName2']);"));
+            final Page script = wc.goTo(Strings.CS.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
+            assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath + "/theWellKnownRoot',document.head.dataset.crumbValue,['annotatedJsMethod2','byName2']);"));
         }
         assertThat(root.invocations, is(1));
     }
@@ -96,8 +96,9 @@ class BindTest {
                     .orElseThrow()
                     .getAttribute("src");
 
-            final Page script = wc.goTo(StringUtils.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
-            assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath + "/the\\'Well\\'Known\\\\\\'Root\\'With\\'Quotes','test',['annotatedJsMethod2','byName2']);"));
+            final Page script = wc.goTo(Strings.CS.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
+            assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath
+                    + "/the\\'Well\\'Known\\\\\\'Root\\'With\\'Quotes',document.head.dataset.crumbValue,['annotatedJsMethod2','byName2']);"));
         }
         assertThat(root.invocations, is(1));
     }
@@ -114,7 +115,7 @@ class BindTest {
             final HtmlPage htmlPage = exception.getPage();
             final String scriptUrl = htmlPage.getElementsByTagName("script").stream().filter(it -> it.getAttribute("src").equals(j.contextPath + "/$stapler/bound/script/null?var=varname")).findFirst().orElseThrow().getAttribute("src");
 
-            final Page script = wc.goTo(StringUtils.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
+            final Page script = wc.goTo(Strings.CS.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
             final String content = script.getWebResponse().getContentAsString();
             assertThat(content, is("varname = null;"));
         }
@@ -135,7 +136,7 @@ class BindTest {
                     .getTextContent();
 
             assertThat(content, startsWith("window['varname']=makeStaplerProxy('" + j.contextPath + "/$stapler/bound/"));
-            assertThat(content, endsWith("','test',['annotatedJsMethod1','byName1']);"));
+            assertThat(content, endsWith("',document.head.dataset.crumbValue,['annotatedJsMethod1','byName1']);"));
         }
         assertThat(root.invocations, is(1));
     }
