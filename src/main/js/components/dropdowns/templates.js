@@ -98,16 +98,22 @@ function optionalVals(keyVals) {
     .join(" ");
 }
 
-function icon(opt) {
+function icon(opt, type) {
   if (!opt.icon) {
     return "";
   }
 
-  return `<div class="jenkins-dropdown__item__icon">${
-    opt.iconXml
-      ? opt.iconXml
-      : `<img alt="Icon" aria-hidden="true" src="${opt.icon}" />`
-  }</div>`;
+  const iconMarkup = opt.iconXml
+    ? opt.iconXml
+    : `<img alt="Icon" aria-hidden="true" src="${opt.icon}" />`;
+
+  // Buttons size their icon directly via CSS and don't want the
+  // dropdown item's icon wrapper (and its label-oriented margin)
+  if (type === "jenkins-button") {
+    return iconMarkup;
+  }
+
+  return `<div class="jenkins-dropdown__item__icon">${iconMarkup}</div>`;
 }
 
 function badge(opt) {
@@ -141,6 +147,9 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
   );
 
   const label = xmlEscape(itemOptions.displayName);
+  const description = itemOptions.description
+    ? `<span class="jenkins-dropdown__item__description">${xmlEscape(itemOptions.description)}</span>`
+    : "";
 
   const clazz = [
     type,
@@ -210,8 +219,9 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
           "data-html-tooltip": itemOptions.tooltip,
           type: tag === "button" ? "button" : null,
         })}>
-          ${icon(itemOptions)}
+          ${icon(itemOptions, type)}
           ${label}
+          ${description}
           ${badge(itemOptions)}
           ${
             itemOptions.event &&

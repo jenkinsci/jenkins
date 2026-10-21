@@ -415,7 +415,7 @@ class UtilTest {
     }
 
     @Test
-    @Issue({"SECURITY-276", "SECURITY-3501"})
+    @Issue({"SECURITY-276", "SECURITY-3501", "SECURITY-3711"})
     void testIsSafeToRedirectTo() {
         assertFalse(Util.isSafeToRedirectTo("http://foobar/"));
         assertFalse(Util.isSafeToRedirectTo("mailto:kk@kohsuke.org"));
@@ -425,6 +425,19 @@ class UtilTest {
         assertFalse(Util.isSafeToRedirectTo("\\/google.com"));
         assertFalse(Util.isSafeToRedirectTo("/\\google.com"));
         assertFalse(Util.isSafeToRedirectTo("\\google.com"));
+
+        assertFalse(Util.isSafeToRedirectTo(".//google.com"));
+        assertFalse(Util.isSafeToRedirectTo(".///google.com"));
+        assertFalse(Util.isSafeToRedirectTo("aaa/..//google.com"));
+        assertFalse(Util.isSafeToRedirectTo("./aaa/..//google.com"));
+        assertFalse(Util.isSafeToRedirectTo("./\\/google.com"));
+
+        assertFalse(Util.isSafeToRedirectTo("/\t/google.com"));
+        assertFalse(Util.isSafeToRedirectTo("/\n/google.com"));
+        assertFalse(Util.isSafeToRedirectTo("/\r/google.com"));
+        assertFalse(Util.isSafeToRedirectTo("\t//google.com"));
+        assertFalse(Util.isSafeToRedirectTo("/\t/\t/google.com"));
+        assertFalse(Util.isSafeToRedirectTo("/\t\n\r/google.com"));
 
         assertTrue(Util.isSafeToRedirectTo("foo/bar/abc:def"));
         assertTrue(Util.isSafeToRedirectTo("foo?abc:def"));

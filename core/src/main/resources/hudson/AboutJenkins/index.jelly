@@ -49,10 +49,7 @@ THE SOFTWARE.
                       permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
 
-    <div class="app-about-branding">
-      <div class="app-about-branding__aurora"></div>
-      <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}" />
-    </div>
+    <l:branding clazz="app-about-branding" />
 
     <p class="jenkins-page-description jenkins-!-text-color">${%blurb}</p>
 

@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -43,6 +44,7 @@ import hudson.ExtensionList;
 import hudson.model.User;
 import hudson.security.HudsonPrivateSecurityRealm.Details;
 import hudson.security.pages.SignupPage;
+import hudson.util.FormValidation;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -53,6 +55,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import jenkins.security.ApiTokenProperty;
+import jenkins.security.BasicPasswordComplexityRule;
 import jenkins.security.SecurityListener;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.seed.UserSeedProperty;
@@ -64,7 +67,7 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPasswordInput;
-import org.htmlunit.util.Cookie;
+import org.htmlunit.http.Cookie;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.xml.XmlPage;
 import org.junit.jupiter.api.BeforeEach;
@@ -797,5 +800,150 @@ class HudsonPrivateSecurityRealmTest {
     private void assertUserNotConnected(JenkinsRule.WebClient wc, String notExpectedUsername) throws Exception {
         XmlPage page = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
         assertThat(page, hasXPath("//name", not(is(notExpectedUsername))));
+    }
+
+    @Test
+    void noPasswordComplexityRuleAllowsAnyPassword() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("testuser");
+        signup.enterPassword("a");
+        signup.enterFullName("Test User");
+        signup.enterEmail("test@example.com");
+        HtmlPage success = signup.submit(j);
+        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
+    }
+
+    @Test
+    void signupRejectsWeakPasswordWhenComplexityRuleConfigured() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        securityRealm.setPasswordComplexityRule(new BasicPasswordComplexityRule(8, true, false, true, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("testuser");
+        signup.enterPassword("weak");
+        signup.enterFullName("Test User");
+        signup.enterEmail("test@example.com");
+        signup = new SignupPage(signup.submit(j));
+        signup.assertErrorContains("Password must be at least 8 characters long");
+        assertNull(User.get("testuser", false, Collections.emptyMap()));
+    }
+
+    @Test
+    void signupAcceptsStrongPasswordWhenComplexityRuleConfigured() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        securityRealm.setPasswordComplexityRule(new BasicPasswordComplexityRule(8, true, false, true, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("testuser2");
+        signup.enterPassword("StrongPass1");
+        signup.enterFullName("Test User");
+        signup.enterEmail("test@example.com");
+        HtmlPage success = signup.submit(j);
+        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
+    }
+
+    @Test
+    void passwordChangeRejectsWeakPasswordWhenComplexityRuleConfigured() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setPasswordComplexityRule(new BasicPasswordComplexityRule(8, true, false, true, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User alice = securityRealm.createAccount("alice", "AlicePass1");
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.login("alice", "AlicePass1");
+
+        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/security/");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+
+        password1.setText("weak");
+        password2.setText("weak");
+
+        HtmlForm form = configurePage.getFormByName("config");
+        assertThrows(FailingHttpStatusCodeException.class, () -> j.submit(form));
+    }
+
+    @Test
+    void passwordChangeAcceptsStrongPasswordWhenComplexityRuleConfigured() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setPasswordComplexityRule(new BasicPasswordComplexityRule(8, true, false, true, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User alice = securityRealm.createAccount("alice", "AlicePass1");
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.login("alice", "AlicePass1");
+
+        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/security/");
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
+
+        password1.setText("NewStrong1");
+        password2.setText("NewStrong1");
+
+        HtmlForm form = configurePage.getFormByName("config");
+        j.submit(form);
+
+        wc.login("alice", "NewStrong1");
+        assertUserConnected(wc, "alice");
+    }
+
+    @Test
+    void doCheckPasswordReturnsErrorForWeakPassword() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setPasswordComplexityRule(new BasicPasswordComplexityRule(8, true, false, false, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        Details.DescriptorImpl descriptor = ExtensionList.lookupSingleton(Details.DescriptorImpl.class);
+        FormValidation result = descriptor.doCheckPassword("weak");
+        assertEquals(FormValidation.Kind.ERROR, result.kind);
+    }
+
+    @Test
+    void doCheckPasswordReturnsOkForStrongPassword() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setPasswordComplexityRule(new BasicPasswordComplexityRule(8, true, false, false, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        Details.DescriptorImpl descriptor = ExtensionList.lookupSingleton(Details.DescriptorImpl.class);
+        FormValidation result = descriptor.doCheckPassword("StrongPass1");
+        assertEquals(FormValidation.Kind.OK, result.kind);
+    }
+
+    @Test
+    void doCheckPasswordReturnsOkWhenNoRuleConfigured() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        Details.DescriptorImpl descriptor = ExtensionList.lookupSingleton(Details.DescriptorImpl.class);
+        FormValidation result = descriptor.doCheckPassword("weak");
+        assertEquals(FormValidation.Kind.OK, result.kind);
+    }
+
+    @Test
+    void doCheckPasswordReturnsOkForEmptyPassword() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        securityRealm.setPasswordComplexityRule(new BasicPasswordComplexityRule(8, true, false, false, false));
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        Details.DescriptorImpl descriptor = ExtensionList.lookupSingleton(Details.DescriptorImpl.class);
+        FormValidation result = descriptor.doCheckPassword("");
+        assertEquals(FormValidation.Kind.OK, result.kind);
+    }
+
+    @Test
+    void setNullPasswordComplexityRuleFallsBackToNone() {
+        HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
+        realm.setPasswordComplexityRule(null);
+        assertDoesNotThrow(() -> realm.getPasswordComplexityRule().validate("weak"));
     }
 }

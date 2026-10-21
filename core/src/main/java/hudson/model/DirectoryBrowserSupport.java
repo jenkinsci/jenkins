@@ -382,8 +382,8 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             // for binary files, provide the file name for download
             rsp.setHeader("Content-Disposition", "inline; filename=" + baseFile.getName());
 
-            // pseudo file name to let the Stapler set text/plain
-            rsp.serveFile(req, in, lastModified, -1, length, "plain.txt");
+            // pseudo file name to let the Stapler set text/plain; ensure charset for non-ASCII text
+            rsp.serveFile(req, in, lastModified, -1, length, "mime-type:text/plain;charset=UTF-8");
         } else {
             if (resourceToken != null) {
                 // redirect to second domain
@@ -407,7 +407,14 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                     rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
                     return;
                 }
-                rsp.serveFile(req, in, lastModified, -1, length, baseFile.getName());
+                String fileName = baseFile.getName();
+                String mimeType = Jenkins.get().getServletContext().getMimeType(fileName);
+                if (mimeType != null && mimeType.startsWith("text/")) {
+                    // include charset=UTF-8 for text files to prevent browser encoding guessing
+                    rsp.serveFile(req, in, lastModified, -1, length, "mime-type:" + mimeType + ";charset=UTF-8");
+                } else {
+                    rsp.serveFile(req, in, lastModified, -1, length, fileName);
+                }
             }
         }
     }

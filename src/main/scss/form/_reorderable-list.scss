@@ -15,13 +15,13 @@ div.repeated-chunk {
     border-radius var(--standard-transition),
     box-shadow var(--standard-transition);
   height: unset !important;
-  margin: 0 0 calc(var(--card-border-width) * 2);
+  margin: 0 0 calc(var(--jenkins-border-width) * 2);
 
   &::after {
     content: "";
     position: absolute;
     inset: 0;
-    border: var(--card-border-width) solid var(--card-border-color);
+    border: var(--jenkins-border);
     border-radius: inherit;
     pointer-events: none;
   }

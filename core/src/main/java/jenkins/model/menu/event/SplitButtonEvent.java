@@ -12,19 +12,18 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 @Restricted(Beta.class)
-public final class SplitButtonEvent implements Event {
+public final class SplitButtonEvent extends DropdownEvent {
 
     private final Event event;
 
-    private final List<Action> actions;
-
     private SplitButtonEvent(Event event, List<Action> actions) {
-        if (event instanceof SplitButtonEvent) {
+        super(actions);
+
+        if (event instanceof DropdownEvent) {
             throw new IllegalArgumentException("Cannot nest dropdown events");
         }
 
         this.event = event;
-        this.actions = actions;
     }
 
     /**
@@ -39,10 +38,5 @@ public final class SplitButtonEvent implements Event {
     @Exported
     public Event getEvent() {
         return event;
-    }
-
-    @Exported
-    public List<Action> getActions() {
-        return actions;
     }
 }
