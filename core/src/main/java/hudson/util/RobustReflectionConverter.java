@@ -72,6 +72,8 @@ import jenkins.util.xstream.CriticalXStreamException;
 import net.jcip.annotations.GuardedBy;
 import org.acegisecurity.Authentication;
 import org.jvnet.tiger_types.Types;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Custom {@link ReflectionConverter} that handle errors more gracefully.
@@ -428,8 +430,8 @@ public class RobustReflectionConverter implements Converter {
             reader.moveUp();
         }
 
-        // Report any class/field errors in Saveable objects if it happens during loading of existing data from disk
-        if (shouldReportUnloadableDataForCurrentUser() && context.get("ReadError") != null && context.get("Saveable") == result) {
+        // Report any class/field errors in Saveable objects
+        if (context.get("ReadError") != null && context.get("Saveable") == result) {
             // Avoid any error in OldDataMonitor to be catastrophic. See JENKINS-62231 and JENKINS-59582
             // The root cause is the OldDataMonitor extension is not ready before a plugin triggers an error, for
             // example when trying to load a field that was created by a new version and you downgrade to the previous
@@ -461,7 +463,9 @@ public class RobustReflectionConverter implements Converter {
      *
      * @return whether the current user authentication is allowed to have errors loading data reported.
      */
-    private static boolean shouldReportUnloadableDataForCurrentUser() {
+    @Restricted(NoExternalUse.class)
+    public static boolean shouldReportUnloadableDataErrors() {
+        // TODO This should probably be moved to ODM
         if (RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS) {
             return true;
         }
