@@ -39,6 +39,31 @@ THE SOFTWARE.
               title="${%No builds yet}"
               clazz="jenkins-hidden">
       ${%Start the first build to see run history here.}
+
+      <j:set var="job" value="${it.owner}" />
+      <j:if test="${job.buildable}">
+        <l:hasPermission permission="${job.BUILD}">
+          <div class="jenkins-!-margin-top-3">
+            <j:choose>
+              <j:when test="${job.parameterized}">
+                <a class="jenkins-button jenkins-button--primary"
+                   href="${rootURL}/${job.url}build">
+                  <l:icon src="symbol-play" />
+                  ${%Build with Parameters}
+                </a>
+              </j:when>
+              <j:otherwise>
+                <form method="post" action="${rootURL}/${job.url}build?delay=0sec">
+                  <button type="submit" class="jenkins-button jenkins-button--primary">
+                    <l:icon src="symbol-play" />
+                    ${%Build Now}
+                  </button>
+                </form>
+              </j:otherwise>
+            </j:choose>
+          </div>
+        </l:hasPermission>
+      </j:if>
     </l:notice>
 
     <l:notice id="no-builds"
