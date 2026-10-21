@@ -46,6 +46,7 @@ import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.security.InputManipulationException;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.diagnosis.OldDataMonitor;
+import hudson.model.JobProperty;
 import hudson.model.PersistenceRoot;
 import hudson.model.Saveable;
 import hudson.remoting.ClassFilter;
@@ -379,7 +380,8 @@ public class RobustReflectionConverter implements Converter {
                 final Object value;
                 if (fieldExistsInClass) {
                     Field field = reflectionProvider.getField(result.getClass(), fieldName);
-                    if (PersistenceRoot.class.isAssignableFrom(type) && !isSafePersistenceRootReference(reader)) {
+                    // JobProperty as a workaround for promoted-builds plugin's `JobPropertyImpl` being both
+                    if (PersistenceRoot.class.isAssignableFrom(type) && !JobProperty.class.isAssignableFrom(type) && !isSafePersistenceRootReference(reader, type)) {
                         final String msg = "Refusing to unmarshal PersistenceRoot subtype '" + type.getName() + "' into field '"
                                 + fieldName + "' in '" + result.getClass().getName()
                                 + "'. PersistenceRoot objects are document roots and must not appear as nested field values.";
@@ -508,7 +510,8 @@ public class RobustReflectionConverter implements Converter {
      *       handled by the single-value converter which performs a safe registry lookup.</li>
      * </ol>
      */
-    private boolean isSafePersistenceRootReference(HierarchicalStreamReader reader) {
+    // TODO Look into removing this and letting PersistenceRootGuardingMarshallingStrategy handle it
+    private boolean isSafePersistenceRootReference(HierarchicalStreamReader reader, Class<?> determinedType) {
         // Pattern 1: XStream back-reference — already-deserialized object, nothing new constructed.
         String referenceAttr = reader.getAttribute(mapper.aliasForSystemAttribute("reference"));
         if (referenceAttr != null) {
@@ -518,14 +521,14 @@ public class RobustReflectionConverter implements Converter {
         // and there is no class= attribute that could override it with an arbitrary PersistenceRoot.
         String classAttr = reader.getAttribute(mapper.aliasForAttribute("class"));
         if (classAttr != null) {
-            // Pattern 3: single-value reference — the resolved type has a SingleValueConverter
-            // registered (e.g. Queue.XSTREAM's converter for hudson.model.Item). Such converters
-            // serialize PersistenceRoot objects as plain identifier strings with no child XML elements,
-            // so no attacker-controlled object graph can be injected.
+            // Pattern 3: single-value reference — the resolved type is assignable to the field and
+            // has a SingleValueConverter registered (e.g. Queue.XSTREAM's converter for hudson.model.Item).
+            // Such converters serialize PersistenceRoot objects as plain identifier strings with no
+            // child XML elements, so no attacker-controlled object graph can be injected.
             if (converterLookup != null) {
                 try {
                     Class<?> resolvedType = mapper.realClass(classAttr);
-                    if (converterLookup.lookupConverterForType(resolvedType) instanceof SingleValueConverter) {
+                    if (determinedType.isAssignableFrom(resolvedType) && converterLookup.lookupConverterForType(resolvedType) instanceof SingleValueConverter) {
                         return true;
                     }
                 } catch (Exception ignored) {
