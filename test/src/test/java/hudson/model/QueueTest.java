@@ -101,6 +101,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -646,6 +647,49 @@ public class QueueTest {
     @Test
     void vetoStillRefusesSchedulingOutsideLock() throws Exception {
         assertVetoRefuses(true);
+    }
+
+    @TestExtension("concurrentIdenticalSchedulesYieldSingleItemOutsideLock")
+    public static class BarrierDecisionHandler extends Queue.QueueDecisionHandler {
+        static volatile Queue.Task target;
+        static volatile CyclicBarrier barrier;
+
+        @Override
+        public boolean shouldSchedule(Queue.Task p, List<Action> actions) {
+            if (p == target) {
+                try {
+                    // both schedulers must be inside the handler at the same time
+                    barrier.await(10, TimeUnit.SECONDS);
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+            return true;
+        }
+    }
+
+    @Test
+    void concurrentIdenticalSchedulesYieldSingleItemOutsideLock() throws Exception {
+        boolean old = Queue.DECISION_HANDLERS_OUTSIDE_LOCK;
+        Queue.DECISION_HANDLERS_OUTSIDE_LOCK = true;
+        r.jenkins.setNumExecutors(0); // keep the item in the queue
+        FreeStyleProject p = r.createFreeStyleProject();
+        BarrierDecisionHandler.target = p;
+        BarrierDecisionHandler.barrier = new CyclicBarrier(2);
+        ExecutorService ex = Executors.newFixedThreadPool(2);
+        try {
+            Future<ScheduleResult> a = ex.submit(() -> r.jenkins.getQueue().schedule2(p, 0));
+            Future<ScheduleResult> b = ex.submit(() -> r.jenkins.getQueue().schedule2(p, 0));
+            ScheduleResult resultA = a.get(30, TimeUnit.SECONDS);
+            ScheduleResult resultB = b.get(30, TimeUnit.SECONDS);
+
+            assertEquals(1, r.jenkins.getQueue().getItems(p).size(), "duplicate detection must still yield one item");
+            assertTrue(resultA.isCreated() ^ resultB.isCreated(), "exactly one call should create the item");
+        } finally {
+            ex.shutdownNow();
+            Queue.DECISION_HANDLERS_OUTSIDE_LOCK = old;
+            r.jenkins.getQueue().clear();
+        }
     }
 
     @Issue("JENKINS-27256")
