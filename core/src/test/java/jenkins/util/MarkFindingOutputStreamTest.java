@@ -2,11 +2,16 @@ package jenkins.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import hudson.util.StreamCopyThread;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -64,6 +69,64 @@ class MarkFindingOutputStreamTest {
         writeOneByOne("x");
         assertOutput(markHead + "x");
         assertCount(0);
+    }
+
+    @ParameterizedTest
+    @MethodSource("markerSplitPoints")
+    void findMarkerAcrossTwoWrites(int split) throws IOException {
+        byte[] bytes = mark.getBytes(StandardCharsets.UTF_8);
+        write("before");
+        m.write(bytes, 0, split);
+        m.write(bytes, split, bytes.length - split);
+        write("after");
+        assertCount(1);
+        assertOutput("beforeafter");
+    }
+
+    private static IntStream markerSplitPoints() {
+        return IntStream.range(1, MarkFindingOutputStream.MARK.length());
+    }
+
+    @Test
+    void findSplitMarkerWithOffsetsAndSurroundingOutput() throws IOException {
+        byte[] first = ("__before" + markHead + "__").getBytes(StandardCharsets.UTF_8);
+        byte[] second = ("__" + markTail + "after__").getBytes(StandardCharsets.UTF_8);
+        m.write(first, 2, first.length - 4);
+        m.write(second, 2, second.length - 4);
+        assertCount(1);
+        assertOutput("beforeafter");
+    }
+
+    @Test
+    void findMarkerAcrossSingleByteAndBulkWrites() throws IOException {
+        byte[] bytes = mark.getBytes(StandardCharsets.UTF_8);
+        m.write(bytes[0]);
+        m.write(bytes, 1, bytes.length - 1);
+        assertCount(1);
+        assertOutput("");
+    }
+
+    @Test
+    void findMarkerAcrossThreeWrites() throws IOException {
+        byte[] bytes = mark.getBytes(StandardCharsets.UTF_8);
+        m.write(bytes, 0, 5);
+        m.write(bytes, 5, 4);
+        m.write(bytes, 9, bytes.length - 9);
+        assertCount(1);
+        assertOutput("");
+    }
+
+    @Test
+    void findMarkerCopiedInSeparateChunks() {
+        ByteArrayInputStream input = new ByteArrayInputStream(("before" + mark + "after").getBytes(StandardCharsets.UTF_8)) {
+            @Override
+            public synchronized int read(byte[] buffer, int offset, int length) {
+                return super.read(buffer, offset, Math.min(length, 7));
+            }
+        };
+        new StreamCopyThread("marker regression", input, m).run();
+        assertCount(1);
+        assertOutput("beforeafter");
     }
 
     private void assertOutput(String s) {

@@ -56,7 +56,8 @@ public abstract class MarkFindingOutputStream extends OutputStream {
                 match++;
                 i++;
                 if (match == MBYTES.length) {
-                    base.write(b, off, i - off - MBYTES.length);    // flush the portion up to MARK
+                    // The marker may have started in an earlier write.
+                    base.write(b, off, Math.max(0, i - off - MBYTES.length));    // flush the portion up to MARK
                     // don't send MARK to the output, but instead notify the callback
                     onMarkFound();
                     match = 0;
