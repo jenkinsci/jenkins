@@ -353,6 +353,16 @@ public class Queue extends ResourceController implements Saveable {
 
     private final transient Condition condition = lock.newCondition();
 
+    /**
+     * If true, {@link QueueDecisionHandler#shouldSchedule} is called before the queue lock is
+     * acquired, so a slow handler cannot block unrelated queue operations.
+     * Handlers then must not assume the queue state is stable during the call.
+     */
+    @Restricted(NoExternalUse.class)
+    @VisibleForTesting
+    /*package*/ static /*final*/ boolean DECISION_HANDLERS_OUTSIDE_LOCK =
+            SystemProperties.getBoolean(Queue.class.getName() + ".decisionHandlersOutsideLock");
+
     public Queue(@NonNull LoadBalancer loadBalancer) {
         this.loadBalancer =  loadBalancer.sanitize();
         // if all the executors are busy doing something, then the queue won't be maintained in
@@ -588,16 +598,34 @@ public class Queue extends ResourceController implements Saveable {
         actions = new ArrayList<>(actions);
         actions.removeIf(Objects::isNull);
 
+        final boolean handlersOutsideLock = DECISION_HANDLERS_OUTSIDE_LOCK;
+        if (handlersOutsideLock && !askDecisionHandlers(p, actions)) {
+            return ScheduleResult.refused();    // veto, evaluated without holding the queue lock
+        }
+
         lock.lock();
         try { try {
-            for (QueueDecisionHandler h : QueueDecisionHandler.all())
-                if (!h.shouldSchedule(p, actions))
-                    return ScheduleResult.refused();    // veto
+            if (!handlersOutsideLock && !askDecisionHandlers(p, actions)) {
+                return ScheduleResult.refused();    // veto (legacy behavior: under the lock)
+            }
 
             return scheduleInternal(p, quietPeriod, actions);
         } finally { updateSnapshot(); } } finally {
             lock.unlock();
         }
+    }
+
+    /**
+     * Consults all {@link QueueDecisionHandler}s in registration order.
+     * @return false if any handler vetoes
+     */
+    private boolean askDecisionHandlers(Task p, List<Action> actions) {
+        for (QueueDecisionHandler h : QueueDecisionHandler.all()) {
+            if (!h.shouldSchedule(p, actions)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -2679,6 +2707,11 @@ public class Queue extends ResourceController implements Saveable {
          * @param actions
          *      List of actions that are to be made available as {@link AbstractBuild#getActions()}
          *      upon the start of the build. This list is live, and can be mutated.
+         *
+         * <p>
+         * Depending on {@code hudson.model.Queue.decisionHandlersOutsideLock}, this may be called
+         * without the {@link Queue} lock held. Implementations must not assume the queue is
+         * unchanged between this call and the item being added.
          */
         public abstract boolean shouldSchedule(Task p, List<Action> actions);
 
