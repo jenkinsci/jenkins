@@ -69,14 +69,12 @@ public final class PersistenceStores {
         }
         RESOLVING.set(Boolean.TRUE);
         try {
-            // looked up before taking our own lock: loading extensions takes a global lock, and threads holding it
-            // (instantiating extensions) may themselves read files and get here
-            ExtensionList<PersistenceStoreProvider> providers = ExtensionList.lookup(PersistenceStoreProvider.class);
-            providers.size();
-            synchronized (PersistenceStores.class) {
+            // resolved under the lock that loading extensions takes, not one of our own: a thread holding it (as one
+            // making an extension that reads its files) may get here, and a provider may load extensions
+            synchronized (ExtensionList.loadLock(j)) {
                 if (resolvedFor != j) {
                     PersistenceStore store = null;
-                    for (PersistenceStoreProvider provider : providers) {
+                    for (PersistenceStoreProvider provider : ExtensionList.lookup(PersistenceStoreProvider.class)) {
                         store = provider.create();
                         if (store != null) {
                             LOGGER.info(() -> "Using persistence store " + provider.getClass().getName());

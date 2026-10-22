@@ -317,7 +317,16 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      * Chooses the object that locks the loading of the extension instances.
      */
     protected Object getLoadLock() {
-        return Objects.requireNonNull(jenkins).lookup.setIfNull(Lock.class, new Lock());
+        return loadLock(Objects.requireNonNull(jenkins));
+    }
+
+    /**
+     * The lock that loading any {@link ExtensionList} of this Jenkins takes (see {@link Lock}), for code that must not
+     * hold a lock of its own while extensions load, as one that loads them can wait for that lock.
+     */
+    @Restricted(NoExternalUse.class)
+    public static @NonNull Object loadLock(@NonNull Jenkins jenkins) {
+        return jenkins.lookup.setIfNull(Lock.class, new Lock());
     }
 
     /**
