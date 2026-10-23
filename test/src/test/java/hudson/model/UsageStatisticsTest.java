@@ -162,7 +162,7 @@ class UsageStatisticsTest {
      */
     private void warmUpNodeMonitorCache() throws InterruptedException {
         ArchitectureMonitor.DescriptorImpl descriptor = j.jenkins.getDescriptorByType(ArchitectureMonitor.DescriptorImpl.class);
-        String value = null;
+        ArchitectureMonitor.Info value = null;
         int count = 1;
         while (value == null && count++ <= 5)  // If for some reason the cache doesn't get populated, don't loop forever
         {

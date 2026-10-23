@@ -166,7 +166,8 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
             }
             n.put("executors", c.getNumExecutors());
             ArchitectureMonitor.DescriptorImpl descriptor = j.getDescriptorByType(ArchitectureMonitor.DescriptorImpl.class);
-            n.put("os", descriptor.get(c));
+            ArchitectureMonitor.Info info = descriptor.get(c);
+            n.put("os", info != null ? info.toString() : null);
             nodes.add(n);
         }
         o.put("nodes", nodes);
