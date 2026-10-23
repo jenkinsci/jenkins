@@ -139,7 +139,15 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             menuItem.semantic = action.getSemantic();
             menuItem.description = action.getDescription();
             menuItem.group = action.getGroup();
-            menuItem.event = action.getEvent();
+            // Adjust URL handling for root-relative URLs
+            String urlName = action.getUrlName();
+            if (urlName != null && urlName.startsWith("/")) {
+                urlName = Stapler.getCurrentRequest2().getContextPath() + urlName;
+                menuItem.event = LinkEvent.of(urlName);
+                menuItem.url = urlName;
+            } else {
+                menuItem.event = action.getEvent();
+            }
 
             if (!Functions.isContextMenuVisible(action)) {
                 return this;
