@@ -82,7 +82,7 @@ THE SOFTWARE.
             </j:otherwise>
           </j:choose>
           <j:if test="${attrs.hasMenu or attrs.hasChildrenMenu}">
-            <div aria-label="dropdown menu for ${attrs.title}" data-iscurrent="${isCurrent}" data-href="${attrs.href}" data-base="${baseUrl}" tabindex="0" class="dropdown-indicator" data-model="${attrs.hasMenu}" data-children="${attrs.hasChildrenMenu}" >
+            <div aria-label="dropdown menu for ${attrs.title}" aria-haspopup="menu" aria-expanded="false" data-iscurrent="${isCurrent}" data-href="${attrs.href}" data-base="${baseUrl}" tabindex="0" class="dropdown-indicator" data-model="${attrs.hasMenu}" data-children="${attrs.hasChildrenMenu}" >
               <l:icon class="icon-sm jenkins-!-text-color-secondary" src="symbol-chevron-down" />
             </div>
           </j:if>

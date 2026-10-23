@@ -218,6 +218,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
           id: itemOptions.id,
           "data-html-tooltip": itemOptions.tooltip,
           type: tag === "button" ? "button" : null,
+          role: "menuitem",
         })}>
           ${icon(itemOptions, type)}
           ${label}
