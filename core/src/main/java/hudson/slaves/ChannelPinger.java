@@ -42,6 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.XStreamDeserializable;
 import jenkins.slaves.PingFailureAnalyzer;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
@@ -130,6 +131,7 @@ public class ChannelPinger extends ComputerListener {
     public static class SetUpRemotePing extends MasterToSlaveCallable<Void, IOException> {
         private static final long serialVersionUID = -2702219700841759872L;
         @Deprecated
+        @XStreamDeserializable
         private transient int pingInterval;
         private final int pingTimeoutSeconds;
         private final int pingIntervalSeconds;

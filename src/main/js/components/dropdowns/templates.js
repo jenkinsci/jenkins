@@ -98,16 +98,22 @@ function optionalVals(keyVals) {
     .join(" ");
 }
 
-function icon(opt) {
+function icon(opt, type) {
   if (!opt.icon) {
     return "";
   }
 
-  return `<div class="jenkins-dropdown__item__icon">${
-    opt.iconXml
-      ? opt.iconXml
-      : `<img alt="Icon" aria-hidden="true" src="${opt.icon}" />`
-  }</div>`;
+  const iconMarkup = opt.iconXml
+    ? opt.iconXml
+    : `<img alt="Icon" aria-hidden="true" src="${opt.icon}" />`;
+
+  // Buttons size their icon directly via CSS and don't want the
+  // dropdown item's icon wrapper (and its label-oriented margin)
+  if (type === "jenkins-button") {
+    return iconMarkup;
+  }
+
+  return `<div class="jenkins-dropdown__item__icon">${iconMarkup}</div>`;
 }
 
 function badge(opt) {
@@ -205,28 +211,29 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
   const url = tag === "a" ? context + xmlEscape(itemOptions.event.url) : null;
 
   const item = createElementFromHtml(`
-    <${tag}
-      ${optionalVals({
-        class: clazz,
-        href: url,
-        id: itemOptions.id,
-        "data-html-tooltip": itemOptions.tooltip,
-        type: tag === "button" ? "button" : null,
-        role: "menuitem",
-      })}>
-        ${icon(itemOptions)}
-        ${label}
-        ${description}
-        ${badge(itemOptions)}
-        ${
-          itemOptions.event &&
-          itemOptions.event.actions &&
-          type === "jenkins-dropdown__item"
-            ? `<span class="jenkins-dropdown__item__chevron"></span>`
-            : ``
-        }
-    </${tag}>
-  `);
+      <${tag}
+        ${optionalVals({
+          class: clazz,
+          href: url,
+          id: itemOptions.id,
+          "data-html-tooltip": itemOptions.tooltip,
+          type: tag === "button" ? "button" : null,
+          role: "menuitem",
+        })}>
+          ${icon(itemOptions, type)}
+          ${label}
+          ${description}
+          ${badge(itemOptions)}
+          ${
+            itemOptions.event &&
+            itemOptions.event.actions &&
+            type === "jenkins-dropdown__item"
+              ? `<span class="jenkins-dropdown__item__chevron"></span>`
+              : ``
+          }
+      </${tag}>
+    `);
+
   // Handle special cases
   tryOnClickEvent(item, dropdownItem);
   tryLoadScripts(item, dropdownItem, context);

@@ -2618,7 +2618,21 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 // JENKINS-16846: if f.getName() is the same as one of the files/directories in f,
                 // the rename op will fail
                 File tmp = new File(f.getAbsolutePath() + ".__rename");
-                if (!f.renameTo(tmp))
+                int attempts = 5;
+                boolean renamed = false;
+
+                try {
+                    do {
+                        renamed = f.renameTo(tmp);
+                        attempts--;
+                        if (!renamed && attempts > 0) {
+                            Thread.sleep(300);
+                        }
+                    } while (!renamed && attempts > 0);
+                } catch (InterruptedException e) {
+                    // Ignore
+                }
+                if (!renamed)
                     throw new IOException("Failed to rename " + f + " to " + tmp);
 
                 File t = new File(target.getRemote());
@@ -3098,6 +3112,14 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 if (!f.toPath().normalize().startsWith(normalizedAbsoluteBaseDir)) {
                     // This covers both relative path traversal, and potential undefined File(String, String) constructor behavior when it takes a second argument that's absolute.
                     throw new IOException("Tar " + name + " contains entry that escapes destination directory: " + entryName);
+                }
+
+                if (f.toPath().normalize().equals(normalizedAbsoluteBaseDir)) {
+                    if (te.isDirectory()) {
+                        continue;
+                    }
+                    // tar entry resolves to extraction base dir, so reject unless it's a directory
+                    throw new IOException("Tar " + name + " contains non-directory entry that resolves to base directory: " + entryName);
                 }
 
                 if (requireReadFromTarPathTraversalValidation(ALLOW_UNTAR_SYMLINK_RESOLUTION)) {

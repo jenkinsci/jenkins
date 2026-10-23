@@ -13,6 +13,6 @@
     <f:checkbox default="false" title="${%Require at least one digit (0-9)}" />
   </f:entry>
   <f:entry field="requireSpecialCharacter">
-    <f:checkbox default="false" title="${%Require at least one special character (e.g. !@#$%^&amp;*)}" />
+    <f:checkbox default="false" title="${%Require at least one special character}" />
   </f:entry>
 </j:jelly>

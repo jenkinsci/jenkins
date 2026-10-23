@@ -30,7 +30,7 @@ THE SOFTWARE.
   <j:new var="managementLink" className="jenkins.management.ConsoleLink" />
 
   <l:settings-subpage includeBreadcrumb="true" permission="${app.ADMINISTER}"
-                      header="${null}" noDefer="true" managementLink="${managementLink}">
+                      header="${null}" managementLink="${managementLink}">
 
     <t:scriptConsole scripts="${['println(Jenkins.instance.pluginManager.plugins)']}"
                      layout="none" />

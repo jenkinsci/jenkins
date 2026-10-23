@@ -312,6 +312,14 @@ function convertHtmlToItems(children) {
           };
         }
 
+        if (attributes.dropdownBadgeSeverity) {
+          item.badge = {
+            text: attributes.dropdownBadgeText,
+            tooltip: attributes.dropdownBadgeTooltip,
+            severity: attributes.dropdownBadgeSeverity,
+          };
+        }
+
         return item;
       }
       case "SUBMENU":

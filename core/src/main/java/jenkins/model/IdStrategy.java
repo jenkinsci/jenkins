@@ -212,12 +212,12 @@ public abstract class IdStrategy implements Describable<IdStrategy>, ExtensionPo
 
         @Override
         public boolean equals(@NonNull String id1, @NonNull String id2) {
-            return id1.equalsIgnoreCase(id2);
+            return keyFor(id1).equals(keyFor(id2));
         }
 
         @Override
         public int compare(@NonNull String id1, @NonNull String id2) {
-            return id1.compareToIgnoreCase(id2);
+            return keyFor(id1).compareTo(keyFor(id2));
         }
 
         @Extension @Symbol("caseInsensitive")
