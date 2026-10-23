@@ -26,12 +26,12 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -185,7 +185,7 @@ class SlaveTest {
                 j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
         DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> descriptors =
                 j.getInstance().getDescriptorList(ComputerLauncher.class);
-        assumeTrue(descriptors.size() > 1, "we need at least two launchers to test this");
+        assertThat("we need at least two launchers to test this", descriptors.size(), greaterThan(1));
         assertThat(descriptor.computerLauncherDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[0])));
 
         Descriptor<ComputerLauncher> victim = descriptors.getFirst();
@@ -202,7 +202,7 @@ class SlaveTest {
         DumbSlave.DescriptorImpl descriptor =
                 j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
         DescriptorExtensionList<RetentionStrategy<?>, Descriptor<RetentionStrategy<?>>> descriptors = RetentionStrategy.all();
-        assumeTrue(descriptors.size() > 1, "we need at least two retention strategies to test this");
+        assertThat("we need at least two retention strategies to test this", descriptors.size(), greaterThan(1));
         assertThat(descriptor.retentionStrategyDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[0])));
 
         Descriptor<RetentionStrategy<?>> victim = descriptors.getFirst();
@@ -220,7 +220,7 @@ class SlaveTest {
         DumbSlave.DescriptorImpl descriptor =
                 j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
         DescriptorExtensionList<NodeProperty<?>, NodePropertyDescriptor> descriptors = NodeProperty.all();
-        assumeTrue(descriptors.size() > 1, "we need at least two node properties to test this");
+        assertThat("we need at least two node properties to test this", descriptors.size(), greaterThan(1));
         assertThat(descriptor.nodePropertyDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[0])));
 
         NodePropertyDescriptor victim = descriptors.getFirst();

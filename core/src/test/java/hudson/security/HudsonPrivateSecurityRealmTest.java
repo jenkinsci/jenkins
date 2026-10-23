@@ -5,16 +5,19 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import hudson.Functions;
 import hudson.security.HudsonPrivateSecurityRealm.JBCryptEncoder;
 import hudson.security.HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.Duration;
 import javax.crypto.SecretKeyFactory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -25,6 +28,11 @@ class HudsonPrivateSecurityRealmTest {
     // MySecurePassword
     private static final String PBKDF2_HMAC_SHA512_ENCODED_PASSWORD =
             "$HMACSHA512:210000:30f9e0a5470a8bc67f128ca1aae25dd4$88abaca4f442caeff0096ec0f75df2d77cc31a956c564133232f4d2532a72c8d4380a718d5b2a3dccab9e752027eeadd8f9f2c0c624505531bf3a57ec7d08aad";
+
+    @BeforeEach
+    void skipTestsOnWindowsCI() {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Expensive to run and not Windows specific");
+    }
 
     /*
      * This exists so that we can easily check the complexity of how long this takes (ie is the number of iterations we
@@ -160,7 +168,7 @@ class HudsonPrivateSecurityRealmTest {
     @Issue("JENKINS-75533")
     @Test
     void ensureExpectedMessageAscii() {
-        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode(
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode2(
                 "1234567890123456789012345678901234567890123456789012345678901234567890123"));
         assertThat(ex.getMessage(), is(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong_ASCII()));
     }
@@ -168,9 +176,16 @@ class HudsonPrivateSecurityRealmTest {
     @Issue("JENKINS-75533")
     @Test
     void ensureExpectedMessageEmoji() {
-        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode(
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode2(
                 "\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20" +
                         "\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20\uD83E\uDD20")); // 🤠
         assertThat(ex.getMessage(), is(Messages.HudsonPrivateSecurityRealm_CreateAccount_BCrypt_PasswordTooLong()));
+    }
+
+    @Test
+    void ensureExpectedMessageFromEncode() {
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER.encode(
+                "1234567890123456789012345678901234567890123456789012345678901234567890123"));
+        assertThat(ex.getMessage(), is("password cannot be more than 72 bytes"));
     }
 }

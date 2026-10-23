@@ -166,7 +166,7 @@ public class PathRemover {
             sb.append("'. Tried ");
             sb.append(retryCount + 1);
             sb.append(" time");
-            if (retryCount != 1) sb.append('s');
+            if (retryCount + 1 != 1) sb.append('s');
             if (maxRetries > 0) {
                 sb.append(" (of a maximum of ");
                 sb.append(maxRetries + 1);

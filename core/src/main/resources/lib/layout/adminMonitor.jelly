@@ -1,0 +1,71 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:d="jelly:define">
+  <st:documentation> <![CDATA[
+    Displays an administrative monitor alert.
+
+    @since 2.558
+    ]]>
+    <st:attribute name="severity" use="optional" >
+      Severity of the alert, one of info, warning, danger or success. Defaults to warning if not specified.
+    </st:attribute>
+    <st:attribute name="dismissable" use="optional">
+      If the alert can be dismissed by the user, defaults to true if not specified. Dismissed alerts can be re-enabled
+      in the global configuration.
+    </st:attribute>
+    <st:attribute name="dismissValue" use="optional">
+      The value of the dismiss tooltip. Defaults to "Dismiss" if not specified.
+    </st:attribute>
+    <st:attribute name="class" use="optional">
+      Additional CSS class to add to the alert div.
+    </st:attribute>
+    <st:attribute name="id" use="optional">
+      The id attribute to add to the alert div.
+    </st:attribute>
+    <st:attribute name="controls" use="optional"><![CDATA[
+      Shows additional controls in the top right of the alert besides the dismiss button.
+
+      Define the controls like this:
+
+      <j:set var="controls">
+        <form method="post" name="clear" action="${rootURL}/${it.url}/clear">
+          <f:submit value="${%Clear}"/>
+        </form>
+      </j:set>
+
+      To be able to set controls, You must use a message.jelly. It is not possible
+      to do this in groovy.
+      ]]>
+    </st:attribute>
+
+  </st:documentation>
+  <j:set var="severity" value="${attrs.severity ?: 'warning'}"/>
+  <j:set var="dismissable" value="${attrs.dismissable ?: true}"/>
+  <j:set var="dismissValue" value="${attrs.dismissValue ?: '%Dismiss'}"/>
+  <st:adjunct includes="lib.layout.admin-monitor"/>
+  <div id="${attrs.id}" class="app-adminmonitor jenkins-alert jenkins-alert-${severity} ${attrs.class}" data-monitor-id="${it.id}">
+    <j:choose>
+      <j:when test="${severity == 'danger'}">
+        <l:icon src="symbol-alert-circle-outline" class="app-adminmonitor-icon"/>
+      </j:when>
+      <j:when test="${severity == 'warning'}">
+        <l:icon src="symbol-warning-outline" class="app-adminmonitor-icon"/>
+      </j:when>
+      <j:otherwise>
+        <l:icon src="symbol-information-circle" class="app-adminmonitor-icon"/>
+      </j:otherwise>
+    </j:choose>
+    <div class="app-adminmonitor-content">
+      <div class="app-adminmonitor-controls">
+        <j:out value="${attrs.controls}"/>
+        <l:isAdmin>
+          <j:if test="${dismissable}">
+            <button class="app-adminmonitor-dismiss-button jenkins-button" type="button" tooltip="${dismissValue}" data-url="${rootURL}/${it.url}/disable">
+              <l:icon src="symbol-close" />
+            </button>
+          </j:if>
+        </l:isAdmin>
+      </div>
+      <d:invokeBody />
+    </div>
+  </div>
+</j:jelly>

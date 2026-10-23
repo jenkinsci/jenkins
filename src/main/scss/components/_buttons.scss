@@ -18,6 +18,9 @@
   min-height: 2.375rem;
   white-space: nowrap;
   gap: 1ch;
+  box-shadow:
+    inset 0 10px 10px color-mix(in sRGB, white 1.5%, transparent),
+    var(--elevation-2-box-shadow);
 
   svg {
     width: 1.125rem;
@@ -55,6 +58,11 @@
   }
 
   color: var(--color) !important;
+
+  // Keep in sync with theme.scss' --elevation-2-box-shadow
+  box-shadow:
+    inset 0 10px 10px color-mix(in sRGB, white 1.5%, transparent),
+    0 2px 2px color-mix(in sRGB, var(--color) 4%, transparent);
 }
 
 .jenkins-button--primary[class*="color"] {
@@ -76,6 +84,8 @@
     &[aria-describedby],
     &[aria-expanded="true"]
   ) {
+    box-shadow: none;
+
     &::before {
       border-color: transparent;
     }
@@ -256,21 +266,21 @@ $jenkins-split-button-border-radius: 0.2rem;
 
 .jenkins-split-button {
   display: flex;
-  gap: 1px;
+  gap: 1.5px;
 
   & > :first-child {
     border-top-right-radius: $jenkins-split-button-border-radius;
     border-bottom-right-radius: $jenkins-split-button-border-radius;
   }
 
-  & > .jenkins-button:last-of-type {
+  & > * + * {
     padding: 0 5px;
     border-top-left-radius: $jenkins-split-button-border-radius;
     border-bottom-left-radius: $jenkins-split-button-border-radius;
 
     svg {
-      width: 0.8rem;
-      height: 0.8rem;
+      width: 0.75rem;
+      height: 0.75rem;
     }
   }
 }

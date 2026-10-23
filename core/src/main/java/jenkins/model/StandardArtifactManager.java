@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.security.XStreamNotDeserializable;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import org.kohsuke.accmod.Restricted;
@@ -57,6 +58,7 @@ public class StandardArtifactManager extends ArtifactManager {
             ? FilePath.TarCompression.NONE
             : FilePath.TarCompression.GZIP;
 
+    @XStreamNotDeserializable
     protected transient Run<?, ?> build;
 
     public StandardArtifactManager(Run<?, ?> build) {

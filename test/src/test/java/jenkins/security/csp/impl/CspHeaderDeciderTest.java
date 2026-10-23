@@ -19,6 +19,7 @@ import jenkins.security.csp.CspHeaderDecider;
 import org.hamcrest.Matcher;
 import org.htmlunit.Page;
 import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlCheckBoxInput;
 import org.htmlunit.html.HtmlFormUtil;
 import org.htmlunit.html.HtmlPage;
@@ -41,7 +42,7 @@ public class CspHeaderDeciderTest {
 
             final HtmlPage htmlPage = webClient.goTo("configureSecurity");
             assertThat(
-                    htmlPage.getWebResponse().getContentAsString(),
+                    htmlPage.querySelector("body").asXml(),
                     hasBlurb(jellyResource(DevelopmentHeaderDecider.class, "message.properties")));
             assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), not(nullValue()));
             assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), nullValue());
@@ -66,7 +67,7 @@ public class CspHeaderDeciderTest {
 
             final HtmlPage htmlPage = webClient.goTo("configureSecurity");
             assertThat(
-                    htmlPage.getWebResponse().getContentAsString().replace("Content-Security-Policy", "{0}"),
+                    htmlPage.querySelector("body").asXml().replace("Content-Security-Policy", "{0}"),
                     hasBlurb(jellyResource(SystemPropertyHeaderDecider.class, "message.properties")));
             assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), not(nullValue()));
             assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), nullValue());
@@ -91,7 +92,7 @@ public class CspHeaderDeciderTest {
 
             final HtmlPage htmlPage = webClient.goTo("configureSecurity");
             assertThat(
-                    htmlPage.getWebResponse().getContentAsString().replace("Content-Security-Policy-Report-Only", "{0}"),
+                    htmlPage.querySelector("body").asXml().replace("Content-Security-Policy-Report-Only", "{0}"),
                     hasBlurb(jellyResource(SystemPropertyHeaderDecider.class, "message.properties")));
             assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), nullValue());
             assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), not(nullValue()));
@@ -116,7 +117,7 @@ public class CspHeaderDeciderTest {
 
             final HtmlPage htmlPage = webClient.goTo("configureSecurity");
             assertThat(
-                    htmlPage.getWebResponse().getContentAsString(),
+                    htmlPage.querySelector("body").asXml(),
                     hasMessage(jellyResource(SystemPropertyHeaderDecider.class, "message.properties"), "blurbUnset"));
             assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), nullValue());
             assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), nullValue());
@@ -141,7 +142,7 @@ public class CspHeaderDeciderTest {
 
             final HtmlPage htmlPage = webClient.goTo("configureSecurity");
             assertThat(
-                    htmlPage.getWebResponse().getContentAsString(),
+                    htmlPage.querySelector("body").asXml(),
                     allOf(
                             hasBlurb(jellyResource(DevelopmentHeaderDecider.class, "message.properties")),
                             not(hasBlurb(jellyResource(SystemPropertyHeaderDecider.class, "message.properties")))));
@@ -171,7 +172,7 @@ public class CspHeaderDeciderTest {
             final HtmlPage htmlPage = webClient.goTo("configureSecurity");
             assertThat(
                     // Workaround to placeholder for context path in this string
-                    htmlPage.getWebResponse().getContentAsString().replace("/jenkins/", "{0}/"),
+                    htmlPage.querySelector("body").asXml().replace("/jenkins/", "{0}/"),
                     hasBlurb(jellyResource(FallbackDecider.class, "message.properties")));
             assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), nullValue());
             assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), not(nullValue()));
@@ -198,7 +199,8 @@ public class CspHeaderDeciderTest {
             assertTrue(ExtensionList.lookupSingleton(CspRecommendation.class).isActivated());
 
             final HtmlPage htmlPage = webClient.goTo("manage/");
-            final Page recommendationClick = htmlPage.getElementByName("more").click();
+            HtmlAnchor link = htmlPage.querySelector("div[data-monitor-id=\"jenkins.security.csp.impl.CspRecommendation\"] a");
+            final Page recommendationClick = link.click();
             assertThat(recommendationClick, instanceOf(HtmlPage.class));
             HtmlPage recommendationPage = (HtmlPage) recommendationClick;
             assertThat(
@@ -218,7 +220,7 @@ public class CspHeaderDeciderTest {
             assertFalse(ExtensionList.lookupSingleton(CspRecommendation.class).isActivated());
 
             // We can see the checkbox now
-            assertThat(setupPage.getWebResponse().getContentAsString(), containsString("Enforce Content Security Policy"));
+            assertThat(setupPage.querySelector("body").asXml(), containsString("Enforce Content Security Policy"));
             assertThat(setupPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), nullValue());
             assertThat(setupPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), not(nullValue()));
 
@@ -232,7 +234,7 @@ public class CspHeaderDeciderTest {
 
             final Page afterSavingPage = HtmlFormUtil.submit(setupPage.getFormByName("config"), setupPage.getFormByName("config").getButtonByName("Submit"));
             assertThat(afterSavingPage, instanceOf(HtmlPage.class));
-            assertThat(afterSavingPage.getUrl().getPath(), is(j.contextPath + "/manage/"));
+            assertThat(afterSavingPage.getUrl().getPath(), is(j.contextPath + "/manage/configureSecurity/"));
             assertThat(afterSavingPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), not(nullValue()));
             assertThat(afterSavingPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), nullValue());
 

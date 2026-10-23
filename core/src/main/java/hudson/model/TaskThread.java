@@ -136,8 +136,8 @@ public abstract class TaskThread extends Thread {
         } finally {
             listener = null;
             isRunning = false;
+            log.markAsComplete();
         }
-        log.markAsComplete();
     }
 
     /**

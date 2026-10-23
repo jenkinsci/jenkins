@@ -1,0 +1,14 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <st:documentation>
+    <st:attribute name="clazz">
+      Additional CSS class(es) to add.
+    </st:attribute>
+  </st:documentation>
+
+  <div class="app-branding ${attrs.clazz}">
+    <div class="app-branding__conic">
+      <img src="${imagesURL}/svgs/logo.svg" alt="${%Jenkins illustration}" />
+    </div>
+  </div>
+</j:jelly>
