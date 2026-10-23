@@ -52,7 +52,14 @@ THE SOFTWARE.
             <j:set var="linkTitleAttr">${%Took} ${build.durationString}</j:set>
           </j:if>
           <div tooltip="${linkTitleAttr}" data-tooltip-append-to-parent="true">
-            <i:formatDate value="${build.timestamp.time}" type="time" timeStyle="short" />
+            <j:choose>
+              <j:when test="${h.isUse24HourTime()}">
+                <i:formatDate value="${build.timestamp.time}" type="time" pattern="HH:mm" />
+              </j:when>
+              <j:otherwise>
+                <i:formatDate value="${build.timestamp.time}" type="time" timeStyle="short" />
+              </j:otherwise>
+            </j:choose>
             ${h.getUserTimeZonePostfix()}
           </div>
         </span>

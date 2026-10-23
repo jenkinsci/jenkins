@@ -57,6 +57,7 @@ import hudson.model.PasswordParameterDefinition;
 import hudson.model.RootAction;
 import hudson.model.Run;
 import hudson.model.Slave;
+import hudson.model.TimeFormatProperty;
 import hudson.model.TimeZoneProperty;
 import hudson.model.TopLevelItem;
 import hudson.model.User;
@@ -752,6 +753,11 @@ public class Functions {
     @Restricted(NoExternalUse.class)
     public static boolean isUserTimeZoneOverride() {
         return TimeZoneProperty.forCurrentUser() != null;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static boolean isUse24HourTime() {
+        return TimeFormatProperty.forCurrentUser();
     }
 
     @CheckForNull
