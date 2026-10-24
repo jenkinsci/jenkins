@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.ExtensionList;
+import hudson.model.InvisibleAction;
+import hudson.model.RootAction;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import jenkins.security.ResourceDomainConfiguration;
@@ -22,8 +24,10 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.Dispatcher;
+import org.kohsuke.stapler.WebMethod;
 
 @ParameterizedClass
 @ValueSource(strings = { "/jenkins", "" })
@@ -140,6 +144,47 @@ class ErrorPageTest {
             }
         } finally {
             Dispatcher.TRACE = true;
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-75205")
+    void oopsErrorPageShowsCurrentUser() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().toAuthenticated().grant(Jenkins.READ).everywhere().toEveryone());
+
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            { // anonymous users get a login link
+                final FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("exception"));
+                assertEquals(500, ex.getStatusCode());
+                final String content = ex.getResponse().getContentAsString(StandardCharsets.UTF_8);
+                assertThat(content, containsString("A problem occurred while processing the request"));
+                assertThat(content, containsString(j.contextPath + "/login?from="));
+            }
+
+            wc.login("alice");
+
+            { // logged in users see their profile link instead
+                final FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("exception"));
+                assertEquals(500, ex.getStatusCode());
+                final String content = ex.getResponse().getContentAsString(StandardCharsets.UTF_8);
+                assertThat(content, containsString("A problem occurred while processing the request"));
+                assertThat(content, not(containsString(j.contextPath + "/login?from=")));
+                assertThat(content, containsString("user/alice"));
+            }
+        }
+    }
+
+    @TestExtension("oopsErrorPageShowsCurrentUser")
+    public static class ExceptionAction extends InvisibleAction implements RootAction {
+        @WebMethod(name = "")
+        public void doException() {
+            throw new RuntimeException();
+        }
+
+        @Override
+        public String getUrlName() {
+            return "exception";
         }
     }
 
