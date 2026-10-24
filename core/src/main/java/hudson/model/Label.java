@@ -587,7 +587,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         labels = fixNull(labels);
         if (!labels.isEmpty()) {
             Jenkins j = Jenkins.get();
-            LabelAtom labelAtom = j.tryGetLabelAtom(labels);
+            LabelAtom labelAtom = isSingleToken(labels) ? j.tryGetLabelAtom(labels) : null;
             if (labelAtom == null) {
                 final QuotedStringTokenizer tokenizer = new QuotedStringTokenizer(labels);
                 while (tokenizer.hasMoreTokens())
@@ -597,6 +597,16 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
             }
         }
         return r;
+    }
+
+    private static boolean isSingleToken(@NonNull String s) {
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c <= ' ' || Character.isWhitespace(c) || c == '"' || c == '\'' || c == '\\') {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
