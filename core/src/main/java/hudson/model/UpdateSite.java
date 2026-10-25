@@ -1299,7 +1299,7 @@ public class UpdateSite {
             this.title = get(o, "title");
             this.excerpt = get(o, "excerpt");
             this.searchName = normalizeForSearch(name);
-            this.searchTitle = normalizeForSearch(title);
+            this.searchTitle = normalizeForSearch(getDisplayName());
             this.compatibleSinceVersion = Util.intern(get(o, "compatibleSinceVersion"));
             this.requiredCore = Util.intern(get(o, "requiredCore"));
             final String releaseTimestamp = get(o, "releaseTimestamp");
