@@ -697,7 +697,7 @@ class PluginManagerTest {
             assumeFalse(Functions.isWindows(), "TODO: Implement this test for Windows");
             PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
             sites.clear();
-            URL url = PluginManagerTest.class.getResource("/plugins/large-update-center.json");
+            URL url = PluginManagerTest.class.getResource("/plugins/search-tokens-update-center.json");
             UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
             sites.add(site);
             assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
@@ -713,13 +713,20 @@ class PluginManagerTest {
             // plugins matching only some of the words are left out when others match all of them
             assertThat(searchResults(r, "build token"), not(hasItem("token-macro")));
 
+            // all matches are ranked before the limit is applied, so the best match is kept even if less popular
+            assertThat(searchResults(r, "build token", 1), is(List.of("build-token-root")));
+
             // but are returned, best match first, when nothing matches all of the words
             assertThat(searchResults(r, "build-token-root zzznomatch").get(0), is("build-token-root"));
         });
     }
 
     private static List<String> searchResults(JenkinsRule r, String query) throws Exception {
-        JenkinsRule.JSONWebResponse response = r.getJSON("pluginManager/pluginsSearch?query=" + URLEncoder.encode(query, StandardCharsets.UTF_8) + "&limit=50");
+        return searchResults(r, query, 50);
+    }
+
+    private static List<String> searchResults(JenkinsRule r, String query, int limit) throws Exception {
+        JenkinsRule.JSONWebResponse response = r.getJSON("pluginManager/pluginsSearch?query=" + URLEncoder.encode(query, StandardCharsets.UTF_8) + "&limit=" + limit);
         JSONObject json = response.getJSONObject();
         assertTrue(json.has("data"));
         return json.getJSONArray("data").stream()
