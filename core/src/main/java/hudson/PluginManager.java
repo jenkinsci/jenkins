@@ -1548,12 +1548,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         List<SearchResult> allTokensMatched = new ArrayList<>();
         List<SearchResult> someTokensMatched = new ArrayList<>();
         for (UpdateSite.Plugin plugin : available) {
-            int matchedTokens = 0;
-            for (String token : tokens) {
-                if (plugin.searchName.contains(token) || plugin.searchTitle.contains(token)) {
-                    matchedTokens++;
-                }
-            }
+            int matchedTokens = plugin.countSearchMatches(tokens);
             boolean allMatched = tokens.length > 0 && matchedTokens == tokens.length;
             if (allMatched || searchQueryMatches(query, plugin, lQuery)) {
                 allTokensMatched.add(new SearchResult(plugin, normalizedQuery, matchedTokens));
@@ -1572,7 +1567,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     private record SearchResult(UpdateSite.Plugin plugin, boolean exactMatch, boolean deprecated, int matchedTokens) {
         SearchResult(UpdateSite.Plugin plugin, String normalizedQuery, int matchedTokens) {
             this(plugin,
-                    plugin.searchName.equals(normalizedQuery) || plugin.searchTitle.equals(normalizedQuery),
+                    plugin.isExactSearchMatch(normalizedQuery),
                     plugin.isDeprecated(),
                     matchedTokens);
         }

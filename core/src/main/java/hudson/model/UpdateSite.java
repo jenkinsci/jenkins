@@ -1222,17 +1222,11 @@ public class UpdateSite {
         @Exported
         public final String excerpt;
         /**
-         * {@link #name} normalized by {@link UpdateSite#normalizeForSearch(String)}.
+         * {@link #name} and {@link #title} normalized by {@link UpdateSite#normalizeForSearch(String)}.
          * Computed once when update site data is loaded rather than on every search.
          */
-        @Restricted(NoExternalUse.class)
-        public final String searchName;
-        /**
-         * {@link #title} normalized by {@link UpdateSite#normalizeForSearch(String)}.
-         * Computed once when update site data is loaded rather than on every search.
-         */
-        @Restricted(NoExternalUse.class)
-        public final String searchTitle;
+        private final String searchName;
+        private final String searchTitle;
         /**
          * Optional version # from which this plugin release is configuration-compatible.
          */
@@ -1356,6 +1350,32 @@ public class UpdateSite {
                 }
             }
 
+        }
+
+        /**
+         * Counts how many of the given words appear in this plugin's name or title.
+         *
+         * @param normalizedWords words already normalized by {@link UpdateSite#normalizeForSearch(String)}
+         */
+        @Restricted(NoExternalUse.class)
+        public int countSearchMatches(String[] normalizedWords) {
+            int matches = 0;
+            for (String word : normalizedWords) {
+                if (searchName.contains(word) || searchTitle.contains(word)) {
+                    matches++;
+                }
+            }
+            return matches;
+        }
+
+        /**
+         * Whether this plugin's name or title is exactly the given query, ignoring case and punctuation.
+         *
+         * @param normalizedQuery a query already normalized by {@link UpdateSite#normalizeForSearch(String)}
+         */
+        @Restricted(NoExternalUse.class)
+        public boolean isExactSearchMatch(String normalizedQuery) {
+            return searchName.equals(normalizedQuery) || searchTitle.equals(normalizedQuery);
         }
 
         @Restricted(NoExternalUse.class)
