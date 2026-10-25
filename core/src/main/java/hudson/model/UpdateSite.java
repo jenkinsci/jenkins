@@ -1222,6 +1222,18 @@ public class UpdateSite {
         @Exported
         public final String excerpt;
         /**
+         * {@link #name} normalized by {@link UpdateSite#normalizeForSearch(String)}.
+         * Computed once when update site data is loaded rather than on every search.
+         */
+        @Restricted(NoExternalUse.class)
+        public final String searchName;
+        /**
+         * {@link #title} normalized by {@link UpdateSite#normalizeForSearch(String)}.
+         * Computed once when update site data is loaded rather than on every search.
+         */
+        @Restricted(NoExternalUse.class)
+        public final String searchTitle;
+        /**
          * Optional version # from which this plugin release is configuration-compatible.
          */
         @Exported
@@ -1292,6 +1304,8 @@ public class UpdateSite {
             this.wiki = get(o, "wiki");
             this.title = get(o, "title");
             this.excerpt = get(o, "excerpt");
+            this.searchName = normalizeForSearch(name);
+            this.searchTitle = normalizeForSearch(title);
             this.compatibleSinceVersion = Util.intern(get(o, "compatibleSinceVersion"));
             this.requiredCore = Util.intern(get(o, "requiredCore"));
             final String releaseTimestamp = get(o, "releaseTimestamp");
@@ -1753,6 +1767,20 @@ public class UpdateSite {
             deployBackup();
             return HttpResponses.redirectTo("../..");
         }
+    }
+
+    private static final Pattern SEARCH_SEPARATORS = Pattern.compile("[^\\p{L}\\p{N}]+");
+
+    /**
+     * Lower-cases text and collapses everything other than letters and digits into single spaces,
+     * so that {@code workflow-cps} and {@code Pipeline: Groovy} become {@code workflow cps} and {@code pipeline groovy}.
+     */
+    @Restricted(NoExternalUse.class)
+    public static String normalizeForSearch(@CheckForNull String text) {
+        if (text == null) {
+            return "";
+        }
+        return SEARCH_SEPARATORS.matcher(text.toLowerCase(Locale.ROOT)).replaceAll(" ").strip();
     }
 
     private static final long DAY = DAYS.toMillis(1);

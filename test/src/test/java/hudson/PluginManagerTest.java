@@ -66,6 +66,7 @@ import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -702,37 +703,28 @@ class PluginManagerTest {
             assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
             assertNotNull(site.getData());
 
-            //Dummy plugin is found in the second site (should have worked before the fix)
-            JenkinsRule.JSONWebResponse response = r.getJSON("pluginManager/pluginsSearch?query=build%20token&limit=50");
-            JSONObject json = response.getJSONObject();
-            assertTrue(json.has("data"));
-            JSONArray data = json.getJSONArray("data");
+            // words match across the plugin ID and title, ignoring punctuation
+            assertThat(searchResults(r, "build token").get(0), is("build-token-root"));
+            assertThat(searchResults(r, "Pipeline Groovy").get(0), is("workflow-cps"));
+            assertThat(searchResults(r, "pipeline cps").get(0), is("workflow-cps"));
+            assertThat(searchResults(r, "workflow cps").get(0), is("workflow-cps"));
+            assertThat(searchResults(r, "build  token").get(0), is("build-token-root"));
 
-            List<String> artifactIdResults = data.stream()
-                    .map(obj -> (JSONObject) obj)
-                    .map(obj -> obj.getString("name"))
-                    .collect(Collectors.toList());
+            // plugins matching only some of the words are left out when others match all of them
+            assertThat(searchResults(r, "build token"), not(hasItem("token-macro")));
 
-            assertThat(artifactIdResults, hasItem("build-token-root"));
-            String firstArtifact = artifactIdResults.get(0);
-
-            assertThat(firstArtifact, is("build-token-root"));
-
-            response = r.getJSON("pluginManager/pluginsSearch?query=Pipeline%20Groovy&limit=50");
-            json = response.getJSONObject();
-            assertTrue(json.has("data"));
-            data = json.getJSONArray("data");
-
-            artifactIdResults = data.stream()
-                    .map(obj -> (JSONObject) obj)
-                    .map(obj -> obj.getString("name"))
-                    .collect(Collectors.toList());
-
-            assertThat(artifactIdResults, hasItem("workflow-cps"));
-
-            firstArtifact = artifactIdResults.get(0);
-            assertThat(firstArtifact, is("workflow-cps"));
+            // but are returned, best match first, when nothing matches all of the words
+            assertThat(searchResults(r, "build-token-root zzznomatch").get(0), is("build-token-root"));
         });
+    }
+
+    private static List<String> searchResults(JenkinsRule r, String query) throws Exception {
+        JenkinsRule.JSONWebResponse response = r.getJSON("pluginManager/pluginsSearch?query=" + URLEncoder.encode(query, StandardCharsets.UTF_8) + "&limit=50");
+        JSONObject json = response.getJSONObject();
+        assertTrue(json.has("data"));
+        return json.getJSONArray("data").stream()
+                .map(obj -> ((JSONObject) obj).getString("name"))
+                .collect(Collectors.toList());
     }
 
     @Test
