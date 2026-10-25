@@ -42,8 +42,8 @@ public final class PersistenceStores {
 
     private static final Logger LOGGER = Logger.getLogger(PersistenceStores.class.getName());
 
-    private static volatile Jenkins resolvedFor;
-    private static volatile PersistenceStore resolvedStore;
+    /** The store resolved for a Jenkins, kept in its {@link Jenkins#lookup}. */
+    private record Resolved(@CheckForNull PersistenceStore store) {}
 
     private PersistenceStores() {}
 
@@ -61,8 +61,9 @@ public final class PersistenceStores {
         if (j == null) {
             return null;
         }
-        if (resolvedFor == j) {
-            return resolvedStore;
+        Resolved resolved = j.lookup.get(Resolved.class);
+        if (resolved != null) {
+            return resolved.store();
         }
         if (j.getInitLevel().compareTo(InitMilestone.EXTENSIONS_AUGMENTED) < 0 || RESOLVING.get() != null) {
             return null;
@@ -72,7 +73,8 @@ public final class PersistenceStores {
             // resolved under the lock that loading extensions takes, not one of our own: a thread holding it (as one
             // making an extension that reads its files) may get here, and a provider may load extensions
             synchronized (ExtensionList.loadLock(j)) {
-                if (resolvedFor != j) {
+                resolved = j.lookup.get(Resolved.class);
+                if (resolved == null) {
                     PersistenceStore store = null;
                     for (PersistenceStoreProvider provider : ExtensionList.lookup(PersistenceStoreProvider.class)) {
                         store = provider.create();
@@ -81,10 +83,10 @@ public final class PersistenceStores {
                             break;
                         }
                     }
-                    resolvedStore = store;
-                    resolvedFor = j;
+                    resolved = new Resolved(store);
+                    j.lookup.set(Resolved.class, resolved);
                 }
-                return resolvedStore;
+                return resolved.store();
             }
         } finally {
             RESOLVING.remove();
