@@ -27,6 +27,7 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.queue.SubTask;
 import hudson.tasks.BuildStep;
@@ -39,8 +40,10 @@ import java.util.Collections;
 import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.OptionalJobProperty;
+import jenkins.security.XStreamNotDeserializable;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
@@ -82,6 +85,7 @@ public abstract class JobProperty<J extends Job<?, ?>> implements Reconfigurable
      * This value will be set by the Hudson code.
      * Derived classes can expect this value to be always set.
      */
+    @XStreamNotDeserializable
     protected transient J owner;
 
     /**
@@ -183,8 +187,28 @@ public abstract class JobProperty<J extends Job<?, ?>> implements Reconfigurable
         return Collections.emptyList();
     }
 
+    /**
+     * @since 2.475
+     */
+    @Override
+    public JobProperty<?> reconfigure(StaplerRequest2 req, JSONObject form) throws FormException {
+        if (Util.isOverridden(JobProperty.class, getClass(), "reconfigure", StaplerRequest.class, JSONObject.class)) {
+            return reconfigure(StaplerRequest.fromStaplerRequest2(req), form);
+        } else {
+            return reconfigureImpl(req, form);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #reconfigure(StaplerRequest2, JSONObject)}
+     */
+    @Deprecated
     @Override
     public JobProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+        return reconfigureImpl(StaplerRequest.toStaplerRequest2(req), form);
+    }
+
+    private JobProperty<?> reconfigureImpl(StaplerRequest2 req, JSONObject form) throws FormException {
         return form == null ? null : getDescriptor().newInstance(req, form);
     }
 

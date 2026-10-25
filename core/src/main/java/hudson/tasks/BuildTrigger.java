@@ -56,7 +56,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringTokenizer;
@@ -73,7 +72,7 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -137,10 +136,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     }
 
     public Result getThreshold() {
-        if (threshold == null)
-            return Result.SUCCESS;
-        else
-            return threshold;
+        return Objects.requireNonNullElse(threshold, Result.SUCCESS);
     }
 
     /**
@@ -278,12 +274,9 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         List<Dependency> downstreamProjects = new ArrayList<>(
                 graph.getDownstreamDependencies(build.getProject()));
         // Sort topologically
-        downstreamProjects.sort(new Comparator<>() {
-            @Override
-            public int compare(Dependency lhs, Dependency rhs) {
-                // Swapping lhs/rhs to get reverse sort:
-                return graph.compare(rhs.getDownstreamProject(), lhs.getDownstreamProject());
-            }
+        downstreamProjects.sort((lhs, rhs) -> {
+            // Swapping lhs/rhs to get reverse sort:
+            return graph.compare(rhs.getDownstreamProject(), lhs.getDownstreamProject());
         });
 
         for (Dependency dep : downstreamProjects) {
@@ -385,7 +378,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         }
 
         @Override
-        public BuildTrigger newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public BuildTrigger newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
             String childProjectsString = formData.getString("childProjects").trim();
             if (childProjectsString.endsWith(",")) {
                 childProjectsString = childProjectsString.substring(0, childProjectsString.length() - 1).trim();

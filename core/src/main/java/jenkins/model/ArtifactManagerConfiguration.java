@@ -31,7 +31,7 @@ import hudson.util.DescribableList;
 import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * List of configured {@link ArtifactManagerFactory}s.
@@ -55,7 +55,7 @@ public class ArtifactManagerConfiguration extends GlobalConfiguration implements
         return artifactManagerFactories;
     }
 
-    @Override public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    @Override public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         try {
             artifactManagerFactories.rebuildHetero(req, json, ArtifactManagerFactoryDescriptor.all(), "artifactManagerFactories");
             return true;

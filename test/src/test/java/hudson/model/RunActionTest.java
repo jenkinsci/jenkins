@@ -26,24 +26,28 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.jvnet.hudson.test.LogRecorder.recorded;
 
 import hudson.XmlFile;
 import java.io.File;
-import org.junit.Rule;
-import org.junit.Test;
+import java.util.logging.Level;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsSessionRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
-public class RunActionTest {
+class RunActionTest {
 
-    @Rule
-    public JenkinsSessionRule sessions = new JenkinsSessionRule();
+    @RegisterExtension
+    private final JenkinsSessionExtension sessions = new JenkinsSessionExtension();
 
     @Issue("JENKINS-45892")
     @Test
-    public void badSerialization() throws Throwable {
+    void badSerialization() throws Throwable {
         sessions.then(j -> {
                 FreeStyleProject p = j.createFreeStyleProject("p");
                 FreeStyleBuild b1 = j.buildAndAssertSuccess(p);
@@ -55,8 +59,19 @@ public class RunActionTest {
                 assertThat(text, containsString("<id>p#1</id>"));
         });
         sessions.then(j -> {
-                FreeStyleProject p = j.jenkins.getItemByFullName("p", FreeStyleProject.class);
-                assertEquals(p.getBuildByNumber(1), p.getBuildByNumber(2).getAction(BadAction.class).owner);
+            FreeStyleProject p = j.jenkins.getItemByFullName("p", FreeStyleProject.class);
+            try (LogRecorder recorder = new LogRecorder()) {
+                recorder.record(RunMap.class, Level.WARNING);
+                recorder.capture(5);
+                assertNull(p.getBuildByNumber(2));
+                assertThat(recorder, recorded(
+                        Level.WARNING,
+                        containsString("could not load"),
+                        hasProperty("cause",
+                                hasProperty("message",
+                                        containsString("Refusing to unmarshal PersistenceRoot subtype 'hudson.model.FreeStyleBuild' into field 'owner' in 'hudson.model.RunActionTest$BadAction'. " +
+                                                "PersistenceRoot objects are document roots and must not appear as nested field values.")))));
+            }
         });
     }
 

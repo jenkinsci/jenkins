@@ -24,18 +24,23 @@
 
 package hudson.logging;
 
+import static jenkins.util.QueryUtils.getButtonByCaption;
+import static jenkins.util.QueryUtils.waitUntilElementIsPresent;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Computer;
 import hudson.model.Saveable;
@@ -51,27 +56,36 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import jenkins.security.MasterToSlaveCallable;
 import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.WebClientUtil;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.Url;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class LogRecorderManagerTest {
+@WithJenkins
+class LogRecorderManagerTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * Makes sure that the logger configuration works.
      */
     @Url("http://d.hatena.ne.jp/ssogabe/20090101/1230744150")
-    @Test public void loggerConfig() throws Exception {
+    @Test
+    void loggerConfig() throws Exception {
         Logger logger = Logger.getLogger("foo.bar.zot");
 
         HtmlPage page = j.createWebClient().goTo("log/levels");
@@ -83,7 +97,8 @@ public class LogRecorderManagerTest {
         assertEquals(Level.FINEST, logger.getLevel());
     }
 
-    @Test public void loggerConfigNotFound() throws Exception {
+    @Test
+    void loggerConfigNotFound() throws Exception {
         HtmlPage page = j.createWebClient().goTo("log/levels");
         HtmlForm form = page.getFormByName("configLogger");
         form.getInputByName("name").setValue("foo.bar.zot");
@@ -94,7 +109,8 @@ public class LogRecorderManagerTest {
     }
 
     @Issue("JENKINS-62472")
-    @Test public void logRecorderCheckName() {
+    @Test
+    void logRecorderCheckName() {
         LogRecorder testRecorder = new LogRecorder("test");
         String warning = FormValidation.warning(Messages.LogRecorder_Target_Empty_Warning()).toString();
         assertEquals(warning, testRecorder.doCheckName("", null).toString());
@@ -102,13 +118,13 @@ public class LogRecorderManagerTest {
         assertEquals(warning, testRecorder.doCheckName("", Level.ALL.getName()).toString());
         assertEquals(warning, testRecorder.doCheckName("", Level.FINEST.getName()).toString());
         assertEquals(warning, testRecorder.doCheckName("", Level.FINER.getName()).toString());
-        assertEquals(warning, testRecorder.doCheckName("", Level.FINER.getName()).toString());
+        assertEquals(warning, testRecorder.doCheckName("", Level.FINE.getName()).toString());
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", "illegalArgument"));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", null));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.ALL.getName()));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.FINEST.getName()));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.FINER.getName()));
-        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.FINER.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.FINE.getName()));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("", Level.CONFIG.getName()));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("", Level.INFO.getName()));
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("", Level.WARNING.getName()));
@@ -121,8 +137,225 @@ public class LogRecorderManagerTest {
         assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.OFF.getName()));
     }
 
+    @Test
+    void createLogRecorderWithNonAsciiName() throws Exception {
+        String name = "Journal d’accès";
+
+        JenkinsRule.WebClient webClient = j.createWebClient();
+        HtmlPage page = webClient.goTo("log/");
+        getButtonByCaption(page, "Add recorder").click();
+
+        HtmlForm form = waitUntilElementIsPresent(page, "[name='configSubmit']");
+        form.getInputByName("name").setValueAttribute(name);
+        j.submit(form);
+
+        assertNotNull(j.jenkins.getLog().getLogRecorder(name));
+        j.createWebClient().goTo("log/" + Util.rawEncode(name) + "/configure");
+    }
+
+    @Issue("JENKINS-75310")
+    @Test
+    void changingRecorderToLessVerboseLevelUpdatesLogger() throws Exception {
+        String loggerName = getClass().getName() + ".lessVerbose";
+        Logger logger = Logger.getLogger(loggerName);
+        LogRecorder recorder = new LogRecorder("recorder");
+        recorder.setLoggers(List.of(new LogRecorder.Target(loggerName, Level.FINEST)));
+        j.jenkins.getLog().getRecorders().add(recorder);
+
+        try {
+            recorder.save();
+            assertEquals(Level.FINEST, logger.getLevel());
+
+            configureLevel(recorder, Level.INFO);
+
+            assertNotEquals(Level.FINEST, logger.getLevel());
+            assertFalse(logger.isLoggable(Level.FINER));
+        } finally {
+            logger.setLevel(null);
+        }
+    }
+
+    @Issue("JENKINS-75310")
+    @Test
+    void changingParentTargetPreservesIntermediateManualLevel() throws Exception {
+        String parentLoggerName = getClass().getName() + ".manual";
+        String intermediateLoggerName = parentLoggerName + ".intermediate";
+        String childLoggerName = intermediateLoggerName + ".child";
+        Logger parentLogger = Logger.getLogger(parentLoggerName);
+        Logger intermediateLogger = Logger.getLogger(intermediateLoggerName);
+        Logger childLogger = Logger.getLogger(childLoggerName);
+        LogRecorder parent = new LogRecorder("manual-parent");
+        parent.setLoggers(List.of(new LogRecorder.Target(parentLoggerName, Level.FINE)));
+        LogRecorder child = new LogRecorder("manual-child");
+        child.setLoggers(List.of(new LogRecorder.Target(childLoggerName, Level.WARNING)));
+        j.jenkins.getLog().getRecorders().addAll(List.of(parent, child));
+
+        try {
+            parent.save();
+            child.save();
+            intermediateLogger.setLevel(Level.FINEST);
+            assertNull(childLogger.getLevel());
+
+            configureLevel(parent, Level.INFO);
+
+            assertFalse(parentLogger.isLoggable(Level.FINE));
+            assertEquals(Level.FINEST, intermediateLogger.getLevel());
+            assertNull(childLogger.getLevel());
+            assertTrue(childLogger.isLoggable(Level.FINER));
+        } finally {
+            parentLogger.setLevel(null);
+            intermediateLogger.setLevel(null);
+            childLogger.setLevel(null);
+        }
+    }
+
+    @Issue("JENKINS-75310")
+    @Test
+    void changingRecorderPreservesMoreVerboseSharedTarget() throws Exception {
+        String loggerName = getClass().getName() + ".shared";
+        Logger logger = Logger.getLogger(loggerName);
+        LogRecorder first = new LogRecorder("first");
+        first.setLoggers(List.of(new LogRecorder.Target(loggerName, Level.FINEST)));
+        LogRecorder second = new LogRecorder("second");
+        second.setLoggers(List.of(new LogRecorder.Target(loggerName, Level.FINE)));
+        j.jenkins.getLog().getRecorders().addAll(List.of(first, second));
+
+        try {
+            first.save();
+            second.save();
+            assertEquals(Level.FINEST, logger.getLevel());
+
+            configureLevel(first, Level.INFO);
+
+            assertEquals(Level.FINE, logger.getLevel());
+        } finally {
+            logger.setLevel(null);
+        }
+    }
+
+    @Issue("JENKINS-75310")
+    @Test
+    void changingChildTargetDoesNotPinInheritedRecorderLevel() throws Exception {
+        String parentLoggerName = getClass().getName() + ".sharedParent";
+        String childLoggerName = parentLoggerName + ".child";
+        Logger parentLogger = Logger.getLogger(parentLoggerName);
+        Logger childLogger = Logger.getLogger(childLoggerName);
+        LogRecorder parent = new LogRecorder("shared-parent");
+        parent.setLoggers(List.of(new LogRecorder.Target(parentLoggerName, Level.FINEST)));
+        LogRecorder child = new LogRecorder("shared-child");
+        child.setLoggers(List.of(new LogRecorder.Target(childLoggerName, Level.INFO)));
+        j.jenkins.getLog().getRecorders().addAll(List.of(parent, child));
+
+        try {
+            parent.save();
+            child.save();
+            assertNull(childLogger.getLevel());
+
+            configureLevel(child, Level.WARNING);
+
+            assertNull(childLogger.getLevel());
+            parent.delete();
+            assertNull(childLogger.getLevel());
+            assertFalse(childLogger.isLoggable(Level.FINER));
+        } finally {
+            parentLogger.setLevel(null);
+            childLogger.setLevel(null);
+        }
+    }
+
+    @Issue("JENKINS-75310")
+    @Test
+    void changingParentTargetKeepsChildTargetLoggable() throws Exception {
+        String parentLoggerName = getClass().getName() + ".parent";
+        String childLoggerName = parentLoggerName + ".child";
+        Logger parentLogger = Logger.getLogger(parentLoggerName);
+        Logger childLogger = Logger.getLogger(childLoggerName);
+        LogRecorder parent = new LogRecorder("parent");
+        parent.setLoggers(List.of(new LogRecorder.Target(parentLoggerName, Level.FINE)));
+        LogRecorder child = new LogRecorder("child");
+        child.setLoggers(List.of(new LogRecorder.Target(childLoggerName, Level.FINE)));
+        j.jenkins.getLog().getRecorders().addAll(List.of(parent, child));
+
+        try {
+            parent.save();
+            child.save();
+            assertNull(childLogger.getLevel());
+
+            configureLevel(parent, Level.INFO);
+
+            assertFalse(parentLogger.isLoggable(Level.FINE));
+            assertEquals(Level.FINE, childLogger.getLevel());
+        } finally {
+            parentLogger.setLevel(null);
+            childLogger.setLevel(null);
+        }
+    }
+
+    @Issue("JENKINS-75310")
+    @Test
+    void removingRecorderTargetClearsLoggerLevel() throws Exception {
+        String loggerName = getClass().getName() + ".removed";
+        Logger logger = Logger.getLogger(loggerName);
+        LogRecorder recorder = new LogRecorder("removed");
+        recorder.setLoggers(List.of(new LogRecorder.Target(loggerName, Level.FINEST)));
+        j.jenkins.getLog().getRecorders().add(recorder);
+
+        try {
+            recorder.save();
+            assertEquals(Level.FINEST, logger.getLevel());
+
+            removeTarget(recorder);
+
+            assertTrue(recorder.getLoggers().isEmpty());
+            assertNull(logger.getLevel());
+        } finally {
+            logger.setLevel(null);
+        }
+    }
+
+    @Issue("JENKINS-75310")
+    @Test
+    void removingRecorderTargetPreservesSharedTarget() throws Exception {
+        String loggerName = getClass().getName() + ".removedShared";
+        Logger logger = Logger.getLogger(loggerName);
+        LogRecorder first = new LogRecorder("removed-first");
+        first.setLoggers(List.of(new LogRecorder.Target(loggerName, Level.FINEST)));
+        LogRecorder second = new LogRecorder("removed-second");
+        second.setLoggers(List.of(new LogRecorder.Target(loggerName, Level.FINE)));
+        j.jenkins.getLog().getRecorders().addAll(List.of(first, second));
+
+        try {
+            first.save();
+            second.save();
+            assertEquals(Level.FINEST, logger.getLevel());
+
+            removeTarget(first);
+
+            assertEquals(Level.FINE, logger.getLevel());
+        } finally {
+            logger.setLevel(null);
+        }
+    }
+
+    private void configureLevel(LogRecorder recorder, Level level) throws Exception {
+        HtmlPage page = j.createWebClient().goTo("log/" + Util.rawEncode(recorder.getName()) + "/configure");
+        HtmlForm form = page.getFormByName("config");
+        form.getSelectByName("level").getOptionByValue(level.getName()).setSelected(true);
+        j.submit(form);
+    }
+
+    private void removeTarget(LogRecorder recorder) throws Exception {
+        JenkinsRule.WebClient webClient = j.createWebClient();
+        HtmlPage page = webClient.goTo("log/" + Util.rawEncode(recorder.getName()) + "/configure");
+        HtmlForm form = page.getFormByName("config");
+        j.getButtonByCaption(form, "Delete").click();
+        WebClientUtil.waitForJSExec(webClient);
+        j.submit(form);
+    }
+
     @Issue({"JENKINS-18274", "JENKINS-63458"})
-    @Test public void loggingOnSlaves() throws Exception {
+    @Test
+    void loggingOnSlaves() throws Exception {
         // TODO could also go through WebClient to assert that the config UI works
         LogRecorderManager mgr = j.jenkins.getLog();
         LogRecorder r1 = new LogRecorder("r1");
@@ -155,63 +388,51 @@ public class LogRecorderManagerTest {
         assertTrue(ch.call(new LambdaLog(Level.FINE, "ns1")));
         assertFalse(ch.call(new LambdaLog(Level.FINER, "ns1")));
         List<LogRecord> recs = c.getLogRecords();
-        assertEquals(show(recs), 6, recs.size());
+        assertEquals(6, recs.size(), show(recs));
         // Would of course prefer to get "msg #5 1.0 2.0 'OK?'" but all attempts to fix this have ended in disaster (JENKINS-63458):
         assertEquals("msg #5 {0,number,0.0} {1,number,0.0} ''OK?''", new SimpleFormatter().formatMessage(recs.get(1)));
         recs = r1.getSlaveLogRecords().get(c);
         assertNotNull(recs);
-        assertEquals(show(recs), 3, recs.size());
+        assertEquals(3, recs.size(), show(recs));
         recs = r2.getSlaveLogRecords().get(c);
         assertNotNull(recs);
-        assertEquals(show(recs), 1, recs.size());
+        assertEquals(1, recs.size(), show(recs));
         String text = j.createWebClient().goTo("log/r1/").asNormalizedText();
-        assertTrue(text, text.contains(c.getDisplayName()));
-        assertTrue(text, text.contains("msg #1"));
-        assertTrue(text, text.contains("msg #2"));
-        assertFalse(text, text.contains("msg #3"));
-        assertFalse(text, text.contains("msg #4"));
-        assertTrue(text, text.contains("LambdaLog @FINE"));
-        assertFalse(text, text.contains("LambdaLog @FINER"));
+        assertTrue(text.contains(c.getDisplayName()), text);
+        assertTrue(text.contains("msg #1"), text);
+        assertTrue(text.contains("msg #2"), text);
+        assertFalse(text.contains("msg #3"), text);
+        assertFalse(text.contains("msg #4"), text);
+        assertTrue(text.contains("LambdaLog @FINE"), text);
+        assertFalse(text.contains("LambdaLog @FINER"), text);
+    }
+
+    @Issue("SECURITY-3967")
+    @Test
+    void logRecorderPageDoesNotRenderUnescapedMetadata() throws Exception {
+        LogRecorderManager mgr = j.jenkins.getLog();
+        LogRecorder recorder = new LogRecorder("xsstest");
+        recorder.getLoggers().add(new LogRecorder.Target("hudson.remoting", Level.ALL));
+        mgr.getRecorders().add(recorder);
+        recorder.save();
+        recorder.getLoggers().forEach(LogRecorder.Target::enable);
+
+        // Craft a LogRecord with an XSS payload in sourceClassName — the same vector as the attack.
+        // Logger.log(LogRecord) preserves sourceClassName when already set, so this mirrors what
+        // an attacker-controlled agent JVM would send.
+        LogRecord malicious = new LogRecord(Level.SEVERE, "routine agent message");
+        malicious.setLoggerName("hudson.remoting");
+        malicious.setSourceClassName("<svg onload=alert(1)>");
+        malicious.setSourceMethodName(null);
+        Logger.getLogger("hudson.remoting").log(malicious);
+
+        String page = j.createWebClient().goTo("log/xsstest/").asXml();
+        assertThat("page must not contain unescaped XSS payload", page, not(containsString("<svg onload")));
+        assertThat("page must contain escaped payload", page, containsString("&lt;svg onload"));
     }
 
     @Test
-    @SuppressWarnings("deprecation")
-    public void addingLogRecorderToLegacyMapAddsToRecordersList() throws IOException {
-        LogRecorderManager log = j.jenkins.getLog();
-
-        assertThat(log.logRecorders.size(), is(0));
-        assertThat(log.getRecorders().size(), is(0));
-
-        LogRecorder logRecorder = new LogRecorder("dummy");
-        logRecorder.getLoggers().add(new LogRecorder.Target("dummy", Level.ALL));
-
-        log.logRecorders.put("dummy", logRecorder);
-        logRecorder.save();
-
-        assertThat(log.logRecorders.size(), is(1));
-        assertThat(log.getRecorders().size(), is(1));
-    }
-
-    @Test
-    @SuppressWarnings("deprecation")
-    public void addingLogRecorderToListAddsToLegacyRecordersMap() throws IOException {
-        LogRecorderManager log = j.jenkins.getLog();
-
-        assertThat(log.logRecorders.size(), is(0));
-        assertThat(log.getRecorders().size(), is(0));
-
-        LogRecorder logRecorder = new LogRecorder("dummy");
-        logRecorder.getLoggers().add(new LogRecorder.Target("dummy", Level.ALL));
-
-        log.getRecorders().add(logRecorder);
-        logRecorder.save();
-
-        assertThat(log.logRecorders.size(), is(1));
-        assertThat(log.getRecorders().size(), is(1));
-    }
-
-    @Test
-    public void deletingLogRecorder() throws IOException {
+    void deletingLogRecorder() throws IOException {
         LogRecorderManager log = j.jenkins.getLog();
         assertThat(log.getRecorders(), empty());
         LogRecorder logRecorder = new LogRecorder("dummy");
@@ -229,7 +450,7 @@ public class LogRecorderManagerTest {
         private static boolean recordDeletion;
 
         @Override
-        public void onChange(Saveable o, XmlFile file) {
+        public void onDeleted(Saveable o, XmlFile file) {
             if (o instanceof LogRecorder && "dummy".equals(((LogRecorder) o).getName())) {
                 if (!file.exists()) {
                     recordDeletion = true;
@@ -289,5 +510,4 @@ public class LogRecorderManagerTest {
         }
         return b.toString();
     }
-
 }

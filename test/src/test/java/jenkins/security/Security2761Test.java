@@ -3,28 +3,34 @@ package jenkins.security;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import hudson.model.InvisibleAction;
 import hudson.model.UnprotectedRootAction;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class Security2761Test {
-    public static final String ACTION_URL = "security2761";
+@WithJenkins
+class Security2761Test {
+    private static final String ACTION_URL = "security2761";
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("SECURITY-2761")
     @Test
-    public void symbolIconAltIsEscaped() throws Exception {
+    void symbolIconAltIsEscaped() throws Exception {
         final AtomicBoolean alerted = new AtomicBoolean(false);
 
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -35,7 +41,7 @@ public class Security2761Test {
 
         assertThat(responseContent, not(containsString("<img src=x")));
         assertThat(responseContent, containsString("<span class=\"jenkins-visually-hidden\">&lt;img src=x"));
-        assertFalse("no alert expected", alerted.get());
+        assertFalse(alerted.get(), "no alert expected");
     }
 
     @TestExtension

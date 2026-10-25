@@ -37,7 +37,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Configuration of the filter rules that are applied globally,
@@ -75,7 +75,7 @@ public class EnvVarsFilterGlobalConfiguration extends GlobalConfiguration {
     }
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         try {
             activatedGlobalRules.rebuildHetero(req, json, getAllGlobalRules(), "rules");
         } catch (IOException e) {

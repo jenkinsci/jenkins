@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.agents.ControllerToAgentCallable;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.tasks.filters.EnvVarsFilterLocalRule;
@@ -999,6 +1000,7 @@ public abstract class Launcher {
         }
 
         @Override
+        @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "TODO needs triage")
         public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String, String> envVars) throws IOException {
             printCommandLine(cmd, workDir);
 
@@ -1114,8 +1116,21 @@ public abstract class Launcher {
             final String workDir = psPwd == null ? null : psPwd.getRemote();
 
             try {
-                RemoteLaunchCallable remote = new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin, out, ps.reverseStdout, err, ps.reverseStderr, ps.quiet, workDir, listener, ps.stdoutListener);
-                remote.setEnvVarsFilterRuleWrapper(envVarsFilterRuleWrapper);
+                RemoteLaunchCallable remote = new RemoteLaunchCallable(
+                        ps.commands,
+                        ps.masks,
+                        ps.envs,
+                        in,
+                        ps.reverseStdin,
+                        out,
+                        ps.reverseStdout,
+                        err,
+                        ps.reverseStderr,
+                        ps.quiet,
+                        workDir,
+                        listener,
+                        ps.stdoutListener,
+                        envVarsFilterRuleWrapper);
                 // reset the rules to prevent build step without rules configuration to re-use those
                 envVarsFilterRuleWrapper = null;
                 return new ProcImpl(getChannel().call(remote));
@@ -1334,46 +1349,13 @@ public abstract class Launcher {
         IOTriplet getIOtriplet();
     }
 
-    private static class RemoteLaunchCallable extends MasterToSlaveCallable<RemoteProcess, IOException> {
-        private final @NonNull List<String> cmd;
-        private final @CheckForNull boolean[] masks;
-        private final @CheckForNull String[] env;
-        private final @CheckForNull InputStream in;
-        private final @CheckForNull OutputStream out;
-        private final @CheckForNull OutputStream err;
-        private final @CheckForNull String workDir;
-        private final @NonNull TaskListener listener;
-        private final @CheckForNull TaskListener stdoutListener;
-        private final boolean reverseStdin, reverseStdout, reverseStderr;
-        private final boolean quiet;
-
-        private EnvVarsFilterRuleWrapper envVarsFilterRuleWrapper;
-
-        RemoteLaunchCallable(@NonNull List<String> cmd, @CheckForNull boolean[] masks, @CheckForNull String[] env,
+    private record RemoteLaunchCallable(@NonNull List<String> cmd, @CheckForNull boolean[] masks, @CheckForNull String[] env,
                 @CheckForNull InputStream in, boolean reverseStdin,
                 @CheckForNull OutputStream out, boolean reverseStdout,
                 @CheckForNull OutputStream err, boolean reverseStderr,
-                boolean quiet, @CheckForNull String workDir, @NonNull TaskListener listener, @CheckForNull TaskListener stdoutListener) {
-            this.cmd = new ArrayList<>(cmd);
-            this.masks = masks;
-            this.env = env;
-            this.in = in;
-            this.out = out;
-            this.err = err;
-            this.workDir = workDir;
-            this.listener = listener;
-            this.stdoutListener = stdoutListener;
-            this.reverseStdin = reverseStdin;
-            this.reverseStdout = reverseStdout;
-            this.reverseStderr = reverseStderr;
-            this.quiet = quiet;
-        }
-
-        @Restricted(NoExternalUse.class)
-        public void setEnvVarsFilterRuleWrapper(EnvVarsFilterRuleWrapper envVarsFilterRuleWrapper) {
-            this.envVarsFilterRuleWrapper = envVarsFilterRuleWrapper;
-        }
-
+                boolean quiet, @CheckForNull String workDir,
+                @NonNull TaskListener listener, @CheckForNull TaskListener stdoutListener,
+                @CheckForNull EnvVarsFilterRuleWrapper envVarsFilterRuleWrapper) implements ControllerToAgentCallable<RemoteProcess, IOException> {
         @Override
         public RemoteProcess call() throws IOException {
             final Channel channel = getOpenChannelOrFail();
@@ -1433,8 +1415,6 @@ public abstract class Launcher {
                 }
             });
         }
-
-        private static final long serialVersionUID = 1L;
     }
 
     private static class RemoteChannelLaunchCallable extends MasterToSlaveCallable<OutputStream, IOException> {
@@ -1458,11 +1438,15 @@ public abstract class Launcher {
             this.envOverrides = envOverrides;
         }
 
+        @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "TODO needs triage")
+        private Process launchProcess() throws IOException {
+            return Runtime.getRuntime()
+                    .exec(cmd, Util.mapToEnv(inherit(envOverrides)), workDir == null ? null : new File(workDir));
+        }
+
         @Override
         public OutputStream call() throws IOException {
-            Process p = Runtime.getRuntime().exec(cmd,
-                Util.mapToEnv(inherit(envOverrides)),
-                workDir == null ? null : new File(workDir));
+            Process p = launchProcess();
 
             List<String> cmdLines = Arrays.asList(cmd);
             new StreamCopyThread("stdin copier for remote agent on " + cmdLines,

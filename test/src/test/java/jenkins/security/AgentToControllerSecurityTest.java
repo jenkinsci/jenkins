@@ -2,11 +2,11 @@ package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import hudson.FilePath;
 import hudson.remoting.Callable;
@@ -21,21 +21,27 @@ import jenkins.agents.AgentComputerUtil;
 import jenkins.security.s2m.CallableDirectionChecker;
 import jenkins.util.JenkinsJVM;
 import org.jenkinsci.remoting.RoleChecker;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class AgentToControllerSecurityTest {
+@WithJenkins
+class AgentToControllerSecurityTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     // ----- try to run a legacy callable
 
     @Test
-    public void testLegacyCallable() {
+    void testLegacyCallable() {
         final SecurityException securityException = assertThrowsIOExceptionCausedBySecurityException(() -> Objects.requireNonNull(j.createOnlineSlave().getChannel()).call(new CallLegacyCallableCallable()));
         assertThat(securityException.getMessage(), containsString("Sending jenkins.security.AgentToControllerSecurityTest$LegacyCallable from agent to controller is prohibited"));
     }
@@ -64,7 +70,7 @@ public class AgentToControllerSecurityTest {
     // ----- Attempt any file path access using a FilePath method
 
     @Test
-    public void testFilePaths() {
+    void testFilePaths() {
         final SecurityException securityException = assertThrowsIOExceptionCausedBySecurityException(() -> Objects.requireNonNull(j.createOnlineSlave().getChannel()).call(new AccessControllerFilePathCallable()));
         assertThat(securityException.getMessage(), containsString("Sending hudson.FilePath$ReadLink from agent to controller is prohibited"));
     }
@@ -80,7 +86,7 @@ public class AgentToControllerSecurityTest {
     // ----- Agent to controller access is still possible using SlaveToMaster[File]Callable
 
     @Test
-    public void testAgentToControllerFileCallable() throws Exception {
+    void testAgentToControllerFileCallable() throws Exception {
         Objects.requireNonNull(j.createOnlineSlave().getChannel()).call(new InvokeAgentToControllerCallables());
     }
 
@@ -114,7 +120,7 @@ public class AgentToControllerSecurityTest {
 
     // ----- Agent to controller access control can be disabled using system property (but really shouldn't)
     @Test
-    public void ensureBypass() throws Exception {
+    void ensureBypass() throws Exception {
         CallableDirectionChecker.BYPASS = true;
         try {
             Objects.requireNonNull(j.createOnlineSlave().getChannel()).call(new InvokeControllerToAgentCallables());
@@ -153,7 +159,7 @@ public class AgentToControllerSecurityTest {
 
     @Test
     @Issue("JENKINS-67189")
-    public void controllerToControllerTest() throws Exception {
+    void controllerToControllerTest() throws Exception {
         // Send a callable to the agent, which sends a callable to the controller, which invokes a method of a local FilePath
         Objects.requireNonNull(j.createOnlineSlave().getChannel()).call(new BackToControllerCallable());
     }
@@ -182,25 +188,26 @@ public class AgentToControllerSecurityTest {
         }
     }
 
+    // but this test works even in 2.319 because no agent side filtering
     @Test
-    @Issue("JENKINS-67189") // but this test works even in 2.319 because no agent side filtering
-    public void agentToAgentTest() throws Exception {
+    @Issue("JENKINS-67189")
+    void agentToAgentTest() throws Exception {
         Objects.requireNonNull(j.createOnlineSlave().getChannel()).call(new LocalFileOpCallable(false));
     }
 
     // ----- Utility methods
 
-    public static SecurityException assertThrowsIOExceptionCausedBySecurityException(ThrowingRunnable runnable) {
+    public static SecurityException assertThrowsIOExceptionCausedBySecurityException(Executable runnable) {
         return assertThrowsIOExceptionCausedBy(SecurityException.class, runnable);
     }
 
-    public static <X extends Throwable> X assertThrowsIOExceptionCausedBy(Class<X> causeClass, ThrowingRunnable runnable) {
+    public static <X extends Throwable> X assertThrowsIOExceptionCausedBy(Class<X> causeClass, Executable runnable) {
         try {
-            runnable.run();
+            runnable.execute();
         } catch (IOException ex) {
             final Throwable cause = ex.getCause();
-            assertTrue("IOException with message: '" + ex.getMessage() + "' wasn't caused by " + causeClass + ": " + (cause == null ? "(null)" : (cause.getClass().getName() + ": " + cause.getMessage())),
-                    cause != null && causeClass.isAssignableFrom(cause.getClass()));
+            assertTrue(cause != null && causeClass.isAssignableFrom(cause.getClass()),
+                    "IOException with message: '" + ex.getMessage() + "' wasn't caused by " + causeClass + ": " + (cause == null ? "(null)" : (cause.getClass().getName() + ": " + cause.getMessage())));
             return causeClass.cast(cause);
         } catch (Throwable t) {
             fail("Threw other Throwable: " + t.getClass() + " with message " + t.getMessage());

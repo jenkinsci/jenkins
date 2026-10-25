@@ -64,7 +64,7 @@ public final class TreeString implements Serializable {
     }
 
     /* package */TreeString(final TreeString parent, final String label) {
-        assert parent == null || label.length() > 0; // if there's a parent,
+        assert parent == null || !label.isEmpty(); // if there's a parent,
                                                      // label can't be empty.
 
         this.parent = parent;

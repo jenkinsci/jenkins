@@ -14,14 +14,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
-public class BridgeMethodsTest {
+class BridgeMethodsTest {
 
     @Test
     @Issue("JENKINS-65605")
-    public void checkBridgeMethod() {
+    void checkBridgeMethod() {
         /*
          * we should have 2 methods getFuture() in hudson.model.Queue$WaitingItem but with different return types :
          * hudson.model.Queue$WaitingItem.getFuture()Ljava/util/concurrent/Future

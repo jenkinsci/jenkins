@@ -23,6 +23,15 @@
     .) The name will not include the directory name portion.
   </p>
   <p>
+    Please note that some shells, such as dash, or /bin/sh provided by dash, do
+    not make such environment variables with special characters available to
+    child processes. Try using shebang like
+    <code>#!/bin/bash</code>
+    in shell script and use
+    <code>$(printenv abc.zip)</code>
+    to get the original file name.
+  </p>
+  <p>
     File upload is optional. If a user chooses not to upload anything, Jenkins
     will simply skips this parameter and will not place anything (but it also
     will not delete anything that's already in the workspace.)

@@ -24,7 +24,7 @@
 
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.EnvVars;
 import hudson.Launcher;
@@ -35,21 +35,28 @@ import hudson.util.LogTaskListener;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class RunParameterDefinitionTest {
+@WithJenkins
+class RunParameterDefinitionTest {
 
     private static final Logger LOGGER = Logger.getLogger(Run.class.getName());
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("JENKINS-31954")
-    @Test public void configRoundtrip() throws Exception {
+    @Test
+    void configRoundtrip() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty(new RunParameterDefinition("build", "p", "", RunParameterFilter.COMPLETED)));
         j.configRoundtrip(p);
@@ -59,7 +66,8 @@ public class RunParameterDefinitionTest {
     }
 
     @Issue("JENKINS-16462")
-    @Test public void inFolders() throws Exception {
+    @Test
+    void inFolders() throws Exception {
         MockFolder dir = j.createFolder("dir");
         MockFolder subdir = dir.createProject(MockFolder.class, "sub dir");
         FreeStyleProject p = subdir.createProject(FreeStyleProject.class, "some project");
@@ -88,7 +96,7 @@ public class RunParameterDefinitionTest {
     }
 
     @Test
-    public void testNULLFilter() throws Exception {
+    void testNULLFilter() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("project");
         FreeStyleBuild successfulBuild = j.buildAndAssertSuccess(project);
@@ -120,7 +128,7 @@ public class RunParameterDefinitionTest {
 
 
     @Test
-    public void testALLFilter() throws Exception {
+    void testALLFilter() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("project");
         FreeStyleBuild successfulBuild = j.buildAndAssertSuccess(project);
@@ -151,7 +159,7 @@ public class RunParameterDefinitionTest {
     }
 
     @Test
-    public void testCOMPLETEDFilter() throws Exception {
+    void testCOMPLETEDFilter() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("project");
         FreeStyleBuild successfulBuild = j.buildAndAssertSuccess(project);
@@ -182,7 +190,7 @@ public class RunParameterDefinitionTest {
     }
 
     @Test
-    public void testSUCCESSFULFilter() throws Exception {
+    void testSUCCESSFULFilter() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("project");
         FreeStyleBuild successfulBuild = j.buildAndAssertSuccess(project);
@@ -214,7 +222,7 @@ public class RunParameterDefinitionTest {
 
 
     @Test
-    public void testSTABLEFilter() throws Exception {
+    void testSTABLEFilter() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("project");
         FreeStyleBuild successfulBuild = j.buildAndAssertSuccess(project);
@@ -246,7 +254,7 @@ public class RunParameterDefinitionTest {
 
 
     @Test
-    public void testLoadEnvironmentVariablesWhenRunParameterJobHasBeenDeleted() throws Exception {
+    void testLoadEnvironmentVariablesWhenRunParameterJobHasBeenDeleted() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("project");
         FreeStyleBuild successfulBuild = j.buildAndAssertSuccess(project);

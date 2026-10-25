@@ -24,20 +24,19 @@
 
 package hudson.cli.handlers;
 
+import hudson.cli.declarative.OptionHandlerExtension;
 import jenkins.model.ParameterizedJobMixIn;
-import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
-import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Setter;
 
 /**
  * Refer to {@link jenkins.model.ParameterizedJobMixIn.ParameterizedJob} by its name.
  */
 @Restricted(DoNotUse.class)
-@MetaInfServices(OptionHandler.class)
+@OptionHandlerExtension
 @SuppressWarnings("rawtypes")
 public class ParameterizedJobOptionHandler extends GenericItemOptionHandler<ParameterizedJobMixIn.ParameterizedJob> {
 

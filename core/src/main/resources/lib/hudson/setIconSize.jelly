@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:set scope="parent" var="iconSize" value="${h.validateIconSize(h.getCookie(request,'iconSize','32x32'))}" />
+  <j:set scope="parent" var="iconSize" value="${h.validateIconSize(h.getCookie(request2,'iconSize','32x32'))}" />
   <j:set scope="parent" var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(iconSize)}" />
   <!--
     balls look smaller than their actual size,

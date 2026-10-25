@@ -75,12 +75,13 @@ import jenkins.mvn.GlobalMavenConfig;
 import jenkins.mvn.GlobalSettingsProvider;
 import jenkins.mvn.SettingsProvider;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.XStreamDeserializable;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Build by using Maven.
@@ -127,6 +128,7 @@ public class Maven extends Builder {
      *
      * @since 1.322
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public boolean usePrivateRepository;
 
     /**
@@ -479,7 +481,7 @@ public class Maven extends Builder {
         }
 
         @Override
-        public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public Builder newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
             if (req == null) {
                 // This state is prohibited according to the Javadoc of the super method.
                 throw new FormException("Maven Build Step new instance method is called for null Stapler request. "
@@ -505,6 +507,7 @@ public class Maven extends Builder {
          * @deprecated since 2009-02-25.
          */
         @Deprecated // kept for backward compatibility - use getHome()
+        @XStreamDeserializable
         private transient String mavenHome;
 
         /**

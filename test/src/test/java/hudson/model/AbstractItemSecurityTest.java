@@ -30,32 +30,41 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.text.IsEmptyString.emptyOrNullString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.io.StringReader;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class AbstractItemSecurityTest {
+@WithJenkins
+class AbstractItemSecurityTest {
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    private JenkinsRule jenkinsRule;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        jenkinsRule = rule;
+    }
 
     @Issue("SECURITY-167")
     @Test
-    public void testUpdateByXmlDoesNotProcessForeignResources() throws Exception {
-        final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
-                "<!DOCTYPE project[\n" +
-                "  <!ENTITY foo SYSTEM \"file:///\">\n" +
-                "]>\n" +
-                "<project>\n" +
-                "  <description>&foo;</description>\n" +
-                "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
-                "</project>";
+    void testUpdateByXmlDoesNotProcessForeignResources() throws Exception {
+        final String xml = """
+                <?xml version='1.0' encoding='UTF-8'?>
+                <!DOCTYPE project[
+                  <!ENTITY foo SYSTEM "file:///">
+                ]>
+                <project>
+                  <description>&foo;</description>
+                  <scm class="hudson.scm.NullSCM"/>
+                </project>""";
 
         FreeStyleProject project = jenkinsRule.createFreeStyleProject("security-167");
         project.setDescription("Wibble");
@@ -73,16 +82,58 @@ public class AbstractItemSecurityTest {
 
     @Issue("SECURITY-167")
     @Test
-    public void testUpdateByXmlDoesNotFail() throws Exception {
-        final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
-                "<project>\n" +
-                "  <description>&amp;</description>\n" +
-                "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
-                "</project>";
+    void testUpdateByXmlDoesNotFail() throws Exception {
+        final String xml = """
+                <?xml version='1.0' encoding='UTF-8'?>
+                <project>
+                  <description>&amp;</description>
+                  <scm class="hudson.scm.NullSCM"/>
+                </project>""";
 
         FreeStyleProject project = jenkinsRule.createFreeStyleProject("security-167");
         project.updateByXml((Source) new StreamSource(new StringReader(xml)));
         assertThat(project.getDescription(), is("&")); // the entity is transformed
+    }
+
+    @Test
+    void updateByXmlDoesNotOverwriteItemName() throws Exception {
+        FreeStyleProject carrier = jenkinsRule.createFreeStyleProject("carrier");
+        FreeStyleProject target = jenkinsRule.createFreeStyleProject("target");
+        target.setDescription("target-secret");
+
+        String carrierXml = carrier.getConfigFile().asString();
+        String poisoned = carrierXml.replace("<project>", "<project><name>target</name>");
+
+        carrier.updateByXml((Source) new StreamSource(new StringReader(poisoned)));
+
+        assertEquals("carrier", carrier.getName(),
+                "name must not be overwritten by submitted XML");
+        assertEquals("carrier", carrier.getParent().getItemName(carrier.getRootDir(), carrier),
+                "root directory must still resolve to 'carrier'");
+
+        FreeStyleProject stillTarget = jenkinsRule.jenkins.getItemByFullName("target", FreeStyleProject.class);
+        assertNotNull(stillTarget, "target job must still exist under its original name");
+        assertEquals("target-secret", stillTarget.getDescription(),
+                "target job must be unaffected");
+    }
+
+    @Test
+    void updateByXmlDoesNotEnableRenameToArbitraryName() throws Exception {
+        FreeStyleProject carrier = jenkinsRule.createFreeStyleProject("carrier");
+        jenkinsRule.createFreeStyleProject("target");
+
+        String carrierXml = carrier.getConfigFile().asString();
+        String poisoned = carrierXml.replace("<project>", "<project><name>target</name>");
+        carrier.updateByXml((Source) new StreamSource(new StringReader(poisoned)));
+
+        // Even after the malicious updateByXml, a rename of "carrier" must rename from "carrier",
+        // not from the injected name "target".
+        carrier.renameTo("new-name");
+
+        assertEquals("new-name", carrier.getName());
+        // The target job must still exist — the rename must not have evicted it.
+        assertNotNull(jenkinsRule.jenkins.getItemByFullName("target", FreeStyleProject.class),
+                "target job must still exist after carrier rename");
     }
 
 }

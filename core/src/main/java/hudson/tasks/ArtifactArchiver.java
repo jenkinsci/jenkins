@@ -44,10 +44,12 @@ import hudson.util.FormValidation;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
@@ -63,7 +65,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Copies the artifacts into an archive directory.
@@ -75,12 +77,12 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     private static final Logger LOG = Logger.getLogger(ArtifactArchiver.class.getName());
 
     /**
-     * Comma- or space-separated list of patterns of files/directories to be archived.
+     * Comma-separated list of patterns of files/directories to be archived.
      */
     private String artifacts;
 
     /**
-     * Possibly null 'excludes' pattern as in Ant.
+     * Possibly null comma-separated 'excludes' pattern, using Ant-style wildcards.
      */
     private String excludes;
 
@@ -252,9 +254,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 artifacts = environment.expand(artifacts);
             }
 
-            Map<String, String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive, followSymlinks));
+            Set<String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive, followSymlinks));
             if (!files.isEmpty()) {
-                build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
+                build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files.stream().collect(Collectors.toMap(f -> f, f -> f)));
                 if (fingerprint) {
                     Fingerprinter f = new Fingerprinter(artifacts);
                     f.setExcludes(excludes);
@@ -287,12 +289,16 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 }
             }
         } catch (AccessDeniedException e) {
-            LOG.log(Level.FINE, "Diagnosing anticipated Exception", e);
-            throw new AbortException(e.toString()); // Message is not enough as that is the filename only
+            String deniedPath = e.getFile() != null
+                    ? e.getFile()
+                    : Objects.toString(e.getMessage(), e.getClass().getName());
+            String message = Messages.ArtifactArchiver_AccessDenied(deniedPath, ws.getRemote());
+            LOG.log(Level.FINE, message, e);
+            throw new AbortException(message);
         }
     }
 
-    private static final class ListFiles extends MasterToSlaveFileCallable<Map<String, String>> {
+    private static final class ListFiles extends MasterToSlaveFileCallable<Set<String>> {
         private static final long serialVersionUID = 1;
         private final String includes, excludes;
         private final boolean defaultExcludes;
@@ -307,8 +313,8 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             this.followSymlinks = followSymlinks;
         }
 
-        @Override public Map<String, String> invoke(File basedir, VirtualChannel channel) throws IOException, InterruptedException {
-            Map<String, String> r = new HashMap<>();
+        @Override public Set<String> invoke(File basedir, VirtualChannel channel) {
+            Set<String> r = new HashSet<>();
 
             FileSet fileSet = Util.createFileSet(basedir, includes, excludes);
             fileSet.setDefaultexcludes(defaultExcludes);
@@ -317,7 +323,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
             for (String f : fileSet.getDirectoryScanner().getIncludedFiles()) {
                 f = f.replace(File.separatorChar, '/');
-                r.put(f, f);
+                r.add(f);
             }
             return r;
         }
@@ -367,7 +373,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
 
         @Override
-        public ArtifactArchiver newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public ArtifactArchiver newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
             return req.bindJSON(ArtifactArchiver.class, formData);
         }
 
@@ -386,10 +392,11 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                     if (aa != null && aa.latestOnly != null) {
                         if (aa.latestOnly) {
                             BuildDiscarder bd = p.getBuildDiscarder();
-                            if (bd instanceof LogRotator) {
-                                LogRotator lr = (LogRotator) bd;
+                            if (bd instanceof LogRotator lr) {
                                 if (lr.getArtifactNumToKeep() == -1) {
-                                    p.setBuildDiscarder(new LogRotator(lr.getDaysToKeep(), lr.getNumToKeep(), lr.getArtifactDaysToKeep(), 1));
+                                    LogRotator newLr = new LogRotator(lr.getDaysToKeep(), lr.getNumToKeep(), lr.getArtifactDaysToKeep(), 1);
+                                    newLr.setRemoveLastBuild(lr.isRemoveLastBuild());
+                                    p.setBuildDiscarder(newLr);
                                 } else {
                                     LOG.log(Level.WARNING, "will not clobber artifactNumToKeep={0} in {1}", new Object[] {lr.getArtifactNumToKeep(), p});
                                 }

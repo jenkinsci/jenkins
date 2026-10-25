@@ -17,7 +17,6 @@ import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import jenkins.security.RekeySecretAdminMonitor;
 
 /**
  * Convenient partial implementation of {@link AdministrativeMonitor} that involves a background "fixing" action
@@ -26,9 +25,6 @@ import jenkins.security.RekeySecretAdminMonitor;
  * <p>
  * A subclass defines what that background fixing actually does in {@link #fix(TaskListener)}. The logging output
  * from it gets persisted, and this class provides a "/log" view that allows the administrator to monitor its progress.
- *
- * <p>
- * See {@link RekeySecretAdminMonitor} for an example of how to subtype this class.
  *
  * @author Kohsuke Kawaguchi
  */

@@ -24,12 +24,16 @@
 
 package jenkins.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.cli.FullDuplexHttpStream;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import hudson.security.csrf.CrumbExclusion;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,28 +42,29 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
-public class FullDuplexHttpServiceTest {
+@WithJenkins
+class FullDuplexHttpServiceTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private final LogRecorder logging = new LogRecorder().record(FullDuplexHttpService.class, Level.FINE).record(FullDuplexHttpStream.class, Level.FINE);
 
-    @Rule
-    public LoggerRule logging = new LoggerRule().record(FullDuplexHttpService.class, Level.FINE).record(FullDuplexHttpStream.class, Level.FINE);
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
-    public void smokes() throws Exception {
+    void smokes() throws Exception {
         logging.record("org.eclipse.jetty", Level.ALL);
         FullDuplexHttpStream con = new FullDuplexHttpStream(r.getURL(), "test/", null);
         InputStream is = con.getInputStream();
@@ -83,7 +88,7 @@ public class FullDuplexHttpServiceTest {
         public HttpResponse doIndex() {
             return new FullDuplexHttpService.Response(duplexServices) {
                 @Override
-                protected FullDuplexHttpService createService(StaplerRequest req, UUID uuid) throws IOException, InterruptedException {
+                protected FullDuplexHttpService createService(StaplerRequest2 req, UUID uuid) throws IOException, InterruptedException {
                     return new FullDuplexHttpService(uuid) {
                         @Override
                         protected void run(InputStream upload, OutputStream download) throws IOException, InterruptedException {

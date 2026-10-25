@@ -1,15 +1,15 @@
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import hudson.util.Secret;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ParameterDefinitionTest {
+class ParameterDefinitionTest {
 
     @Test
-    public void compareStringParameterDefinition() {
+    void compareStringParameterDefinition() {
         StringParameterDefinition spd = new StringParameterDefinition("spd", "default");
         StringParameterDefinition spdSame = new StringParameterDefinition("spd", "default");
         StringParameterDefinition spdOther = new StringParameterDefinition("spdOther", "default");
@@ -46,7 +46,7 @@ public class ParameterDefinitionTest {
     }
 
     @Test
-    public void compareBooleanParameterDefinition() {
+    void compareBooleanParameterDefinition() {
         BooleanParameterDefinition bpd = new BooleanParameterDefinition("bpd", false, "desc");
         BooleanParameterDefinition bpdSame = new BooleanParameterDefinition("bpd", false, "desc");
         BooleanParameterDefinition bpdOther = new BooleanParameterDefinition("bpd", true, "desc");
@@ -63,7 +63,7 @@ public class ParameterDefinitionTest {
     }
 
     @Test
-    public void compareChoiceParameterDefinition() {
+    void compareChoiceParameterDefinition() {
         ChoiceParameterDefinition cpd = new ChoiceParameterDefinition("bpd", new String[]{"1", "2", "3"}, "desc");
         ChoiceParameterDefinition cpdSame = new ChoiceParameterDefinition("bpd", new String[]{"1", "2", "3"}, "desc");
         ChoiceParameterDefinition cpdOther = new ChoiceParameterDefinition("bpd", new String[]{"1", "3", "2"}, "desc");
@@ -80,7 +80,7 @@ public class ParameterDefinitionTest {
     }
 
     @Test
-    public void comparePasswordParameterDefinition() {
+    void comparePasswordParameterDefinition() {
         PasswordParameterDefinition ppd = new PasswordParameterDefinition("ppd", Secret.fromString("password"), "desc");
         PasswordParameterDefinition ppdSame = new PasswordParameterDefinition("ppd", Secret.fromString("password"), "desc");
         PasswordParameterDefinition ppdOther = new PasswordParameterDefinition("ppd", Secret.fromString("password1"), "desc");
@@ -97,7 +97,7 @@ public class ParameterDefinitionTest {
     }
 
     @Test
-    public void compareFileParameterDefinition() {
+    void compareFileParameterDefinition() {
         FileParameterDefinition fpd = new FileParameterDefinition("fpd", "desc");
         FileParameterDefinition fpdSame = new FileParameterDefinition("fpd", "desc");
         FileParameterDefinition fpdOther = new FileParameterDefinition("fpdOther", "desc");
@@ -114,7 +114,7 @@ public class ParameterDefinitionTest {
     }
 
     @Test
-    public void compareRunParameterDefinition() {
+    void compareRunParameterDefinition() {
         RunParameterDefinition rpd = new RunParameterDefinition("rpd", "project", "desc", RunParameterDefinition.RunParameterFilter.ALL);
         RunParameterDefinition rpdSame = new RunParameterDefinition("rpd", "project", "desc", RunParameterDefinition.RunParameterFilter.ALL);
         RunParameterDefinition rpdOther = new RunParameterDefinition("rpd", "project1", "desc", RunParameterDefinition.RunParameterFilter.STABLE);
@@ -132,7 +132,7 @@ public class ParameterDefinitionTest {
     }
 
     @Test
-    public void compareChildsWithoutEqualsAndHashCode() {
+    void compareChildsWithoutEqualsAndHashCode() {
         ExtendStringParameterDefinition epd = new ExtendStringParameterDefinition("epd", "default", "desc");
         ExtendStringParameterDefinition epdSame = new ExtendStringParameterDefinition("epd", "default", "desc");
         ExtendStringParameterDefinition epdOther = new ExtendStringParameterDefinition("epd", "default1", "desc");

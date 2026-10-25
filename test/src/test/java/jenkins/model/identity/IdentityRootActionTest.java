@@ -6,17 +6,23 @@ import static org.hamcrest.Matchers.containsString;
 import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class IdentityRootActionTest {
+@WithJenkins
+class IdentityRootActionTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private JenkinsRule r;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
 
     @Test
-    public void ui() throws Exception {
+    void ui() throws Exception {
         HtmlPage p = r.createWebClient().goTo("instance-identity");
         assertThat(p.getElementById("fingerprint").getTextContent(),
                 containsString(ExtensionList.lookup(UnprotectedRootAction.class).get(IdentityRootAction.class).getFingerprint()));

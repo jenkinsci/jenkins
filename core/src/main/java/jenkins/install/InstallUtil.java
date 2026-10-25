@@ -234,7 +234,7 @@ public class InstallUtil {
             if (configFile.exists()) {
                 try {
                     String lastVersion = XMLUtils.getValue("/hudson/version", configFile);
-                    if (lastVersion.length() > 0) {
+                    if (!lastVersion.isEmpty()) {
                         LOGGER.log(Level.FINE, "discovered serialized lastVersion {0}", lastVersion);
                         return lastVersion;
                     }
@@ -307,8 +307,7 @@ public class InstallUtil {
         LOGGER.fine("Writing install state to: " + installingPluginsFile.getAbsolutePath());
         Map<String, String> statuses = new HashMap<>();
         for (UpdateCenterJob j : installingPlugins) {
-            if (j instanceof InstallationJob && j.getCorrelationId() != null) { // only include install jobs with a correlation id (directly selected)
-                InstallationJob ij = (InstallationJob) j;
+            if (j instanceof InstallationJob ij && j.getCorrelationId() != null) { // only include install jobs with a correlation id (directly selected)
                 InstallationStatus status = ij.status;
                 String statusText = status.getType();
                 if (status instanceof Installing) { // flag currently installing plugins as pending

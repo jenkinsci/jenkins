@@ -38,10 +38,14 @@ import hudson.security.PermissionScope;
 import hudson.util.Secret;
 import java.io.IOException;
 import java.util.Collection;
+import jenkins.model.FullyNamed;
+import jenkins.model.FullyNamedModelObject;
 import jenkins.model.Jenkins;
+import jenkins.model.Named;
+import jenkins.search.SearchGroup;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Basic configuration unit in Hudson.
@@ -72,7 +76,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @see Items
  * @see ItemVisitor
  */
-public interface Item extends PersistenceRoot, SearchableModelObject, AccessControlled, OnMaster {
+public interface Item extends PersistenceRoot, FullyNamedModelObject, SearchableModelObject, FullyNamed, Named, AccessControlled, OnMaster {
     /**
      * Gets the parent that contains this item.
      */
@@ -96,6 +100,8 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      *
      * @see #getFullName()
      */
+    @NonNull
+    @Override
     String getName();
 
     /**
@@ -109,6 +115,8 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      *
      * @see jenkins.model.Jenkins#getItemByFullName(String,Class)
      */
+    @NonNull
+    @Override
     String getFullName();
 
     /**
@@ -125,13 +133,6 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      */
     @Override
     String getDisplayName();
-
-    /**
-     * Works like {@link #getDisplayName()} but return
-     * the full path that includes all the display names
-     * of the ancestors.
-     */
-    String getFullDisplayName();
 
     /**
      * Gets the relative name to this item from the specified group.
@@ -183,7 +184,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
 
     /**
      * Returns the absolute URL of this item. This relies on the current
-     * {@link StaplerRequest} to figure out what the host name is,
+     * {@link StaplerRequest2} to figure out what the host name is,
      * so can be used only during processing client requests.
      *
      * @return
@@ -248,6 +249,11 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      * Deletes this item.
      */
     void delete() throws IOException, InterruptedException;
+
+    @Override
+    default SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.ItemSearchGroup.class);
+    }
 
     PermissionGroup PERMISSIONS = new PermissionGroup(Item.class, Messages._Item_Permissions_Title());
     Permission CREATE =

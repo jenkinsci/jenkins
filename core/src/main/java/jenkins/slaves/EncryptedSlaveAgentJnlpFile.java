@@ -5,6 +5,11 @@ import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.slaves.SlaveComputer;
 import hudson.util.Secret;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -17,15 +22,10 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
-import javax.servlet.http.HttpServletResponseWrapper;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.ResponseImpl;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Serves the JNLP file.
@@ -70,11 +70,11 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
     }
 
     @Override
-    public void generateResponse(StaplerRequest req, final StaplerResponse res, Object node) throws IOException, ServletException {
+    public void generateResponse(StaplerRequest2 req, final StaplerResponse2 res, Object node) throws IOException, ServletException {
         RequestDispatcher view = req.getView(it, viewName);
         if ("true".equals(req.getParameter("encrypt"))) {
             final CapturingServletOutputStream csos = new CapturingServletOutputStream();
-            StaplerResponse temp = new ResponseImpl(req.getStapler(), new HttpServletResponseWrapper(res) {
+            StaplerResponse2 temp = new ResponseImpl(req.getStapler(), new HttpServletResponseWrapper(res) {
                 @Override public ServletOutputStream getOutputStream() {
                     return csos;
                 }

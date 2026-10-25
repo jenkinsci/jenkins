@@ -34,24 +34,27 @@ import static org.hamcrest.Matchers.startsWith;
 
 import hudson.model.Computer;
 import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class GetNodeCommandTest {
+@WithJenkins
+class GetNodeCommandTest {
 
     private CLICommandInvoker command;
 
-    @Rule public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before public void setUp() {
-
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         command = new CLICommandInvoker(j, new GetNodeCommand());
     }
 
-    @Test public void getNodeShouldFailWithoutComputerExtendedReadPermission() throws Exception {
+    @Test
+    void getNodeShouldFailWithoutComputerExtendedReadPermission() throws Exception {
 
         // JENKINS-65578 workaround
         Computer.EXTENDED_READ.enabled = false;
@@ -68,7 +71,8 @@ public class GetNodeCommandTest {
         assertThat(result, hasNoStandardOutput());
     }
 
-    @Test public void getNodeShouldYieldConfigXml() throws Exception {
+    @Test
+    void getNodeShouldYieldConfigXml() throws Exception {
 
         j.createSlave("MyAgent", null, null);
 
@@ -83,7 +87,8 @@ public class GetNodeCommandTest {
         assertThat(result, succeeded());
     }
 
-    @Test public void getNodeShouldFailIfNodeDoesNotExist() {
+    @Test
+    void getNodeShouldFailIfNodeDoesNotExist() {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.EXTENDED_READ, Jenkins.READ)
@@ -97,7 +102,7 @@ public class GetNodeCommandTest {
 
     @Issue("SECURITY-281")
     @Test
-    public void getNodeShouldFailForBuiltInNode() {
+    void getNodeShouldFailForBuiltInNode() {
         CLICommandInvoker.Result result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).invokeWithArgs("");
         assertThat(result.stderr(), containsString("No such node ''"));
         assertThat(result, failedWith(3));

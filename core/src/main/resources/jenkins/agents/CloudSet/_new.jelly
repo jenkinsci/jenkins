@@ -37,7 +37,7 @@ THE SOFTWARE.
         <st:include it="${requestScope.instance}" class="${requestScope.descriptor.clazz}" page="config.jelly" optional="true" />
         
         <f:bottomButtonBar>
-          <input type="hidden" name="type" value="${request.getParameter('mode')}"/>
+          <input type="hidden" name="cloudDescriptorName" value="${request2.getParameter('mode')}"/>
 
           <f:submit value="${%Save}"/>
         </f:bottomButtonBar>

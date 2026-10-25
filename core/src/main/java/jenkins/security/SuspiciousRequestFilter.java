@@ -1,22 +1,22 @@
 package jenkins.security;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.logging.Logger;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.CompatibleFilter;
 
 @Restricted(NoExternalUse.class)
-public class SuspiciousRequestFilter implements Filter {
+public class SuspiciousRequestFilter implements CompatibleFilter {
 
     /** System property name set to true or false to indicate whether or not semicolons should be allowed in URL paths. */
     public static final String ALLOW_SEMICOLONS_IN_PATH = SuspiciousRequestFilter.class.getName() + ".allowSemicolonsInPath";

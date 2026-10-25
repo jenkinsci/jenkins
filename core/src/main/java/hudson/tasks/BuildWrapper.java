@@ -31,11 +31,11 @@ import hudson.LauncherDecorator;
 import hudson.Util;
 import hudson.console.ConsoleLogFilter;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.model.Run.RunnerAbortedException;
@@ -77,7 +77,7 @@ import jenkins.model.Jenkins;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper> implements ExtensionPoint {
+public abstract class BuildWrapper implements Describable<BuildWrapper>, ExtensionPoint {
     /**
      * Represents the environment set up by {@link BuildWrapper#setUp(Build,Launcher,BuildListener)}.
      *

@@ -133,16 +133,14 @@ var Sortable = (function () {
      */
     getStoredPreference: function () {
       var key = this.getStorageKey();
-      if (storage.hasKey(key)) {
-        var val = storage.getItem(key);
-        if (val) {
-          var vals = val.split(":");
-          if (vals.length == 2) {
-            return {
-              column: parseInt(vals[0]),
-              direction: arrowTable[vals[1]],
-            };
-          }
+      var val = sessionStorage.getItem(key);
+      if (val) {
+        var vals = val.split(":");
+        if (vals.length == 2) {
+          return {
+            column: parseInt(vals[0]),
+            direction: arrowTable[vals[1]],
+          };
         }
       }
       return null;
@@ -156,7 +154,13 @@ var Sortable = (function () {
 
     savePreference: function () {
       var key = this.getStorageKey();
-      storage.setItem(key, this.pref.column + ":" + this.pref.direction.id);
+      var value = this.pref.column + ":" + this.pref.direction.id;
+      try {
+        sessionStorage.setItem(key, value);
+      } catch (e) {
+        // storage could be full
+        console.warn(e);
+      }
     },
 
     /**
@@ -357,6 +361,8 @@ var Sortable = (function () {
         hours = parseInt(hours);
         if (dmatches[7] && dmatches[7].match(/pm/i) && hours < 12) {
           hours += 12;
+        } else if (dmatches[7] && dmatches[7].match(/am/i) && hours === 12) {
+          hours = 0;
         }
         return new Date(year, month, day, hours, minutes, seconds, 0);
       }
@@ -441,28 +447,6 @@ var Sortable = (function () {
       };
     },
   };
-
-  var storage;
-  try {
-    storage = YAHOO.util.StorageManager.get(
-      YAHOO.util.StorageEngineHTML5.ENGINE_NAME,
-      YAHOO.util.StorageManager.LOCATION_SESSION,
-      {
-        order: [YAHOO.util.StorageEngineGears],
-      },
-    );
-  } catch (e) {
-    // no storage available
-    storage = {
-      setItem: function () {},
-      getItem: function () {
-        return null;
-      },
-      hasKey: function () {
-        return false;
-      },
-    };
-  }
 
   return {
     Sortable: Sortable,

@@ -79,8 +79,7 @@ public abstract class BuildStepDescriptor<T extends BuildStep & Describable<T>> 
             if (pd instanceof AbstractProjectDescriptor && !((AbstractProjectDescriptor) pd).isApplicable(d))
                 continue;
 
-            if (d instanceof BuildStepDescriptor) {
-                BuildStepDescriptor<T> bd = (BuildStepDescriptor<T>) d;
+            if (d instanceof BuildStepDescriptor<T> bd) {
                 if (!bd.isApplicable(type))  continue;
                 r.add(bd);
             } else {

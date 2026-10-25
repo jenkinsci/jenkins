@@ -32,16 +32,22 @@ import hudson.model.FreeStyleProject;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
 import jenkins.model.ParameterizedJobMixIn;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class AlternativeUiTextProviderTest {
+@WithJenkins
+class AlternativeUiTextProviderTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @TestExtension
     public static class Impl extends AlternativeUiTextProvider {
@@ -63,7 +69,7 @@ public class AlternativeUiTextProviderTest {
      * Makes sure that {@link AlternativeUiTextProvider} actually works at some basic level.
      */
     @Test
-    public void basics() throws Exception {
+    void basics() throws Exception {
         Impl.oldschool = false;
         FreeStyleProject p = j.createFreeStyleProject("aaa");
         assertThat(j.createWebClient().getPage(p).asNormalizedText(), containsString("newschool:aaa"));
@@ -77,7 +83,7 @@ public class AlternativeUiTextProviderTest {
      */
     @Test
     @Issue("JENKINS-41757")
-    public void basicsWithParameter() throws Exception {
+    void basicsWithParameter() throws Exception {
         Impl.oldschool = false;
         FreeStyleProject p = j.createFreeStyleProject("aaa");
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("FOO", null)));

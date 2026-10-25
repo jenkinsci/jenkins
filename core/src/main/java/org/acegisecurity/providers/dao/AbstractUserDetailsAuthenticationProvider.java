@@ -24,6 +24,7 @@
 
 package org.acegisecurity.providers.dao;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.acegisecurity.AcegiSecurityException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
@@ -69,6 +70,7 @@ public abstract class AbstractUserDetailsAuthenticationProvider implements Authe
     protected abstract UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException;
 
     @Override
+    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         try {
             return Authentication.fromSpring(delegate.authenticate(authentication.toSpring()));

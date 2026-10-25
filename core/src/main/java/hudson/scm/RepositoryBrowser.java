@@ -27,7 +27,7 @@ package hudson.scm;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractDescribableImpl;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import java.io.IOException;
 import java.io.Serializable;
@@ -56,7 +56,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @see RepositoryBrowsers
  */
 @ExportedBean
-public abstract class RepositoryBrowser<E extends ChangeLogSet.Entry> extends AbstractDescribableImpl<RepositoryBrowser<?>> implements ExtensionPoint, Serializable {
+public abstract class RepositoryBrowser<E extends ChangeLogSet.Entry> implements Describable<RepositoryBrowser<?>>, ExtensionPoint, Serializable {
     /**
      * Determines the link to the given change set.
      *

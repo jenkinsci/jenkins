@@ -2,6 +2,7 @@ package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
@@ -17,22 +18,27 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import jenkins.tasks.SimpleBuildStep;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class Security3245Test {
+@WithJenkins
+class Security3245Test {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("SECURITY-3245")
     @Test
-    public void captionCannotAttributeEscape() throws Exception {
+    void captionCannotElementEscape() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("p");
-        p.getBuildersList().add(new ExpandableDetailsNoteTestAction("' onclick=alert(1) foo='bar", "<h1></h1>"));
+        p.getBuildersList().add(new ExpandableDetailsNoteTestAction("<script>alert(1)</script>", "<h1></h1>"));
         FreeStyleBuild build = j.buildAndAssertSuccess(p);
 
         AtomicBoolean alerts = new AtomicBoolean();
@@ -40,13 +46,10 @@ public class Security3245Test {
             wc.setAlertHandler((pr, s) -> alerts.set(true));
             final HtmlPage page = wc.goTo(build.getUrl() + "console");
             String content = page.getWebResponse().getContentAsString();
-            assertThat(content, containsString("<input type=button value='&#39; onclick=alert(1) foo=&#39;bar' class='reveal-expandable-detail'>"));
-
-            // Execute JavaScript code to simulate click event
-            String jsCode = "document.querySelector('.reveal-expandable-detail').dispatchEvent(new MouseEvent('click'));";
-            page.executeJavaScript(jsCode);
-
-            Assert.assertFalse("Alert not expected", alerts.get());
+            assertThat(content, containsString("<button type='button' class='jenkins-button " +
+                    "reveal-expandable-detail'>&lt;script&gt;alert(1)&lt;/script&gt;</button>"));
+            // check that alert was not executed
+            assertFalse(alerts.get(), "Alert not expected");
         }
     }
 

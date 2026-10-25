@@ -1,5 +1,6 @@
 package hudson.cli;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
@@ -23,6 +24,7 @@ public class SetBuildDisplayNameCommand extends CLICommand implements Serializab
     public int number;
 
     @Argument(metaVar = "DISPLAYNAME", required = true, usage = "DisplayName to be set. '-' to read from stdin.", index = 2)
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public String displayName;
 
     @Override

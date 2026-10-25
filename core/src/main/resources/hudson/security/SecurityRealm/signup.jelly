@@ -24,8 +24,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
     <st:statusCode value="404" />
-    <l:layout title="${%Signup not supported}">
-        <st:include page="sidepanel.jelly" from="${app}" it="${app}" />
+    <l:layout title="${%Signup not supported}" type="one-column">
         <l:breadcrumb title="${%Signup}" />
         <l:main-panel>
             <h1>${%Sign up}</h1>

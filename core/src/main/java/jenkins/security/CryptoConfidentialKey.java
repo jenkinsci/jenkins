@@ -1,5 +1,6 @@
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.Secret;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -71,6 +72,7 @@ public class CryptoConfidentialKey extends ConfidentialKey {
      * @return the cipher
      */
     @Restricted(NoExternalUse.class) // TODO pending API
+    @SuppressFBWarnings(value = "STATIC_IV", justification = "TODO needs triage")
     public Cipher encrypt(byte[] iv) {
         try {
             Cipher cipher = Secret.getCipher(ALGORITHM);

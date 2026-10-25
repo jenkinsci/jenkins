@@ -24,6 +24,7 @@
 
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Proc;
@@ -219,6 +220,7 @@ public class Channels {
      * @deprecated removed without replacement
      */
     @Deprecated
+    @SuppressFBWarnings(value = "UNENCRYPTED_SERVER_SOCKET", justification = "TODO needs triage")
     public static Channel newJVM(String displayName, TaskListener listener, JVMBuilder vmb, FilePath workDir, ClasspathBuilder classpath) throws IOException {
         ServerSocket serverSocket = new ServerSocket();
         serverSocket.bind(new InetSocketAddress("localhost", 0));

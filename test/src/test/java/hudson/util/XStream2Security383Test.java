@@ -1,66 +1,70 @@
 package hudson.util;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import hudson.model.Items;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.logging.Level;
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
 import jenkins.security.ClassFilterImpl;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-public class XStream2Security383Test {
+@WithJenkins
+class XStream2Security383Test {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    @TempDir
+    private File f;
 
-    @Rule
-    public TemporaryFolder f = new TemporaryFolder();
-
-    @Rule
-    public LoggerRule logging = new LoggerRule().record(ClassFilterImpl.class, Level.FINE);
+    private final LogRecorder logging = new LogRecorder().record(ClassFilterImpl.class, Level.FINE);
 
     @Mock
-    private StaplerRequest req;
+    private StaplerRequest2 req;
 
     @Mock
-    private StaplerResponse rsp;
+    private StaplerResponse2 rsp;
 
     private AutoCloseable mocks;
 
-    @After
-    public void tearDown() throws Exception {
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
         mocks.close();
     }
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         mocks = MockitoAnnotations.openMocks(this);
     }
 
     @Test
     @Issue("SECURITY-383")
-    public void testXmlLoad() throws Exception {
-        File exploitFile = f.newFile();
+    void testXmlLoad() throws Exception {
+        File exploitFile = File.createTempFile("junit", null, f);
         try {
             // be extra sure there's no file already
             if (exploitFile.exists() && !exploitFile.delete()) {
@@ -78,7 +82,7 @@ public class XStream2Security383Test {
             Files.writeString(tempJobDir.toPath().resolve("config.xml"), exploitXml, StandardCharsets.UTF_8);
 
             assertThrows(IOException.class, () -> Items.load(j.jenkins, tempJobDir));
-            assertFalse("no file should be created here", exploitFile.exists());
+            assertFalse(exploitFile.exists(), "no file should be created here");
         } finally {
             exploitFile.delete();
         }
@@ -86,8 +90,8 @@ public class XStream2Security383Test {
 
     @Test
     @Issue("SECURITY-383")
-    public void testPostJobXml() throws Exception {
-        File exploitFile = f.newFile();
+    void testPostJobXml() throws Exception {
+        File exploitFile = File.createTempFile("junit", null, f);
         try {
             // be extra sure there's no file already
             if (exploitFile.exists() && !exploitFile.delete()) {
@@ -107,7 +111,7 @@ public class XStream2Security383Test {
             when(req.getParameter("name")).thenReturn("foo");
 
             assertThrows(IOException.class, () -> j.jenkins.doCreateItem(req, rsp));
-            assertFalse("no file should be created here", exploitFile.exists());
+            assertFalse(exploitFile.exists(), "no file should be created here");
         } finally {
             exploitFile.delete();
         }

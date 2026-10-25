@@ -33,7 +33,10 @@ THE SOFTWARE.
     <st:attribute name="hasKeyboardShortcut">
       If false the default keyboard shortcut for the input is disabled. Defaults to true.
     </st:attribute>
-    <st:attribute name="enabled" since="TODO">
+    <st:attribute name="charms" since="TODO">
+      Custom content shown at the trailing edge of the input, replacing the default keyboard shortcut hint.
+    </st:attribute>
+    <st:attribute name="enabled" since="2.420">
       Defaults to true. Sets whether the search bar is enabled or not.
     </st:attribute>
     Creates a search input
@@ -46,9 +49,10 @@ THE SOFTWARE.
       <div class="jenkins-search__icon">
         <l:icon src="symbol-search" />
       </div>
+
       <input value="${attrs.value}"
              id="${attrs.id}"
-             class="jenkins-search__input"
+             class="jenkins-input jenkins-search__input"
              placeholder="${attrs.placeholder ?: '%Search'}"
              type="search"
              autofocus="${attrs.autofocus == 'true' ? 'true' : null}"
@@ -57,9 +61,15 @@ THE SOFTWARE.
              autocapitalize="off"
              spellcheck="false"
              disabled="${attrs.enabled == false ? true : null}" />
-      <j:if test="${attrs.hasKeyboardShortcut != 'false'}">
-        <div class="jenkins-search__shortcut" tooltip="${%Press / on your keyboard to focus}">
-          <l:icon src="symbol-search-shortcut" />
+
+      <j:if test="${attrs.hasKeyboardShortcut != 'false' or attrs.charms != null}">
+        <div class="jenkins-search__charms">
+          <j:if test="${attrs.charms != null}">
+            <j:out value="${attrs.charms}" />
+          </j:if>
+          <j:if test="${attrs.hasKeyboardShortcut != 'false' and attrs.charms == null}">
+            <l:keyboard-shortcut shortcut="symbol-search-shortcut" message="${%shortcut}" />
+          </j:if>
         </div>
       </j:if>
     </div>

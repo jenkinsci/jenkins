@@ -101,11 +101,10 @@ public class FileFingerprintStorage extends FingerprintStorage {
 
         try {
             Object loaded = configFile.read();
-            if (!(loaded instanceof Fingerprint)) {
+            if (!(loaded instanceof Fingerprint f)) {
                 throw new IOException("Unexpected Fingerprint type. Expected " + Fingerprint.class + " or subclass but got "
                         + (loaded != null ? loaded.getClass() : "null"));
             }
-            Fingerprint f = (Fingerprint) loaded;
             if (f.getPersistedFacets() == null) {
                 logger.log(Level.WARNING, "Malformed fingerprint {0}: Missing facets", configFile);
                 Files.deleteIfExists(Util.fileToPath(file));
@@ -335,7 +334,6 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Deletes a directory if it's empty.
      */
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", justification = "https://github.com/spotbugs/spotbugs/issues/756")
     private void deleteIfEmpty(File dir) {
         try {
             if (Files.isDirectory(dir.toPath())) {

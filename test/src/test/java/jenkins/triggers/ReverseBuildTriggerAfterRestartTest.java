@@ -1,21 +1,21 @@
 package jenkins.triggers;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import hudson.model.FreeStyleProject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsSessionRule;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
-public class ReverseBuildTriggerAfterRestartTest {
+class ReverseBuildTriggerAfterRestartTest {
 
-    @Rule
-    public JenkinsSessionRule rule = new JenkinsSessionRule();
+    @RegisterExtension
+    private final JenkinsSessionExtension rule = new JenkinsSessionExtension();
 
     @Issue("JENKINS-67237")
     @Test
-    public void testExecutionOfReverseBuildTriggersAfterRestart() throws Throwable {
+    void testExecutionOfReverseBuildTriggersAfterRestart() throws Throwable {
         String nameOfUpstreamProject = "upstreamProject";
         String nameOfDownstreamProject = "downstreamProject";
 

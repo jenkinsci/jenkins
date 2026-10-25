@@ -24,11 +24,11 @@
 
 package jenkins.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -37,12 +37,12 @@ import org.mockito.stubbing.Answer;
  * Tests for {@link JenkinsLocationConfiguration}.
  * @author Oleg Nenashev
  */
-public class JenkinsLocationConfigurationTest {
+class JenkinsLocationConfigurationTest {
 
-    JenkinsLocationConfiguration config;
+    private JenkinsLocationConfiguration config;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         config = mock(JenkinsLocationConfiguration.class, Mockito.CALLS_REAL_METHODS);
         Answer<String> mockVoid = invocation -> "stub";
         Mockito.doAnswer(mockVoid).when(config).save();
@@ -50,7 +50,7 @@ public class JenkinsLocationConfigurationTest {
     }
 
     @Test
-    public void setAdminEmail() {
+    void setAdminEmail() {
         final String email = "test@foo.bar";
         final String email2 = "test@bar.foo";
 
@@ -71,7 +71,7 @@ public class JenkinsLocationConfigurationTest {
 
     @Test
     @Issue("JENKINS-28419")
-    public void resetAdminEmail() {
+    void resetAdminEmail() {
         final String email = "test@foo.bar";
 
         // Set the e-mail

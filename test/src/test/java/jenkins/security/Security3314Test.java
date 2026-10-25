@@ -10,34 +10,34 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-@RunWith(Parameterized.class)
-public class Security3314Test {
-    private String commandName;
+@WithJenkins
+class Security3314Test {
 
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /**
      * connect-node to test the CLICommand behavior
      * disable-job to test the CLIRegisterer behavior (@CLIMethod)
      */
-    @Parameterized.Parameters
-    public static List<String> commands() {
+    static List<String> commands() {
         return Arrays.asList("connect-node", "disable-job");
     }
 
-    public Security3314Test(String commandName) {
-        this.commandName = commandName;
-    }
 
-    @Test
-    public void commandShouldNotParseAt() throws Exception {
+    @ParameterizedTest
+    @MethodSource("commands")
+    void commandShouldNotParseAt(String commandName) throws Exception {
         CLICommandInvoker command = new CLICommandInvoker(j, commandName);
 
         Path tempPath = Files.createTempFile("tempFile", ".txt");

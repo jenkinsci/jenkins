@@ -1,20 +1,18 @@
 <div>
-  <!-- TODO -->
   このオプションを有効にすると、このプロジェクトのビルドが(指紋経由で)依存している
   <a href="lastSuccessfulBuild/fingerprint">すべてのビルド</a>
   が、 ログローテーションで削除されないようにします。
 
   <p>
-    When your job depends on other jobs on Jenkins and you occasionally need to
-    tag your workspace, it's often convenient/necessary to also tag your
-    dependencies on Jenkins. The problem is that the log rotation could
-    interfere with this, since the build your project is using might already be
-    log rotated (if there have been a lot of builds in your dependency), and if
-    that happens you won't be able to reliably tag your dependencies.
+    ジョブがJenkins上の他のジョブに依存しており、ワークスペースにタグ付けする必要がある場合、
+    Jenkins上の依存関係に対してもタグ付けすると便利であり、また必要になることがあります。
+    問題は、ログローテーションがこれを妨げる可能性があることです。
+    プロジェクトが使用しているビルドが（依存関係に多数のビルドがある場合）既にログローテーションされている可能性があり、
+    その場合、依存関係に対しての確実なタグ付けができなくなります。
   </p>
 
   <p>
-    This feature fixes that problem by "locking" those builds that you depend
-    on, thereby guaranteeing that you can always tag your complete dependencies.
+    この機能は、依存しているビルドを「ロック」することでこの問題を解決し、
+    常に完全な依存関係にタグ付けできることを保証します。
   </p>
 </div>

@@ -59,8 +59,8 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -142,7 +142,6 @@ public final class RemotingDiagnostics {
         }
 
         @Override
-        @SuppressFBWarnings(value = "GROOVY_SHELL", justification = "script console is a feature, not a bug")
         public String call() throws RuntimeException {
             // if we run locally, cl!=null. Otherwise the delegating classloader will be available as context classloader.
             if (cl == null)       cl = Thread.currentThread().getContextClassLoader();
@@ -158,13 +157,18 @@ public final class RemotingDiagnostics {
             PrintWriter pw = new PrintWriter(out);
             shell.setVariable("out", pw);
             try {
-                Object output = shell.evaluate(script);
+                Object output = evaluateScript(shell);
                 if (output != null)
                 pw.println("Result: " + output);
             } catch (Throwable t) {
                 Functions.printStackTrace(t, pw);
             }
             return out.toString();
+        }
+
+        @SuppressFBWarnings(value = "GROOVY_SHELL", justification = "script console is a feature, not a bug")
+        private Object evaluateScript(GroovyShell shell) {
+            return shell.evaluate(script);
         }
 
         private static final long serialVersionUID = 1L;
@@ -211,13 +215,13 @@ public final class RemotingDiagnostics {
 
         @WebMethod(name = "heapdump.hprof")
         @RequirePOST
-        public void doHeapDump(StaplerRequest req, StaplerResponse rsp) throws IOException, InterruptedException {
+        public void doHeapDump(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, InterruptedException {
             owner.checkPermission(Jenkins.ADMINISTER);
             rsp.setContentType("application/octet-stream");
 
             FilePath dump = obtain();
             try {
-                dump.copyTo(rsp.getCompressedOutputStream(req));
+                dump.copyTo(rsp.getOutputStream());
             } finally {
                 dump.delete();
             }

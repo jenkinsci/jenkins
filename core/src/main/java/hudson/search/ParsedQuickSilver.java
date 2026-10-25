@@ -85,7 +85,7 @@ final class ParsedQuickSilver {
     private String splitName(String url) {
         StringBuilder buf = new StringBuilder(url.length() + 5);
         for (String token : url.split("(?<=[a-z])(?=[A-Z])")) {
-            if (buf.length() > 0)  buf.append(' ');
+            if (!buf.isEmpty())  buf.append(' ');
             buf.append(Introspector.decapitalize(token));
         }
         return buf.toString();

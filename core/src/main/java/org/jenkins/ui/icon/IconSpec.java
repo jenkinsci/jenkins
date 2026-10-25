@@ -27,8 +27,7 @@ package org.jenkins.ui.icon;
 /**
  * Icon Specification.
  * <br>
- * Plugin extension points that implement/extend Action/ManagementLink should
- * also implement this interface.
+ * If your class provides an icon spec you should implement this interface.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  * @since 2.0

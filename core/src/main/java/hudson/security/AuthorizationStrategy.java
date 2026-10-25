@@ -28,7 +28,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.AbstractItem;
 import hudson.model.AbstractProject;
 import hudson.model.Computer;
@@ -43,11 +42,12 @@ import hudson.util.DescriptorList;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import jenkins.model.IComputer;
 import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Controls authorization throughout Hudson.
@@ -70,7 +70,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @see SecurityRealm
  */
 @StaplerAccessibleType
-public abstract class AuthorizationStrategy extends AbstractDescribableImpl<AuthorizationStrategy> implements ExtensionPoint {
+public abstract class AuthorizationStrategy implements Describable<AuthorizationStrategy>, ExtensionPoint {
     /**
      * Returns the instance of {@link ACL} where all the other {@link ACL} instances
      * for all the other model objects eventually delegate.
@@ -152,6 +152,22 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      */
     public @NonNull ACL getACL(@NonNull Computer computer) {
         return getACL(computer.getNode());
+    }
+
+    /**
+     * Implementation can choose to provide different ACL for different computers.
+     * This can be used as a basis for more fine-grained access control.
+     * <p>
+     * Default implementation delegates to {@link #getACL(Computer)} if the computer is an instance of {@link Computer},
+     * otherwise it will fall back to {@link #getRootACL()}.
+     *
+     * @since 2.480
+     **/
+    public @NonNull ACL getACL(@NonNull IComputer computer) {
+        if (computer instanceof Computer c) {
+            return getACL(c);
+        }
+        return getRootACL();
     }
 
     /**
@@ -241,7 +257,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
             }
 
             @Override
-            public @NonNull AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            public @NonNull AuthorizationStrategy newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
                 return UNSECURED;
             }
         }

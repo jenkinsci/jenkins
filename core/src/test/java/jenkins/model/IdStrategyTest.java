@@ -2,17 +2,20 @@ package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
 
-public class IdStrategyTest {
+class IdStrategyTest {
 
     @SuppressWarnings("deprecation")
     @Test
-    public void caseInsensitive() {
+    void caseInsensitive() {
         IdStrategy idStrategy = new IdStrategy.CaseInsensitive();
 
         assertRestrictedNames(idStrategy);
@@ -48,7 +51,7 @@ public class IdStrategyTest {
 
     @SuppressWarnings("deprecation")
     @Test
-    public void caseInsensitivePassesThroughOldLegacy() {
+    void caseInsensitivePassesThroughOldLegacy() {
         IdStrategy idStrategy = new IdStrategy.CaseInsensitive();
 
         assertThat(idStrategy.idFromFilename("make\u1000000"), is("make\u1000000"));
@@ -59,7 +62,7 @@ public class IdStrategyTest {
 
     @SuppressWarnings("deprecation")
     @Test
-    public void caseSensitive() {
+    void caseSensitive() {
         IdStrategy idStrategy = new IdStrategy.CaseSensitive();
 
         assertRestrictedNames(idStrategy);
@@ -98,7 +101,7 @@ public class IdStrategyTest {
 
     @SuppressWarnings("deprecation")
     @Test
-    public void caseSensitivePassesThroughOldLegacy() {
+    void caseSensitivePassesThroughOldLegacy() {
         IdStrategy idStrategy = new IdStrategy.CaseSensitive();
 
         assertThat(idStrategy.idFromFilename("make\u1000000"), is("make\u1000000"));
@@ -107,7 +110,7 @@ public class IdStrategyTest {
     }
 
     @Test
-    public void testEqualsCaseInsensitive() {
+    void testEqualsCaseInsensitive() {
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
         assertTrue(idStrategy.equals("user1", "User1"));
         assertTrue(idStrategy.equals("User1", "user1"));
@@ -117,7 +120,7 @@ public class IdStrategyTest {
     }
 
     @Test
-    public void testEqualsCaseSensitive() {
+    void testEqualsCaseSensitive() {
         IdStrategy idStrategy = new IdStrategy.CaseSensitive();
         assertFalse(idStrategy.equals("user1", "User1"));
         assertFalse(idStrategy.equals("User1", "user1"));
@@ -127,7 +130,7 @@ public class IdStrategyTest {
     }
 
     @Test
-    public void testEqualsCaseSensitiveEmailAddress() {
+    void testEqualsCaseSensitiveEmailAddress() {
         IdStrategy idStrategy = new IdStrategy.CaseSensitiveEmailAddress();
         assertFalse(idStrategy.equals("john.smith@acme.org", "John.Smith@acme.org"));
         assertFalse(idStrategy.equals("john.smith@acme.org", "John.Smith@ACME.org"));
@@ -142,7 +145,7 @@ public class IdStrategyTest {
     }
 
     @Test
-    public void testKeyForCaseInsensitive() {
+    void testKeyForCaseInsensitive() {
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
         assertThat(idStrategy.keyFor("user1"), is("user1"));
         assertThat(idStrategy.keyFor("User1"), is("user1"));
@@ -150,7 +153,7 @@ public class IdStrategyTest {
     }
 
     @Test
-    public void testKeyForCaseSensitive() {
+    void testKeyForCaseSensitive() {
         IdStrategy idStrategy = new IdStrategy.CaseSensitive();
         assertThat(idStrategy.keyFor("user1"), is("user1"));
         assertThat(idStrategy.keyFor("User1"), is("User1"));
@@ -158,7 +161,7 @@ public class IdStrategyTest {
     }
 
     @Test
-    public void testKeyForCaseSensitiveEmailAddress() {
+    void testKeyForCaseSensitiveEmailAddress() {
         IdStrategy idStrategy = new IdStrategy.CaseSensitiveEmailAddress();
         assertThat(idStrategy.keyFor("john.smith@acme.org"), is("john.smith@acme.org"));
         assertThat(idStrategy.keyFor("John.Smith@acme.org"), is("John.Smith@acme.org"));
@@ -171,7 +174,7 @@ public class IdStrategyTest {
     }
 
     @Test
-    public void testCompareCaseInsensitive() {
+    void testCompareCaseInsensitive() {
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
         assertTrue(idStrategy.compare("user1", "user2") < 0);
         assertTrue(idStrategy.compare("user2", "user1") > 0);
@@ -182,7 +185,7 @@ public class IdStrategyTest {
     }
 
     @Test
-    public void testCompareCaseSensitive() {
+    void testCompareCaseSensitive() {
         IdStrategy idStrategy = new IdStrategy.CaseSensitive();
         assertTrue(idStrategy.compare("user1", "user2") < 0);
         assertTrue(idStrategy.compare("user2", "user1") > 0);
@@ -193,7 +196,7 @@ public class IdStrategyTest {
     }
 
     @Test
-    public void testCompareCaseSensitiveEmail() {
+    void testCompareCaseSensitiveEmail() {
         IdStrategy idStrategy = new IdStrategy.CaseSensitiveEmailAddress();
         assertEquals(0, idStrategy.compare("john.smith@acme.org", "john.smith@acme.org"));
         assertEquals(0, idStrategy.compare("John.Smith@acme.org", "John.Smith@acme.org"));
@@ -206,6 +209,40 @@ public class IdStrategyTest {
 
         assertTrue(idStrategy.compare("John.Smith@acme.org", "john.smith@acme.org") < 0);
         assertTrue(idStrategy.compare("john.smith@acme.org", "John.Smith@acme.org") > 0);
+    }
+
+    @Test
+    @Issue("SECURITY-3924")
+    void caseInsensitiveEqualsIsConsistentWithKeyForForUnicode() {
+        IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
+
+        // U+0131 LATIN SMALL LETTER DOTLESS I: "admın" upper-cases to "ADMIN", so String.equalsIgnoreCase
+        assertFalse(idStrategy.equals("admin", "admın"));
+
+        // U+017F LATIN SMALL LETTER LONG S: upper-cases to 'S'.
+        assertFalse(idStrategy.equals("mass", "maſs"));
+
+        // Greek final sigma U+03C2 vs regular sigma U+03C3: both upper-case to U+03A3.
+        assertFalse(idStrategy.equals("σ", "ς"));
+    }
+
+    @Test
+    @Issue("SECURITY-3924")
+    void caseInsensitiveDotlessIDoesNotCollideWithAdmin() {
+        IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
+
+        String admin = "admin";
+        String attacker = "admın"; // 4th char is U+0131
+
+        assertThat(idStrategy.keyFor(admin), is(not(idStrategy.keyFor(attacker))));
+
+        assertFalse(idStrategy.equals(admin, attacker));
+        assertFalse(idStrategy.equals(attacker, admin));
+        assertNotEquals(0, idStrategy.compare(admin, attacker));
+
+        assertTrue(idStrategy.equals("Admin", "admin"));
+        assertThat(idStrategy.keyFor("Admin"), is(idStrategy.keyFor("admin")));
+        assertEquals(0, idStrategy.compare("Admin", "admin"));
     }
 
     @SuppressWarnings("deprecation")

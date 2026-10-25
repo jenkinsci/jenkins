@@ -1,15 +1,15 @@
 package hudson.model;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class EnvironmentContributingActionTest {
+class EnvironmentContributingActionTest {
     static class OverrideRun extends InvisibleAction implements EnvironmentContributingAction {
         private boolean wasCalled = false;
 
@@ -64,7 +64,7 @@ public class EnvironmentContributingActionTest {
     private final EnvVars envVars = mock(EnvVars.class);
 
     @Test
-    public void testOverrideRunMethodAndCallNewMethod() {
+    void testOverrideRunMethodAndCallNewMethod() {
         Run<?, ?> run = mock(Run.class);
 
         OverrideRun overrideRun = new OverrideRun();
@@ -78,7 +78,7 @@ public class EnvironmentContributingActionTest {
      */
     @Test
     @SuppressWarnings("deprecation")
-    public void testOverrideRunMethodAndCallDeprecatedMethod() {
+    void testOverrideRunMethodAndCallDeprecatedMethod() {
         AbstractBuild<?, ?> abstractBuild = mock(AbstractBuild.class);
         when(abstractBuild.getBuiltOn()).thenReturn(mock(Node.class));
 
@@ -92,7 +92,7 @@ public class EnvironmentContributingActionTest {
      * {@link AbstractBuild} should work as before.
      */
     @Test
-    public void testOverrideAbstractBuildAndCallNewMethodWithAbstractBuild() {
+    void testOverrideAbstractBuildAndCallNewMethodWithAbstractBuild() {
         AbstractBuild<?, ?> abstractBuild = mock(AbstractBuild.class);
 
         OverrideAbstractBuild action = new OverrideAbstractBuild();
@@ -105,7 +105,7 @@ public class EnvironmentContributingActionTest {
      * {@link Run} should not execute method that was overridden for {@link AbstractBuild}.
      */
     @Test
-    public void testOverrideAbstractBuildAndCallNewMethodWithRun() {
+    void testOverrideAbstractBuildAndCallNewMethodWithRun() {
         Run<?, ?> run = mock(Run.class);
 
         OverrideAbstractBuild action = new OverrideAbstractBuild();
@@ -118,7 +118,7 @@ public class EnvironmentContributingActionTest {
      * If someone wants to use overridden deprecated method, it would still work.
      */
     @Test
-    public void testOverrideAbstractBuildAndCallDeprecatedMethod() {
+    void testOverrideAbstractBuildAndCallDeprecatedMethod() {
         AbstractBuild<?, ?> abstractBuild = mock(AbstractBuild.class);
 
         OverrideAbstractBuild overrideRun = new OverrideAbstractBuild();
@@ -128,7 +128,7 @@ public class EnvironmentContributingActionTest {
     }
 
     @Test
-    public void testOverrideBothAndCallNewMethod() {
+    void testOverrideBothAndCallNewMethod() {
         Run<?, ?> run = mock(Run.class);
 
         OverrideBoth overrideRun = new OverrideBoth();
@@ -138,7 +138,7 @@ public class EnvironmentContributingActionTest {
     }
 
     @Test
-    public void testOverrideBothAndCallDeprecatedMethod() {
+    void testOverrideBothAndCallDeprecatedMethod() {
         AbstractBuild<?, ?> abstractBuild = mock(AbstractBuild.class);
 
         OverrideBoth overrideRun = new OverrideBoth();

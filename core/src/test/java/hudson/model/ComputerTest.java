@@ -2,8 +2,8 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.FilePath;
 import hudson.security.ACL;
@@ -13,16 +13,17 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
 import jenkins.util.SetContextClassLoader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.springframework.security.core.Authentication;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ComputerTest {
+class ComputerTest {
+
     @Test
-    public void testRelocate() throws Exception {
+    void testRelocate() throws Exception {
         File d = File.createTempFile("jenkins", "test");
         FilePath dir = new FilePath(d);
         try {
@@ -43,14 +44,14 @@ public class ComputerTest {
 
     @Issue("JENKINS-50296")
     @Test
-    public void testThreadPoolForRemotingActsAsSystemUser() throws InterruptedException, ExecutionException {
+    void testThreadPoolForRemotingActsAsSystemUser() throws InterruptedException, ExecutionException {
         Future<Authentication> job = Computer.threadPoolForRemoting.submit(Jenkins::getAuthentication2);
         assertThat(job.get(), is(ACL.SYSTEM2));
     }
 
     @Issue("JENKINS-72796")
     @Test
-    public void testThreadPoolForRemotingContextClassLoaderIsSet() throws Exception {
+    void testThreadPoolForRemotingContextClassLoaderIsSet() throws Exception {
         // as the threadpool is cached, any other tests here pollute this test so we need enough threads to
         // avoid any cached.
         final int numThreads = 5;

@@ -24,6 +24,8 @@
 
 package jenkins.security.apitoken;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
@@ -45,8 +47,20 @@ public class TokenUuidAndPlainValue {
      */
     public final String plainValue;
 
-    public TokenUuidAndPlainValue(String tokenUuid, String plainValue) {
+
+    public final String expirationDate;
+
+    public final boolean aboutToExpire;
+
+    public TokenUuidAndPlainValue(String tokenUuid, String plainValue, LocalDate expirationDate, boolean aboutToExpire) {
         this.tokenUuid = tokenUuid;
         this.plainValue = plainValue;
+        this.aboutToExpire = aboutToExpire;
+        if (expirationDate != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("E, L d u");
+            this.expirationDate = formatter.format(expirationDate);
+        } else {
+            this.expirationDate = "Never";
+        }
     }
 }

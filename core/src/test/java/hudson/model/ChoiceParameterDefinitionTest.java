@@ -2,19 +2,20 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.util.FormValidation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
-public class ChoiceParameterDefinitionTest {
+class ChoiceParameterDefinitionTest {
+
     @Test
-    public void shouldValidateChoices() {
+    void shouldValidateChoices() {
         assertFalse(ChoiceParameterDefinition.areValidChoices(""));
         assertFalse(ChoiceParameterDefinition.areValidChoices("        "));
         assertTrue(ChoiceParameterDefinition.areValidChoices("abc"));
@@ -23,7 +24,7 @@ public class ChoiceParameterDefinitionTest {
     }
 
     @Test
-    public void testCheckChoices() {
+    void testCheckChoices() {
         ChoiceParameterDefinition.DescriptorImpl descriptorImpl = new ChoiceParameterDefinition.DescriptorImpl();
 
         assertEquals(FormValidation.Kind.OK, descriptorImpl.doCheckChoices("abc\ndef").kind);
@@ -32,13 +33,13 @@ public class ChoiceParameterDefinitionTest {
 
     @Test
     @Issue("JENKINS-60721")
-    public void testNullDefaultParameter() {
+    void testNullDefaultParameter() {
         ChoiceParameterDefinition param = new ChoiceParameterDefinition("name", new String[0], null);
         assertNull(param.getDefaultParameterValue());
     }
 
     @Test
-    public void createNullChoice() {
+    void createNullChoice() {
         String stringValue = null;
         String[] choices = new String[]{stringValue};
         assertCreation(stringValue, choices, true);
@@ -46,14 +47,14 @@ public class ChoiceParameterDefinitionTest {
 
     @Test
     @Issue("JENKINS-62889")
-    public void checkValue_Null() {
+    void checkValue_Null() {
         String stringValue = null;
         String[] choices = new String[]{stringValue};
         assertCheckValue(stringValue, choices, true);
     }
 
     @Test
-    public void createBlankChoice() {
+    void createBlankChoice() {
         String stringValue = "";
         String[] choices = new String[]{stringValue};
         assertCreation(stringValue, choices, true);
@@ -61,14 +62,14 @@ public class ChoiceParameterDefinitionTest {
 
     @Test
     @Issue("JENKINS-62889")
-    public void checkValue_Blank() {
+    void checkValue_Blank() {
         String stringValue = "";
         String[] choices = new String[]{stringValue};
         assertCheckValue(stringValue, choices, true);
     }
 
     @Test
-    public void createEmptyChoice() {
+    void createEmptyChoice() {
         String stringValue = "   ";
         String[] choices = new String[]{stringValue};
         assertCreation(stringValue, choices, true);
@@ -76,7 +77,7 @@ public class ChoiceParameterDefinitionTest {
 
     @Test
     @Issue("JENKINS-62889")
-    public void checkValue_Empty() {
+    void checkValue_Empty() {
         String stringValue = "";
         String[] choices = new String[]{stringValue};
         assertCheckValue(stringValue, choices, true);
@@ -84,7 +85,7 @@ public class ChoiceParameterDefinitionTest {
 
     @Test
     @Issue("JENKINS-62889")
-    public void checkValue_Single() {
+    void checkValue_Single() {
         String stringValue = "single";
         String[] choices = new String[]{stringValue};
         assertCheckValue(stringValue, choices, true);
@@ -92,7 +93,7 @@ public class ChoiceParameterDefinitionTest {
 
     @Test
     @Issue("JENKINS-62889")
-    public void checkValue_Multiple() {
+    void checkValue_Multiple() {
         String[] choices = new String[]{"one", "two", "three"};
         ChoiceParameterDefinition parameterDefinition = new ChoiceParameterDefinition("name", choices, "description");
         for (String choiceValue : choices) {
@@ -103,7 +104,7 @@ public class ChoiceParameterDefinitionTest {
 
     @Test
     @Issue("JENKINS-62889")
-    public void checkValue_Invalid() {
+    void checkValue_Invalid() {
         String stringValue = "single";
         String[] choices = new String[]{stringValue};
         ChoiceParameterDefinition parameterDefinition = new ChoiceParameterDefinition("name", choices, "description");
@@ -113,7 +114,7 @@ public class ChoiceParameterDefinitionTest {
 
     @Test
     @Issue("JENKINS-62889")
-    public void checkValue_WrongValueType() {
+    void checkValue_WrongValueType() {
         String stringValue = "single";
         String[] choices = new String[]{stringValue};
         ChoiceParameterDefinition parameterDefinition = new ChoiceParameterDefinition("name", choices, "description");
@@ -123,7 +124,7 @@ public class ChoiceParameterDefinitionTest {
 
     @Test
     @Issue("JENKINS-62889")
-    public void createValue_Invalid() {
+    void createValue_Invalid() {
         String stringValue = "single";
         String[] choices = new String[]{stringValue};
         ChoiceParameterDefinition parameterDefinition = new ChoiceParameterDefinition("name", choices, "description");

@@ -25,16 +25,18 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import javax.servlet.ServletException;
+import jenkins.util.ClientHttpRedirect;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Various {@link HttpResponse} implementations.
@@ -44,9 +46,20 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressFBWarnings(value = "NM_SAME_SIMPLE_NAME_AS_SUPERCLASS", justification = "Used for backward compatibility and extending utility classes")
 public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
     public static HttpResponse staticResource(File f) throws IOException {
         return staticResource(f.toURI().toURL());
+    }
+
+    /**
+     * Redirect to the given URL via a client-side JS/meta tag redirect.
+     * @param url the URL to redirect to
+     * @return the HttpResponse
+     * @since 2.550
+     */
+    public static HttpResponse clientRedirectTo(String url) {
+        return new ClientHttpRedirect(url);
     }
 
     /**
@@ -204,7 +217,7 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
         }
 
         @Override
-        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+        public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
             byte[] bytes = jsonObject.toString().getBytes(StandardCharsets.UTF_8);
             rsp.setContentType("application/json; charset=UTF-8");
             rsp.setContentLength(bytes.length);

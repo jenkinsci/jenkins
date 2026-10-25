@@ -77,7 +77,8 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
-import hudson.widgets.HistoryWidget;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -97,7 +98,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
@@ -107,6 +107,7 @@ import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
 import jenkins.scm.SCMDecisionHandler;
+import jenkins.security.XStreamNotDeserializable;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
@@ -121,7 +122,9 @@ import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
@@ -154,6 +157,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      */
     private transient volatile SCMRevisionState pollingBaseline = null;
 
+    @XStreamNotDeserializable
     private transient LazyBuildMixIn<P, R> buildMixIn;
 
     /**
@@ -163,6 +167,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      * {@link Run#getPreviousBuild()}
      */
     @Restricted(NoExternalUse.class)
+    @XStreamNotDeserializable
     protected transient RunMap<R> builds;
 
     /**
@@ -242,6 +247,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      * come and go as configuration change, so it's kept separate.
      */
     @CopyOnWrite
+    @XStreamNotDeserializable
     protected transient volatile List<Action> transientActions = new Vector<>();
 
     private boolean concurrentBuild;
@@ -519,8 +525,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         Executor e = Executor.currentExecutor();
         if (e != null) {
             Executable exe = e.getCurrentExecutable();
-            if (exe instanceof AbstractBuild) {
-                AbstractBuild b = (AbstractBuild) exe;
+            if (exe instanceof AbstractBuild b) {
                 if (b.getProject() == this)
                     return b;
             }
@@ -771,7 +776,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
     @Override
     @POST
-    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+    public void doConfigSubmit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
         super.doConfigSubmit(req, rsp);
 
         updateTransientActions();
@@ -1013,6 +1018,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      *      null if no information is available (for example,
      *      if no build was done yet.)
      */
+    @SuppressWarnings("deprecation")
     @Override
     public Node getLastBuiltOn() {
         // where was it built on?
@@ -1721,21 +1727,20 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         return getParameterizedJobMixIn().extendSearchIndex(super.makeSearchIndex());
     }
 
-    @Override
-    protected HistoryWidget createHistoryWidget() {
-        return buildMixIn.createHistoryWidget();
-    }
-
 //
 //
 // actions
 //
 //
 
-    /** @deprecated use {@link #doBuild(StaplerRequest, StaplerResponse, TimeDuration)} */
+    /** @deprecated use {@link #doBuild(StaplerRequest2, StaplerResponse2, TimeDuration)} */
     @Deprecated
-    public void doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        doBuild(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
+    public void doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            doBuild(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp), TimeDuration.fromString(req.getParameter("delay")));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
     }
 
     /**
@@ -1745,7 +1750,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      *      Inject {@link TimeDuration}.
      */
     @Deprecated
-    public int getDelay(StaplerRequest req) throws ServletException {
+    public int getDelay(StaplerRequest req) throws javax.servlet.ServletException {
         String delay = req.getParameter("delay");
         if (delay == null)    return getQuietPeriod();
 
@@ -1755,26 +1760,59 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
             if (delay.endsWith("secs"))  delay = delay.substring(0, delay.length() - 4);
             return Integer.parseInt(delay);
         } catch (NumberFormatException e) {
-            throw new ServletException("Invalid delay parameter value: " + delay, e);
+            throw new javax.servlet.ServletException("Invalid delay parameter value: " + delay, e);
         }
     }
 
-    /** @deprecated use {@link #doBuildWithParameters(StaplerRequest, StaplerResponse, TimeDuration)} */
+    /** @deprecated use {@link #doBuildWithParameters(StaplerRequest2, StaplerResponse2, TimeDuration)} */
     @Deprecated
-    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        doBuildWithParameters(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
+    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            doBuildWithParameters(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp), TimeDuration.fromString(req.getParameter("delay")));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
     }
 
     @Override // in case schedulePolling was overridden
-    public void doPolling(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doPolling(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         BuildAuthorizationToken.checkPermission((Job) this, authToken, req, rsp);
         schedulePolling();
         rsp.sendRedirect(".");
     }
 
+    /**
+     * @since 2.475
+     */
     @Override
-    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+    protected void submit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
+        if (Util.isOverridden(AbstractProject.class, getClass(), "submit", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                submit(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        } else {
+            super.submit(req, rsp);
+            submitImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #submit(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    @Override
+    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException, FormException {
         super.submit(req, rsp);
+        try {
+            submitImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    private void submitImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
         JSONObject json = req.getSubmittedForm();
 
         makeDisabled(!json.optBoolean("enable"));
@@ -1841,14 +1879,18 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
     /**
      * @deprecated
-     *      As of 1.261. Use {@link #buildDescribable(StaplerRequest, List)} instead.
+     *      As of 1.261. Use {@link #buildDescribable(StaplerRequest2, List)} instead.
      */
     @Deprecated
-    protected final <T extends Describable<T>> List<T> buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException, ServletException {
-        return buildDescribable(req, descriptors);
+    protected final <T extends Describable<T>> List<T> buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException, javax.servlet.ServletException {
+        try {
+            return buildDescribable(StaplerRequest.toStaplerRequest2(req), descriptors);
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
     }
 
-    protected final <T extends Describable<T>> List<T> buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors)
+    protected final <T extends Describable<T>> List<T> buildDescribable(StaplerRequest2 req, List<? extends Descriptor<T>> descriptors)
         throws FormException, ServletException {
 
         JSONObject data = req.getSubmittedForm();
@@ -1866,7 +1908,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
     /**
      * Serves the workspace files.
      */
-    public DirectoryBrowserSupport doWs(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
+    public DirectoryBrowserSupport doWs(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, InterruptedException {
         checkPermission(Item.WORKSPACE);
         FilePath ws = getSomeWorkspace();
         if (ws == null || !ws.exists()) {
@@ -1893,7 +1935,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      * Wipes out the workspace.
      */
     @RequirePOST
-    public HttpResponse doDoWipeOutWorkspace() throws IOException, ServletException, InterruptedException {
+    public HttpResponse doDoWipeOutWorkspace() throws IOException, InterruptedException {
         checkPermission(Functions.isWipeOutPermissionEnabled() ? WIPEOUT : BUILD);
         R b = getSomeBuildWithWorkspace();
         FilePath ws = b != null ? b.getWorkspace() : null;
@@ -1938,11 +1980,6 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         @Override
         public boolean isApplicable(Descriptor descriptor) {
             return true;
-        }
-
-        @Restricted(DoNotUse.class)
-        public FormValidation doCheckDisplayNameOrNull(@AncestorInPath AbstractProject project, @QueryParameter String value) {
-            return Jenkins.get().doCheckDisplayName(value, project.getName());
         }
 
         @Restricted(DoNotUse.class)

@@ -1,14 +1,14 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <div>
+    <p>
         For any project, it's critical to know how the software is used, but tracking usage data is inherently difficult in open-source projects.
         Anonymous usage statistics address this need.
         When enabled, Jenkins periodically sends information to the Jenkins project.
         The Jenkins project uses this information to set development priorities.
-    </div>
+    </p>
     <j:invokeStatic className="jenkins.security.FIPS140" method="useCompliantAlgorithms" var="fips"/>
     <j:if test="${!fips}">
-        <h1>General usage statistics</h1>
+        <h3>General usage statistics</h3>
         <div>
             <p>Jenkins reports the following general usage statistics:</p>
             <ul>
@@ -24,7 +24,7 @@
             </p>
         </div>
     </j:if>
-    <h1>Telemetry collection</h1>
+    <h3>Telemetry collection</h3>
     <div>
         <p>
             <j:choose>
@@ -38,24 +38,34 @@
             Each trial has a specific purpose and a defined end date, after which collection stops, independent of the installed versions of Jenkins or plugins.
             Once a trial is complete, the trial results may be aggregated and shared with the developer community.
         </p>
-        <p>
-            The following trials defined on this instance are active now or in the future:
-        </p>
+
         <j:invokeStatic className="jenkins.telemetry.Telemetry" method="all" var="collectors"/>
+        <j:invokeStatic className="jenkins.telemetry.Telemetry" method="isAnyTrialActive" var="anyTrialActive"/>
         <j:invokeStatic className="java.time.LocalDate" method="now" var="now"/>
-        <dl>
-            <j:forEach items="${collectors}" var="collector">
-                <j:if test="${not collector.end.isBefore(now)}">
-                    <dt>${collector.displayName}</dt>
-                    <dd>
-                        <st:include it="${collector}" optional="true" page="description.jelly"/>
-                        <p>
-                            Start date: ${collector.start}<br/>
-                            End date: ${collector.end}
-                        </p>
-                    </dd>
-                </j:if>
-            </j:forEach>
-        </dl>
+        <j:choose>
+            <j:when test="${!anyTrialActive}">
+                <p>${%There are currently no active trials.}</p>
+            </j:when>
+            <j:otherwise>
+                <p>
+                    The following trials defined on this instance are active now or in the future:
+                </p>
+                <dl>
+                    <j:forEach items="${collectors}" var="collector">
+                        <j:if test="${not collector.end.isBefore(now)}">
+                            <dt>${collector.displayName}</dt>
+                            <dd>
+                                <st:include it="${collector}" optional="true" page="description.jelly"/>
+                                <p>
+                                    Start date: ${collector.start}
+                                    <br/>
+                                    End date: ${collector.end}
+                                </p>
+                            </dd>
+                        </j:if>
+                    </j:forEach>
+                </dl>
+            </j:otherwise>
+        </j:choose>
     </div>
 </j:jelly>

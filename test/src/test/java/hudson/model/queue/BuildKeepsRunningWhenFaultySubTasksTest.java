@@ -13,60 +13,67 @@ import hudson.model.ResourceList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class BuildKeepsRunningWhenFaultySubTasksTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class BuildKeepsRunningWhenFaultySubTasksTest {
 
-    @Rule
-    public LoggerRule logging = new LoggerRule().record(Executor.class, Level.SEVERE).capture(100);
+    private final LogRecorder logging = new LogRecorder().record(Executor.class, Level.SEVERE).capture(100);
 
-    public static final String ERROR_MESSAGE = "My unexpected exception";
+    private static final String ERROR_MESSAGE = "My unexpected exception";
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     // When using SubTaskContributor (FailingSubTaskContributor) the build never ends
-    @Ignore("Too flaky; sometimes the build fails with java.util.concurrent.ExecutionException: java.lang.InterruptedException\n" +
-            "\tat hudson.remoting.AsyncFutureImpl.get(AsyncFutureImpl.java:80)\n" +
-            "\tat org.jvnet.hudson.test.JenkinsRule.assertBuildStatus(JenkinsRule.java:1484)\n" +
-            "\tat org.jvnet.hudson.test.JenkinsRule.assertBuildStatusSuccess(JenkinsRule.java:1512)\n" +
-            "\tat org.jvnet.hudson.test.JenkinsRule.buildAndAssertSuccess(JenkinsRule.java:1539)\n" +
-            "\tat hudson.model.queue.BuildKeepsRunningWhenFaultySubTasksTest.buildFinishesWhenSubTaskFails(BuildKeepsRunningWhenFaultySubTasksTest.java:39)\n" +
-            "\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n" +
-            "\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n" +
-            "\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n" +
-            "\tat java.base/java.lang.reflect.Method.invoke(Method.java:568)\n" +
-            "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)\n" +
-            "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n" +
-            "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)\n" +
-            "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n" +
-            "\tat org.jvnet.hudson.test.JenkinsRule$1.evaluate(JenkinsRule.java:618)\n" +
-            "\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)\n" +
-            "\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)\n" +
-            "\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)\n" +
-            "\tat java.base/java.lang.Thread.run(Thread.java:833)\n" +
-            "Caused by: java.lang.InterruptedException\n" +
-            "\tat hudson.model.queue.Latch.check(Latch.java:104)\n" +
-            "\tat hudson.model.queue.Latch.synchronize(Latch.java:83)\n" +
-            "\tat hudson.model.queue.WorkUnitContext.synchronizeStart(WorkUnitContext.java:132)\n" +
-            "\tat hudson.model.Executor.run(Executor.java:408)\n" +
-            "Caused by: hudson.AbortException\n" +
-            "\tat hudson.model.queue.Latch.abort(Latch.java:58)\n" +
-            "\tat hudson.model.queue.WorkUnitContext.abort(WorkUnitContext.java:204)\n" +
-            "\tat hudson.model.Executor.finish1(Executor.java:492)\n" +
-            "\tat hudson.model.Executor.run(Executor.java:471)\n" +
-            "Caused by: java.lang.ArrayIndexOutOfBoundsException: My unexpected exception\n" +
-            "\tat hudson.model.queue.BuildKeepsRunningWhenFaultySubTasksTest$FailingSubTaskContributor$1$1.run(BuildKeepsRunningWhenFaultySubTasksTest.java:61)\n" +
-            "\tat hudson.model.ResourceController.execute(ResourceController.java:107)\n" +
-            "\tat hudson.model.Executor.run(Executor.java:449)")
+    @Disabled("""
+            Too flaky; sometimes the build fails with java.util.concurrent.ExecutionException: java.lang.InterruptedException
+            \tat hudson.remoting.AsyncFutureImpl.get(AsyncFutureImpl.java:80)
+            \tat org.jvnet.hudson.test.JenkinsRule.assertBuildStatus(JenkinsRule.java:1484)
+            \tat org.jvnet.hudson.test.JenkinsRule.assertBuildStatusSuccess(JenkinsRule.java:1512)
+            \tat org.jvnet.hudson.test.JenkinsRule.buildAndAssertSuccess(JenkinsRule.java:1539)
+            \tat hudson.model.queue.BuildKeepsRunningWhenFaultySubTasksTest.buildFinishesWhenSubTaskFails(BuildKeepsRunningWhenFaultySubTasksTest.java:39)
+            \tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+            \tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+            \tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+            \tat java.base/java.lang.reflect.Method.invoke(Method.java:568)
+            \tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+            \tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+            \tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+            \tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+            \tat org.jvnet.hudson.test.JenkinsRule$1.evaluate(JenkinsRule.java:618)
+            \tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)
+            \tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)
+            \tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+            \tat java.base/java.lang.Thread.run(Thread.java:833)
+            Caused by: java.lang.InterruptedException
+            \tat hudson.model.queue.Latch.check(Latch.java:104)
+            \tat hudson.model.queue.Latch.synchronize(Latch.java:83)
+            \tat hudson.model.queue.WorkUnitContext.synchronizeStart(WorkUnitContext.java:132)
+            \tat hudson.model.Executor.run(Executor.java:408)
+            Caused by: hudson.AbortException
+            \tat hudson.model.queue.Latch.abort(Latch.java:58)
+            \tat hudson.model.queue.WorkUnitContext.abort(WorkUnitContext.java:204)
+            \tat hudson.model.Executor.finish1(Executor.java:492)
+            \tat hudson.model.Executor.run(Executor.java:471)
+            Caused by: java.lang.ArrayIndexOutOfBoundsException: My unexpected exception
+            \tat hudson.model.queue.BuildKeepsRunningWhenFaultySubTasksTest$FailingSubTaskContributor$1$1.run(BuildKeepsRunningWhenFaultySubTasksTest.java:61)
+            \tat hudson.model.ResourceController.execute(ResourceController.java:107)
+            \tat hudson.model.Executor.run(Executor.java:449)""")
     @Test
     @Issue("JENKINS-59793")
-    public void buildFinishesWhenSubTaskFails() throws Exception {
+    void buildFinishesWhenSubTaskFails() throws Exception {
         FreeStyleProject p = j.createProject(FreeStyleProject.class);
 
         // We don't get stalled waiting the finalization of the job
@@ -107,6 +114,7 @@ public class BuildKeepsRunningWhenFaultySubTasksTest {
                     return null;
                 }
 
+                @Deprecated
                 @Override
                 public Node getLastBuiltOn() {
                     return null;

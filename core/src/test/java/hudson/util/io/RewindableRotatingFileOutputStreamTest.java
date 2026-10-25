@@ -1,8 +1,8 @@
 package hudson.util.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.FilePath;
 import hudson.Functions;
@@ -12,19 +12,18 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.FileUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
 
-public class RewindableRotatingFileOutputStreamTest {
+class RewindableRotatingFileOutputStreamTest {
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    @TempDir
+    private File tmp;
 
     @Test
-    public void rotation() throws IOException, InterruptedException {
-        File base = tmp.newFile("test.log");
+    void rotation() throws IOException, InterruptedException {
+        File base = File.createTempFile("test.log", null, tmp);
         RewindableRotatingFileOutputStream os = new RewindableRotatingFileOutputStream(base, 3);
         PrintWriter w = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
         for (int i = 0; i <= 4; i++) {
@@ -45,10 +44,10 @@ public class RewindableRotatingFileOutputStreamTest {
 
     @Issue("JENKINS-16634")
     @Test
-    public void deletedFolder() throws Exception {
-        assumeFalse("Windows does not allow deleting a directory with a "
-            + "file open, so this case should never occur", Functions.isWindows());
-        File dir = tmp.newFolder("dir");
+    void deletedFolder() throws Exception {
+        assumeFalse(Functions.isWindows(), "Windows does not allow deleting a directory with a "
+            + "file open, so this case should never occur");
+        File dir = newFolder(tmp, "dir");
         File base = new File(dir, "x.log");
         RewindableRotatingFileOutputStream os = new RewindableRotatingFileOutputStream(base, 3);
         for (int i = 0; i < 2; i++) {
@@ -59,6 +58,15 @@ public class RewindableRotatingFileOutputStreamTest {
             FileUtils.deleteDirectory(dir);
             os.rewind();
         }
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            throw new IOException("Couldn't create folders " + root);
+        }
+        return result;
     }
 
 }

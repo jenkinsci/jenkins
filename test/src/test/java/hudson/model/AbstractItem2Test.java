@@ -27,27 +27,26 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.XmlFile;
 import java.util.logging.Level;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsSessionRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.JenkinsSessionExtension;
 
-public class AbstractItem2Test {
+class AbstractItem2Test {
 
-    @Rule
-    public JenkinsSessionRule sessions = new JenkinsSessionRule();
+    @RegisterExtension
+    private final JenkinsSessionExtension sessions = new JenkinsSessionExtension();
 
-    @Rule
-    public LoggerRule logging = new LoggerRule().record(XmlFile.class, Level.WARNING).capture(100);
+    private final LogRecorder logging = new LogRecorder().record(XmlFile.class, Level.WARNING).capture(100);
 
     @Issue("JENKINS-45892")
     @Test
-    public void badSerialization() throws Throwable {
+    void badSerialization() throws Throwable {
         sessions.then(j -> {
                 FreeStyleProject p1 = j.createFreeStyleProject("p1");
                 p1.setDescription("this is p1");

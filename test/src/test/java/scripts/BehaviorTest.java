@@ -24,29 +24,36 @@
 
 package scripts;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Tests <code>behaviour.js</code>
  *
  * @author Kohsuke Kawaguchi
  */
-public class BehaviorTest {
+@WithJenkins
+class BehaviorTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void testCssSelectors() throws Exception {
+    void testCssSelectors() throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/testCssSelectors");
 
         // basic class selector, that we use the most often
@@ -68,14 +75,14 @@ public class BehaviorTest {
 
     @Issue("JENKINS-14495")
     @Test
-    public void testDuplicateRegistrations() throws Exception {
+    void testDuplicateRegistrations() throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/testDuplicateRegistrations");
         ScriptResult r = p.executeJavaScript("document.getElementsBySelector('DIV.a')[0].innerHTML");
         assertEquals("initial and appended yet different", r.getJavaScriptResult().toString());
     }
 
     @Test
-    public void testSelectorOrdering() throws Exception {
+    void testSelectorOrdering() throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/testSelectorOrdering");
         ScriptResult r = p.executeJavaScript("document.getElementsBySelector('DIV.a')[0].innerHTML");
         assertEquals("initial early counted! generic weevils! late", r.getJavaScriptResult().toString());

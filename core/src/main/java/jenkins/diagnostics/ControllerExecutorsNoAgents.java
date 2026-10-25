@@ -32,8 +32,8 @@ import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 @Extension
@@ -52,7 +52,7 @@ public class ControllerExecutorsNoAgents extends AdministrativeMonitor {
     }
 
     @RequirePOST
-    public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doAct(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (req.hasParameter("no")) {
             disable(true);
             rsp.sendRedirect(req.getContextPath() + "/manage");

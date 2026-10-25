@@ -52,6 +52,7 @@
             "&height=500";
           const graphImgTag = document.createElement("img");
           graphImgTag.src = graphUrl;
+          graphImgTag.classList.add("jenkins-graph-card");
           graphImgTag.srcset = graphUrl + "&scale=2 2x";
           graphImgTag.alt = graphAlt;
           graphLocation.innerHTML = graphImgTag.outerHTML;

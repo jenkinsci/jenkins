@@ -37,6 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import jenkins.model.RunAction2;
+import jenkins.security.XStreamDeserializable;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -46,11 +47,13 @@ public class CauseAction implements FoldableAction, RunAction2 {
      * @deprecated since 2009-02-28
      */
     @Deprecated
+    @XStreamDeserializable
     // there can be multiple causes, so this is deprecated
     private transient Cause cause;
 
     /** @deprecated JENKINS-33467 inefficient */
     @Deprecated
+    @XStreamDeserializable
     private transient List<Cause> causes;
 
     private Map<Cause, Integer> causeBag = new LinkedHashMap<>();
@@ -61,8 +64,7 @@ public class CauseAction implements FoldableAction, RunAction2 {
 
     private void addCause(Cause c) {
         synchronized (causeBag) {
-            Integer cnt = causeBag.get(c);
-            causeBag.put(c, cnt == null ? 1 : cnt + 1);
+            causeBag.compute(c, (unused, cnt) -> cnt == null ? 1 : cnt + 1);
         }
     }
 

@@ -26,28 +26,33 @@ package hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.HttpURLConnection;
 import jenkins.model.Jenkins;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.SmokeTest;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-@Category(SmokeTest.class)
-public class AboutJenkinsTest {
+@Tag("SmokeTest")
+@WithJenkins
+class AboutJenkinsTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("SECURITY-771")
-    public void onlyAdminOrManageOrSystemReadCanReadAbout() throws Exception {
+    void onlyAdminOrManageOrSystemReadCanReadAbout() throws Exception {
         final String ADMIN = "admin";
         final String USER = "user";
         final String MANAGER = "manager";
@@ -89,7 +94,7 @@ public class AboutJenkinsTest {
             wc.login(ADMIN);
             HtmlPage page = wc.goTo("about/");
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-            assertThat(page.getWebResponse().getContentAsString(), containsString("Mavenized dependencies"));
+            assertThat(page.querySelector("body").asXml(), containsString("Mavenized dependencies"));
         }
 
         { // manager can access it

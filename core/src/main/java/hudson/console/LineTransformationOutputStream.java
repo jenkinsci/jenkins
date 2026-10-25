@@ -38,7 +38,16 @@ import java.io.OutputStream;
  * @since 1.349
  */
 public abstract class LineTransformationOutputStream extends OutputStream {
+    private boolean sawCR;
     private ByteArrayOutputStream2 buf = new ByteArrayOutputStream2();
+
+    /**
+     * Returns the number of bytes currently buffered for the current line.
+     * @since 2.569
+     */
+    public int lineBufferSize() {
+        return buf.size();
+    }
 
     /**
      * Called for each end of the line.
@@ -53,8 +62,15 @@ public abstract class LineTransformationOutputStream extends OutputStream {
 
     @Override
     public void write(int b) throws IOException {
+        if (sawCR && b != '\n') {
+            eol();
+        }
         buf.write(b);
-        if (b == LF) eol();
+        if (b == '\n') {
+            eol();
+        } else if (b == '\r') {
+            sawCR = true;
+        }
     }
 
     private void eol() throws IOException {
@@ -65,6 +81,7 @@ public abstract class LineTransformationOutputStream extends OutputStream {
             buf = new ByteArrayOutputStream2();
         else
             buf.reset();
+        sawCR = false;
     }
 
     @Override
@@ -109,8 +126,6 @@ public abstract class LineTransformationOutputStream extends OutputStream {
         line = line.substring(0, slen);
         return line;
     }
-
-    private static final int LF = 0x0A;
 
     /**
      * Convenience subclass for cases where you wish to process lines being sent to an underlying stream.

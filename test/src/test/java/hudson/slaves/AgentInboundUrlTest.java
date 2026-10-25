@@ -24,7 +24,7 @@
 
 package hudson.slaves;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.Slave;
 import java.util.logging.Level;
@@ -33,44 +33,60 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.DOMReader;
 import org.htmlunit.xml.XmlPage;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.FlagRule;
-import org.jvnet.hudson.test.InboundAgentRule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.InboundAgentExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Tests of {@link JNLPLauncher} using a custom inbound agent url.
  */
-public class AgentInboundUrlTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class AgentInboundUrlTest {
 
-    @Rule
-    public InboundAgentRule inboundAgents = new InboundAgentRule();
+    @RegisterExtension
+    private final InboundAgentExtension inboundAgents = new InboundAgentExtension();
 
-    @Rule
-    public LoggerRule logging = new LoggerRule().record(Slave.class, Level.FINE);
+    private final LogRecorder logging = new LogRecorder().record(Slave.class, Level.FINE);
 
     // Override the inbound agent url
-    private static final String customInboundUrl = "http://localhost:8080/jenkins";
+    private static final String CUSTOM_INBOUND_URL = "http://localhost:8080/jenkins";
 
-    @Rule
-    public final FlagRule<String> customInboundUrlRule = FlagRule.systemProperty(JNLPLauncher.CUSTOM_INBOUND_URL_PROPERTY, customInboundUrl);
+    private String customInboundUrlRule;
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+        customInboundUrlRule = System.setProperty(JNLPLauncher.CUSTOM_INBOUND_URL_PROPERTY, CUSTOM_INBOUND_URL);
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (customInboundUrlRule != null) {
+            System.setProperty(JNLPLauncher.CUSTOM_INBOUND_URL_PROPERTY, customInboundUrlRule);
+        } else {
+            System.clearProperty(JNLPLauncher.CUSTOM_INBOUND_URL_PROPERTY);
+        }
+    }
 
     @Issue("JENKINS-63222")
     @Test
-    public void testInboundAgentUrlOverride() throws Exception {
+    void testInboundAgentUrlOverride() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
         authorizationStrategy.grant(Jenkins.ADMINISTER).everywhere().toEveryone();
         j.jenkins.setAuthorizationStrategy(authorizationStrategy);
 
         // Create an agent
-        inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().name("test").skipStart().build());
+        inboundAgents.createAgent(j, InboundAgentExtension.Options.newBuilder().name("test").skipStart().build());
 
         // parse the JNLP page into DOM to inspect the jnlp url argument.
         JenkinsRule.WebClient agent = j.createWebClient();
@@ -78,6 +94,6 @@ public class AgentInboundUrlTest {
         Document dom = new DOMReader().read(jnlp.getXmlDocument());
         Object arg = dom.selectSingleNode("//application-desc/argument[7]/following-sibling::argument[1]");
         String val = ((Element) arg).getText();
-        assertEquals(customInboundUrl, val);
+        assertEquals(CUSTOM_INBOUND_URL, val);
     }
 }

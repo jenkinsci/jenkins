@@ -24,21 +24,29 @@
 
 package hudson.init.impl;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-public class GroovyInitScriptTest {
+@WithJenkins
+class GroovyInitScriptTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("JENKINS-17933")
     @LocalData
-    @Test public void errorsHandled() {
+    @Test
+    void errorsHandled() {
         assertEquals("true", System.getProperty("started"));
         /* TODO Jenkins.logRecords empty during a test, and adding a handler to root logger in JenkinsRule.before() does not work:
         assertTrue(log, log.contains("Nonexistent"));

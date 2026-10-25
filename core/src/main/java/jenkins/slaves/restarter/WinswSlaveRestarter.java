@@ -3,6 +3,7 @@ package jenkins.slaves.restarter;
 import static java.util.logging.Level.FINE;
 import static org.apache.commons.io.IOUtils.copy;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,6 +30,7 @@ public class WinswSlaveRestarter extends SlaveRestarter {
         }
     }
 
+    @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "TODO needs triage")
     private int exec(String cmd) throws InterruptedException, IOException {
         ProcessBuilder pb = new ProcessBuilder(exe, cmd);
         pb.redirectErrorStream(true);

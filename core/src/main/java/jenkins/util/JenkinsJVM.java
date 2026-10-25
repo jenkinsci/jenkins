@@ -1,7 +1,7 @@
 package jenkins.util;
 
 import hudson.WebAppMain;
-import javax.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextEvent;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;

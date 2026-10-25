@@ -24,18 +24,19 @@
 
 package hudson.bugs;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import hudson.security.Permission;
 import java.net.HttpURLConnection;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.jvnet.hudson.test.recipes.PresetData;
-import org.jvnet.hudson.test.recipes.PresetData.DataSet;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Login redirection ignores the context path
@@ -43,17 +44,24 @@ import org.jvnet.hudson.test.recipes.PresetData.DataSet;
  * @author Kohsuke Kawaguchi
  */
 @Issue("JENKINS-2290")
-public class LoginRedirectTest {
+@WithJenkins
+class LoginRedirectTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     /*
      * First sends HTTP 403, then redirects to the login page.
      */
-    @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     @Test
-    public void redirect1() throws Exception {
+    void redirect1() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Permission.READ).everywhere().toAuthenticated());
+
         WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
@@ -71,9 +79,11 @@ public class LoginRedirectTest {
     /*
      * Verifies that HTTP 403 is sent first. This is important for machine agents.
      */
-    @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     @Test
-    public void redirect2() throws Exception {
+    void redirect2() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Permission.READ).everywhere().toAuthenticated());
+
         WebClient wc = j.createWebClient();
         wc.assertFails("", HttpURLConnection.HTTP_FORBIDDEN);
     }

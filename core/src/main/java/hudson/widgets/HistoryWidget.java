@@ -26,20 +26,25 @@ package hudson.widgets;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Queue;
-import hudson.model.Run;
 import hudson.util.AlternativeUiTextProvider;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import javax.servlet.ServletException;
+import java.util.Set;
+import jenkins.model.HistoricalBuild;
+import jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag;
 import jenkins.util.SystemProperties;
 import jenkins.widgets.HistoryPageEntry;
 import jenkins.widgets.HistoryPageFilter;
@@ -49,16 +54,16 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
- * Displays the history of records (normally {@link Run}s) on the side panel.
+ * Displays the history of records on the side panel.
  *
  * @param <O>
- *      Owner of the widget.
+ *      Owner of the widget, typically {@link Job}
  * @param <T>
- *      Type individual record.
+ *      Type individual record, typically {@link HistoricalBuild}
  * @author Kohsuke Kawaguchi
  */
 public class HistoryWidget<O extends ModelObject, T> extends Widget {
@@ -71,6 +76,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     /**
      * The given data model of records. Newer ones first.
      */
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Preserve API compatibility")
     public Iterable<T> baseList;
 
     /**
@@ -92,6 +98,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     final Long newerThan;
     final Long olderThan;
     final String searchString;
+    final String status;
 
     /**
      * First transient build record. Everything >= this will be discarded when AJAX call is made.
@@ -103,7 +110,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
      *      The parent model object that owns this widget.
      */
     public HistoryWidget(O owner, Iterable<T> baseList, Adapter<? super T> adapter) {
-        StaplerRequest currentRequest = Stapler.getCurrentRequest();
+        StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
         this.adapter = adapter;
         this.baseList = baseList;
         this.baseUrl = Functions.getNearestAncestorUrl(currentRequest, owner);
@@ -111,6 +118,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
         this.newerThan = getPagingParam(currentRequest, "newer-than");
         this.olderThan = getPagingParam(currentRequest, "older-than");
         this.searchString = currentRequest.getParameter("search");
+        this.status = currentRequest.getParameter("status");
     }
 
     @Override
@@ -142,7 +150,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
      * @return
      *      The history page filter that was passed in.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // TODO actually not type-safe
     protected HistoryPageFilter updateFirstTransientBuildKey(HistoryPageFilter historyPageFilter) {
         updateFirstTransientBuildKey(historyPageFilter.runs);
         return historyPageFilter;
@@ -195,7 +203,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     /**
      * Get a {@link jenkins.widgets.HistoryPageFilter} for rendering a page of queue items.
      */
-    public HistoryPageFilter getHistoryPageFilter() {
+    public HistoryPageFilter<T> getHistoryPageFilter() {
         HistoryPageFilter<T> historyPageFilter = newPageFilter();
 
         historyPageFilter.add(baseList);
@@ -204,7 +212,9 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     }
 
     protected HistoryPageFilter<T> newPageFilter() {
-        HistoryPageFilter<T> historyPageFilter = new HistoryPageFilter<>(THRESHOLD);
+        int maxEntries = new NewJobPageUserExperimentalFlag().getFlagValue() ? NEW_JOB_PAGE_THRESHOLD : THRESHOLD;
+        HistoryPageFilter<T> historyPageFilter = new HistoryPageFilter<>(maxEntries);
+        historyPageFilter.widget = this;
 
         if (newerThan != null) {
             historyPageFilter.setNewerThan(newerThan);
@@ -214,6 +224,11 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
 
         if (searchString != null) {
             historyPageFilter.setSearchString(searchString);
+        }
+
+        if (status != null && !status.isEmpty()) {
+            Set<String> statuses = new HashSet<>(Arrays.asList(status.split(",")));
+            historyPageFilter.setStatuses(statuses);
         }
 
         return historyPageFilter;
@@ -234,7 +249,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
      *      The build 'number' to fetch. This is string because various variants
      *      uses non-numbers as the build key.
      */
-    public void doAjax(StaplerRequest req, StaplerResponse rsp,
+    public void doAjax(StaplerRequest2 req, StaplerResponse2 rsp,
           @Header("n") String n) throws IOException, ServletException {
 
         rsp.setContentType("text/html;charset=UTF-8");
@@ -261,7 +276,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
                     nn = n;
                 } else {
                     // every record fetched this time is frozen. next fetch should start from the next build
-                    nn = adapter.getNextKey(adapter.getKey(items.get(0)));
+                    nn = adapter.getNextKey(adapter.getKey(items.getFirst()));
                 }
             }
 
@@ -276,6 +291,11 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     }
 
     static final int THRESHOLD = SystemProperties.getInteger(HistoryWidget.class.getName() + ".threshold", 30);
+
+    /**
+     * Maximum number of builds shown in the builds list when the experimental new job page is enabled.
+     */
+    static final int NEW_JOB_PAGE_THRESHOLD = 10;
 
     public String getNextBuildNumberToFetch() {
         return nextBuildNumberToFetch;
@@ -298,7 +318,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
         String getNextKey(String key);
     }
 
-    private Long getPagingParam(@CheckForNull StaplerRequest currentRequest, @CheckForNull String name) {
+    private Long getPagingParam(@CheckForNull StaplerRequest2 currentRequest, @CheckForNull String name) {
         if (currentRequest == null || name == null) {
             return null;
         }

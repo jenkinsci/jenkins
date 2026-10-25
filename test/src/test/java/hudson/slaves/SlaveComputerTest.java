@@ -27,8 +27,15 @@ package hudson.slaves;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assume.assumeFalse;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.Functions;
 import hudson.model.Computer;
@@ -40,44 +47,56 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.io.IOError;
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import org.htmlunit.WebResponse;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SimpleCommandLauncher;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.xml.sax.SAXException;
 
 /**
  * @author suren
  */
-public class SlaveComputerTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class SlaveComputerTest {
 
-    @Test
-    public void testAgentLogs() throws Exception {
-        DumbSlave node = j.createOnlineSlave();
-        String log = node.getComputer().getLog();
-        Assert.assertTrue(log.contains("Remoting version: " + Launcher.VERSION));
-        Assert.assertTrue(log.contains("Launcher: " + SimpleCommandLauncher.class.getSimpleName()));
-        Assert.assertTrue(log.contains("Communication Protocol: Standard in/out"));
-        Assert.assertTrue(log.contains(String.format("This is a %s agent", Functions.isWindows() ? "Windows" : "Unix")));
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
     }
 
     @Test
-    public void testGetAbsoluteRemotePath() throws Exception {
+    void testAgentLogs() throws Exception {
+        DumbSlave node = j.createOnlineSlave();
+        String log = node.getComputer().getLog();
+        assertTrue(log.contains("Remoting version: " + Launcher.VERSION));
+        assertTrue(log.contains("Launcher: " + SimpleCommandLauncher.class.getSimpleName()));
+        assertTrue(log.contains("Communication Protocol: Standard in/out"));
+        assertTrue(log.contains(String.format("This is a %s agent", Functions.isWindows() ? "Windows" : "Unix")));
+    }
+
+    @Test
+    void testGetAbsoluteRemotePath() throws Exception {
         //default auth
         DumbSlave nodeA = j.createOnlineSlave();
         String path = nodeA.getComputer().getAbsoluteRemotePath();
-        Assert.assertNotNull(path);
-        Assert.assertEquals(getRemoteFS(nodeA, null), path);
+        assertNotNull(path);
+        assertEquals(getRemoteFS(nodeA, null), path);
 
         //not auth
         String userAlice = "alice";
@@ -88,8 +107,8 @@ public class SlaveComputerTest {
         j.jenkins.setAuthorizationStrategy(authStrategy);
         try (ACLContext context = ACL.as(User.getById(userAlice, true))) {
             path = nodeA.getComputer().getAbsoluteRemotePath();
-            Assert.assertNull(path);
-            Assert.assertNull(getRemoteFS(nodeA, userAlice));
+            assertNull(path);
+            assertNull(getRemoteFS(nodeA, userAlice));
         }
 
         //with auth
@@ -97,14 +116,56 @@ public class SlaveComputerTest {
         authStrategy.grant(Computer.CONNECT, Jenkins.READ).everywhere().to(userBob);
         try (ACLContext context = ACL.as(User.getById(userBob, true))) {
             path = nodeA.getComputer().getAbsoluteRemotePath();
-            Assert.assertNotNull(path);
-            Assert.assertNotNull(getRemoteFS(nodeA, userBob));
+            assertNotNull(path);
+            assertNotNull(getRemoteFS(nodeA, userBob));
+        }
+    }
+
+    @Test
+    void fetchingTheJnlpFileLogsAnEndpointDeprecationWarning() throws Exception {
+        DumbSlave nodeA = j.createOnlineSlave();
+
+        List<LogRecord> records = new CopyOnWriteArrayList<>();
+        Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
+                    records.add(record);
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        Logger slaveComputerLogger = Logger.getLogger(SlaveComputer.class.getName());
+        slaveComputerLogger.addHandler(handler);
+
+        try {
+            JenkinsRule.WebClient wc = j.createWebClient();
+            WebResponse response = wc.goTo("computer/" + nodeA.getNodeName() + "/jenkins-agent.jnlp",
+                    "application/x-java-jnlp-file").getWebResponse();
+            assertEquals(200, response.getStatusCode());
+            assertThat(response.getContentAsString(), containsString(nodeA.getNodeName()));
+
+            List<String> warnings = records.stream().map(r -> r.getLevel() + ": " + r.getMessage()).toList();
+            assertThat(warnings, hasItem(allOf(
+                    containsString("deprecated"),
+                    containsString("jenkins-agent.jnlp"))));
+            // the warning must not blame an agent connection, which did not happen
+            assertThat(warnings, not(hasItem(containsString("is connecting"))));
+        } finally {
+            slaveComputerLogger.removeHandler(handler);
         }
     }
 
     @Test
     @Issue("JENKINS-57111")
-    public void startupShouldNotFailOnExceptionOnlineListener() throws Exception {
+    void startupShouldNotFailOnExceptionOnlineListener() throws Exception {
         DumbSlave nodeA = j.createOnlineSlave();
         assertThat(nodeA.getComputer(), instanceOf(SlaveComputer.class));
 
@@ -113,15 +174,15 @@ public class SlaveComputerTest {
             retries--;
             Thread.sleep(500);
         }
-        Assert.assertTrue(retries > 0);
+        assertTrue(retries > 0);
         Thread.sleep(500);
 
-        Assert.assertFalse(nodeA.getComputer().isOffline());
-        Assert.assertTrue(nodeA.getComputer().isOnline());
+        assertFalse(nodeA.getComputer().isOffline());
+        assertTrue(nodeA.getComputer().isOnline());
 
         // Both listeners should fire and not cause the other not to fire.
-        Assert.assertEquals(1, IOExceptionOnOnlineListener.onOnlineCount);
-        Assert.assertEquals(1, RuntimeExceptionOnOnlineListener.onOnlineCount);
+        assertEquals(1, IOExceptionOnOnlineListener.onOnlineCount);
+        assertEquals(1, RuntimeExceptionOnOnlineListener.onOnlineCount);
 
         // We should get the stack trace too.
         assertThat(nodeA.getComputer().getLog(), allOf(
@@ -159,8 +220,8 @@ public class SlaveComputerTest {
 
     @Test
     @Issue("JENKINS-57111")
-    public void startupShouldFailOnErrorOnlineListener() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+    void startupShouldFailOnErrorOnlineListener() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         DumbSlave nodeA = j.createSlave();
         assertThat(nodeA.getComputer(), instanceOf(SlaveComputer.class));
         int retries = 10;
@@ -168,13 +229,13 @@ public class SlaveComputerTest {
             retries--;
             Thread.sleep(500);
         }
-        Assert.assertTrue(retries > 0);
+        assertTrue(retries > 0);
         Thread.sleep(500);
 
-        Assert.assertEquals(1, ErrorOnOnlineListener.onOnlineCount);
+        assertEquals(1, ErrorOnOnlineListener.onOnlineCount);
 
-        Assert.assertTrue(nodeA.getComputer().isOffline());
-        Assert.assertFalse(nodeA.getComputer().isOnline());
+        assertTrue(nodeA.getComputer().isOffline());
+        assertFalse(nodeA.getComputer().isOnline());
     }
 
     @TestExtension(value = "startupShouldFailOnErrorOnlineListener")

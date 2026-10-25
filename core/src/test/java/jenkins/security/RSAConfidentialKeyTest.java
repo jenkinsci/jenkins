@@ -24,20 +24,22 @@
 
 package jenkins.security;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class RSAConfidentialKeyTest {
-
-    @Rule
-    public ConfidentialStoreRule store = new ConfidentialStoreRule();
+class RSAConfidentialKeyTest {
 
     private RSAConfidentialKey key = new RSAConfidentialKey("test") {};
 
+    @BeforeEach
+    void setUp() {
+        ConfidentialStore.Mock.INSTANCE.clear();
+    }
+
     @Test
-    public void loadingExistingKey() {
+    void loadingExistingKey() {
         // this second key of the same ID will cause it to load the key from the disk
         RSAConfidentialKey key2 = new RSAConfidentialKey("test") {};
 

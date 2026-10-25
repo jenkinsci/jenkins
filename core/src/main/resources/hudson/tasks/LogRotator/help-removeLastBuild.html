@@ -1,0 +1,31 @@
+<div>
+  <p>
+    When enabled, Jenkins is allowed to remove the
+    <b>last successful</b>
+    and
+    <b>last stable</b>
+    build if they match the configured build discarder rules.
+  </p>
+
+  <p>
+    By default, Jenkins keeps the most recent successful and stable builds, even
+    if they are older than the configured retention limits. Enabling this option
+    overrides that behavior.
+  </p>
+
+  <p>
+    <b>Example:</b>
+    <br />
+    If builds are configured to be deleted after 7 days, and the most recent
+    successful build is 30 days old, it will normally be kept. With this option
+    enabled, that build will also be removed.
+  </p>
+
+  <p>This option is also available in Pipelines with:</p>
+
+  <pre>
+options {
+    buildDiscarder logRotator(removeLastBuild: true)
+}
+  </pre>
+</div>

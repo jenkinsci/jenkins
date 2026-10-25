@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.not;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-public class IconSetTest {
+class IconSetTest {
 
     /**
      * Tests that at least a reasonable high number of icons is there

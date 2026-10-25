@@ -2,6 +2,7 @@ package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import hudson.Functions;
 import hudson.model.FreeStyleBuild;
@@ -11,20 +12,25 @@ import hudson.tasks.CommandInterpreter;
 import hudson.tasks.Shell;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class Security3188Test {
+@WithJenkins
+class Security3188Test {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("SECURITY-3188")
     @Test
-    public void linkCannotAttributeEscape() throws Exception {
+    void linkCannotAttributeEscape() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("p");
         p.getBuildersList().add(getScript("echo \"https://acme.com/search?q='onmouseover=alert(1);'Hello World\""));
         FreeStyleBuild build = j.buildAndAssertSuccess(p);
@@ -40,7 +46,7 @@ public class Security3188Test {
             String jsCode = "document.querySelector('pre.console-output a:nth-child(2)').dispatchEvent(new MouseEvent('mouseover'));";
             page.executeJavaScript(jsCode);
 
-            Assert.assertFalse("Alert not expected", alerts.get());
+            assertFalse(alerts.get(), "Alert not expected");
         }
     }
 

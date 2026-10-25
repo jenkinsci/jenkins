@@ -1,0 +1,192 @@
+.jenkins-checkbox-help-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.jenkins-checkbox + a.jenkins-help-button {
+  vertical-align: top;
+}
+
+.jenkins-checkbox {
+  position: relative;
+  display: inline-flex;
+}
+
+.jenkins-checkbox input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+
+  // If margin is set to a negative value it can cause text to be announced in
+  // the wrong order in VoiceOver for OSX
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+
+  &:not(:disabled) {
+    &:active,
+    &:focus {
+      & + label {
+        &::before {
+          box-shadow:
+            var(--form-input-glow--focus),
+            inset 0 0 0 5px var(--focus-input-border);
+        }
+      }
+    }
+
+    &:checked {
+      &:active,
+      &:focus {
+        & + label {
+          &::before {
+            box-shadow:
+              var(--form-input-glow--focus),
+              inset 0 0 0 12px var(--focus-input-border);
+          }
+        }
+      }
+    }
+  }
+
+  &:checked {
+    &:active,
+    &:focus {
+      & + label {
+        &::before {
+          box-shadow:
+            var(--form-input-glow--focus),
+            inset 0 0 0 12px var(--focus-input-border);
+        }
+      }
+    }
+  }
+
+  &:checked {
+    & + label {
+      &:active,
+      &:focus {
+        &::before {
+          box-shadow:
+            var(--form-input-glow--focus),
+            inset 0 0 0 12px var(--focus-input-border);
+        }
+      }
+    }
+
+    & + label {
+      &::before {
+        box-shadow:
+          var(--form-input-glow),
+          inset 0 0 0 12px var(--focus-input-border);
+      }
+
+      &::after {
+        transform: scale(1);
+      }
+    }
+  }
+
+  &:disabled {
+    & + label {
+      cursor: not-allowed;
+
+      &::before {
+        opacity: 0.35 !important;
+        box-shadow:
+          var(--form-input-glow),
+          inset 0 0 0 2px var(--input-border) !important;
+      }
+    }
+
+    &:checked {
+      & + label {
+        &::before {
+          box-shadow:
+            var(--form-input-glow),
+            inset 0 0 0 12px var(--focus-input-border) !important;
+        }
+
+        &::after {
+          transform: scale(1) !important;
+        }
+      }
+    }
+  }
+}
+
+.jenkins-checkbox label {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin: 0;
+  cursor: pointer;
+  line-height: 22px;
+  font-weight: var(--form-label-font-weight);
+
+  &::before {
+    content: "";
+    display: inline-block;
+    position: relative;
+    min-width: 22px;
+    min-height: 22px;
+    border-radius: 6px;
+    transition: var(--standard-transition);
+    margin-right: 11px;
+    box-shadow:
+      var(--form-input-glow),
+      inset 0 0 0 var(--jenkins-border-width) var(--input-border);
+    background: var(--input-color);
+  }
+
+  &::after {
+    content: "";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 22px;
+    height: 22px;
+    background: var(--background);
+    mask-image: url("../images/svgs/mask-checkbox-label.svg");
+    mask-size: 10px 10px;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    transition: var(--elastic-transition);
+    transform: scale(0);
+  }
+
+  &:empty {
+    &::before {
+      margin-right: 0;
+    }
+  }
+
+  &:hover {
+    &::before {
+      box-shadow:
+        var(--form-input-glow),
+        inset 0 0 0 5px var(--input-border-hover);
+    }
+  }
+
+  &:active,
+  &:focus {
+    &::before {
+      box-shadow:
+        var(--form-input-glow--focus),
+        inset 0 0 0 5px var(--focus-input-border);
+    }
+  }
+}
+
+.jenkins-checkbox__description {
+  margin-left: 34px;
+  color: var(--text-color-secondary);
+  line-height: 1.66;
+}

@@ -24,10 +24,13 @@
 
 package jenkins.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import hudson.remoting.ClassFilter;
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Level;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -36,61 +39,75 @@ import jenkins.util.BuildListenerAdapter;
 import jenkins.util.TreeString;
 import jenkins.util.TreeStringBuilder;
 import org.apache.commons.io.FileUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.ErrorCollector;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.CleanupMode;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
-import org.jvnet.hudson.test.SmokeTest;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 
-@Category(SmokeTest.class)
-public class CustomClassFilterTest {
+@Tag("SmokeTest")
+@WithJenkins
+class CustomClassFilterTest {
 
     static {
         System.setProperty("hudson.remoting.ClassFilter", "javax.script.SimpleBindings,!jenkins.util.TreeString");
     }
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private final LogRecorder logging = new LogRecorder().record("jenkins.security", Level.FINER);
 
-    @Rule
-    public ErrorCollector errors = new ErrorCollector();
+    @TempDir(cleanup = CleanupMode.NEVER)
+    private File tmp;
 
-    @Rule
-    public LoggerRule logging = new LoggerRule().record("jenkins.security", Level.FINER);
+    private JenkinsRule r;
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        r = rule;
+    }
+
 
     @WithPlugin("custom-class-filter.jpi")
     @Test
-    public void smokes() throws Exception {
-        assertBlacklisted("enabled via system property", SimpleBindings.class, false);
-        assertBlacklisted("enabled via plugin", ScriptException.class, false);
-        assertBlacklisted("disabled by ClassFilter.STANDARD", ScriptEngineManager.class, true);
-        assertBlacklisted("part of Jenkins core, so why not?", BuildListenerAdapter.class, false);
-        // As an aside, the following appear totally unused anyway!
-        assertBlacklisted("disabled via system property", TreeString.class, true);
-        assertBlacklisted("disabled via plugin", TreeStringBuilder.class, true);
+    void smokes() {
+        assertAll(
+                () -> assertBlacklisted("enabled via system property", SimpleBindings.class, false),
+                () -> assertBlacklisted("enabled via plugin", ScriptException.class, false),
+                () -> assertBlacklisted("disabled by ClassFilter.STANDARD", ScriptEngineManager.class, true),
+                () -> assertBlacklisted("part of Jenkins core, so why not?", BuildListenerAdapter.class, false),
+                // As an aside, the following appear totally unused anyway!
+                () -> assertBlacklisted("disabled via system property", TreeString.class, true),
+                () -> assertBlacklisted("disabled via plugin", TreeStringBuilder.class, true)
+        );
     }
 
     @Test
-    public void dynamicLoad() throws Exception {
-        assertBlacklisted("not yet enabled via plugin", ScriptException.class, true);
-        assertBlacklisted("not yet disabled via plugin", TreeStringBuilder.class, false);
-        File jpi = tmp.newFile("custom-class-filter.jpi");
-        FileUtils.copyURLToFile(CustomClassFilterTest.class.getResource("/plugins/custom-class-filter.jpi"), jpi);
-        r.jenkins.pluginManager.dynamicLoad(jpi);
-        assertBlacklisted("enabled via plugin", ScriptException.class, false);
-        assertBlacklisted("disabled via plugin", TreeStringBuilder.class, true);
+    void dynamicLoad() {
+        assertAll(
+                () -> assertBlacklisted("not yet enabled via plugin", ScriptException.class, true),
+                () -> assertBlacklisted("not yet disabled via plugin", TreeStringBuilder.class, false),
+                () -> {
+                    File jpi = newFile(tmp, "custom-class-filter.jpi");
+                    FileUtils.copyURLToFile(CustomClassFilterTest.class.getResource("/plugins/custom-class-filter.jpi"), jpi);
+                    r.jenkins.pluginManager.dynamicLoad(jpi);
+                },
+                () -> assertBlacklisted("enabled via plugin", ScriptException.class, false),
+                () -> assertBlacklisted("disabled via plugin", TreeStringBuilder.class, true)
+        );
     }
 
     private void assertBlacklisted(String message, Class<?> c, boolean blacklisted) {
         String name = c.getName();
-        errors.checkThat(name + ": " + message, ClassFilter.DEFAULT.isBlacklisted(c) || ClassFilter.DEFAULT.isBlacklisted(name), is(blacklisted));
+        assertThat(name + ": " + message, ClassFilter.DEFAULT.isBlacklisted(c) || ClassFilter.DEFAULT.isBlacklisted(name), is(blacklisted));
+    }
+
+    private static File newFile(File parent, String child) throws IOException {
+        File result = new File(parent, child);
+        result.createNewFile();
+        return result;
     }
 
 }

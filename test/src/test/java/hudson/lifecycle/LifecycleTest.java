@@ -30,21 +30,21 @@ import static org.hamcrest.Matchers.is;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RealJenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.RealJenkinsExtension;
 
-public final class LifecycleTest {
+class LifecycleTest {
 
-    @Rule
-    public RealJenkinsRule rr = new RealJenkinsRule()
+    @RegisterExtension
+    private final RealJenkinsExtension rr = new RealJenkinsExtension()
         .addPlugins("plugins/custom-lifecycle.hpi")
         .javaOptions("-Dhudson.lifecycle=test.custom_lifecycle.CustomLifecycle")
         .withLogger(Lifecycle.class, Level.FINE);
 
     @Test
-    public void definedInPlugin() throws Throwable {
+    void definedInPlugin() throws Throwable {
         rr.then(LifecycleTest::_definedInPlugin);
     }
 

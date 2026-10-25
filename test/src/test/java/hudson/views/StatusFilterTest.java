@@ -7,17 +7,23 @@ import hudson.model.FreeStyleProject;
 import hudson.model.TopLevelItem;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class StatusFilterTest {
+@WithJenkins
+class StatusFilterTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void basic() throws Exception {
+    void basic() throws Exception {
         List<TopLevelItem> list = new ArrayList<>();
         FreeStyleProject p1 = j.createFreeStyleProject("p1");
         FreeStyleProject p2 = j.createFreeStyleProject("p2");

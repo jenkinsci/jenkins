@@ -28,6 +28,7 @@ import static hudson.init.InitMilestone.PLUGINS_PREPARED;
 import static java.util.stream.Collectors.toMap;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.ExtensionList;
 import hudson.FeedAdapter;
 import hudson.Functions;
 import hudson.RestrictedSince;
@@ -35,9 +36,11 @@ import hudson.Util;
 import hudson.init.Initializer;
 import hudson.model.AbstractModelObject;
 import hudson.model.Failure;
+import hudson.model.ManagementLink;
 import hudson.model.RSS;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.FormValidation;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -53,7 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
+import jenkins.management.SystemLogLink;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
@@ -61,6 +64,7 @@ import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -68,8 +72,8 @@ import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -155,7 +159,6 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
             lr.load();
             recorders.add(lr);
         }
-        setRecorders(recorders); // ensure that legacy logRecorders field is synced on load
     }
 
     /**
@@ -170,7 +173,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
         recorders.add(new LogRecorder(name));
 
         // redirect to the config screen
-        return new HttpRedirect(name + "/configure");
+        return new HttpRedirect(Util.rawEncode(name) + "/configure");
     }
 
     @Restricted(NoExternalUse.class)
@@ -188,7 +191,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     }
 
     @Override
-    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    public ContextMenu doChildrenContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws Exception {
         ContextMenu menu = new ContextMenu();
         menu.add("all", "All Jenkins Logs");
         for (LogRecorder lr : recorders) {
@@ -225,14 +228,14 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     /**
      * RSS feed for log entries.
      */
-    public void doRss(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRss(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         doRss(req, rsp, Jenkins.logRecords);
     }
 
     /**
      * Renders the given log recorders as RSS.
      */
-    /*package*/ static void doRss(StaplerRequest req, StaplerResponse rsp, List<LogRecord> logs) throws IOException, ServletException {
+    /*package*/ static void doRss(StaplerRequest2 req, StaplerResponse2 rsp, List<LogRecord> logs) throws IOException, ServletException {
         // filter log records based on the log level
         String entryType = "all";
         String level = req.getParameter("level");
@@ -294,6 +297,12 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
             Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
         }
         return this;
+    }
+
+    @SuppressWarnings("unused")
+    @Restricted(DoNotUse.class) // used by jelly
+    public ManagementLink getManagementLink() {
+        return ExtensionList.lookupSingleton(SystemLogLink.class);
     }
 
     /**

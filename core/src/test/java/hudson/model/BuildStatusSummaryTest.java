@@ -1,14 +1,14 @@
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import hudson.model.Run.Summary;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests {@link Run#getBuildStatusSummary()}.
@@ -16,13 +16,13 @@ import org.junit.Test;
  * @author kutzi
  */
 @SuppressWarnings("rawtypes")
-public class BuildStatusSummaryTest {
+class BuildStatusSummaryTest {
 
     private Run build;
     private Run prevBuild;
 
-    @Before
-    public void before() {
+    @BeforeEach
+    void before() {
         mockBuilds(Run.class);
     }
 
@@ -36,7 +36,7 @@ public class BuildStatusSummaryTest {
     }
 
     @Test
-    public void testStatusUnknownIfRunIsStillBuilding() {
+    void testStatusUnknownIfRunIsStillBuilding() {
         when(this.build.getResult()).thenReturn(null);
         when(this.build.isBuilding()).thenReturn(true);
 
@@ -45,7 +45,7 @@ public class BuildStatusSummaryTest {
     }
 
     @Test
-    public void testSuccess() {
+    void testSuccess() {
         when(this.build.getResult()).thenReturn(Result.SUCCESS);
         when(this.prevBuild.getResult()).thenReturn(Result.SUCCESS);
 
@@ -76,7 +76,7 @@ public class BuildStatusSummaryTest {
     }
 
     @Test
-    public void testFixed() {
+    void testFixed() {
         when(this.build.getResult()).thenReturn(Result.SUCCESS);
         when(this.prevBuild.getResult()).thenReturn(Result.FAILURE);
 
@@ -95,7 +95,7 @@ public class BuildStatusSummaryTest {
     }
 
     @Test
-    public void testFailure() {
+    void testFailure() {
         when(this.build.getResult()).thenReturn(Result.FAILURE);
         when(this.prevBuild.getResult()).thenReturn(Result.FAILURE);
 
@@ -106,7 +106,7 @@ public class BuildStatusSummaryTest {
     }
 
     @Test
-    public void testBecameFailure() {
+    void testBecameFailure() {
         when(this.build.getResult()).thenReturn(Result.FAILURE);
         when(this.prevBuild.getResult()).thenReturn(Result.SUCCESS);
         when(this.build.getPreviousNotFailedBuild()).thenReturn(this.prevBuild);
@@ -118,7 +118,7 @@ public class BuildStatusSummaryTest {
     }
 
     @Test
-    public void testFailureSince() {
+    void testFailureSince() {
         when(this.build.getResult()).thenReturn(Result.FAILURE);
         when(this.prevBuild.getResult()).thenReturn(Result.FAILURE);
         when(this.prevBuild.getDisplayName()).thenReturn("prevBuild");
@@ -134,7 +134,7 @@ public class BuildStatusSummaryTest {
     }
 
     @Test
-    public void testBecameUnstable() {
+    void testBecameUnstable() {
         when(this.build.getResult()).thenReturn(Result.UNSTABLE);
         when(this.prevBuild.getResult()).thenReturn(Result.SUCCESS);
 
@@ -145,7 +145,7 @@ public class BuildStatusSummaryTest {
     }
 
     @Test
-    public void testUnstableAfterFailure() {
+    void testUnstableAfterFailure() {
         when(this.build.getResult()).thenReturn(Result.UNSTABLE);
         when(this.prevBuild.getResult()).thenReturn(Result.FAILURE);
 
@@ -156,7 +156,7 @@ public class BuildStatusSummaryTest {
     }
 
     @Test
-    public void testNonTestRelatedUnstable() {
+    void testNonTestRelatedUnstable() {
         when(this.build.getResult()).thenReturn(Result.UNSTABLE);
         when(this.prevBuild.getResult()).thenReturn(Result.UNSTABLE);
 
@@ -167,7 +167,7 @@ public class BuildStatusSummaryTest {
     }
 
     @Test
-    public void testNonTestRelatedBecameUnstable() {
+    void testNonTestRelatedBecameUnstable() {
         when(this.build.getResult()).thenReturn(Result.UNSTABLE);
         when(this.prevBuild.getResult()).thenReturn(Result.SUCCESS);
 
@@ -178,7 +178,7 @@ public class BuildStatusSummaryTest {
     }
 
     @Test
-    public void testAborted() {
+    void testAborted() {
         when(this.build.getResult()).thenReturn(Result.ABORTED);
         Summary summary = this.build.getBuildStatusSummary();
 
@@ -187,7 +187,7 @@ public class BuildStatusSummaryTest {
     }
 
     @Test
-    public void testNotBuilt() {
+    void testNotBuilt() {
         when(this.build.getResult()).thenReturn(Result.NOT_BUILT);
         Summary summary = this.build.getBuildStatusSummary();
 

@@ -31,7 +31,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.AbstractModelObject;
@@ -43,11 +42,12 @@ import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
-import hudson.util.CopyOnWriteList;
+import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -71,7 +71,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.model.Loadable;
 import jenkins.security.MasterToSlaveCallable;
@@ -82,8 +81,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
@@ -103,15 +102,6 @@ import org.kohsuke.stapler.verb.POST;
 public class LogRecorder extends AbstractModelObject implements Loadable, Saveable {
     private volatile String name;
 
-    /**
-     * No longer used.
-     *
-     * @deprecated use {@link #getLoggers()}
-     */
-    @Deprecated
-    @Restricted(NoExternalUse.class)
-    @RestrictedSince("2.324")
-    public final transient CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
     private List<Target> loggers = new ArrayList<>();
     private static final TargetComparator TARGET_COMPARATOR = new TargetComparator();
 
@@ -121,22 +111,6 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
         // register it only once when constructed, and when this object dies
         // WeakLogHandler will remove it
         new WeakLogHandler(handler, Logger.getLogger(""));
-    }
-
-    private Object readResolve() {
-        if (loggers == null) {
-            loggers = new ArrayList<>();
-        }
-
-        List<Target> tempLoggers = new ArrayList<>(loggers);
-
-        if (!targets.isEmpty()) {
-            loggers.addAll(targets.getView());
-        }
-        if (!tempLoggers.isEmpty() && !targets.getView().equals(tempLoggers)) {
-            targets.addAll(tempLoggers);
-        }
-        return this;
     }
 
     public List<Target> getLoggers() {
@@ -350,10 +324,14 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
          * Makes sure that the logger passes through messages at the correct level to us.
          */
         public void enable() {
+            enableLogger();
+            new SetLevel(name, getLevel()).broadcast();
+        }
+
+        private void enableLogger() {
             Logger l = getLogger();
             if (!l.isLoggable(getLevel()))
                 l.setLevel(getLevel());
-            new SetLevel(name, getLevel()).broadcast();
         }
 
         public void disable() {
@@ -393,7 +371,7 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
 
         void broadcast() {
             for (Computer c : Jenkins.get().getComputers()) {
-                if (c.getName().length() > 0) { // i.e. not master
+                if (!c.getName().isEmpty()) { // i.e. not master
                     VirtualChannel ch = c.getChannel();
                     if (ch != null) {
                         try {
@@ -436,10 +414,67 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
     }
 
     /**
+     * Updates controller logger levels after existing targets are reconfigured or removed. {@link Target#enable()}
+     * only makes a logger more verbose, so it cannot otherwise apply a change such as {@code FINEST} to {@code INFO}.
+     */
+    private void updateLogLevels(List<Target> previousTargets) {
+        List<LogRecorder> recorders = getParent().getRecorders();
+        Set<String> changedTargetNames = new LinkedHashSet<>();
+        for (Target previousTarget : previousTargets) {
+            Target target = getTarget(previousTarget.name, loggers);
+            if (target != null && target.getLevel().intValue() <= previousTarget.getLevel().intValue()) {
+                continue;
+            }
+            changedTargetNames.add(previousTarget.name);
+            if (sameLevel(previousTarget.getLogger().getLevel(), previousTarget.getLevel())) {
+                previousTarget.getLogger().setLevel(null);
+            }
+        }
+
+        for (LogRecorder recorder : recorders) {
+            for (Target target : recorder.loggers) {
+                if (changedTargetNames.contains(target.name)) {
+                    target.enableLogger();
+                }
+            }
+        }
+
+        List<Target> descendantTargets = new ArrayList<>();
+        for (LogRecorder recorder : recorders) {
+            for (Target target : recorder.loggers) {
+                for (String name : changedTargetNames) {
+                    if (isDescendant(name, target.name)) {
+                        descendantTargets.add(target);
+                        break;
+                    }
+                }
+            }
+        }
+        descendantTargets.sort(Comparator.comparingInt(target -> target.name.length()));
+        descendantTargets.forEach(Target::enableLogger);
+    }
+
+    private static Target getTarget(String loggerName, List<Target> targets) {
+        return targets.stream().filter(target -> target.name.equals(loggerName)).findFirst().orElse(null);
+    }
+
+    private static boolean isDescendant(String loggerName, String candidate) {
+        return loggerName.isEmpty()
+                ? !candidate.isEmpty()
+                : candidate.startsWith(loggerName)
+                        && candidate.length() > loggerName.length()
+                        && candidate.charAt(loggerName.length()) == '.';
+    }
+
+    private static boolean sameLevel(Level first, Level second) {
+        return first == null ? second == null : second != null && first.intValue() == second.intValue();
+    }
+
+    /**
      * Accepts submission from the configuration page.
      */
     @POST
-    public synchronized void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized void doConfigSubmit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         JSONObject src = req.getSubmittedForm();
@@ -454,16 +489,16 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
             recorders.remove(new LogRecorder(name));
             this.name = newName;
             recorders.add(this);
-            getParent().setRecorders(recorders); // ensure that legacy logRecorders field is synced on save
             redirect = "../" + Util.rawEncode(newName) + '/';
         }
 
+        List<Target> previousTargets = List.copyOf(loggers);
         List<Target> newTargets = req.bindJSONToList(Target.class, src.get("loggers"));
         setLoggers(newTargets);
 
-        save();
+        save(previousTargets);
         if (oldFile != null) oldFile.delete();
-        rsp.sendRedirect2(redirect);
+        FormApply.success(redirect).generateResponse(req, rsp, null);
     }
 
     @RequirePOST
@@ -488,31 +523,19 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
      */
     @Override
     public synchronized void save() throws IOException {
-        if (BulkChange.contains(this))   return;
-
-        handlePluginUpdatingLegacyLogManagerMap();
-        getConfigFile().write(this);
-        loggers.forEach(Target::enable);
-
-        SaveableListener.fireOnChange(this, getConfigFile());
+        save(null);
     }
 
-    @SuppressWarnings("deprecation") // this is for compatibility
-    private void handlePluginUpdatingLegacyLogManagerMap() {
-        if (getParent().logRecorders.size() > getParent().getRecorders().size()) {
-            for (LogRecorder logRecorder : getParent().logRecorders.values()) {
-                if (!getParent().getRecorders().contains(logRecorder)) {
-                    getParent().getRecorders().add(logRecorder);
-                }
-            }
+    private synchronized void save(List<Target> previousTargets) throws IOException {
+        if (BulkChange.contains(this))   return;
+
+        getConfigFile().write(this);
+        loggers.forEach(Target::enable);
+        if (previousTargets != null) {
+            updateLogLevels(previousTargets);
         }
-        if (getParent().getRecorders().size() > getParent().logRecorders.size()) {
-            for (LogRecorder logRecorder : getParent().getRecorders()) {
-                if (!getParent().logRecorders.containsKey(logRecorder.getName())) {
-                    getParent().logRecorders.put(logRecorder.getName(), logRecorder);
-                }
-            }
-        }
+
+        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
     @Override
@@ -536,7 +559,7 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
      * Deletes this recorder, then go back to the parent.
      */
     @RequirePOST
-    public synchronized void doDoDelete(StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized void doDoDelete(StaplerResponse2 rsp) throws IOException, ServletException {
         delete();
         rsp.sendRedirect2("..");
     }
@@ -556,13 +579,13 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
         loggers.forEach(Target::disable);
 
         getParent().getRecorders().forEach(logRecorder -> logRecorder.getLoggers().forEach(Target::enable));
-        SaveableListener.fireOnChange(this, getConfigFile());
+        SaveableListener.fireOnDeleted(this, getConfigFile());
     }
 
     /**
      * RSS feed for log entries.
      */
-    public void doRss(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doRss(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         LogRecorderManager.doRss(req, rsp, getLogRecords());
     }
 
@@ -595,7 +618,7 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
             }
         });
         for (Computer c : Jenkins.get().getComputers()) {
-            if (c.getName().length() == 0) {
+            if (c.getName().isEmpty()) {
                 continue; // master
             }
             List<LogRecord> recs = new ArrayList<>();
