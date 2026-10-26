@@ -106,6 +106,19 @@ class ManageUserLinksReadOnlyModeTest {
 
     @Issue("JENKINS-62430")
     @Test
+    void adminStillSeesAccountSettingsLinkForOtherUsers() throws Exception {
+        setUpRealm();
+        JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("admin", "admin");
+        HtmlPage page = wc.goTo("manage/securityRealm/");
+
+        assertNotNull(page.querySelector("#people a[href='user/viewer/account']"),
+                "an admin must still see the account settings link for other users");
+        assertNotNull(page.querySelector("#people a[href='user/admin/account']"),
+                "an admin must still see the account settings link for their own account");
+    }
+
+    @Issue("JENKINS-62430")
+    @Test
     void viewerWithoutSystemReadIsDenied() throws Exception {
         setUpRealm();
         JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("nobody", "nobody");
