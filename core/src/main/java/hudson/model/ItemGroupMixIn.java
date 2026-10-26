@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.listeners.ItemListener;
+import hudson.model.listeners.SaveableListener;
 import hudson.security.AccessControlled;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.Function1;
@@ -265,6 +266,8 @@ public abstract class ItemGroupMixIn {
         final File rootDir = result.getRootDir();
         result = Items.callWhileUpdatingByXml(() -> (T) Items.load(parent, rootDir));
         result.onCopiedFrom(src);
+        // The copied configuration was written above without Saveable.save(), so notify as save() would.
+        SaveableListener.fireOnChange(result, Items.getConfigFile(result));
 
         add(result);
         ItemListener.fireOnCopied(src, result);
@@ -306,6 +309,8 @@ public abstract class ItemGroupMixIn {
             add(result);
 
             result.onCreatedFromScratch();
+            // The configuration was written above without Saveable.save(), so notify as save() would.
+            SaveableListener.fireOnChange(result, Items.getConfigFile(result));
             ItemListener.fireOnCreated(result);
             Jenkins.get().rebuildDependencyGraphAsync();
 
