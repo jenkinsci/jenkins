@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.User;
@@ -48,10 +49,10 @@ class JenkinsItemOrNullTest {
 
         // item of another type is null
         assertThat(
-                asUser("reader", () -> r.jenkins.getItemByFullNameOrNull("p", AbstractTopLevelItem.class)),
+                asUser("reader", () -> r.jenkins.getItemByFullNameOrNull("p", Folder.class)),
                 nullValue());
         assertThat(
-                asUser("reader", () -> r.jenkins.getItemOrNull("p", null, AbstractTopLevelItem.class)),
+                asUser("reader", () -> r.jenkins.getItemOrNull("p", null, Folder.class)),
                 nullValue());
     }
 
@@ -79,10 +80,11 @@ class JenkinsItemOrNullTest {
     @Test
     void nestedDiscoverOnlyItemIsAbsent(JenkinsRule r) throws Exception {
         setUpUsers(r);
-        var folder = r.createFolder("d");
+        var folder = r.createProject(Folder.class, "d");
         var nested = folder.createProject(FreeStyleProject.class, "q");
         assertThat(asUser("reader", () -> folder.getItemOrNull("q")), sameInstance(nested));
-        // MockFolder.getItem does not check permissions, so folder-level lookups are not asserted here.
+        assertThrows(AccessDeniedException.class, () -> asUser("visitor", () -> folder.getItem("q")));
+        assertThat(asUser("visitor", () -> folder.getItemOrNull("q")), nullValue());
         assertThrows(AccessDeniedException.class, () -> asUser("visitor", () -> r.jenkins.getItemByFullName("d/q")));
         assertThrows(
                 AccessDeniedException.class,
