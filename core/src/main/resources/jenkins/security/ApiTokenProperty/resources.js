@@ -131,35 +131,23 @@ function addFormChangesHandling(form) {
   const customDateInput = form.querySelector('input[name="tokenExpiration"]');
   const warningDiv = form.querySelector(".token-warning");
 
-  expirationSelect.addEventListener("change", () => {
-    if (expirationSelect.value === "custom") {
-      customDateInput.classList.remove("jenkins-hidden");
-      const submitButton = form.querySelector('button[data-id="ok"]');
-      if (customDateInput.value !== "") {
-        submitButton.disabled = false;
-      } else {
-        submitButton.disabled = true;
-      }
-    } else {
-      const submitButton = form.querySelector('button[data-id="ok"]');
-      submitButton.disabled = false;
-      customDateInput.classList.add("jenkins-hidden");
-    }
-    if (expirationSelect.value === "never") {
-      warningDiv.classList.remove("jenkins-hidden");
-    } else {
-      warningDiv.classList.add("jenkins-hidden");
-    }
-  });
+  const updateForm = () => {
+    const customExpiration = expirationSelect.value === "custom";
+    customDateInput.classList.toggle("jenkins-hidden", !customExpiration);
+    const submitButton = form
+      .closest("dialog")
+      .querySelector('button[data-id="ok"]');
+    submitButton.disabled =
+      customExpiration &&
+      (customDateInput.value === "" || !customDateInput.checkValidity());
+    warningDiv.classList.toggle(
+      "jenkins-hidden",
+      expirationSelect.value !== "never",
+    );
+  };
 
-  customDateInput.addEventListener("change", () => {
-    const submitButton = form.querySelector('button[data-id="ok"]');
-    if (customDateInput.value !== "") {
-      submitButton.disabled = false;
-    } else {
-      submitButton.disabled = true;
-    }
-  });
+  expirationSelect.addEventListener("change", updateForm);
+  customDateInput.addEventListener("input", updateForm);
 }
 
 function addToken(button) {
@@ -176,8 +164,12 @@ function addToken(button) {
   presetDate.setDate(now.getDate() + 30);
   nextYear.setDate(now.getDate() + 365);
   dateInput.min = now.toISOString().split("T")[0];
-  dateInput.max = nextYear.toISOString().split("T")[0];
+  dateInput.max =
+    dateInput.dataset.maxExpiration || nextYear.toISOString().split("T")[0];
   dateInput.value = presetDate.toISOString().split("T")[0];
+  if (dateInput.value > dateInput.max) {
+    dateInput.value = dateInput.max;
+  }
   form.appendChild(formTemplate);
   addFormChangesHandling(form);
   dialog
