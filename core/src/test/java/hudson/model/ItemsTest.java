@@ -54,6 +54,7 @@ class ItemsTest {
     @Test
     void computeRelativeNamesAfterRenaming() {
         assertEquals("meu,bu,zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "ga,bu,zo", root));
+        assertEquals("meu,bu,zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "ga, bu, zo", root));
         assertEquals("ga,bu,zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "ga,bu,zo", foo_bar));
         assertEquals("meu,bu,zo", Items.computeRelativeNamesAfterRenaming("foo/ga", "foo/meu", "ga,bu,zo", foo));
 
@@ -77,6 +78,16 @@ class ItemsTest {
         assertEquals("/top2/dir/j", Items.computeRelativeNamesAfterRenaming("top1/dir", "top2/dir", "/top1/dir/j", foo));
         assertEquals("sister", Items.computeRelativeNamesAfterRenaming("fooq", "foo", "sister", foo));
         assertEquals("/foo/sister", Items.computeRelativeNamesAfterRenaming("fooq", "foo", "/fooq/sister", foo));
+    }
+
+    @Test
+    void computeRelativeNameAfterRenaming() {
+        assertEquals("job,  name", Items.computeRelativeNameAfterRenaming("unrelated", "renamed", "job,  name", root));
+        assertEquals("job,  renamed", Items.computeRelativeNameAfterRenaming("job,  name", "job,  renamed", "job,  name", root));
+        assertEquals("renamed, folder/job,  name", Items.computeRelativeNameAfterRenaming("folder", "renamed, folder", "folder/job,  name", root));
+        assertEquals("../qux, folder/job,  name", Items.computeRelativeNameAfterRenaming("foo/baz, folder", "foo/qux, folder", "../baz, folder/job,  name", foo_bar));
+        assertEquals("/renamed, folder/job,  name", Items.computeRelativeNameAfterRenaming("folder", "renamed, folder", "/folder/job,  name", foo));
+        assertEquals("folder-other/job,  name", Items.computeRelativeNameAfterRenaming("folder", "renamed", "folder-other/job,  name", root));
     }
 
     @Test
