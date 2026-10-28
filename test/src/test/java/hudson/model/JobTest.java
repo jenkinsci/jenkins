@@ -114,6 +114,21 @@ class JobTest {
         assertTrue(test2.passed, test2.message);
     }
 
+    @Test
+    void updateNextBuildNumberDoesNotRewindOntoAssignedNumber() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        // Models a build that holds its number but is not yet visible to getLastBuild().
+        int assigned = p.assignBuildNumber();
+        assertEquals(assigned + 1, p.getNextBuildNumber());
+
+        p.updateNextBuildNumber(assigned);
+        assertEquals(assigned + 1, p.getNextBuildNumber());
+        assertEquals(String.valueOf(assigned + 1), p.getNextBuildNumberFile().readTrim());
+
+        p.updateNextBuildNumber(assigned + 5);
+        assertEquals(assigned + 5, p.getNextBuildNumber());
+    }
+
     public static class BuildNumberSyncTester implements Runnable {
         private final AbstractProject p;
         private final CountDownLatch start;
