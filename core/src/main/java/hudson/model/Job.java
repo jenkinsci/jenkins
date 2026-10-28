@@ -193,6 +193,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     private transient volatile Object nextBuildNumberLock = new Object();
 
     /**
+     * Highest number handed out by {@link #assignBuildNumber} since this object was created or loaded,
+     * guarded by {@link #nextBuildNumberLock}. A build is not visible to {@link #getLastBuild} until
+     * after its number is assigned, so {@link #updateNextBuildNumber} also checks this to avoid
+     * rewinding onto a number that a build being created already holds.
+     */
+    private transient int highestAssignedBuildNumber;
+
+    /**
      * Newly copied jobs get this flag set, so that Hudson doesn't try to run the job until its configuration
      * is saved once.
      */
@@ -388,7 +396,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see BuildNumberAssigner
      */
     public int assignBuildNumber() throws IOException {
-        return ExtensionList.lookupFirst(BuildNumberAssigner.class).assignBuildNumber(this, this::saveNextBuildNumber);
+        BuildNumberAssigner assigner = ExtensionList.lookupFirst(BuildNumberAssigner.class);
+        // Held across the assigner so that updateNextBuildNumber can never observe a number that has
+        // been handed out but not yet recorded, whichever assigner is in use.
+        synchronized (nextBuildNumberLock) {
+            int r = assigner.assignBuildNumber(this, this::saveNextBuildNumber);
+            highestAssignedBuildNumber = Math.max(highestAssignedBuildNumber, r);
+            return r;
+        }
     }
 
     /**
@@ -493,13 +508,18 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Much of Hudson assumes that the build number is unique and monotonic, so
      * this method can only accept a new value that's bigger than
      * {@link #getLastBuild()} returns. Otherwise it'll be no-op.
+     * It is likewise a no-op for any value not bigger than the highest number already handed out by
+     * {@link #assignBuildNumber} since this job was loaded, even if that build was never recorded.
      *
      * @since 1.199 (before that, this method was package private.)
      */
     public void updateNextBuildNumber(int next) throws IOException {
+        // Read outside the lock: it may lazy-load builds (running arbitrary onLoad code), and a stale
+        // value is harmless because every number assigned since load is covered by highestAssignedBuildNumber.
         RunT lb = getLastBuild();
-        if (lb != null ?  next > lb.getNumber() : next > 0) {
-            synchronized (nextBuildNumberLock) {
+        synchronized (nextBuildNumberLock) {
+            int floor = Math.max(lb != null ? lb.getNumber() : 0, highestAssignedBuildNumber);
+            if (next > floor) {
                 this.nextBuildNumber = next;
                 saveNextBuildNumber();
             }
