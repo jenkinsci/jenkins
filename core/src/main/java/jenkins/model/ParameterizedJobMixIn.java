@@ -539,7 +539,13 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
                 // deadlock. isDisabled() is already true by this point, so any executor about to
                 // build this job will see that and decline before it would need the job's
                 // monitor; the queued item itself is removed moments later, off this thread.
-                Timer.get().execute(() -> Jenkins.get().getQueue().cancel(this));
+                // Queue#cancel matches by task, not by queue item, so skip it if the job was
+                // re-enabled in the meantime: any item queued since then is a legitimate new build.
+                Timer.get().execute(() -> {
+                    if (isDisabled()) {
+                        Jenkins.get().getQueue().cancel(this);
+                    }
+                });
             }
             save();
             ItemListener.fireOnUpdated(this);
