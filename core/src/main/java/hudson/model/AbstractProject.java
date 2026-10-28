@@ -110,6 +110,7 @@ import jenkins.scm.SCMDecisionHandler;
 import jenkins.security.XStreamNotDeserializable;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;
+import jenkins.util.Timer;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -359,7 +360,10 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         // prevent a new build while a delete operation is in progress
         if (supportsMakeDisabled()) {
             setDisabled(true);
-            Jenkins.get().getQueue().cancel(this);
+            // Dispatched rather than called synchronously: AbstractItem#delete holds
+            // synchronized (this) around performDelete(), and Queue#cancel needs Queue#lock --
+            // see the identical reasoning in ParameterizedJobMixIn#makeDisabled.
+            Timer.get().execute(() -> Jenkins.get().getQueue().cancel(this));
         }
         FilePath ws = getWorkspace();
         if (ws != null) {
@@ -976,8 +980,19 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
     /**
      * Creates a new build of this project for immediate execution.
+     *
+     * <p>Not {@code synchronized}: that was added in 2009 (HUDSON-2997) to serialize access to a
+     * {@code lastBuildStartTime} field that no longer exists, and this method does nothing else
+     * that needs mutual exclusion on the project itself. {@link LazyBuildMixIn#newBuild} already
+     * synchronizes on its own object, and build-number assignment now uses a dedicated lock (see
+     * {@link Job#nextBuildNumberLock}) rather than the project's own monitor. Synchronizing here
+     * would force the caller (an executor, via {@link Queue#callWithLock}) to acquire the
+     * project's monitor while holding {@link Queue#lock}, which can deadlock against any code
+     * path that acquires those two locks in the opposite order while holding the project's
+     * monitor, such as disabling ({@link ParameterizedJobMixIn#makeDisabled}) or deleting
+     * ({@link AbstractItem#delete}) the project.
      */
-    protected synchronized R newBuild() throws IOException {
+    protected R newBuild() throws IOException {
         return buildMixIn.newBuild();
     }
 

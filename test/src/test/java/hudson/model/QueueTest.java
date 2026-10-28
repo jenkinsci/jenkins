@@ -45,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -89,6 +90,7 @@ import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.time.Duration;
@@ -128,6 +130,7 @@ import org.htmlunit.xml.XmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -289,6 +292,80 @@ public class QueueTest {
         assertTrue(q.cancel(items[0]));
         seq.done();
         r.assertBuildStatusSuccess(r.waitForCompletion(b1));
+    }
+
+    /**
+     * Reproduces a lock-ordering deadlock between {@link Queue#lock} and the
+     * {@link AbstractProject} monitor.
+     * <p>
+     * {@link Job#doConfigSubmit} (which disabling a project through the config form goes through)
+     * is {@code synchronized} on the project and, while holding that monitor, calls
+     * {@link ParameterizedJobMixIn#makeDisabled} which calls {@link Queue#cancel(Queue.Task)},
+     * which needs {@link Queue#lock}. Meanwhile {@link Executor#run} acquires {@link Queue#lock}
+     * (via {@link Queue#callWithLock} in production code) and, while still holding it, calls
+     * {@link SubTask#createExecutable} which for an {@link AbstractProject} calls the
+     * {@code synchronized} {@link AbstractProject#newBuild}. The two call chains take the same two
+     * locks in opposite order.
+     * <p>
+     * The "disable" side holds {@code synchronized (p)} directly rather than going through an
+     * actual HTTP config-form submission: {@code doConfigSubmit} is itself a plain
+     * {@code synchronized} instance method, so acquiring the same monitor by hand and then calling
+     * the real {@link ParameterizedJobMixIn#makeDisabled} reproduces the identical lock-acquisition
+     * shape without HtmlUnit's browser-side machinery in the way.
+     */
+    @Test
+    @Timeout(10)
+    void disablingProjectDoesNotDeadlockWithConcurrentQueueMaintenance() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+
+        CountDownLatch projectMonitorHeld = new CountDownLatch(1);
+        CountDownLatch queueLockHeld = new CountDownLatch(1);
+
+        Thread disablingThread = new Thread(() -> {
+            synchronized (p) { // what Job#doConfigSubmit does
+                projectMonitorHeld.countDown();
+                try {
+                    queueLockHeld.await();
+                    p.makeDisabled(true); // calls Queue#cancel, which needs Queue#lock
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+        }, "simulated doConfigSubmit disabling " + p.getName());
+
+        Thread executorThread = new Thread(() ->
+            Queue.callWithLock(() -> { // what Executor#run does to grab Queue#lock
+                queueLockHeld.countDown();
+                try {
+                    projectMonitorHeld.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+                try {
+                    return p.createExecutable(); // calls the synchronized AbstractProject#newBuild
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }), "simulated Executor building " + p.getName());
+
+        executorThread.setDaemon(true); // never leave a real deadlock holding up the JVM on failure
+        disablingThread.setDaemon(true);
+
+        executorThread.start();
+        disablingThread.start();
+
+        disablingThread.join(5000);
+        executorThread.join(5000);
+
+        if (disablingThread.isAlive() || executorThread.isAlive()) {
+            long[] deadlocked = ManagementFactory.getThreadMXBean().findDeadlockedThreads();
+            fail("disabling a project deadlocked against concurrent queue/executor build creation "
+                    + "(Queue#lock and the AbstractProject monitor acquired in opposite order); "
+                    + "JVM-reported deadlocked thread ids: " + Arrays.toString(deadlocked));
+        }
     }
 
     @Issue("JENKINS-33467")
