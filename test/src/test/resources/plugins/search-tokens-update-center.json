@@ -1,0 +1,438 @@
+updateCenter.post(
+{
+  "connectionCheckUrl": "https://www.google.com/",
+  "core": {
+    "buildDate": "Apr 02, 2024",
+    "name": "core",
+    "sha1": "9A9Qvg9sI2N4Qt0NiszJ7udaVuQ=",
+    "sha256": "H6DTwoJ/xGbK+LdH0Ct/cLxWvErCoXKAi8/je/9+cCw=",
+    "size": 93463429,
+    "url": "https://updates.jenkins.io/download/war/2.452/jenkins.war",
+    "version": "2.452"
+  },
+  "deprecations": {},
+  "id": "default",
+  "plugins": {
+    "authentication-tokens": {
+      "dependencies": [],
+      "excerpt": "This plugin provides an API for converting credentials into authentication tokens in Jenkins.",
+      "labels": [],
+      "name": "authentication-tokens",
+      "popularity": 162179,
+      "title": "Authentication Tokens API",
+      "url": "https://updates.jenkins.io/download/plugins/authentication-tokens/1.53.v1c90fd9191a_b_/authentication-tokens.hpi",
+      "version": "1.53.v1c90fd9191a_b_"
+    },
+    "bouncycastle-api": {
+      "dependencies": [],
+      "excerpt": "This plugin provides a stable API to Bouncy Castle related tasks.",
+      "labels": [
+        "api-plugin",
+        "library"
+      ],
+      "name": "bouncycastle-api",
+      "popularity": 291000,
+      "title": "bouncycastle API",
+      "url": "https://updates.jenkins.io/download/plugins/bouncycastle-api/2.30.1.77-225.v26ea_c9455fd9/bouncycastle-api.hpi",
+      "version": "2.30.1.77-225.v26ea_c9455fd9"
+    },
+    "build-timeout": {
+      "dependencies": [],
+      "excerpt": "This plugin allows you to automatically terminate a build if it&#39;s taking too long.",
+      "labels": [
+        "buildwrapper"
+      ],
+      "name": "build-timeout",
+      "popularity": 239187,
+      "title": "Build Timeout",
+      "url": "https://updates.jenkins.io/download/plugins/build-timeout/1.32/build-timeout.hpi",
+      "version": "1.32"
+    },
+    "build-token-root": {
+      "dependencies": [],
+      "excerpt": "Lets <code>build</code> and related REST build triggers be accessed even when anonymous users cannot see Jenkins.",
+      "labels": [
+        "trigger"
+      ],
+      "name": "build-token-root",
+      "popularity": 10971,
+      "title": "Build Authorization Token Root",
+      "url": "https://updates.jenkins.io/download/plugins/build-token-root/151.va_e52fe3215fc/build-token-root.hpi",
+      "version": "151.va_e52fe3215fc"
+    },
+    "build-token-trigger": {
+      "dependencies": [],
+      "excerpt": "This plugin provides a pipeline step to trigger a build using the <a href=\"https://plugins.jenkins.io/build-token-root\" target=\"_blank\" rel=\"nofollow noopener noreferrer\">Build Authorization Token Root</a> plugin",
+      "labels": [],
+      "name": "build-token-trigger",
+      "popularity": 2569,
+      "title": "Build Token Trigger",
+      "url": "https://updates.jenkins.io/download/plugins/build-token-trigger/1.0.0/build-token-trigger.hpi",
+      "version": "1.0.0"
+    },
+    "conditional-buildstep": {
+      "dependencies": [],
+      "excerpt": "A buildstep wrapping any number of other buildsteps, controlling their execution based on a defined condition (e.g. BuildParameter).",
+      "labels": [
+        "adopt-this-plugin",
+        "builder"
+      ],
+      "name": "conditional-buildstep",
+      "popularity": 66537,
+      "title": "Conditional BuildStep",
+      "url": "https://updates.jenkins.io/download/plugins/conditional-buildstep/1.4.3/conditional-buildstep.hpi",
+      "version": "1.4.3"
+    },
+    "jbpm-workflow-plugin": {
+      "dependencies": [],
+      "excerpt": "This plugin implements a <a href=\"http://www.jboss.org/jbpm\" target=\"_blank\" rel=\"nofollow noopener noreferrer\">jBPM</a> build step, which can be used to execute a test plan described by a business process.",
+      "labels": [
+        "external"
+      ],
+      "name": "jbpm-workflow-plugin",
+      "popularity": 40,
+      "title": "jBPM workflow",
+      "url": "https://updates.jenkins.io/download/plugins/jbpm-workflow-plugin/0.3/jbpm-workflow-plugin.hpi",
+      "version": "0.3"
+    },
+    "jjwt-api": {
+      "dependencies": [],
+      "excerpt": "Bundles the Java JSON Web Token (JJWT) library.",
+      "labels": [],
+      "name": "jjwt-api",
+      "popularity": 220237,
+      "title": "Java JSON Web Token (JJWT)",
+      "url": "https://updates.jenkins.io/download/plugins/jjwt-api/0.11.5-112.ve82dfb_224b_a_d/jjwt-api.hpi",
+      "version": "0.11.5-112.ve82dfb_224b_a_d"
+    },
+    "mailer": {
+      "dependencies": [],
+      "excerpt": "This plugin allows you to configure email notifications for build results.",
+      "labels": [
+        "builder",
+        "email"
+      ],
+      "name": "mailer",
+      "popularity": 292074,
+      "title": "Mailer",
+      "url": "https://updates.jenkins.io/download/plugins/mailer/472.vf7c289a_4b_420/mailer.hpi",
+      "version": "472.vf7c289a_4b_420"
+    },
+    "pipeline-build-step": {
+      "dependencies": [],
+      "excerpt": "Adds the Pipeline step <code>build</code> to trigger builds of other jobs.",
+      "labels": [
+        "misc"
+      ],
+      "name": "pipeline-build-step",
+      "popularity": 273277,
+      "title": "Pipeline: Build Step",
+      "url": "https://updates.jenkins.io/download/plugins/pipeline-build-step/540.vb_e8849e1a_b_d8/pipeline-build-step.hpi",
+      "version": "540.vb_e8849e1a_b_d8"
+    },
+    "pipeline-cps-http": {
+      "dependencies": [],
+      "excerpt": "",
+      "labels": [],
+      "name": "pipeline-cps-http",
+      "popularity": 1576,
+      "title": "Pipeline: Groovy HTTP",
+      "url": "https://updates.jenkins.io/download/plugins/pipeline-cps-http/0.3.1/pipeline-cps-http.hpi",
+      "version": "0.3.1"
+    },
+    "pipeline-github-lib": {
+      "dependencies": [],
+      "excerpt": "Allows Pipeline Groovy libraries to be loaded on the fly from GitHub.",
+      "labels": [
+        "github",
+        "pipeline"
+      ],
+      "name": "pipeline-github-lib",
+      "popularity": 219457,
+      "title": "Pipeline: GitHub Groovy Libraries",
+      "url": "https://updates.jenkins.io/download/plugins/pipeline-github-lib/42.v0739460cda_c4/pipeline-github-lib.hpi",
+      "version": "42.v0739460cda_c4"
+    },
+    "pipeline-global-lib-nexus": {
+      "dependencies": [],
+      "excerpt": "Shared libraries for Pipeline scripts via Nexus retrieval.",
+      "labels": [],
+      "name": "pipeline-global-lib-nexus",
+      "popularity": 965,
+      "title": "Pipeline: Shared Groovy Libraries through Nexus retrieval",
+      "url": "https://updates.jenkins.io/download/plugins/pipeline-global-lib-nexus/0.3.2/pipeline-global-lib-nexus.hpi",
+      "version": "0.3.2"
+    },
+    "pipeline-groovy-lib": {
+      "dependencies": [],
+      "excerpt": "Libraries for Pipeline scripts allowing logic to be shared across jobs.",
+      "labels": [
+        "library",
+        "pipeline"
+      ],
+      "name": "pipeline-groovy-lib",
+      "popularity": 209151,
+      "title": "Pipeline: Groovy Libraries",
+      "url": "https://updates.jenkins.io/download/plugins/pipeline-groovy-lib/704.vc58b_8890a_384/pipeline-groovy-lib.hpi",
+      "version": "704.vc58b_8890a_384"
+    },
+    "pipeline-input-step": {
+      "dependencies": [],
+      "excerpt": "Adds the Pipeline step <code>input</code> to wait for human input or approval.",
+      "labels": [
+        "misc"
+      ],
+      "name": "pipeline-input-step",
+      "popularity": 274638,
+      "title": "Pipeline: Input Step",
+      "url": "https://updates.jenkins.io/download/plugins/pipeline-input-step/491.vb_07d21da_1a_fb_/pipeline-input-step.hpi",
+      "version": "491.vb_07d21da_1a_fb_"
+    },
+    "pipeline-stage-step": {
+      "dependencies": [],
+      "excerpt": "Adds the Pipeline step <code>stage</code> to delineate portions of a build.",
+      "labels": [
+        "misc",
+        "pipeline"
+      ],
+      "name": "pipeline-stage-step",
+      "popularity": 275549,
+      "title": "Pipeline: Stage Step",
+      "url": "https://updates.jenkins.io/download/plugins/pipeline-stage-step/312.v8cd10304c27a_/pipeline-stage-step.hpi",
+      "version": "312.v8cd10304c27a_"
+    },
+    "rebuild": {
+      "dependencies": [],
+      "excerpt": "This plugin is for rebuilding a job using the same parameters.",
+      "labels": [
+        "misc"
+      ],
+      "name": "rebuild",
+      "popularity": 48945,
+      "title": "Rebuilder",
+      "url": "https://updates.jenkins.io/download/plugins/rebuild/332.va_1ee476d8f6d/rebuild.hpi",
+      "version": "332.va_1ee476d8f6d"
+    },
+    "scm-api": {
+      "dependencies": [],
+      "excerpt": "This plugin provides a new enhanced API for interacting with SCM systems.",
+      "labels": [
+        "api-plugin",
+        "scm"
+      ],
+      "name": "scm-api",
+      "popularity": 292012,
+      "title": "SCM API",
+      "url": "https://updates.jenkins.io/download/plugins/scm-api/689.v237b_6d3a_ef7f/scm-api.hpi",
+      "version": "689.v237b_6d3a_ef7f"
+    },
+    "script-security": {
+      "dependencies": [],
+      "excerpt": "Allows Jenkins administrators to control what in-process scripts can be run by less-privileged users.",
+      "labels": [
+        "api-plugin",
+        "security"
+      ],
+      "name": "script-security",
+      "popularity": 292841,
+      "title": "Script Security",
+      "url": "https://updates.jenkins.io/download/plugins/script-security/1326.vdb_c154de8669/script-security.hpi",
+      "version": "1326.vdb_c154de8669"
+    },
+    "ssh-credentials": {
+      "dependencies": [],
+      "excerpt": "Allows storage of SSH credentials in Jenkins",
+      "labels": [
+        "api-plugin",
+        "credentials"
+      ],
+      "name": "ssh-credentials",
+      "popularity": 291003,
+      "title": "SSH Credentials",
+      "url": "https://updates.jenkins.io/download/plugins/ssh-credentials/337.v395d2403ccd4/ssh-credentials.hpi",
+      "version": "337.v395d2403ccd4"
+    },
+    "ssh-slaves": {
+      "dependencies": [],
+      "excerpt": "Allows to launch agents over SSH, using a Java implementation of the SSH protocol.",
+      "labels": [
+        "agent",
+        "slaves"
+      ],
+      "name": "ssh-slaves",
+      "popularity": 259318,
+      "title": "SSH Build Agents",
+      "url": "https://updates.jenkins.io/download/plugins/ssh-slaves/2.948.vb_8050d697fec/ssh-slaves.hpi",
+      "version": "2.948.vb_8050d697fec"
+    },
+    "structs": {
+      "dependencies": [],
+      "excerpt": "Library plugin for DSL plugins that need names for Jenkins objects.",
+      "labels": [
+        "api-plugin"
+      ],
+      "name": "structs",
+      "popularity": 292321,
+      "title": "Structs",
+      "url": "https://updates.jenkins.io/download/plugins/structs/337.v1b_04ea_4df7c8/structs.hpi",
+      "version": "337.v1b_04ea_4df7c8"
+    },
+    "template-workflows": {
+      "dependencies": [],
+      "excerpt": "This plugin introduces templates for workflows (pipelines).",
+      "labels": [
+        "adopt-this-plugin",
+        "misc"
+      ],
+      "name": "template-workflows",
+      "popularity": 524,
+      "title": "Template Workflows",
+      "url": "https://updates.jenkins.io/download/plugins/template-workflows/41.v32d86a_313b_4a/template-workflows.hpi",
+      "version": "41.v32d86a_313b_4a"
+    },
+    "token-macro": {
+      "dependencies": [],
+      "excerpt": "This plug-in adds reusable macro expansion capability for other plug-ins to use.",
+      "labels": [],
+      "name": "token-macro",
+      "popularity": 283437,
+      "title": "Token Macro",
+      "url": "https://updates.jenkins.io/download/plugins/token-macro/400.v35420b_922dcb_/token-macro.hpi",
+      "version": "400.v35420b_922dcb_"
+    },
+    "workflow-api": {
+      "dependencies": [],
+      "excerpt": "Plugin that defines Pipeline API.",
+      "labels": [
+        "api-plugin",
+        "misc"
+      ],
+      "name": "workflow-api",
+      "popularity": 289695,
+      "title": "Pipeline: API",
+      "url": "https://updates.jenkins.io/download/plugins/workflow-api/1291.v51fd2a_625da_7/workflow-api.hpi",
+      "version": "1291.v51fd2a_625da_7"
+    },
+    "workflow-basic-steps": {
+      "dependencies": [],
+      "excerpt": "Commonly used steps for Pipelines.",
+      "labels": [
+        "misc",
+        "pipeline"
+      ],
+      "name": "workflow-basic-steps",
+      "popularity": 276194,
+      "title": "Pipeline: Basic Steps",
+      "url": "https://updates.jenkins.io/download/plugins/workflow-basic-steps/1049.v257a_e6b_30fb_d/workflow-basic-steps.hpi",
+      "version": "1049.v257a_e6b_30fb_d"
+    },
+    "workflow-cps": {
+      "dependencies": [],
+      "excerpt": "Pipeline execution engine based on continuation passing style transformation of Groovy scripts.",
+      "labels": [
+        "misc",
+        "pipeline"
+      ],
+      "name": "workflow-cps",
+      "popularity": 278997,
+      "title": "Pipeline: Groovy",
+      "url": "https://updates.jenkins.io/download/plugins/workflow-cps/3894.vd0f0248b_a_fc4/workflow-cps.hpi",
+      "version": "3894.vd0f0248b_a_fc4"
+    },
+    "workflow-cps-global-lib": {
+      "dependencies": [],
+      "excerpt": "Hosting of Pipeline Groovy libraries inside a Jenkins Git server. <strong>Deprecated</strong>. Use <a href=\"https://plugins.jenkins.io/pipeline-groovy-lib/\" target=\"_blank\" rel=\"nofollow noopener noreferrer\"><b>Pipeline: Groovy Libraries</b></a> instead. If you see this plugin installed just because you upgraded, you can probably uninstall it now. This plugin should only be used if you have historically <em>pushed</em> libraries to a Git server inside Jenkins.",
+      "labels": [
+        "deprecated",
+        "misc"
+      ],
+      "name": "workflow-cps-global-lib",
+      "popularity": 110623,
+      "title": "Pipeline: Deprecated Groovy Libraries",
+      "url": "https://updates.jenkins.io/download/plugins/workflow-cps-global-lib/612.v55f2f80781ef/workflow-cps-global-lib.hpi",
+      "version": "612.v55f2f80781ef"
+    },
+    "workflow-cps-global-lib-http": {
+      "dependencies": [],
+      "excerpt": "Shared libraries for Pipeline scripts via HTTP retrieval.",
+      "labels": [
+        "misc",
+        "pipeline"
+      ],
+      "name": "workflow-cps-global-lib-http",
+      "popularity": 3497,
+      "title": "Pipeline: Shared Groovy Libraries through HTTP retrieval",
+      "url": "https://updates.jenkins.io/download/plugins/workflow-cps-global-lib-http/2.48.0/workflow-cps-global-lib-http.hpi",
+      "version": "2.48.0"
+    },
+    "workflow-durable-task-step": {
+      "dependencies": [],
+      "excerpt": "Pipeline steps locking agents and workspaces, and running external processes that may survive a Jenkins restart or agent reconnection.",
+      "labels": [
+        "misc",
+        "pipeline"
+      ],
+      "name": "workflow-durable-task-step",
+      "popularity": 278482,
+      "title": "Pipeline: Nodes and Processes",
+      "url": "https://updates.jenkins.io/download/plugins/workflow-durable-task-step/1336.v768003e07199/workflow-durable-task-step.hpi",
+      "version": "1336.v768003e07199"
+    },
+    "workflow-job": {
+      "dependencies": [],
+      "excerpt": "Defines a new job type for pipelines and provides their generic user interface.",
+      "labels": [
+        "misc",
+        "pipeline"
+      ],
+      "name": "workflow-job",
+      "popularity": 281754,
+      "title": "Pipeline: Job",
+      "url": "https://updates.jenkins.io/download/plugins/workflow-job/1400.v7fd111b_ec82f/workflow-job.hpi",
+      "version": "1400.v7fd111b_ec82f"
+    },
+    "workflow-scm-step": {
+      "dependencies": [],
+      "excerpt": "Adds a Pipeline step to check out or update working sources from various SCMs (version control).",
+      "labels": [
+        "misc",
+        "scm",
+        "scm-related"
+      ],
+      "name": "workflow-scm-step",
+      "popularity": 289127,
+      "title": "Pipeline: SCM Step",
+      "url": "https://updates.jenkins.io/download/plugins/workflow-scm-step/427.v4ca_6512e7df1/workflow-scm-step.hpi",
+      "version": "427.v4ca_6512e7df1"
+    },
+    "workflow-step-api": {
+      "dependencies": [],
+      "excerpt": "API for asynchronous build step primitive.",
+      "labels": [
+        "api-plugin",
+        "misc"
+      ],
+      "name": "workflow-step-api",
+      "popularity": 291915,
+      "title": "Pipeline: Step API",
+      "url": "https://updates.jenkins.io/download/plugins/workflow-step-api/657.v03b_e8115821b_/workflow-step-api.hpi",
+      "version": "657.v03b_e8115821b_"
+    },
+    "workflow-support": {
+      "dependencies": [],
+      "excerpt": "Common utility implementations to build Pipeline Plugin",
+      "labels": [
+        "api-plugin",
+        "misc"
+      ],
+      "name": "workflow-support",
+      "popularity": 287671,
+      "title": "Pipeline: Supporting APIs",
+      "url": "https://updates.jenkins.io/download/plugins/workflow-support/896.v175a_a_9c5b_78f/workflow-support.hpi",
+      "version": "896.v175a_a_9c5b_78f"
+    }
+  },
+  "updateCenterVersion": "1",
+  "warnings": []
+}
+);
