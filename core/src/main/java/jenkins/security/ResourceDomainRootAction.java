@@ -150,9 +150,60 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         public void doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
             String restOfPath = req.getRestOfPath();
 
-            String url = Jenkins.get().getRootUrl() + this.url + restOfPath;
-            rsp.sendRedirect(302, url);
+            // Ensure url is a safe relative path (defense in depth against open redirect).
+            // The token is HMAC-signed so tampering is not expected, but be defensive here.
+            String safeUrl = sanitizeRedirectPath(this.url);
+            String safeRestOfPath = sanitizeRedirectPath(restOfPath);
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(Jenkins.get().getRootUrl());
+
+            if (!safeUrl.startsWith("/")) {
+                sb.append('/');
+            }
+            sb.append(safeUrl);
+
+            if (safeUrl.isEmpty() || safeUrl.charAt(safeUrl.length() - 1) != '/') {
+                sb.append('/');
+            }
+            if (safeRestOfPath.startsWith("/")) {
+                sb.append(safeRestOfPath.substring(1));
+            } else {
+                sb.append(safeRestOfPath);
+            }
+
+            rsp.sendRedirect(302, sb.toString());
         }
+    }
+
+    /**
+     * Sanitize a path component used for redirects or internal dispatch.
+     * Ensures the path is a relative path and does not start with // (which would
+     * create a protocol-relative URL when prefixed with a scheme+host).
+     * Blocks paths containing URL schemes (://) which could enable open redirects.
+     */
+    private static String sanitizeRedirectPath(String path) {
+        if (path == null) {
+            return "";
+        }
+        String sanitized = path;
+        // Strip any URL scheme that could cause open redirects
+        int schemeIdx = sanitized.indexOf("://");
+        if (schemeIdx >= 0) {
+            sanitized = sanitized.substring(schemeIdx + 3);
+            // After stripping scheme, skip the host portion if present
+            int nextSlash = sanitized.indexOf('/');
+            if (nextSlash >= 0) {
+                sanitized = sanitized.substring(nextSlash);
+            } else {
+                sanitized = "";
+            }
+        }
+        // Prevent protocol-relative URLs (//evil.com/...)
+        while (sanitized.startsWith("//")) {
+            sanitized = sanitized.substring(1);
+        }
+        return sanitized;
     }
 
     public String getRedirectUrl(@NonNull Token token, @NonNull String restOfPath) {
@@ -186,7 +237,21 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         final String completeUrl = req.getAncestors().getFirst().getRestOfUrl();
 
         // And finally, remove the 'restOfPath' suffix from the complete URL, as that's the path from Jenkins to the DBS.
-        String dbsUrl = completeUrl.substring(0, completeUrl.length() - dbsFile.length());
+        // Defensive boundary checks to prevent IndexOutOfBoundsException on unexpected paths.
+        String dbsUrl;
+        if (completeUrl == null || dbsFile == null || completeUrl.length() < dbsFile.length()) {
+            LOGGER.log(Level.WARNING, "Cannot determine DBS URL: completeUrl='" + completeUrl + "', dbsFile='" + dbsFile + "'");
+            return null;
+        }
+        dbsUrl = completeUrl.substring(0, completeUrl.length() - dbsFile.length());
+
+        // Security: ensure dbsUrl is a safe relative path, not an absolute URL or protocol-relative URL
+        // that could be abused for open redirect if the token HMAC were somehow broken.
+        if (dbsUrl.contains("://") || dbsUrl.startsWith("//")) {
+            LOGGER.log(Level.WARNING, "Refusing to create token with unsafe DBS URL: " + dbsUrl);
+            return null;
+        }
+
         LOGGER.fine(() -> "Determined DBS URL: " + dbsUrl + " from restOfUrl: " + completeUrl + " and restOfPath: " + dbsFile);
 
         Authentication authentication = Jenkins.getAuthentication2();
@@ -215,9 +280,11 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         public void doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
             String restOfPath = req.getRestOfPath();
 
-            String requestUrlSuffix = this.browserUrl;
+            // Sanitize browser URL from token -- defense in depth against open redirect
+            // and path traversal (the token is HMAC-signed but validate anyway).
+            String safeBrowserUrl = sanitizeRedirectPath(this.browserUrl);
 
-            LOGGER.fine(() -> "Performing a request as authentication: " + authenticationName + " and restOfUrl: " + requestUrlSuffix + " and restOfPath: " + restOfPath);
+            LOGGER.fine(() -> "Performing a request as authentication: " + authenticationName + " and restOfUrl: " + safeBrowserUrl + " and restOfPath: " + restOfPath);
 
             Authentication auth = Jenkins.ANONYMOUS2;
             if (Util.fixEmpty(authenticationName) != null) {
@@ -236,7 +303,38 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
             try (ACLContext ignored = ACL.as2(auth)) {
                 try {
-                    String path = requestUrlSuffix + Arrays.stream(restOfPath.split("[/]")).map(Util::rawEncode).collect(Collectors.joining("/"));
+                    // Construct a safe path for Stapler dispatch.
+                    // Ensure safeBrowserUrl starts with "/" and handle trailing slash properly.
+                    StringBuilder pathBuilder = new StringBuilder();
+                    if (!safeBrowserUrl.startsWith("/")) {
+                        pathBuilder.append('/');
+                    }
+                    pathBuilder.append(safeBrowserUrl);
+
+                    // Normalize restOfPath (from URL) -- split, encode each segment, join
+                    String encodedRestOfPath = Arrays.stream(restOfPath.split("[/]"))
+                            .map(Util::rawEncode)
+                            .collect(Collectors.joining("/"));
+
+                    if (!encodedRestOfPath.isEmpty()) {
+                        if (pathBuilder.length() > 0 && pathBuilder.charAt(pathBuilder.length() - 1) != '/') {
+                            pathBuilder.append('/');
+                        }
+                        if (encodedRestOfPath.startsWith("/")) {
+                            pathBuilder.append(encodedRestOfPath.substring(1));
+                        } else {
+                            pathBuilder.append(encodedRestOfPath);
+                        }
+                    }
+
+                    String path = pathBuilder.toString();
+                    // Prevent path traversal: ensure path does not contain ".." segments
+                    if (Arrays.stream(path.split("[/]")).anyMatch(".."::equals)) {
+                        LOGGER.log(Level.FINE, "Path traversal attempt blocked: " + path);
+                        rsp.sendError(400);
+                        return;
+                    }
+
                     Stapler.getCurrent().invoke(req, rsp, Jenkins.get(), path);
                 } catch (Exception ex) {
                     // cf. UnwrapSecurityExceptionFilter
