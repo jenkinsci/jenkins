@@ -228,7 +228,7 @@ public class Security3657Test {
         extractFilePath.mkdirs();
         final IOException ioException = assertThrows(IOException.class, () -> symlinkTarFile.untar(extractFilePath, FilePath.TarCompression.NONE));
         assertThat(ioException.getMessage(), containsString("Failed to extract crafted.tar"));
-        assertThat(ioException.getCause().getMessage(), containsString("Tar crafted.tar attempts to write to file with symlink in path: link-file/bar/"));
+        assertThat(ioException.getCause().getMessage(), containsString("Tar crafted.tar attempts to write to file with symlink in path (during initial ancestor check): link-file/bar/"));
         assertFalse(Files.isDirectory(root.toPath().resolve("bar")));
     }
 
@@ -309,7 +309,7 @@ public class Security3657Test {
         extractFilePath.mkdirs();
         final IOException ioException = assertThrows(IOException.class, () -> symlinkTarFile.untar(extractFilePath, FilePath.TarCompression.NONE));
         assertThat(ioException.getMessage(), containsString("Failed to extract crafted.tar"));
-        assertThat(ioException.getCause().getMessage(), containsString("Tar crafted.tar attempts to write to file with symlink in path: link-file/bar/"));
+        assertThat(ioException.getCause().getMessage(), containsString("Tar crafted.tar attempts to write to file with symlink in path (during initial ancestor check): link-file/bar/"));
         assertFalse(Files.isDirectory(relativeRoot.toPath().resolve("bar")));
     }
 

@@ -27,6 +27,7 @@ package hudson.util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.ConverterLookup;
@@ -41,6 +42,9 @@ import com.thoughtworks.xstream.converters.extended.DynamicProxyConverter;
 import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
 import com.thoughtworks.xstream.core.ClassLoaderReference;
 import com.thoughtworks.xstream.core.JVM;
+import com.thoughtworks.xstream.core.ReferenceByXPathMarshallingStrategy;
+import com.thoughtworks.xstream.core.ReferenceByXPathUnmarshaller;
+import com.thoughtworks.xstream.core.TreeUnmarshaller;
 import com.thoughtworks.xstream.core.util.Fields;
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
@@ -51,6 +55,10 @@ import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 import com.thoughtworks.xstream.security.AnyTypePermission;
+import com.thoughtworks.xstream.security.ForbiddenClassException;
+import com.thoughtworks.xstream.security.InterfaceTypePermission;
+import com.thoughtworks.xstream.security.NoTypePermission;
+import com.thoughtworks.xstream.security.NullPermission;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -58,7 +66,10 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.XmlFile;
 import hudson.diagnosis.OldDataMonitor;
+import hudson.model.JobProperty;
 import hudson.model.Label;
+import hudson.model.Node;
+import hudson.model.PersistenceRoot;
 import hudson.model.Result;
 import hudson.model.Saveable;
 import hudson.remoting.ClassFilter;
@@ -85,6 +96,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
+import jenkins.util.xstream.CriticalXStreamException;
 import jenkins.util.xstream.SafeURLConverter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -96,6 +108,10 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class XStream2 extends XStream {
 
     private static final Logger LOGGER = Logger.getLogger(XStream2.class.getName());
+
+    @Restricted(NoExternalUse.class)
+    static /* non-final for tests */ boolean DISABLE_PERSISTENCE_ROOT_GUARDING_UNMARSHALLING_STRATEGY = SystemProperties.getBoolean(XStream2.class.getName() + ".DISABLE_PERSISTENCE_ROOT_GUARDING_UNMARSHALLING_STRATEGY");
+
     /**
      * Determine what is the value (in seconds) of the "collectionUpdateLimit" added by XStream
      * to protect against <a href="http://x-stream.github.io/CVE-2021-43859.html">CVE-2021-43859</a>.
@@ -107,6 +123,20 @@ public class XStream2 extends XStream {
     @Restricted(NoExternalUse.class)
     public static final String COLLECTION_UPDATE_LIMIT_PROPERTY_NAME = XStream2.class.getName() + ".collectionUpdateLimit";
     private static final int COLLECTION_UPDATE_LIMIT_DEFAULT_VALUE = 5;
+
+    /**
+     * Escape hatch: set {@code hudson.util.XStream2.SUPPRESS_TYPE_PERMISSION=true} to restore the
+     * pre-SECURITY-4125 behaviour of allowing all types through XStream's TypePermission layer.
+     * The {@link RobustReflectionConverter} {@code resolves-to} check introduced by SECURITY-4125
+     * remains active regardless of this flag and provides a second layer of defence.
+     *
+     * <p>This flag is evaluated once at {@code XStream2} construction time; changing the system
+     * property after the JVM has started has no effect on existing instances (including
+     * {@code Jenkins.XSTREAM2}).  A full restart is required for this escape hatch to take effect.
+     */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @Restricted(NoExternalUse.class)
+    public static /* non-final for tests */ boolean SUPPRESS_TYPE_PERMISSION = SystemProperties.getBoolean(XStream2.class.getName() + ".SUPPRESS_TYPE_PERMISSION");
 
     private RobustReflectionConverter reflectionConverter;
     private final ThreadLocal<Boolean> oldData = new ThreadLocal<>();
@@ -310,6 +340,10 @@ public class XStream2 extends XStream {
         // http://www.openwall.com/lists/oss-security/2017/04/03/4
         denyTypes(new Class[] { void.class, Void.class });
 
+        if (!DISABLE_PERSISTENCE_ROOT_GUARDING_UNMARSHALLING_STRATEGY) {
+            setMarshallingStrategy(new PersistenceRootGuardingMarshallingStrategy());
+        }
+
         registerConverter(new RobustCollectionConverter(getMapper(), getReflectionProvider()), 10);
         registerConverter(new RobustMapConverter(getMapper()), 10);
         registerConverter(new ImmutableMapConverter(getMapper(), getReflectionProvider()), 10);
@@ -327,7 +361,22 @@ public class XStream2 extends XStream {
         registerConverter(new AssociatedConverterImpl(this), -10);
 
         registerConverter(new BlacklistedTypesConverter(), PRIORITY_VERY_HIGH); // SECURITY-247 defense
-        addPermission(AnyTypePermission.ANY); // covered by JEP-200, avoid securityWarningGiven
+        if (SUPPRESS_TYPE_PERMISSION) {
+            addPermission(AnyTypePermission.ANY); // covered by JEP-200, avoid securityWarningGiven
+        } else {
+            addPermission(NoTypePermission.NONE);
+            addPermission(type -> {
+                // TODO What about abstract classes?
+                String typeName = type.getName();
+                if (ClassFilter.DEFAULT.isBlacklisted(typeName) || ClassFilter.DEFAULT.isBlacklisted(type)) {
+                    throw new CriticalXStreamException(new ForbiddenClassException(type));
+                }
+                // Allow anything allowed by ClassFilter, we still apply Converter-based restrictions
+                return true;
+            });
+            addPermission(NullPermission.NULL);
+            addPermission(InterfaceTypePermission.INTERFACES);
+        }
 
         registerConverter(new DynamicProxyConverter(getMapper(), new ClassLoaderReference(getClassLoader())) { // SECURITY-105 defense
             @Override public boolean canConvert(Class type) {
@@ -651,6 +700,80 @@ public class XStream2 extends XStream {
             String name = type.getName();
             // claim we can convert all the scary stuff so we can throw exceptions when attempting to do so
             return ClassFilter.DEFAULT.isBlacklisted(name) || ClassFilter.DEFAULT.isBlacklisted(type);
+        }
+    }
+
+    /**
+     * The stock XStream marshalling strategy, except that its unmarshaller refuses to construct a
+     * {@link PersistenceRoot} subtype anywhere but at the document root.
+     * See also {@code hudson.util.RobustReflectionConverter#isSafePersistenceRootReference(com.thoughtworks.xstream.io.HierarchicalStreamReader, Class)}.
+     */
+    private static final class PersistenceRootGuardingMarshallingStrategy extends ReferenceByXPathMarshallingStrategy {
+        PersistenceRootGuardingMarshallingStrategy() {
+            super(RELATIVE);
+        }
+
+        @Override
+        protected TreeUnmarshaller createUnmarshallingContext(Object root, HierarchicalStreamReader reader, ConverterLookup converterLookup, Mapper mapper) {
+            return new ReferenceByXPathUnmarshaller(root, reader, converterLookup, mapper) {
+                private int depth;
+
+                @Override
+                protected Object convert(Object parent, Class type, Converter converter) {
+                    if (depth > 0) {
+                        // Cf. RobustReflectionConverter#instantiateNewInstance
+                        Class effectiveType = resolvedType(type);
+                        if (effectiveType != null && PersistenceRoot.class.isAssignableFrom(effectiveType)
+                                // JobProperty as a workaround for promoted-builds plugin's `JobPropertyImpl` being both
+                                && !JobProperty.class.isAssignableFrom(effectiveType) && !isSafePersistenceRootReference(effectiveType, converter)) {
+                            final String msg = "Refusing to unmarshal PersistenceRoot subtype '" + effectiveType.getName() + "' nested in '"
+                                    + getRequiredType().getName() + "' as element '" + reader.getNodeName()
+                                    + "'. PersistenceRoot objects are document roots and must not appear as nested values.";
+                            LOGGER.log(Level.WARNING, msg);
+                            throw new CriticalXStreamException(new XStreamException(msg));
+                        }
+                    }
+                    depth++;
+                    try {
+                        return super.convert(parent, type, converter);
+                    } finally {
+                        depth--;
+                    }
+                }
+
+                private Class resolvedType(Class type) {
+                    String resolvesToAttr = reader.getAttribute(getMapper().aliasForSystemAttribute("resolves-to"));
+                    if (resolvesToAttr != null) {
+                        try {
+                            return getMapper().realClass(resolvesToAttr);
+                        } catch (Exception ignored) {
+                            // unresolvable class name — not a PersistenceRoot
+                        }
+                    }
+                    return type;
+                }
+
+                private boolean isSafePersistenceRootReference(Class type, Converter converter) {
+                    if (reader.getAttribute(getMapper().aliasForSystemAttribute("reference")) != null) {
+                        return true;
+                    }
+                    if (converter instanceof SingleValueConverter) {
+                        return true;
+                    }
+                    String resolvesTo = reader.getAttribute(getMapper().aliasForSystemAttribute("resolves-to"));
+                    if (resolvesTo != null) {
+                        try {
+                            return !PersistenceRoot.class.isAssignableFrom(getMapper().realClass(resolvesTo));
+                        } catch (Exception e) {
+                            return false;
+                        }
+                    }
+                    // legacy Jenkins#slaves inlined in the root config.xml, migrated to Nodes right after Jenkins#load;
+                    // that is the only unmarshalling into the Jenkins singleton, so this is not reachable from user input
+                    // TODO Remove support for this
+                    return root instanceof Jenkins && Node.class.isAssignableFrom(type);
+                }
+            };
         }
     }
 }
