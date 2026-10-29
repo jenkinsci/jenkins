@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -41,9 +42,12 @@ import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import hudson.Functions;
+import hudson.model.PersistenceRoot;
 import hudson.model.Result;
 import hudson.model.Run;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -55,6 +59,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.util.xstream.CriticalXStreamException;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -639,6 +644,113 @@ class XStream2Test {
         } catch (RuntimeException x) {
             assertThat("cause is com.thoughtworks.xstream.io.StreamException: Invalid character 0x0 in XML stream", Functions.printThrowable(x), containsString("0x0"));
         }
+    }
+
+    @Issue("SECURITY-4243")
+    @Test
+    void deserializeRootInsideField() throws Exception {
+        String xml = "<hudson.util.XStream2Test_-Root><wrapped><anotherRoot class=\"hudson.util.XStream2Test$AnotherRoot\"/></wrapped></hudson.util.XStream2Test_-Root>";
+        assertThrows(CriticalXStreamException.class, () -> new XStream2().fromXML(xml));
+    }
+
+    @Issue("SECURITY-4243")
+    @Test
+    void deserializeRootOutsideField() throws Exception {
+        String xml = "<hudson.util.XStream2Test_-Root><hudson.util.XStream2Test_-AnotherRoot/><wrapped><anotherRoot reference=\"../../hudson.util.XStream2Test$AnotherRoot\"/></wrapped></hudson.util.XStream2Test_-Root>";
+        assertThrows(CriticalXStreamException.class, () -> new XStream2().fromXML(xml));
+    }
+
+    static class Root implements PersistenceRoot {
+        private Wrapped wrapped;
+
+        @Override
+        public File getRootDir() {
+            return null;
+        }
+
+        @Override
+        public void save() throws IOException {
+        }
+    }
+
+    static class AnotherRoot implements PersistenceRoot {
+        private String fullName;
+
+        @Override
+        public File getRootDir() {
+            return null;
+        }
+
+        @Override
+        public void save() throws IOException {
+        }
+    }
+
+    static class Wrapped {
+        private AnotherRoot anotherRoot;
+    }
+
+    @Issue("SECURITY-4267")
+    @Test
+    void incompatibleSingleValueConverterClassAttributeBlockedByFieldGuard() throws Exception {
+        boolean before = XStream2.DISABLE_PERSISTENCE_ROOT_GUARDING_UNMARSHALLING_STRATEGY;
+        try {
+            XStream2.DISABLE_PERSISTENCE_ROOT_GUARDING_UNMARSHALLING_STRATEGY = true;
+            var xs = new XStream2();
+
+            String xml = "<hudson.util.XStream2Test_-Wrapped>"
+                    + "<anotherRoot class=\"java.lang.String\"/>"
+                    + "</hudson.util.XStream2Test_-Wrapped>";
+
+            final CriticalXStreamException ex = assertThrows(CriticalXStreamException.class, () -> xs.fromXML(xml));
+            assertThat(ex.getMessage(), containsString(
+                    "Refusing to unmarshal PersistenceRoot subtype 'hudson.util.XStream2Test$AnotherRoot' into field 'anotherRoot'"));
+        } finally {
+            XStream2.DISABLE_PERSISTENCE_ROOT_GUARDING_UNMARSHALLING_STRATEGY = before;
+        }
+    }
+
+    @Issue("SECURITY-4267")
+    @Test
+    void incompatibleClassAttributeWithChildElementsStillBlockedByFieldGuard() {
+        boolean before = XStream2.DISABLE_PERSISTENCE_ROOT_GUARDING_UNMARSHALLING_STRATEGY;
+        try {
+            XStream2.DISABLE_PERSISTENCE_ROOT_GUARDING_UNMARSHALLING_STRATEGY = true;
+            var xs = new XStream2();
+
+            String xml = "<hudson.util.XStream2Test_-Wrapped>"
+                    + "<anotherRoot class=\"java.lang.String\">"
+                    + "<fullName>ghost</fullName>"
+                    + "</anotherRoot>"
+                    + "</hudson.util.XStream2Test_-Wrapped>";
+
+            final CriticalXStreamException ex = assertThrows(CriticalXStreamException.class, () -> xs.fromXML(xml));
+            assertThat(ex.getMessage(), containsString(
+                    "Refusing to unmarshal PersistenceRoot subtype 'hudson.util.XStream2Test$AnotherRoot' into field 'anotherRoot'"));
+        } finally {
+            XStream2.DISABLE_PERSISTENCE_ROOT_GUARDING_UNMARSHALLING_STRATEGY = before;
+        }
+    }
+
+    @Issue("SECURITY-4243")
+    @Test
+    void resolvesToPersistenceRootAsUnknownChildBlockedByMarshallingStrategy() {
+        String xml = "<hudson.util.XStream2Test_-Wrapped>"
+                + "<hudson.util.XStream2Test_-Wrapped resolves-to=\"hudson.util.XStream2Test$AnotherRoot\"/>"
+                + "</hudson.util.XStream2Test_-Wrapped>";
+        assertThrows(CriticalXStreamException.class, () -> new XStream2().fromXML(xml));
+    }
+
+    @Issue("SECURITY-4243")
+    @Test
+    void classAttributePersistenceRootIgnoredWhenResolvesToIsNonPersistenceRoot() {
+        // Copilot thought this was a problem but isn't.
+        String xml = "<list>"
+                + "<hudson.util.XStream2Test_-Wrapped"
+                + " class=\"hudson.util.XStream2Test$AnotherRoot\""
+                + " resolves-to=\"hudson.util.XStream2Test_-Wrapped\"/>"
+                + "</list>";
+        assertDoesNotThrow(() -> new XStream2().fromXML(xml));
     }
 
 }

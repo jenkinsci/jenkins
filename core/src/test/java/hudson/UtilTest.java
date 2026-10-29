@@ -306,6 +306,60 @@ class UtilTest {
     }
 
     @Test
+    @Issue("SECURITY-4248")
+    void createSymlinkStrictRefusesToReplaceExistingDirectory() throws Exception {
+        assumeFalse(Functions.isWindows());
+        var d = tmp;
+        var subdir = new File(d, "subdir");
+        assertTrue(subdir.mkdir());
+
+        assertThrows(IOException.class, () -> Util.createSymlinkStrict(d, "/tmp/evil", "subdir", TaskListener.NULL));
+
+        assertFalse(Util.isSymlink(subdir));
+        assertTrue(subdir.isDirectory());
+    }
+
+    @Test
+    @Issue("SECURITY-4248")
+    void createSymlinkStrictRefusesToReplaceExistingFile() throws Exception {
+        assumeFalse(Functions.isWindows());
+        var d = tmp;
+        var file = new File(d, "existing");
+        Files.writeString(file.toPath(), "original");
+
+        assertThrows(IOException.class, () -> Util.createSymlinkStrict(d, "/tmp/evil", "existing", TaskListener.NULL));
+
+        assertFalse(Util.isSymlink(file));
+        assertEquals("original", Files.readString(file.toPath()));
+    }
+
+    @Test
+    @Issue("SECURITY-4248")
+    void createSymlinkStrictSkipsIdenticalSymlink() throws Exception {
+        assumeFalse(Functions.isWindows());
+        var d = tmp;
+        Util.createSymlinkStrict(d, "target", "link", TaskListener.NULL);
+        assertEquals("target", Util.resolveSymlink(new File(d, "link")));
+
+        Util.createSymlinkStrict(d, "target", "link", TaskListener.NULL);
+
+        assertEquals("target", Util.resolveSymlink(new File(d, "link")));
+    }
+
+    @Test
+    @Issue("SECURITY-4248")
+    void createSymlinkStrictRefusesToReplaceDifferentSymlink() throws Exception {
+        assumeFalse(Functions.isWindows());
+        var d = tmp;
+        Util.createSymlinkStrict(d, "old-target", "link", TaskListener.NULL);
+        assertEquals("old-target", Util.resolveSymlink(new File(d, "link")));
+
+        assertThrows(IOException.class, () -> Util.createSymlinkStrict(d, "new-target", "link", TaskListener.NULL));
+
+        assertEquals("old-target", Util.resolveSymlink(new File(d, "link")));
+    }
+
+    @Test
     void testIsSymlink_onWindows_junction() throws Exception {
         assumeTrue(Functions.isWindows(), "Uses Windows-specific features");
         File targetDir = newFolder(tmp, "targetDir");
