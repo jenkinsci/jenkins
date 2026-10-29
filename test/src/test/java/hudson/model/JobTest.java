@@ -174,6 +174,23 @@ class JobTest {
         assertEquals(String.valueOf(assigned.get() + 1), p.getNextBuildNumberFile().readTrim());
     }
 
+    @Test
+    void renameRefusedWhileBuildIsBeingCreated() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("before");
+        // Models an executor inside LazyBuildMixIn#newBuild, after the build resolved its directory.
+        p.beginBuildCreation();
+        try {
+            Failure failure = assertThrows(Failure.class, () -> p.renameTo("after"));
+            assertEquals(Messages.Job_NoRenameWhileBuilding(), failure.getMessage());
+            assertEquals("before", p.getName());
+        } finally {
+            p.endBuildCreation();
+        }
+        p.renameTo("after");
+        assertEquals("after", p.getName());
+        j.buildAndAssertSuccess(p);
+    }
+
     @TestExtension("renameWaitsForInFlightBuildNumberAssignment")
     public static final class BlockingBuildNumberAssigner implements Job.BuildNumberAssigner {
         final CountDownLatch entered = new CountDownLatch(1);
