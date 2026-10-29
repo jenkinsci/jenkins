@@ -56,6 +56,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
@@ -390,8 +391,8 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
                 // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
                 Items.verifyItemDoesNotAlreadyExist(parent, newName, this);
 
-                // Kept to the directory move only: the fallback copy below overwrites, so nothing may
-                // write into either root directory meanwhile, and no parent/plugin code may run here.
+                // Kept to the directory move only: anything written into the new root before the move makes it
+                // fail (or, on Windows, be overwritten by the fallback copy), and no parent/plugin code may run here.
                 synchronized (getRenameLock()) {
                     File oldRoot = this.getRootDir();
 
@@ -409,21 +410,28 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
                         // accessing a file.
                         // so retry few times before we fall back to copy.
                         for (int retry = 0; retry < 5; retry++) {
-                            if (oldRoot.renameTo(newRoot)) {
-                                renamed = true;
-                                break; // succeeded
-                            }
                             try {
-                                Thread.sleep(500);
-                            } catch (InterruptedException e) {
-                                // process the interruption later
-                                interrupted = true;
+                                Files.move(Util.fileToPath(oldRoot), Util.fileToPath(newRoot));
+                                renamed = true;
+                                break;
+                            } catch (java.nio.file.AccessDeniedException e) { // use FQN as we already imported one from spring here.
+                                if (!Functions.isWindows()) {
+                                    throw e;
+                                }
+                                try {
+                                    Thread.sleep(500);
+                                } catch (InterruptedException ie) {
+                                    // process the interruption later
+                                    interrupted = true;
+                                }
                             }
                         }
 
                         if (interrupted)
                             Thread.currentThread().interrupt();
 
+                        // Since changing the renaming api from java.io.File#renameTo to java.nio.file.Files#move,
+                        // no failure in Unix is retryable, control can only reach here on Windows.
                         if (!renamed) {
                             // failed to rename. it must be that some lengthy
                             // process is going on
@@ -433,6 +441,20 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
                             // so, as before the VM
                             // shuts down there might be a new job created under the
                             // old name.
+
+                            // [SECURITY-4187] Refuse to copy if the directory contains symlinks,
+                            // as the Ant Copy task dereferences them into regular files.
+                            // As mentioned above, this only happens on Windows on rare occasion, so this is fine.
+                            try (var stream = Files.walk(Util.fileToPath(oldRoot))) {
+                                if (stream.anyMatch(Files::isSymbolicLink)) {
+                                    throw new IOException("""
+                                            Rename of %s failed, possibly because another process has files \
+                                            open in the directory. Cannot fall back to recursive-copy for security reasons \
+                                            because the directory contains symbolic links. Retry may succeed \
+                                            once the other process releases its lock.""".formatted(oldRoot));
+                                }
+                            }
+
                             Copy cp = new Copy();
                             cp.setProject(new Project());
                             cp.setTodir(newRoot);

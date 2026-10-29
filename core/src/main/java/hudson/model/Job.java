@@ -779,7 +779,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Build-number assignment writes {@code nextBuildNumber} into the root directory under
      * {@link #nextBuildNumberLock} rather than this job's monitor, so a rename must also hold that
-     * lock while moving the directory, or its fallback copy could overwrite a freshly saved number.
+     * lock while moving the directory, or a number saved into the new root first would make the move
+     * fail (or, on Windows, be overwritten by the fallback copy).
      */
     @Override
     Object getRenameLock() {
