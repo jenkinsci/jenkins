@@ -85,7 +85,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -328,30 +327,16 @@ public class ProjectTest {
     void deferredCancelSkipsBuildQueuedAfterReEnable() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
-        // jenkins.util.Timer is a fixed pool of 10 threads; occupy all of them so the deferred cancel
-        // dispatched by makeDisabled(true) cannot run until after the project is re-enabled.
-        int timerThreads = 10;
-        CountDownLatch parked = new CountDownLatch(timerThreads);
-        CountDownLatch release = new CountDownLatch(1);
-        for (int i = 0; i < timerThreads; i++) {
-            Timer.get().execute(() -> {
-                parked.countDown();
-                try {
-                    release.await();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            });
-        }
-        try {
-            assertTrue(parked.await(30, TimeUnit.SECONDS), "Timer threads did not all become busy");
+        // The deferred cancel needs Queue#lock, so holding it here keeps that cancel from running until after
+        // the re-enable, however many Timer threads are free.
+        Queue.runWithLock(() -> {
             p.makeDisabled(true);
             p.makeDisabled(false);
             assertNotNull(p.scheduleBuild2(0));
-        } finally {
-            release.countDown();
-        }
-        // All 10 threads can only meet at this barrier once nothing else, including the cancel, is running.
+        });
+        // jenkins.util.Timer is a fixed pool of 10 threads, which can only all meet at this barrier once
+        // the cancel (queued before them) has finished.
+        int timerThreads = 10;
         CyclicBarrier drained = new CyclicBarrier(timerThreads + 1);
         for (int i = 0; i < timerThreads; i++) {
             Timer.get().execute(() -> {
