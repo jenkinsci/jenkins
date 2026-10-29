@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -176,19 +177,93 @@ class JobTest {
 
     @Test
     void renameRefusedWhileBuildIsBeingCreated() throws Exception {
-        FreeStyleProject p = j.createFreeStyleProject("before");
-        // Models an executor inside LazyBuildMixIn#newBuild, after the build resolved its directory.
-        p.beginBuildCreation();
+        PausingProject p = j.createProject(PausingProject.class, "before");
+        PausingBuild.entered = new CountDownLatch(1);
+        PausingBuild.release = new CountDownLatch(1);
+        AtomicReference<Throwable> creationError = new AtomicReference<>();
+        Thread creating = new Thread(() -> {
+            try {
+                p.newBuild();
+            } catch (Throwable t) {
+                creationError.set(t);
+            }
+        }, "creating");
+        creating.setDaemon(true);
         try {
+            creating.start();
+            // The build has its number (the build-number lock is free again) but is still inside newBuild().
+            assertTrue(PausingBuild.entered.await(30, TimeUnit.SECONDS), "build constructor was not reached");
             Failure failure = assertThrows(Failure.class, () -> p.renameTo("after"));
             assertEquals(Messages.Job_NoRenameWhileBuilding(), failure.getMessage());
             assertEquals("before", p.getName());
+            PausingBuild.release.countDown();
+            creating.join(30_000);
+            assertNull(creationError.get());
+            p.renameTo("after");
+            assertEquals("after", p.getName());
+
+            // A failed creation must not leave the job permanently unrenamable.
+            PausingBuild.failNext = true;
+            assertThrows(IOException.class, p::newBuild);
+            p.renameTo("again");
+            assertEquals("again", p.getName());
         } finally {
-            p.endBuildCreation();
+            PausingBuild.release.countDown();
+            PausingBuild.entered = null;
+            PausingBuild.release = null;
+            PausingBuild.failNext = false;
         }
-        p.renameTo("after");
-        assertEquals("after", p.getName());
-        j.buildAndAssertSuccess(p);
+    }
+
+    public static class PausingBuild extends Build<PausingProject, PausingBuild> {
+        static volatile CountDownLatch entered;
+        static volatile CountDownLatch release;
+        static volatile boolean failNext;
+
+        @SuppressWarnings("checkstyle:redundantmodifier")
+        public PausingBuild(PausingProject job) throws IOException {
+            super(job);
+            if (failNext) {
+                failNext = false;
+                throw new IOException("simulated build creation failure");
+            }
+            CountDownLatch e = entered;
+            CountDownLatch r = release;
+            if (e != null && r != null) {
+                e.countDown();
+                try {
+                    r.await();
+                } catch (InterruptedException x) {
+                    Thread.currentThread().interrupt();
+                    throw new IOException(x);
+                }
+            }
+        }
+    }
+
+    public static class PausingProject extends Project<PausingProject, PausingBuild> implements TopLevelItem {
+        @SuppressWarnings("checkstyle:redundantmodifier")
+        public PausingProject(ItemGroup parent, String name) {
+            super(parent, name);
+        }
+
+        @Override
+        protected Class<PausingBuild> getBuildClass() {
+            return PausingBuild.class;
+        }
+
+        @Override
+        public TopLevelItemDescriptor getDescriptor() {
+            return (TopLevelItemDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
+        }
+
+        @TestExtension("renameRefusedWhileBuildIsBeingCreated")
+        public static class DescriptorImpl extends AbstractProjectDescriptor {
+            @Override
+            public PausingProject newInstance(ItemGroup parent, String name) {
+                return new PausingProject(parent, name);
+            }
+        }
     }
 
     @TestExtension("renameWaitsForInFlightBuildNumberAssignment")
