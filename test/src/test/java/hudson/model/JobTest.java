@@ -25,6 +25,7 @@
 
 package hudson.model;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
@@ -36,11 +37,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionList;
 import hudson.Functions;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.RetentionStrategy;
 import hudson.util.TextFile;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -127,6 +131,68 @@ class JobTest {
 
         p.updateNextBuildNumber(assigned + 5);
         assertEquals(assigned + 5, p.getNextBuildNumber());
+    }
+
+    @Test
+    void renameWaitsForInFlightBuildNumberAssignment() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("before");
+        BlockingBuildNumberAssigner assigner = ExtensionList.lookupSingleton(BlockingBuildNumberAssigner.class);
+        AtomicReference<Integer> assigned = new AtomicReference<>();
+        Thread assigning = new Thread(() -> {
+            try {
+                assigned.set(p.assignBuildNumber());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }, "assigning");
+        Thread renaming = new Thread(() -> {
+            try {
+                p.renameTo("after");
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }, "renaming");
+        assigning.setDaemon(true);
+        renaming.setDaemon(true);
+        try {
+            assigning.start();
+            assertTrue(assigner.entered.await(30, TimeUnit.SECONDS), "assigner was not called");
+            renaming.start();
+            // The rename must wait for the assignment (which holds the build-number lock) rather than move the
+            // root directory while the next build number may still be written into it.
+            await().atMost(30, TimeUnit.SECONDS).until(() -> {
+                var info = ManagementFactory.getThreadMXBean().getThreadInfo(renaming.threadId());
+                return info != null && info.getLockOwnerId() == assigning.threadId();
+            });
+            assertEquals("before", p.getName());
+        } finally {
+            assigner.release.countDown();
+        }
+        assigning.join(30_000);
+        renaming.join(30_000);
+        assertEquals("after", p.getName());
+        assertEquals(String.valueOf(assigned.get() + 1), p.getNextBuildNumberFile().readTrim());
+    }
+
+    @TestExtension("renameWaitsForInFlightBuildNumberAssignment")
+    public static final class BlockingBuildNumberAssigner implements Job.BuildNumberAssigner {
+        final CountDownLatch entered = new CountDownLatch(1);
+        final CountDownLatch release = new CountDownLatch(1);
+
+        @Override
+        public int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException {
+            entered.countDown();
+            try {
+                release.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException(e);
+            }
+            int r = job.getNextBuildNumber();
+            job.fastUpdateNextBuildNumber(r + 1);
+            saveNextBuildNumber.call();
+            return r;
+        }
     }
 
     public static class BuildNumberSyncTester implements Runnable {

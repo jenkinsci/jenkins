@@ -189,6 +189,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * field. {@link #onLoad} and {@link #onCopiedFrom} each fix it up with a plain, unsynchronized
      * null check -- safe because neither runs concurrently with a build of the same job, the same
      * way {@link #onLoad} already fixes up {@link #properties} for objects that predate that field.
+     *
+     * <p>Lock order: {@link AbstractItem#renameTo} takes this inside the job's own monitor (see
+     * {@link #getRenameLock}), so code holding this lock must never acquire the job's or its parent's
+     * monitor, nor {@link Queue#lock}.
      */
     private transient volatile Object nextBuildNumberLock = new Object();
 
@@ -413,6 +417,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public interface BuildNumberAssigner extends ExtensionPoint {
         /**
          * Implementation of {@link Job#assignBuildNumber}.
+         * Always called with the job's private build-number lock held (and normally, from an executor,
+         * with {@link Queue#lock} held too), so it must not call anything that synchronizes on the job
+         * or its parent (such as {@link Job#save}), or it can deadlock against a concurrent rename.
          */
         int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException;
 
@@ -768,6 +775,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
         }
     };
+
+    /**
+     * Build-number assignment writes {@code nextBuildNumber} into the root directory under
+     * {@link #nextBuildNumberLock} rather than this job's monitor, so a rename must also hold that
+     * lock while moving the directory, or its fallback copy could overwrite a freshly saved number.
+     */
+    @Override
+    Object getRenameLock() {
+        return nextBuildNumberLock;
+    }
 
     /**
      * Renames a job.
