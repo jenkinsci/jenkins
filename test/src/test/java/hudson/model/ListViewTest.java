@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.htmlunit.AlertHandler;
@@ -178,6 +179,56 @@ class ListViewTest {
         assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<>(v.getItems()));
         top.renameTo("upper");
         assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<>(v.getItems()));
+    }
+
+    @Issue("https://github.com/jenkinsci/jenkins/issues/27622")
+    @Test
+    void unrelatedRenamePreservesNamesWithCommas() throws Exception {
+        ListView view = new ListView("view", j.jenkins);
+        j.jenkins.addView(view);
+        Set<String> names = Set.of("Debug Job, With Comma Space", "job,, consecutive commas", "job,", ",job", ",");
+        for (String name : names) {
+            view.add(j.createFreeStyleProject(name));
+        }
+        j.createFreeStyleProject("unrelated").renameTo("renamed");
+        assertEquals(names, view.getJobNames());
+        assertEquals(names, view.getItems().stream().map(Item::getName).collect(Collectors.toSet()));
+        j.jenkins.reload();
+        ListView reloaded = (ListView) j.jenkins.getView("view");
+        assertEquals(names, reloaded.getJobNames());
+        assertEquals(names, reloaded.getItems().stream().map(Item::getName).collect(Collectors.toSet()));
+    }
+
+    @Issue("https://github.com/jenkinsci/jenkins/issues/27622")
+    @Test
+    void renameAndMoveItemsWithCommas() throws Exception {
+        MockFolder folder = j.createFolder("folder, original");
+        FreeStyleProject job = folder.createProject(FreeStyleProject.class, "job, original");
+
+        ListView rootView = new ListView("root-view", j.jenkins);
+        rootView.setRecurse(true);
+        j.jenkins.addView(rootView);
+        rootView.add(job);
+
+        ListView folderView = new ListView("folder-view", folder);
+        folderView.setRecurse(true);
+        folder.addView(folderView);
+        folderView.add(job);
+
+        job.renameTo("job, renamed");
+        assertEquals(Set.of("folder, original/job, renamed"), rootView.getJobNames());
+        assertEquals(Set.of("job, renamed"), folderView.getJobNames());
+
+        folder.renameTo("folder, renamed");
+        assertEquals(Set.of("folder, renamed/job, renamed"), rootView.getJobNames());
+        assertEquals(Set.of("job, renamed"), folderView.getJobNames());
+
+        MockFolder destination = folder.createProject(MockFolder.class, "destination, folder");
+        Items.move(job, destination);
+        assertEquals(Set.of("folder, renamed/destination, folder/job, renamed"), rootView.getJobNames());
+        assertEquals(Set.of("destination, folder/job, renamed"), folderView.getJobNames());
+        assertEquals(List.of(job), rootView.getItems());
+        assertEquals(List.of(job), folderView.getItems());
     }
 
     @Issue("JENKINS-23893")
