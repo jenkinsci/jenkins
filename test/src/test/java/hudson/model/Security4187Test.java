@@ -155,6 +155,8 @@ class Security4187Test {
                 <project>
                   <assignedNode>agent1</assignedNode>
                   <canRoam>false</canRoam>
+                  <!-- deep enough that ../../../../../ stays inside the agent's root rather than escaping into the source checkout -->
+                  <customWorkspace>d1/d2/d3/d4/ws</customWorkspace>
                   <builders>
                     <hudson.tasks.Shell>
                       <command>
