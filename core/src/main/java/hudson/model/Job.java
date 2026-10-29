@@ -304,6 +304,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Override
+    @SuppressFBWarnings(
+            value = "ML_SYNC_ON_UPDATED_FIELD",
+            justification = "The field is only null right after XStream deserialization, and a copied job cannot be building yet; see nextBuildNumberLock.")
     public void onCopiedFrom(Item src) {
         super.onCopiedFrom(src);
         if (nextBuildNumberLock == null) { // XStream deserialization bypasses the field initializer
