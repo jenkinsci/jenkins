@@ -361,6 +361,13 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     }
 
     /**
+     * Called by {@link #renameTo} with {@link #getRenameLock} held, before anything is changed, to refuse
+     * the rename if something is about to write into the current root directory.
+     */
+    void checkRootDirMovable() {
+    }
+
+    /**
      * Renames this item.
      * Not all the Items need to support this operation, but if you decide to do so,
      * you can use this method.
@@ -394,6 +401,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
                 // Kept to the directory move only: anything written into the new root before the move makes it
                 // fail (or, on Windows, be overwritten by the fallback copy), and no parent/plugin code may run here.
                 synchronized (getRenameLock()) {
+                    checkRootDirMovable();
                     File oldRoot = this.getRootDir();
 
                     doSetName(newName);

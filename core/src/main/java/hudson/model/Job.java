@@ -205,6 +205,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     private transient int highestAssignedBuildNumber;
 
     /**
+     * Builds currently inside {@link LazyBuildMixIn#newBuild}, guarded by {@link #nextBuildNumberLock}.
+     * Such a build has already resolved its directory from the job's name but may not have created it
+     * yet, so {@link #renameTo} refuses to move the job meanwhile.
+     */
+    private transient int buildsBeingCreated;
+
+    /**
      * Newly copied jobs get this flag set, so that Hudson doesn't try to run the job until its configuration
      * is saved once.
      */
@@ -785,6 +792,27 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     Object getRenameLock() {
         return nextBuildNumberLock;
+    }
+
+    @Override
+    void checkRootDirMovable() {
+        if (buildsBeingCreated > 0) {
+            throw new Failure(Messages.Job_NoRenameWhileBuilding());
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void beginBuildCreation() {
+        synchronized (nextBuildNumberLock) {
+            buildsBeingCreated++;
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void endBuildCreation() {
+        synchronized (nextBuildNumberLock) {
+            buildsBeingCreated--;
+        }
     }
 
     /**
