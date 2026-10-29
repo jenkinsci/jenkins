@@ -175,7 +175,7 @@ Behaviour.specify(
     const more = container.querySelector(".jenkins-runs__more");
     let next = null;
 
-    function fetchPage() {
+    function fetchPage(loaded) {
       const pageUrl =
         next === null ? url : url + "?olderThan=" + encodeURIComponent(next);
       return fetch(pageUrl)
@@ -189,9 +189,10 @@ Behaviour.specify(
           const page = json.data;
           render(page.builds);
           next = page.next;
+          loaded += page.builds.length;
           // the server stopped early to bound its scan time, so the page is not full yet
-          if (page.partial && next !== null) {
-            return fetchPage();
+          if (page.partial && next !== null && loaded < page.pageSize) {
+            return fetchPage(loaded);
           }
         });
     }
@@ -199,7 +200,7 @@ Behaviour.specify(
     function load() {
       more.disabled = true;
       loading.classList.remove("jenkins-hidden");
-      fetchPage()
+      fetchPage(0)
         .then(function () {
           more.classList.toggle("jenkins-hidden", next === null);
         })

@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import hudson.model.Run;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -20,6 +21,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class RunListDataTest {
+
+    private static final Predicate<Run<?, ?>> ALL = build -> true;
 
     private int pageSize;
     private long scanBudget;
@@ -48,16 +51,16 @@ class RunListDataTest {
         RunListData.PAGE_SIZE = 2;
         List<Run<?, ?>> runs = runs(50, 40, 30, 20, 10);
 
-        JSONObject page = data.page(runs, Long.MAX_VALUE);
+        JSONObject page = data.page(runs, ALL, Long.MAX_VALUE);
         assertThat(ids(page), contains("r50", "r40"));
         assertEquals(40L, page.getLong("next"));
         assertFalse(page.getBoolean("partial"));
 
-        page = data.page(runs, 40);
+        page = data.page(runs, ALL, 40);
         assertThat(ids(page), contains("r30", "r20"));
         assertEquals(20L, page.getLong("next"));
 
-        page = data.page(runs, 20);
+        page = data.page(runs, ALL, 20);
         assertThat(ids(page), contains("r10"));
         assertEquals(JSONNull.getInstance(), page.get("next"));
     }
@@ -71,11 +74,11 @@ class RunListDataTest {
         runs.add(run("c40", 40));
         runs.addAll(runs(30));
 
-        JSONObject page = data.page(runs, Long.MAX_VALUE);
+        JSONObject page = data.page(runs, ALL, Long.MAX_VALUE);
         assertThat(ids(page), contains("r50", "a40", "b40", "c40"));
         assertEquals(40L, page.getLong("next"));
 
-        page = data.page(runs, 40);
+        page = data.page(runs, ALL, 40);
         assertThat(ids(page), contains("r30"));
         assertEquals(JSONNull.getInstance(), page.get("next"));
     }
@@ -85,24 +88,57 @@ class RunListDataTest {
         RunListData.SCAN_BUDGET_MS = 0;
         List<Run<?, ?>> runs = runs(30, 20, 10);
 
-        JSONObject page = data.page(runs, Long.MAX_VALUE);
+        JSONObject page = data.page(runs, ALL, Long.MAX_VALUE);
         assertThat(ids(page), contains("r30"));
         assertEquals(30L, page.getLong("next"));
         assertTrue(page.getBoolean("partial"));
 
-        page = data.page(runs, 30);
+        page = data.page(runs, ALL, 30);
         assertThat(ids(page), contains("r20"));
         assertTrue(page.getBoolean("partial"));
 
-        page = data.page(runs, 20);
+        page = data.page(runs, ALL, 20);
         assertThat(ids(page), contains("r10"));
         assertEquals(JSONNull.getInstance(), page.get("next"));
         assertFalse(page.getBoolean("partial"));
     }
 
     @Test
+    void filterSkipsRuns() {
+        RunListData.PAGE_SIZE = 2;
+        List<Run<?, ?>> runs = runs(50, 40, 30, 20, 10);
+        Predicate<Run<?, ?>> filter = build -> build.getTimeInMillis() != 40;
+
+        JSONObject page = data.page(runs, filter, Long.MAX_VALUE);
+        assertThat(ids(page), contains("r50", "r30"));
+        assertEquals(30L, page.getLong("next"));
+        assertEquals(2, page.getInt("pageSize"));
+    }
+
+    @Test
+    void scanBudgetCoversRejectedRuns() {
+        RunListData.SCAN_BUDGET_MS = 0;
+        List<Run<?, ?>> runs = runs(30, 20, 10);
+        Predicate<Run<?, ?>> none = build -> false;
+
+        JSONObject page = data.page(runs, none, Long.MAX_VALUE);
+        assertThat(ids(page), empty());
+        assertEquals(30L, page.getLong("next"));
+        assertTrue(page.getBoolean("partial"));
+
+        page = data.page(runs, none, 30);
+        assertThat(ids(page), empty());
+        assertEquals(20L, page.getLong("next"));
+
+        page = data.page(runs, none, 20);
+        assertThat(ids(page), empty());
+        assertEquals(JSONNull.getInstance(), page.get("next"));
+        assertFalse(page.getBoolean("partial"));
+    }
+
+    @Test
     void emptyList() {
-        JSONObject page = data.page(List.of(), Long.MAX_VALUE);
+        JSONObject page = data.page(List.of(), ALL, Long.MAX_VALUE);
         assertThat(ids(page), empty());
         assertEquals(JSONNull.getInstance(), page.get("next"));
         assertFalse(page.getBoolean("partial"));

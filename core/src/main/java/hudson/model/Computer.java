@@ -797,7 +797,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public RunList getBuilds() {
-        return RunList.fromJobs((Iterable) Jenkins.get().allItems(AbstractProject.class)).node(getNode());
+        return allBuilds().node(getNode());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static RunList<Run<?, ?>> allBuilds() {
+        return RunList.fromJobs((Iterable) Jenkins.get().allItems(AbstractProject.class));
     }
 
     /**
@@ -806,7 +811,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @GET
     @Restricted(NoExternalUse.class)
     public HttpResponse doBuildList(@QueryParameter String olderThan) {
-        return new BuildListTable().serve(getBuilds(), olderThan);
+        Node node = getNode();
+        return new BuildListTable().serve(allBuilds(), r -> r instanceof AbstractBuild && ((AbstractBuild<?, ?>) r).getBuiltOn() == node, olderThan);
     }
 
     /**

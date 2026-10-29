@@ -30,6 +30,7 @@ import hudson.model.Run;
 import hudson.util.HttpResponses;
 import hudson.util.RunList;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
@@ -42,13 +43,14 @@ import org.kohsuke.stapler.HttpResponse;
  * Serves a page of some information from a {@link RunList} as JSON.
  * <p>
  * Runs are expected newest first, ordered by {@link Run#getTimeInMillis()}, as {@link RunList} provides them.
- * A page holds runs strictly older than the {@code olderThan} cursor; the response's {@code next} is the cursor
+ * A page holds matching runs strictly older than the {@code olderThan} cursor; the response's {@code next} is the cursor
  * for the following page, or {@code null} once there are no more runs.
  * Runs sharing a timestamp are never split across pages, so the cursor is an exact boundary.
  * <p>
- * Filtered lists (such as the builds of a user) may need to scan many runs to fill a page,
- * so a page may be cut short once {@link #SCAN_BUDGET_MS} has elapsed, in which case {@code partial} is set
- * and the client should request the next page straight away.
+ * A filter (such as runs related to a user) may reject many runs before a page is full,
+ * so a page may be cut short once {@link #SCAN_BUDGET_MS} has elapsed, in which case {@code partial} is set.
+ * The cursor then covers every run examined, matching or not, and the client should request the next page
+ * until it has {@code pageSize} runs.
  */
 @Restricted(NoExternalUse.class)
 public abstract class RunListData {
@@ -65,6 +67,16 @@ public abstract class RunListData {
      * @param olderThan cursor from a previous page's {@code next}, or {@code null} for the first page
      */
     public HttpResponse serve(Iterable<? extends Run<?, ?>> builds, @CheckForNull String olderThan) {
+        return serve(builds, build -> true, olderThan);
+    }
+
+    /**
+     * Serves one page of the runs matching a filter.
+     * @param builds runs, newest first, not yet filtered, so that the scan budget covers the runs the filter rejects
+     * @param filter selects the runs to include
+     * @param olderThan cursor from a previous page's {@code next}, or {@code null} for the first page
+     */
+    public HttpResponse serve(Iterable<? extends Run<?, ?>> builds, Predicate<? super Run<?, ?>> filter, @CheckForNull String olderThan) {
         long cursor;
         if (olderThan == null || olderThan.isEmpty()) {
             cursor = Long.MAX_VALUE;
@@ -75,10 +87,10 @@ public abstract class RunListData {
                 return HttpResponses.error(400, "Invalid olderThan: " + olderThan);
             }
         }
-        return HttpResponses.okJSON(page(builds, cursor));
+        return HttpResponses.okJSON(page(builds, filter, cursor));
     }
 
-    JSONObject page(Iterable<? extends Run<?, ?>> builds, long cursor) {
+    JSONObject page(Iterable<? extends Run<?, ?>> builds, Predicate<? super Run<?, ?>> filter, long cursor) {
         long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(SCAN_BUDGET_MS);
         JSONArray results = new JSONArray();
         Long groupTime = null;
@@ -97,15 +109,18 @@ public abstract class RunListData {
                     break;
                 }
             }
-            JSONObject element = new JSONObject();
-            calculate(build, element);
-            results.add(element);
             groupTime = time;
+            if (filter.test(build)) {
+                JSONObject element = new JSONObject();
+                calculate(build, element);
+                results.add(element);
+            }
         }
         JSONObject page = new JSONObject();
         page.put("builds", results);
         page.put("next", next != null ? next : JSONNull.getInstance());
         page.put("partial", partial);
+        page.put("pageSize", PAGE_SIZE);
         return page;
     }
 

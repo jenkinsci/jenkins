@@ -786,8 +786,12 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(List.class)
     public @NonNull RunList getBuilds() {
-        return RunList.fromJobs((Iterable) Jenkins.get().
-                allItems(Job.class)).filter((Predicate<Run<?, ?>>) this::relatedTo);
+        return allBuilds().filter((Predicate<Run<?, ?>>) this::relatedTo);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static RunList<Run<?, ?>> allBuilds() {
+        return RunList.fromJobs((Iterable) Jenkins.get().allItems(Job.class));
     }
 
     /**
@@ -796,7 +800,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @GET
     @Restricted(NoExternalUse.class)
     public HttpResponse doBuildList(@QueryParameter String olderThan) {
-        return new BuildListTable().serve(getBuilds(), olderThan);
+        return new BuildListTable().serve(allBuilds(), this::relatedTo, olderThan);
     }
 
     /**
