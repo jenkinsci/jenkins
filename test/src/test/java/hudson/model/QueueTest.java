@@ -307,6 +307,10 @@ public class QueueTest {
      * {@code synchronized} {@link AbstractProject#newBuild}. The two call chains take the same two
      * locks in opposite order.
      * <p>
+     * The executor side calls {@link AbstractProject#newBuild} directly, modeling an executor that
+     * already passed the {@link AbstractProject#isDisabled} check in {@link SubTask#createExecutable}
+     * before the disable landed, which is the window in which the deadlock occurs.
+     * <p>
      * The "disable" side holds {@code synchronized (p)} directly rather than going through an
      * actual HTTP config-form submission: {@code doConfigSubmit} is itself a plain
      * {@code synchronized} instance method, so acquiring the same monitor by hand and then calling
@@ -345,7 +349,9 @@ public class QueueTest {
                     return null;
                 }
                 try {
-                    return p.createExecutable(); // calls the synchronized AbstractProject#newBuild
+                    // Not createExecutable(): it returns null without touching the project monitor once
+                    // the disable has set the flag, letting the test pass without any lock contention.
+                    return p.newBuild();
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
@@ -357,14 +363,19 @@ public class QueueTest {
         executorThread.start();
         disablingThread.start();
 
-        disablingThread.join(5000);
-        executorThread.join(5000);
+        // Kept well inside @Timeout so a deadlock reports the thread ids below rather than a bare timeout.
+        disablingThread.join(3000);
+        executorThread.join(3000);
 
         if (disablingThread.isAlive() || executorThread.isAlive()) {
             long[] deadlocked = ManagementFactory.getThreadMXBean().findDeadlockedThreads();
-            fail("disabling a project deadlocked against concurrent queue/executor build creation "
+            String message = "disabling a project deadlocked against concurrent queue/executor build creation "
                     + "(Queue#lock and the AbstractProject monitor acquired in opposite order); "
-                    + "JVM-reported deadlocked thread ids: " + Arrays.toString(deadlocked));
+                    + "JVM-reported deadlocked thread ids: " + Arrays.toString(deadlocked);
+            // The deadlocked threads hold Queue#lock forever, so JenkinsRule teardown hangs and the fork is
+            // killed before surefire writes a report; print first so the cause still reaches the build log.
+            System.err.println(message);
+            fail(message);
         }
     }
 
