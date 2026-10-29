@@ -109,7 +109,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.23.0</version>
+        <version>1.22.1</version>
       </dependency>
       <dependency>
         <groupId>commons-collections</groupId>
@@ -321,7 +321,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
-        <version>9.11</version>
+        <version>9.11.1</version>
       </dependency>
       <dependency>
         <!-- provided by jcl-over-slf4j -->
