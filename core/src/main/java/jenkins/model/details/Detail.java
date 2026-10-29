@@ -69,18 +69,18 @@ public abstract class Detail implements ModelObject, IconSpec {
     }
 
     /**
-     * @return where this detail should be shown, defaults to {@link Visibility#FULL}
+     * @return where this detail should be shown, defaults to {@link Verbosity#FULL}
      * @since TODO
      */
-    public @NonNull Visibility getVisibility() {
-        return Visibility.FULL;
+    public @NonNull Verbosity getVerbosity() {
+        return Verbosity.FULL;
     }
 
     /**
      * Where a {@link Detail} should be shown.
      * @since TODO
      */
-    public enum Visibility {
+    public enum Verbosity {
         /**
          * Only shown in condensed views, such as rows in the build history.
          */
@@ -96,9 +96,9 @@ public abstract class Detail implements ModelObject, IconSpec {
 
         /**
          * @param context the view the detail is being rendered in, {@code null} or {@link #BOTH} to match any
-         * @return whether a detail with this visibility should be shown in the given context
+         * @return whether a detail with this verbosity should be shown in the given context
          */
-        public boolean isVisibleIn(@CheckForNull Visibility context) {
+        public boolean isVisibleIn(@CheckForNull Verbosity context) {
             return this == BOTH || context == null || context == BOTH || this == context;
         }
     }

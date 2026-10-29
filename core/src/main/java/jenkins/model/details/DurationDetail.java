@@ -13,7 +13,7 @@ public class DurationDetail extends Detail {
     }
 
     @Override
-    public @NonNull Visibility getVisibility() {
-        return Visibility.BOTH;
+    public @NonNull Verbosity getVerbosity() {
+        return Verbosity.BOTH;
     }
 }

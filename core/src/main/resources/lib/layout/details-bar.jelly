@@ -31,7 +31,7 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="context" since="TODO">
       The view the bar is rendered in, either 'compact' or 'full'.
-      Details whose visibility doesn't match are hidden. Omit to show all details.
+      Details whose verbosity doesn't match are hidden. Omit to show all details.
     </st:attribute>
   </st:documentation>
 

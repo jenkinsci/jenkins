@@ -2725,12 +2725,12 @@ public class Functions {
     }
 
     /**
-     * @param context the view the details are rendered in, one of {@link Detail.Visibility} (case-insensitive),
+     * @param context the view the details are rendered in, one of {@link Detail.Verbosity} (case-insensitive),
      *                or {@code null} to include all details
      */
     @Restricted(NoExternalUse.class)
     public static Map<DetailGroup, List<Detail>> getDetailsFor(Actionable object, @CheckForNull String context) {
-        Detail.Visibility visibility = context == null || context.isEmpty() ? null : Detail.Visibility.valueOf(context.toUpperCase(Locale.ROOT));
+        Detail.Verbosity verbosity = context == null || context.isEmpty() ? null : Detail.Verbosity.valueOf(context.toUpperCase(Locale.ROOT));
         ExtensionList<DetailGroup> groupsExtensionList = ExtensionList.lookup(DetailGroup.class);
         List<ExtensionComponent<DetailGroup>> components = groupsExtensionList.getComponents();
         Map<String, Double> detailGroupOrdinal = components.stream()
@@ -2743,7 +2743,7 @@ public class Functions {
         for (DetailFactory taf : DetailFactory.factoriesFor(object.getClass())) {
             List<Detail> details = taf.createFor(object);
             details.stream()
-                    .filter(e -> e.getVisibility().isVisibleIn(visibility))
+                    .filter(e -> e.getVerbosity().isVisibleIn(verbosity))
                     .forEach(e -> result.computeIfAbsent(e.getGroup(), k -> new ArrayList<>()).add(e));
         }
 
