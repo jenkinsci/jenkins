@@ -364,11 +364,11 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
             // synchronized (this) around performDelete(), and Queue#cancel needs Queue#lock --
             // see the identical reasoning in ParameterizedJobMixIn#makeDisabled, including why
             // the cancel is skipped if the project was re-enabled before it runs.
-            Timer.get().execute(() -> {
+            Timer.get().execute(() -> Queue.runWithLock(() -> {
                 if (isDisabled()) {
                     Jenkins.get().getQueue().cancel(this);
                 }
-            });
+            }));
         }
         FilePath ws = getWorkspace();
         if (ws != null) {

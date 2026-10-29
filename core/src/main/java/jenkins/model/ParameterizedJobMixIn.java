@@ -541,11 +541,12 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
                 // monitor; the queued item itself is removed moments later, off this thread.
                 // Queue#cancel matches by task, not by queue item, so skip it if the job was
                 // re-enabled in the meantime: any item queued since then is a legitimate new build.
-                Timer.get().execute(() -> {
+                // Checked under Queue#lock so a re-enable and reschedule cannot slip in between.
+                Timer.get().execute(() -> Queue.runWithLock(() -> {
                     if (isDisabled()) {
                         Jenkins.get().getQueue().cancel(this);
                     }
-                });
+                }));
             }
             save();
             ItemListener.fireOnUpdated(this);
