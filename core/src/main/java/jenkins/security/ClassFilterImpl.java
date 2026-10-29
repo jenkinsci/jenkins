@@ -57,6 +57,7 @@ import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
 
 /**
  * Customized version of {@link ClassFilter#DEFAULT}.
@@ -151,6 +152,10 @@ public class ClassFilterImpl extends ClassFilter {
                 return false;
             }
             if (Throwable.class.isAssignableFrom(c)) {
+                if (HttpResponse.class.isAssignableFrom(c)) {
+                    notifyRejected(_c, name, String.format("Rejecting %s Throwable implementing HttpResponse during remote deserialization", name));
+                    return true;
+                }
                 LOGGER.log(Level.FINE, "permitting {0} since it is a throwable", name);
                 return false;
             }
