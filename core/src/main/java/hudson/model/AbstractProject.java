@@ -994,7 +994,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      * would force the caller (an executor, via {@link Queue#callWithLock}) to acquire the
      * project's monitor while holding {@link Queue#lock}, which can deadlock against any code
      * path that acquires those two locks in the opposite order while holding the project's
-     * monitor, such as disabling ({@link ParameterizedJobMixIn#makeDisabled}) or deleting
+     * monitor, such as disabling ({@link ParameterizedJobMixIn.ParameterizedJob#makeDisabled}) or deleting
      * ({@link AbstractItem#delete}) the project.
      */
     protected R newBuild() throws IOException {
