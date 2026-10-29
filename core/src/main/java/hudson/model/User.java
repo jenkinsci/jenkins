@@ -82,16 +82,20 @@ import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
+import jenkins.widgets.BuildListTable;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.GET;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -784,6 +788,15 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public @NonNull RunList getBuilds() {
         return RunList.fromJobs((Iterable) Jenkins.get().
                 allItems(Job.class)).filter((Predicate<Run<?, ?>>) this::relatedTo);
+    }
+
+    /**
+     * Serves a page of {@link #getBuilds()} as JSON for {@code buildListTable.jelly}.
+     */
+    @GET
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doBuildList(@QueryParameter String olderThan) {
+        return new BuildListTable().serve(getBuilds(), olderThan);
     }
 
     /**

@@ -111,6 +111,7 @@ import jenkins.security.HexStringConfidentialKey;
 import jenkins.security.XStreamNotDeserializable;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
+import jenkins.widgets.BuildTimeTrend;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -132,6 +133,8 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerOverridable;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -139,6 +142,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.GET;
 import org.kohsuke.stapler.verb.POST;
 
 /**
@@ -1589,6 +1593,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
             return label.run.getDisplayName() + " : " + label.run.getDurationString();
         }
+    }
+
+    /**
+     * Serves a page of {@link #getBuilds()} as JSON for {@code buildTimeTrend.jelly}.
+     */
+    @GET
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doBuildTimeTrendData(@QueryParameter String olderThan) {
+        return new BuildTimeTrend().serve(getBuilds(), olderThan);
     }
 
     public Graph getBuildTimeGraph() {

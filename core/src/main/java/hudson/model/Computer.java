@@ -122,6 +122,7 @@ import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.ErrorLoggingExecutorService;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
+import jenkins.widgets.BuildListTable;
 import jenkins.widgets.HasWidgets;
 import net.jcip.annotations.GuardedBy;
 import org.kohsuke.accmod.Restricted;
@@ -141,6 +142,7 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.GET;
 import org.kohsuke.stapler.verb.POST;
 
 /**
@@ -796,6 +798,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     public RunList getBuilds() {
         return RunList.fromJobs((Iterable) Jenkins.get().allItems(AbstractProject.class)).node(getNode());
+    }
+
+    /**
+     * Serves a page of {@link #getBuilds()} as JSON for {@code buildListTable.jelly}.
+     */
+    @GET
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doBuildList(@QueryParameter String olderThan) {
+        return new BuildListTable().serve(getBuilds(), olderThan);
     }
 
     /**
