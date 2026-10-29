@@ -23,6 +23,14 @@ function generateDropdown(element, callback, immediate, options = {}) {
       Templates.dropdown(),
       {
         onCreate(instance) {
+          // Suggestion dropdowns on inputs and hover-only dropdowns are not menu buttons
+          if (
+            instance.props.trigger.includes("click") &&
+            instance.reference.tagName !== "INPUT"
+          ) {
+            instance.reference.setAttribute("aria-haspopup", "menu");
+          }
+
           const onload = () => {
             if (instance.loaded) {
               return;
@@ -85,12 +93,6 @@ function generateDropdownItems(items, compact = false, context = "") {
   const menuItems = document.createElement("div");
   menuItems.classList.add("jenkins-dropdown");
   menuItems.setAttribute("role", "menu");
-  const menuLabel =
-    items.length > 0 && items[0].label
-      ? `${items[0].label} menu`
-      : "dropdown menu";
-  menuItems.setAttribute("aria-label", menuLabel);
-
   if (compact === true) {
     menuItems.classList.add("jenkins-dropdown--compact");
   }
