@@ -1,0 +1,7 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+  <f:section title="${%Maven Configuration}">
+    <f:dropdownDescriptorSelector title="${%Default settings provider}" field="settingsProvider" />
+    <f:dropdownDescriptorSelector title="${%Default global settings provider}" field="globalSettingsProvider" />
+  </f:section>
+</j:jelly>
