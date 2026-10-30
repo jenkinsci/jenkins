@@ -1,0 +1,50 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <st:documentation>
+    A reusable container for pages relating to a label.
+    <st:attribute name="title">
+      Optional title for the page, used as breadcrumb.
+    </st:attribute>
+    <st:attribute name="permission">
+      If given, this page is only made available to users who have the specified permission.
+      (The permission will be checked against the "it" object.)
+    </st:attribute>
+    <st:attribute name="permissions">
+      If given, this page is made available to users who have one or more of the specified permissions.
+      (The permissions will be checked against the "it" object.)
+    </st:attribute>
+  </st:documentation>
+  <l:layout title="${it.name} ${attrs.title}" permission="${attrs.permission}" permissions="${attrs.permissions}">
+    <j:if test="${not empty(attrs.title)}">
+      <l:breadcrumb title="${attrs.title}" />
+    </j:if>
+    <l:main-panel width="wide">
+
+      <div class="app-build-bar">
+        <div class="app-build-bar__content">
+          <h1>
+            ${%Label} ${it.name}
+          </h1>
+        </div>
+        <div class="app-build-bar__tabs">
+        </div>
+        <div class="app-build-bar__controls">
+          <j:if test="${it.atom}">
+            <a href="configure" class="jenkins-button" permission="${app.ADMINISTER}">
+              <l:icon src="symbol-settings" />
+              ${%Configure}
+            </a>
+          </j:if>
+          <a href="load-statistics" class="jenkins-button">
+            <l:icon src="symbol-analytics" />
+            ${%Load Statistics}
+          </a>
+          <l:actions it="${it}"/>
+        </div>
+      </div>
+
+      <div class="app-build-content">
+        <d:invokeBody/>
+      </div>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
