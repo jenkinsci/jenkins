@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Predicate;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link List} of {@link Run}s, sorted in the descending date order.
@@ -101,6 +103,14 @@ public class RunList<R extends Run> extends AbstractList<R> {
         for (Job j : jobs)
             runLists.add(j.getBuilds());
         return new RunList<>(combine(runLists));
+    }
+
+    /**
+     * Creates a {@link RunList} over some runs, which should be newest first.
+     */
+    @Restricted(NoExternalUse.class)
+    public static <R extends Run> RunList<R> fromIterable(Iterable<R> runs) {
+        return new RunList<>(runs);
     }
 
     private static <R extends Run> Iterable<R> combine(Iterable<Iterable<R>> runLists) {

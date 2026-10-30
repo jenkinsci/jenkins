@@ -100,6 +100,7 @@ import jenkins.search.SearchGroup;
 import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.xml.XMLUtils;
+import jenkins.widgets.BuildListTable;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.Icon;
@@ -108,6 +109,7 @@ import org.jenkins.ui.symbol.Symbol;
 import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -121,6 +123,7 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.GET;
 import org.kohsuke.stapler.verb.POST;
 import org.xml.sax.SAXException;
 
@@ -946,6 +949,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     public RunList getBuilds() {
         return new RunList(this);
+    }
+
+    /**
+     * Serves a page of {@link #getBuilds()} as JSON for {@code buildListTable.jelly}.
+     */
+    @GET
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doBuildList(@QueryParameter String olderThan) {
+        return new BuildListTable().serve(getBuilds(), olderThan);
     }
 
     @Deprecated

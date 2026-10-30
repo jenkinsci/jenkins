@@ -34,10 +34,10 @@ import jenkins.console.ConsoleUrlProvider;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-@Restricted(DoNotUse.class) // only for buildTimeTrend.jelly
-public class BuildTimeTrend extends RunListProgressiveRendering {
+@Restricted(NoExternalUse.class) // only for buildTimeTrend.jelly and Job#doBuildTimeTrendData
+public class BuildTimeTrend extends RunListData {
 
     public boolean isAbstractProject(Job<?, ?> job) {
         return job instanceof AbstractProject;
