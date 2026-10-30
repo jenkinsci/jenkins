@@ -434,7 +434,7 @@ public class Items {
      * {@link #allItems(ItemGroup, Class)} instead.
      *
      * @param root Root node to start searching from
-     * @param type Given type of of items being searched for
+     * @param type Given type of items being searched for
      * @return List of items matching given criteria
      *
      * @since 1.512
@@ -447,7 +447,7 @@ public class Items {
      * Similar to {@link #getAllItems(ItemGroup, Class)} but with a predicate to pre-filter items to
      * avoid checking ACLs unnecessarily and returning items not required by the caller
      * @param root Root node to start searching from
-     * @param type Given type of of items being searched for
+     * @param type Given type of items being searched for
      * @param pred Predicate condition to filter items
      * @return List of items matching given criteria
      *
