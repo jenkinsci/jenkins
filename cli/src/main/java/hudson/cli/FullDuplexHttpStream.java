@@ -64,6 +64,7 @@ public class FullDuplexHttpStream {
         HttpURLConnection con = openHttpConnection(target);
         con.setDoOutput(true); // request POST to avoid caching
         con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", "Jenkins-cli-" + CLI.computeVersion());
         con.addRequestProperty("Session", uuid.toString());
         con.addRequestProperty("Side", "download");
         if (authorization != null) {
@@ -84,6 +85,7 @@ public class FullDuplexHttpStream {
         con.setRequestMethod("POST");
         con.setChunkedStreamingMode(0);
         con.setRequestProperty("Content-type", "application/octet-stream");
+        con.setRequestProperty("User-Agent", "Jenkins-cli-" + CLI.computeVersion());
         con.addRequestProperty("Session", uuid.toString());
         con.addRequestProperty("Side", "upload");
         if (authorization != null) {
@@ -102,6 +104,7 @@ public class FullDuplexHttpStream {
     private URL tryToResolveRedirects(URL base, String authorization) {
         try {
             HttpURLConnection con = openHttpConnection(base);
+            con.setRequestProperty("User-Agent", "Jenkins-cli-" + CLI.computeVersion());
             if (authorization != null) {
                 con.addRequestProperty("Authorization", authorization);
             }
