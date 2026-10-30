@@ -1138,7 +1138,11 @@ function evalInnerHtmlScripts(text, callback) {
     var m = s.match(srcAttr);
     if (m) {
       q.push(function (cont) {
-        loadScript(m[1], cont);
+        if (isAdjunctLoaded(m[1])) {
+          cont();
+        } else {
+          loadScript(m[1], cont);
+        }
       });
     } else {
       q.push(function (cont) {
@@ -1149,6 +1153,26 @@ function evalInnerHtmlScripts(text, callback) {
   });
   q.push(callback);
   sequencer(q);
+}
+
+/**
+ * Whether a script is an adjunct already on the page, or already loaded with content rendered on demand.
+ * An adjunct runs once per page; content rendered on demand without a closure in the session (see
+ * hudson.widgets.DescriptorPage) does not know which adjuncts the page already has, and includes all it needs.
+ */
+var loadedAdjuncts = new Set();
+function isAdjunctLoaded(src) {
+  var url = new URL(src, document.baseURI).href;
+  if (!url.includes("/adjuncts/")) {
+    return false;
+  }
+  if (loadedAdjuncts.has(url)) {
+    return true;
+  }
+  loadedAdjuncts.add(url);
+  return Array.from(document.scripts).some(function (script) {
+    return script.src === url;
+  });
 }
 
 /**
