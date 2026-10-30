@@ -53,6 +53,7 @@ THE SOFTWARE.
     <st:attribute name="hasHeader"> <![CDATA[
       For each item, add a caption from descriptor.getDisplayName().
       This also activates drag&drop (where the header is a grip), and help text support.
+      When false, no header is rendered, but a delete button is still provided for each item.
         ]]>
     </st:attribute>
     <st:attribute name="oneEach">
@@ -84,28 +85,35 @@ THE SOFTWARE.
       <j:set var="help" value="${descriptor.helpFile}" />
       <j:set var="disableHandle" value="${attrs.disableDragAndDrop or readOnlyMode}" />
 
-      <div class="repeated-chunk__header ${disableHandle ? 'repeated-chunk__header--no-handle' : ''}">
-        <j:if test="${!disableHandle}">
-          <div class="dd-handle" />
-        </j:if>
+      <j:if test="${hasHeader}">
+        <div class="repeated-chunk__header ${disableHandle ? 'repeated-chunk__header--no-handle' : ''}">
+          <j:if test="${!disableHandle}">
+            <div class="dd-handle" />
+          </j:if>
 
-        ${descriptor.displayName}
+          ${descriptor.displayName}
 
-        <f:helpLink url="${help}"/>
+          <f:helpLink url="${help}"/>
 
-        <j:if test="${!readOnlyMode}">
-          <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
-        </j:if>
-      </div>
+          <j:if test="${!readOnlyMode}">
+            <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
+          </j:if>
+        </div>
+      </j:if>
 
       <f:class-entry descriptor="${descriptor}" />
 
-      <j:if test="${help!=null}">
+      <j:if test="${hasHeader and help!=null}">
         <f:helpArea />
       </j:if>
 
       <div class="jenkins-repeated-chunk__content">
         <d:invokeBody/>
+        <j:if test="${!readOnlyMode and !hasHeader}">
+          <div class="repeated-chunk__footer">
+            <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
+          </div>
+        </j:if>
       </div>
     </d:tag>
   </d:taglib>

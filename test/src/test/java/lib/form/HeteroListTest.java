@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -87,6 +88,44 @@ class HeteroListTest {
         HTMLButtonElement menuItem = (HTMLButtonElement) result;
         String menuItemContent = menuItem.getInnerHTML();
         assertThat(menuItemContent, not(containsString("<img")));
+    }
+
+    @Test
+    @Issue("JENKINS-71089")
+    void hasHeaderFalseOmitsHeaderAndDragHandleButKeepsDeleteButton() throws Exception {
+        RootActionImpl rootAction = ExtensionList.lookupSingleton(RootActionImpl.class);
+        rootAction.descriptorList = List.of(ExtensionList.lookupSingleton(TestItemDescribable.DynamicDisplayNameDescriptor.class));
+        rootAction.hasHeader = false;
+        rootAction.disableDragAndDrop = false;
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setJavaScriptEnabled(false);
+        wc.getOptions().setCssEnabled(false);
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo("root/header");
+
+        assertEquals(0, page.querySelectorAll(".repeated-chunk__header").size());
+        assertEquals(0, page.querySelectorAll(".dd-handle").size());
+        assertEquals(1, page.querySelectorAll(".repeatable-delete").size());
+    }
+
+    @Test
+    @Issue("JENKINS-71089")
+    void hasHeaderTrueRendersHeaderAndDragHandle() throws Exception {
+        RootActionImpl rootAction = ExtensionList.lookupSingleton(RootActionImpl.class);
+        rootAction.descriptorList = List.of(ExtensionList.lookupSingleton(TestItemDescribable.DynamicDisplayNameDescriptor.class));
+        rootAction.hasHeader = true;
+        rootAction.disableDragAndDrop = false;
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setJavaScriptEnabled(false);
+        wc.getOptions().setCssEnabled(false);
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo("root/header");
+
+        assertEquals(1, page.querySelectorAll(".repeated-chunk__header").size());
+        assertEquals(1, page.querySelectorAll(".dd-handle").size());
+        assertEquals(1, page.querySelectorAll(".repeatable-delete").size());
     }
 
     @Test
@@ -205,6 +244,8 @@ class HeteroListTest {
     @TestExtension
     public static class RootActionImpl implements UnprotectedRootAction {
         public List<Descriptor<?>> descriptorList;
+        public boolean hasHeader = true;
+        public boolean disableDragAndDrop;
 
         @Override
         @CheckForNull
