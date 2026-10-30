@@ -44,6 +44,7 @@ import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.framework.adjunct.AdjunctsInPage;
+import org.kohsuke.stapler.jelly.CallTagLibScript;
 import org.kohsuke.stapler.jelly.DefaultScriptInvoker;
 import org.xml.sax.SAXException;
 
@@ -66,7 +67,7 @@ public class RenderOnDemandClosure {
         List<Script> bodyStack = new ArrayList<>();
         for (JellyContext c = context; c != null; c = c.getParent()) {
             Script script = (Script) c.getVariables().get("org.apache.commons.jelly.body");
-            if (script != null) bodyStack.add(script);
+            if (script != null) bodyStack.add(CallTagLibScript.detach(script)); // kept without the page's contexts
         }
         this.bodyStack = bodyStack.toArray(new Script[0]);
         assert !bodyStack.isEmpty();    // there must be at least one, which is the direct child of <l:renderOnDemand>
