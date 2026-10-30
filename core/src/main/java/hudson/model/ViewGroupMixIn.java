@@ -154,10 +154,7 @@ public abstract class ViewGroupMixIn {
     public Collection<View> getViews() {
         List<View> orig = views();
         List<View> copy = new ArrayList<>(orig.size());
-        for (View v : orig) {
-            if (v.hasPermission(View.READ))
-                copy.add(v);
-        }
+        copy.addAll(orig);
         copy.sort(View.SORTER);
         return copy;
     }
