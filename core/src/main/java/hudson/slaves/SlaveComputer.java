@@ -664,90 +664,101 @@ public class SlaveComputer extends Computer {
         if (listener != null)
             channel.addListener(listener);
 
-        String slaveVersion = channel.call(new SlaveVersion());
-        log.println("Remoting version: " + slaveVersion);
-        VersionNumber agentVersion = new VersionNumber(slaveVersion);
-        if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
-            if (!ALLOW_UNSUPPORTED_REMOTING_VERSIONS) {
-                taskListener.fatalError(
-                        "Rejecting the connection because the Remoting version is older than the"
-                            + " minimum required version (%s). To allow the connection anyway, set"
-                            + " the hudson.slaves.SlaveComputer.allowUnsupportedRemotingVersions"
-                            + " system property to true.",
-                        RemotingVersionInfo.getMinimumSupportedVersion());
-                disconnect(new OfflineCause.LaunchFailed());
-                return;
-            } else {
-                taskListener.error(
-                        "The Remoting version is older than the minimum required version (%s)."
-                            + " The connection will be allowed, but compatibility is NOT"
-                            + " guaranteed.",
-                        RemotingVersionInfo.getMinimumSupportedVersion());
+        try {
+            String slaveVersion = channel.call(new SlaveVersion());
+            log.println("Remoting version: " + slaveVersion);
+            VersionNumber agentVersion = new VersionNumber(slaveVersion);
+            if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
+                if (!ALLOW_UNSUPPORTED_REMOTING_VERSIONS) {
+                    taskListener.fatalError(
+                            "Rejecting the connection because the Remoting version is older than the"
+                                + " minimum required version (%s). To allow the connection anyway, set"
+                                + " the hudson.slaves.SlaveComputer.allowUnsupportedRemotingVersions"
+                                + " system property to true.",
+                            RemotingVersionInfo.getMinimumSupportedVersion());
+                    offlineCause = new OfflineCause.LaunchFailed();
+                    throw new AbortException("Rejecting connection because Remoting version " + slaveVersion + " is older than minimum supported version " + RemotingVersionInfo.getMinimumSupportedVersion());
+                } else {
+                    taskListener.error(
+                            "The Remoting version is older than the minimum required version (%s)."
+                                + " The connection will be allowed, but compatibility is NOT"
+                                + " guaranteed.",
+                            RemotingVersionInfo.getMinimumSupportedVersion());
+                }
             }
-        }
 
-        log.println("Launcher: " + getLauncher().getClass().getSimpleName());
+            log.println("Launcher: " + getLauncher().getClass().getSimpleName());
 
-        String communicationProtocol = channel.call(new CommunicationProtocol());
-        if (communicationProtocol != null) {
-            log.println("Communication Protocol: " + communicationProtocol);
-        }
-
-        boolean _isUnix = channel.call(new DetectOS());
-        log.println(_isUnix ? hudson.model.Messages.Slave_UnixSlave() : hudson.model.Messages.Slave_WindowsSlave());
-
-        String defaultCharsetName = channel.call(new DetectDefaultCharset());
-
-        Slave node = getNode();
-        if (node == null) { // Node has been disabled/removed during the connection
-            throw new IOException("Node " + nodeName + " has been deleted during the channel setup");
-        }
-
-        String remoteFS = node.getRemoteFS();
-        if (Util.isRelativePath(remoteFS)) {
-            remoteFS = channel.call(new AbsolutePath(remoteFS));
-            log.println("NOTE: Relative remote path resolved to: " + remoteFS);
-        }
-        if (_isUnix && !remoteFS.contains("/") && remoteFS.contains("\\"))
-            log.println("WARNING: " + remoteFS
-                    + " looks suspiciously like Windows path. Maybe you meant " + remoteFS.replace('\\', '/') + "?");
-        FilePath root = new FilePath(channel, remoteFS);
-
-        // reference counting problem is known to happen, such as JENKINS-9017, and so as a preventive measure
-        // we pin the base classloader so that it'll never get GCed. When this classloader gets released,
-        // it'll have a catastrophic impact on the communication.
-        channel.pinClassLoader(getClass().getClassLoader());
-
-        channel.call(new SlaveInitializer(DEFAULT_RING_BUFFER_SIZE));
-        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
-            for (ComputerListener cl : ComputerListener.all()) {
-                cl.preOnline(this, channel, root, taskListener);
+            String communicationProtocol = channel.call(new CommunicationProtocol());
+            if (communicationProtocol != null) {
+                log.println("Communication Protocol: " + communicationProtocol);
             }
-        }
 
-        offlineCause = null;
+            boolean _isUnix = channel.call(new DetectOS());
+            log.println(_isUnix ? hudson.model.Messages.Slave_UnixSlave() : hudson.model.Messages.Slave_WindowsSlave());
 
-        // update the data structure atomically to prevent others from seeing a channel that's not properly initialized yet
-        synchronized (channelLock) {
-            if (this.channel != null) {
-                // check again. we used to have this entire method in a big synchronization block,
-                // but Channel constructor blocks for an external process to do the connection
-                // if CommandLauncher is used, and that cannot be interrupted because it blocks at InputStream.
-                // so if the process hangs, it hangs the thread in a lock, and since Hudson will try to relaunch,
-                // we'll end up queuing the lot of threads in a pseudo deadlock.
-                // This implementation prevents that by avoiding a lock. JENKINS-1705 is likely a manifestation of this.
-                channel.close();
-                throw new IllegalStateException("Already connected");
+            String defaultCharsetName = channel.call(new DetectDefaultCharset());
+
+            Slave node = getNode();
+            if (node == null) { // Node has been disabled/removed during the connection
+                throw new IOException("Node " + nodeName + " has been deleted during the channel setup");
             }
-            isUnix = _isUnix;
-            numRetryAttempt = 0;
-            this.channel = channel;
-            this.absoluteRemoteFs = remoteFS;
-            defaultCharset = Charset.forName(defaultCharsetName);
 
-            synchronized (statusChangeLock) {
-                statusChangeLock.notifyAll();
+            String remoteFS = node.getRemoteFS();
+            if (Util.isRelativePath(remoteFS)) {
+                remoteFS = channel.call(new AbsolutePath(remoteFS));
+                log.println("NOTE: Relative remote path resolved to: " + remoteFS);
             }
+            if (_isUnix && !remoteFS.contains("/") && remoteFS.contains("\\"))
+                log.println("WARNING: " + remoteFS
+                        + " looks suspiciously like Windows path. Maybe you meant " + remoteFS.replace('\\', '/') + "?");
+            FilePath root = new FilePath(channel, remoteFS);
+
+            // reference counting problem is known to happen, such as JENKINS-9017, and so as a preventive measure
+            // we pin the base classloader so that it'll never get GCed. When this classloader gets released,
+            // it'll have a catastrophic impact on the communication.
+            channel.pinClassLoader(getClass().getClassLoader());
+
+            channel.call(new SlaveInitializer(DEFAULT_RING_BUFFER_SIZE));
+            try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
+                for (ComputerListener cl : ComputerListener.all()) {
+                    cl.preOnline(this, channel, root, taskListener);
+                }
+            }
+
+            offlineCause = null;
+
+            // update the data structure atomically to prevent others from seeing a channel that's not properly initialized yet
+            synchronized (channelLock) {
+                if (this.channel != null) {
+                    // check again. we used to have this entire method in a big synchronization block,
+                    // but Channel constructor blocks for an external process to do the connection
+                    // if CommandLauncher is used, and that cannot be interrupted because it blocks at InputStream.
+                    // so if the process hangs, it hangs the thread in a lock, and since Hudson will try to relaunch,
+                    // we'll end up queuing the lot of threads in a pseudo deadlock.
+                    // This implementation prevents that by avoiding a lock. JENKINS-1705 is likely a manifestation of this.
+                    channel.close();
+                    throw new IllegalStateException("Already connected");
+                }
+                isUnix = _isUnix;
+                numRetryAttempt = 0;
+                this.channel = channel;
+                this.absoluteRemoteFs = remoteFS;
+                defaultCharset = Charset.forName(defaultCharsetName);
+
+                synchronized (statusChangeLock) {
+                    statusChangeLock.notifyAll();
+                }
+            }
+        } catch (Throwable t) {
+            if (this.channel != channel) {
+                try {
+                    channel.close();
+                } catch (Exception e) {
+                    logger.log(Level.FINE, "Failed to close channel after setup failure", e);
+                }
+            }
+            throw t;
         }
         try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             for (ComputerListener cl : ComputerListener.all()) {
