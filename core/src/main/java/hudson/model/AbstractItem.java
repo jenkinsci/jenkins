@@ -41,6 +41,7 @@ import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
+import hudson.security.Permission;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.FormValidation;
@@ -80,6 +81,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -1059,4 +1061,9 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
      */
     public static final Message<AbstractItem> TASK_NOUN = new Message<>();
 
+    @Restricted(Beta.class)
+    @Override
+    public Permission getDescriptorPagePermission() {
+        return CONFIGURE;
+    }
 }

@@ -24,7 +24,10 @@
 
 package hudson.model;
 
+import hudson.security.Permission;
 import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
 /**
  * Adds {@link #getDescriptorByName(String)} to bind {@link Descriptor}s to URL.
@@ -51,5 +54,18 @@ public interface DescriptorByNameOwner extends ModelObject {
      */
     default Descriptor getDescriptorByName(String id) {
         return Jenkins.get().getDescriptorByName(id);
+    }
+
+    /**
+     * The permission needed on this object to render, at {@code descriptorByName/ID/page/...}, the configuration page
+     * of a descriptor for a new instance, as the configuration pages of this object offer descriptors to add or select.
+     * It should be the permission to configure this object; by default, {@link Jenkins#ADMINISTER}.
+     *
+     * @since TODO
+     * @see hudson.widgets.DescriptorPage
+     */
+    @Restricted(Beta.class)
+    default Permission getDescriptorPagePermission() {
+        return Jenkins.ADMINISTER;
     }
 }

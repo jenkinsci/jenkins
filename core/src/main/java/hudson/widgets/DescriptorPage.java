@@ -4,9 +4,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.DescriptorByNameOwner;
-import hudson.model.Item;
-import hudson.model.User;
-import hudson.model.View;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import jakarta.servlet.ServletException;
@@ -34,12 +31,13 @@ import org.kohsuke.stapler.bind.JavaScriptMethod;
  * long as the session lasts. Here everything needed is in the URL instead: the object configured (the
  * {@link DescriptorByNameOwner} the URL goes through, which Stapler resolves, checking access as for any other request),
  * the descriptor, and the view to render, as {@code descriptorByName/ID/page/VIEW} under the object's URL. Rendering
- * needs the permission to configure the object. Nothing in such a page is secret: it holds no instance, and it renders
+ * needs the object's {@link DescriptorByNameOwner#getDescriptorPagePermission()}, normally the permission to configure
+ * it (by default, to administer Jenkins). Nothing in such a page is secret: it holds no instance, and it renders
  * as the user asking, who could add the same descriptor to an object they configure.
  *
  * <p>
- * Where any of this does not hold (other variables captured, an existing instance, read-only mode, an object of another
- * type, a user who could not configure it), the closure is kept as before.
+ * Where any of this does not hold (other variables captured, an existing instance, read-only mode, {@code it} not the
+ * object of the URL, a user without that permission), the closure is kept as before.
  */
 @Restricted(NoExternalUse.class)
 public final class DescriptorPage {
@@ -112,8 +110,7 @@ public final class DescriptorPage {
         } else {
             return keepClosure("it is not " + (a == null ? "an object of the URL" : a.getObject()));
         }
-        Permission configure = permissionToConfigure(a.getObject());
-        if (configure == null || !((AccessControlled) a.getObject()).hasPermission(configure)) {
+        if (!accessControlled(a.getObject()).hasPermission(permission(a.getObject()))) {
             return keepClosure("cannot configure " + a.getObject());
         }
         String url = a.getUrl() + '/' + d.getDescriptorUrl() + "/page/" + name;
@@ -134,12 +131,11 @@ public final class DescriptorPage {
         String view = node ? name.substring(0, name.length() - NODE.length()) : name;
         StaplerRequest2 req = Stapler.getCurrentRequest2();
         Ancestor a = req.findAncestor(DescriptorByNameOwner.class);
-        Permission configure = a == null ? null : permissionToConfigure(a.getObject());
-        if (!VIEWS.contains(view) || configure == null) {
+        if (!VIEWS.contains(view) || a == null) {
             throw HttpResponses.notFound();
         }
-        AccessControlled owner = (AccessControlled) a.getObject();
-        if (!owner.hasPermission(configure)) {
+        Object owner = a.getObject();
+        if (!accessControlled(owner).hasPermission(permission(owner))) {
             throw HttpResponses.forbidden();
         }
         Object it = node ? (owner instanceof Computer c ? c.getNode() : null) : owner;
@@ -149,20 +145,14 @@ public final class DescriptorPage {
         return new DescriptorPage(descriptor, it, view);
     }
 
-    /** The permission to configure an object, if it is of a type known here. */
-    private static @CheckForNull Permission permissionToConfigure(Object owner) {
-        if (owner instanceof Item) {
-            return Item.CONFIGURE;
-        } else if (owner instanceof View) {
-            return View.CONFIGURE;
-        } else if (owner instanceof Computer) {
-            return Computer.CONFIGURE;
-        } else if (owner instanceof User) {
-            return Jenkins.ADMINISTER; // a user has every permission on themselves
-        } else if (owner instanceof Jenkins) {
-            return Jenkins.ADMINISTER; // pages differ (some need only Manage); others keep the closure
-        }
-        return null;
+    /** The permission needed to render on the object configured. */
+    private static Permission permission(Object owner) {
+        return owner instanceof DescriptorByNameOwner o ? o.getDescriptorPagePermission() : Jenkins.ADMINISTER;
+    }
+
+    /** What the permission is checked on: the object configured, or Jenkins if it is not access controlled. */
+    private static AccessControlled accessControlled(Object owner) {
+        return owner instanceof AccessControlled ac ? ac : Jenkins.get();
     }
 
     /**

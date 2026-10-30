@@ -89,6 +89,16 @@ class DescriptorPageTest {
     }
 
     @Test
+    void anObjectThatDoesNotSayNeedsAdministerOnIt() throws Exception {
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().to("admin")
+                .grant(Jenkins.READ, Jenkins.MANAGE).everywhere().to("manager"));
+        String page = "descriptorByName/hudson.tasks.Shell/page/heteroList";
+        assertEquals(200, render(j.createWebClient().login("admin"), page));
+        assertEquals(403, render(j.createWebClient().login("manager"), page));
+    }
+
+    @Test
     void aReadOnlyPageKeepsTheClosure() throws Exception {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.READ, Item.READ, Item.EXTENDED_READ).everywhere().to("reader"));
