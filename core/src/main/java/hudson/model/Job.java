@@ -169,6 +169,49 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     protected transient volatile int nextBuildNumber = 1;
 
     /**
+     * Guards read-modify-write access to {@link #nextBuildNumber}, instead of synchronizing on
+     * {@code this}. Build number assignment happens on every build, from {@link Executor#run}
+     * while it holds {@link Queue#lock}; synchronizing on the job's own monitor there would risk
+     * a lock-ordering deadlock against any code that acquires {@link Queue#lock} while already
+     * holding that monitor (as disabling or deleting a job used to, before those were changed to
+     * dispatch their queue cancellation asynchronously -- see
+     * {@link jenkins.model.ParameterizedJobMixIn.ParameterizedJob#makeDisabled} and
+     * {@link AbstractProject#performDelete}). This dedicated lock is never needed by anything
+     * that also needs {@link Queue#lock}, so it carries no equivalent risk -- but only as long as
+     * nothing to do with it ever has to fall back to synchronizing on {@code this}, which is why
+     * this is a field initializer (always run for normally-constructed jobs) rather than lazily
+     * created on first use: a lazy-init fallback would itself need to synchronize on {@code this}
+     * for a newly constructed job's first build, recreating the exact hazard this exists to avoid.
+     *
+     * <p>Deliberately not {@code final}: XStream deserialization (loading a job from
+     * {@code config.xml}, including {@link #onCopiedFrom}) bypasses the constructor and field
+     * initializers entirely, which would leave this {@code null} for existing jobs predating this
+     * field. {@link #onLoad} and {@link #onCopiedFrom} each fix it up with a plain, unsynchronized
+     * null check -- safe because neither runs concurrently with a build of the same job, the same
+     * way {@link #onLoad} already fixes up {@link #properties} for objects that predate that field.
+     *
+     * <p>Lock order: {@link AbstractItem#renameTo} takes this inside the job's own monitor (see
+     * {@link #getRenameLock}), so code holding this lock must never acquire the job's or its parent's
+     * monitor, nor {@link Queue#lock}.
+     */
+    private transient volatile Object nextBuildNumberLock = new Object();
+
+    /**
+     * Highest number handed out by {@link #assignBuildNumber} since this object was created or loaded,
+     * guarded by {@link #nextBuildNumberLock}. A build is not visible to {@link #getLastBuild} until
+     * after its number is assigned, so {@link #updateNextBuildNumber} also checks this to avoid
+     * rewinding onto a number that a build being created already holds.
+     */
+    private transient int highestAssignedBuildNumber;
+
+    /**
+     * Builds currently inside {@link LazyBuildMixIn#newBuild}, guarded by {@link #nextBuildNumberLock}.
+     * Such a build has already resolved its directory from the job's name but may not have created it
+     * yet, so {@link #renameTo} refuses to move the job meanwhile.
+     */
+    private transient int buildsBeingCreated;
+
+    /**
      * Newly copied jobs get this flag set, so that Hudson doesn't try to run the job until its configuration
      * is saved once.
      */
@@ -218,6 +261,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             throws IOException {
         super.onLoad(parent, name);
 
+        if (nextBuildNumberLock == null) { // XStream deserialization bypasses the field initializer
+            nextBuildNumberLock = new Object();
+        }
+
         // see https://github.com/jenkinsci/jenkins/pull/10456#issuecomment-2748112449
         // This code can be deleted after several Jenkins releases,
         // when it is likely that everyone is running a version equal or higher to this version.
@@ -232,19 +279,21 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         TextFile f = getNextBuildNumberFile();
         if (f.exists()) {
             try {
-                synchronized (this) {
+                synchronized (nextBuildNumberLock) {
                     this.nextBuildNumber = Integer.parseInt(f.readTrim());
                 }
             } catch (NumberFormatException e) {
                 LOGGER.log(Level.WARNING, "Corruption in {0}: {1}", new Object[] {f, e});
                 RunT lB = getLastBuild();
-                synchronized (this) {
+                synchronized (nextBuildNumberLock) {
                     this.nextBuildNumber = lB != null ? lB.getNumber() + 1 : 1;
                 }
                 saveNextBuildNumber();
             }
         } else if (nextBuildNumber == 0) {
-            nextBuildNumber = 1;
+            synchronized (nextBuildNumberLock) {
+                nextBuildNumber = 1;
+            }
         }
 
         if (properties == null) // didn't exist < 1.72
@@ -255,10 +304,18 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Override
+    @SuppressFBWarnings(
+            value = "ML_SYNC_ON_UPDATED_FIELD",
+            justification = "The field is only null right after XStream deserialization, and a copied job cannot be building yet; see nextBuildNumberLock.")
     public void onCopiedFrom(Item src) {
         super.onCopiedFrom(src);
-        synchronized (this) {
+        if (nextBuildNumberLock == null) { // XStream deserialization bypasses the field initializer
+            nextBuildNumberLock = new Object();
+        }
+        synchronized (nextBuildNumberLock) {
             this.nextBuildNumber = 1; // reset the next build number
+        }
+        synchronized (this) {
             this.holdOffBuildUntilUserSave = true;
             this.holdOffBuildUntilSave = this.holdOffBuildUntilUserSave;
         }
@@ -288,11 +345,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return holdOffBuildUntilSave;
     }
 
-    protected synchronized void saveNextBuildNumber() throws IOException {
-        if (nextBuildNumber == 0) { // JENKINS-3361
-            nextBuildNumber = 1;
+    protected void saveNextBuildNumber() throws IOException {
+        synchronized (nextBuildNumberLock) {
+            if (nextBuildNumber == 0) { // JENKINS-3361
+                nextBuildNumber = 1;
+            }
+            getNextBuildNumberFile().write(String.valueOf(nextBuildNumber) + '\n');
         }
-        getNextBuildNumberFile().write(String.valueOf(nextBuildNumber) + '\n');
     }
 
     @Exported
@@ -351,7 +410,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see BuildNumberAssigner
      */
     public int assignBuildNumber() throws IOException {
-        return ExtensionList.lookupFirst(BuildNumberAssigner.class).assignBuildNumber(this, this::saveNextBuildNumber);
+        BuildNumberAssigner assigner = ExtensionList.lookupFirst(BuildNumberAssigner.class);
+        // Held across the assigner so that updateNextBuildNumber can never observe a number that has
+        // been handed out but not yet recorded, whichever assigner is in use.
+        synchronized (nextBuildNumberLock) {
+            int r = assigner.assignBuildNumber(this, this::saveNextBuildNumber);
+            highestAssignedBuildNumber = Math.max(highestAssignedBuildNumber, r);
+            return r;
+        }
     }
 
     /**
@@ -361,6 +427,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public interface BuildNumberAssigner extends ExtensionPoint {
         /**
          * Implementation of {@link Job#assignBuildNumber}.
+         * Always called with the job's private build-number lock held (and normally, from an executor,
+         * with {@link Queue#lock} held too), so it must not call anything that synchronizes on the job
+         * or its parent (such as {@link Job#save}), or it can deadlock against a concurrent rename.
          */
         int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException;
 
@@ -379,7 +448,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public static final class DefaultBuildNumberAssigner implements BuildNumberAssigner {
         @Override
         public int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException {
-            synchronized (job) {
+            // Not synchronized on `job` itself: this runs from Executor#run while Queue#lock is
+            // held, and the job's own monitor can be held elsewhere (e.g. during doConfigSubmit)
+            // by code that in turn needs Queue#lock -- see Job#nextBuildNumberLock.
+            synchronized (job.nextBuildNumberLock) {
                 int r = job.nextBuildNumber++;
                 saveNextBuildNumber.call();
                 return r;
@@ -453,14 +525,21 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Much of Hudson assumes that the build number is unique and monotonic, so
      * this method can only accept a new value that's bigger than
      * {@link #getLastBuild()} returns. Otherwise it'll be no-op.
+     * It is likewise a no-op for any value not bigger than the highest number already handed out by
+     * {@link #assignBuildNumber} since this job was loaded, even if that build was never recorded.
      *
      * @since 1.199 (before that, this method was package private.)
      */
-    public synchronized void updateNextBuildNumber(int next) throws IOException {
+    public void updateNextBuildNumber(int next) throws IOException {
+        // Read outside the lock: it may lazy-load builds (running arbitrary onLoad code), and a stale
+        // value is harmless because every number assigned since load is covered by highestAssignedBuildNumber.
         RunT lb = getLastBuild();
-        if (lb != null ?  next > lb.getNumber() : next > 0) {
-            this.nextBuildNumber = next;
-            saveNextBuildNumber();
+        synchronized (nextBuildNumberLock) {
+            int floor = Math.max(lb != null ? lb.getNumber() : 0, highestAssignedBuildNumber);
+            if (next > floor) {
+                this.nextBuildNumber = next;
+                saveNextBuildNumber();
+            }
         }
     }
 
@@ -706,6 +785,38 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
         }
     };
+
+    /**
+     * Build-number assignment writes {@code nextBuildNumber} into the root directory under
+     * {@link #nextBuildNumberLock} rather than this job's monitor, so a rename must also hold that
+     * lock while moving the directory, or a number saved into the new root first would make the move
+     * fail (or, on Windows, be overwritten by the fallback copy).
+     */
+    @Override
+    Object getRenameLock() {
+        return nextBuildNumberLock;
+    }
+
+    @Override
+    void checkRootDirMovable() {
+        if (buildsBeingCreated > 0) {
+            throw new Failure(Messages.Job_NoRenameWhileBuilding());
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void beginBuildCreation() {
+        synchronized (nextBuildNumberLock) {
+            buildsBeingCreated++;
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void endBuildCreation() {
+        synchronized (nextBuildNumberLock) {
+            buildsBeingCreated--;
+        }
+    }
 
     /**
      * Renames a job.

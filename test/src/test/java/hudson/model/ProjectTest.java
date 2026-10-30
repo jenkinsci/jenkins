@@ -25,6 +25,7 @@
 package hudson.model;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
@@ -84,6 +85,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -93,6 +95,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.WorkspaceWriter;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
+import jenkins.util.Timer;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlElement;
@@ -313,7 +316,39 @@ public class ProjectTest {
         p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
         p.scheduleBuild2(0);
         p.makeDisabled(true);
-        assertNull(Queue.getInstance().getItem(p), "Project should be canceled.");
+        // Queue#cancel is dispatched asynchronously (off the caller's monitor) rather than
+        // called synchronously, to avoid a lock-ordering deadlock against Executor#run -- see
+        // ParameterizedJobMixIn#makeDisabled. The item is still removed promptly, just not
+        // necessarily by the time this call returns.
+        await().untilAsserted(() -> assertNull(Queue.getInstance().getItem(p), "Project should be canceled."));
+    }
+
+    @Test
+    void deferredCancelSkipsBuildQueuedAfterReEnable() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("project");
+        p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
+        // The deferred cancel needs Queue#lock, so holding it here keeps that cancel from running until after
+        // the re-enable, however many Timer threads are free.
+        Queue.runWithLock(() -> {
+            p.makeDisabled(true);
+            p.makeDisabled(false);
+            assertNotNull(p.scheduleBuild2(0));
+        });
+        // jenkins.util.Timer is a fixed pool of 10 threads, which can only all meet at this barrier once
+        // the cancel (queued before them) has finished.
+        int timerThreads = 10;
+        CyclicBarrier drained = new CyclicBarrier(timerThreads + 1);
+        for (int i = 0; i < timerThreads; i++) {
+            Timer.get().execute(() -> {
+                try {
+                    drained.await(30, TimeUnit.SECONDS);
+                } catch (Exception e) {
+                    throw new AssertionError(e);
+                }
+            });
+        }
+        drained.await(30, TimeUnit.SECONDS);
+        assertNotNull(Queue.getInstance().getItem(p), "Build queued after re-enabling should not be canceled");
     }
 
     @Test

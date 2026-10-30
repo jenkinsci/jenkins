@@ -110,6 +110,7 @@ import jenkins.scm.SCMDecisionHandler;
 import jenkins.security.XStreamNotDeserializable;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;
+import jenkins.util.Timer;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -359,7 +360,15 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         // prevent a new build while a delete operation is in progress
         if (supportsMakeDisabled()) {
             setDisabled(true);
-            Jenkins.get().getQueue().cancel(this);
+            // Dispatched rather than called synchronously: AbstractItem#delete holds
+            // synchronized (this) around performDelete(), and Queue#cancel needs Queue#lock --
+            // see the identical reasoning in ParameterizedJobMixIn#makeDisabled, including why
+            // the cancel is skipped if the project was re-enabled before it runs.
+            Timer.get().execute(() -> Queue.runWithLock(() -> {
+                if (isDisabled()) {
+                    Jenkins.get().getQueue().cancel(this);
+                }
+            }));
         }
         FilePath ws = getWorkspace();
         if (ws != null) {
@@ -976,8 +985,13 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
     /**
      * Creates a new build of this project for immediate execution.
+     *
+     * <p>Must not be {@code synchronized}: the caller (an executor, via {@link Queue#callWithLock})
+     * holds {@link Queue#lock}, and acquiring the project's monitor here too would deadlock against
+     * any code that acquires those two locks in the opposite order while holding the monitor, such as
+     * {@link ParameterizedJobMixIn.ParameterizedJob#makeDisabled} or {@link AbstractItem#delete}.
      */
-    protected synchronized R newBuild() throws IOException {
+    protected R newBuild() throws IOException {
         return buildMixIn.newBuild();
     }
 
