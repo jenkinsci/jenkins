@@ -332,20 +332,25 @@ public class Items {
         StringTokenizer tokens = new StringTokenizer(relativeNames, ",");
         List<String> newValue = new ArrayList<>();
         while (tokens.hasMoreTokens()) {
-            String relativeName = tokens.nextToken().trim();
-            String canonicalName = getCanonicalName(context, relativeName);
-            if (canonicalName.equals(oldFullName) || canonicalName.startsWith(oldFullName + '/')) {
-                String newCanonicalName = newFullName + canonicalName.substring(oldFullName.length());
-                if (relativeName.startsWith("/")) {
-                    newValue.add("/" + newCanonicalName);
-                } else {
-                    newValue.add(getRelativeNameFrom(newCanonicalName, context.getFullName()));
-                }
-            } else {
-                newValue.add(relativeName);
-            }
+            newValue.add(computeRelativeNameAfterRenaming(oldFullName, newFullName, tokens.nextToken().trim(), context));
         }
         return String.join(",", newValue);
+    }
+
+    /**
+     * Computes a single item's relative name after a rename or move, preserving literal commas and whitespace.
+     */
+    static String computeRelativeNameAfterRenaming(String oldFullName, String newFullName, String relativeName, ItemGroup context) {
+        String canonicalName = getCanonicalName(context, relativeName);
+        if (canonicalName.equals(oldFullName) || canonicalName.startsWith(oldFullName + '/')) {
+            String newCanonicalName = newFullName + canonicalName.substring(oldFullName.length());
+            if (relativeName.startsWith("/")) {
+                return "/" + newCanonicalName;
+            } else {
+                return getRelativeNameFrom(newCanonicalName, context.getFullName());
+            }
+        }
+        return relativeName;
     }
 
     // Had difficulty adapting the version in Functions to use no live items, so rewrote it:
