@@ -421,7 +421,17 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         p.printSingleLineUsage(stderr);
         stderr.println();
         printUsageSummary(stderr);
-        p.printUsage(stderr);
+
+        CmdLineParser parserForUsage = p;
+        try {
+            CLICommand cleanInstance = createClone();
+            if (cleanInstance != null) {
+                parserForUsage = cleanInstance.getCmdLineParser();
+            }
+        } catch (Throwable ignored) {
+            // Fallback to the supplied parser if an unmutated clone cannot be created
+        }
+        parserForUsage.printUsage(stderr);
     }
 
     /**
