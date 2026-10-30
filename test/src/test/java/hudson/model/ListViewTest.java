@@ -205,7 +205,7 @@ class ListViewTest {
     @Test
     void renameAndMoveItemsWithCommas() throws Exception {
         MockFolder folder = j.createFolder("folder, original");
-        MockFolder destination = folder.createProject(MockFolder.class, "destination, folder");
+        final MockFolder destination = folder.createProject(MockFolder.class, "destination, folder");
         FreeStyleProject job = folder.createProject(FreeStyleProject.class, "job, original");
         ListView rootView = new ListView("root-view", j.jenkins);
         rootView.setRecurse(true);
