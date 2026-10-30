@@ -3143,6 +3143,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return null;
     }
 
+    /**
+     * Gets the item at the given path relative to the context, or null if there is no such item of the given type.
+     * @throws AccessDeniedException if the current user has {@link Item#DISCOVER} but not {@link Item#READ} on an item along the path
+     */
     public final <T extends Item> T getItem(String pathName, Item context, Class<T> type) {
         return getItem(pathName, context != null ? context.getParent() : null, type);
     }
@@ -3191,8 +3195,45 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
+    /**
+     * Gets the item with the given full name, or null if there is no such item.
+     * @throws AccessDeniedException as per {@link #getItemByFullName(String, Class)}
+     */
     public @CheckForNull Item getItemByFullName(String fullName) {
         return getItemByFullName(fullName, Item.class);
+    }
+
+    /**
+     * Like {@link #getItemByFullName(String, Class)}, but returns null instead of throwing {@link AccessDeniedException}.
+     * @since TODO
+     */
+    public @CheckForNull <T extends Item> T getItemByFullNameOrNull(@NonNull String fullName, Class<T> type) {
+        try {
+            return getItemByFullName(fullName, type);
+        } catch (AccessDeniedException x) {
+            return null;
+        }
+    }
+
+    /**
+     * Like {@link #getItemByFullName(String)}, but returns null instead of throwing {@link AccessDeniedException}.
+     * @since TODO
+     */
+    public @CheckForNull Item getItemByFullNameOrNull(@NonNull String fullName) {
+        return getItemByFullNameOrNull(fullName, Item.class);
+    }
+
+    /**
+     * Like {@link #getItem(String, Item, Class)}, but returns null instead of throwing {@link AccessDeniedException}.
+     * @since TODO
+     */
+    public @CheckForNull <T extends Item> T getItemOrNull(
+            @NonNull String pathName, Item context, @NonNull Class<T> type) {
+        try {
+            return getItem(pathName, context, type);
+        } catch (AccessDeniedException x) {
+            return null;
+        }
     }
 
     /**
