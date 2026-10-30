@@ -24,9 +24,14 @@
 
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Objects;
+import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
@@ -40,10 +45,44 @@ import org.kohsuke.stapler.StaplerResponse2;
  * @see <a href="https://github.com/w3c/webappsec-csp/issues/8">Content Security Policy issue discussing this behavior</a>
  * @since 2.550
  */
-public record ClientHttpRedirect(String redirectUrl) implements HttpResponse {
+public record ClientHttpRedirect(@NonNull String redirectUrl) implements HttpResponse {
+
+    public ClientHttpRedirect {
+        Objects.requireNonNull(redirectUrl, "redirectUrl must not be null");
+    }
+
+    /**
+     * Checks whether the target redirect URL uses an allowed HTTP/HTTPS scheme or is a safe relative URL.
+     *
+     * @param url the URL to validate
+     * @return true if the URL is allowed for client-side redirection
+     * @since TODO
+     */
+    public static boolean isAllowed(String url) {
+        if (url == null || url.isBlank()) {
+            return false;
+        }
+        try {
+            URI uri = new URI(url);
+            String scheme = uri.getScheme();
+            if (scheme != null) {
+                return scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https");
+            }
+            return Util.isSafeToRedirectTo(url);
+        } catch (URISyntaxException e) {
+            return false;
+        }
+    }
+
     @Override
     public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object o) throws IOException, ServletException {
-        rsp.setContentType("text/html;charset=UTF-8");
-        Util.printRedirect(req.getContextPath(), redirectUrl, redirectUrl, rsp.getWriter());
+        if (isAllowed(redirectUrl)) {
+            rsp.setContentType("text/html;charset=UTF-8");
+            Util.printRedirect(req.getContextPath(), redirectUrl, Util.escape(redirectUrl), rsp.getWriter());
+        } else {
+            new ForwardToView(ClientHttpRedirect.class, "securityWarning")
+                    .with("redirectUrl", redirectUrl)
+                    .generateResponse(req, rsp, o);
+        }
     }
 }
