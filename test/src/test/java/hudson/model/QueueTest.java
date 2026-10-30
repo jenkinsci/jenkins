@@ -101,6 +101,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -537,6 +538,157 @@ public class QueueTest {
             assertTrue(taskComplete.get());
         } finally {
             executor.shutdownNow();
+        }
+    }
+
+    /**
+     * A handler that blocks inside shouldSchedule for one specific task until released,
+     * to prove whether other queue operations are blocked meanwhile.
+     */
+    @TestExtension({"slowDecisionHandlerBlocksQueueByDefault", "slowDecisionHandlerDoesNotBlockQueueWhenOutsideLock"})
+    public static class BlockingDecisionHandler extends Queue.QueueDecisionHandler {
+        static volatile Queue.Task target;
+        static volatile CountDownLatch entered;
+        static volatile CountDownLatch release;
+
+        @Override
+        public boolean shouldSchedule(Queue.Task p, List<Action> actions) {
+            if (p == target) {
+                entered.countDown();
+                try {
+                    release.await(30, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            return true;
+        }
+    }
+
+    /**
+     * Schedules a task whose decision handler blocks, then checks whether an unrelated
+     * queue-lock operation can complete in the meantime.
+     * @return true if the other operation completed while the handler was still blocked
+     */
+    private boolean otherQueueOperationCompletesWhileHandlerBlocked(boolean outsideLock) throws Exception {
+        boolean old = Queue.DECISION_HANDLERS_OUTSIDE_LOCK;
+        Queue.DECISION_HANDLERS_OUTSIDE_LOCK = outsideLock;
+        r.jenkins.setNumExecutors(0); // keep the scheduled item in the queue
+        FreeStyleProject p = r.createFreeStyleProject();
+        BlockingDecisionHandler.target = p;
+        BlockingDecisionHandler.entered = new CountDownLatch(1);
+        BlockingDecisionHandler.release = new CountDownLatch(1);
+        ExecutorService ex = Executors.newFixedThreadPool(2);
+        try {
+            Future<?> scheduling = ex.submit(() -> {
+                r.jenkins.getQueue().schedule2(p, 0);
+            });
+            assertTrue(BlockingDecisionHandler.entered.await(10, TimeUnit.SECONDS), "handler should have been entered");
+
+            Future<?> other = ex.submit(() -> {
+                Queue.withLock(() -> { });
+            });
+            boolean completed;
+            try {
+                other.get(3, TimeUnit.SECONDS);
+                completed = true;
+            } catch (TimeoutException e) {
+                completed = false;
+            }
+
+            BlockingDecisionHandler.release.countDown();
+            scheduling.get(10, TimeUnit.SECONDS);
+            return completed;
+        } finally {
+            BlockingDecisionHandler.release.countDown();
+            ex.shutdownNow();
+            Queue.DECISION_HANDLERS_OUTSIDE_LOCK = old;
+            r.jenkins.getQueue().clear();
+        }
+    }
+
+    @Test
+    void slowDecisionHandlerBlocksQueueByDefault() throws Exception {
+        assertFalse(otherQueueOperationCompletesWhileHandlerBlocked(false),
+                "legacy behavior: handler runs under the queue lock, so other operations wait");
+    }
+
+    @Test
+    void slowDecisionHandlerDoesNotBlockQueueWhenOutsideLock() throws Exception {
+        assertTrue(otherQueueOperationCompletesWhileHandlerBlocked(true),
+                "with the option enabled, other queue operations must not wait for the handler");
+    }
+
+    @TestExtension({"vetoStillRefusesSchedulingByDefault", "vetoStillRefusesSchedulingOutsideLock"})
+    public static class VetoDecisionHandler extends Queue.QueueDecisionHandler {
+        @Override
+        public boolean shouldSchedule(Queue.Task p, List<Action> actions) {
+            return false;
+        }
+    }
+
+    private void assertVetoRefuses(boolean outsideLock) throws Exception {
+        boolean old = Queue.DECISION_HANDLERS_OUTSIDE_LOCK;
+        Queue.DECISION_HANDLERS_OUTSIDE_LOCK = outsideLock;
+        try {
+            FreeStyleProject p = r.createFreeStyleProject();
+            assertTrue(r.jenkins.getQueue().schedule2(p, 0).isRefused());
+            assertTrue(r.jenkins.getQueue().isEmpty());
+        } finally {
+            Queue.DECISION_HANDLERS_OUTSIDE_LOCK = old;
+        }
+    }
+
+    @Test
+    void vetoStillRefusesSchedulingByDefault() throws Exception {
+        assertVetoRefuses(false);
+    }
+
+    @Test
+    void vetoStillRefusesSchedulingOutsideLock() throws Exception {
+        assertVetoRefuses(true);
+    }
+
+    @TestExtension("concurrentIdenticalSchedulesYieldSingleItemOutsideLock")
+    public static class BarrierDecisionHandler extends Queue.QueueDecisionHandler {
+        static volatile Queue.Task target;
+        static volatile CyclicBarrier barrier;
+
+        @Override
+        public boolean shouldSchedule(Queue.Task p, List<Action> actions) {
+            if (p == target) {
+                try {
+                    // both schedulers must be inside the handler at the same time
+                    barrier.await(10, TimeUnit.SECONDS);
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+            return true;
+        }
+    }
+
+    @Test
+    void concurrentIdenticalSchedulesYieldSingleItemOutsideLock() throws Exception {
+        boolean old = Queue.DECISION_HANDLERS_OUTSIDE_LOCK;
+        Queue.DECISION_HANDLERS_OUTSIDE_LOCK = true;
+        r.jenkins.setNumExecutors(0); // keep the item in the queue
+        FreeStyleProject p = r.createFreeStyleProject();
+        BarrierDecisionHandler.target = p;
+        BarrierDecisionHandler.barrier = new CyclicBarrier(2);
+        ExecutorService ex = Executors.newFixedThreadPool(2);
+        try {
+            Future<ScheduleResult> a = ex.submit(() -> r.jenkins.getQueue().schedule2(p, 0));
+            Future<ScheduleResult> b = ex.submit(() -> r.jenkins.getQueue().schedule2(p, 0));
+            ScheduleResult resultA = a.get(30, TimeUnit.SECONDS);
+            ScheduleResult resultB = b.get(30, TimeUnit.SECONDS);
+
+            assertEquals(1, r.jenkins.getQueue().getItems(p).size(), "duplicate detection must still yield one item");
+            assertTrue(resultA.isCreated() ^ resultB.isCreated(), "exactly one call should create the item");
+        } finally {
+            ex.shutdownNow();
+            Queue.DECISION_HANDLERS_OUTSIDE_LOCK = old;
+            r.jenkins.getQueue().clear();
         }
     }
 
