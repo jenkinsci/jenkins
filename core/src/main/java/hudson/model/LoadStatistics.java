@@ -321,16 +321,21 @@ public abstract class LoadStatistics {
             }
         }
         int q = 0;
+        int rejected = 0;
         if (queue != null) {
             for (Queue.BuildableItem item : queue) {
-
+                int matching = 0;
                 for (SubTask st : item.task.getSubTasks()) {
                     if (matches(item, st))
-                        q++;
+                        matching++;
+                }
+                q += matching;
+                if (item.isRejectedByAllAvailableExecutors()) {
+                    rejected += matching;
                 }
             }
         }
-        return builder.withQueueLength(q).build();
+        return builder.withQueueLength(q).withRejectedQueueLength(rejected).build();
     }
 
     /**
@@ -421,11 +426,16 @@ public abstract class LoadStatistics {
          * The number of items in the queue.
          */
         private final int queueLength;
+        /**
+         * The number of queued items that no currently available executor was willing to take, and for which
+         * additional capacity could plausibly help.
+         */
+        private final int rejectedQueueLength;
 
         private LoadStatisticsSnapshot(
                 int definedExecutors, int onlineExecutors, int connectingExecutors,
                 int busyExecutors, int idleExecutors, int availableExecutors,
-                int queueLength) {
+                int queueLength, int rejectedQueueLength) {
             this.definedExecutors = definedExecutors;
             this.onlineExecutors = onlineExecutors;
             this.connectingExecutors = connectingExecutors;
@@ -436,6 +446,8 @@ public abstract class LoadStatistics {
             this.availableExecutors = availableExecutors;
             // assert availableExecutors <= idleExecutors;
             this.queueLength = queueLength;
+            // assert rejectedQueueLength <= queueLength;
+            this.rejectedQueueLength = rejectedQueueLength;
         }
 
         /**
@@ -495,6 +507,27 @@ public abstract class LoadStatistics {
             return queueLength;
         }
 
+        /**
+         * The number of items in the queue that no currently {@linkplain #getAvailableExecutors() available}
+         * executor was willing to take, and for which additional capacity could plausibly help.
+         *
+         * <p>Executors counted in {@link #getAvailableExecutors()} are idle and accepting tasks, but a
+         * {@link hudson.model.queue.QueueTaskDispatcher} may still veto individual items on them, for example
+         * to limit how many builds of a category run concurrently on one node. Such an executor is not
+         * capacity that can serve those items, so {@link hudson.slaves.NodeProvisioner} uses this count to
+         * avoid mistaking it for capacity and refusing to provision.
+         *
+         * <p>Unlike the other counts, this one has no associated {@link MultiStageTimeSeries}; it is only
+         * meaningful as an instantaneous value.
+         *
+         * @see Queue.BuildableItem#isRejectedByAllAvailableExecutors()
+         * @since TODO
+         */
+        @Exported
+        public int getRejectedQueueLength() {
+            return rejectedQueueLength;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) {
@@ -527,6 +560,9 @@ public abstract class LoadStatistics {
             if (queueLength != that.queueLength) {
                 return false;
             }
+            if (rejectedQueueLength != that.rejectedQueueLength) {
+                return false;
+            }
 
             return true;
         }
@@ -540,6 +576,7 @@ public abstract class LoadStatistics {
             result = 31 * result + idleExecutors;
             result = 31 * result + availableExecutors;
             result = 31 * result + queueLength;
+            result = 31 * result + rejectedQueueLength;
             return result;
         }
 
@@ -552,6 +589,7 @@ public abstract class LoadStatistics {
                     ", idleExecutors=" + idleExecutors +
                     ", availableExecutors=" + availableExecutors +
                     ", queueLength=" + queueLength +
+                    ", rejectedQueueLength=" + rejectedQueueLength +
                     '}';
             return sb;
         }
@@ -569,17 +607,27 @@ public abstract class LoadStatistics {
             private int idleExecutors;
             private int availableExecutors;
             private int queueLength;
+            private int rejectedQueueLength;
 
             public LoadStatisticsSnapshot build() {
                 return new LoadStatisticsSnapshot(
                         definedExecutors, onlineExecutors, connectingExecutors,
                         busyExecutors, idleExecutors, availableExecutors,
-                        queueLength
+                        queueLength, rejectedQueueLength
                 );
             }
 
             public Builder withQueueLength(int queueLength) {
                 this.queueLength = queueLength;
+                return this;
+            }
+
+            /**
+             * @see LoadStatisticsSnapshot#getRejectedQueueLength()
+             * @since TODO
+             */
+            public Builder withRejectedQueueLength(int rejectedQueueLength) {
+                this.rejectedQueueLength = rejectedQueueLength;
                 return this;
             }
 
