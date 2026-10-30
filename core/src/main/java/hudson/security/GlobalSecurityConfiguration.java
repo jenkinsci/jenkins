@@ -37,6 +37,7 @@ import hudson.model.ManagementLink;
 import hudson.util.FormApply;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -187,6 +188,12 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
     @Restricted(NoExternalUse.class)
     @RestrictedSince("2.222")
     public static final Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof GlobalConfigurationCategory.Security;
+
+    /** The descriptors configured on this page, for {@code index.jelly}. */
+    @Restricted(NoExternalUse.class)
+    public Collection<Descriptor> getSecurityDescriptors() {
+        return Functions.getSortedDescriptorsForGlobalConfigByDescriptor(FILTER);
+    }
 
     /**
      * @see Describable#getDescriptor()
