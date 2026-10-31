@@ -174,8 +174,11 @@ Behaviour.specify(
     const loading = container.querySelector(".jenkins-runs__loading");
     const more = container.querySelector(".jenkins-runs__more");
     let next = null;
+    // rows of the current page loaded so far, kept if loading the rest fails so that a retry asks only for the rest
+    let loaded = 0;
+    let pageSize = null;
 
-    function fetchPage(loaded, pageSize) {
+    function fetchPage() {
       const params = new URLSearchParams();
       if (next !== null) {
         params.set("olderThan", next);
@@ -196,23 +199,25 @@ Behaviour.specify(
           render(page.builds);
           next = page.next;
           loaded += page.builds.length;
+          pageSize = page.pageSize;
           // the server stopped early to bound its scan time, so the page is not full yet
-          if (page.partial && next !== null && loaded < page.pageSize) {
-            return fetchPage(loaded, page.pageSize);
+          if (page.partial && next !== null && loaded < pageSize) {
+            return fetchPage();
           }
+          loaded = 0;
         });
     }
 
     function load() {
       more.disabled = true;
       loading.classList.remove("jenkins-hidden");
-      fetchPage(0)
+      fetchPage()
         .then(function () {
           more.classList.toggle("jenkins-hidden", next === null);
         })
         .catch(function (e) {
           console.error("Failed to load builds from " + url, e);
-          // offer to retry from the last page loaded
+          // offer to retry, loading the rest of the page
           more.classList.remove("jenkins-hidden");
           notificationBar.show(
             container.dataset.loadError,

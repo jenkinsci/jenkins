@@ -38,17 +38,22 @@ import hudson.model.Slave;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
 import hudson.util.RunList;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTable;
+import org.htmlunit.util.WebConnectionWrapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -98,6 +103,51 @@ class BuildListTableTest {
         target = URI.create(page.getUrl().toExternalForm()).resolve(href).toURL();
         wc.getPage(target);
         assertEquals(r.getURL() + "job/d/job/d2/job/p/", target.toString(), href);
+    }
+
+    @Test
+    void retryingAPageCutShortLoadsOnlyTheRest() throws Exception {
+        int pageSize = RunListData.PAGE_SIZE;
+        long scanBudget = RunListData.SCAN_BUDGET_MS;
+        RunListData.PAGE_SIZE = 3;
+        RunListData.SCAN_BUDGET_MS = 0; // every page is cut short after one build
+        try {
+            FreeStyleProject p = r.createFreeStyleProject("p");
+            for (int i = 0; i < 4; i++) {
+                r.buildAndAssertSuccess(p);
+                Thread.sleep(2); // so that the builds have different timestamps
+            }
+            JenkinsRule.WebClient wc = r.createWebClient();
+            wc.getOptions().setThrowExceptionOnScriptError(false);
+            List<String> requests = new ArrayList<>();
+            new WebConnectionWrapper(wc) {
+                @Override
+                public WebResponse getResponse(WebRequest request) throws IOException {
+                    String url = request.getUrl().toString();
+                    if (url.contains("/buildList")) {
+                        requests.add(url.replaceAll(".*/buildList", "buildList").replaceAll("olderThan=\\d+&?", ""));
+                        if (requests.size() == 2) {
+                            throw new IOException("the second request fails");
+                        }
+                    }
+                    return super.getResponse(request);
+                }
+            };
+            HtmlPage page = wc.goTo("view/all/builds");
+            wc.waitForBackgroundJavaScript(120000);
+            HtmlTable table = page.getHtmlElementById("projectStatus");
+            assertEquals(1, table.getRowCount() - 1);
+            HtmlButton more = page.querySelector(".jenkins-runs__more");
+            assertFalse(more.getAttribute("class").contains("jenkins-hidden"), "the user can try again");
+
+            more.click();
+            wc.waitForBackgroundJavaScript(120000);
+            assertEquals(List.of("buildList", "buildList?limit=2", "buildList?limit=2", "buildList?limit=1"), requests);
+            assertEquals(3, table.getRowCount() - 1, "a page of 3 builds");
+        } finally {
+            RunListData.PAGE_SIZE = pageSize;
+            RunListData.SCAN_BUDGET_MS = scanBudget;
+        }
     }
 
     @Test
