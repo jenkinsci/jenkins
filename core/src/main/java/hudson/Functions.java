@@ -96,6 +96,7 @@ import hudson.util.Secret;
 import hudson.util.jna.GNUCLibrary;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
+import hudson.widgets.DescriptorPage;
 import hudson.widgets.RenderOnDemandClosure;
 import io.jenkins.servlet.http.CookieWrapper;
 import io.jenkins.servlet.http.HttpServletRequestWrapper;
@@ -2455,6 +2456,17 @@ public class Functions {
     @Restricted(NoExternalUse.class)
     public static StaplerRequest2.RenderOnDemandParameters createRenderOnDemandProxyParameters(JellyContext context, String attributesToCapture) {
         return Stapler.getCurrentRequest2().createJavaScriptProxyParameters(new RenderOnDemandClosure(context, attributesToCapture));
+    }
+
+    /**
+     * Called from renderOnDemand.jelly to generate the parameters for the proxy object generation, rendering with a view
+     * of {@link DescriptorPage} rather than keeping a closure in the session where it can.
+     */
+    @Restricted(NoExternalUse.class)
+    public static StaplerRequest2.RenderOnDemandParameters createRenderOnDemandProxyParameters(JellyContext context, String attributesToCapture, String prototype) {
+        StaplerRequest2.RenderOnDemandParameters parameters = prototype == null ? null
+                : DescriptorPage.parameters(context, Util.fixNull(attributesToCapture), prototype);
+        return parameters != null ? parameters : createRenderOnDemandProxyParameters(context, attributesToCapture);
     }
 
     public static String getCurrentDescriptorByNameUrl() {

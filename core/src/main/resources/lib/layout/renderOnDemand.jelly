@@ -34,9 +34,13 @@ THE SOFTWARE.
     <st:attribute name="capture">
       ','-separated list of variables to capture and make available when later evaluating the body.
     </st:attribute>
+    <st:attribute name="prototype">
+      For Jenkins core only: the view of hudson.widgets.DescriptorPage that renders the same as the body,
+      so that, where it can, the body is rendered on demand without keeping anything in the session.
+    </st:attribute>
   </st:documentation>
 
-  <j:set var="parameters" value="${h.createRenderOnDemandProxyParameters(context,attrs.capture)}"/>
+  <j:set var="parameters" value="${h.createRenderOnDemandProxyParameters(context,attrs.capture,attrs.prototype)}"/>
   <x:element name="${attrs.tag?:'div'}">
     <x:attribute name="class">render-on-demand ${attrs.clazz}</x:attribute>
     <x:attribute name="data-proxy-method">${parameters.proxyMethod}</x:attribute>

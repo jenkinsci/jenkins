@@ -107,6 +107,7 @@ import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.symbol.Symbol;
 import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
@@ -1282,4 +1283,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static final Message<View> NEW_PRONOUN = new Message<>();
 
     private static final Logger LOGGER = Logger.getLogger(View.class.getName());
+
+    @Restricted(Beta.class)
+    @Override
+    public Permission getDescriptorPagePermission() {
+        return CONFIGURE;
+    }
 }
