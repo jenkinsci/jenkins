@@ -320,12 +320,52 @@ function tryPost(element, opt, context) {
   }
 
   element.addEventListener("click", () => {
-    fetch(context + xmlEscape(opt.event.url), {
-      method: "post",
-      headers: crumb.wrap({}),
-    });
-    window.location.href = ".";
+    element.disabled = true;
+    fetchPostHeaders()
+      .then((headers) =>
+        fetch(context + xmlEscape(opt.event.url), {
+          method: "post",
+          headers,
+        }),
+      )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to complete the action");
+        }
+        window.location.href = ".";
+      })
+      .catch(() => {
+        notificationBar.show(
+          document.head.dataset.dropdownPostError,
+          notificationBar.ERROR,
+        );
+        element.disabled = false;
+      });
   });
+}
+
+function fetchPostHeaders() {
+  if (!crumb.fieldName) {
+    return Promise.resolve({});
+  }
+
+  // A long-lived page may have a crumb from an expired session. Refresh
+  // it before the action so that we never need to repeat the POST.
+  return fetch(`${document.head.dataset.rooturl}/crumbIssuer/api/json`, {
+    cache: "no-store",
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to refresh the crumb");
+      }
+      return response.json();
+    })
+    .then(({ crumbRequestField, crumb: freshCrumb }) => {
+      if (!crumbRequestField || !freshCrumb) {
+        throw new Error("Invalid crumb response");
+      }
+      return { [crumbRequestField]: freshCrumb };
+    });
 }
 
 function heading(label) {
