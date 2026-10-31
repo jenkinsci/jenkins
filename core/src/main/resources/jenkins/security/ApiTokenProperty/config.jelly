@@ -100,7 +100,11 @@ THE SOFTWARE.
             </div>
             <j:if test="${expiration.pendingEnforceFrom() != null}">
                 <div class="jenkins-alert jenkins-alert-info token-enforce-from-notice">
-                    ${%EnforceFromNotice(expiration.pendingEnforceFrom(), expiration.maximumLifetimeDays())}
+                    <!-- with strict mode scheduled nobody will be exempt, so the notice must not say "unless your account is exempt" -->
+                    <j:choose>
+                        <j:when test="${expiration.strictScheduled()}">${%EnforceFromNoticeStrict(expiration.pendingEnforceFrom(), expiration.maximumLifetimeDays())}</j:when>
+                        <j:otherwise>${%EnforceFromNotice(expiration.pendingEnforceFrom(), expiration.maximumLifetimeDays())}</j:otherwise>
+                    </j:choose>
                 </div>
             </j:if>
         </div>

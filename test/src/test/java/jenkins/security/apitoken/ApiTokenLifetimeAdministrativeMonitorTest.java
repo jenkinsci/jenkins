@@ -99,6 +99,10 @@ import org.jvnet.hudson.test.recipes.LocalData;
  * is a finding depends on the day, which the checks that take one use a fixed one, far from the date of the clock; the tests of
  * the page can only use the clock, so the dates they use are relative to it. See issue #27612.
  * <p>
+ * Strict mode adds a label to the phase, and one case to what is hidden from the users who are exempt: while it is switched on and
+ * has not started, they are still exempt, and from the day it starts nobody is, so the tokens of an exempt owner that exceed the
+ * maximum, and the secrets that several of them share, are listed already, marked with that day (scenario S21).
+ * <p>
  * They also cover the two actions of the page, Revoke and Shorten. Both are POSTs that only administrators reach, and that look
  * at the token again when they arrive: Revoke takes with it every token of the user that has not expired and holds the same
  * secret, even one that was added after the page was rendered, and Shorten refuses a token that complies, that has expired, that
@@ -464,6 +468,269 @@ class ApiTokenLifetimeAdministrativeMonitorTest {
         assertEquals(Phase.ENFORCING_INVALID_DATE, invalid.getPhase());
         assertEquals("Enforcing (invalid start date in configuration)", invalid.getPhaseLabel());
         assertNull(invalid.getCountdown());
+    }
+
+    // ---- strict mode: the label, and the exempt owners while it is only scheduled (S21)
+
+    /**
+     * Strict mode is switched on, a maximum of 30 days applies, the user {@code service} is exempt, and strict mode starts on
+     * the day that is given, which is the enforcement date.
+     */
+    private LocalDate scheduleStrict(LocalDate start) {
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("service");
+        config.setStrict(true);
+        config.setEnforceFrom(start.toString());
+        return start;
+    }
+
+    @Test
+    void thePhaseLabelSaysWhenStrictModeIsScheduledOrInEffect() {
+        config.setMaxTokenLifetimeDays(30);
+        config.setStrict(true);
+
+        config.setEnforceFrom(TODAY.plusDays(10).toString());
+        Report scheduled = monitor.scan(TODAY);
+        assertEquals(Phase.WARNING, scheduled.getPhase());
+        assertEquals("Warning phase until " + TODAY.plusDays(10) + " (strict from then)", scheduled.getPhaseLabel());
+        assertEquals("The maximum lifetime is enforced from that day on, in 10 days. Until then nothing is rejected.", scheduled.getCountdown());
+
+        config.setEnforceFrom(TODAY.plusDays(1).toString());
+        assertEquals("Warning phase until " + TODAY.plusDays(1) + " (strict from then)", monitor.scan(TODAY).getPhaseLabel());
+
+        config.setEnforceFrom(TODAY.toString());
+        Report today = monitor.scan(TODAY);
+        assertEquals(Phase.ENFORCING, today.getPhase());
+        assertEquals("Enforcing since " + TODAY + ", in strict mode", today.getPhaseLabel(), "the date is the one of the enforcement, not the day strict mode was switched on");
+        assertNull(today.getCountdown());
+
+        config.setEnforceFrom(TODAY.minusDays(40).toString());
+        assertEquals("Enforcing since " + TODAY.minusDays(40) + ", in strict mode", monitor.scan(TODAY).getPhaseLabel());
+
+        config.setEnforceFrom(null);
+        Report none = monitor.scan(TODAY);
+        assertEquals(Phase.ENFORCING, none.getPhase());
+        assertEquals("Enforcing, in strict mode", none.getPhaseLabel(), "without a date there is none to show");
+
+        config.setEnforceFrom("  ");
+        assertEquals("Enforcing, in strict mode", monitor.scan(TODAY).getPhaseLabel(), "a blank date is no date");
+
+        config.setEnforceFrom("not-a-date-in-the-strict-label-test");
+        Report invalid = monitor.scan(TODAY);
+        assertEquals(Phase.ENFORCING_INVALID_DATE, invalid.getPhase());
+        assertEquals("Enforcing in strict mode (invalid start date in configuration)", invalid.getPhaseLabel(), "strict applies, and the date is still said to be invalid");
+        assertNull(invalid.getCountdown());
+    }
+
+    @Test
+    void theLabelsAreThoseOfThePolicyAloneWhenStrictModeIsSwitchedOff() {
+        config.setMaxTokenLifetimeDays(30);
+        config.setStrict(true);
+        config.setEnforceFrom(TODAY.plusDays(10).toString());
+        assertEquals("Warning phase until " + TODAY.plusDays(10) + " (strict from then)", monitor.scan(TODAY).getPhaseLabel());
+        config.setStrict(false);
+        assertEquals("Warning phase until " + TODAY.plusDays(10), monitor.scan(TODAY).getPhaseLabel());
+
+        config.setEnforceFrom(TODAY.toString());
+        assertEquals("Enforcing since " + TODAY, monitor.scan(TODAY).getPhaseLabel());
+        config.setStrict(true);
+        assertEquals("Enforcing since " + TODAY + ", in strict mode", monitor.scan(TODAY).getPhaseLabel());
+
+        config.setEnforceFrom(null);
+        config.setStrict(false);
+        assertEquals("Enforcing", monitor.scan(TODAY).getPhaseLabel());
+        config.setStrict(true);
+        assertEquals("Enforcing, in strict mode", monitor.scan(TODAY).getPhaseLabel());
+    }
+
+    @Test
+    void strictModeWithoutAMaximumIsInert() throws Exception {
+        config.setStrict(true);
+        config.setExemptUserIds("service");
+        config.setEnforceFrom(TODAY.plusDays(10).toString());
+        add("service", "never", 1, null);
+        add("bob", "never", 2, null);
+
+        assertFalse(monitor.isActivated(TODAY));
+        Report report = monitor.scan(TODAY);
+        assertEquals(Phase.INACTIVE, report.getPhase());
+        assertEquals("No maximum lifetime is configured", report.getPhaseLabel());
+        assertThat(report.getRows(), empty());
+        assertNull(report.getExemptUntil());
+    }
+
+    @Test
+    void s21AnExemptOwnersTokensAreListedAndMarkedWhileStrictModeIsScheduled() throws Exception {
+        LocalDate start = scheduleStrict(TODAY.plusDays(10));
+        add("service", "never", 1, null);
+        add("service", "far", 2, TODAY.plusDays(100));
+        add("service", "within", 3, TODAY.plusDays(5));
+        add("bob", "never", 4, null);
+
+        assertTrue(monitor.isActivated(TODAY));
+        Report report = monitor.scan(TODAY);
+        assertThat("the token that complies is not listed", rowsOf(report, "service"), hasSize(2));
+        Row never = rowOf(report, "service", "never");
+        assertEquals(start.toString(), never.getExemptUntil(), "the day strict mode starts");
+        assertTrue(never.isOverMaximum());
+        assertTrue(never.isNeverExpires());
+        assertFalse(never.isShortenable(), "the maximum does not apply to its owner yet");
+        Row far = rowOf(report, "service", "far");
+        assertEquals(start.toString(), far.getExemptUntil());
+        assertTrue(far.isOverMaximum());
+        assertEquals(70, far.getDaysOverMaximum());
+        assertFalse(far.isShortenable());
+
+        // an owner who is not exempt is not affected
+        Row bob = rowOf(report, "bob", "never");
+        assertNull(bob.getExemptUntil());
+        assertTrue(bob.isShortenable());
+
+        assertEquals(3, report.getNonCompliantCount(), "the tokens of the exempt owner are counted");
+        assertEquals(0, report.getSharedSecretGroupCount());
+        assertEquals(start.toString(), report.getExemptUntil());
+        assertEquals(Phase.WARNING, report.getPhase());
+    }
+
+    @Test
+    void s21TheTokenOfAnExemptOwnerAloneActivatesTheMonitor() throws Exception {
+        scheduleStrict(TODAY.plusDays(10));
+        add("service", "within", 1, TODAY.plusDays(30));
+        add("bob", "compliant", 2, TODAY.plusDays(1));
+        assertFalse(monitor.isActivated(TODAY), "what complies is not a finding, exempt or not");
+        assertNull(monitor.scan(TODAY).getExemptUntil(), "no row, so no marker to explain");
+
+        add("service", "never", 3, null);
+        assertTrue(monitor.isActivated(TODAY));
+        assertThat(monitor.scan(TODAY).getRows(), hasSize(1));
+    }
+
+    @Test
+    void s21AnExemptOwnersTokenOverTheMaximumIsAFindingWithTheClock() throws Exception {
+        LocalDate now = LocalDate.now();
+        scheduleStrict(now.plusDays(10));
+        add("service", "far", 1, now.plusDays(31));
+        assertTrue(monitor.isActivated());
+        assertEquals(now.plusDays(10).toString(), rowOf(monitor.getReport(), "service", "far").getExemptUntil());
+    }
+
+    @Test
+    void s21TheTokensOfAnExemptOwnerAreHiddenWhileStrictModeIsOff() throws Exception {
+        scheduleStrict(TODAY.plusDays(10));
+        config.setStrict(false);
+        add("service", "never", 1, null);
+        add("service", "far", 2, TODAY.plusDays(100));
+        add("service", "first", 3, TODAY.plusDays(5));
+        add("service", "second", 3, TODAY.plusDays(6));
+
+        assertFalse(monitor.isActivated(TODAY));
+        Report report = monitor.scan(TODAY);
+        assertThat(report.getRows(), empty());
+        assertEquals(0, report.getNonCompliantCount());
+        assertEquals(0, report.getSharedSecretGroupCount());
+        assertNull(report.getExemptUntil());
+    }
+
+    @Test
+    void s21OnceStrictModeIsInEffectTheOwnerIsListedWithoutTheMarker() throws Exception {
+        scheduleStrict(TODAY.plusDays(10));
+        add("service", "never", 1, null);
+        add("service", "far", 2, TODAY.plusDays(100));
+        assertThat(rowsOf(monitor.scan(TODAY), "service"), hasSize(2));
+        assertNotNull(rowOf(monitor.scan(TODAY), "service", "never").getExemptUntil());
+
+        // the date is reached (strict mode starts on it), has passed, or is not set, or cannot be read
+        for (String date : new String[] {TODAY.toString(), TODAY.minusDays(5).toString(), null, "not-a-date-in-the-marker-test"}) {
+            config.setEnforceFrom(date);
+            assertTrue(monitor.isActivated(TODAY), "date: " + date);
+            Report report = monitor.scan(TODAY);
+            assertThat("date: " + date, rowsOf(report, "service"), hasSize(2));
+            for (Row row : rowsOf(report, "service")) {
+                assertNull(row.getExemptUntil(), "nobody is exempt any more, date: " + date);
+                assertTrue(row.isOverMaximum());
+            }
+            assertTrue(rowOf(report, "service", "never").isShortenable(), "the maximum applies to its owner now");
+            assertNull(report.getExemptUntil());
+            assertEquals(2, report.getNonCompliantCount());
+        }
+    }
+
+    @Test
+    void s21AGroupOfAnExemptOwnerIsListedWhileStrictModeIsScheduled() throws Exception {
+        LocalDate start = scheduleStrict(TODAY.plusDays(10));
+        add("service", "first", 1, TODAY.plusDays(5));
+        add("service", "second", 1, TODAY.plusDays(6));
+
+        assertTrue(monitor.isActivated(TODAY), "two live entries share a secret");
+        Report report = monitor.scan(TODAY);
+        assertEquals(1, report.getSharedSecretGroupCount(), "each group is counted once");
+        assertEquals(0, report.getNonCompliantCount(), "both comply on their own");
+        assertThat(rowsOf(report, "service"), hasSize(2));
+        for (Row row : rowsOf(report, "service")) {
+            assertTrue(row.isSharesSecret());
+            assertFalse(row.isOverMaximum());
+            assertEquals(start.toString(), row.getExemptUntil());
+            assertFalse(row.isShortenable());
+        }
+        assertEquals("Shares its secret with: second", rowOf(report, "service", "first").getSharedWithMarker());
+
+        // strict mode off: nothing is listed for an exempt owner
+        config.setStrict(false);
+        assertFalse(monitor.isActivated(TODAY));
+        assertThat(monitor.scan(TODAY).getRows(), empty());
+
+        // in effect: listed, without the marker
+        config.setStrict(true);
+        config.setEnforceFrom(TODAY.toString());
+        assertTrue(monitor.isActivated(TODAY));
+        Report inEffect = monitor.scan(TODAY);
+        assertEquals(1, inEffect.getSharedSecretGroupCount());
+        assertThat(rowsOf(inEffect, "service"), hasSize(2));
+        assertNull(rowOf(inEffect, "service", "first").getExemptUntil());
+    }
+
+    @Test
+    void s21ALiveEntryAndAnExpiredSiblingOfAnExemptOwnerAreNotAFinding() throws Exception {
+        scheduleStrict(TODAY.plusDays(10));
+        add("service", "live", 1, TODAY.plusDays(5));
+        add("service", "expired", 1, TODAY.minusDays(1));
+
+        assertFalse(monitor.isActivated(TODAY));
+        assertThat(monitor.scan(TODAY).getRows(), empty());
+    }
+
+    @Test
+    void aTokenOfAnExemptOwnerThatOverTheMaximumAndSharesItsSecretIsOneRowWithBothStatuses() throws Exception {
+        LocalDate start = scheduleStrict(TODAY.plusDays(10));
+        add("service", "never", 1, null);
+        add("service", "twin", 1, TODAY.plusDays(5));
+
+        Report report = monitor.scan(TODAY);
+        assertThat(rowsOf(report, "service"), hasSize(2));
+        Row never = rowOf(report, "service", "never");
+        assertTrue(never.isOverMaximum());
+        assertTrue(never.isSharesSecret());
+        assertEquals(start.toString(), never.getExemptUntil());
+        Row twin = rowOf(report, "service", "twin");
+        assertFalse(twin.isOverMaximum());
+        assertTrue(twin.isSharesSecret());
+        assertEquals(1, report.getNonCompliantCount());
+        assertEquals(1, report.getSharedSecretGroupCount());
+    }
+
+    @Test
+    void theLegacyTokenOfAnExemptOwnerIsListedWhileStrictModeIsScheduled() throws Exception {
+        LocalDate start = scheduleStrict(TODAY.plusDays(10));
+        config.setCreationOfLegacyTokenEnabled(true);
+        propertyOf("service").changeApiToken();
+
+        assertTrue(monitor.isActivated(TODAY));
+        List<Row> rows = rowsOf(monitor.scan(TODAY), "service");
+        assertThat(rows, hasSize(1));
+        Row row = rows.get(0);
+        assertTrue(row.isLegacy());
+        assertEquals(start.toString(), row.getExemptUntil());
+        assertFalse(row.isShortenable());
     }
 
     // ---- what the scan skips and does not do
@@ -876,6 +1143,118 @@ class ApiTokenLifetimeAdministrativeMonitorTest {
         assertEquals(0, panel.getElementsByTagName("script").size());
     }
 
+    // ---- the page: strict mode
+
+    @Test
+    void thePageShowsTheStrictLabelsAndMarksTheTokensOfAnExemptOwnerWhileStrictModeIsScheduled() throws Exception {
+        LocalDate now = LocalDate.now();
+        LocalDate start = scheduleStrict(now.plusDays(10));
+        String serviceNever = add("service", "never", 1, null);
+        String serviceOver = add("service", "over", 2, now.plusDays(100));
+        String bobNever = add("bob", "never", 3, null);
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        HtmlPage page = managePage(wc);
+        assertEquals("Warning phase until " + start + " (strict from then)", phaseLabelOf(page));
+        assertThat(page.querySelector(".token-lifetime-countdown").asNormalizedText(), containsString("in 10 days"));
+        assertEquals("API tokens that do not comply with the maximum lifetime: 3", page.querySelector(".token-lifetime-count-non-compliant").asNormalizedText());
+        assertThat(tableRows(page), hasSize(3));
+
+        for (String uuid : List.of(serviceNever, serviceOver)) {
+            DomElement row = tableRowOf(page, uuid);
+            DomNode marker = row.querySelector("td.token-status .token-status-exempt-until");
+            assertNotNull(marker, "listed with the marker");
+            assertEquals("Exempt until " + start + ", when strict mode starts", marker.asNormalizedText());
+            // Revoke is offered as on any row, and Shorten is not: the maximum does not apply to the owner yet
+            assertEquals(List.of("revoke"), buttonActions(row));
+        }
+        assertThat(text(tableRowOf(page, serviceNever), "token-status"), containsString("Never expires"));
+        assertThat(text(tableRowOf(page, serviceOver), "token-status"), containsString("Expires on " + now.plusDays(100) + ", 70 days over the maximum"));
+
+        DomElement bob = tableRowOf(page, bobNever);
+        assertNull(bob.querySelector(".token-status-exempt-until"), "an owner who is not exempt has no marker");
+        assertEquals(List.of("revoke", "shorten"), buttonActions(bob));
+
+        // the sentence that explains the marker, with the date
+        DomNode help = page.querySelector("li.token-lifetime-help-exempt-until");
+        assertNotNull(help);
+        assertThat(help.asNormalizedText(), containsString("A token marked Exempt until " + start + " belongs to a user who is exempt from the maximum lifetime."));
+        assertThat(help.asNormalizedText(), containsString("Strict mode is switched on and starts that day: from then on nobody is exempt."));
+        assertThat(help.asNormalizedText(), containsString("Revoke is offered for it and Shorten to maximum is not"));
+    }
+
+    @Test
+    void thePageHasNoMarkerNorExplanationWhenNoRowIsMarked() throws Exception {
+        LocalDate now = LocalDate.now();
+        LocalDate start = scheduleStrict(now.plusDays(10));
+        add("bob", "never", 1, null);
+        add("service", "compliant", 2, now.plusDays(1));
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        HtmlPage scheduled = managePage(wc);
+        assertEquals("Warning phase until " + start + " (strict from then)", phaseLabelOf(scheduled));
+        assertThat(tableRows(scheduled), hasSize(1));
+        assertNull(scheduled.querySelector(".token-status-exempt-until"));
+        assertNull(scheduled.querySelector("li.token-lifetime-help-exempt-until"), "nothing to explain");
+
+        // the same exempt owner with a token that is over the maximum, but strict mode off: hidden, and still no marker
+        add("service", "never", 3, null);
+        config.setStrict(false);
+        HtmlPage off = managePage(wc);
+        assertEquals("Warning phase until " + start, phaseLabelOf(off));
+        assertThat(tableRows(off), hasSize(1));
+        assertNull(off.querySelector(".token-status-exempt-until"));
+        assertNull(off.querySelector("li.token-lifetime-help-exempt-until"));
+    }
+
+    @Test
+    void thePageShowsTheStrictLabelWhenStrictModeIsInEffectAndListsTheFormerlyExemptOwnerWithoutTheMarker() throws Exception {
+        LocalDate now = LocalDate.now();
+        // the token is added while strict mode is only scheduled: once it is in effect the store refuses a token that never expires
+        scheduleStrict(now.plusDays(10));
+        String never = add("service", "never", 1, null);
+        config.setEnforceFrom(now.minusDays(2).toString());
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        HtmlPage page = managePage(wc);
+        assertEquals("Enforcing since " + now.minusDays(2) + ", in strict mode", phaseLabelOf(page));
+        assertNull(page.querySelector(".token-lifetime-countdown"));
+        DomElement row = tableRowOf(page, never);
+        assertNull(row.querySelector(".token-status-exempt-until"), "nobody is exempt, nothing to announce");
+        assertEquals(List.of("revoke", "shorten"), buttonActions(row), "the maximum applies to its owner now");
+        assertNull(page.querySelector("li.token-lifetime-help-exempt-until"));
+
+        config.setEnforceFrom(null);
+        assertEquals("Enforcing, in strict mode", phaseLabelOf(managePage(wc)));
+        config.setEnforceFrom("not-a-date-on-the-strict-page");
+        assertEquals("Enforcing in strict mode (invalid start date in configuration)", phaseLabelOf(managePage(wc)));
+    }
+
+    @Test
+    void theBannerCountsTheTokensAndGroupsOfAnExemptOwnerWhileStrictModeIsScheduled() throws Exception {
+        LocalDate now = LocalDate.now();
+        LocalDate start = scheduleStrict(now.plusDays(10));
+        add("service", "never", 1, null);
+        add("service", "first", 2, now.plusDays(5));
+        add("service", "second", 2, now.plusDays(5));
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        assertTrue(monitor.isActivated());
+        DomElement banner = (DomElement) wc.goTo("manage").querySelector("[data-monitor-id='apiTokenLifetime']");
+        assertNotNull(banner);
+        assertThat(banner.asNormalizedText(), containsString("Warning phase until " + start + " (strict from then). API tokens that do not comply with the maximum lifetime: 1. Secrets shared by several tokens: 1."));
+
+        config.setStrict(false);
+        assertFalse(monitor.isActivated());
+        assertNull(wc.goTo("manage").querySelector("[data-monitor-id='apiTokenLifetime']"), "an exempt owner is not reported without strict mode");
+
+        config.setStrict(true);
+        config.setEnforceFrom(now.toString());
+        DomElement inEffect = (DomElement) wc.goTo("manage").querySelector("[data-monitor-id='apiTokenLifetime']");
+        assertNotNull(inEffect);
+        assertThat(inEffect.asNormalizedText(), containsString("Enforcing since " + now + ", in strict mode. API tokens that do not comply with the maximum lifetime: 1. Secrets shared by several tokens: 1."));
+    }
+
     // ---- who can see what
 
     @Test
@@ -972,6 +1351,54 @@ class ApiTokenLifetimeAdministrativeMonitorTest {
         assertThat(bannerXml, not(containsString("alert(1)")));
         assertThat(bannerXml, not(containsString("ev\"il")));
         assertThat(bannerXml, not(containsString("onerror")));
+        assertThat(bannerXml, not(containsString("$&")));
+        assertThat(alerts, empty());
+    }
+
+    /**
+     * The hostile owner of the fixture is exempt only until strict mode starts: the row that is listed for it, with the marker
+     * and the explanation, shows what it chose as text, and the date is the only argument of the new strings.
+     */
+    @Test
+    void anExemptOwnerWithHostileNamesIsShownAsTextWithTheMarker() throws Exception {
+        LocalDate now = LocalDate.now();
+        LocalDate start = now.plusDays(10);
+        config.setMaxTokenLifetimeDays(30);
+        config.setStrict(true);
+        config.setEnforceFrom(start.toString());
+        config.setExemptUserIds(EVIL_ID);
+        User evil = User.getById(EVIL_ID, true);
+        evil.setFullName(EVIL_FULL_NAME);
+        evil.save();
+        String uuid = add(EVIL_ID, EVIL_TOKEN_NAME, 1, null);
+
+        List<String> alerts = new ArrayList<>();
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.setAlertHandler((page, message) -> alerts.add(message));
+
+        HtmlPage page = managePage(wc);
+        String html = page.getWebResponse().getContentAsString();
+        assertThat(alerts, empty());
+        assertThat(html, not(containsString("<script>alert(1)</script>")));
+        assertThat(html, not(containsString("<img src=x")));
+        assertThat(html, not(containsString("<b>")));
+        assertEquals(0, page.querySelectorAll("img[src='x']").size());
+
+        DomElement row = tableRowOf(page, uuid);
+        assertEquals(EVIL_ID, row.getAttribute("data-user-id"));
+        assertEquals(EVIL_ID, row.querySelector("td.token-user-id").getTextContent().trim());
+        assertEquals(EVIL_FULL_NAME, row.querySelector("td.token-user-full-name").getTextContent().trim());
+        assertEquals(EVIL_TOKEN_NAME, row.querySelector("td.token-name").getTextContent().trim());
+        assertEquals("Exempt until " + start + ", when strict mode starts", row.querySelector(".token-status-exempt-until").getTextContent().trim());
+        assertEquals(List.of("revoke"), buttonActions(row));
+        assertThat(page.querySelector("li.token-lifetime-help-exempt-until").asNormalizedText(), containsString("Exempt until " + start));
+
+        // the banner has no user string at all
+        DomElement banner = (DomElement) wc.goTo("manage").querySelector("[data-monitor-id='apiTokenLifetime']");
+        assertNotNull(banner);
+        String bannerXml = banner.asXml();
+        assertThat(bannerXml, not(containsString("alert(1)")));
+        assertThat(bannerXml, not(containsString("ev\"il")));
         assertThat(bannerXml, not(containsString("$&")));
         assertThat(alerts, empty());
     }
@@ -1499,6 +1926,54 @@ class ApiTokenLifetimeAdministrativeMonitorTest {
         assertRefused(409, Messages.ApiTokenLifetimeAdministrativeMonitor_Action_ShortenNotNeeded(), shorten(admin, "alice", never));
         assertEquals(state, stateOf("alice"));
         assertNull(expirationOf("alice", never));
+    }
+
+    /**
+     * The panel lists the token of an owner who is exempt only until strict mode starts, and offers Revoke for it: a revocation
+     * does not depend on the maximum, which does not apply to the owner yet.
+     */
+    @Test
+    void revokeWorksOnAnExemptUntilRow() throws Exception {
+        JenkinsRule.WebClient admin = adminClient();
+        scheduleStrict(LocalDate.now().plusDays(10));
+        String never = add("service", "never", 1, null);
+        String kept = add("service", "kept", 2, LocalDate.now().plusDays(5));
+        assertNotNull(rowOf(monitor.getReport(), "service", "never").getExemptUntil(), "listed with the marker");
+
+        assertDone(revoke(admin, "service", never));
+
+        assertEquals(List.of(kept), tokenUuids("service"));
+        assertThat(monitor.getReport().getRows(), empty());
+        assertFalse(monitor.isActivated());
+    }
+
+    /**
+     * Shorten is not offered on an "exempt until" row, and a forged request for it is refused as for any token of an exempt owner:
+     * 409, the same static message, and nothing changes. Once strict mode is in effect the owner is not exempt any more and the
+     * very same request is accepted.
+     */
+    @Test
+    void shortenIsRefusedForTheTokenOfAnExemptOwnerWhileStrictModeIsOnlyScheduled() throws Exception {
+        JenkinsRule.WebClient admin = adminClient();
+        LocalDate now = LocalDate.now();
+        scheduleStrict(now.plusDays(10));
+        String never = add("service", "never", 1, null);
+        String over = add("service", "over", 2, now.plusDays(100));
+        State state = stateOf("service");
+        HtmlPage page = managePage(j.createWebClient().withBasicCredentials("admin"));
+        assertEquals(List.of("revoke"), buttonActions(tableRowOf(page, never)), "Shorten is not offered");
+
+        for (String uuid : List.of(never, over)) {
+            assertRefused(409, Messages.ApiTokenLifetimeAdministrativeMonitor_Action_ShortenNotNeeded(), shorten(admin, "service", uuid));
+        }
+        assertEquals(state, stateOf("service"), "nothing changed");
+        assertNull(expirationOf("service", never));
+        assertEquals(now.plusDays(100), expirationOf("service", over));
+
+        // strict mode starts: nobody is exempt, the same request shortens
+        config.setEnforceFrom(now.toString());
+        assertDone(shorten(admin, "service", never));
+        assertEquals(now.plusDays(30), expirationOf("service", never));
     }
 
     // ---- who may act, and with what

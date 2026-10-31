@@ -189,11 +189,18 @@ public class ApiTokenStore {
     }
 
     /**
-     * Create a new token with the given name and return its id and secret value.
+     * Create a new token with the given name, which never expires, and return its id and secret value.
      * Result meant to be sent / displayed and then discarded.
+     * <p>
+     * While the strict mode of the maximum lifetime of API tokens is in effect (see {@link ApiTokenLifetimePolicy#isStrict}) a
+     * token that never expires is refused.
+     *
+     * @throws ApiTokenPolicyViolationException with the reason {@link ApiTokenPolicyViolationException.Reason#NEVER_EXPIRES},
+     *         and only while the strict mode is in effect. Nothing is stored then.
      */
-    public synchronized @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name) {
-        return generateNewToken(name, null);
+    public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name) {
+        // not through the method with two arguments: the configuration and the clock are read once for each call
+        return generateNewToken(name, null, LocalDate.now());
     }
 
     /**
@@ -202,8 +209,36 @@ public class ApiTokenStore {
      * <p>
      * The secret is random, 128 bits of it, so it is never checked against the secrets that the store already holds, unlike
      * the one of {@link #addFixedNewTokenRejectingKnownSecret}.
+     * <p>
+     * The maximum lifetime of API tokens is not applied here, and any expiration is accepted, unless the strict mode is in
+     * effect (see {@link ApiTokenLifetimePolicy#isStrict}): then the token must expire, no later than today plus the maximum,
+     * whoever the owner is, because the exemptions do not apply in strict mode. The configuration and the clock are read
+     * when the method is called, before the store is locked.
+     *
+     * @throws ApiTokenPolicyViolationException with the reason {@link ApiTokenPolicyViolationException.Reason#NEVER_EXPIRES}
+     *         if the expiration is {@code null} or {@link ApiTokenPolicyViolationException.Reason#OVER_MAXIMUM} if it is later
+     *         than the maximum, and only while the strict mode is in effect. Nothing is stored then.
      */
-    public synchronized @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate) {
+    public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate) {
+        return generateNewToken(name, expirationDate, LocalDate.now());
+    }
+
+    /**
+     * Same as {@link #generateNewToken(String, LocalDate)} for the day {@code today}, instead of the day of the clock, which is
+     * what the strict mode counts the maximum lifetime from. For tests: the configuration is the one of
+     * {@link ApiTokenPropertyConfiguration#get()}.
+     */
+    @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate, @NonNull LocalDate today) {
+        return generateNewTokenImpl(name, expirationDate, strictMaxExpiration(today));
+    }
+
+    /**
+     * The implementation of {@link #generateNewToken(String, LocalDate)}. It is synchronized, and it does not read the
+     * configuration: what the strict mode decided is in {@code strictMaxExpiration}.
+     */
+    private synchronized @NonNull TokenUuidAndPlainValue generateNewTokenImpl(@NonNull String name, @Nullable LocalDate expirationDate, @CheckForNull LocalDate strictMaxExpiration) {
+        requireWithinStrictMaximum(expirationDate, strictMaxExpiration);
+
         // 16x8=128bit worth of randomness, using brute-force you need on average 2^127 tries (~10^37)
         byte[] random = new byte[16];
         RANDOM.nextBytes(random);
@@ -227,9 +262,32 @@ public class ApiTokenStore {
      * <p>
      * The secret is stored even if the store holds it already, which then has two entries: each one has its own
      * expiration. See {@link #addFixedNewTokenRejectingKnownSecret} for the variant that refuses that.
+     * <p>
+     * The maximum lifetime of API tokens is not applied here either, and any expiration is accepted, unless the strict mode
+     * is in effect (see {@link ApiTokenLifetimePolicy#isStrict}). Then the token must expire, no later than today plus the
+     * maximum, whoever the owner is, because the exemptions do not apply in strict mode, and the secret is refused if the
+     * store holds it already, as {@link #addFixedNewTokenRejectingKnownSecret} does. The checks run in this order: the format
+     * of the value, the expiration, the secret. The configuration and the clock are read when the method is called, before
+     * the store is locked.
+     *
+     * @throws ApiTokenPolicyViolationException only while the strict mode is in effect, with the reason
+     *         {@link ApiTokenPolicyViolationException.Reason#NEVER_EXPIRES} if the expiration is {@code null},
+     *         {@link ApiTokenPolicyViolationException.Reason#OVER_MAXIMUM} if it is later than the maximum, or
+     *         {@link ApiTokenPolicyViolationException.Reason#SECRET_ALREADY_REGISTERED} if the store holds the secret.
+     *         Nothing is stored then.
+     * @throws IllegalArgumentException when the token value is malformed, which is checked first
      */
-    public synchronized @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate) {
-        return addFixedNewToken(name, tokenPlainValue, expirationDate, false);
+    public @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate) {
+        return addFixedNewToken(name, tokenPlainValue, expirationDate, LocalDate.now());
+    }
+
+    /**
+     * Same as {@link #addFixedNewToken(String, String, LocalDate)} for the day {@code today}, instead of the day of the clock,
+     * which is what the strict mode counts the maximum lifetime from. For tests: the configuration is the one of
+     * {@link ApiTokenPropertyConfiguration#get()}.
+     */
+    @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate, @NonNull LocalDate today) {
+        return addFixedNewTokenImpl(name, tokenPlainValue, expirationDate, false, strictMaxExpiration(today));
     }
 
     /**
@@ -251,24 +309,42 @@ public class ApiTokenStore {
      * <p>
      * The rejection tells the caller that this user holds the secret, even through an entry that has expired. That is not
      * exploitable by someone who does not know the secret already, the caller sent it.
+     * <p>
+     * While the strict mode is in effect (see {@link ApiTokenLifetimePolicy#isStrict}) this method applies the maximum
+     * lifetime as {@link #addFixedNewToken(String, String, LocalDate)} does, and the expiration is checked before the secret:
+     * a request that is over the maximum and has a known secret is refused for the maximum.
      *
      * @throws ApiTokenPolicyViolationException with the reason {@link ApiTokenPolicyViolationException.Reason#SECRET_ALREADY_REGISTERED}
-     *         when the store holds the secret. Nothing is stored then.
+     *         when the store holds the secret, or, only while the strict mode is in effect, with the reason
+     *         {@link ApiTokenPolicyViolationException.Reason#NEVER_EXPIRES} or
+     *         {@link ApiTokenPolicyViolationException.Reason#OVER_MAXIMUM} when the expiration is not allowed. Nothing is stored then.
      * @throws IllegalArgumentException when the token value is malformed, which is checked first, as
      *         {@link #addFixedNewToken(String, String, LocalDate)} does
      */
     @Restricted(NoExternalUse.class)
-    public synchronized @NonNull String addFixedNewTokenRejectingKnownSecret(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate) {
-        return addFixedNewToken(name, tokenPlainValue, expirationDate, true);
+    public @NonNull String addFixedNewTokenRejectingKnownSecret(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate) {
+        return addFixedNewTokenRejectingKnownSecret(name, tokenPlainValue, expirationDate, LocalDate.now());
+    }
+
+    /**
+     * Same as {@link #addFixedNewTokenRejectingKnownSecret(String, String, LocalDate)} for the day {@code today}, instead of the
+     * day of the clock, which is what the strict mode counts the maximum lifetime from. For tests: the configuration is the
+     * one of {@link ApiTokenPropertyConfiguration#get()}.
+     */
+    @NonNull String addFixedNewTokenRejectingKnownSecret(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate, @NonNull LocalDate today) {
+        return addFixedNewTokenImpl(name, tokenPlainValue, expirationDate, true, strictMaxExpiration(today));
     }
 
     /**
      * The implementation of {@link #addFixedNewToken(String, String, LocalDate)} and
      * {@link #addFixedNewTokenRejectingKnownSecret}. It is synchronized, so that the search for the secret and the insertion
-     * of the entry are one operation.
+     * of the entry are one operation, and it does not read the configuration: what the strict mode decided is in
+     * {@code strictMaxExpiration}.
+     *
+     * @param rejectKnownSecret whether the secret is refused if the store holds it, which the strict mode requires as well
      */
     @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "Comparison only validates version of the specified token")
-    private synchronized @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate, boolean rejectKnownSecret) {
+    private synchronized @NonNull String addFixedNewTokenImpl(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate, boolean rejectKnownSecret, @CheckForNull LocalDate strictMaxExpiration) {
         if (tokenPlainValue.length() != VERSION_LENGTH + HEX_CHAR_LENGTH) {
             LOGGER.log(Level.INFO, "addFixedNewToken, length received: {0}" + tokenPlainValue.length());
             throw new IllegalArgumentException("The token must consist of 2 characters for the version and 32 hex-characters for the secret");
@@ -285,14 +361,72 @@ public class ApiTokenStore {
             throw new IllegalArgumentException("The secret part of the token must consist of 32 hex-characters");
         }
 
+        requireWithinStrictMaximum(expirationDate, strictMaxExpiration);
+
         // legacy and version 11 hashes are both the SHA-256 of the 32 hex characters, so this finds either kind of entry
-        if (rejectKnownSecret && containsSecret(plainSecretToHashBytes(tokenPlainHexValue))) {
+        if ((rejectKnownSecret || strictMaxExpiration != null) && containsSecret(plainSecretToHashBytes(tokenPlainHexValue))) {
             throw new ApiTokenPolicyViolationException(ApiTokenPolicyViolationException.Reason.SECRET_ALREADY_REGISTERED);
         }
 
         HashedToken token = prepareAndStoreToken(name, tokenPlainHexValue, expirationDate);
 
         return token.uuid;
+    }
+
+    /**
+     * What the strict mode of the maximum lifetime of API tokens, see {@link ApiTokenLifetimePolicy#isStrict}, allows on
+     * {@code today}. The public methods that create a token call this once, before they lock the store, and pass the result to
+     * the synchronized implementation: the configuration is not read while the lock is held.
+     * <p>
+     * It reads the configuration, which is available once the extensions are loaded. Before that there is none to ask, and the
+     * strict mode counts as not in effect, rather than failing the creation of a token: nothing that runs that early creates
+     * one, SetupWizard and the startup scripts run later.
+     *
+     * @return the latest expiration that a token may have, today plus the maximum, if the strict mode is in effect,
+     *         otherwise {@code null}: no limit
+     */
+    private static @CheckForNull LocalDate strictMaxExpiration(@NonNull LocalDate today) {
+        ApiTokenPropertyConfiguration configuration = lookupConfiguration();
+        if (configuration == null) {
+            LOGGER.log(Level.WARNING, "The configuration of the API tokens is not available yet, the strict mode of their maximum lifetime cannot be checked");
+            return null;
+        }
+        // the switch first: it is off unless an administrator turned it on, and then nothing else is read
+        if (!configuration.isStrict()) {
+            return null;
+        }
+        ApiTokenLifetimePolicy policy = new ApiTokenLifetimePolicy();
+        return policy.isStrict(today) ? policy.maxExpiration(today) : null;
+    }
+
+    /**
+     * @return {@code null} when the configuration cannot be looked up yet: Jenkins is not there, or its extensions are not loaded
+     */
+    private static @CheckForNull ApiTokenPropertyConfiguration lookupConfiguration() {
+        try {
+            return ApiTokenPropertyConfiguration.get();
+        } catch (IllegalStateException e) {
+            // Jenkins.get() when there is no instance yet
+            return null;
+        }
+    }
+
+    /**
+     * @param strictMaxExpiration the result of {@link #strictMaxExpiration}, {@code null} when the strict mode is not in effect,
+     *                            in which case any expiration is allowed
+     * @throws ApiTokenPolicyViolationException when the strict mode is in effect and the token would never expire, or would
+     *         expire later than {@code strictMaxExpiration}, that day included
+     */
+    private static void requireWithinStrictMaximum(@Nullable LocalDate expirationDate, @CheckForNull LocalDate strictMaxExpiration) {
+        if (strictMaxExpiration == null) {
+            return;
+        }
+        if (expirationDate == null) {
+            throw new ApiTokenPolicyViolationException(ApiTokenPolicyViolationException.Reason.NEVER_EXPIRES);
+        }
+        if (expirationDate.isAfter(strictMaxExpiration)) {
+            throw new ApiTokenPolicyViolationException(ApiTokenPolicyViolationException.Reason.OVER_MAXIMUM);
+        }
     }
 
     private @NonNull HashedToken prepareAndStoreToken(@NonNull String name, @NonNull String tokenPlainValue, LocalDate expirationDate) {

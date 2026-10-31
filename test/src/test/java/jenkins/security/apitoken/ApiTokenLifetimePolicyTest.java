@@ -378,6 +378,250 @@ class ApiTokenLifetimePolicyTest {
         assertTrue(policy.appliesTo(bob, TODAY));
     }
 
+    @Test
+    void strictModeIsOffByDefault() {
+        assertFalse(config.isStrict());
+        config.setMaxTokenLifetimeDays(30);
+        assertFalse(policy.isStrict(TODAY), "a maximum alone is not strict");
+        assertFalse(policy.isStrict(TODAY.plusYears(10)));
+    }
+
+    @Test
+    void strictModeIsInEffectOnceTheMaximumIsEnforced() {
+        config.setStrict(true);
+        assertFalse(policy.isStrict(TODAY), "no maximum, so nothing to be strict about");
+        config.setEnforceFrom(TODAY.minusDays(1).toString());
+        assertFalse(policy.isStrict(TODAY), "a date alone does not activate the policy, strict or not");
+
+        config.setMaxTokenLifetimeDays(30);
+        config.setEnforceFrom(null);
+        assertTrue(policy.isStrict(TODAY), "no date: enforcing right away");
+
+        config.setEnforceFrom(TODAY.plusDays(1).toString());
+        assertFalse(policy.isStrict(TODAY), "the warning phase: strict is scheduled, it is not in effect");
+        assertTrue(policy.isStrict(TODAY.plusDays(1)), "the date itself is the first day");
+        assertTrue(policy.isStrict(TODAY.plusDays(2)));
+
+        config.setEnforceFrom(TODAY.toString());
+        assertTrue(policy.isStrict(TODAY));
+        config.setEnforceFrom(TODAY.minusDays(1).toString());
+        assertTrue(policy.isStrict(TODAY), "a date in the past behaves like no date");
+        config.setEnforceFrom("   ");
+        assertTrue(policy.isStrict(TODAY), "blank is stored as null");
+
+        config.setMaxTokenLifetimeDays(0);
+        assertFalse(policy.isStrict(TODAY), "no maximum again");
+    }
+
+    @Test
+    void strictModeSwitchedOffIsNotInEffect() {
+        config.setMaxTokenLifetimeDays(30);
+        config.setStrict(true);
+        assertTrue(policy.isStrict(TODAY));
+        config.setStrict(false);
+        assertFalse(policy.isStrict(TODAY));
+    }
+
+    @Test
+    void strictModeCountsAnUnparsableEnforcementDateAsStarted() {
+        config.setMaxTokenLifetimeDays(30);
+        config.setStrict(true);
+        config.setEnforceFrom("not-a-date-for-is-strict");
+        assertTrue(policy.isStrict(TODAY));
+        assertTrue(policy.isStrict(TODAY.minusYears(50)), "in effect whatever the day");
+        config.setStrict(false);
+        assertFalse(policy.isStrict(TODAY), "and not at all when it is switched off");
+    }
+
+    @Test
+    void strictModeRemovesTheExemptions() {
+        User service = User.getById("Service Account", true);
+        User bob = User.getById("bob", true);
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("service account");
+
+        assertTrue(policy.isExempt(service, TODAY));
+        assertFalse(policy.appliesTo(service, TODAY));
+        config.setStrict(true);
+        assertFalse(policy.isExempt(service, TODAY), "nobody is exempt in strict mode");
+        assertFalse(policy.isExempt(bob, TODAY));
+        assertTrue(policy.appliesTo(service, TODAY), "so the maximum applies to every owner");
+        assertTrue(policy.appliesTo(bob, TODAY));
+        assertEquals(Violation.NEVER_NOT_ALLOWED, policy.validate(service, null, TODAY));
+        assertEquals(Violation.OVER_MAXIMUM, policy.validate(service, TODAY.plusDays(31), TODAY));
+        assertNull(policy.validate(service, TODAY.plusDays(30), TODAY));
+        assertTrue(policy.isMonitored(service, TODAY), "an owner who is no longer exempt is monitored");
+
+        // the exemptions stay in the configuration and apply again when strict mode is off
+        config.setStrict(false);
+        assertTrue(policy.isExempt(service, TODAY));
+        assertFalse(policy.appliesTo(service, TODAY));
+        assertNull(policy.validate(service, null, TODAY));
+        assertEquals("service account", config.getExemptUserIds());
+    }
+
+    @Test
+    void strictModeScheduledForALaterDateLeavesTheExemptionsAlone() {
+        User service = User.getById("Service Account", true);
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("service account");
+        config.setStrict(true);
+        config.setEnforceFrom(TODAY.plusDays(1).toString());
+
+        assertFalse(policy.isStrict(TODAY));
+        assertTrue(policy.isExempt(service, TODAY), "exempt until strict mode is in effect");
+        assertFalse(policy.appliesTo(service, TODAY));
+        assertNull(policy.validate(service, null, TODAY));
+        assertFalse(policy.isMonitored(service, TODAY), "exempt owners are still not monitored");
+
+        assertFalse(policy.isExempt(service, TODAY.plusDays(1)), "from the enforcement date on");
+        assertTrue(policy.appliesTo(service, TODAY.plusDays(1)));
+        assertEquals(Violation.NEVER_NOT_ALLOWED, policy.validate(service, null, TODAY.plusDays(1)));
+    }
+
+    @Test
+    void strictModeWithoutAMaximumLeavesTheExemptionsAlone() {
+        User service = User.getById("Service Account", true);
+        config.setExemptUserIds("service account");
+        config.setStrict(true);
+
+        assertTrue(policy.isExempt(service, TODAY));
+        assertFalse(policy.appliesTo(service, TODAY));
+        assertFalse(policy.isActive());
+    }
+
+    @Test
+    void strictModeIsScheduledOnlyWhileTheWarningPhaseLasts() {
+        // switched off: never
+        config.setMaxTokenLifetimeDays(30);
+        config.setEnforceFrom(TODAY.plusDays(1).toString());
+        assertFalse(policy.isStrictScheduled(TODAY), "a maximum and a date, but strict is off");
+
+        config.setStrict(true);
+        assertTrue(policy.isStrictScheduled(TODAY), "switched on, and the date is in the future");
+        assertTrue(policy.isStrictScheduled(TODAY.minusYears(1)));
+        assertFalse(policy.isStrictScheduled(TODAY.plusDays(1)), "the date itself is the first day of strict mode: it is in effect");
+        assertTrue(policy.isStrict(TODAY.plusDays(1)));
+        assertFalse(policy.isStrictScheduled(TODAY.plusDays(2)));
+
+        config.setEnforceFrom(TODAY.toString());
+        assertFalse(policy.isStrictScheduled(TODAY), "today: in effect");
+        config.setEnforceFrom(TODAY.minusDays(1).toString());
+        assertFalse(policy.isStrictScheduled(TODAY), "in the past: in effect");
+        config.setEnforceFrom(null);
+        assertFalse(policy.isStrictScheduled(TODAY), "no date: in effect");
+        config.setEnforceFrom("  ");
+        assertFalse(policy.isStrictScheduled(TODAY), "a blank date is no date");
+        config.setEnforceFrom("not-a-date-for-is-strict-scheduled");
+        assertFalse(policy.isStrictScheduled(TODAY), "a date that cannot be read counts as started");
+        assertTrue(policy.isStrict(TODAY));
+
+        // no maximum: inert
+        config.setEnforceFrom(TODAY.plusDays(1).toString());
+        assertTrue(policy.isStrictScheduled(TODAY));
+        config.setMaxTokenLifetimeDays(0);
+        assertFalse(policy.isStrictScheduled(TODAY), "no maximum, so nothing is scheduled");
+        assertFalse(policy.isStrict(TODAY));
+    }
+
+    @Test
+    void anExemptOwnerIsExemptUntilTheDayStrictModeStarts() {
+        User service = User.getById("Service Account", true);
+        User bob = User.getById("bob", true);
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("service account");
+        config.setStrict(true);
+        LocalDate start = TODAY.plusDays(10);
+        config.setEnforceFrom(start.toString());
+
+        assertEquals(start, policy.getExemptionEnd(service, TODAY), "exempt now, and not from the date of the strict mode");
+        assertEquals(start, policy.getExemptionEnd(service, start.minusDays(1)), "the last day of the exemption");
+        assertNull(policy.getExemptionEnd(bob, TODAY), "an owner who is not exempt has no exemption to end");
+        assertTrue(policy.isExempt(service, TODAY), "exempt as before: only the report changes");
+        assertNull(policy.getExemptionEnd(service, start), "from the date nobody is exempt");
+        assertFalse(policy.isExempt(service, start));
+        assertNull(policy.getExemptionEnd(service, start.plusDays(1)));
+    }
+
+    @Test
+    void theExemptionEndsOnlyWhenStrictModeIsSwitchedOnAndHasAMaximumToApplyAndADateToWaitFor() {
+        User service = User.getById("Service Account", true);
+        config.setExemptUserIds("service account");
+        LocalDate future = TODAY.plusDays(10);
+
+        // no maximum
+        config.setStrict(true);
+        config.setEnforceFrom(future.toString());
+        assertNull(policy.getExemptionEnd(service, TODAY), "no maximum: inert");
+
+        // strict off: the exemption is not ending
+        config.setMaxTokenLifetimeDays(30);
+        config.setStrict(false);
+        assertNull(policy.getExemptionEnd(service, TODAY), "strict is off: the exemption does not end");
+        assertTrue(policy.isExempt(service, TODAY));
+
+        // strict on, no date or a date that has come: already in effect, nobody is exempt
+        config.setStrict(true);
+        for (String date : new String[] {null, "", TODAY.toString(), TODAY.minusDays(30).toString(), "not-a-date-for-exemption-end"}) {
+            config.setEnforceFrom(date);
+            assertNull(policy.getExemptionEnd(service, TODAY), "date: " + date);
+            assertFalse(policy.isExempt(service, TODAY), "in effect: nobody is exempt, date: " + date);
+        }
+
+        // only the owner who is on the list has an exemption to end
+        config.setEnforceFrom(future.toString());
+        assertEquals(future, policy.getExemptionEnd(service, TODAY));
+        config.setExemptUserIds("someone else");
+        assertNull(policy.getExemptionEnd(service, TODAY));
+        config.setExemptUserIds(null);
+        assertNull(policy.getExemptionEnd(service, TODAY));
+    }
+
+    @Test
+    void exceedsMaximumIsTheCheckOfATokenAlone() throws Exception {
+        User alice = User.getById("alice", true);
+        HashedToken never = addToken(alice, "never", 1, null);
+        HashedToken far = addToken(alice, "far", 2, TODAY.plusDays(31));
+        HashedToken last = addToken(alice, "last", 3, TODAY.plusDays(30));
+        HashedToken today = addToken(alice, "today", 4, TODAY);
+        HashedToken expired = addToken(alice, "expired", 5, TODAY.minusDays(1));
+        assertFalse(policy.exceedsMaximum(never, TODAY), "no maximum: nothing is exceeded");
+
+        config.setMaxTokenLifetimeDays(30);
+        assertTrue(policy.exceedsMaximum(never, TODAY));
+        assertTrue(policy.exceedsMaximum(far, TODAY));
+        assertFalse(policy.exceedsMaximum(last, TODAY), "the last day that is allowed");
+        assertFalse(policy.exceedsMaximum(today, TODAY));
+        assertFalse(policy.exceedsMaximum(expired, TODAY), "a token that has expired cannot be used");
+        assertFalse(policy.exceedsMaximum(far, TODAY.plusDays(1)), "a day later, the maximum reaches further");
+
+        // whoever the owner is: exemptions are not looked at
+        config.setExemptUserIds("alice");
+        assertTrue(policy.exceedsMaximum(never, TODAY));
+        assertTrue(policy.isCompliant(alice, never, TODAY), "while the token of an exempt owner stays compliant");
+    }
+
+    @Test
+    void theTokensOfAnOwnerWhoIsNoLongerExemptAreCheckedInStrictMode() throws Exception {
+        User service = User.getById("Service Account", true);
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("service account");
+        HashedToken never = addToken(service, "never", 1, null);
+        HashedToken far = addToken(service, "far", 2, TODAY.plusDays(31));
+        HashedToken within = addToken(service, "within", 3, TODAY.plusDays(30));
+        assertTrue(policy.isCompliant(service, never, TODAY));
+        assertTrue(policy.isCompliant(service, far, TODAY));
+
+        config.setStrict(true);
+        assertFalse(policy.isCompliant(service, never, TODAY));
+        assertFalse(policy.isCompliant(service, far, TODAY));
+        assertTrue(policy.isCompliant(service, within, TODAY));
+
+        config.setEnforceFrom(TODAY.plusDays(1).toString());
+        assertTrue(policy.isCompliant(service, never, TODAY), "strict is only scheduled");
+        assertFalse(policy.isCompliant(service, never, TODAY.plusDays(1)));
+    }
+
     private static HashedToken addToken(User owner, String name, int secret, LocalDate expiry) throws IOException {
         ApiTokenProperty property = owner.getProperty(ApiTokenProperty.class);
         String uuid = property.addFixedNewToken(name, "11" + "%032x".formatted(secret), expiry);

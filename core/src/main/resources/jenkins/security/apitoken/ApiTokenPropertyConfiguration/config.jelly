@@ -47,9 +47,20 @@ THE SOFTWARE.
         <f:entry title="${%enforceFrom}" field="enforceFrom">
             <f:textbox placeholder="yyyy-MM-dd" />
         </f:entry>
+        <f:entry field="strict">
+            <f:checkbox title="${%strict}" />
+        </f:entry>
         <j:set var="pendingEnforceFrom" value="${instance.pendingEnforceFrom()}" />
         <j:if test="${pendingEnforceFrom != null}">
-            <div class="jenkins-alert jenkins-alert-info jenkins-form-item">${%enforceFromNotice(pendingEnforceFrom, instance.maxTokenLifetimeDays)}</div>
+            <!-- with strict mode switched on nobody is exempt, so the notice must not say "unless the account is exempt" -->
+            <j:choose>
+                <j:when test="${instance.strict}">
+                    <div class="jenkins-alert jenkins-alert-info jenkins-form-item">${%enforceFromNoticeStrict(pendingEnforceFrom, instance.maxTokenLifetimeDays)}</div>
+                </j:when>
+                <j:otherwise>
+                    <div class="jenkins-alert jenkins-alert-info jenkins-form-item">${%enforceFromNotice(pendingEnforceFrom, instance.maxTokenLifetimeDays)}</div>
+                </j:otherwise>
+            </j:choose>
         </j:if>
         <j:set var="compliancePanelUrl" value="${instance.compliancePanelUrl()}" />
         <!-- the page of the panel is for administrators only: a user who can only read this page would get a 403 from it -->

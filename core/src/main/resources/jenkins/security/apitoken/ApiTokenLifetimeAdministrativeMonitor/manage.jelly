@@ -119,6 +119,10 @@ THE SOFTWARE.
                                                     <!-- The text is built in Java, from the names, so that they are one escaped text node, not an i18n argument -->
                                                     <div class="token-status-shared">${row.sharedWithMarker}</div>
                                                 </j:if>
+                                                <j:if test="${row.exemptUntil != null}">
+                                                    <!-- The date is the one of the configuration, as an ISO date: an argument of the text, shown as one escaped text node -->
+                                                    <div class="token-status-exempt-until">${%StatusExemptUntil(row.exemptUntil)}</div>
+                                                </j:if>
                                             </td>
                                             <td class="token-created">
                                                 <j:choose>
@@ -199,6 +203,9 @@ THE SOFTWARE.
                         <li>${%ActionRevoke}</li>
                         <li>${%ActionShorten}</li>
                         <li>${%ActionLegacy}</li>
+                        <j:if test="${report.exemptUntil != null}">
+                            <li class="token-lifetime-help-exempt-until">${%ActionExemptUntil(report.exemptUntil)}</li>
+                        </j:if>
                         <li>${%ActionOtherPages}</li>
                         <li>${%ActionAgain}</li>
                     </ul>

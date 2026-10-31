@@ -15,12 +15,14 @@
   </p>
   <p>
     The limit only applies when a token is created. Tokens that exist already
-    are not touched, and neither are tokens that are created from a script or
-    from the script console through the Java API. Legacy API tokens never
-    expire, so the maximum cannot apply to them: once it is enforced, users who
-    are not exempt can no longer regenerate a legacy token from their page, but
-    the legacy tokens that are generated for new users (see the options above)
-    are not limited.
+    are not touched. Neither are tokens that are created from a script or from
+    the script console through the Java API, unless
+    <em>Strict mode</em>
+    is in effect: then the maximum covers them too, and nobody is exempt. Legacy
+    API tokens never expire, so the maximum cannot apply to them: once it is
+    enforced, users who are not exempt can no longer regenerate a legacy token
+    from their page, but the legacy tokens that are generated for new users (see
+    the options above) are not limited, even in strict mode.
   </p>
   <p>
     A maximum of less than 7 days is accepted, but then every new token is
@@ -29,17 +31,20 @@
   <p>
     The users listed under
     <em>Users exempt from the maximum lifetime</em>
-    are not restricted.
+    are not restricted, unless strict mode is in effect.
   </p>
   <p>
     The compliance panel lists the tokens that exceed the maximum, which
     includes the tokens that never expire, and the secrets that are shared by
     several tokens of one user. It does so as soon as a maximum is configured,
-    before the enforcement date too. A banner on the Manage Jenkins page tells
-    administrators when there is something to review. Dismissing that banner
-    hides it for every administrator, until the monitor is enabled again under
-    Manage Jenkins &gt; System &gt; Administrative monitors. The panel itself
-    stays reachable through the link in this section.
+    before the enforcement date too. It does not list the tokens of the users
+    who are exempt, except while strict mode is switched on and has not started
+    yet: they are listed then, marked with the date from which they will no
+    longer be exempt. A banner on the Manage Jenkins page tells administrators
+    when there is something to review. Dismissing that banner hides it for every
+    administrator, until the monitor is enabled again under Manage Jenkins &gt;
+    System &gt; Administrative monitors. The panel itself stays reachable
+    through the link in this section.
   </p>
   <h3>Registering a secret again</h3>
   <p>
@@ -62,7 +67,8 @@
     <li>
       Nothing changes while the limit is not enforced, that is with no maximum
       or before the enforcement date, and for the users who are exempt: they can
-      register the same secret again, as before.
+      register the same secret again, as before. In strict mode nobody is
+      exempt, so the rule applies to them too.
     </li>
     <li>
       Only the tokens of the same user are compared. The same secret registered
@@ -84,7 +90,7 @@
     revoked tokens: once every token that has this secret is revoked, the same
     secret can be registered again, so a secret can be kept alive by revoking
     and registering it before each expiration. The Java API, which scripts use,
-    does not check the secrets either. And the tokens that existed before the
-    limit was enforced are not touched.
+    does not check the secrets either, unless strict mode is in effect. And the
+    tokens that existed before the limit was enforced are not touched.
   </p>
 </div>

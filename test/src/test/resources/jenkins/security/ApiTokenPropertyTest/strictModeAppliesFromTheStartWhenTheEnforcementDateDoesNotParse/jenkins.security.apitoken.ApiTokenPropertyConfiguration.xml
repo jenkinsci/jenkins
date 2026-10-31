@@ -1,0 +1,10 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<jenkins.security.apitoken.ApiTokenPropertyConfiguration>
+  <tokenGenerationOnCreationEnabled>false</tokenGenerationOnCreationEnabled>
+  <creationOfLegacyTokenEnabled>false</creationOfLegacyTokenEnabled>
+  <usageStatisticsEnabled>true</usageStatisticsEnabled>
+  <maxTokenLifetimeDays>30</maxTokenLifetimeDays>
+  <exemptUserIds>user</exemptUserIds>
+  <enforceFrom>2026-13-01</enforceFrom>
+  <strict>true</strict>
+</jenkins.security.apitoken.ApiTokenPropertyConfiguration>

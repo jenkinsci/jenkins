@@ -42,7 +42,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Rules for the maximum lifetime of the API tokens that are created through the HTTP endpoints, as configured in
- * {@link ApiTokenPropertyConfiguration}. This class holds no state of its own: it reads the configuration on each call.
+ * {@link ApiTokenPropertyConfiguration}, and, in strict mode, through the Java API as well. This class holds no state of
+ * its own: it reads the configuration on each call.
  * <p>
  * Every method that depends on the date takes {@code today} as a parameter, so there is no hidden clock.
  * <ul>
@@ -61,6 +62,12 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * day itself is accepted.
  * <li>The tokens that exist already are only reported, by {@link ApiTokenLifetimeAdministrativeMonitor}, and in every phase,
  * the warning phase included: see {@link #isCompliant} and {@link #isMonitored}.
+ * <li>The <em>strict mode</em>, see {@link #isStrict(LocalDate)}, is a switch of the configuration that has an effect once the
+ * policy is enforcing. Then nobody is exempt: {@link #isExempt} is false for every owner, so the rules above cover every
+ * owner. And the maximum is checked by {@link ApiTokenStore} too, which is what the Java API goes through, and by
+ * {@link jenkins.security.ApiTokenProperty#changeApiToken()}. Without the strict mode only the HTTP endpoints check it.
+ * Until the enforcement date, when it is {@linkplain #isStrictScheduled(LocalDate) scheduled}, the exemptions still apply, but
+ * the tokens of the exempt owners that exceed the maximum are reported already: see {@link #getExemptionEnd}.
  * </ul>
  */
 @Restricted(NoExternalUse.class)
@@ -168,11 +175,59 @@ public class ApiTokenLifetimePolicy {
     }
 
     /**
-     * Whether the owner of a token is exempt from the maximum lifetime.
+     * Whether the strict mode is in effect: it is switched on in the configuration, and the maximum lifetime is enforced
+     * ({@link #isEnforcing(LocalDate)}), so a strict mode that is switched on has no effect while there is no maximum, nor in
+     * the warning phase. A stored enforcement date that cannot be parsed counts as an enforcement that has started, as for
+     * {@code isEnforcing}, so the strict mode is in effect from the start in that case too.
+     * <p>
+     * While it is in effect nobody is {@linkplain #isExempt exempt}, and {@link ApiTokenStore} refuses the tokens that break the
+     * maximum, see {@link ApiTokenPolicyViolationException}.
+     */
+    public boolean isStrict(@NonNull LocalDate today) {
+        // the switch first: it costs nothing, and it is off unless an administrator chose otherwise
+        return config().isStrict() && isEnforcing(today);
+    }
+
+    /**
+     * Whether the strict mode is switched on and will take effect later: a maximum is configured, and its enforcement date
+     * has not been reached, so that it is in its warning phase. It is the counterpart of {@link #isStrict(LocalDate)}: on
+     * any given day at most one of the two holds, and neither does while the strict mode is switched off or no maximum is
+     * configured.
+     */
+    public boolean isStrictScheduled(@NonNull LocalDate today) {
+        return config().isStrict() && getPendingEnforceFrom(today) != null;
+    }
+
+    /**
+     * Tells whether the owner is exempt now but will not be once the strict mode starts, and from when. While the strict mode
+     * is {@linkplain #isStrictScheduled(LocalDate) scheduled}, the exemptions still apply, and they stop on the enforcement date,
+     * as everybody is held to the maximum from then on. This is what lets the compliance panel list the tokens of such an owner
+     * that will not comply, before that day.
      *
-     * @param today not used yet, a strict mode will ignore the exemptions from some date on
+     * @return the day on which the strict mode starts, and with it the end of the exemption, if the strict mode is scheduled and
+     *         the owner is exempt; {@code null} in every other case: the strict mode is switched off, already in effect (nobody
+     *         is exempt then), or has no maximum to apply, or the owner is not exempt
+     */
+    @CheckForNull
+    public LocalDate getExemptionEnd(@NonNull User owner, @NonNull LocalDate today) {
+        // the switch first, as for isStrict: this runs for each user
+        if (!config().isStrict()) {
+            return null;
+        }
+        LocalDate strictStart = getPendingEnforceFrom(today);
+        return strictStart != null && isExempt(owner, today) ? strictStart : null;
+    }
+
+    /**
+     * Whether the owner of a token is exempt from the maximum lifetime. Nobody is while the strict mode is
+     * {@linkplain #isStrict(LocalDate) in effect}: the exemptions stay in the configuration, and apply again when it is not.
+     *
+     * @param today the day that decides whether the strict mode is in effect
      */
     public boolean isExempt(@NonNull User owner, @NonNull LocalDate today) {
+        if (isStrict(today)) {
+            return false;
+        }
         IdStrategy strategy = User.idStrategy();
         for (String id : parseUserIds(config().getExemptUserIds())) {
             if (strategy.equals(id, owner.getId())) {
@@ -185,8 +240,9 @@ public class ApiTokenLifetimePolicy {
     /**
      * Whether the maximum lifetime applies to the tokens of this owner, that is whether the policy is
      * {@linkplain #isEnforcing(LocalDate) enforcing} and the owner is not {@linkplain #isExempt(User, LocalDate) exempt}.
-     * Callers ask this instead of combining the two, so that a strict mode which will ignore the exemptions from some
-     * date on has only one place to change.
+     * Callers ask this instead of combining the two. The strict mode needs no case of its own here: while it is
+     * {@linkplain #isStrict(LocalDate) in effect} nobody is exempt, so this holds for every owner as soon as the policy
+     * is enforcing.
      */
     public boolean appliesTo(@NonNull User owner, @NonNull LocalDate today) {
         return isEnforcing(today) && !isExempt(owner, today);
@@ -246,16 +302,29 @@ public class ApiTokenLifetimePolicy {
      * @param today the day that decides whether the token has expired and how far the maximum reaches
      */
     public boolean isCompliant(@NonNull User owner, @NonNull ApiTokenStore.HashedToken token, @NonNull LocalDate today) {
-        if (!isActive()) {
-            return true;
-        }
-        // a token that has expired expires before today, so it is not after the maximum either: it is compliant
-        LocalDate expiration = token.getExpirationDate();
-        if (expiration != null && !expiration.isAfter(maxExpiration(today))) {
+        if (!exceedsMaximum(token, today)) {
             return true;
         }
         // only a token that exceeds the maximum depends on the owner, so the list of exemptions is read for these only
         return isExempt(owner, today);
+    }
+
+    /**
+     * Checks a token that exists against the maximum alone, whoever owns it: whether the policy is
+     * {@linkplain #isActive() active}, the token has not expired on {@code today}, and it never expires, which is the case of
+     * the legacy token, or expires after {@link #maxExpiration(LocalDate) today plus the maximum}. It is the question that
+     * {@link #isCompliant} asks before the exemptions, and that the compliance panel asks for the tokens of the owners who are
+     * exempt only until the strict mode starts, see {@link #getExemptionEnd}.
+     *
+     * @param today the day that decides whether the token has expired and how far the maximum reaches
+     */
+    public boolean exceedsMaximum(@NonNull ApiTokenStore.HashedToken token, @NonNull LocalDate today) {
+        if (!isActive()) {
+            return false;
+        }
+        // a token that has expired expires before today, so it is not after the maximum either
+        LocalDate expiration = token.getExpirationDate();
+        return expiration == null || expiration.isAfter(maxExpiration(today));
     }
 
     /**

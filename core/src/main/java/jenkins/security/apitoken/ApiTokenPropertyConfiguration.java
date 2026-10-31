@@ -54,7 +54,7 @@ import org.kohsuke.stapler.verb.POST;
 /**
  * Configuration of the API tokens: whether a legacy token is generated when a user is created, whether a user can
  * request a new legacy token, whether the usage of the tokens is recorded, and the maximum lifetime of the tokens that
- * are created through the HTTP endpoints, see {@link ApiTokenLifetimePolicy}.
+ * are created through the HTTP endpoints, and, in strict mode, through the Java API, see {@link ApiTokenLifetimePolicy}.
  *
  * @since 2.129
  */
@@ -98,6 +98,12 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
      * right away. Kept as the raw string, see {@link ApiTokenLifetimePolicy}.
      */
     private String enforceFrom;
+
+    /**
+     * Whether the strict mode is switched on, see {@link ApiTokenLifetimePolicy#isStrict(LocalDate)}. It is only in effect
+     * while a maximum is configured and its enforcement has started.
+     */
+    private boolean strict;
 
     public static ApiTokenPropertyConfiguration get() {
         return GlobalConfiguration.all().get(ApiTokenPropertyConfiguration.class);
@@ -204,6 +210,29 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
     }
 
     /**
+     * Whether the strict mode of the maximum lifetime of API tokens is switched on. In strict mode the maximum also applies
+     * to the tokens that are created through the Java API, and nobody is exempt from it. It has no effect while no maximum is
+     * configured, nor before the maximum is enforced: see {@link ApiTokenLifetimePolicy#isStrict(LocalDate)}, which is what
+     * decides whether it is in effect.
+     *
+     * @return {@code true} if the strict mode is switched on; {@code false} by default
+     * @since TODO
+     */
+    public boolean isStrict() {
+        return strict;
+    }
+
+    /**
+     * Switches the strict mode on or off, see {@link #isStrict()}.
+     *
+     * @since TODO
+     */
+    public void setStrict(boolean strict) {
+        this.strict = strict;
+        save();
+    }
+
+    /**
      * Validates the {@code maxTokenLifetimeDays} and {@code enforceFrom} values that are submitted before binding
      * anything, so that an invalid value rejects the whole submission instead of being half applied.
      * A key that is absent from the submission leaves its field unchanged.
@@ -217,7 +246,7 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
     public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         if (json.has("maxTokenLifetimeDays")) {
             String value = asString(json.get("maxTokenLifetimeDays"));
-            if (validateMaxTokenLifetimeDays(value, null).kind == FormValidation.Kind.ERROR) {
+            if (validateMaxTokenLifetimeDays(value, false, null).kind == FormValidation.Kind.ERROR) {
                 throw new FormException(Messages.ApiTokenPropertyConfiguration_MaxTokenLifetimeDays_Rejected(), "maxTokenLifetimeDays");
             }
             json.put("maxTokenLifetimeDays", parseDays(value));
@@ -240,16 +269,18 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
     }
 
     /**
-     * Form validation of {@link #getMaxTokenLifetimeDays()}.
+     * Form validation of {@link #getMaxTokenLifetimeDays()}. The strict mode and the enforcement date are parameters only
+     * because they have no effect while there is no maximum, and the field says so: the form checks the field again when
+     * either one changes.
      *
      * @since TODO
      */
     @POST
-    public FormValidation doCheckMaxTokenLifetimeDays(@QueryParameter String value, @QueryParameter String enforceFrom) {
+    public FormValidation doCheckMaxTokenLifetimeDays(@QueryParameter String value, @QueryParameter boolean strict, @QueryParameter String enforceFrom) {
         if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
             return FormValidation.ok();
         }
-        return validateMaxTokenLifetimeDays(value, enforceFrom);
+        return validateMaxTokenLifetimeDays(value, strict, enforceFrom);
     }
 
     /**
@@ -342,15 +373,24 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
     }
 
     /**
+     * @param strict whether the strict mode is switched on, only used to warn when there is no maximum
      * @param enforceFrom the value of the enforcement date, only used to warn when there is no maximum
      */
-    private static FormValidation validateMaxTokenLifetimeDays(@CheckForNull String value, @CheckForNull String enforceFrom) {
+    private static FormValidation validateMaxTokenLifetimeDays(@CheckForNull String value, boolean strict, @CheckForNull String enforceFrom) {
         int days = parseDays(value);
         if (days < 0) {
             return FormValidation.error(Messages.ApiTokenPropertyConfiguration_MaxTokenLifetimeDays_Invalid());
         }
         if (days == 0) {
-            if (Util.fixEmptyAndTrim(enforceFrom) != null) {
+            boolean hasEnforceFrom = Util.fixEmptyAndTrim(enforceFrom) != null;
+            // one warning that names what is ignored, whichever of the two it is, or both
+            if (strict && hasEnforceFrom) {
+                return FormValidation.warning(Messages.ApiTokenPropertyConfiguration_MaxTokenLifetimeDays_StrictAndEnforceFromIgnored());
+            }
+            if (strict) {
+                return FormValidation.warning(Messages.ApiTokenPropertyConfiguration_MaxTokenLifetimeDays_StrictIgnored());
+            }
+            if (hasEnforceFrom) {
                 return FormValidation.warning(Messages.ApiTokenPropertyConfiguration_MaxTokenLifetimeDays_EnforceFromIgnored());
             }
             return FormValidation.ok();

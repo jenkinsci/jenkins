@@ -78,6 +78,12 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * and every one of those tokens is listed. A token that has expired cannot authenticate, so it is not reported, and
  * neither is a secret that only one token that has not expired holds.
  * <p>
+ * The owners who are exempt are not reported, but for one case: while the strict mode is switched on and has not started yet,
+ * because the warning phase has not ended, they are still exempt, and from the day it ends nobody is. Their tokens that exceed
+ * the maximum, and the secrets that several of their tokens hold, are listed and counted from now, marked as exempt until that
+ * day, so that they can be dealt with before it. The maximum does not apply to these owners yet, so Revoke is offered for such
+ * a token and Shorten is not.
+ * <p>
  * Like {@link LegacyApiTokenAdministrativeMonitor}, from which it takes the pattern, it is {@linkplain #isSecurity() a
  * security monitor} that shows a banner and links to a page, but it is not a subclass of it.
  * <p>
@@ -122,7 +128,8 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
     /**
      * Whether there is something to report: a maximum is configured and, either the enforcement date does not parse, which
      * is known without looking at any token, or some user who is not exempt has a token that does not comply, or two tokens
-     * that have not expired and hold the same secret. It stops at the first one it finds, and it keeps no result: the
+     * that have not expired and hold the same secret; a user who is exempt only until the strict mode starts counts for this
+     * as well, see {@link #scan}. It stops at the first one it finds, and it keeps no result: the
      * tokens are scanned each time, as {@link LegacyApiTokenAdministrativeMonitor#isActivated()} does.
      */
     @Override
@@ -151,16 +158,28 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
             if (store == null) {
                 continue;
             }
+            LocalDate exemptUntil = policy.getExemptionEnd(user, today);
             for (HashedToken token : store.getTokenListSnapshot()) {
-                if (!policy.isCompliant(user, token, today)) {
+                if (isOverMaximum(policy, user, token, exemptUntil, today)) {
                     return true;
                 }
             }
-            if (store.hasLiveSharedSecret(today) && policy.isMonitored(user, today)) {
+            if (store.hasLiveSharedSecret(today) && (exemptUntil != null || policy.isMonitored(user, today))) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Whether the page lists a token as one that exceeds the maximum: it does not comply, or its owner is exempt only until the
+     * strict mode starts, see {@link ApiTokenLifetimePolicy#getExemptionEnd}, and it will not comply then.
+     *
+     * @param exemptUntil the day the strict mode starts if the owner is exempt only until then, otherwise {@code null}
+     */
+    private static boolean isOverMaximum(@NonNull ApiTokenLifetimePolicy policy, @NonNull User owner, @NonNull HashedToken token,
+                                         @CheckForNull LocalDate exemptUntil, @NonNull LocalDate today) {
+        return !policy.isCompliant(owner, token, today) || (exemptUntil != null && policy.exceedsMaximum(token, today));
     }
 
     public HttpResponse doIndex() throws IOException {
@@ -200,7 +219,9 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
      * when the request arrives, that the token still needs it: the maximum is configured and its owner is not exempt, the token
      * exists, it is not the legacy token, which has no expiration to change, and it neither expires within the maximum nor has
      * expired. Otherwise nothing is changed and the answer is 400 for the legacy token and 409 for a token that does not need
-     * it, so that a page that is out of date cannot extend a token or shorten one that complies. It never makes a token expire
+     * it, so that a page that is out of date cannot extend a token or shorten one that complies. A user who is exempt until the
+     * strict mode starts is exempt here as well, although the page lists the tokens of that user: the maximum does not apply
+     * to them yet. It never makes a token expire
      * later, which {@link ApiTokenProperty#shortenExpiration} guarantees even if the token changes meanwhile.
      * <p>
      * It changes the token that was asked for only: the other tokens that share its secret are listed on their own if they do
@@ -357,8 +378,10 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
      * users that have no {@link ApiTokenProperty}, or no token, are skipped.
      * <p>
      * A token is a row when it does not comply, or when it holds a secret that another token that has not expired holds too,
-     * and its owner is not exempt in either case. The rows are sorted by the ID of their owner and then by the name of
-     * the token, so the order in which the users are returned does not matter.
+     * and its owner is not exempt in either case. The exception are the owners who are exempt only until the strict mode starts,
+     * see {@link ApiTokenLifetimePolicy#getExemptionEnd}: their tokens that exceed the maximum are rows too, and so are the ones
+     * that share a secret, each marked with the day the exemption ends. The rows are sorted by the ID of their owner and then by
+     * the name of the token, so the order in which the users are returned does not matter.
      */
     @NonNull
     Report scan(@NonNull LocalDate today) {
@@ -366,10 +389,13 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
         Phase phase = policy.getPhase(today);
         LocalDate enforcementStart = policy.getEnforcementStart();
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        // while the warning phase lasts the strict mode is only scheduled, afterwards it is in effect or not
+        boolean strict = phase == Phase.WARNING ? policy.isStrictScheduled(today) : policy.isStrict(today);
 
         List<Row> rows = new ArrayList<>();
         int nonCompliantCount = 0;
         int sharedSecretGroupCount = 0;
+        LocalDate exemptUntilListed = null;
         if (phase != Phase.INACTIVE) {
             for (User user : User.getAll()) {
                 ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
@@ -382,10 +408,13 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
                     continue;
                 }
 
+                // An owner who is exempt now but will not be once the strict mode starts is reported already: that is the day
+                // to prepare for. Otherwise the owners who are exempt are not reported.
+                LocalDate exemptUntil = policy.getExemptionEnd(user, today);
                 // The snapshot and the groups are read apart, so a token can be revoked in between: the siblings that are
                 // not in the snapshot are ignored.
                 Map<String, List<String>> sharing = store.getUuidsSharingSecret();
-                boolean reportsSharedSecrets = !sharing.isEmpty() && policy.isMonitored(user, today);
+                boolean reportsSharedSecrets = !sharing.isEmpty() && (exemptUntil != null || policy.isMonitored(user, today));
                 Map<String, HashedToken> byUuid = new HashMap<>();
                 for (HashedToken token : tokens) {
                     byUuid.put(token.getUuid(), token);
@@ -393,7 +422,7 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
 
                 Set<String> counted = new HashSet<>();
                 for (HashedToken token : tokens) {
-                    boolean compliant = policy.isCompliant(user, token, today);
+                    boolean overMaximum = isOverMaximum(policy, user, token, exemptUntil, today);
 
                     String sharedWith = null;
                     List<String> liveSharedNames = List.of();
@@ -427,13 +456,16 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
                         }
                     }
 
-                    if (compliant && sharedWith == null) {
+                    if (!overMaximum && sharedWith == null) {
                         continue;
                     }
-                    if (!compliant) {
+                    if (overMaximum) {
                         nonCompliantCount++;
                     }
-                    rows.add(new Row(user, property, token, !compliant, sharedWith, liveSharedNames, policy.maxExpiration(today)));
+                    if (exemptUntil != null) {
+                        exemptUntilListed = exemptUntil;
+                    }
+                    rows.add(new Row(user, property, token, overMaximum, sharedWith, liveSharedNames, policy.maxExpiration(today), exemptUntil));
                 }
             }
         }
@@ -443,9 +475,9 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
                 .thenComparing(row -> row.getName().toLowerCase(Locale.ENGLISH))
                 .thenComparing(Row::getName));
 
-        return new Report(phase, phaseLabel(phase, enforcementStart), countdown(phase, enforcementStart, today),
+        return new Report(phase, phaseLabel(phase, enforcementStart, strict), countdown(phase, enforcementStart, today),
                 config.getMaxTokenLifetimeDays(), config.isUsageStatisticsEnabled(),
-                nonCompliantCount, sharedSecretGroupCount, rows);
+                nonCompliantCount, sharedSecretGroupCount, exemptUntilListed == null ? null : exemptUntilListed.toString(), rows);
     }
 
     private static @CheckForNull ApiTokenStore storeOf(@NonNull User user) {
@@ -453,17 +485,31 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
         return property == null ? null : property.getTokenStore();
     }
 
-    private static @NonNull String phaseLabel(@NonNull Phase phase, @CheckForNull LocalDate enforcementStart) {
+    /**
+     * @param strict the strict mode: scheduled for the end of the warning phase, or in effect when the maximum is enforced.
+     *               It adds "in strict mode" to "Enforcing", and it says that it will start in the warning phase. The date shown
+     *               is the one of the enforcement: nothing stores the day when strict mode was switched on.
+     */
+    private static @NonNull String phaseLabel(@NonNull Phase phase, @CheckForNull LocalDate enforcementStart, boolean strict) {
         switch (phase) {
             case WARNING:
-                return Messages.ApiTokenLifetimeAdministrativeMonitor_Phase_Warning(String.valueOf(enforcementStart));
+                return strict
+                        ? Messages.ApiTokenLifetimeAdministrativeMonitor_Phase_WarningStrict(String.valueOf(enforcementStart))
+                        : Messages.ApiTokenLifetimeAdministrativeMonitor_Phase_Warning(String.valueOf(enforcementStart));
             case ENFORCING:
                 // without a date the policy enforces from the start, there is no date to show
+                if (strict) {
+                    return enforcementStart == null
+                            ? Messages.ApiTokenLifetimeAdministrativeMonitor_Phase_Strict()
+                            : Messages.ApiTokenLifetimeAdministrativeMonitor_Phase_StrictSince(String.valueOf(enforcementStart));
+                }
                 return enforcementStart == null
                         ? Messages.ApiTokenLifetimeAdministrativeMonitor_Phase_Enforcing()
                         : Messages.ApiTokenLifetimeAdministrativeMonitor_Phase_EnforcingSince(String.valueOf(enforcementStart));
             case ENFORCING_INVALID_DATE:
-                return Messages.ApiTokenLifetimeAdministrativeMonitor_Phase_EnforcingInvalidDate();
+                return strict
+                        ? Messages.ApiTokenLifetimeAdministrativeMonitor_Phase_StrictInvalidDate()
+                        : Messages.ApiTokenLifetimeAdministrativeMonitor_Phase_EnforcingInvalidDate();
             default:
                 return Messages.ApiTokenLifetimeAdministrativeMonitor_Phase_Inactive();
         }
@@ -493,10 +539,11 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
         private final boolean usageStatisticsEnabled;
         private final int nonCompliantCount;
         private final int sharedSecretGroupCount;
+        private final String exemptUntil;
         private final List<Row> rows;
 
         private Report(Phase phase, String phaseLabel, @CheckForNull String countdown, int maxDays, boolean usageStatisticsEnabled,
-                       int nonCompliantCount, int sharedSecretGroupCount, List<Row> rows) {
+                       int nonCompliantCount, int sharedSecretGroupCount, @CheckForNull String exemptUntil, List<Row> rows) {
             this.phase = phase;
             this.phaseLabel = phaseLabel;
             this.countdown = countdown;
@@ -504,6 +551,7 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
             this.usageStatisticsEnabled = usageStatisticsEnabled;
             this.nonCompliantCount = nonCompliantCount;
             this.sharedSecretGroupCount = sharedSecretGroupCount;
+            this.exemptUntil = exemptUntil;
             this.rows = Collections.unmodifiableList(rows);
         }
 
@@ -561,6 +609,14 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
         }
 
         /**
+         * @return the day on which the strict mode starts, as an ISO date, when a row is listed for an owner who is exempt only
+         *         until then, see {@link Row#getExemptUntil()}; {@code null} when there is no such row
+         */
+        public @CheckForNull String getExemptUntil() {
+            return exemptUntil;
+        }
+
+        /**
          * The tokens that do not comply and the ones that share a secret, sorted by user ID and then token name.
          */
         public List<Row> getRows() {
@@ -584,16 +640,20 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
         private final long daysOverMaximum;
         private final String sharedWith;
         private final List<String> liveSharedNames;
+        private final String exemptUntil;
 
         /**
-         * @param overMaximum whether the token does not comply with the maximum
+         * @param overMaximum whether the token does not comply with the maximum, or will not once the strict mode starts when
+         *                    its owner is exempt until then
          * @param sharedWith the names of the other tokens that hold the secret of this one, those that have expired suffixed
          *                   as such, {@code null} if this token is not listed for sharing a secret
          * @param liveSharedNames the names of those of the other tokens that have not expired, which are the ones that revoking
          *                        this token revokes as well
          * @param maxExpiration the latest expiration date that complies, {@code today} plus the maximum
+         * @param exemptUntil the day the strict mode starts if the owner of the token is exempt only until then, otherwise
+         *                    {@code null}
          */
-        private Row(User user, ApiTokenProperty property, HashedToken token, boolean overMaximum, @CheckForNull String sharedWith, List<String> liveSharedNames, LocalDate maxExpiration) {
+        private Row(User user, ApiTokenProperty property, HashedToken token, boolean overMaximum, @CheckForNull String sharedWith, List<String> liveSharedNames, LocalDate maxExpiration, @CheckForNull LocalDate exemptUntil) {
             this.userId = user.getId();
             this.userFullName = user.getFullName();
             this.userUrl = user.getUrl();
@@ -604,6 +664,7 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
             this.daysOverMaximum = expirationDate == null ? 0 : ChronoUnit.DAYS.between(maxExpiration, expirationDate);
             this.sharedWith = sharedWith;
             this.liveSharedNames = List.copyOf(liveSharedNames);
+            this.exemptUntil = exemptUntil == null ? null : exemptUntil.toString();
         }
 
         public String getUserId() {
@@ -707,11 +768,21 @@ public class ApiTokenLifetimeAdministrativeMonitor extends AdministrativeMonitor
         }
 
         /**
-         * Whether the expiration of this token can be made earlier: it does not comply on its own and it is not the legacy
-         * token, which has no expiration to change.
+         * @return the day on which the strict mode starts, as an ISO date, if the owner of this token is exempt now and
+         *         will not be from that day on, see {@link ApiTokenLifetimePolicy#getExemptionEnd}; {@code null} otherwise.
+         *         Such a token is listed to prepare for that day, as the maximum does not apply to its owner yet.
+         */
+        public @CheckForNull String getExemptUntil() {
+            return exemptUntil;
+        }
+
+        /**
+         * Whether the expiration of this token can be made earlier: it does not comply on its own, it is not the legacy
+         * token, which has no expiration to change, and the maximum applies to its owner already, which it does not while
+         * the owner is exempt until the strict mode starts.
          */
         public boolean isShortenable() {
-            return overMaximum && !token.isLegacy;
+            return overMaximum && !token.isLegacy && exemptUntil == null;
         }
     }
 }

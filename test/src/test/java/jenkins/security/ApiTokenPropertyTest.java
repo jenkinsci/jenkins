@@ -17,6 +17,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
@@ -30,9 +35,14 @@ import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.HudsonPrivateSecurityRealm;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -52,12 +62,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
+import jenkins.security.apitoken.ApiTokenPolicyViolationException;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStats;
 import jenkins.security.apitoken.ApiTokenStore;
@@ -86,6 +98,10 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerResponse2;
+import org.mockito.MockedStatic;
+import org.springframework.security.core.Authentication;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -1926,6 +1942,497 @@ class ApiTokenPropertyTest {
         assertLegacyTokenIsRegenerated(adminClient, admin);
     }
 
+    // ---- JENKINS-27612: the strict mode, which also limits the exempt owners and the Java API ----
+
+    private static void switchStrictModeOn(int maximum) {
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(maximum);
+        config.setStrict(true);
+    }
+
+    /** Removes the property from the user in memory, as for a user that never had one. */
+    private static void removeApiTokenProperty(User user) throws ReflectiveOperationException {
+        Field properties = User.class.getDeclaredField("properties");
+        properties.setAccessible(true);
+        ((List<?>) properties.get(user)).removeIf(ApiTokenProperty.class::isInstance);
+        assertNull(user.getProperty(ApiTokenProperty.class));
+    }
+
+    /**
+     * In the strict mode nobody is exempt: an owner who is exempt is limited like the others, by both endpoints, and is exempt
+     * again when the strict mode is switched off, as the list of exemptions was not touched.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void strictModeLimitsAnExemptOwner(String endpoint) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("user");
+        assertAcceptedNeverExpiring(user, createToken(wc, "user", endpoint, "expirationDuration", "never"));
+
+        config.setStrict(true);
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationNeverNotAllowed(), "expirationDuration", "never");
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationOverMaximum(30), "expirationDuration", "31");
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationOverMaximum(30), "expirationDuration", "365");
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationInPast(), "expirationDuration", "-1");
+        // an empty duration gets the last day that is allowed, and the maximum itself is accepted
+        LocalDate before = LocalDate.now();
+        JSONObject response = createToken(wc, "user", endpoint);
+        LocalDate after = LocalDate.now();
+        assertAcceptedExpiring(user, response, before.plusDays(30), after.plusDays(30));
+        before = LocalDate.now();
+        response = createToken(wc, "user", endpoint, "expirationDuration", "30");
+        after = LocalDate.now();
+        assertAcceptedExpiring(user, response, before.plusDays(30), after.plusDays(30));
+        LocalDate within = LocalDate.now().plusDays(10);
+        assertAcceptedExpiring(user, createToken(wc, "user", endpoint, "expirationDuration", "custom", "tokenExpiration", within.toString()), within);
+        LocalDate over = LocalDate.now().plusDays(40);
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationOverMaximum(30),
+                "expirationDuration", "custom", "tokenExpiration", over.toString());
+
+        config.setStrict(false);
+        assertAcceptedNeverExpiring(user, createToken(wc, "user", endpoint, "expirationDuration", "never"));
+        assertEquals("user", config.getExemptUserIds());
+    }
+
+    /**
+     * The strict mode that is scheduled is not in effect yet, so exemptions still apply and nothing is rejected, until the
+     * enforcement date, like the maximum itself.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void strictModeThatIsOnlyScheduledLeavesAnExemptOwnerExempt(String endpoint) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("user");
+        config.setStrict(true);
+        // far enough from today for midnight not to matter
+        config.setEnforceFrom(LocalDate.now().plusDays(10).toString());
+
+        for (String duration : new String[]{null, "", "never"}) {
+            assertAcceptedNeverExpiring(user, createToken(wc, "user", endpoint, "expirationDuration", duration));
+        }
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationInPast(), "expirationDuration", "-1");
+
+        // the date arrives: strict mode is in effect, and the owner is exempt no more
+        config.setEnforceFrom(LocalDate.now().toString());
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationNeverNotAllowed(), "expirationDuration", "never");
+    }
+
+    /**
+     * Strict mode without a maximum does nothing.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void strictModeWithoutAMaximumDoesNothing(String endpoint) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setStrict(true);
+        config.setExemptUserIds("user");
+
+        assertAcceptedNeverExpiring(user, createToken(wc, "user", endpoint, "expirationDuration", "never"));
+        assertAcceptedNeverExpiring(user, createToken(wc, "user", endpoint));
+        user.getProperty(ApiTokenProperty.class).generateNewToken("script");
+        user.getProperty(ApiTokenProperty.class).changeApiToken();
+    }
+
+    /**
+     * A stored enforcement date that does not parse counts as an enforcement that has started: the strict mode applies from the
+     * start, to an owner who the file lists as exempt too.
+     */
+    @Test
+    @LocalData
+    @Issue("JENKINS-27612")
+    void strictModeAppliesFromTheStartWhenTheEnforcementDateDoesNotParse() throws Exception {
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        assertEquals("2026-13-01", config.getEnforceFrom());
+        assertTrue(config.isStrict());
+        assertEquals("user", config.getExemptUserIds());
+        config.setTokenGenerationOnCreationEnabled(true);
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        for (String endpoint : List.of(GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN)) {
+            assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationNeverNotAllowed(), "expirationDuration", "never");
+            assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationOverMaximum(30), "expirationDuration", "31");
+            LocalDate before = LocalDate.now();
+            JSONObject response = createToken(wc, "user", endpoint);
+            LocalDate after = LocalDate.now();
+            assertAcceptedExpiring(user, response, before.plusDays(30), after.plusDays(30));
+        }
+        assertLegacyTokenIsKept(wc, user);
+        assertThrows(ApiTokenPolicyViolationException.class, () -> user.getProperty(ApiTokenProperty.class).generateNewToken("script"));
+    }
+
+    /**
+     * The deprecated endpoint is rejected for every owner in the strict mode, an exempt one included: it regenerates a legacy
+     * token, which never expires. While the strict mode is only scheduled, or off, the exempt owner can still do it.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void changeTokenIsRejectedForAnExemptOwnerOnlyWhenStrictModeIsInEffect() throws Exception {
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("user");
+        assertLegacyTokenIsRegenerated(wc, user);
+
+        config.setStrict(true);
+        config.setEnforceFrom(LocalDate.now().plusDays(10).toString());
+        assertLegacyTokenIsRegenerated(wc, user);
+
+        config.setEnforceFrom(null);
+        assertLegacyTokenIsKept(wc, user);
+
+        config.setStrict(false);
+        assertLegacyTokenIsRegenerated(wc, user);
+    }
+
+    /**
+     * The Java method refuses to regenerate the legacy token in the strict mode, before it changes anything: the secret in
+     * memory is still the one that the stored hash matches, as it is after the user is loaded again. Without the strict mode,
+     * and when it is only scheduled, it works.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void changeApiTokenIsRefusedInStrictModeBeforeAnythingChanges() throws Exception {
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User user = User.getById("user", true);
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        assertTrue(property.hasLegacyToken());
+        String legacyValue = property.getApiTokenInsecure();
+        String legacyUuid = property.getTokenStore().getLegacyToken().getUuid();
+        user.save();
+        StoredState stored = storedState(user);
+
+        switchStrictModeOn(30);
+        ApiTokenPolicyViolationException e = assertThrows(ApiTokenPolicyViolationException.class, property::changeApiToken);
+        assertEquals(ApiTokenPolicyViolationException.Reason.NEVER_EXPIRES, e.getReason());
+        assertEquals(legacyValue, property.getApiTokenInsecure(), "the secret in memory is the one that the stored hash matches");
+        assertEquals(legacyUuid, property.getTokenStore().getLegacyToken().getUuid());
+        assertEquals(stored, storedState(user), "nothing is saved");
+        // the exemption does not help either
+        config.setExemptUserIds("user");
+        assertThrows(ApiTokenPolicyViolationException.class, property::changeApiToken);
+        assertEquals(legacyValue, property.getApiTokenInsecure());
+        checkTokenIsWorking("user", legacyValue);
+
+        user.load();
+        ApiTokenProperty reloaded = user.getProperty(ApiTokenProperty.class);
+        assertEquals(legacyValue, reloaded.getApiTokenInsecure());
+        assertEquals(legacyUuid, reloaded.getTokenStore().getLegacyToken().getUuid());
+        checkTokenIsWorking("user", legacyValue);
+
+        // only scheduled: it is not in effect yet
+        config.setEnforceFrom(LocalDate.now().plusDays(10).toString());
+        reloaded.changeApiToken();
+        String regenerated = reloaded.getApiTokenInsecure();
+        assertNotEquals(legacyValue, regenerated);
+        checkTokenIsNotWorking("user", legacyValue);
+        checkTokenIsWorking("user", regenerated);
+
+        // switched off
+        config.setEnforceFrom(null);
+        config.setStrict(false);
+        reloaded.changeApiToken();
+        assertNotEquals(regenerated, reloaded.getApiTokenInsecure());
+        checkTokenIsWorking("user", reloaded.getApiTokenInsecure());
+    }
+
+    /**
+     * The script methods of the property refuse, in the strict mode, what the maximum does not allow, whoever the owner is, and a
+     * secret that the owner holds, and a refusal stores and saves nothing. They are as they always were without the strict mode.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void theScriptMethodsApplyTheMaximumInStrictModeAndSaveNothingWhenTheyRefuse() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User user = User.getById("user", true);
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        property.generateNewToken("never");
+        property.addFixedNewToken("fixed", FIXED_TOKEN);
+        assertEquals(2, tokenCount(user));
+
+        switchStrictModeOn(30);
+        ApiTokenPropertyConfiguration.get().setExemptUserIds("user");
+        StoredState stored = storedState(user);
+        LocalDate today = LocalDate.now();
+        LocalDate over = today.plusDays(40);
+        ApiTokenPolicyViolationException.Reason never = ApiTokenPolicyViolationException.Reason.NEVER_EXPIRES;
+        ApiTokenPolicyViolationException.Reason overMaximum = ApiTokenPolicyViolationException.Reason.OVER_MAXIMUM;
+
+        assertEquals(never, assertThrows(ApiTokenPolicyViolationException.class, () -> property.generateNewToken("n")).getReason());
+        assertEquals(never, assertThrows(ApiTokenPolicyViolationException.class, () -> property.generateNewToken("n", null)).getReason());
+        assertEquals(overMaximum, assertThrows(ApiTokenPolicyViolationException.class, () -> property.generateNewToken("n", over)).getReason());
+        assertEquals(never, assertThrows(ApiTokenPolicyViolationException.class, () -> property.addFixedNewToken("n", OTHER_FIXED_TOKEN)).getReason());
+        assertEquals(never, assertThrows(ApiTokenPolicyViolationException.class, () -> property.addFixedNewToken("n", OTHER_FIXED_TOKEN, null)).getReason());
+        assertEquals(overMaximum, assertThrows(ApiTokenPolicyViolationException.class, () -> property.addFixedNewToken("n", OTHER_FIXED_TOKEN, over)).getReason());
+        assertEquals(ApiTokenPolicyViolationException.Reason.SECRET_ALREADY_REGISTERED,
+                assertThrows(ApiTokenPolicyViolationException.class, () -> property.addFixedNewToken("n", FIXED_TOKEN, today.plusDays(10))).getReason());
+        assertEquals(stored, storedState(user), "nothing was stored and nothing was saved");
+
+        LocalDate within = today.plusDays(10);
+        property.generateNewToken("within", within);
+        property.addFixedNewToken("within", OTHER_FIXED_TOKEN, within);
+        assertEquals(4, tokenCount(user));
+        user.load();
+        assertEquals(4, tokenCount(user));
+    }
+
+    /**
+     * The token that a user without {@link ApiTokenProperty} gets from {@code generateNewToken} is saved with the property, and
+     * a user that has one keeps getting its tokens saved.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void generateNewTokenSavesTheTokenWithOrWithoutAnExistingProperty() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        removeApiTokenProperty(user);
+
+        JSONObject first = assertAccepted(postToTokenEndpoint(wc, "user", GENERATE_NEW_TOKEN, "newTokenName", "first", "expirationDuration", "30"));
+        assertNotNull(user.getProperty(ApiTokenProperty.class));
+        assertEquals(1, tokenCount(user));
+        JSONObject second = assertAccepted(postToTokenEndpoint(wc, "user", GENERATE_NEW_TOKEN, "newTokenName", "second", "expirationDuration", "30"));
+        assertEquals(2, tokenCount(user));
+
+        user.load();
+        assertEquals(2, tokenCount(user));
+        checkTokenIsWorking("user", first.getString("tokenValue"));
+        checkTokenIsWorking("user", second.getString("tokenValue"));
+    }
+
+    /**
+     * What the web layer does with the answer of an endpoint: it writes it to the response.
+     */
+    private static String render(HttpResponse response) throws Exception {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        StringWriter text = new StringWriter();
+        PrintWriter writer = new PrintWriter(text);
+        StaplerResponse2 rsp = mock(StaplerResponse2.class);
+        when(rsp.getOutputStream()).thenReturn(new ServletOutputStream() {
+            @Override
+            public boolean isReady() {
+                return true;
+            }
+
+            @Override
+            public void setWriteListener(WriteListener listener) {
+            }
+
+            @Override
+            public void write(int b) {
+                bytes.write(b);
+            }
+        });
+        when(rsp.getWriter()).thenReturn(writer);
+        response.generateResponse(null, rsp, null);
+        writer.flush();
+        return bytes.toString(StandardCharsets.UTF_8) + text;
+    }
+
+    /** Whether the configuration is being read by the store: that is what changes between the check of an endpoint and the store. */
+    private static boolean readByTheStore() {
+        return StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+                .walk(frames -> frames.anyMatch(frame -> frame.getDeclaringClass() == ApiTokenStore.class));
+    }
+
+    private static HttpResponse callEndpointDirectly(ApiTokenProperty.DescriptorImpl descriptor, User owner, String endpoint, String duration) throws IOException {
+        return GENERATE_NEW_TOKEN.equals(endpoint)
+                ? descriptor.doGenerateNewToken(owner, "token", null, duration)
+                : descriptor.doAddFixedToken(owner, "token", FIXED_TOKEN, null, duration);
+    }
+
+    /**
+     * Calls an endpoint on this thread, as the owner, while the configuration answers one way to the check of the endpoint and
+     * another way to the store. The request is HTTP in real life, on a thread of the web server, and the static mock that
+     * stands in for {@link ApiTokenPropertyConfiguration#get()} is local to this thread: the endpoint has to be called directly.
+     *
+     * @param changing a spy of the configuration that answers differently to the store, see {@link #readByTheStore()}
+     */
+    private HttpResponse callWhileTheConfigurationChanges(ApiTokenPropertyConfiguration changing, User owner, String endpoint, String duration) throws Exception {
+        ApiTokenProperty.DescriptorImpl descriptor = j.jenkins.getDescriptorByType(ApiTokenProperty.DescriptorImpl.class);
+        Authentication owners = owner.impersonate2();
+        try (MockedStatic<ApiTokenPropertyConfiguration> mocked = mockStatic(ApiTokenPropertyConfiguration.class);
+             ACLContext ignored = ACL.as2(owners)) {
+            mocked.when(ApiTokenPropertyConfiguration::get).thenReturn(changing);
+            return callEndpointDirectly(descriptor, owner, endpoint, duration);
+        }
+    }
+
+    private void assertAnsweredWithAnErrorAndNothingChanged(HttpResponse response, User owner, StoredState stored, String expectedMessage, boolean hasProperty) throws Exception {
+        JSONObject answer = JSONObject.fromObject(render(response));
+        assertEquals("error", answer.getString("status"), answer.toString());
+        assertEquals(expectedMessage, answer.getString("message"));
+        assertEquals(stored, storedState(owner), "a request that the store refuses must not change anything for the user");
+        assertEquals(hasProperty, owner.getProperty(ApiTokenProperty.class) != null, "nor create the property of a user who has none");
+    }
+
+    /**
+     * Strict mode switched on between the check of the endpoint and the store call: an exempt owner is accepted by the endpoint,
+     * and the store, which reads the configuration again, refuses. The answer is {@code status:error}, never an exception, and
+     * nothing is stored or saved, for a user who has a property and for one who has none, which is not added.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void aStoreRefusalBecauseStrictModeWasSwitchedOnMidRequestIsAnsweredWithAnError(String endpoint) throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("user\nbare");
+        User user = User.getById("user", true);
+        User bare = User.getById("bare", true);
+        user.save();
+        bare.save();
+        removeApiTokenProperty(bare);
+
+        for (User owner : List.of(user, bare)) {
+            for (Map.Entry<String, String> request : Map.of(
+                    "never", Messages.ApiTokenProperty_expirationNeverNotAllowed(),
+                    "365", Messages.ApiTokenProperty_expirationOverMaximum(30)).entrySet()) {
+                AtomicBoolean readByTheEndpoint = new AtomicBoolean();
+                AtomicBoolean readByTheStore = new AtomicBoolean();
+                ApiTokenPropertyConfiguration changing = spy(config);
+                doAnswer(invocation -> {
+                    boolean store = readByTheStore();
+                    (store ? readByTheStore : readByTheEndpoint).set(true);
+                    // the strict mode is off for the check of the endpoint, and on for the store
+                    return store;
+                }).when(changing).isStrict();
+                StoredState stored = storedState(owner);
+
+                HttpResponse response = callWhileTheConfigurationChanges(changing, owner, endpoint, request.getKey());
+
+                assertTrue(readByTheEndpoint.get(), "the endpoint decided with strict mode off");
+                assertTrue(readByTheStore.get(), "the store decided with strict mode on");
+                assertAnsweredWithAnErrorAndNothingChanged(response, owner, stored, request.getValue(), owner == user);
+            }
+        }
+    }
+
+    /**
+     * The enforcement date arrives between the check of the endpoint and the store call, which can happen at midnight: the
+     * endpoint is in the warning phase and accepts what the store, in the strict mode, refuses.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void aStoreRefusalBecauseTheEnforcementDateWasReachedMidRequestIsAnsweredWithAnError(String endpoint) throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+        config.setStrict(true);
+        User user = User.getById("user", true);
+        User bare = User.getById("bare", true);
+        user.save();
+        bare.save();
+        removeApiTokenProperty(bare);
+
+        for (User owner : List.of(user, bare)) {
+            for (Map.Entry<String, String> request : Map.of(
+                    "never", Messages.ApiTokenProperty_expirationNeverNotAllowed(),
+                    "365", Messages.ApiTokenProperty_expirationOverMaximum(30)).entrySet()) {
+                AtomicBoolean readByTheEndpoint = new AtomicBoolean();
+                AtomicBoolean readByTheStore = new AtomicBoolean();
+                ApiTokenPropertyConfiguration changing = spy(config);
+                doAnswer(invocation -> {
+                    boolean store = readByTheStore();
+                    (store ? readByTheStore : readByTheEndpoint).set(true);
+                    // announced for the check of the endpoint, reached for the store
+                    return store ? LocalDate.now().toString() : LocalDate.now().plusDays(10).toString();
+                }).when(changing).getEnforceFrom();
+                StoredState stored = storedState(owner);
+
+                HttpResponse response = callWhileTheConfigurationChanges(changing, owner, endpoint, request.getKey());
+
+                assertTrue(readByTheEndpoint.get(), "the endpoint decided in the warning phase");
+                assertTrue(readByTheStore.get(), "the store decided when the enforcement had started");
+                assertAnsweredWithAnErrorAndNothingChanged(response, owner, stored, request.getValue(), owner == user);
+            }
+        }
+    }
+
+    /**
+     * Without a change in the configuration, the same direct call is accepted: what the two tests above refuse is the store's
+     * doing, not the way the endpoint is called.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void theSameDirectCallIsAcceptedWhenTheConfigurationDoesNotChange(String endpoint) throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("user");
+        User user = User.getById("user", true);
+
+        HttpResponse response = callWhileTheConfigurationChanges(spy(config), user, endpoint, "never");
+
+        JSONObject answer = JSONObject.fromObject(render(response));
+        assertEquals("ok", answer.getString("status"), answer.toString());
+        assertEquals("never", answer.getJSONObject("data").getString("expirationDateIso"));
+        assertEquals(1, tokenCount(user));
+    }
+
+    /**
+     * The deprecated endpoint is rejected by its own check, and when the strict mode is switched on after that check, the Java
+     * method refuses before it changes anything and the endpoint gives the same answer as its check: an exception is not an
+     * answer.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void changeTokenAnswersLikeItsCheckWhenStrictModeWasSwitchedOnMidRequest() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("user");
+        User user = User.getById("user", true);
+        user.save();
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        String legacyValue = property.getApiTokenInsecure();
+        StoredState stored = storedState(user);
+
+        AtomicBoolean strictWasAsked = new AtomicBoolean();
+        ApiTokenPropertyConfiguration changing = spy(config);
+        // not strict for the check of the endpoint, strict for the method of the property that runs after it
+        doAnswer(invocation -> {
+            boolean afterTheCheck = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+                    .walk(frames -> frames.anyMatch(frame -> frame.getDeclaringClass() == ApiTokenProperty.class
+                            && "changeApiToken".equals(frame.getMethodName())));
+            strictWasAsked.set(strictWasAsked.get() || afterTheCheck);
+            return afterTheCheck;
+        }).when(changing).isStrict();
+
+        ApiTokenProperty.DescriptorImpl descriptor = j.jenkins.getDescriptorByType(ApiTokenProperty.DescriptorImpl.class);
+        Authentication owners = user.impersonate2();
+        HttpResponse response;
+        try (MockedStatic<ApiTokenPropertyConfiguration> mocked = mockStatic(ApiTokenPropertyConfiguration.class);
+             ACLContext ignored = ACL.as2(owners)) {
+            mocked.when(ApiTokenPropertyConfiguration::get).thenReturn(changing);
+            // the response is only used when the legacy token is regenerated
+            response = descriptor.doChangeToken(user, null);
+        }
+
+        assertTrue(strictWasAsked.get(), "the method of the property was reached, and it refused");
+        assertThat(render(response), containsString(Messages.ApiTokenProperty_ChangeToken_MaximumLifetimeEnforced()));
+        assertEquals(legacyValue, property.getApiTokenInsecure());
+        assertEquals(stored, storedState(user));
+    }
+
     // ---- JENKINS-27612: the add-token dialog and the legacy token section of the page of a user ----
 
     /** What the dialog offers when the maximum does not apply to the owner, as {@code value=label,...}. */
@@ -1978,6 +2485,11 @@ class ApiTokenPropertyTest {
 
     private static String enforceFromNoticeText(String date, String days) {
         return "From " + date + ", tokens must expire within " + days + ", unless your account is exempt. Existing tokens are not touched.";
+    }
+
+    /** The notice while strict mode is scheduled: nobody will be exempt, so it does not mention exemptions as a way out. */
+    private static String enforceFromNoticeStrictText(String date, String days) {
+        return "From " + date + ", tokens must expire within " + days + " for every account, and nobody is exempt: strict mode starts on that day. Existing tokens are not touched.";
     }
 
     private static boolean hasChangeTokenButton(HtmlPage page) {
@@ -2094,6 +2606,95 @@ class ApiTokenPropertyTest {
         assertEquals(enforceFromNoticeText(enforceFrom.toString(), "1000 days"), enforceFromNotice(tokenPage(wc, user)));
         config.setMaxTokenLifetimeDays(Integer.MAX_VALUE);
         assertEquals(enforceFromNoticeText(enforceFrom.toString(), "2147483647 days"), enforceFromNotice(tokenPage(wc, user)));
+    }
+
+    /**
+     * While strict mode is scheduled for the enforcement date nobody will be exempt from then on: the notice says so, for an
+     * owner who is exempt now and for one who is not, and it does not say that an exempt account is spared. The dialog itself is
+     * still the full one: the exemptions apply until that date.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void dialogAnnouncesThatNobodyIsExemptWhenStrictModeIsScheduled() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+        // far enough from today for midnight not to matter
+        LocalDate enforceFrom = LocalDate.now().plusDays(10);
+        config.setEnforceFrom(enforceFrom.toString());
+        config.setStrict(true);
+        String date = enforceFrom.toString();
+
+        // an owner who is not exempt
+        HtmlPage page = tokenPage(wc, user);
+        assertExpirationOptions(page, "30", FULL_EXPIRATION_OPTIONS);
+        assertEquals(NEVER_WARNING, neverWarning(page));
+        assertEquals(enforceFromNoticeStrictText(date, "30 days"), enforceFromNotice(page));
+        assertThat(enforceFromNotice(page), not(containsString("unless your account is exempt")));
+        assertThat(page.asXml(), not(containsString("unless your account is exempt")));
+
+        // an owner who is exempt until the date
+        config.setExemptUserIds("user");
+        page = tokenPage(wc, user);
+        assertExpirationOptions(page, "30", FULL_EXPIRATION_OPTIONS);
+        assertEquals(enforceFromNoticeStrictText(date, "30 days"), enforceFromNotice(page));
+        assertThat(enforceFromNotice(page), not(containsString("unless your account is exempt")));
+        assertThat(page.asXml(), not(containsString("unless your account is exempt")));
+
+        // the singular, and a number without grouping
+        config.setExemptUserIds("");
+        config.setMaxTokenLifetimeDays(1);
+        assertEquals(enforceFromNoticeStrictText(date, "1 day"), enforceFromNotice(tokenPage(wc, user)));
+        config.setMaxTokenLifetimeDays(Integer.MAX_VALUE);
+        assertEquals(enforceFromNoticeStrictText(date, "2147483647 days"), enforceFromNotice(tokenPage(wc, user)));
+    }
+
+    /** Without strict mode the exemptions apply from the date, and the notice keeps saying so. It follows the switch. */
+    @Test
+    @Issue("JENKINS-27612")
+    void dialogKeepsTheExemptionWordingWhileStrictModeIsSwitchedOff() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+        LocalDate enforceFrom = LocalDate.now().plusDays(10);
+        config.setEnforceFrom(enforceFrom.toString());
+        String date = enforceFrom.toString();
+
+        config.setStrict(false);
+        assertEquals(enforceFromNoticeText(date, "30 days"), enforceFromNotice(tokenPage(wc, user)));
+        config.setExemptUserIds("user");
+        assertEquals(enforceFromNoticeText(date, "30 days"), enforceFromNotice(tokenPage(wc, user)));
+
+        config.setStrict(true);
+        assertEquals(enforceFromNoticeStrictText(date, "30 days"), enforceFromNotice(tokenPage(wc, user)));
+
+        config.setStrict(false);
+        assertEquals(enforceFromNoticeText(date, "30 days"), enforceFromNotice(tokenPage(wc, user)));
+        assertThat(enforceFromNotice(tokenPage(wc, user)), not(containsString("nobody is exempt")));
+    }
+
+    /** Strict mode without a future enforcement date, or without a maximum, has nothing to announce: no notice at all. */
+    @Test
+    @Issue("JENKINS-27612")
+    void dialogHasNoNoticeWhenStrictModeHasNoFutureDate() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setStrict(true);
+
+        // no maximum: the date and the switch have no effect
+        config.setEnforceFrom(LocalDate.now().plusDays(10).toString());
+        assertNull(enforceFromNotice(tokenPage(wc, user)));
+
+        config.setMaxTokenLifetimeDays(30);
+        for (String enforceFrom : new String[] {LocalDate.now().toString(), LocalDate.now().minusDays(3).toString(), null, "  ", "not-a-date-in-the-strict-dialog"}) {
+            config.setEnforceFrom(enforceFrom);
+            HtmlPage page = tokenPage(wc, user);
+            assertNull(enforceFromNotice(page), "no notice once strict mode is in effect: " + enforceFrom);
+            assertThat(page.asXml(), not(containsString("strict mode starts on that day")));
+        }
     }
 
     /** An owner who is exempt is not limited by an enforced maximum: the dialog is the full one, and has nothing to announce. */

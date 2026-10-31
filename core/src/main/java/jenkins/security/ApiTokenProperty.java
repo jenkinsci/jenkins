@@ -419,6 +419,13 @@ public class ApiTokenProperty extends UserProperty {
 
     /**
      * Only usable if the user still has the legacy API token.
+     * <p>
+     * The legacy token that this creates never expires. The maximum lifetime of API tokens is not applied to it, unless the
+     * strict mode is in effect (see {@link ApiTokenLifetimePolicy#isStrict}): then nothing is changed and
+     * {@link ApiTokenPolicyViolationException} is thrown, with the reason
+     * {@link ApiTokenPolicyViolationException.Reason#NEVER_EXPIRES}.
+     *
+     * @throws ApiTokenPolicyViolationException only while the strict mode is in effect
      * @deprecated Each token can be revoked now and new tokens can be requested without altering existing ones.
      */
     @Deprecated
@@ -427,6 +434,12 @@ public class ApiTokenProperty extends UserProperty {
         user.checkPermission(Jenkins.ADMINISTER);
 
         LOGGER.log(Level.FINE, "Deprecated usage of changeApiToken");
+
+        // The legacy token that is created has no expiration. This has to be decided before _changeApiToken() replaces the
+        // secret in memory: after that, a refusal would leave a secret that does not match the stored hash.
+        if (new ApiTokenLifetimePolicy().isStrict(LocalDate.now())) {
+            throw new ApiTokenPolicyViolationException(ApiTokenPolicyViolationException.Reason.NEVER_EXPIRES);
+        }
 
         ApiTokenStore.HashedToken existingLegacyToken = tokenStore.getLegacyToken();
         _changeApiToken();
@@ -463,7 +476,14 @@ public class ApiTokenProperty extends UserProperty {
         return tokenStats;
     }
 
-    // essentially meant for scripting
+    /**
+     * Essentially meant for scripting.
+     * <p>
+     * The token never expires, so this fails while the strict mode of the maximum lifetime of API tokens is in effect: see
+     * {@link #addFixedNewToken(String, String, LocalDate)}.
+     *
+     * @throws ApiTokenPolicyViolationException only while the strict mode is in effect
+     */
     @Restricted(Beta.class)
     public @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue) throws IOException {
         return addFixedNewToken(name, tokenPlainValue, null);
@@ -475,6 +495,14 @@ public class ApiTokenProperty extends UserProperty {
      * Unlike the HTTP endpoint while the maximum is enforced for this user, this method neither applies the maximum
      * lifetime of API tokens nor refuses a secret that this user holds already: the secret is stored again, with its own
      * expiration. See {@link ApiTokenLifetimePolicy}.
+     * <p>
+     * The exception is the strict mode of the maximum lifetime, see {@link ApiTokenLifetimePolicy#isStrict}. While it is in
+     * effect nobody is exempt, the expiration must respect the maximum, and a secret that this user holds already is
+     * refused, as the store does, see {@link ApiTokenStore#addFixedNewToken(String, String, LocalDate)}. Provisioning scripts
+     * that give no expiration, or register the same secret at every start, fail then.
+     *
+     * @throws ApiTokenPolicyViolationException only while the strict mode is in effect. Nothing is stored or saved then.
+     * @throws IllegalArgumentException when the token value is malformed
      */
     @Restricted(Beta.class)
     public @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate) throws IOException {
@@ -483,13 +511,29 @@ public class ApiTokenProperty extends UserProperty {
         return tokenUuid;
     }
 
-    // essentially meant for scripting
+    /**
+     * Essentially meant for scripting.
+     * <p>
+     * The token never expires, so this fails while the strict mode of the maximum lifetime of API tokens is in effect: see
+     * {@link #generateNewToken(String, LocalDate)}.
+     *
+     * @throws ApiTokenPolicyViolationException only while the strict mode is in effect
+     */
     @Restricted(Beta.class)
     public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name) throws IOException {
         return generateNewToken(name, null);
     }
 
-    // essentially meant for scripting
+    /**
+     * Essentially meant for scripting.
+     * <p>
+     * This does not apply the maximum lifetime of API tokens, and any expiration is accepted, unless the strict mode is in
+     * effect, see {@link ApiTokenLifetimePolicy#isStrict}: then nobody is exempt and the token must expire, no later than today
+     * plus the maximum. That includes the tokens that never expire, and so the {@code JenkinsRule.createApiToken} of the
+     * tests and provisioning scripts that give no expiration.
+     *
+     * @throws ApiTokenPolicyViolationException only while the strict mode is in effect. Nothing is stored or saved then.
+     */
     @Restricted(Beta.class)
     public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate) throws IOException {
         TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name, expirationDate);
@@ -665,7 +709,7 @@ public class ApiTokenProperty extends UserProperty {
             LocalDate today = LocalDate.now();
             ApiTokenLifetimePolicy policy = new ApiTokenLifetimePolicy();
             boolean maximumApplies = policy.appliesTo(propertyOwner, today);
-            return ExpirationOptions.of(today, maximumApplies, ApiTokenPropertyConfiguration.get().getMaxTokenLifetimeDays(), policy.maxExpiration(today), policy.getPendingEnforceFrom(today));
+            return ExpirationOptions.of(today, maximumApplies, ApiTokenPropertyConfiguration.get().getMaxTokenLifetimeDays(), policy.maxExpiration(today), policy.getPendingEnforceFrom(today), policy.isStrictScheduled(today));
         }
 
         /**
@@ -683,6 +727,8 @@ public class ApiTokenProperty extends UserProperty {
          * @param maximumApplies whether the maximum applies to the owner, so that a token cannot be created without expiration
          * @param pendingEnforceFrom the date from which the maximum will be enforced, when it is announced but not enforced yet,
          *                           otherwise {@code null}
+         * @param strictScheduled whether the strict mode is switched on and starts on {@code pendingEnforceFrom}: nobody will be
+         *                        exempt from then on, so the announcement does not mention exemptions
          * @param maximumLifetimeDays the maximum lifetime of a token in days, 0 if there is none
          * @param minDate the earliest date that the date picker of the custom choice accepts: the day of the server
          * @param maxDate the latest date that the date picker accepts: the latest expiration the maximum allows if it applies,
@@ -692,7 +738,7 @@ public class ApiTokenProperty extends UserProperty {
          */
         @Restricted(NoExternalUse.class)
         public record ExpirationOptions(List<Integer> days, int explicitMaximum, int defaultDays, boolean maximumApplies,
-                                        @CheckForNull LocalDate pendingEnforceFrom, int maximumLifetimeDays,
+                                        @CheckForNull LocalDate pendingEnforceFrom, boolean strictScheduled, int maximumLifetimeDays,
                                         LocalDate minDate, LocalDate maxDate, LocalDate presetDate) {
 
             private static final int[] USUAL_DAYS = {7, 30, 60, 90};
@@ -713,7 +759,7 @@ public class ApiTokenProperty extends UserProperty {
              * @param today the date of the server, from which all the dates are computed
              * @param maximumExpiration {@code today} plus the maximum lifetime, used when the maximum applies
              */
-            static ExpirationOptions of(LocalDate today, boolean maximumApplies, int maximumLifetimeDays, LocalDate maximumExpiration, @CheckForNull LocalDate pendingEnforceFrom) {
+            static ExpirationOptions of(LocalDate today, boolean maximumApplies, int maximumLifetimeDays, LocalDate maximumExpiration, @CheckForNull LocalDate pendingEnforceFrom, boolean strictScheduled) {
                 List<Integer> days = new ArrayList<>();
                 for (int usual : USUAL_DAYS) {
                     if (!maximumApplies || usual <= maximumLifetimeDays) {
@@ -740,7 +786,7 @@ public class ApiTokenProperty extends UserProperty {
                 if (presetDate.isAfter(maxDate)) {
                     presetDate = maxDate;
                 }
-                return new ExpirationOptions(days, explicitMaximum, defaultDays, maximumApplies, pendingEnforceFrom, maximumLifetimeDays, today, maxDate, presetDate);
+                return new ExpirationOptions(days, explicitMaximum, defaultDays, maximumApplies, pendingEnforceFrom, strictScheduled, maximumLifetimeDays, today, maxDate, presetDate);
             }
         }
 
@@ -748,7 +794,8 @@ public class ApiTokenProperty extends UserProperty {
          * Regenerates the legacy token of the user. A legacy token never expires, so once the maximum lifetime of API tokens
          * is enforced (see {@link ApiTokenLifetimePolicy}) this endpoint is rejected, with an HTML message, when the owner
          * of the token is not exempt from the maximum. The owner is the user of the page, not the user who sends the request.
-         * The Java method {@link ApiTokenProperty#changeApiToken()} does not check the maximum.
+         * While the strict mode is in effect nobody is exempt, so it is rejected for every owner. The Java method
+         * {@link ApiTokenProperty#changeApiToken()} checks the maximum only in the strict mode.
          *
          * @deprecated use {@link #doGenerateNewToken(User, String, String, String)} instead
          */
@@ -779,7 +826,12 @@ public class ApiTokenProperty extends UserProperty {
                 u.addProperty(p);
             } else {
                 // even if the user does not have legacy token, this method let some legacy system to regenerate one
-                p.changeApiToken();
+                try {
+                    p.changeApiToken();
+                } catch (ApiTokenPolicyViolationException e) {
+                    // the strict mode was switched on after the check above, nothing was changed: same answer as that check
+                    return HttpResponses.html(Messages.ApiTokenProperty_ChangeToken_MaximumLifetimeEnforced());
+                }
             }
 
             rsp.setHeader("X-Jenkins-ValidateButton-Callback", "{\"callback\":\"changeTokenCallback\",\"arguments\":[\"" + p.getApiTokenInsecure() + "\"]}");
@@ -796,9 +848,12 @@ public class ApiTokenProperty extends UserProperty {
          * is rejected, and an empty {@code expirationDuration} creates a token that expires on the last day that is allowed.
          * The owner is judged, not the user who sends the request. Clients should read the expiration of the token that was
          * created from {@code expirationDateIso} in the response.
-         * The Java API ({@link ApiTokenProperty#generateNewToken(String, LocalDate)}) and {@link ApiTokenStore} do not enforce the maximum.
+         * The Java API ({@link ApiTokenProperty#generateNewToken(String, LocalDate)}) and {@link ApiTokenStore} enforce the maximum
+         * only in the strict mode, in which nobody is exempt, and that mode applies to this endpoint as well.
          * <p>
          * Rejections are answered with {@link HttpResponses#errorJSON(String)} (HTTP status 200 and {@code "status":"error"}).
+         * That includes a token that the store refuses, which the strict mode can do when it is switched on, or the enforcement
+         * date is reached, after the check of this method; nothing is stored then.
          *
          * @param newTokenName the name of the token, a default name is used if it is blank
          * @param tokenExpiration the expiration date, as {@code yyyy-MM-dd}, used only when {@code expirationDuration} is {@code custom}
@@ -827,13 +882,28 @@ public class ApiTokenProperty extends UserProperty {
             }
             LocalDate expirationDate = requestedExpiration.date();
 
-            ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
+            ApiTokenProperty existing = u.getProperty(ApiTokenProperty.class);
+            ApiTokenProperty p = existing;
             if (p == null) {
                 p = forceNewInstance(u, false);
-                u.addProperty(p);
+                // creates the token store and the statistics, the store call below needs them;
+                // the property is only added to the user once the token has been stored
+                p.setUser(u);
             }
 
-            TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName, expirationDate);
+            TokenUuidAndPlainValue tokenUuidAndPlainValue;
+            try {
+                tokenUuidAndPlainValue = p.tokenStore.generateNewToken(tokenName, expirationDate);
+            } catch (ApiTokenPolicyViolationException e) {
+                // The store reads the configuration and the clock again: the strict mode can have been switched on, or the
+                // enforcement date reached, since the check above. Nothing was stored, nor saved.
+                return rejection(e);
+            }
+            if (existing == null) {
+                u.addProperty(p);
+            } else {
+                u.save();
+            }
 
             Map<String, Object> data = new HashMap<>();
             data.put("tokenUuid", tokenUuidAndPlainValue.tokenUuid);
@@ -928,7 +998,9 @@ public class ApiTokenProperty extends UserProperty {
          * valid through its expiration date.
          * </ul>
          * Otherwise (no maximum, a maximum that is not enforced yet, or an exempt owner) the request is left as {@link #parseExpiration}
-         * returned it. The Java API and {@link ApiTokenStore} do not enforce the maximum.
+         * returned it. In the strict mode nobody is exempt, so the maximum applies to every owner. The Java API and
+         * {@link ApiTokenStore} enforce the maximum in that mode only, which is why the store can still refuse a request that
+         * this method accepted.
          * <p>
          * The messages of the rejections are static: they contain no submitted value, only the configured maximum.
          *
@@ -960,6 +1032,18 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         /**
+         * The answer to a token creation that the store refused. The message of the exception is for logs and scripts: the
+         * response gets a localized one, chosen by the reason, which contains no submitted value, only the configured maximum.
+         */
+        private static HttpResponse rejection(ApiTokenPolicyViolationException e) {
+            return HttpResponses.errorJSON(switch (e.getReason()) {
+                case NEVER_EXPIRES -> Messages.ApiTokenProperty_expirationNeverNotAllowed();
+                case OVER_MAXIMUM -> Messages.ApiTokenProperty_expirationOverMaximum(ApiTokenPropertyConfiguration.get().getMaxTokenLifetimeDays());
+                case SECRET_ALREADY_REGISTERED -> Messages.ApiTokenProperty_SecretAlreadyRegistered();
+            });
+        }
+
+        /**
          * Adds the expiration to the response of a token creation: {@code expirationDate} is localized, as shown to the user,
          * {@code expirationDateIso} is the ISO-8601 date for clients. Both are {@code never} when the token does not expire.
          */
@@ -983,15 +1067,16 @@ public class ApiTokenProperty extends UserProperty {
          * (see {@link ApiTokenLifetimePolicy}) this HTTP endpoint rejects a token that never expires, or that expires later than
          * today plus the maximum, unless the owner {@code u} is exempt, and an empty {@code expirationDuration} creates a token that
          * expires on the last day that is allowed. The Java API ({@link ApiTokenProperty#addFixedNewToken(String, String, LocalDate)})
-         * and {@link ApiTokenStore} do not enforce the maximum.
+         * and {@link ApiTokenStore} enforce the maximum only in the strict mode, in which nobody is exempt, and that mode applies
+         * to this endpoint as well.
          * <p>
          * In the same case, when the maximum applies to the owner, a secret that the store of the owner holds already is rejected
          * too, whether the entry that holds it has expired or not, and whichever the letter case of the value is. Registering the
          * same secret again would give it a new expiration each time, so the maximum would limit the entries but not the secret:
          * to keep working, the owner generates a new secret. The check and the insertion are one operation of the store, see
          * {@link ApiTokenStore#addFixedNewTokenRejectingKnownSecret}. The rejection is answered like the other ones, and it is
-         * the last check: a request that is over the maximum is rejected for that. The Java API does not check it, and neither
-         * does {@link #doGenerateNewToken}, whose secret is random.
+         * the last check: a request that is over the maximum is rejected for that. The Java API checks it only in the strict mode,
+         * in which it applies to every owner, and {@link #doGenerateNewToken} never does, as its secret is random.
          */
         @RequirePOST
         @Restricted(NoExternalUse.class)
@@ -1042,13 +1127,10 @@ public class ApiTokenProperty extends UserProperty {
                         ? p.tokenStore.addFixedNewTokenRejectingKnownSecret(tokenName, newTokenPlainValue, expirationDate)
                         : p.tokenStore.addFixedNewToken(tokenName, newTokenPlainValue, expirationDate);
             } catch (ApiTokenPolicyViolationException e) {
-                // the message of the exception is for logs and scripts: the response gets a localized one, chosen by the reason.
-                // This catch must stay before the one of IllegalArgumentException, which the exception is a subclass of
-                return switch (e.getReason()) {
-                    case SECRET_ALREADY_REGISTERED -> HttpResponses.errorJSON(Messages.ApiTokenProperty_SecretAlreadyRegistered());
-                    // only a strict mode throws it, and the store has none: the rejecting entry point does not check the lifetime
-                    case LIFETIME -> throw e;
-                };
+                // This catch must stay before the one of IllegalArgumentException, which the exception is a subclass of.
+                // For the lifetime: the store reads the configuration and the clock again, so the strict mode can have been
+                // switched on, or the enforcement date reached, since the check above
+                return rejection(e);
             } catch (IllegalArgumentException e) {
                 // wrong length, unknown version or not hexadecimal. The message of the store contains the submitted value
                 return HttpResponses.errorJSON(Messages.ApiTokenProperty_tokenValueInvalid());
