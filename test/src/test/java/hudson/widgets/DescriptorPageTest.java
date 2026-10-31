@@ -8,11 +8,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import hudson.model.AbstractDescribableImpl;
 import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
+import hudson.model.Job;
+import hudson.model.JobProperty;
+import hudson.model.JobPropertyDescriptor;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
@@ -141,12 +145,28 @@ class DescriptorPageTest {
                 + "s.type = 'text/x-inserted';"
                 + "s.src = '" + m.group(1) + "';"
                 + "document.body.appendChild(s);"
+                // as content rendered with <l:defer> announces itself
+                + "document.body.dispatchEvent(new Event('DOMContentLoaded', {bubbles: true}));"
                 + "window.runsBefore = [];"
                 + "for (let i = 0; i < 2; i++) {"
                 + "  evalInnerHtmlScripts('<script src=\"" + m.group(1) + "\"></script>', () => runsBefore.push(window.descriptorPageTestAdjunctRuns));"
                 + "}");
         page.getWebClient().waitForBackgroundJavaScript(5000);
         assertEquals("[1,1]", page.executeJavaScript("JSON.stringify(window.runsBefore)").getJavaScriptResult());
+    }
+
+    @Test
+    void contentIsSetUpWhenItsAdjunctFailsToLoadAndLaterContentTriesAgain() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient().login("configurer");
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        wc.getOptions().setThrowExceptionOnScriptError(false);
+        HtmlPage page = wc.getPage(p, "configure");
+        String missing = j.getURL().getPath() + "adjuncts/missing/hudson/widgets/DescriptorPageTest/missing.js";
+        page.executeJavaScript("window.setUp = 0;"
+                + "evalInnerHtmlScripts('<script src=\"" + missing + "\"></script>', () => window.setUp++);");
+        page.getWebClient().waitForBackgroundJavaScript(5000);
+        assertEquals(1, ((Number) page.executeJavaScript("window.setUp").getJavaScriptResult()).intValue());
+        assertEquals(false, page.executeJavaScript("adjunctLoads.has(new URL('" + missing + "', document.baseURI).href)").getJavaScriptResult());
     }
 
     public static class WithAdjunct extends Builder {
@@ -162,6 +182,47 @@ class DescriptorPageTest {
                 return "With adjunct";
             }
         }
+    }
+
+    @Test
+    void aPageSetReadOnlyWithAStringKeepsTheClosure() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient().login("configurer");
+        String banana = "descriptorByName/" + Banana.class.getName() + "/page/dropdownListBlock";
+        assertThat("the dropdown is otherwise rendered this way",
+                wc.getPage(p, "configure").getWebResponse().getContentAsString(), containsString(banana));
+        j.jenkins.getDescriptorByType(ReadOnlyProperty.DescriptorImpl.class).readOnly = true;
+        assertThat(wc.getPage(p, "configure").getWebResponse().getContentAsString(), not(containsString(banana)));
+    }
+
+    public static class ReadOnlyProperty extends JobProperty<Job<?, ?>> {
+        public Fruit getFruit() {
+            return null;
+        }
+
+        @TestExtension("aPageSetReadOnlyWithAStringKeepsTheClosure")
+        public static class DescriptorImpl extends JobPropertyDescriptor {
+            public boolean readOnly;
+
+            public boolean isReadOnly() {
+                return readOnly;
+            }
+        }
+    }
+
+    public abstract static class Fruit extends AbstractDescribableImpl<Fruit> {
+        public String getName() {
+            return null;
+        }
+    }
+
+    public static class Apple extends Fruit {
+        @TestExtension("aPageSetReadOnlyWithAStringKeepsTheClosure")
+        public static class DescriptorImpl extends Descriptor<Fruit> {}
+    }
+
+    public static class Banana extends Fruit {
+        @TestExtension("aPageSetReadOnlyWithAStringKeepsTheClosure")
+        public static class DescriptorImpl extends Descriptor<Fruit> {}
     }
 
     @Test

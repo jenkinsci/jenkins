@@ -92,7 +92,7 @@ public final class DescriptorPage {
                 return keepClosure("an instance is rendered");
             }
         }
-        if (Boolean.TRUE.equals(context.getVariable("readOnlyMode"))) {
+        if (readOnly(context.getVariable("readOnlyMode"))) {
             return keepClosure("read-only");
         }
         if (!(context.getVariable("descriptor") instanceof Descriptor<?> d) || !renders(d)) {
@@ -118,6 +118,14 @@ public final class DescriptorPage {
         String url = a.getUrl() + '/' + d.getDescriptorUrl() + "/page/" + name;
         return new StaplerRequest2.RenderOnDemandParameters(
                 "makeStaplerProxy", url, req.getWebApp().getCrumbIssuer().issueCrumb(), Set.of("render"));
+    }
+
+    /**
+     * Whether a page is read-only, as {@code readOnlyMode} is set by Java code ({@code true}) or by a page
+     * ({@code <j:set var="readOnlyMode" value="true"/>}, a string). Anything but false counts, to keep the closure.
+     */
+    private static boolean readOnly(Object readOnlyMode) {
+        return readOnlyMode != null && !Boolean.FALSE.equals(readOnlyMode) && !"false".equals(readOnlyMode) && !"".equals(readOnlyMode);
     }
 
     private static <T> T keepClosure(String reason) {
