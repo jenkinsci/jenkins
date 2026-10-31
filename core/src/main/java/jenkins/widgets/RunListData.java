@@ -49,8 +49,9 @@ import org.kohsuke.stapler.HttpResponse;
  * <p>
  * A filter (such as runs related to a user) may reject many runs before a page is full,
  * so a page may be cut short once {@link #SCAN_BUDGET_MS} has elapsed, in which case {@code partial} is set.
- * The cursor then covers every run examined, matching or not, and the client should request the next page
- * until it has {@code pageSize} runs.
+ * The cursor then covers every run examined, matching or not, and the client should request the rest of the page,
+ * with {@code limit} set to the runs it still needs, until it has {@code pageSize} runs.
+ * The budget starts at the first run older than the cursor, so that reaching the cursor does not use it up.
  */
 @Restricted(NoExternalUse.class)
 public abstract class RunListData {
@@ -66,8 +67,8 @@ public abstract class RunListData {
      * @param builds runs, newest first
      * @param olderThan cursor from a previous page's {@code next}, or {@code null} for the first page
      */
-    public HttpResponse serve(Iterable<? extends Run<?, ?>> builds, @CheckForNull String olderThan) {
-        return serve(builds, build -> true, olderThan);
+    public HttpResponse serve(Iterable<? extends Run<?, ?>> builds, @CheckForNull String olderThan, @CheckForNull String limit) {
+        return serve(builds, build -> true, olderThan, limit);
     }
 
     /**
@@ -75,23 +76,26 @@ public abstract class RunListData {
      * @param builds runs, newest first, not yet filtered, so that the scan budget covers the runs the filter rejects
      * @param filter selects the runs to include
      * @param olderThan cursor from a previous page's {@code next}, or {@code null} for the first page
+     * @param limit the runs still needed to fill a page cut short, or {@code null} for a whole page
      */
-    public HttpResponse serve(Iterable<? extends Run<?, ?>> builds, Predicate<? super Run<?, ?>> filter, @CheckForNull String olderThan) {
+    public HttpResponse serve(Iterable<? extends Run<?, ?>> builds, Predicate<? super Run<?, ?>> filter, @CheckForNull String olderThan, @CheckForNull String limit) {
         long cursor;
-        if (olderThan == null || olderThan.isEmpty()) {
-            cursor = Long.MAX_VALUE;
-        } else {
-            try {
-                cursor = Long.parseLong(olderThan);
-            } catch (NumberFormatException e) {
-                return HttpResponses.error(400, "Invalid olderThan: " + olderThan);
-            }
+        int size;
+        try {
+            cursor = olderThan == null || olderThan.isEmpty() ? Long.MAX_VALUE : Long.parseLong(olderThan);
+            size = limit == null || limit.isEmpty() ? PAGE_SIZE : Math.min(Math.max(Integer.parseInt(limit), 1), PAGE_SIZE);
+        } catch (NumberFormatException e) {
+            return HttpResponses.error(400, "Invalid olderThan or limit: " + olderThan + ", " + limit);
         }
-        return HttpResponses.okJSON(page(builds, filter, cursor));
+        return HttpResponses.okJSON(page(builds, filter, cursor, size));
     }
 
     JSONObject page(Iterable<? extends Run<?, ?>> builds, Predicate<? super Run<?, ?>> filter, long cursor) {
-        long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(SCAN_BUDGET_MS);
+        return page(builds, filter, cursor, PAGE_SIZE);
+    }
+
+    JSONObject page(Iterable<? extends Run<?, ?>> builds, Predicate<? super Run<?, ?>> filter, long cursor, int size) {
+        Long deadline = null;
         JSONArray results = new JSONArray();
         Long groupTime = null;
         Long next = null;
@@ -101,8 +105,11 @@ public abstract class RunListData {
             if (time >= cursor) {
                 continue;
             }
+            if (deadline == null) {
+                deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(SCAN_BUDGET_MS);
+            }
             if (groupTime != null && time != groupTime) {
-                boolean full = results.size() >= PAGE_SIZE;
+                boolean full = results.size() >= size;
                 if (full || System.nanoTime() - deadline >= 0) {
                     next = groupTime;
                     partial = !full;

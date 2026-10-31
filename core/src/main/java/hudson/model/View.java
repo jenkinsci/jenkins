@@ -956,8 +956,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @GET
     @Restricted(NoExternalUse.class)
-    public HttpResponse doBuildList(@QueryParameter String olderThan) {
-        return new BuildListTable().serve(getBuilds(), olderThan);
+    public HttpResponse doBuildList(@QueryParameter String olderThan, @QueryParameter String limit) {
+        return new BuildListTable().serve(getBuilds(), olderThan, limit);
     }
 
     @Deprecated

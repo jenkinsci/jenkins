@@ -137,6 +137,38 @@ class RunListDataTest {
     }
 
     @Test
+    void limitFillsTheRestOfAPageWithoutSplittingTimestamps() {
+        RunListData.PAGE_SIZE = 4;
+        List<Run<?, ?>> runs = runs(50, 40, 40, 30, 20);
+
+        JSONObject page = data.page(runs, ALL, Long.MAX_VALUE, 2);
+        assertThat(ids(page), contains("r50", "r40", "r40"));
+        assertEquals(40L, page.getLong("next"));
+        assertFalse(page.getBoolean("partial"));
+        assertEquals(4, page.getInt("pageSize"));
+    }
+
+    @Test
+    void reachingTheCursorDoesNotUseTheBudget() {
+        RunListData.SCAN_BUDGET_MS = 50;
+        List<Run<?, ?>> runs = new ArrayList<>();
+        for (long time = 100; time > 30; time -= 10) {
+            Run<?, ?> run = mock(Run.class);
+            long t = time;
+            when(run.getTimeInMillis()).thenAnswer(invocation -> {
+                Thread.sleep(20);
+                return t;
+            });
+            runs.add(run);
+        }
+        runs.addAll(runs(30, 20, 10));
+
+        JSONObject page = data.page(runs, ALL, 31);
+        assertThat(ids(page), contains("r30", "r20", "r10"));
+        assertFalse(page.getBoolean("partial"));
+    }
+
+    @Test
     void emptyList() {
         JSONObject page = data.page(List.of(), ALL, Long.MAX_VALUE);
         assertThat(ids(page), empty());

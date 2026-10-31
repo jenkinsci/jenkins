@@ -1600,8 +1600,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @GET
     @Restricted(NoExternalUse.class)
-    public HttpResponse doBuildTimeTrendData(@QueryParameter String olderThan) {
-        return new BuildTimeTrend().serve(getBuilds(), olderThan);
+    public HttpResponse doBuildTimeTrendData(@QueryParameter String olderThan, @QueryParameter String limit) {
+        return new BuildTimeTrend().serve(getBuilds(), olderThan, limit);
     }
 
     public Graph getBuildTimeGraph() {

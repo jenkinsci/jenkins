@@ -29,13 +29,20 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.AbstractItem;
+import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Job;
 import hudson.model.ListView;
+import hudson.model.Slave;
+import hudson.slaves.JNLPLauncher;
+import hudson.slaves.SlaveComputer;
+import hudson.util.RunList;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import org.htmlunit.html.HtmlAnchor;
@@ -134,6 +141,43 @@ class BuildListTableTest {
         }
         wc.setThrowExceptionOnFailingStatusCode(false);
         assertEquals(400, wc.goTo("view/all/buildList?olderThan=nope", null).getWebResponse().getStatusCode());
+        assertEquals(400, wc.goTo("view/all/buildList?limit=nope", null).getWebResponse().getStatusCode());
+    }
+
+    @Test
+    void theRestOfAPageIsLimited() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("p");
+        r.buildAndAssertSuccess(p);
+        Thread.sleep(2); // so that the builds have different timestamps
+        r.buildAndAssertSuccess(p);
+        JSONObject data = r.createWebClient().getJSON("view/all/buildList?limit=1").getJSONObject().getJSONObject("data");
+        assertEquals(1, data.getJSONArray("builds").size());
+        assertEquals(p.getLastBuild().getTimeInMillis(), data.getLong("next"));
+    }
+
+    @Test
+    void aComputerListsTheBuildsItSays() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("p");
+        r.buildAndAssertSuccess(p);
+        r.jenkins.addNode(new AllBuildsAgent());
+        JSONObject data = r.createWebClient().getJSON("computer/all-builds/buildList").getJSONObject().getJSONObject("data");
+        assertEquals(1, data.getJSONArray("builds").size(), "the build on the built-in node, as getBuilds() says");
+    }
+
+    private static class AllBuildsAgent extends Slave {
+        AllBuildsAgent() throws Exception {
+            super("all-builds", "/tmp", new JNLPLauncher());
+        }
+
+        @Override
+        public Computer createComputer() {
+            return new SlaveComputer(this) {
+                @Override
+                public RunList getBuilds() {
+                    return RunList.fromJobs((Iterable) Jenkins.get().allItems(Job.class));
+                }
+            };
+        }
     }
 
 }

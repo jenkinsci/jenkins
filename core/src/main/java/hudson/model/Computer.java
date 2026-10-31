@@ -807,12 +807,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Serves a page of {@link #getBuilds()} as JSON for {@code buildListTable.jelly}.
+     * Unless {@link #getBuilds()} is overridden, the builds of other nodes count towards the scan budget.
      */
     @GET
     @Restricted(NoExternalUse.class)
-    public HttpResponse doBuildList(@QueryParameter String olderThan) {
+    public HttpResponse doBuildList(@QueryParameter String olderThan, @QueryParameter String limit) {
+        if (Util.isOverridden(Computer.class, getClass(), "getBuilds")) {
+            return new BuildListTable().serve(getBuilds(), olderThan, limit);
+        }
         Node node = getNode();
-        return new BuildListTable().serve(allBuilds(), r -> r instanceof AbstractBuild && ((AbstractBuild<?, ?>) r).getBuiltOn() == node, olderThan);
+        return new BuildListTable().serve(allBuilds(), r -> r instanceof AbstractBuild && ((AbstractBuild<?, ?>) r).getBuiltOn() == node, olderThan, limit);
     }
 
     /**
