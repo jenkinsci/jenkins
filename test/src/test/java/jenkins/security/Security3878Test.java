@@ -5,10 +5,14 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import hudson.model.FreeStyleProject;
+import hudson.model.InvisibleAction;
+import hudson.model.UnprotectedRootAction;
 import java.net.URL;
+import java.util.List;
+import jenkins.util.ProgressiveRendering;
+import net.sf.json.JSON;
+import net.sf.json.JSONArray;
 import org.htmlunit.Page;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.WebRequest;
@@ -18,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @Issue("SECURITY-3878")
@@ -75,16 +80,22 @@ class Security3878Test {
     }
 
     @Test
-    void buildsPageRendersProgressivelyWithCsrfEnabled() throws Exception {
+    void progressiveRenderingWorksWithCsrfEnabled() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        assertProgressiveRenderingCompletes();
+    }
 
-        /* Ensure there's a build to show */
-        FreeStyleProject project = j.createFreeStyleProject("myproject");
-        j.buildAndAssertSuccess(project);
+    @Test
+    void progressiveRenderingWorksWithCsrfDisabled() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setCrumbIssuer(null);
+        assertProgressiveRenderingCompletes();
+    }
 
+    private void assertProgressiveRenderingCompletes() throws Exception {
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             wc.login("alice");
-            HtmlPage page = wc.goTo("view/All/builds");
+            HtmlPage page = wc.goTo("security3878");
 
             // 0 means all background JS tasks (proxy start + news poll) completed without error.
             assertEquals(0, wc.waitForBackgroundJavaScript(5_000));
@@ -96,44 +107,31 @@ class Security3878Test {
                             + ").style.display");
             assertEquals("none", progressBarDisplay.getJavaScriptResult().toString());
 
-            // The build table switches from display:none to visible once displayBuilds() runs.
-            ScriptResult tableDisplay = page.executeJavaScript(
-                    "document.getElementById('projectStatus').style.display");
-            assertNotEquals("none", tableDisplay.getJavaScriptResult().toString());
-
-            // At least one row showing the completed build must be present in the table.
-            DomElement buildTable = page.getElementById("projectStatus");
-            assertThat(buildTable.asNormalizedText(), containsString("myproject"));
+            // The callback received the data through the bound proxy.
+            DomElement result = page.getElementById("security3878-result");
+            assertThat(result.asNormalizedText(), containsString("rendered"));
         }
     }
 
-    @Test
-    void buildsPageRendersProgressivelyWithCsrfDisabled() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setCrumbIssuer(null);
+    @TestExtension
+    public static class ProgressiveAction extends InvisibleAction implements UnprotectedRootAction {
+        @Override
+        public String getUrlName() {
+            return "security3878";
+        }
 
-        /* Ensure there's a build to show */
-        FreeStyleProject project = j.createFreeStyleProject("myproject");
-        j.buildAndAssertSuccess(project);
+        public ProgressiveRendering getHandler() {
+            return new ProgressiveRendering() {
+                @Override
+                protected void compute() {
+                    progress(1);
+                }
 
-        try (JenkinsRule.WebClient wc = j.createWebClient()) {
-            wc.login("alice");
-            HtmlPage page = wc.goTo("view/All/builds");
-
-            assertEquals(0, wc.waitForBackgroundJavaScript(5_000));
-
-            ScriptResult progressBarDisplay = page.executeJavaScript(
-                    "document.getElementById("
-                            + "document.querySelector('.progressive-rendering-information-holder').dataset.id"
-                            + ").style.display");
-            assertEquals("none", progressBarDisplay.getJavaScriptResult().toString());
-
-            ScriptResult tableDisplay = page.executeJavaScript(
-                    "document.getElementById('projectStatus').style.display");
-            assertNotEquals("none", tableDisplay.getJavaScriptResult().toString());
-
-            DomElement buildTable = page.getElementById("projectStatus");
-            assertThat(buildTable.asNormalizedText(), containsString("myproject"));
+                @Override
+                protected JSON data() {
+                    return JSONArray.fromObject(List.of("rendered"));
+                }
+            };
         }
     }
 }
