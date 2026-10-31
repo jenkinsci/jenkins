@@ -3,14 +3,15 @@
   created. Leave the field empty, or enter 0, for no limit. This is the default,
   and nothing is restricted then.
   <p>
-    Once the limit is enforced (see <em>Enforce the maximum lifetime from</em>),
-    an API token that is created through the HTTP endpoints, which is what the
-    user configuration page and scripted clients use, must expire within that
-    number of days from today. A token is valid through its expiration date, so
-    the last date that is allowed is today plus the maximum. A token that never
-    expires is rejected. A request that does not ask for a duration gets a token
-    that expires on the last day that is allowed, today plus the maximum; the
-    response gives that date.
+    Once the limit is enforced (see
+    <em>Enforce the maximum lifetime from</em>
+    ), an API token that is created through the HTTP endpoints, which is what
+    the user configuration page and scripted clients use, must expire within
+    that number of days from today. A token is valid through its expiration
+    date, so the last date that is allowed is today plus the maximum. A token
+    that never expires is rejected. A request that does not ask for a duration
+    gets a token that expires on the last day that is allowed, today plus the
+    maximum; the response gives that date.
   </p>
   <p>
     The limit only applies when a token is created. Tokens that exist already
@@ -26,7 +27,54 @@
     flagged as about to expire as soon as it is created.
   </p>
   <p>
-    The users listed under <em>Users exempt from the maximum lifetime</em> are
-    not restricted.
+    The users listed under
+    <em>Users exempt from the maximum lifetime</em>
+    are not restricted.
+  </p>
+  <h3>Registering a secret again</h3>
+  <p>
+    The maximum limits tokens, not secrets. A client that chooses the value of
+    its token itself and registers it through the HTTP endpoint (
+    <code>addFixedToken</code>
+    ) could register the same value again before each expiration, and every
+    registration would give it a new expiration date. So once the limit is
+    enforced, a secret that is already registered for the user is rejected, and
+    the client has to switch to a new secret to keep working.
+  </p>
+  <ul>
+    <li>
+      Any token of the user with that secret counts, whether it has expired or
+      not. So does the user's legacy token: its value, registered as
+      <code>11</code>
+      followed by the value, is rejected. The letter case of the hexadecimal
+      digits does not matter.
+    </li>
+    <li>
+      Nothing changes while the limit is not enforced, that is with no maximum
+      or before the enforcement date, and for the users who are exempt: they can
+      register the same secret again, as before.
+    </li>
+    <li>
+      Only the tokens of the same user are compared. The same secret registered
+      for two different users gives two independent tokens, each one limited on
+      its own. Tokens that Jenkins generates are never compared, their secret is
+      random.
+    </li>
+    <li>
+      The rejection is answered like the other ones, with HTTP status 200 and
+      <code>"status":"error"</code>
+      in the response. A client that checks only the HTTP status does not see
+      it, and fails later, when the token it holds expires and no longer
+      authenticates. This is what happens to provisioning that registers the
+      same token again each time it runs.
+    </li>
+  </ul>
+  <p>
+    This is not a complete protection. Jenkins does not remember the secrets of
+    revoked tokens: once every token that has this secret is revoked, the same
+    secret can be registered again, so a secret can be kept alive by revoking
+    and registering it before each expiration. The Java API, which scripts use,
+    does not check the secrets either. And the tokens that existed before the
+    limit was enforced are not touched.
   </p>
 </div>

@@ -35,6 +35,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -43,7 +44,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
@@ -2220,6 +2224,328 @@ class ApiTokenPropertyTest {
         assertFalse(hasChangeTokenButton(tokenPage(adminClient, alice)));
         assertFalse(hasChangeTokenButton(tokenPage(adminClient, service)));
         assertTrue(hasChangeTokenButton(tokenPage(adminClient, admin)));
+    }
+
+    // ---- JENKINS-27612: a secret that the owner holds already is not registered again while the maximum applies ----
+    //
+    // The maximum lifetime bounds token entries, not secrets: a client that registers a fixed token (addFixedToken) could register
+    // the same secret again before each expiry, and every registration would give it a new expiration. So while the maximum applies
+    // to the owner, the endpoint rejects a secret that any entry of the owner's store holds, expired or not. The scenario ids S1
+    // to S18 are those of the design of the feature; S12 is tested with the store, in ApiTokenStoreReuseTest, and S16 (a random
+    // token is never checked) is a review requirement.
+
+    private static int tokenCount(User user) {
+        return user.getProperty(ApiTokenProperty.class).getTokenStore().getTokenListSortedByName().size();
+    }
+
+    /** Registers a secret through {@code addFixedToken}, with the given expiration parameters, name and value pairs. */
+    private JSONObject registerSecret(WebClient wc, String owner, String name, String token, String... expirationParameters) throws Exception {
+        List<String> parameters = new ArrayList<>(List.of("newTokenName", name, "newTokenPlainValue", token));
+        Collections.addAll(parameters, expirationParameters);
+        return postToTokenEndpoint(wc, owner, ADD_FIXED_TOKEN, parameters.toArray(String[]::new));
+    }
+
+    /**
+     * Checks that registering the secret is rejected because the owner holds it already, with a valid duration so that nothing
+     * else can be the reason, and that nothing is stored or saved for the user.
+     */
+    private void assertSecretAlreadyRegistered(WebClient wc, User owner, String name, String token) throws Exception {
+        assertRejected(wc, owner, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_SecretAlreadyRegistered(),
+                "newTokenName", name, "newTokenPlainValue", token, "expirationDuration", "30");
+    }
+
+    /**
+     * S1 reuse-active-rejected. Given the maximum is enforced (90 days) and a user who is not exempt registered a secret through
+     * {@code addFixedToken}, when the user registers the same secret again, with another name and a valid duration, then the
+     * answer is HTTP 200 with {@code status:error} and the message about the secret, the store still holds exactly one entry for
+     * it, which was not renewed, and {@code config.xml} is unchanged.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void s1_reuseOfAnActiveSecretIsRejected() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(90);
+        JSONObject first = assertAccepted(registerSecret(wc, "user", "first", FIXED_TOKEN, "expirationDuration", "30"));
+        String uuid = first.getString("tokenUuid");
+        LocalDate expiration = findToken(user, uuid).getExpirationDate();
+
+        assertEquals("This secret is already registered for this user. Generate a new secret instead of registering the same one again.",
+                Messages.ApiTokenProperty_SecretAlreadyRegistered());
+        // assertRejected compares the uuids of the store and the bytes of config.xml before and after
+        assertSecretAlreadyRegistered(wc, user, "second", FIXED_TOKEN);
+
+        assertEquals(1, tokenCount(user));
+        assertEquals(expiration, findToken(user, uuid).getExpirationDate(), "the entry was not renewed");
+        checkTokenIsWorking("user", FIXED_TOKEN);
+    }
+
+    /**
+     * S2 reuse-expired-rejected. Given the maximum is enforced and the user holds an expired entry with the secret, which the
+     * Java API accepts (only the endpoint rejects a date in the past), when the user registers the secret again, then it is
+     * rejected as in S1, and the secret does not come back to life.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void s2_reuseOfAnExpiredSecretIsRejected() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(90);
+        user.getProperty(ApiTokenProperty.class).addFixedNewToken("expired", FIXED_TOKEN, LocalDate.now().minusDays(1));
+        checkTokenIsNotWorking("user", FIXED_TOKEN);
+
+        assertSecretAlreadyRegistered(wc, user, "again", FIXED_TOKEN);
+
+        assertEquals(1, tokenCount(user));
+        checkTokenIsNotWorking("user", FIXED_TOKEN);
+    }
+
+    /**
+     * S3 policy-off-accepted. Given there is no maximum, which is the default, and the user holds the secret, when the user
+     * registers it again, then it is accepted: two entries, as it always was.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void s3_reuseIsAcceptedWithoutMaximum() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        JSONObject first = assertAccepted(registerSecret(wc, "user", "first", FIXED_TOKEN, "expirationDuration", "30"));
+
+        JSONObject second = assertAccepted(registerSecret(wc, "user", "second", FIXED_TOKEN, "expirationDuration", "30"));
+
+        assertNotEquals(first.getString("tokenUuid"), second.getString("tokenUuid"));
+        assertEquals(2, tokenCount(user));
+        checkTokenIsWorking("user", FIXED_TOKEN);
+    }
+
+    /**
+     * S4 warning-phase-accepted. Given a maximum that is not enforced yet, because the enforcement date is in the future, and the
+     * user holds the secret, when the user registers it again, then it is accepted.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void s4_reuseIsAcceptedInTheWarningPhase() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+        // far enough from today for midnight not to matter
+        config.setEnforceFrom(LocalDate.now().plusDays(10).toString());
+        assertAccepted(registerSecret(wc, "user", "first", FIXED_TOKEN, "expirationDuration", "30"));
+
+        assertAccepted(registerSecret(wc, "user", "second", FIXED_TOKEN, "expirationDuration", "30"));
+
+        assertEquals(2, tokenCount(user));
+    }
+
+    /**
+     * S5 exempt-owner-accepted. Given the maximum is enforced and the user is exempt and holds the secret, when the user
+     * registers it again, then it is accepted. Another user, who is not exempt, is rejected.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void s5_reuseIsAcceptedForAnExemptOwner() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("user");
+        assertAccepted(registerSecret(wc, "user", "first", FIXED_TOKEN, "expirationDuration", "never"));
+
+        assertAccepted(registerSecret(wc, "user", "second", FIXED_TOKEN, "expirationDuration", "never"));
+
+        assertEquals(2, tokenCount(user));
+
+        // the exemption is the user's: when it goes away the secret is held, and registering it is rejected
+        config.setExemptUserIds("someone");
+        assertSecretAlreadyRegistered(wc, user, "third", FIXED_TOKEN);
+        assertEquals(2, tokenCount(user));
+    }
+
+    /**
+     * S6 other-user-accepted. Given the maximum is enforced and a user holds the secret, when another user registers the same
+     * secret, then it is accepted, and the two credentials are independent: authentication finds the user by its name first, so
+     * revoking the entry of one leaves the other working.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void s6_theSameSecretIsAcceptedForAnotherUser() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        User other = User.getById("other", true);
+        WebClient otherClient = j.createWebClient().withBasicCredentials("other", "other");
+        otherClient.goToXml("whoAmI/api/xml");
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(90);
+        JSONObject first = assertAccepted(registerSecret(wc, "user", "first", FIXED_TOKEN, "expirationDuration", "30"));
+
+        assertAccepted(registerSecret(otherClient, "other", "first", FIXED_TOKEN, "expirationDuration", "30"));
+
+        assertEquals(1, tokenCount(user));
+        assertEquals(1, tokenCount(other));
+        checkTokenIsWorking("user", FIXED_TOKEN);
+        checkTokenIsWorking("other", FIXED_TOKEN);
+
+        user.getProperty(ApiTokenProperty.class).revokeToken(first.getString("tokenUuid"));
+        checkTokenIsNotWorking("user", FIXED_TOKEN);
+        checkTokenIsWorking("other", FIXED_TOKEN);
+    }
+
+    /**
+     * S7 case-insensitive. Given the maximum is enforced and the user holds the secret in lowercase, when the user submits it in
+     * uppercase hexadecimal digits, then it is rejected: the endpoint lowercases the submitted digits before hashing them.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void s7_theLetterCaseOfTheSecretDoesNotMatter() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(90);
+        assertAccepted(registerSecret(wc, "user", "first", FIXED_TOKEN, "expirationDuration", "30"));
+        String secret = FIXED_TOKEN.substring(2);
+        assertNotEquals(secret, secret.toUpperCase(Locale.ROOT));
+
+        assertSecretAlreadyRegistered(wc, user, "upper", "11" + secret.toUpperCase(Locale.ROOT));
+        assertSecretAlreadyRegistered(wc, user, "mixed", "11" + secret.substring(0, 16).toUpperCase(Locale.ROOT) + secret.substring(16));
+
+        assertEquals(1, tokenCount(user));
+    }
+
+    /**
+     * S8 legacy-as-fixed-rejected. Given the maximum is enforced and the user has a legacy token with the value W, when the user
+     * registers {@code 11}+W, then it is rejected: the hash of a legacy token is the hash of its value, as the hash of a fixed
+     * token is the hash of its 32 hexadecimal digits, so both are the same secret. The test first shows that they are: with no
+     * maximum {@code 11}+W is accepted, and after that entry is revoked, {@code 11}+W still authenticates, through the legacy entry.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void s8_theValueOfTheLegacyTokenRegisteredAsAFixedTokenIsRejected() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        property.changeApiToken();
+        assertTrue(property.hasLegacyToken());
+        String legacyValue = property.getApiTokenInsecure();
+        String fixedToken = "11" + legacyValue;
+        assertEquals(34, fixedToken.length());
+        assertEquals(1, tokenCount(user));
+
+        JSONObject registered = assertAccepted(registerSecret(wc, "user", "fixed", fixedToken));
+        assertEquals(2, tokenCount(user));
+        property.revokeToken(registered.getString("tokenUuid"));
+        assertEquals(1, tokenCount(user));
+        assertTrue(property.hasLegacyToken());
+        checkTokenIsWorking("user", fixedToken);
+        checkTokenIsWorking("user", legacyValue);
+
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(90);
+        assertSecretAlreadyRegistered(wc, user, "fixed again", fixedToken);
+
+        assertEquals(1, tokenCount(user));
+    }
+
+    /**
+     * S9 revoke-then-readd-accepted. Given the maximum is enforced and the user revoked the only entry that holds the secret,
+     * when the user registers the secret again, then it is accepted.
+     * <p>
+     * This documents a known limitation, the residual that the help of the maximum lifetime states: the store keeps no history
+     * of revoked secrets, so a secret can be kept alive by revoking it and registering it again before each expiry. The test
+     * captures that limit; it is not a behavior to rely on.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void s9_revokeThenRegisterAgainIsAccepted() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(90);
+        JSONObject first = assertAccepted(registerSecret(wc, "user", "first", FIXED_TOKEN, "expirationDuration", "30"));
+        assertSecretAlreadyRegistered(wc, user, "again", FIXED_TOKEN);
+
+        user.getProperty(ApiTokenProperty.class).revokeToken(first.getString("tokenUuid"));
+        assertEquals(0, tokenCount(user));
+        checkTokenIsNotWorking("user", FIXED_TOKEN);
+        JSONObject second = assertAccepted(registerSecret(wc, "user", "again", FIXED_TOKEN, "expirationDuration", "30"));
+
+        assertNotEquals(first.getString("tokenUuid"), second.getString("tokenUuid"));
+        assertEquals(1, tokenCount(user));
+        checkTokenIsWorking("user", FIXED_TOKEN);
+    }
+
+    /** The content of every file in the directory of the user, by path relative to it. */
+    private static Map<String, String> filesOf(User user) throws IOException {
+        Path root = user.getRootDir().toPath();
+        List<Path> files;
+        try (Stream<Path> walk = Files.walk(root)) {
+            files = walk.filter(Files::isRegularFile).toList();
+        }
+        Map<String, String> content = new TreeMap<>();
+        for (Path file : files) {
+            content.put(root.relativize(file).toString(), Files.readString(file, StandardCharsets.UTF_8));
+        }
+        return content;
+    }
+
+    /** The tokens of the user as the token page shows them, with their expiration and their usage statistics. */
+    private static List<String> tokensAndStatistics(User user) {
+        return user.getProperty(ApiTokenProperty.class).getTokenList().stream()
+                .map(token -> token.uuid + "|" + token.name + "|" + token.expirationDate + "|" + token.useCounter + "|" + token.lastUseDate)
+                .toList();
+    }
+
+    /**
+     * S10 rejected-persists-nothing. Given the maximum is enforced and the user holds the secret, when the user registers it
+     * again, then nothing changes: the files of the user (the bytes of {@code config.xml} and of the usage statistics, not
+     * their modification time), the tokens and their statistics are the same, so the user was not even saved.
+     * <p>
+     * The user authenticates and the snapshot is taken afterwards, because an authentication can write the files of the user.
+     * No request between the snapshot and the comparison authenticates with a token of the same store.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void s10_aRejectedReuseChangesNothing() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(90);
+        assertAccepted(registerSecret(wc, "user", "first", FIXED_TOKEN, "expirationDuration", "30"));
+        checkTokenIsWorking("user", FIXED_TOKEN);
+        // the requests of the user that follow the use of its token write nothing more
+        wc.goToXml("whoAmI/api/xml");
+        wc.goToXml("whoAmI/api/xml");
+        Map<String, String> filesBefore = filesOf(user);
+        List<String> tokensBefore = tokensAndStatistics(user);
+        assertTrue(filesBefore.containsKey("config.xml"));
+        assertEquals(1, tokenCount(user));
+
+        JSONObject response = registerSecret(wc, "user", "second", FIXED_TOKEN, "expirationDuration", "30");
+
+        assertEquals("error", response.getString("status"), response.toString());
+        assertEquals(Messages.ApiTokenProperty_SecretAlreadyRegistered(), response.getString("message"));
+        assertEquals(filesBefore, filesOf(user));
+        assertEquals(tokensBefore, tokensAndStatistics(user));
+        assertEquals(1, tokenCount(user));
+    }
+
+    /**
+     * S18 over-max-and-known. Given the maximum is enforced and the user holds the secret, when the user registers it again with a
+     * duration over the maximum, or with {@code never}, then it is rejected with the message about the maximum: the policy is
+     * checked before the store looks for the secret.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void s18_aRequestOverTheMaximumGetsTheMessageAboutTheMaximumEvenIfTheSecretIsKnown() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(90);
+        assertAccepted(registerSecret(wc, "user", "first", FIXED_TOKEN, "expirationDuration", "30"));
+
+        assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_expirationOverMaximum(90),
+                "newTokenName", "over", "newTokenPlainValue", FIXED_TOKEN, "expirationDuration", "91");
+        assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_expirationNeverNotAllowed(),
+                "newTokenName", "never", "newTokenPlainValue", FIXED_TOKEN, "expirationDuration", "never");
+        // once the request respects the maximum, the secret is what is wrong with it
+        assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_SecretAlreadyRegistered(),
+                "newTokenName", "last", "newTokenPlainValue", FIXED_TOKEN, "expirationDuration", "90");
+
+        assertEquals(1, tokenCount(user));
     }
 
     // test no token are generated for new user with the global configuration set to false

@@ -60,6 +60,7 @@ import java.util.stream.Collectors;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenLifetimePolicy;
+import jenkins.security.apitoken.ApiTokenPolicyViolationException;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStats;
 import jenkins.security.apitoken.ApiTokenStore;
@@ -451,7 +452,13 @@ public class ApiTokenProperty extends UserProperty {
         return addFixedNewToken(name, tokenPlainValue, null);
     }
 
-    // essentially meant for scripting
+    /**
+     * Essentially meant for scripting.
+     * <p>
+     * Unlike the HTTP endpoint while the maximum is enforced for this user, this method neither applies the maximum
+     * lifetime of API tokens nor refuses a secret that this user holds already: the secret is stored again, with its own
+     * expiration. See {@link ApiTokenLifetimePolicy}.
+     */
     @Restricted(Beta.class)
     public @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate) throws IOException {
         String tokenUuid = this.tokenStore.addFixedNewToken(name, tokenPlainValue, expirationDate);
@@ -881,6 +888,14 @@ public class ApiTokenProperty extends UserProperty {
          * today plus the maximum, unless the owner {@code u} is exempt, and an empty {@code expirationDuration} creates a token that
          * expires on the last day that is allowed. The Java API ({@link ApiTokenProperty#addFixedNewToken(String, String, LocalDate)})
          * and {@link ApiTokenStore} do not enforce the maximum.
+         * <p>
+         * In the same case, when the maximum applies to the owner, a secret that the store of the owner holds already is rejected
+         * too, whether the entry that holds it has expired or not, and whichever the letter case of the value is. Registering the
+         * same secret again would give it a new expiration each time, so the maximum would limit the entries but not the secret:
+         * to keep working, the owner generates a new secret. The check and the insertion are one operation of the store, see
+         * {@link ApiTokenStore#addFixedNewTokenRejectingKnownSecret}. The rejection is answered like the other ones, and it is
+         * the last check: a request that is over the maximum is rejected for that. The Java API does not check it, and neither
+         * does {@link #doGenerateNewToken}, whose secret is random.
          */
         @RequirePOST
         @Restricted(NoExternalUse.class)
@@ -921,9 +936,23 @@ public class ApiTokenProperty extends UserProperty {
                 p.setUser(u);
             }
 
+            // The same secret registered again would get a new expiration each time: while the maximum applies to the owner,
+            // the store refuses a secret it holds already. Otherwise nothing changes, duplicates are stored as they always were.
+            boolean rejectKnownSecret = new ApiTokenLifetimePolicy().appliesTo(u, today);
+
             String tokenUuid;
             try {
-                tokenUuid = p.tokenStore.addFixedNewToken(tokenName, newTokenPlainValue, expirationDate);
+                tokenUuid = rejectKnownSecret
+                        ? p.tokenStore.addFixedNewTokenRejectingKnownSecret(tokenName, newTokenPlainValue, expirationDate)
+                        : p.tokenStore.addFixedNewToken(tokenName, newTokenPlainValue, expirationDate);
+            } catch (ApiTokenPolicyViolationException e) {
+                // the message of the exception is for logs and scripts: the response gets a localized one, chosen by the reason.
+                // This catch must stay before the one of IllegalArgumentException, which the exception is a subclass of
+                return switch (e.getReason()) {
+                    case SECRET_ALREADY_REGISTERED -> HttpResponses.errorJSON(Messages.ApiTokenProperty_SecretAlreadyRegistered());
+                    // only a strict mode throws it, and the store has none: the rejecting entry point does not check the lifetime
+                    case LIFETIME -> throw e;
+                };
             } catch (IllegalArgumentException e) {
                 // wrong length, unknown version or not hexadecimal. The message of the store contains the submitted value
                 return HttpResponses.errorJSON(Messages.ApiTokenProperty_tokenValueInvalid());

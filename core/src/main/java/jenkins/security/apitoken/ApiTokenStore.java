@@ -180,6 +180,9 @@ public class ApiTokenStore {
     /**
      * Create a new token with the given name and expiration and return its id and secret value.
      * Result meant to be sent / displayed and then discarded.
+     * <p>
+     * The secret is random, 128 bits of it, so it is never checked against the secrets that the store already holds, unlike
+     * the one of {@link #addFixedNewTokenRejectingKnownSecret}.
      */
     public synchronized @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name, @Nullable LocalDate expirationDate) {
         // 16x8=128bit worth of randomness, using brute-force you need on average 2^127 tries (~10^37)
@@ -202,9 +205,51 @@ public class ApiTokenStore {
     /**
      * Be careful with this method. Depending on how the tokenPlainValue was stored/sent to this method,
      * it could be a good idea to generate a new token randomly and revoke this one.
+     * <p>
+     * The secret is stored even if the store holds it already, which then has two entries: each one has its own
+     * expiration. See {@link #addFixedNewTokenRejectingKnownSecret} for the variant that refuses that.
+     */
+    public synchronized @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate) {
+        return addFixedNewToken(name, tokenPlainValue, expirationDate, false);
+    }
+
+    /**
+     * Same as {@link #addFixedNewToken(String, String, LocalDate)}, but refuses a secret that the store holds already.
+     * <p>
+     * Registering the same secret again creates a new entry with a new expiration, which keeps the secret valid for as
+     * long as the caller repeats it. A maximum lifetime of API tokens bounds the entries, not the secrets, unless this
+     * is refused: the web endpoint that registers a fixed token calls this method, instead of the other one, while the
+     * maximum is enforced for the owner of the token. See {@link ApiTokenLifetimePolicy}.
+     * <p>
+     * What is refused is a secret that <em>any</em> entry of this store has: it does not matter whether that entry has
+     * expired, nor which version it has, so the secret of a legacy token, which is held by the entry of that token,
+     * is known as well. The letter case of the submitted hexadecimal digits does not matter either. The check and the
+     * insertion are one atomic operation: of several calls with the same secret at the same time, one succeeds.
+     * <p>
+     * Only the store of this user is searched. The same secret can be registered for another user, which gives an
+     * independent credential, because authentication finds the user by its name first. Revoking every entry that holds the
+     * secret makes the store forget it: the same secret can be registered again after that.
+     * <p>
+     * The rejection tells the caller that this user holds the secret, even through an entry that has expired. That is not
+     * exploitable by someone who does not know the secret already, the caller sent it.
+     *
+     * @throws ApiTokenPolicyViolationException with the reason {@link ApiTokenPolicyViolationException.Reason#SECRET_ALREADY_REGISTERED}
+     *         when the store holds the secret. Nothing is stored then.
+     * @throws IllegalArgumentException when the token value is malformed, which is checked first, as
+     *         {@link #addFixedNewToken(String, String, LocalDate)} does
+     */
+    @Restricted(NoExternalUse.class)
+    public synchronized @NonNull String addFixedNewTokenRejectingKnownSecret(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate) {
+        return addFixedNewToken(name, tokenPlainValue, expirationDate, true);
+    }
+
+    /**
+     * The implementation of {@link #addFixedNewToken(String, String, LocalDate)} and
+     * {@link #addFixedNewTokenRejectingKnownSecret}. It is synchronized, so that the search for the secret and the insertion
+     * of the entry are one operation.
      */
     @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "Comparison only validates version of the specified token")
-    public synchronized @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate) {
+    private synchronized @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue, @Nullable LocalDate expirationDate, boolean rejectKnownSecret) {
         if (tokenPlainValue.length() != VERSION_LENGTH + HEX_CHAR_LENGTH) {
             LOGGER.log(Level.INFO, "addFixedNewToken, length received: {0}" + tokenPlainValue.length());
             throw new IllegalArgumentException("The token must consist of 2 characters for the version and 32 hex-characters for the secret");
@@ -219,6 +264,11 @@ public class ApiTokenStore {
         tokenPlainHexValue = tokenPlainHexValue.toLowerCase();
         if (!CHECK_32_HEX_CHAR.matcher(tokenPlainHexValue).matches()) {
             throw new IllegalArgumentException("The secret part of the token must consist of 32 hex-characters");
+        }
+
+        // legacy and version 11 hashes are both the SHA-256 of the 32 hex characters, so this finds either kind of entry
+        if (rejectKnownSecret && containsSecret(plainSecretToHashBytes(tokenPlainHexValue))) {
+            throw new ApiTokenPolicyViolationException(ApiTokenPolicyViolationException.Reason.SECRET_ALREADY_REGISTERED);
         }
 
         HashedToken token = prepareAndStoreToken(name, tokenPlainHexValue, expirationDate);
@@ -306,6 +356,20 @@ public class ApiTokenStore {
         }
 
         return null;
+    }
+
+    /**
+     * Whether any entry of the store has this secret, expired or not.
+     * Like {@link #searchMatch}, it expects the caller to hold the lock.
+     */
+    private boolean containsSecret(@NonNull byte[] hashedBytes) {
+        for (HashedToken token : tokenList) {
+            if (token.hasSameSecret(hashedBytes)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -459,6 +523,29 @@ public class ApiTokenStore {
             boolean expired = isExpired();
             // String.equals() is not constant-time but this method is. No link between correctness and time spent
             return MessageDigest.isEqual(hashFromHex, hashedBytes) && !expired;
+        }
+
+        /**
+         * Like {@link #match(byte[])}, but without looking at the expiration: whether this entry holds the secret that
+         * has this hash, whether it can still be used or not. The version of the entry is not compared either: the
+         * hash of a legacy token and that of a version 11 token are both the SHA-256 of the 32 hexadecimal characters
+         * of the secret, so the same secret gives the same hash for both.
+         *
+         * @param hashedBytes the SHA-256 of the lowercase hexadecimal secret
+         * @return {@code false} if this entry has another secret, or if its stored hash is not valid hexadecimal
+         */
+        boolean hasSameSecret(byte[] hashedBytes) {
+            byte[] hashFromHex;
+            try {
+                hashFromHex = Util.fromHexString(value.hash);
+            } catch (IllegalArgumentException e) {
+                // includes NumberFormatException, which is what match catches: an entry that cannot be decoded has no secret to compare
+                LOGGER.log(Level.FINE, "The API token with uuid=[{0}] is not in hex-format, so it is ignored when looking for a known secret", uuid);
+                return false;
+            }
+
+            // String.equals() is not constant-time but this method is. No link between correctness and time spent
+            return MessageDigest.isEqual(hashFromHex, hashedBytes);
         }
 
         // used by Jelly view
