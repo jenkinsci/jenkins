@@ -45,6 +45,7 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.format.FormatStyle;
 import java.util.Collection;
 import java.util.Collections;
@@ -474,6 +475,8 @@ public class ApiTokenProperty extends UserProperty {
     public void revokeAllTokens() throws IOException {
         tokenStats.removeAll();
         tokenStore.revokeAllTokens();
+        // otherwise the legacy token is created again from this value the next time the user is loaded, see setUser
+        apiToken = null;
         user.save();
     }
 
@@ -482,6 +485,10 @@ public class ApiTokenProperty extends UserProperty {
     public void revokeAllTokensExceptOne(@NonNull String tokenUuid) throws IOException {
         tokenStats.removeAllExcept(tokenUuid);
         tokenStore.revokeAllTokensExcept(tokenUuid);
+        if (tokenStore.getLegacyToken() == null) {
+            // the legacy token was not the one kept: same reason as in revokeAllTokens
+            apiToken = null;
+        }
         user.save();
     }
 
@@ -612,7 +619,14 @@ public class ApiTokenProperty extends UserProperty {
                 tokenName = newTokenName;
             }
 
-            LocalDate expirationDate = getExpirationDate(tokenExpiration, expirationDuration);
+            // Everything that does not need the store is validated before the property is built or added:
+            // User#addProperty saves the user, and a rejected request must not change anything.
+            LocalDate today = LocalDate.now();
+            RequestedExpiration requestedExpiration = parseExpiration(tokenExpiration, expirationDuration, today);
+            if (requestedExpiration.rejection() != null) {
+                return requestedExpiration.rejection();
+            }
+            LocalDate expirationDate = requestedExpiration.date();
 
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
@@ -620,47 +634,97 @@ public class ApiTokenProperty extends UserProperty {
                 u.addProperty(p);
             }
 
-            String expirationDateString = "never";
-            if (expirationDate != null) {
-                expirationDateString = expirationDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
-                        .withLocale(Functions.getCurrentLocale()));
-            }
-
-            Map<String, Object> data = new HashMap<>();
-            if (expirationDate != null && LocalDate.now().isAfter(expirationDate)) {
-                return HttpResponses.errorJSON(Messages.ApiTokenProperty_expirationInPast());
-            }
-
             TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName, expirationDate);
 
+            Map<String, Object> data = new HashMap<>();
             data.put("tokenUuid", tokenUuidAndPlainValue.tokenUuid);
             data.put("tokenName", tokenName);
             data.put("tokenValue", tokenUuidAndPlainValue.plainValue);
-            data.put("expirationDate", expirationDateString);
+            putExpirationDates(data, expirationDate);
             data.put("aboutToExpire", tokenUuidAndPlainValue.aboutToExpire);
             return HttpResponses.okJSON(data);
         }
 
-        private LocalDate getExpirationDate(String tokenExpiration, String expirationDuration) {
-            if (expirationDuration == null) {
-                expirationDuration = "";
+        /**
+         * What the caller asked for as expiration: nothing, an explicit {@code never}, or a date.
+         * Currently an empty duration and {@code never} both mean "no expiry", but they are different requests.
+         */
+        private enum ExpirationChoice {
+            /** The duration is missing or empty. */
+            UNSPECIFIED,
+            /** The duration is {@code never}. */
+            NEVER,
+            /** The duration is a number of days or {@code custom} with a date. */
+            DATE
+        }
+
+        /**
+         * The outcome of {@link #parseExpiration}: either the expiration the request asks for, or the rejection to answer with.
+         *
+         * @param choice what was asked for, {@code null} when the request is rejected
+         * @param date the expiration date, {@code null} unless {@code choice} is {@link ExpirationChoice#DATE}
+         * @param rejection the {@code errorJSON} response when the request is invalid, otherwise {@code null}
+         */
+        private record RequestedExpiration(@CheckForNull ExpirationChoice choice, @CheckForNull LocalDate date, @CheckForNull HttpResponse rejection) {
+            static RequestedExpiration of(ExpirationChoice choice, @CheckForNull LocalDate date) {
+                return new RequestedExpiration(choice, date, null);
             }
-            expirationDuration = expirationDuration.trim();
 
-            return switch (expirationDuration) {
-                case "", "never" -> {
-                    yield null;
-                }
-                case "custom" -> {
-                    yield LocalDate.parse(tokenExpiration);
-                }
-                default -> {
-                    LocalDate now = LocalDate.now();
-                    int days = Integer.parseInt(expirationDuration);
-                    yield now.plusDays(days);
-                }
-            };
+            static RequestedExpiration rejected(String message) {
+                return new RequestedExpiration(null, null, HttpResponses.errorJSON(message));
+            }
+        }
 
+        /**
+         * Parses and validates the expiration of a token creation request, for {@link #doGenerateNewToken} and {@link #doAddFixedToken}.
+         * Nothing here needs the token store, so it runs before anything is changed.
+         * The messages of the rejections are static: they never contain the submitted values.
+         *
+         * @param today the date of the request, computed once by the caller and used for relative durations and for the past-date check
+         */
+        private static RequestedExpiration parseExpiration(@CheckForNull String tokenExpiration, @CheckForNull String expirationDuration, LocalDate today) {
+            String duration = expirationDuration == null ? "" : expirationDuration.trim();
+
+            RequestedExpiration requested;
+            try {
+                requested = switch (duration) {
+                    case "" -> RequestedExpiration.of(ExpirationChoice.UNSPECIFIED, null);
+                    case "never" -> RequestedExpiration.of(ExpirationChoice.NEVER, null);
+                    case "custom" -> {
+                        if (tokenExpiration == null || tokenExpiration.isBlank()) {
+                            yield RequestedExpiration.rejected(Messages.ApiTokenProperty_expirationDateMissing());
+                        }
+                        yield RequestedExpiration.of(ExpirationChoice.DATE, LocalDate.parse(tokenExpiration));
+                    }
+                    default -> RequestedExpiration.of(ExpirationChoice.DATE, today.plusDays(Integer.parseInt(duration)));
+                };
+            } catch (NumberFormatException e) {
+                return RequestedExpiration.rejected(Messages.ApiTokenProperty_expirationDurationInvalid());
+            } catch (DateTimeParseException e) {
+                return RequestedExpiration.rejected(Messages.ApiTokenProperty_expirationDateInvalid());
+            }
+
+            LocalDate date = requested.date();
+            if (date != null && date.isBefore(today)) {
+                // also covers a negative number of days
+                return RequestedExpiration.rejected(Messages.ApiTokenProperty_expirationInPast());
+            }
+            return requested;
+        }
+
+        /**
+         * Adds the expiration to the response of a token creation: {@code expirationDate} is localized, as shown to the user,
+         * {@code expirationDateIso} is the ISO-8601 date for clients. Both are {@code never} when the token does not expire.
+         */
+        private static void putExpirationDates(Map<String, Object> data, @CheckForNull LocalDate expirationDate) {
+            if (expirationDate == null) {
+                data.put("expirationDate", "never");
+                data.put("expirationDateIso", "never");
+            } else {
+                data.put("expirationDate", expirationDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+                        .withLocale(Functions.getCurrentLocale())));
+                data.put("expirationDateIso", expirationDate.toString());
+            }
         }
 
         /**
@@ -686,20 +750,44 @@ public class ApiTokenProperty extends UserProperty {
                 tokenName = newTokenName;
             }
 
-            LocalDate expirationDate = getExpirationDate(tokenExpiration, expirationDuration);
-
-            ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
-            if (p == null) {
-                p = forceNewInstance(u, false);
-                u.addProperty(p);
+            if (newTokenPlainValue == null || newTokenPlainValue.isBlank()) {
+                return HttpResponses.errorJSON(Messages.ApiTokenProperty_tokenValueMissing());
             }
 
-            String tokenUuid = p.tokenStore.addFixedNewToken(tokenName, newTokenPlainValue, expirationDate);
-            u.save();
+            // Everything that does not need the store is validated before the property is built or added.
+            LocalDate today = LocalDate.now();
+            RequestedExpiration requestedExpiration = parseExpiration(tokenExpiration, expirationDuration, today);
+            if (requestedExpiration.rejection() != null) {
+                return requestedExpiration.rejection();
+            }
+            LocalDate expirationDate = requestedExpiration.date();
 
-            Map<String, String> data = new HashMap<>();
+            ApiTokenProperty existing = u.getProperty(ApiTokenProperty.class);
+            ApiTokenProperty p = existing;
+            if (p == null) {
+                p = forceNewInstance(u, false);
+                // creates the token store and the statistics, the store call below needs them;
+                // the property is only added to the user once the token has been stored
+                p.setUser(u);
+            }
+
+            String tokenUuid;
+            try {
+                tokenUuid = p.tokenStore.addFixedNewToken(tokenName, newTokenPlainValue, expirationDate);
+            } catch (IllegalArgumentException e) {
+                // wrong length, unknown version or not hexadecimal. The message of the store contains the submitted value
+                return HttpResponses.errorJSON(Messages.ApiTokenProperty_tokenValueInvalid());
+            }
+            if (existing == null) {
+                u.addProperty(p);
+            } else {
+                u.save();
+            }
+
+            Map<String, Object> data = new HashMap<>();
             data.put("tokenUuid", tokenUuid);
             data.put("tokenName", tokenName);
+            putExpirationDates(data, expirationDate);
             return HttpResponses.okJSON(data);
         }
 

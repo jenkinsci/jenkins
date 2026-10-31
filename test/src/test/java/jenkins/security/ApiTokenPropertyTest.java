@@ -7,12 +7,16 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.oneOf;
 import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
@@ -22,12 +26,21 @@ import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Predicate;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
@@ -40,6 +53,7 @@ import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.NameValuePair;
 import org.htmlunit.xml.XmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -730,6 +744,482 @@ class ApiTokenPropertyTest {
                 IllegalArgumentException.class,
                 () -> apiTokenProperty.addFixedNewToken(tokenName, tokenValue),
                 "The invalid token " + tokenName + " with value " + tokenValue + " was accepted but it should have been rejected.");
+    }
+
+    private static final String GENERATE_NEW_TOKEN = "generateNewToken";
+    private static final String ADD_FIXED_TOKEN = "addFixedToken";
+    private static final String FIXED_TOKEN = "110123456789abcdef0123456789abcdef";
+
+    /**
+     * What a token creation can change for a user: the tokens held in memory and the content of {@code config.xml}
+     * ({@code null} when the user was never saved).
+     */
+    private record StoredState(List<String> tokenUuids, String configXml) {}
+
+    private static StoredState storedState(User user) throws IOException {
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        List<String> tokenUuids = property == null
+                ? List.of()
+                : property.getTokenStore().getTokenListSortedByName().stream().map(ApiTokenStore.HashedToken::getUuid).toList();
+        File configFile = new File(user.getRootDir(), "config.xml");
+        String configXml = configFile.exists() ? Files.readString(configFile.toPath(), StandardCharsets.UTF_8) : null;
+        return new StoredState(tokenUuids, configXml);
+    }
+
+    /**
+     * Creates the user and returns a client that calls the token creation endpoints the way the UI does: logged in
+     * with the password of the dummy security realm (the user ID), without crumb. It does not authenticate with an
+     * API token, so the tokens of the user are not involved.
+     */
+    private WebClient createClientForTokenEndpoints(String login) throws Exception {
+        j.jenkins.setCrumbIssuer(null);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User.getById(login, true);
+        WebClient wc = j.createWebClient().withBasicCredentials(login, login);
+        // the first request of a user may save it (last granted authorities): do it now, not during the assertions
+        wc.goToXml("whoAmI/api/xml");
+        return wc;
+    }
+
+    /**
+     * Posts to a token creation endpoint and returns the JSON answer, after checking the HTTP status is 200:
+     * the endpoints report rejections with {@code status:error}, never with an HTTP error.
+     *
+     * @param parameters name and value pairs, a {@code null} value is not sent at all
+     */
+    private JSONObject postToTokenEndpoint(WebClient wc, String login, String endpoint, String... parameters) throws Exception {
+        assertEquals(0, parameters.length % 2, "parameters are name and value pairs");
+        List<NameValuePair> requestParameters = new ArrayList<>();
+        for (int i = 0; i < parameters.length; i += 2) {
+            if (parameters[i + 1] != null) {
+                requestParameters.add(new NameValuePair(parameters[i], parameters[i + 1]));
+            }
+        }
+        WebRequest request = new WebRequest(
+                new URL(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/" + endpoint),
+                HttpMethod.POST
+        );
+        request.setRequestParameters(requestParameters);
+        Page page = wc.getPage(request);
+        assertEquals(200, page.getWebResponse().getStatusCode());
+        return JSONObject.fromObject(page.getWebResponse().getContentAsString());
+    }
+
+    /**
+     * Checks that a token creation request is rejected the way clients expect, HTTP 200 with {@code status:error} and
+     * the given message, and that nothing is stored for the user (no token, user not saved).
+     */
+    private void assertRejected(WebClient wc, User user, String endpoint, String expectedMessage, String... parameters) throws Exception {
+        StoredState before = storedState(user);
+        JSONObject response = postToTokenEndpoint(wc, user.getId(), endpoint, parameters);
+        assertEquals("error", response.getString("status"), response.toString());
+        assertEquals(expectedMessage, response.getString("message"));
+        assertEquals(before, storedState(user), "a rejected request must not change anything for the user");
+    }
+
+    private static JSONObject assertAccepted(JSONObject response) {
+        assertEquals("ok", response.getString("status"), response.toString());
+        return response.getJSONObject("data");
+    }
+
+    private static ApiTokenStore.HashedToken findToken(User user, String tokenUuid) {
+        return user.getProperty(ApiTokenProperty.class).getTokenStore().getTokenListSortedByName().stream()
+                .filter(token -> token.getUuid().equals(tokenUuid))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    @Test
+    @Issue("JENKINS-27612")
+    void generateNewTokenWithCustomExpirationButNoDateIsRejected() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        String expected = Messages.ApiTokenProperty_expirationDateMissing();
+
+        assertRejected(wc, user, GENERATE_NEW_TOKEN, expected, "newTokenName", "token", "expirationDuration", "custom");
+        assertRejected(wc, user, GENERATE_NEW_TOKEN, expected, "newTokenName", "token", "expirationDuration", "custom", "tokenExpiration", "");
+        assertRejected(wc, user, GENERATE_NEW_TOKEN, expected, "newTokenName", "token", "expirationDuration", "custom", "tokenExpiration", "   ");
+    }
+
+    @Test
+    @Issue("JENKINS-27612")
+    void generateNewTokenWithNonNumericDurationIsRejected() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        for (String duration : List.of("soon", "1.5", "99999999999")) {
+            assertRejected(wc, user, GENERATE_NEW_TOKEN, Messages.ApiTokenProperty_expirationDurationInvalid(),
+                    "newTokenName", "token", "expirationDuration", duration);
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-27612")
+    void generateNewTokenWithMalformedCustomDateIsRejected() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        for (String date : List.of("31/12/2030", "2030-13-01", "tomorrow")) {
+            assertRejected(wc, user, GENERATE_NEW_TOKEN, Messages.ApiTokenProperty_expirationDateInvalid(),
+                    "newTokenName", "token", "expirationDuration", "custom", "tokenExpiration", date);
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-27612")
+    void generateNewTokenWithNegativeNumberOfDaysIsRejected() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        for (String days : List.of("-1", "-365")) {
+            assertRejected(wc, user, GENERATE_NEW_TOKEN, Messages.ApiTokenProperty_expirationInPast(),
+                    "newTokenName", "token", "expirationDuration", days);
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-27612")
+    void generateNewTokenWithPastCustomDateIsRejected() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        assertRejected(wc, user, GENERATE_NEW_TOKEN, Messages.ApiTokenProperty_expirationInPast(),
+                "newTokenName", "token", "expirationDuration", "custom", "tokenExpiration", LocalDate.now().minusDays(1).toString());
+    }
+
+    @Test
+    @Issue("JENKINS-27612")
+    void addFixedTokenWithPastCustomDateIsRejected() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_expirationInPast(),
+                "newTokenName", "fixed", "newTokenPlainValue", FIXED_TOKEN,
+                "expirationDuration", "custom", "tokenExpiration", LocalDate.now().minusDays(1).toString());
+        checkTokenIsNotWorking("user", FIXED_TOKEN);
+    }
+
+    @Test
+    @Issue("JENKINS-27612")
+    void addFixedTokenWithNegativeNumberOfDaysIsRejected() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        for (String days : List.of("-1", "-365")) {
+            assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_expirationInPast(),
+                    "newTokenName", "fixed", "newTokenPlainValue", FIXED_TOKEN, "expirationDuration", days);
+        }
+        checkTokenIsNotWorking("user", FIXED_TOKEN);
+    }
+
+    /**
+     * {@code doAddFixedToken} shares the parsing of the expiration with {@code doGenerateNewToken}.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void addFixedTokenWithInvalidExpirationIsRejected() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_expirationDurationInvalid(),
+                "newTokenName", "fixed", "newTokenPlainValue", FIXED_TOKEN, "expirationDuration", "soon");
+        assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_expirationDateMissing(),
+                "newTokenName", "fixed", "newTokenPlainValue", FIXED_TOKEN, "expirationDuration", "custom");
+        assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_expirationDateInvalid(),
+                "newTokenName", "fixed", "newTokenPlainValue", FIXED_TOKEN, "expirationDuration", "custom", "tokenExpiration", "31/12/2030");
+        checkTokenIsNotWorking("user", FIXED_TOKEN);
+    }
+
+    /**
+     * The message of the token store contains the submitted value: the endpoint must answer with a static one.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void addFixedTokenWithMalformedTokenValueIsRejectedWithoutEchoingIt() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        List<String> malformedValues = List.of(
+                "110123456789abcdef0123456789abcde", // too short
+                "110123456789abcdef0123456789abcdefg", // too long
+                "120123456789abcdef0123456789abcdef", // unknown version
+                "110123456789abcdef0123456789abcdeg"); // not hexadecimal
+        for (String value : malformedValues) {
+            // the exact message is checked, so nothing of the submitted value can be echoed
+            assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_tokenValueInvalid(),
+                    "newTokenName", "fixed", "newTokenPlainValue", value);
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-27612")
+    void addFixedTokenWithMissingOrBlankTokenValueIsRejected() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        for (String value : new String[]{null, "", "   "}) {
+            assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_tokenValueMissing(),
+                    "newTokenName", "fixed", "newTokenPlainValue", value);
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-27612")
+    void generateNewTokenReturnsExpirationDateInLocalizedAndIsoFormat() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        // an empty duration and an explicit never both mean no expiry
+        for (String duration : new String[]{null, "", "never"}) {
+            JSONObject data = assertAccepted(postToTokenEndpoint(wc, "user", GENERATE_NEW_TOKEN,
+                    "newTokenName", "no-expiry", "expirationDuration", duration));
+            assertEquals("never", data.getString("expirationDate"));
+            assertEquals("never", data.getString("expirationDateIso"));
+        }
+
+        LocalDate inTenDays = LocalDate.now().plusDays(10);
+        JSONObject data = assertAccepted(postToTokenEndpoint(wc, "user", GENERATE_NEW_TOKEN,
+                "newTokenName", "custom-date", "expirationDuration", "custom", "tokenExpiration", inTenDays.toString()));
+        assertEquals(inTenDays.toString(), data.getString("expirationDateIso"));
+        assertEquals(inTenDays.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(Locale.US)), data.getString("expirationDate"));
+        // what the answer says is what is stored, and the other fields are still there
+        assertEquals(inTenDays, findToken(user, data.getString("tokenUuid")).getExpirationDate());
+        assertEquals("custom-date", data.getString("tokenName"));
+        assertFalse(data.getString("tokenValue").isEmpty());
+        assertFalse(data.getBoolean("aboutToExpire"));
+        checkTokenIsWorking("user", data.getString("tokenValue"));
+
+        // 0 days is today, which is not in the past: the token is valid through its expiration date
+        LocalDate before = LocalDate.now();
+        data = assertAccepted(postToTokenEndpoint(wc, "user", GENERATE_NEW_TOKEN,
+                "newTokenName", "today", "expirationDuration", "0"));
+        LocalDate after = LocalDate.now();
+        assertThat(data.getString("expirationDateIso"), is(oneOf(before.toString(), after.toString())));
+        assertTrue(data.getBoolean("aboutToExpire"));
+
+        // relative duration
+        before = LocalDate.now();
+        data = assertAccepted(postToTokenEndpoint(wc, "user", GENERATE_NEW_TOKEN,
+                "newTokenName", "thirty-days", "expirationDuration", "30"));
+        after = LocalDate.now();
+        assertThat(data.getString("expirationDateIso"), is(oneOf(before.plusDays(30).toString(), after.plusDays(30).toString())));
+        assertNotEquals("never", data.getString("expirationDate"));
+    }
+
+    /**
+     * The duration is trimmed, as before: {@code " 30 "} is the same request as {@code "30"}, on both endpoints.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void paddedDurationIsAcceptedLikeTheTrimmedOne() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+
+        LocalDate before = LocalDate.now();
+        JSONObject trimmed = assertAccepted(postToTokenEndpoint(wc, "user", GENERATE_NEW_TOKEN,
+                "newTokenName", "trimmed", "expirationDuration", "30"));
+        JSONObject padded = assertAccepted(postToTokenEndpoint(wc, "user", GENERATE_NEW_TOKEN,
+                "newTokenName", "padded", "expirationDuration", " 30 "));
+        JSONObject paddedFixed = assertAccepted(postToTokenEndpoint(wc, "user", ADD_FIXED_TOKEN,
+                "newTokenName", "padded-fixed", "newTokenPlainValue", FIXED_TOKEN, "expirationDuration", " 30 "));
+        LocalDate after = LocalDate.now();
+
+        // the server computes today itself: accept the day before the requests and the day after them, in case midnight passes
+        for (JSONObject data : List.of(trimmed, padded, paddedFixed)) {
+            assertThat(data.getString("expirationDateIso"), is(oneOf(before.plusDays(30).toString(), after.plusDays(30).toString())));
+        }
+        assertNotEquals("never", padded.getString("expirationDate"));
+        checkTokenIsWorking("user", FIXED_TOKEN);
+    }
+
+    /**
+     * The exact boundary of the past-date check: a custom date equal to today is accepted, the token is valid through
+     * its expiration date, and yesterday is rejected (see {@code generateNewTokenWithPastCustomDateIsRejected}).
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void customDateEqualToTodayIsAccepted() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        // only wrong if midnight passes between this line and the server computing its own today
+        LocalDate today = LocalDate.now();
+        JSONObject data = assertAccepted(postToTokenEndpoint(wc, "user", GENERATE_NEW_TOKEN,
+                "newTokenName", "custom-today", "expirationDuration", "custom", "tokenExpiration", today.toString()));
+        assertEquals(today.toString(), data.getString("expirationDateIso"));
+        assertEquals(today, findToken(user, data.getString("tokenUuid")).getExpirationDate());
+        checkTokenIsWorking("user", data.getString("tokenValue"));
+
+        data = assertAccepted(postToTokenEndpoint(wc, "user", ADD_FIXED_TOKEN,
+                "newTokenName", "fixed-custom-today", "newTokenPlainValue", FIXED_TOKEN,
+                "expirationDuration", "custom", "tokenExpiration", today.toString()));
+        assertEquals(today.toString(), data.getString("expirationDateIso"));
+        assertEquals(today, findToken(user, data.getString("tokenUuid")).getExpirationDate());
+        checkTokenIsWorking("user", FIXED_TOKEN);
+    }
+
+    @Test
+    @Issue("JENKINS-27612")
+    void addFixedTokenReturnsExpirationDateInLocalizedAndIsoFormatAndTheTokenAuthenticates() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        JSONObject data = assertAccepted(postToTokenEndpoint(wc, "user", ADD_FIXED_TOKEN,
+                "newTokenName", "fixed-no-expiry", "newTokenPlainValue", FIXED_TOKEN, "expirationDuration", "never"));
+        assertEquals("fixed-no-expiry", data.getString("tokenName"));
+        assertEquals("never", data.getString("expirationDate"));
+        assertEquals("never", data.getString("expirationDateIso"));
+        assertNull(findToken(user, data.getString("tokenUuid")).getExpirationDate());
+        checkTokenIsWorking("user", FIXED_TOKEN);
+
+        String secondToken = "11fedcba9876543210fedcba9876543210";
+        LocalDate inTenDays = LocalDate.now().plusDays(10);
+        data = assertAccepted(postToTokenEndpoint(wc, "user", ADD_FIXED_TOKEN,
+                "newTokenName", "fixed-custom-date", "newTokenPlainValue", secondToken,
+                "expirationDuration", "custom", "tokenExpiration", inTenDays.toString()));
+        assertEquals(inTenDays.toString(), data.getString("expirationDateIso"));
+        assertEquals(inTenDays.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(Locale.US)), data.getString("expirationDate"));
+        assertEquals(inTenDays, findToken(user, data.getString("tokenUuid")).getExpirationDate());
+        checkTokenIsWorking("user", secondToken);
+
+        // no duration at all, as the clients that send only the name and the value do
+        String thirdToken = "11" + "ab".repeat(16);
+        data = assertAccepted(postToTokenEndpoint(wc, "user", ADD_FIXED_TOKEN, "newTokenPlainValue", thirdToken));
+        assertEquals("never", data.getString("expirationDate"));
+        assertEquals("never", data.getString("expirationDateIso"));
+        assertFalse(data.getString("tokenName").isBlank());
+        checkTokenIsWorking("user", thirdToken);
+
+        // relative duration
+        String fourthToken = "11" + "cd".repeat(16);
+        LocalDate before = LocalDate.now();
+        data = assertAccepted(postToTokenEndpoint(wc, "user", ADD_FIXED_TOKEN,
+                "newTokenName", "fixed-thirty-days", "newTokenPlainValue", fourthToken, "expirationDuration", "30"));
+        LocalDate after = LocalDate.now();
+        assertThat(data.getString("expirationDateIso"), is(oneOf(before.plusDays(30).toString(), after.plusDays(30).toString())));
+        checkTokenIsWorking("user", fourthToken);
+    }
+
+    /**
+     * A user without an {@link ApiTokenProperty} is practically unreachable, the property is allocated when the user
+     * is loaded, so it is removed by reflection. A rejected request must neither create the property nor save the user;
+     * an accepted {@code addFixedToken} creates the property with its token store ready (without it, storing the token
+     * is a {@code NullPointerException}) and saves the user.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void tokenCreationForUserWithoutApiTokenPropertyAddsItOnlyWhenAccepted() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        Field properties = User.class.getDeclaredField("properties");
+        properties.setAccessible(true);
+        ((List<?>) properties.get(user)).removeIf(ApiTokenProperty.class::isInstance);
+        assertNull(user.getProperty(ApiTokenProperty.class));
+
+        assertRejected(wc, user, GENERATE_NEW_TOKEN, Messages.ApiTokenProperty_expirationInPast(),
+                "newTokenName", "token", "expirationDuration", "-1");
+        assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_expirationInPast(),
+                "newTokenName", "fixed", "newTokenPlainValue", FIXED_TOKEN, "expirationDuration", "-1");
+        assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_tokenValueInvalid(),
+                "newTokenName", "fixed", "newTokenPlainValue", "110123456789abcdef0123456789abcde");
+        assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_tokenValueMissing(),
+                "newTokenName", "fixed");
+        assertNull(user.getProperty(ApiTokenProperty.class), "rejected requests must not create the property");
+
+        assertAccepted(postToTokenEndpoint(wc, "user", ADD_FIXED_TOKEN, "newTokenName", "fixed", "newTokenPlainValue", FIXED_TOKEN));
+        assertNotNull(user.getProperty(ApiTokenProperty.class));
+        assertThat(user.getProperty(ApiTokenProperty.class).getTokenStore().getTokenListSortedByName(), hasSize(1));
+        checkTokenIsWorking("user", FIXED_TOKEN);
+
+        // the user was saved with the property and its token
+        user.load();
+        assertThat(user.getProperty(ApiTokenProperty.class).getTokenStore().getTokenListSortedByName(), hasSize(1));
+        checkTokenIsWorking("user", FIXED_TOKEN);
+    }
+
+    /**
+     * The legacy token is created again from the {@code apiToken} secret when the user is loaded. Revoking all the
+     * tokens must also drop that secret, or the legacy token is back, and works, after the next restart.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void revokeAllTokensDoesNotBringTheLegacyTokenBackWhenTheUserIsLoaded() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+
+        User user = User.getById("user", true);
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+        assertTrue(apiTokenProperty.hasLegacyToken());
+        String legacyToken = apiTokenProperty.getApiTokenInsecure();
+        checkTokenIsWorking(user.getId(), legacyToken);
+
+        apiTokenProperty.revokeAllTokens();
+        // the in-memory state, which the legacy token monitor reads, before any reload
+        assertFalse(apiTokenProperty.hasLegacyToken());
+        checkTokenIsNotWorking(user.getId(), legacyToken);
+
+        // what happens at the next start: the user is loaded from its config.xml
+        user.load();
+        ApiTokenProperty reloaded = user.getProperty(ApiTokenProperty.class);
+        assertFalse(reloaded.hasLegacyToken());
+        assertThat(reloaded.getTokenStore().getTokenListSortedByName(), empty());
+        checkTokenIsNotWorking(user.getId(), legacyToken);
+    }
+
+    @Test
+    @Issue("JENKINS-27612")
+    void revokeAllTokensExceptOneDoesNotBringTheLegacyTokenBackWhenTheUserIsLoaded() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+
+        User user = User.getById("user", true);
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+        String legacyToken = apiTokenProperty.getApiTokenInsecure();
+        TokenUuidAndPlainValue keptToken = apiTokenProperty.generateNewToken("kept");
+
+        apiTokenProperty.revokeAllTokensExceptOne(keptToken.tokenUuid);
+        // the in-memory state, which the legacy token monitor reads, before any reload
+        assertFalse(apiTokenProperty.hasLegacyToken());
+        checkTokenIsNotWorking(user.getId(), legacyToken);
+        checkTokenIsWorking(user.getId(), keptToken.plainValue);
+
+        user.load();
+        ApiTokenProperty reloaded = user.getProperty(ApiTokenProperty.class);
+        assertFalse(reloaded.hasLegacyToken());
+        Collection<ApiTokenStore.HashedToken> tokenList = reloaded.getTokenStore().getTokenListSortedByName();
+        assertThat(tokenList, hasSize(1));
+        assertFalse(tokenList.iterator().next().isLegacy());
+        checkTokenIsNotWorking(user.getId(), legacyToken);
+        checkTokenIsWorking(user.getId(), keptToken.plainValue);
+    }
+
+    /**
+     * When the legacy token is the one kept, its secret must stay: only the other tokens are revoked.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void revokeAllTokensExceptOneKeepsTheLegacyTokenWhenItIsTheKeptOne() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+
+        User user = User.getById("user", true);
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+        String legacyToken = apiTokenProperty.getApiTokenInsecure();
+        String legacyUuid = apiTokenProperty.getTokenStore().getLegacyToken().getUuid();
+        TokenUuidAndPlainValue otherToken = apiTokenProperty.generateNewToken("other");
+
+        apiTokenProperty.revokeAllTokensExceptOne(legacyUuid);
+        assertTrue(apiTokenProperty.hasLegacyToken());
+        checkTokenIsWorking(user.getId(), legacyToken);
+        checkTokenIsNotWorking(user.getId(), otherToken.plainValue);
+
+        user.load();
+        ApiTokenProperty reloaded = user.getProperty(ApiTokenProperty.class);
+        assertTrue(reloaded.hasLegacyToken());
+        Collection<ApiTokenStore.HashedToken> tokenList = reloaded.getTokenStore().getTokenListSortedByName();
+        assertThat(tokenList, hasSize(1));
+        assertTrue(tokenList.iterator().next().isLegacy());
+        checkTokenIsWorking(user.getId(), legacyToken);
+        checkTokenIsNotWorking(user.getId(), otherToken.plainValue);
     }
 
     // test no token are generated for new user with the global configuration set to false
