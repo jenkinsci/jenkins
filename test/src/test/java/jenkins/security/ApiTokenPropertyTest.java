@@ -39,6 +39,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,6 +47,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import jenkins.model.IdStrategy;
@@ -1953,10 +1955,10 @@ class ApiTokenPropertyTest {
         assertEquals(List.of(expectedSelected), selectedExpirations(page));
     }
 
-    /** The warning about tokens that never expire, which is an empty element when the dialog does not offer them. */
+    /** The warning about tokens that never expire, {@code null} if the dialog has none because it does not offer them. */
     private static String neverWarning(HtmlPage page) {
         HtmlElement warning = dialogTemplate(page).querySelector(".token-warning");
-        return warning.getTextContent().strip();
+        return warning == null ? null : warning.getTextContent().strip();
     }
 
     /** The text of the notice about the enforcement date, {@code null} if the dialog has none. */
@@ -1981,14 +1983,17 @@ class ApiTokenPropertyTest {
     @ParameterizedTest
     @CsvSource(delimiter = ';', value = {
         "90;30;7=7 Days,30=30 Days,60=60 Days,90=90 Days",
-        "100;30;7=7 Days,30=30 Days,60=60 Days,90=90 Days,100=100 days (maximum)",
-        "45;30;7=7 Days,30=30 Days,45=45 days (maximum)",
+        "100;30;7=7 Days,30=30 Days,60=60 Days,90=90 Days,100=100 Days (maximum)",
+        "45;30;7=7 Days,30=30 Days,45=45 Days (maximum)",
         "30;30;7=7 Days,30=30 Days",
-        "29;29;7=7 Days,29=29 days (maximum)",
-        "10;10;7=7 Days,10=10 days (maximum)",
+        "29;29;7=7 Days,29=29 Days (maximum)",
+        "10;10;7=7 Days,10=10 Days (maximum)",
         "7;7;7=7 Days",
-        "3;3;3=3 days (maximum)",
-        "1;1;1=1 day (maximum)"
+        "3;3;3=3 Days (maximum)",
+        "1;1;1=1 Day (maximum)",
+        // the numbers have no grouping
+        "1000;30;7=7 Days,30=30 Days,60=60 Days,90=90 Days,1000=1000 Days (maximum)",
+        "2147483647;30;7=7 Days,30=30 Days,60=60 Days,90=90 Days,2147483647=2147483647 Days (maximum)"
     })
     @Issue("JENKINS-27612")
     void dialogOffersOnlyWhatTheEnforcedMaximumAllows(int maximum, String expectedDefault, String expectedChoices) throws Exception {
@@ -1998,7 +2003,7 @@ class ApiTokenPropertyTest {
 
         HtmlPage page = tokenPage(wc, user);
         assertExpirationOptions(page, expectedDefault, expectedChoices + ",custom=Custom");
-        assertEquals("", neverWarning(page));
+        assertNull(neverWarning(page));
         assertThat(page.asXml(), not(containsString(NEVER_WARNING)));
         assertNull(enforceFromNotice(page));
     }
@@ -2017,7 +2022,7 @@ class ApiTokenPropertyTest {
         for (String enforceFrom : new String[]{today.toString(), today.minusDays(1).toString(), "2000-01-01", "", "  ", null, "2026-13-01", "soon"}) {
             config.setEnforceFrom(enforceFrom);
             HtmlPage page = tokenPage(wc, user);
-            assertExpirationOptions(page, "10", "7=7 Days,10=10 days (maximum),custom=Custom");
+            assertExpirationOptions(page, "10", "7=7 Days,10=10 Days (maximum),custom=Custom");
             assertNull(enforceFromNotice(page), "no notice once the maximum is enforced: " + enforceFrom);
         }
     }
@@ -2074,6 +2079,12 @@ class ApiTokenPropertyTest {
         assertEquals(enforceFromNoticeText(enforceFrom.toString(), "1 day"), enforceFromNotice(tokenPage(wc, user)));
         config.setMaxTokenLifetimeDays(365);
         assertEquals(enforceFromNoticeText(enforceFrom.toString(), "365 days"), enforceFromNotice(tokenPage(wc, user)));
+
+        // the number has no grouping, however large: "2147483647 days" and not "2,147,483,647 days"
+        config.setMaxTokenLifetimeDays(1000);
+        assertEquals(enforceFromNoticeText(enforceFrom.toString(), "1000 days"), enforceFromNotice(tokenPage(wc, user)));
+        config.setMaxTokenLifetimeDays(Integer.MAX_VALUE);
+        assertEquals(enforceFromNoticeText(enforceFrom.toString(), "2147483647 days"), enforceFromNotice(tokenPage(wc, user)));
     }
 
     /** An owner who is exempt is not limited by an enforced maximum: the dialog is the full one, and has nothing to announce. */
@@ -2127,6 +2138,187 @@ class ApiTokenPropertyTest {
         assertExpirationOptions(tokenPage(adminClient, admin), "30", FULL_EXPIRATION_OPTIONS);
         assertExpirationOptions(tokenPage(aliceClient, alice), "30", limited);
         assertExpirationOptions(tokenPage(serviceClient, service), "30", limited);
+    }
+
+    /** The heading and the labels of the choices of the dialog come from the properties of the page. */
+    @Test
+    @Issue("JENKINS-27612")
+    void dialogHasTheLabelsOfThePropertiesFile() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        HtmlPage page = tokenPage(wc, user);
+        List<String> labels = dialogTemplate(page).querySelectorAll(".jenkins-form-label").stream()
+                .map(label -> label.getTextContent().strip())
+                .toList();
+        assertTrue(labels.contains("Expiration"), labels.toString());
+        assertEquals(FULL_EXPIRATION_OPTIONS, expirationOptions(page));
+    }
+
+    /** The warning about tokens that never expire is in the dialog, hidden, only while the dialog offers such tokens. */
+    @Test
+    @Issue("JENKINS-27612")
+    void neverWarningIsRenderedOnlyWhenTheMaximumDoesNotApply() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+
+        // no maximum
+        HtmlElement warning = dialogTemplate(tokenPage(wc, user)).querySelector(".token-warning");
+        assertNotNull(warning);
+        assertThat(warning.getAttribute("class"), allOf(containsString("jenkins-hidden"), containsString("warning")));
+
+        // the maximum is announced but not enforced
+        config.setMaxTokenLifetimeDays(10);
+        config.setEnforceFrom(LocalDate.now().plusDays(10).toString());
+        assertNotNull(dialogTemplate(tokenPage(wc, user)).querySelector(".token-warning"));
+
+        // the owner is exempt
+        config.setEnforceFrom(null);
+        config.setExemptUserIds("user");
+        assertNotNull(dialogTemplate(tokenPage(wc, user)).querySelector(".token-warning"));
+
+        // the maximum applies: nothing to warn about, and no element
+        config.setExemptUserIds("");
+        HtmlPage page = tokenPage(wc, user);
+        assertNull(dialogTemplate(page).querySelector(".token-warning"));
+        assertThat(expirationOptions(page), not(containsString("never")));
+    }
+
+    // ---- JENKINS-27612: the dates of the date picker of the custom choice, which the server computes ----
+
+    /** The dates that the page gives to the date picker, as {@code min,max,preset}. */
+    private static String datePicker(HtmlPage page) {
+        HtmlElement input = dialogTemplate(page).getOneHtmlElementByAttribute("input", "name", "tokenExpiration");
+        return input.getAttribute("data-min-date") + "," + input.getAttribute("data-max-date") + "," + input.getAttribute("data-preset-date");
+    }
+
+    private static String datePicker(LocalDate min, LocalDate max, LocalDate preset) {
+        return min + "," + max + "," + preset;
+    }
+
+    /** What the picker offers when the maximum does not apply: from today to a year from today, starting at 30 days. */
+    private static String unlimitedDatePicker(LocalDate today) {
+        return datePicker(today, today.plusDays(365), today.plusDays(30));
+    }
+
+    /**
+     * Opens the page of the owner and checks the dates of its date picker. They are those of the day on which the server
+     * rendered the page: if midnight passes between the clocks of the test and of the server, either day is accepted.
+     */
+    private static void assertDatePicker(WebClient wc, User owner, Function<LocalDate, String> expected) throws Exception {
+        LocalDate before = LocalDate.now();
+        String actual = datePicker(tokenPage(wc, owner));
+        LocalDate after = LocalDate.now();
+        assertThat(actual, is(oneOf(expected.apply(before), expected.apply(after))));
+    }
+
+    /**
+     * When the maximum does not apply to the owner the picker is what it always was: from today to a year from today, and
+     * 30 days from today when the custom choice is selected. That is the case without a maximum, before the enforcement date
+     * and for an exempt owner.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void datePickerIsLimitedToAYearWhenTheMaximumDoesNotApply() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+
+        // no maximum
+        assertDatePicker(wc, user, ApiTokenPropertyTest::unlimitedDatePicker);
+
+        // a maximum that is announced and not enforced: neither the 10 days nor its date are in the picker
+        config.setMaxTokenLifetimeDays(10);
+        config.setEnforceFrom(LocalDate.now().plusDays(10).toString());
+        assertDatePicker(wc, user, ApiTokenPropertyTest::unlimitedDatePicker);
+
+        // an exempt owner
+        config.setEnforceFrom(null);
+        config.setExemptUserIds("user");
+        assertDatePicker(wc, user, ApiTokenPropertyTest::unlimitedDatePicker);
+
+        // the maximum applies again
+        config.setExemptUserIds("");
+        assertDatePicker(wc, user, today -> datePicker(today, today.plusDays(10), today.plusDays(10)));
+    }
+
+    /**
+     * When the maximum applies the picker ends on the last day that a token may expire, and starts at 30 days from today
+     * or at that last day if it is sooner.
+     */
+    @ParameterizedTest
+    @CsvSource(delimiter = ';', value = {
+        "10;10",
+        "45;30",
+        "90;30",
+        "30;30",
+        "31;30",
+        "29;29",
+        "7;7",
+        "1;1",
+        "365;30",
+        "366;30",
+        "1000;30"
+    })
+    @Issue("JENKINS-27612")
+    void datePickerIsLimitedToTheEnforcedMaximum(int maximum, int presetDays) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(maximum);
+
+        assertDatePicker(wc, user, today -> datePicker(today, today.plusDays(maximum), today.plusDays(presetDays)));
+
+        // from the enforcement date on, that day included
+        config.setEnforceFrom(LocalDate.now().toString());
+        assertDatePicker(wc, user, today -> datePicker(today, today.plusDays(maximum), today.plusDays(presetDays)));
+    }
+
+    /**
+     * A date input does not take a year above 9999, so a maximum that goes beyond that ends the picker on the last valid date,
+     * and what the user sees is not an invalid date. The picker is not cut before that.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void datePickerOfAVeryLargeMaximumEndsOnTheLastValidDate() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        LocalDate lastDate = LocalDate.of(9999, 12, 31);
+        int daysToLastDate = (int) ChronoUnit.DAYS.between(LocalDate.now(), lastDate);
+
+        for (int maximum : new int[]{daysToLastDate - 1, daysToLastDate, daysToLastDate + 1, 3_000_000}) {
+            config.setMaxTokenLifetimeDays(maximum);
+            assertDatePicker(wc, user, today -> {
+                LocalDate expiration = today.plusDays(maximum);
+                return datePicker(today, expiration.isAfter(lastDate) ? lastDate : expiration, today.plusDays(30));
+            });
+        }
+
+        // the largest maximum, with the date written out instead of computed
+        config.setMaxTokenLifetimeDays(Integer.MAX_VALUE);
+        assertDatePicker(wc, user, today -> datePicker(today, LocalDate.of(9999, 12, 31), today.plusDays(30)));
+    }
+
+    /**
+     * The picker follows the owner of the page, not the user who looks at it, as the options do.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void datePickerIsThatOfTheOwnerOfThePageNotThatOfTheViewer() throws Exception {
+        WebClient adminClient = createClientForTokenEndpoints("admin");
+        User alice = User.getById("alice", true);
+        User service = User.getById("service", true);
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().to("admin")
+                .grant(Jenkins.READ).everywhere().toAuthenticated());
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(20);
+        config.setExemptUserIds("service");
+
+        assertDatePicker(adminClient, alice, today -> datePicker(today, today.plusDays(20), today.plusDays(20)));
+        assertDatePicker(adminClient, service, ApiTokenPropertyTest::unlimitedDatePicker);
     }
 
     /**

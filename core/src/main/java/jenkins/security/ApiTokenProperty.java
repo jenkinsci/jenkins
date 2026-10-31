@@ -593,7 +593,7 @@ public class ApiTokenProperty extends UserProperty {
             LocalDate today = LocalDate.now();
             ApiTokenLifetimePolicy policy = new ApiTokenLifetimePolicy();
             boolean maximumApplies = policy.appliesTo(propertyOwner, today);
-            return ExpirationOptions.of(maximumApplies, ApiTokenPropertyConfiguration.get().getMaxTokenLifetimeDays(), policy.getPendingEnforceFrom(today));
+            return ExpirationOptions.of(today, maximumApplies, ApiTokenPropertyConfiguration.get().getMaxTokenLifetimeDays(), policy.maxExpiration(today), policy.getPendingEnforceFrom(today));
         }
 
         /**
@@ -612,20 +612,36 @@ public class ApiTokenProperty extends UserProperty {
          * @param pendingEnforceFrom the date from which the maximum will be enforced, when it is announced but not enforced yet,
          *                           otherwise {@code null}
          * @param maximumLifetimeDays the maximum lifetime of a token in days, 0 if there is none
+         * @param minDate the earliest date that the date picker of the custom choice accepts: the day of the server
+         * @param maxDate the latest date that the date picker accepts: the latest expiration the maximum allows if it applies,
+         *                otherwise a year from {@code minDate}, in both cases no later than the last date that a date input can show
+         * @param presetDate the date that the date picker shows when the custom choice is selected: 30 days from {@code minDate},
+         *                   or {@code maxDate} if that is sooner
          */
         @Restricted(NoExternalUse.class)
         public record ExpirationOptions(List<Integer> days, int explicitMaximum, int defaultDays, boolean maximumApplies,
-                                        @CheckForNull LocalDate pendingEnforceFrom, int maximumLifetimeDays) {
+                                        @CheckForNull LocalDate pendingEnforceFrom, int maximumLifetimeDays,
+                                        LocalDate minDate, LocalDate maxDate, LocalDate presetDate) {
 
             private static final int[] USUAL_DAYS = {7, 30, 60, 90};
 
             private static final int USUAL_DEFAULT_DAYS = 30;
 
+            /** How far the date picker reaches when there is no maximum to limit it. */
+            private static final int UNLIMITED_PICKER_DAYS = 365;
+
+            /** The last date that is valid in the {@code max} of an {@code <input type="date">}: its years have four digits. */
+            private static final LocalDate LAST_PICKER_DATE = LocalDate.of(9999, 12, 31);
+
             public ExpirationOptions {
                 days = List.copyOf(days);
             }
 
-            static ExpirationOptions of(boolean maximumApplies, int maximumLifetimeDays, @CheckForNull LocalDate pendingEnforceFrom) {
+            /**
+             * @param today the date of the server, from which all the dates are computed
+             * @param maximumExpiration {@code today} plus the maximum lifetime, used when the maximum applies
+             */
+            static ExpirationOptions of(LocalDate today, boolean maximumApplies, int maximumLifetimeDays, LocalDate maximumExpiration, @CheckForNull LocalDate pendingEnforceFrom) {
                 List<Integer> days = new ArrayList<>();
                 for (int usual : USUAL_DAYS) {
                     if (!maximumApplies || usual <= maximumLifetimeDays) {
@@ -644,7 +660,15 @@ public class ApiTokenProperty extends UserProperty {
                         defaultDays = offered;
                     }
                 }
-                return new ExpirationOptions(days, explicitMaximum, defaultDays, maximumApplies, pendingEnforceFrom, maximumLifetimeDays);
+                LocalDate maxDate = maximumApplies ? maximumExpiration : today.plusDays(UNLIMITED_PICKER_DAYS);
+                if (maxDate.isAfter(LAST_PICKER_DATE)) {
+                    maxDate = LAST_PICKER_DATE;
+                }
+                LocalDate presetDate = today.plusDays(USUAL_DEFAULT_DAYS);
+                if (presetDate.isAfter(maxDate)) {
+                    presetDate = maxDate;
+                }
+                return new ExpirationOptions(days, explicitMaximum, defaultDays, maximumApplies, pendingEnforceFrom, maximumLifetimeDays, today, maxDate, presetDate);
             }
         }
 

@@ -69,7 +69,7 @@ THE SOFTWARE.
             <f:entry title="${%Name}">
                 <f:textbox name="tokenName"/>
             </f:entry>
-            <div class="jenkins-form-label">Expiration</div>
+            <div class="jenkins-form-label">${%Expiration}</div>
             <div class="token-expiration jenkins-!-margin-bottom-3">
                 <div class="jenkins-select">
                     <select class="jenkins-select__input" name="expirationDuration">
@@ -77,23 +77,26 @@ THE SOFTWARE.
                             <option value="${days}" selected="${days == expiration.defaultDays() ? 'true' : null}">
                                 <j:choose>
                                     <j:when test="${days == expiration.explicitMaximum()}">${%ExpirationMaximum(days)}</j:when>
-                                    <j:otherwise>${days} Days</j:otherwise>
+                                    <j:otherwise>${%ExpirationDays(days)}</j:otherwise>
                                 </j:choose>
                             </option>
                         </j:forEach>
-                        <option value="custom">Custom</option>
+                        <option value="custom">${%ExpirationCustom}</option>
                         <j:if test="${!expiration.maximumApplies()}">
-                            <option value="never">No Expiration</option>
+                            <option value="never">${%ExpirationNever}</option>
                         </j:if>
                     </select>
                 </div>
-                <input type="date" name="tokenExpiration" class="jenkins-hidden jenkins-input token-expiration-date"/>
-                <!-- resources.js looks the element up whatever the options are: only the text depends on them -->
-                <div class="jenkins-hidden warning token-warning">
-                    <j:if test="${!expiration.maximumApplies()}">
+                <!-- the server computes the dates, from its own clock: resources.js does no date arithmetic -->
+                <input type="date" name="tokenExpiration" class="jenkins-hidden jenkins-input token-expiration-date"
+                       data-min-date="${expiration.minDate()}" data-max-date="${expiration.maxDate()}"
+                       data-preset-date="${expiration.presetDate()}"/>
+                <!-- a token that never expires is not offered when the maximum applies: nothing to warn about then -->
+                <j:if test="${!expiration.maximumApplies()}">
+                    <div class="jenkins-hidden warning token-warning">
                         ${%It is not recommended to create tokens that never expire.}
-                    </j:if>
-                </div>
+                    </div>
+                </j:if>
             </div>
             <j:if test="${expiration.pendingEnforceFrom() != null}">
                 <div class="jenkins-alert jenkins-alert-info token-enforce-from-notice">
