@@ -80,6 +80,21 @@ describe("build columns", () => {
     expect(columnBasis(container, 1)).toBe(`${SUMMARY_WIDTH}px`);
   });
 
+  it("offers all the room to a cell that was empty when its entry was first seen", () => {
+    container.innerHTML = entry(1) + entry(2);
+    expect(layoutBuildColumns(container)).toBe(false);
+
+    container
+      .querySelector(`[page-entry-id="1"]`)
+      .querySelectorAll(".app-build-item__column")[1].innerHTML = summary();
+
+    expect(layoutBuildColumns(container)).toBe(true);
+    expect(columnBasis(container, 1)).toBe(`${MAX_WIDTH}px`);
+
+    expect(layoutBuildColumns(container)).toBe(false);
+    expect(columnBasis(container, 1)).toBe(`${SUMMARY_WIDTH}px`);
+  });
+
   it("only asks to remeasure content that hasn't rendered once", () => {
     summaryWidth = PADDING;
     container.innerHTML = entry(1, summary());

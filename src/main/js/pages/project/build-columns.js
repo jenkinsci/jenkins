@@ -59,7 +59,7 @@ export function layoutBuildColumns(container) {
     const previous = (id && previousWidths.get(id)) || [];
     const rowWidths = cellsByRow[r].map((cell, i) => {
       if (!hasContent(cell)) {
-        return previous[i] ?? 0;
+        return previous[i];
       }
       // Content that can shrink adapts to the width it's given, so it can't
       // say how wide it wants to be until it's been offered the room
@@ -91,7 +91,7 @@ export function layoutBuildColumns(container) {
       if (!cell) {
         return;
       }
-      width = Math.max(width, widthsByRow[r][i]);
+      width = Math.max(width, widthsByRow[r][i] ?? 0);
       minWidth = Math.max(minWidth, getMinWidth(cell));
       columnHasContent ||= hasContent(cell);
       maxWidth = parseFloat(getComputedStyle(cell).maxWidth) || Infinity;
