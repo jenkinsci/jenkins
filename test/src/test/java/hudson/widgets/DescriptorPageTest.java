@@ -166,11 +166,27 @@ class DescriptorPageTest {
                 + "evalInnerHtmlScripts('<script src=\"" + missing + "\"></script>', () => window.setUp++);");
         page.getWebClient().waitForBackgroundJavaScript(5000);
         assertEquals(1, ((Number) page.executeJavaScript("window.setUp").getJavaScriptResult()).intValue());
-        assertEquals(false, page.executeJavaScript("adjunctLoads.has(new URL('" + missing + "', document.baseURI).href)").getJavaScriptResult());
+        assertEquals(false, page.executeJavaScript("adjunctLoads.has(adjunctKey('" + missing + "'))").getJavaScriptResult());
+    }
+
+    /** Each controller has its own hash in the URLs of adjuncts, and content may come from any of them. */
+    @Test
+    void anAdjunctRunsOnceWhicheverServerRenderedTheContent() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient().login("configurer");
+        WebResponse step = renderResponse(wc, "job/p/descriptorByName/" + WithAdjunct.class.getName() + "/page/heteroList");
+        Matcher m = Pattern.compile("<script[^>]*src=['\"]([^'\"]*)/adjuncts/[^/]+/([^'\"]*DescriptorPageTest/adjunct\\.js)['\"]").matcher(step.getContentAsString());
+        assertTrue(m.find(), "the step includes its adjunct");
+        HtmlPage page = wc.getPage(p, "configure");
+        page.executeJavaScript("window.runsBefore = [];"
+                + "for (const hash of ['" + Jenkins.SESSION_HASH + "', 'another']) {"
+                + "  evalInnerHtmlScripts('<script src=\"" + m.group(1) + "/adjuncts/' + hash + '/" + m.group(2) + "\"></script>', () => runsBefore.push(window.descriptorPageTestAdjunctRuns));"
+                + "}");
+        page.getWebClient().waitForBackgroundJavaScript(5000);
+        assertEquals("[1,1]", page.executeJavaScript("JSON.stringify(window.runsBefore)").getJavaScriptResult());
     }
 
     public static class WithAdjunct extends Builder {
-        @TestExtension({"anAdjunctNotOnThePageSetsUpEveryStepUsingIt", "anAdjunctRunsOnceBeforeAllTheContentUsingIt"})
+        @TestExtension({"anAdjunctNotOnThePageSetsUpEveryStepUsingIt", "anAdjunctRunsOnceBeforeAllTheContentUsingIt", "anAdjunctRunsOnceWhicheverServerRenderedTheContent"})
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
             @Override
             public boolean isApplicable(Class<? extends AbstractProject> jobType) {

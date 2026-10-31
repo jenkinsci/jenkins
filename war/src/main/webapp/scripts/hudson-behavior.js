@@ -1156,24 +1156,31 @@ function evalInnerHtmlScripts(text, callback) {
  * An adjunct runs once per page; content rendered on demand without a closure in the session (see
  * hudson.widgets.DescriptorPage) does not know which adjuncts the page already has, and includes all it needs.
  * The adjuncts on the page are those it had when it loaded: scripts inserted since with content are not run.
+ * Adjuncts are told apart by their path without the hash of the server that rendered them, which may be another.
  */
 var adjunctLoads = new Map();
-function loadAdjunctOnce(src, cont) {
+function adjunctKey(src) {
   var url = new URL(src, document.baseURI).href;
-  if (!url.includes("/adjuncts/")) {
+  return url.includes("/adjuncts/")
+    ? url.replace(/\/adjuncts\/[^/]+\//, "/adjuncts/")
+    : null;
+}
+function loadAdjunctOnce(src, cont) {
+  var key = adjunctKey(src);
+  if (key === null) {
     loadScript(src, cont);
     return;
   }
-  var load = adjunctLoads.get(url);
+  var load = adjunctLoads.get(key);
   if (!load) {
     load = new Promise(function (resolve, reject) {
       loadScript(src, resolve, reject);
     });
-    adjunctLoads.set(url, load);
+    adjunctLoads.set(key, load);
     // so that content rendered later tries again
     load.catch(function () {
-      adjunctLoads.delete(url);
-      console.error("Failed to load " + url);
+      adjunctLoads.delete(key);
+      console.error("Failed to load " + src);
     });
   }
   // the content is set up without an adjunct that failed to load, rather than never
@@ -1185,8 +1192,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
     return;
   }
   Array.from(document.scripts).forEach(function (script) {
-    if (script.src.includes("/adjuncts/") && !adjunctLoads.has(script.src)) {
-      adjunctLoads.set(script.src, Promise.resolve());
+    var key = script.src ? adjunctKey(script.src) : null;
+    if (key !== null && !adjunctLoads.has(key)) {
+      adjunctLoads.set(key, Promise.resolve());
     }
   });
 });
