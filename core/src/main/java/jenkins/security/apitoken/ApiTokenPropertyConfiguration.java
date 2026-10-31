@@ -27,6 +27,7 @@ package jenkins.security.apitoken;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.BulkChange;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.PersistentDescriptor;
 import hudson.model.User;
@@ -299,6 +300,21 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
     @Restricted(NoExternalUse.class)
     public boolean legacyTokensBypassLimit() {
         return new ApiTokenLifetimePolicy().isActive() && (tokenGenerationOnCreationEnabled || creationOfLegacyTokenEnabled);
+    }
+
+    /**
+     * @return the URL, relative to the root of Jenkins, of the page of the compliance panel that lists the tokens that do not
+     *         comply with the maximum lifetime, while a maximum is configured, otherwise {@code null}: the page has nothing to
+     *         show then
+     */
+    // only for Jelly
+    @Restricted(NoExternalUse.class)
+    @CheckForNull
+    public String compliancePanelUrl() {
+        if (!new ApiTokenLifetimePolicy().isActive()) {
+            return null;
+        }
+        return ExtensionList.lookupSingleton(ApiTokenLifetimeAdministrativeMonitor.class).getUrl() + "/manage";
     }
 
     /**

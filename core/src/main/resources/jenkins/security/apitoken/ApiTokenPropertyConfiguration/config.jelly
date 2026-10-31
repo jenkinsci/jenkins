@@ -51,5 +51,12 @@ THE SOFTWARE.
         <j:if test="${pendingEnforceFrom != null}">
             <div class="jenkins-alert jenkins-alert-info jenkins-form-item">${%enforceFromNotice(pendingEnforceFrom, instance.maxTokenLifetimeDays)}</div>
         </j:if>
+        <j:set var="compliancePanelUrl" value="${instance.compliancePanelUrl()}" />
+        <!-- the page of the panel is for administrators only: a user who can only read this page would get a 403 from it -->
+        <j:if test="${compliancePanelUrl != null and h.hasPermission(app.ADMINISTER)}">
+            <div class="jenkins-form-item">
+                <a href="${rootURL}/${compliancePanelUrl}">${%compliancePanelLink}</a>
+            </div>
+        </j:if>
     </f:section>
 </j:jelly>

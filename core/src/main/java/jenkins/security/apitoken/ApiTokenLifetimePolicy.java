@@ -59,6 +59,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * <li>When the policy is enforcing and the token owner is not exempt, a token must expire, and no later than
  * {@link #maxExpiration(LocalDate) today plus the maximum}. A token is valid through its expiration date, so that
  * day itself is accepted.
+ * <li>The tokens that exist already are only reported, by {@link ApiTokenLifetimeAdministrativeMonitor}, and in every phase,
+ * the warning phase included: see {@link #isCompliant} and {@link #isMonitored}.
  * </ul>
  */
 @Restricted(NoExternalUse.class)
@@ -72,6 +74,20 @@ public class ApiTokenLifetimePolicy {
         NEVER_NOT_ALLOWED,
         /** The token would expire after {@link ApiTokenLifetimePolicy#maxExpiration(LocalDate)}. */
         OVER_MAXIMUM
+    }
+
+    /**
+     * Where the policy stands on a given day, which is what the compliance panel shows.
+     */
+    public enum Phase {
+        /** No maximum is configured. */
+        INACTIVE,
+        /** A maximum is configured and the enforcement date has not been reached: nothing is rejected yet. */
+        WARNING,
+        /** The maximum is enforced, from the configured date or, with no date, from the start. */
+        ENFORCING,
+        /** The maximum is enforced because the configured enforcement date cannot be parsed, which fails closed. */
+        ENFORCING_INVALID_DATE
     }
 
     private static final Logger LOGGER = Logger.getLogger(ApiTokenLifetimePolicy.class.getName());
@@ -121,6 +137,37 @@ public class ApiTokenLifetimePolicy {
     }
 
     /**
+     * Where the policy stands on {@code today}: whether it is active and, if it is, whether it is still in its warning
+     * phase or enforcing, and whether it enforces because its enforcement date does not parse.
+     */
+    @NonNull
+    public Phase getPhase(@NonNull LocalDate today) {
+        if (!isActive()) {
+            return Phase.INACTIVE;
+        }
+        LocalDate enforceFrom = parseEnforceFrom();
+        if (UNPARSABLE.equals(enforceFrom)) {
+            return Phase.ENFORCING_INVALID_DATE;
+        }
+        return enforceFrom != null && today.isBefore(enforceFrom) ? Phase.WARNING : Phase.ENFORCING;
+    }
+
+    /**
+     * @return the configured date from which the policy is, or was, enforced if the policy is active, otherwise
+     *         {@code null}, which is also the result when no date is configured, in which case it enforces right away,
+     *         and when the date does not parse. It does not say whether that date has been reached, see
+     *         {@link #getPhase(LocalDate)}.
+     */
+    @CheckForNull
+    public LocalDate getEnforcementStart() {
+        if (!isActive()) {
+            return null;
+        }
+        LocalDate enforceFrom = parseEnforceFrom();
+        return UNPARSABLE.equals(enforceFrom) ? null : enforceFrom;
+    }
+
+    /**
      * Whether the owner of a token is exempt from the maximum lifetime.
      *
      * @param today not used yet, a strict mode will ignore the exemptions from some date on
@@ -143,6 +190,16 @@ public class ApiTokenLifetimePolicy {
      */
     public boolean appliesTo(@NonNull User owner, @NonNull LocalDate today) {
         return isEnforcing(today) && !isExempt(owner, today);
+    }
+
+    /**
+     * Whether the tokens of this owner that exist are checked against the maximum lifetime, which is what the compliance
+     * panel reports on. Unlike {@link #appliesTo}, which decides whether a token that is created is refused, this holds in
+     * every phase: it is true as soon as the policy is {@linkplain #isActive() active}, in its warning phase too, and the
+     * owner is not {@linkplain #isExempt(User, LocalDate) exempt}.
+     */
+    public boolean isMonitored(@NonNull User owner, @NonNull LocalDate today) {
+        return isActive() && !isExempt(owner, today);
     }
 
     /**
@@ -173,6 +230,32 @@ public class ApiTokenLifetimePolicy {
             return Violation.OVER_MAXIMUM;
         }
         return null;
+    }
+
+    /**
+     * Checks a token that exists, which the compliance panel does. Unlike {@link #validate}, it does not depend on whether the
+     * policy is enforcing: a token is checked in every phase, the warning phase included, as soon as a maximum is configured.
+     * <p>
+     * A token is not compliant when the policy is {@linkplain #isActive() active}, it has not expired on {@code today}, and
+     * it never expires, which is the case of the legacy token, or expires after {@link #maxExpiration(LocalDate) today plus
+     * the maximum}. A token that expires on that day is compliant, and so is one that has expired already: it cannot be used.
+     * The tokens of an {@linkplain #isExempt(User, LocalDate) exempt} owner are compliant whatever their expiration, as for
+     * {@link #validate}.
+     *
+     * @param owner the user who owns the token
+     * @param today the day that decides whether the token has expired and how far the maximum reaches
+     */
+    public boolean isCompliant(@NonNull User owner, @NonNull ApiTokenStore.HashedToken token, @NonNull LocalDate today) {
+        if (!isActive()) {
+            return true;
+        }
+        // a token that has expired expires before today, so it is not after the maximum either: it is compliant
+        LocalDate expiration = token.getExpirationDate();
+        if (expiration != null && !expiration.isAfter(maxExpiration(today))) {
+            return true;
+        }
+        // only a token that exceeds the maximum depends on the owner, so the list of exemptions is read for these only
+        return isExempt(owner, today);
     }
 
     /**

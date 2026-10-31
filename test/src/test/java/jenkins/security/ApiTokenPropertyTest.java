@@ -20,9 +20,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
+import hudson.XmlFile;
+import hudson.model.AdministrativeMonitor;
 import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
+import hudson.model.Saveable;
 import hudson.model.User;
+import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.HudsonPrivateSecurityRealm;
@@ -46,14 +50,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import jenkins.security.apitoken.ApiTokenStats;
 import jenkins.security.apitoken.ApiTokenStore;
+import jenkins.security.apitoken.LegacyApiTokenAdministrativeMonitor;
 import jenkins.security.apitoken.TokenUuidAndPlainValue;
 import net.sf.json.JSONObject;
 import org.htmlunit.FailingHttpStatusCodeException;
@@ -75,6 +83,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -2738,6 +2747,311 @@ class ApiTokenPropertyTest {
                 "newTokenName", "last", "newTokenPlainValue", FIXED_TOKEN, "expirationDuration", "90");
 
         assertEquals(1, tokenCount(user));
+    }
+
+    // ---- JENKINS-27612: revoking the tokens that share a secret and shortening an expiration, the data layer of the compliance panel ----
+
+    private static final String OTHER_FIXED_TOKEN = "11fedcba9876543210fedcba9876543210";
+
+    /** Counts the writes of the configuration of a user, which is what {@link User#save()} does. */
+    @TestExtension
+    public static class UserSaveCounter extends SaveableListener {
+        static final AtomicInteger COUNT = new AtomicInteger();
+
+        @Override
+        public void onChange(Saveable o, XmlFile file) {
+            if (o instanceof User) {
+                COUNT.incrementAndGet();
+            }
+        }
+    }
+
+    private static List<String> storedTokenUuids(User user) {
+        return user.getProperty(ApiTokenProperty.class).getTokenStore().getTokenListSnapshot().stream()
+                .map(ApiTokenStore.HashedToken::getUuid)
+                .toList();
+    }
+
+    /**
+     * Revoking a token whose secret is shared removes every live token that holds it, and what belongs to each of them: its usage
+     * statistics, which are per token, are removed for every one that was revoked and kept for the others, and the user is saved
+     * once for all of them, not once each. The token that has expired and holds the secret is kept.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void revokeTokensRemovesTheLiveTokensOfTheSecretWithTheirStatisticsAndSavesTheUserOnce() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User user = User.getById("user", true);
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        LocalDate today = LocalDate.now();
+        String live1 = property.addFixedNewToken("live 1", FIXED_TOKEN, null);
+        String live2 = property.addFixedNewToken("live 2", FIXED_TOKEN, today.plusDays(30));
+        String expired = property.addFixedNewToken("expired", FIXED_TOKEN, today.minusDays(1));
+        String other = property.addFixedNewToken("other", OTHER_FIXED_TOKEN, null);
+        for (String uuid : List.of(live1, live2, expired, other)) {
+            property.getTokenStats().updateUsageForId(uuid);
+            assertEquals(1, property.getTokenStats().findTokenStatsById(uuid).getUseCounter(), "the statistics of every token are recorded");
+        }
+        UserSaveCounter.COUNT.set(0);
+
+        List<String> revoked = property.revokeTokens(live2, today);
+
+        assertEquals(List.of(live1, live2), revoked, "whichever of the live tokens of the secret is the target");
+        assertEquals(1, UserSaveCounter.COUNT.get(), "the user is saved once for the whole group");
+        ApiTokenStats persistedStats = ApiTokenStats.load(user);
+        for (ApiTokenStats stats : List.of(property.getTokenStats(), persistedStats)) {
+            assertEquals(0, stats.findTokenStatsById(live1).getUseCounter());
+            assertEquals(0, stats.findTokenStatsById(live2).getUseCounter());
+            assertEquals(1, stats.findTokenStatsById(expired).getUseCounter());
+            assertEquals(1, stats.findTokenStatsById(other).getUseCounter());
+        }
+        assertEquals(List.of(expired, other), storedTokenUuids(user));
+        checkTokenIsNotWorking(user.getId(), FIXED_TOKEN);
+        checkTokenIsWorking(user.getId(), OTHER_FIXED_TOKEN);
+
+        // what is persisted is what is left
+        user.load();
+        assertEquals(List.of(expired, other), storedTokenUuids(user));
+    }
+
+    /** A token whose secret is not shared is revoked alone, with its statistics, and the user is saved once. */
+    @Test
+    @Issue("JENKINS-27612")
+    void revokeTokensOfATokenThatIsAloneRevokesOnlyThatToken() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User user = User.getById("user", true);
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        String alone = property.addFixedNewToken("alone", FIXED_TOKEN, null);
+        String other = property.addFixedNewToken("other", OTHER_FIXED_TOKEN, null);
+        property.getTokenStats().updateUsageForId(alone);
+        property.getTokenStats().updateUsageForId(other);
+        UserSaveCounter.COUNT.set(0);
+
+        assertEquals(List.of(alone), property.revokeTokens(alone, LocalDate.now()));
+
+        assertEquals(1, UserSaveCounter.COUNT.get());
+        assertEquals(0, property.getTokenStats().findTokenStatsById(alone).getUseCounter());
+        assertEquals(1, property.getTokenStats().findTokenStatsById(other).getUseCounter());
+        assertEquals(List.of(other), storedTokenUuids(user));
+        checkTokenIsNotWorking(user.getId(), FIXED_TOKEN);
+        checkTokenIsWorking(user.getId(), OTHER_FIXED_TOKEN);
+    }
+
+    /** A token that has expired is revoked when it is the target, with the live ones that have its secret. */
+    @Test
+    @Issue("JENKINS-27612")
+    void revokeTokensOfAnExpiredTokenAlsoRevokesTheLiveTokensOfItsSecret() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User user = User.getById("user", true);
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        LocalDate today = LocalDate.now();
+        String expired = property.addFixedNewToken("expired", FIXED_TOKEN, today.minusDays(1));
+        String live = property.addFixedNewToken("live", FIXED_TOKEN, null);
+        String alsoExpired = property.addFixedNewToken("also expired", FIXED_TOKEN, today.minusDays(9));
+
+        assertEquals(List.of(expired, live), property.revokeTokens(expired, today));
+
+        assertEquals(List.of(alsoExpired), storedTokenUuids(user));
+        checkTokenIsNotWorking(user.getId(), FIXED_TOKEN);
+    }
+
+    @Test
+    @Issue("JENKINS-27612")
+    void revokeTokensOfAnUnknownUuidChangesNothingAndDoesNotSaveTheUser() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User user = User.getById("user", true);
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        String token = property.addFixedNewToken("token", FIXED_TOKEN, null);
+        property.getTokenStats().updateUsageForId(token);
+        UserSaveCounter.COUNT.set(0);
+
+        assertEquals(List.of(), property.revokeTokens("no such uuid", LocalDate.now()));
+
+        assertEquals(0, UserSaveCounter.COUNT.get());
+        assertEquals(List.of(token), storedTokenUuids(user));
+        assertEquals(1, property.getTokenStats().findTokenStatsById(token).getUseCounter());
+    }
+
+    /**
+     * S20, data part. Given the owner has a legacy token with the value W and a fixed token {@code 11}+W, which are one secret, when
+     * the group is revoked, with either of them as the target, and then the user is loaded again, as at a restart, then the
+     * legacy token is not back, and neither W nor {@code 11}+W authenticates. The legacy token is created again at load from the
+     * secret that the property keeps, so revoking its entry is not enough: the secret has to be dropped too.
+     */
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @Issue("JENKINS-27612")
+    void s20_revokingAGroupThatHasTheLegacyTokenDoesNotBringItBackWhenTheUserIsLoaded(boolean targetIsTheLegacyToken) throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User user = User.getById("user", true);
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        property.changeApiToken();
+        String w = property.getApiTokenInsecure();
+        String legacyUuid = property.getTokenStore().getLegacyToken().getUuid();
+        String fixedUuid = property.addFixedNewToken("fixed", "11" + w, null);
+        assertEquals(Set.of(legacyUuid, fixedUuid), property.getTokenStore().getUuidsSharingSecret().keySet(), "they are a group");
+        checkTokenIsWorking(user.getId(), w);
+        checkTokenIsWorking(user.getId(), "11" + w);
+
+        List<String> revoked = property.revokeTokens(targetIsTheLegacyToken ? legacyUuid : fixedUuid, LocalDate.now());
+
+        assertEquals(List.of(legacyUuid, fixedUuid), revoked);
+        // the in-memory state, which the legacy token monitor reads, before any reload
+        assertFalse(property.hasLegacyToken());
+        checkTokenIsNotWorking(user.getId(), w);
+        checkTokenIsNotWorking(user.getId(), "11" + w);
+
+        // what happens at the next start: the user is loaded from its config.xml
+        user.load();
+        ApiTokenProperty reloaded = user.getProperty(ApiTokenProperty.class);
+        assertFalse(reloaded.hasLegacyToken());
+        assertThat(reloaded.getTokenStore().getTokenListSnapshot(), empty());
+        checkTokenIsNotWorking(user.getId(), w);
+        checkTokenIsNotWorking(user.getId(), "11" + w);
+    }
+
+    /**
+     * S17, data part. Given the owner has a legacy token with the value W and a fixed token {@code 11}+W, when an administrator
+     * revokes the legacy token in the legacy token monitor, then {@code 11}+W still authenticates, also after the user is loaded again,
+     * and the entry that is left is no longer a group: the monitor, like the token page, removes one entry.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void s17_revokingOnlyTheLegacyTokenInTheLegacyTokenMonitorLeavesTheFixedTokenWorking() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User user = User.getById("user", true);
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        property.changeApiToken();
+        String w = property.getApiTokenInsecure();
+        String legacyUuid = property.getTokenStore().getLegacyToken().getUuid();
+        String fixedUuid = property.addFixedNewToken("fixed", "11" + w, null);
+        assertEquals(Set.of(legacyUuid, fixedUuid), property.getTokenStore().getUuidsSharingSecret().keySet(), "a group before the revocation");
+
+        LegacyApiTokenAdministrativeMonitor monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(LegacyApiTokenAdministrativeMonitor.class);
+        LegacyApiTokenAdministrativeMonitor.RevokeAllSelectedUserAndUuid selected = new LegacyApiTokenAdministrativeMonitor.RevokeAllSelectedUserAndUuid();
+        selected.userId = user.getId();
+        selected.uuid = legacyUuid;
+        LegacyApiTokenAdministrativeMonitor.RevokeAllSelectedModel model = new LegacyApiTokenAdministrativeMonitor.RevokeAllSelectedModel();
+        model.values = new LegacyApiTokenAdministrativeMonitor.RevokeAllSelectedUserAndUuid[] {selected};
+        monitor.doRevokeAllSelected(model);
+
+        assertEquals(List.of(fixedUuid), storedTokenUuids(user));
+        assertThat(property.getTokenStore().getUuidsSharingSecret().keySet(), empty());
+        checkTokenIsWorking(user.getId(), "11" + w);
+        user.load();
+        assertEquals(List.of(fixedUuid), storedTokenUuids(user));
+        assertFalse(user.getProperty(ApiTokenProperty.class).hasLegacyToken());
+        checkTokenIsWorking(user.getId(), "11" + w);
+    }
+
+    /**
+     * S14, data part with the endpoint. Given the maximum is enforced and the owner holds a secret in three tokens created through
+     * the Java API, two live and one expired, when the group of a live one is revoked, then the live ones are gone, the secret no
+     * longer authenticates, and registering it again is still rejected, as long as the expired token is there.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void s14_afterRevokingTheLiveTokensTheExpiredOneStillBlocksRegisteringTheSecretAgain() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(90);
+        LocalDate today = LocalDate.now();
+        String live1 = property.addFixedNewToken("live 1", FIXED_TOKEN, null);
+        property.addFixedNewToken("live 2", FIXED_TOKEN, today.plusDays(30));
+        String expired = property.addFixedNewToken("expired", FIXED_TOKEN, today.minusDays(1));
+        checkTokenIsWorking("user", FIXED_TOKEN);
+
+        assertEquals(2, property.revokeTokens(live1, today).size());
+
+        assertEquals(List.of(expired), storedTokenUuids(user));
+        checkTokenIsNotWorking("user", FIXED_TOKEN);
+        assertSecretAlreadyRegistered(wc, user, "again", FIXED_TOKEN);
+        assertEquals(1, tokenCount(user));
+    }
+
+    @Test
+    @Issue("JENKINS-27612")
+    void shortenExpirationSavesTheUserOnlyWhenItShortenedTheExpiration() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User user = User.getById("user", true);
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        LocalDate today = LocalDate.now();
+        String bounded = property.addFixedNewToken("bounded", FIXED_TOKEN, today.plusDays(100));
+        String never = property.addFixedNewToken("never", OTHER_FIXED_TOKEN, null);
+        UserSaveCounter.COUNT.set(0);
+
+        assertFalse(property.shortenExpiration(bounded, today.plusDays(100)), "the same date");
+        assertFalse(property.shortenExpiration(bounded, today.plusDays(200)), "a later date");
+        assertFalse(property.shortenExpiration("no such uuid", today.plusDays(1)));
+        assertEquals(0, UserSaveCounter.COUNT.get(), "nothing changed, nothing was saved");
+        assertEquals(today.plusDays(100), findToken(user, bounded).getExpirationDate());
+
+        assertTrue(property.shortenExpiration(bounded, today.plusDays(30)));
+        assertEquals(1, UserSaveCounter.COUNT.get());
+        assertTrue(property.shortenExpiration(never, today.plusDays(60)));
+        assertEquals(2, UserSaveCounter.COUNT.get());
+
+        // what is persisted is what was shortened
+        user.load();
+        assertEquals(today.plusDays(30), findToken(user, bounded).getExpirationDate());
+        assertEquals(today.plusDays(60), findToken(user, never).getExpirationDate());
+    }
+
+    @Test
+    @Issue("JENKINS-27612")
+    void shortenExpirationDoesNotChangeOrSaveTheLegacyToken() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User user = User.getById("user", true);
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        property.changeApiToken();
+        String legacyUuid = property.getTokenStore().getLegacyToken().getUuid();
+        String w = property.getApiTokenInsecure();
+        UserSaveCounter.COUNT.set(0);
+
+        assertFalse(property.shortenExpiration(legacyUuid, LocalDate.now().plusDays(30)));
+        assertFalse(property.shortenExpiration(legacyUuid, LocalDate.now().minusDays(1)));
+
+        assertEquals(0, UserSaveCounter.COUNT.get());
+        assertNull(findToken(user, legacyUuid).getExpirationDate());
+        checkTokenIsWorking(user.getId(), w);
+    }
+
+    /**
+     * A legacy token that was migrated has no creation date and a token that was never used has no last use date: the accessors that
+     * turn them into text, which the panel uses for every row, answer an empty text and do not throw. With dates, they answer
+     * what they always did.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void theDaysAgoAccessorsAreEmptyForADateThatIsNotKnownAndUnchangedOtherwise() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+        User user = User.getById("user", true);
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        String freshUuid = property.generateNewToken("fresh").tokenUuid;
+
+        ApiTokenProperty.TokenInfoAndStats legacy = tokenInfo(property, true);
+        ApiTokenProperty.TokenInfoAndStats fresh = tokenInfo(property, false);
+        assertNull(legacy.creationDate, "a legacy token that was already there has no creation date");
+        assertNull(legacy.lastUseDate);
+        assertNull(fresh.lastUseDate);
+        assertEquals("", legacy.createdDaysAgo());
+        assertEquals("", legacy.lastUsedDaysAgo());
+        assertEquals("", fresh.lastUsedDaysAgo());
+        assertEquals(Messages.ApiTokenProperty_createdToday(), fresh.createdDaysAgo());
+
+        property.getTokenStats().updateUsageForId(freshUuid);
+        ApiTokenProperty.TokenInfoAndStats used = tokenInfo(property, false);
+        assertNotNull(used.lastUseDate);
+        assertEquals(Messages.ApiTokenProperty_lastUsedToday(), used.lastUsedDaysAgo());
+    }
+
+    private static ApiTokenProperty.TokenInfoAndStats tokenInfo(ApiTokenProperty property, boolean legacy) {
+        return property.getTokenList().stream()
+                .filter(token -> token.isLegacy == legacy)
+                .findFirst()
+                .orElseThrow();
     }
 
     // test no token are generated for new user with the global configuration set to false

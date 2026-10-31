@@ -31,6 +31,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.util.Secret;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -38,13 +39,17 @@ import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,6 +75,8 @@ public class ApiTokenStore {
     private static final String HASH_VERSION = "11";
 
     private static final String HASH_ALGORITHM = "SHA-256";
+    /** the size in bytes of a hash made with {@link #HASH_ALGORITHM} */
+    private static final int SHA_256_LENGTH = 32;
 
     private List<HashedToken> tokenList;
 
@@ -92,6 +99,18 @@ public class ApiTokenStore {
         return tokenList.stream()
                 .sorted(SORT_BY_LOWERCASED_NAME)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * A copy of the list of entries, in the order in which they were added. Unlike {@link #getTokenListSortedByName()} it does
+     * not sort them, which is what a caller that only scans the entries needs: it does not pay for the sort while it holds the lock.
+     * <p>
+     * It is a snapshot: it does not change when the store does, and changing it does not change the store. The entries
+     * themselves are not copied.
+     */
+    @Restricted(NoExternalUse.class)
+    public synchronized @NonNull List<HashedToken> getTokenListSnapshot() {
+        return new ArrayList<>(tokenList);
     }
 
     private void addToken(HashedToken token) {
@@ -400,6 +419,172 @@ public class ApiTokenStore {
     }
 
     /**
+     * Whether some secret is held by two or more entries that can still be used on {@code today}, that is entries that have not
+     * expired. Expired entries do not count: they cannot authenticate, so an expired entry that holds a secret does not make a
+     * live entry that holds it too a shared one.
+     * <p>
+     * Entries are compared by their hash, whatever their version is: a legacy token and a token of the current version that
+     * were given the same secret hold one secret between them. An entry whose stored hash cannot be decoded holds no secret
+     * and is ignored, as {@link HashedToken#match} does.
+     * <p>
+     * It is a single pass over the entries that stops at the second live entry of a secret, for a caller that only needs to
+     * know whether there is something to report, as opposed to {@link #getUuidsSharingSecret()}.
+     *
+     * @param today the day that decides which entries have expired. It is a parameter, and the clock is not read, so that the
+     *              caller uses one day for everything it does, and tests can choose it.
+     */
+    @Restricted(NoExternalUse.class)
+    public synchronized boolean hasLiveSharedSecret(@NonNull LocalDate today) {
+        Set<ByteBuffer> liveSecrets = new HashSet<>();
+        for (HashedToken token : tokenList) {
+            if (token.isExpired(today)) {
+                continue;
+            }
+            ByteBuffer secret = token.secretKey();
+            if (secret != null && !liveSecrets.add(secret)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * The entries of this store that share their secret with other entries, for the page that lists them.
+     * <p>
+     * Every entry that has the same secret as at least one other entry, expired or not, whatever its version is, is a key
+     * of the result, and its value is the UUIDs of the other entries of its group, in the order of the store. An entry that
+     * does not share its secret is not in the result. An entry whose stored hash cannot be decoded holds no secret and is
+     * ignored, as {@link HashedToken#match} does. The hashes themselves are not exposed.
+     * <p>
+     * The result is a snapshot that nothing changes.
+     */
+    @Restricted(NoExternalUse.class)
+    public synchronized @NonNull Map<String, List<String>> getUuidsSharingSecret() {
+        Map<ByteBuffer, List<HashedToken>> groups = new LinkedHashMap<>();
+        for (HashedToken token : tokenList) {
+            ByteBuffer secret = token.secretKey();
+            if (secret != null) {
+                groups.computeIfAbsent(secret, key -> new ArrayList<>()).add(token);
+            }
+        }
+
+        Map<String, List<String>> uuidsSharingSecret = new LinkedHashMap<>();
+        for (List<HashedToken> group : groups.values()) {
+            if (group.size() < 2) {
+                continue;
+            }
+            for (HashedToken member : group) {
+                List<String> others = new ArrayList<>(group.size() - 1);
+                for (HashedToken other : group) {
+                    if (other != member) {
+                        others.add(other.uuid);
+                    }
+                }
+                uuidsSharingSecret.put(member.uuid, Collections.unmodifiableList(others));
+            }
+        }
+
+        return Collections.unmodifiableMap(uuidsSharingSecret);
+    }
+
+    /**
+     * Removes the entry with the UUID {@code uuid}, whether it has expired or not, and every other entry that can still be used
+     * on {@code today} and has the same secret, all of it in one operation. An entry that another thread adds with the same
+     * secret is either added before, and removed with the others, or after, and kept: no live entry with the secret that was
+     * in the store when this ran is left.
+     * <p>
+     * The entries that have expired and hold the secret are kept. They cannot authenticate, and while they are in the store
+     * they stop the secret from being registered again, see {@link #addFixedNewTokenRejectingKnownSecret}.
+     * <p>
+     * This is what removes a secret from a store, as {@link #revokeToken} removes one entry: a caller that revokes an entry
+     * whose secret is shared does not have to decide beforehand, which could be out of date once it has the lock.
+     * Revoking an entry that holds a secret on its own removes that entry only. An entry whose stored hash cannot be decoded
+     * holds no secret, so only that entry is removed. The entries are grouped as in {@link #getUuidsSharingSecret()}.
+     * <p>
+     * The caller is responsible for what depends on the entries it gets back, such as their usage statistics, and for the
+     * secret of the legacy token if one of them is the legacy token.
+     *
+     * @param today the day that decides which entries have expired
+     * @return the entries that were removed, in the order of the store, none if there is no entry with that UUID, in which
+     *         case nothing was changed
+     */
+    @Restricted(NoExternalUse.class)
+    public synchronized @NonNull List<HashedToken> revokeLiveEntriesSharingSecretWith(@NonNull String uuid, @NonNull LocalDate today) {
+        HashedToken target = findByUuid(uuid);
+        if (target == null) {
+            return List.of();
+        }
+
+        List<HashedToken> revoked = new ArrayList<>();
+        for (HashedToken token : entriesHoldingTheSecretOf(target)) {
+            if (token == target || !token.isExpired(today)) {
+                revoked.add(token);
+            }
+        }
+        // HashedToken does not override equals, so these are the very entries that were found
+        tokenList.removeAll(revoked);
+
+        return revoked;
+    }
+
+    /**
+     * Makes the expiration of an entry earlier. It never makes it later: the entry is changed only when {@code newExpiry} is
+     * strictly before the expiration it has. An entry that has no expiration counts as one that never expires, so any date is
+     * earlier and is accepted.
+     * <p>
+     * The legacy token is not changed: it has no expiration, and cannot be given one. A date that has passed is accepted, and
+     * expires the entry.
+     * <p>
+     * The store is not saved, that is for the caller to do, as it is for the other changes of the store.
+     *
+     * @return {@code true} iff the entry was changed. {@code false} if there is no entry with that UUID, if it is the
+     *         legacy token, or if its expiration is already {@code newExpiry} or earlier, in which case nothing was changed
+     */
+    @Restricted(NoExternalUse.class)
+    public synchronized boolean shortenExpiration(@NonNull String uuid, @NonNull LocalDate newExpiry) {
+        HashedToken token = findByUuid(uuid);
+        if (token == null) {
+            return false;
+        }
+
+        return token.shortenExpirationTo(newExpiry);
+    }
+
+    /**
+     * The entry with this UUID. Like {@link #searchMatch}, it expects the caller to hold the lock.
+     */
+    private @CheckForNull HashedToken findByUuid(@NonNull String uuid) {
+        for (HashedToken token : tokenList) {
+            if (token.uuid.equals(uuid)) {
+                return token;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * {@code target} and every other entry that has its secret, expired or not, in the order of the store. Only {@code target}
+     * if its stored hash cannot be decoded. Like {@link #searchMatch}, it expects the caller to hold the lock.
+     */
+    private @NonNull List<HashedToken> entriesHoldingTheSecretOf(@NonNull HashedToken target) {
+        ByteBuffer secret = target.secretKey();
+        if (secret == null) {
+            return List.of(target);
+        }
+
+        List<HashedToken> entries = new ArrayList<>();
+        for (HashedToken token : tokenList) {
+            if (token == target || secret.equals(token.secretKey())) {
+                entries.add(token);
+            }
+        }
+
+        return entries;
+    }
+
+    /**
      * Given a token identifier and a name, the system will try to find a corresponding token and rename it
      * @return {@code true} iff the token was found and the rename was successful
      */
@@ -506,9 +691,15 @@ public class ApiTokenStore {
         }
 
         public boolean isExpired() {
-            LocalDate now = LocalDate.now();
-            LocalDate expiration = Objects.requireNonNullElseGet(expirationDate, LocalDate::now);
-            return expiration.isBefore(now);
+            return isExpired(LocalDate.now());
+        }
+
+        /**
+         * Like {@link #isExpired()}, for the given day instead of today, so that one day can be used for a whole operation.
+         * An entry is valid through its expiration date, and one that has none never expires.
+         */
+        boolean isExpired(@NonNull LocalDate today) {
+            return expirationDate != null && expirationDate.isBefore(today);
         }
 
         public boolean match(byte[] hashedBytes) {
@@ -546,6 +737,52 @@ public class ApiTokenStore {
 
             // String.equals() is not constant-time but this method is. No link between correctness and time spent
             return MessageDigest.isEqual(hashFromHex, hashedBytes);
+        }
+
+        /**
+         * The stored hash, decoded, to find the entries that have the same secret: two entries have the same secret when their
+         * keys are equal, whatever their version is, as for {@link #hasSameSecret}. These are hashes that are stored, not a
+         * value that someone submits, so comparing them is not a timing concern.
+         *
+         * @return {@code null} if the stored hash is not hexadecimal, or is not the 32 bytes of a SHA-256: this entry holds no
+         *         secret that {@link #match} can ever accept, so it is not compared with the others
+         */
+        private @CheckForNull ByteBuffer secretKey() {
+            byte[] hashFromHex;
+            try {
+                hashFromHex = Util.fromHexString(value.hash);
+            } catch (IllegalArgumentException e) {
+                // includes NumberFormatException, which is what match catches
+                LOGGER.log(Level.FINE, "The API token with uuid=[{0}] is not in hex-format, so it holds no secret to compare with the others", uuid);
+                return null;
+            }
+            if (hashFromHex.length != SHA_256_LENGTH) {
+                LOGGER.log(Level.FINE, "The API token with uuid=[{0}] has a hash that is not a {1}, so it holds no secret to compare with the others", new Object[]{uuid, HASH_ALGORITHM});
+                return null;
+            }
+
+            return ByteBuffer.wrap(hashFromHex);
+        }
+
+        /**
+         * Makes the expiration of this entry earlier. Never later: the expiration is changed only when {@code newExpiry} is
+         * strictly before the current one, and an entry without expiration counts as one that never expires, so any date is
+         * earlier. It is not changed for the legacy token, which has no expiration and cannot be given one.
+         * The caller must hold the lock of the store, and has to save what it changed.
+         *
+         * @return {@code true} iff the expiration was changed
+         */
+        boolean shortenExpirationTo(@NonNull LocalDate newExpiry) {
+            Objects.requireNonNull(newExpiry);
+            if (isLegacy()) {
+                return false;
+            }
+            if (expirationDate != null && !newExpiry.isBefore(expirationDate)) {
+                return false;
+            }
+
+            expirationDate = newExpiry;
+            return true;
         }
 
         // used by Jelly view

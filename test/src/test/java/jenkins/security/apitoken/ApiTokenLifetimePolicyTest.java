@@ -29,16 +29,21 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.User;
 import hudson.security.HudsonPrivateSecurityRealm;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.logging.Level;
 import jenkins.model.IdStrategy;
+import jenkins.security.ApiTokenProperty;
+import jenkins.security.apitoken.ApiTokenLifetimePolicy.Phase;
 import jenkins.security.apitoken.ApiTokenLifetimePolicy.Violation;
+import jenkins.security.apitoken.ApiTokenStore.HashedToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -371,6 +376,156 @@ class ApiTokenLifetimePolicyTest {
         config.setMaxTokenLifetimeDays(30);
         config.setEnforceFrom("not-a-date-for-applies-to");
         assertTrue(policy.appliesTo(bob, TODAY));
+    }
+
+    private static HashedToken addToken(User owner, String name, int secret, LocalDate expiry) throws IOException {
+        ApiTokenProperty property = owner.getProperty(ApiTokenProperty.class);
+        String uuid = property.addFixedNewToken(name, "11" + "%032x".formatted(secret), expiry);
+        return property.getTokenStore().getTokenListSnapshot().stream()
+                .filter(token -> token.getUuid().equals(uuid))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    @Test
+    void everythingIsCompliantWhileInactive() throws Exception {
+        User bob = User.getById("bob", true);
+        assertTrue(policy.isCompliant(bob, addToken(bob, "never", 1, null), TODAY));
+        assertTrue(policy.isCompliant(bob, addToken(bob, "far", 2, TODAY.plusYears(100)), TODAY));
+        config.setEnforceFrom(TODAY.minusDays(1).toString());
+        assertTrue(policy.isCompliant(bob, addToken(bob, "never again", 3, null), TODAY), "a date alone does not activate the policy");
+    }
+
+    @Test
+    void isCompliantBoundaries() throws Exception {
+        User bob = User.getById("bob", true);
+        config.setMaxTokenLifetimeDays(30);
+
+        assertFalse(policy.isCompliant(bob, addToken(bob, "never", 1, null), TODAY), "never expires");
+        assertTrue(policy.isCompliant(bob, addToken(bob, "maximum", 2, TODAY.plusDays(30)), TODAY), "today plus the maximum");
+        assertFalse(policy.isCompliant(bob, addToken(bob, "one over", 3, TODAY.plusDays(31)), TODAY));
+        assertFalse(policy.isCompliant(bob, addToken(bob, "far", 4, TODAY.plusYears(10)), TODAY));
+        assertTrue(policy.isCompliant(bob, addToken(bob, "tomorrow", 5, TODAY.plusDays(1)), TODAY));
+        assertTrue(policy.isCompliant(bob, addToken(bob, "last day", 6, TODAY), TODAY), "valid through today");
+        assertTrue(policy.isCompliant(bob, addToken(bob, "expired", 7, TODAY.minusDays(1)), TODAY), "an expired token cannot be used");
+        assertTrue(policy.isCompliant(bob, addToken(bob, "long expired", 8, TODAY.minusYears(5)), TODAY));
+
+        // the day decides: the same tokens, a month later
+        HashedToken maximum = addToken(bob, "moves", 9, TODAY.plusDays(30));
+        assertTrue(policy.isCompliant(bob, maximum, TODAY));
+        assertTrue(policy.isCompliant(bob, maximum, TODAY.plusDays(5)), "the maximum reaches further");
+        assertFalse(policy.isCompliant(bob, maximum, TODAY.minusDays(1)), "the maximum reaches one day less far");
+        assertFalse(policy.isCompliant(bob, maximum, TODAY.minusDays(5)));
+        assertTrue(policy.isCompliant(bob, maximum, TODAY.plusDays(31)), "it has expired");
+    }
+
+    @Test
+    void theLegacyTokenIsNotCompliantAsItNeverExpires() throws Exception {
+        User bob = User.getById("bob", true);
+        config.setMaxTokenLifetimeDays(30);
+        config.setCreationOfLegacyTokenEnabled(true);
+        ApiTokenProperty property = bob.getProperty(ApiTokenProperty.class);
+        property.changeApiToken();
+        HashedToken legacy = property.getTokenStore().getLegacyToken();
+        assertNotNull(legacy);
+        assertFalse(policy.isCompliant(bob, legacy, TODAY));
+        assertFalse(policy.isCompliant(bob, legacy, TODAY.plusYears(50)));
+
+        config.setMaxTokenLifetimeDays(0);
+        assertTrue(policy.isCompliant(bob, legacy, TODAY), "no maximum");
+    }
+
+    @Test
+    void tokensAreCheckedInTheWarningPhaseToo() throws Exception {
+        User bob = User.getById("bob", true);
+        config.setMaxTokenLifetimeDays(30);
+        config.setEnforceFrom(TODAY.plusDays(1).toString());
+        assertFalse(policy.isCompliant(bob, addToken(bob, "never", 1, null), TODAY), "validate accepts it, the panel does not");
+        assertFalse(policy.isCompliant(bob, addToken(bob, "far", 2, TODAY.plusDays(31)), TODAY));
+        assertTrue(policy.isCompliant(bob, addToken(bob, "maximum", 3, TODAY.plusDays(30)), TODAY));
+    }
+
+    @Test
+    void tokensOfExemptOwnersAreCompliant() throws Exception {
+        User service = User.getById("Service Account", true);
+        User bob = User.getById("bob", true);
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("service account");
+
+        assertTrue(policy.isCompliant(service, addToken(service, "never", 1, null), TODAY));
+        assertTrue(policy.isCompliant(service, addToken(service, "far", 2, TODAY.plusDays(31)), TODAY));
+        assertFalse(policy.isCompliant(bob, addToken(bob, "never", 3, null), TODAY));
+        assertFalse(policy.isCompliant(bob, addToken(bob, "far", 4, TODAY.plusDays(31)), TODAY));
+    }
+
+    @Test
+    void tokensAreCheckedWhenEnforceFromIsUnparsable() throws Exception {
+        User bob = User.getById("bob", true);
+        config.setMaxTokenLifetimeDays(30);
+        config.setEnforceFrom("not-a-date-for-is-compliant");
+        assertFalse(policy.isCompliant(bob, addToken(bob, "never", 1, null), TODAY));
+        assertTrue(policy.isCompliant(bob, addToken(bob, "maximum", 2, TODAY.plusDays(30)), TODAY));
+    }
+
+    @Test
+    void isMonitoredInEveryPhaseExceptForExemptOwners() {
+        User service = User.getById("Service Account", true);
+        User bob = User.getById("bob", true);
+        assertFalse(policy.isMonitored(bob, TODAY), "inactive");
+
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("service account");
+        assertTrue(policy.isMonitored(bob, TODAY), "no date");
+        assertFalse(policy.isMonitored(service, TODAY), "exempt");
+
+        config.setEnforceFrom(TODAY.plusDays(1).toString());
+        assertFalse(policy.appliesTo(bob, TODAY), "not enforcing yet");
+        assertTrue(policy.isMonitored(bob, TODAY), "the warning phase is monitored");
+        assertFalse(policy.isMonitored(service, TODAY));
+
+        config.setEnforceFrom("not-a-date-for-is-monitored");
+        assertTrue(policy.isMonitored(bob, TODAY));
+        assertFalse(policy.isMonitored(service, TODAY), "an exempt owner stays exempt when the date fails closed");
+    }
+
+    @Test
+    void getPhase() {
+        assertEquals(Phase.INACTIVE, policy.getPhase(TODAY));
+        config.setEnforceFrom(TODAY.plusDays(3).toString());
+        assertEquals(Phase.INACTIVE, policy.getPhase(TODAY), "a date alone does not activate the policy");
+
+        config.setMaxTokenLifetimeDays(30);
+        assertEquals(Phase.WARNING, policy.getPhase(TODAY));
+        assertEquals(Phase.WARNING, policy.getPhase(TODAY.plusDays(2)));
+        assertEquals(Phase.ENFORCING, policy.getPhase(TODAY.plusDays(3)), "the date is the first day of enforcement");
+        assertEquals(Phase.ENFORCING, policy.getPhase(TODAY.plusDays(4)));
+
+        config.setEnforceFrom(null);
+        assertEquals(Phase.ENFORCING, policy.getPhase(TODAY));
+        config.setEnforceFrom(TODAY.minusDays(9).toString());
+        assertEquals(Phase.ENFORCING, policy.getPhase(TODAY));
+        config.setEnforceFrom("not-a-date-for-get-phase");
+        assertEquals(Phase.ENFORCING_INVALID_DATE, policy.getPhase(TODAY));
+        assertEquals(Phase.ENFORCING_INVALID_DATE, policy.getPhase(TODAY.minusYears(50)));
+
+        config.setMaxTokenLifetimeDays(0);
+        assertEquals(Phase.INACTIVE, policy.getPhase(TODAY));
+    }
+
+    @Test
+    void getEnforcementStart() {
+        assertNull(policy.getEnforcementStart(), "inactive");
+        config.setEnforceFrom(TODAY.plusDays(3).toString());
+        assertNull(policy.getEnforcementStart(), "inactive, even with a date");
+
+        config.setMaxTokenLifetimeDays(30);
+        assertEquals(TODAY.plusDays(3), policy.getEnforcementStart());
+        config.setEnforceFrom(TODAY.minusDays(3).toString());
+        assertEquals(TODAY.minusDays(3), policy.getEnforcementStart(), "a date that has passed is still the start");
+        config.setEnforceFrom(null);
+        assertNull(policy.getEnforcementStart(), "enforcing from the start: no date");
+        config.setEnforceFrom("not-a-date-for-get-enforcement-start");
+        assertNull(policy.getEnforcementStart(), "unparsable: no date");
     }
 
     private long countWarnings(String value) {

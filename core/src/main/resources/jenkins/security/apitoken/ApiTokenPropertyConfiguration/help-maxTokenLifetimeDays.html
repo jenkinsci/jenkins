@@ -31,6 +31,16 @@
     <em>Users exempt from the maximum lifetime</em>
     are not restricted.
   </p>
+  <p>
+    The compliance panel lists the tokens that exceed the maximum, which
+    includes the tokens that never expire, and the secrets that are shared by
+    several tokens of one user. It does so as soon as a maximum is configured,
+    before the enforcement date too. A banner on the Manage Jenkins page tells
+    administrators when there is something to review. Dismissing that banner
+    hides it for every administrator, until the monitor is enabled again under
+    Manage Jenkins &gt; System &gt; Administrative monitors. The panel itself
+    stays reachable through the link in this section.
+  </p>
   <h3>Registering a secret again</h3>
   <p>
     The maximum limits tokens, not secrets. A client that chooses the value of

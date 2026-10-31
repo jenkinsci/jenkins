@@ -290,7 +290,16 @@ public class ApiTokenProperty extends UserProperty {
             this.numDaysUse = stats.getNumDaysUse();
         }
 
+        /**
+         * How long ago the token was created, for display.
+         *
+         * @return an empty string if the creation date is not known, as for a legacy token that was already there before
+         *         creation dates were recorded
+         */
         public String createdDaysAgo() {
+            if (creationDate == null) {
+                return "";
+            }
             LocalDate c = creationDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             LocalDate now = LocalDate.now(ZoneId.systemDefault());
             Period period = Period.between(c, now);
@@ -321,7 +330,15 @@ public class ApiTokenProperty extends UserProperty {
             return Messages.ApiTokenProperty_createdDaysAgo(period.getDays());
         }
 
+        /**
+         * How long ago the token was last used, for display.
+         *
+         * @return an empty string if the token was never used, or the usage statistics are not recorded
+         */
         public String lastUsedDaysAgo() {
+            if (lastUseDate == null) {
+                return "";
+            }
             LocalDate lu = lastUseDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             LocalDate now = LocalDate.now(ZoneId.systemDefault());
             Period period = Period.between(lu, now);
@@ -514,6 +531,61 @@ public class ApiTokenProperty extends UserProperty {
             tokenStats.removeId(revoked.getUuid());
             user.save();
         }
+    }
+
+    /**
+     * Revokes the token with the UUID {@code tokenUuid}, whether it has expired or not, and every other token of this user that
+     * can still be used on {@code today} and has the same secret, in one operation of the store, see
+     * {@link ApiTokenStore#revokeLiveEntriesSharingSecretWith}. A token whose secret is not shared is revoked alone, so
+     * the caller does not decide beforehand whether the secret is shared. Tokens that have expired and have the same secret
+     * are kept, as they cannot authenticate.
+     * <p>
+     * For every token that was removed it does what {@link #revokeToken} does for one: its usage statistics are removed, and
+     * when one of them is the legacy token the legacy secret is dropped, or the legacy token would be created again from it
+     * the next time the user is loaded (see {@link #setUser}). The user is saved once, and only if a token was removed.
+     * <p>
+     * Like {@link #revokeToken}, it does not check any permission: the caller, the page of the administrative monitor that
+     * lists the tokens, is the one that does, as it only serves administrators.
+     *
+     * @param today the day that decides which tokens have expired, which the caller chooses once for what it does
+     * @return the UUIDs of the tokens that were revoked, none if this user has no token with that UUID
+     */
+    @Restricted(NoExternalUse.class)
+    public @NonNull List<String> revokeTokens(@NonNull String tokenUuid, @NonNull LocalDate today) throws IOException {
+        List<ApiTokenStore.HashedToken> revoked = tokenStore.revokeLiveEntriesSharingSecretWith(tokenUuid, today);
+        if (revoked.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> revokedUuids = new ArrayList<>(revoked.size());
+        for (ApiTokenStore.HashedToken token : revoked) {
+            if (token.isLegacy()) {
+                // same reason as in revokeToken
+                apiToken = null;
+            }
+            tokenStats.removeId(token.getUuid());
+            revokedUuids.add(token.getUuid());
+        }
+        user.save();
+        return revokedUuids;
+    }
+
+    /**
+     * Makes the expiration of the token with the UUID {@code tokenUuid} earlier, and saves the user if it did. It never makes it
+     * later, and it does not change the legacy token, see {@link ApiTokenStore#shortenExpiration}.
+     * <p>
+     * Like {@link #revokeToken}, it does not check any permission: the caller, the page of the administrative monitor that
+     * lists the tokens, is the one that does, as it only serves administrators.
+     *
+     * @return {@code true} iff the expiration was changed, which is when the user was saved
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean shortenExpiration(@NonNull String tokenUuid, @NonNull LocalDate newExpiry) throws IOException {
+        boolean shortened = tokenStore.shortenExpiration(tokenUuid, newExpiry);
+        if (shortened) {
+            user.save();
+        }
+        return shortened;
     }
 
     @Extension
