@@ -23,18 +23,20 @@ const rememberedWidths = new WeakMap();
  * A column whose cells have content but haven't rendered anything yet, e.g. a
  * decorator that renders client-side, or whose content can shrink (see below)
  * and hasn't been measured yet, is given its full max-width so its content can
- * render into that space. The next layout then shrinks it to what it used.
+ * render into that space. The next layout then shrinks it to what it used, so
+ * this returns whether one is needed for content that won't trigger it itself.
  *
  * Like flex items, a column's content can't shrink below its natural width by
  * default, so a column that doesn't fit is hidden. Content can opt in to
  * shrinking by giving its root element an explicit `min-width`, in which case
  * the column is shrunk down to that before it's hidden.
  * @param {HTMLElement} container
+ * @return {boolean} whether another layout is needed to measure new content
  */
 export function layoutBuildColumns(container) {
   const rows = Array.from(container.querySelectorAll(ROW_SELECTOR));
   if (rows.length === 0) {
-    return;
+    return false;
   }
 
   const cellsByRow = rows.map((row) =>
@@ -51,15 +53,20 @@ export function layoutBuildColumns(container) {
 
   const previousWidths = rememberedWidths.get(container) ?? new Map();
   const widths = new Map();
+  let needsRemeasure = false;
   const widthsByRow = rows.map((row, r) => {
     const id = row.closest("[page-entry-id]")?.getAttribute("page-entry-id");
     const previous = (id && previousWidths.get(id)) || [];
     const rowWidths = cellsByRow[r].map((cell, i) => {
+      if (!hasContent(cell)) {
+        return previous[i] ?? 0;
+      }
       // Content that can shrink adapts to the width it's given, so it can't
       // say how wide it wants to be until it's been offered the room
-      const unmeasured =
-        isPending(cell) ||
-        (previous[i] === undefined && Number.isFinite(getMinWidth(cell)));
+      const firstSeen =
+        previous[i] === undefined && Number.isFinite(getMinWidth(cell));
+      needsRemeasure ||= firstSeen;
+      const unmeasured = isPending(cell) || firstSeen;
       const width = unmeasured
         ? 0
         : Math.ceil(cell.getBoundingClientRect().width);
@@ -77,7 +84,7 @@ export function layoutBuildColumns(container) {
   for (let i = 0; i < columnCount; i++) {
     let width = 0;
     let minWidth = 0;
-    let hasContent = i === 0;
+    let columnHasContent = i === 0;
     let maxWidth = Infinity;
     cellsByRow.forEach((cells, r) => {
       const cell = cells[i];
@@ -86,15 +93,18 @@ export function layoutBuildColumns(container) {
       }
       width = Math.max(width, widthsByRow[r][i]);
       minWidth = Math.max(minWidth, getMinWidth(cell));
-      hasContent ||=
-        cell.childElementCount > 0 || cell.textContent.trim() !== "";
+      columnHasContent ||= hasContent(cell);
       maxWidth = parseFloat(getComputedStyle(cell).maxWidth) || Infinity;
     });
     // Nothing has rendered in this column yet, so offer it all the room it may use
-    if (hasContent && width === 0 && Number.isFinite(maxWidth)) {
+    if (columnHasContent && width === 0 && Number.isFinite(maxWidth)) {
       width = maxWidth;
     }
-    columns.push({ width, minWidth: Math.min(minWidth, width), hasContent });
+    columns.push({
+      width,
+      minWidth: Math.min(minWidth, width),
+      hasContent: columnHasContent,
+    });
   }
 
   container.classList.remove(MEASURING_CLASS);
@@ -144,6 +154,16 @@ export function layoutBuildColumns(container) {
       }
     });
   });
+
+  return needsRemeasure;
+}
+
+/**
+ * @param {HTMLElement} cell
+ * @return {boolean}
+ */
+function hasContent(cell) {
+  return cell.childElementCount > 0 || cell.textContent.trim() !== "";
 }
 
 /**
@@ -212,7 +232,18 @@ function getChromeWidth(element) {
 export function observeBuildColumns(container) {
   // Both observers call back after the DOM changes but before the next paint,
   // so laying out here means rows are never painted with unaligned columns
-  const layout = () => layoutBuildColumns(container);
+  let remeasureFrame;
+  const layout = () => {
+    if (!layoutBuildColumns(container) || remeasureFrame !== undefined) {
+      return;
+    }
+    remeasureFrame = requestAnimationFrame(() => {
+      remeasureFrame = requestAnimationFrame(() => {
+        remeasureFrame = undefined;
+        layout();
+      });
+    });
+  };
 
   let lastWidth;
   new ResizeObserver(([entry]) => {
