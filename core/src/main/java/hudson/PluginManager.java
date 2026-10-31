@@ -1996,20 +1996,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 try (JarFile jarFile = new JarFile(t)) {
                     m = jarFile.getManifest();
                 }
-                String deps = m.getMainAttributes().getValue("Plugin-Dependencies");
-
-                if (deps != null && !deps.isBlank()) {
-                    // now we get to parse it!
-                    String[] plugins = deps.split(",");
-                    for (String p : plugins) {
-                        // should have name:version[;resolution:=optional]
-                        String[] attrs = p.split("[:;]");
-                        dependencies.add(new JSONObject()
-                                .element("name", attrs[0])
-                                .element("version", attrs[1])
-                                .element("optional", p.contains("resolution:=optional")));
-                    }
-                }
+                dependencies = getUploadedPluginDependencies(baseName, m);
             } catch (IOException e) {
                 LOGGER.log(WARNING, "Unable to setup dependency list for plugin upload", e);
             }
@@ -2025,6 +2012,46 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         } catch (FileUploadException e) {
             throw new ServletException(e);
         }
+    }
+
+    /**
+     * Computes the dependencies of an uploaded plugin from its manifest: the declared ones, plus the implied
+     * dependencies on detached plugins for a plugin built against an older core, as {@link UpdateSite.Data}
+     * adds them for plugins from an update site (JENKINS-33308).
+     */
+    @Restricted(NoExternalUse.class)
+    static JSONArray getUploadedPluginDependencies(String shortName, Manifest manifest) {
+        JSONArray dependencies = new JSONArray();
+        Set<String> names = new HashSet<>();
+        String deps = manifest.getMainAttributes().getValue("Plugin-Dependencies");
+
+        if (deps != null && !deps.isBlank()) {
+            // now we get to parse it!
+            String[] plugins = deps.split(",");
+            for (String p : plugins) {
+                // should have name:version[;resolution:=optional]
+                String[] attrs = p.split("[:;]");
+                dependencies.add(new JSONObject()
+                        .element("name", attrs[0])
+                        .element("version", attrs[1])
+                        .element("optional", p.contains("resolution:=optional")));
+                names.add(attrs[0]);
+            }
+        }
+
+        String requiredCore = manifest.getMainAttributes().getValue("Jenkins-Version");
+        if (requiredCore == null) {
+            requiredCore = manifest.getMainAttributes().getValue("Hudson-Version");
+        }
+        for (PluginWrapper.Dependency implied : DetachedPluginsUtil.getImpliedDependencies(shortName, requiredCore)) {
+            if (names.add(implied.shortName)) {
+                dependencies.add(new JSONObject()
+                        .element("name", implied.shortName)
+                        .element("version", implied.version)
+                        .element("optional", false));
+            }
+        }
+        return dependencies;
     }
 
     @Restricted(NoExternalUse.class)
