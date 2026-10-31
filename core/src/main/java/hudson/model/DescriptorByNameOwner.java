@@ -59,7 +59,8 @@ public interface DescriptorByNameOwner extends ModelObject {
     /**
      * The permission needed on this object to render, at {@code descriptorByName/ID/page/...}, the configuration page
      * of a descriptor for a new instance, as the configuration pages of this object offer descriptors to add or select.
-     * It should be the permission to configure this object; by default, {@link Jenkins#ADMINISTER}.
+     * It should be the permission to configure this object; by default, {@link Jenkins#ADMINISTER}, which is checked on
+     * Jenkins rather than on this object.
      *
      * @since TODO
      * @see hudson.widgets.DescriptorPage

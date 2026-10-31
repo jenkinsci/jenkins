@@ -32,8 +32,10 @@ import org.kohsuke.stapler.bind.JavaScriptMethod;
  * {@link DescriptorByNameOwner} the URL goes through, which Stapler resolves, checking access as for any other request),
  * the descriptor, and the view to render, as {@code descriptorByName/ID/page/VIEW} under the object's URL. Rendering
  * needs the object's {@link DescriptorByNameOwner#getDescriptorPagePermission()}, normally the permission to configure
- * it (by default, to administer Jenkins). Nothing in such a page is secret: it holds no instance, and it renders
- * as the user asking, who could add the same descriptor to an object they configure.
+ * it (by default, to administer Jenkins, which is checked on Jenkins). Nothing in such a page is secret: it holds no
+ * instance, and it renders as the user asking, who could add the same descriptor to an object they configure.
+ * Descriptors that are themselves what they configure, such as {@link jenkins.model.GlobalConfiguration}, are not
+ * rendered: their configuration page shows the stored configuration.
  *
  * <p>
  * Where any of this does not hold (other variables captured, an existing instance, read-only mode, {@code it} not the
@@ -93,8 +95,8 @@ public final class DescriptorPage {
         if (Boolean.TRUE.equals(context.getVariable("readOnlyMode"))) {
             return keepClosure("read-only");
         }
-        if (!(context.getVariable("descriptor") instanceof Descriptor<?> d) || Jenkins.get().getDescriptor(d.getId()) != d) {
-            return keepClosure("not a registered descriptor: " + context.getVariable("descriptor"));
+        if (!(context.getVariable("descriptor") instanceof Descriptor<?> d) || !renders(d)) {
+            return keepClosure("not a descriptor of new instances: " + context.getVariable("descriptor"));
         }
         StaplerRequest2 req = Stapler.getCurrentRequest2();
         if (req.getAttribute("currentDescriptorByNameUrl") != null) {
@@ -110,7 +112,7 @@ public final class DescriptorPage {
         } else {
             return keepClosure("it is not " + (a == null ? "an object of the URL" : a.getObject()));
         }
-        if (!accessControlled(a.getObject()).hasPermission(permission(a.getObject()))) {
+        if (!mayRender(a.getObject())) {
             return keepClosure("cannot configure " + a.getObject());
         }
         String url = a.getUrl() + '/' + d.getDescriptorUrl() + "/page/" + name;
@@ -131,11 +133,11 @@ public final class DescriptorPage {
         String view = node ? name.substring(0, name.length() - NODE.length()) : name;
         StaplerRequest2 req = Stapler.getCurrentRequest2();
         Ancestor a = req.findAncestor(DescriptorByNameOwner.class);
-        if (!VIEWS.contains(view) || a == null) {
+        if (!VIEWS.contains(view) || a == null || !renders(descriptor)) {
             throw HttpResponses.notFound();
         }
         Object owner = a.getObject();
-        if (!accessControlled(owner).hasPermission(permission(owner))) {
+        if (!mayRender(owner)) {
             throw HttpResponses.forbidden();
         }
         Object it = node ? (owner instanceof Computer c ? c.getNode() : null) : owner;
@@ -145,14 +147,22 @@ public final class DescriptorPage {
         return new DescriptorPage(descriptor, it, view);
     }
 
-    /** The permission needed to render on the object configured. */
-    private static Permission permission(Object owner) {
-        return owner instanceof DescriptorByNameOwner o ? o.getDescriptorPagePermission() : Jenkins.ADMINISTER;
+    /**
+     * Whether the descriptor's configuration page is for a new instance: a registered descriptor of something other
+     * than descriptors.
+     */
+    private static boolean renders(Descriptor<?> d) {
+        return Jenkins.get().getDescriptor(d.getId()) == d && !Descriptor.class.isAssignableFrom(d.clazz);
     }
 
-    /** What the permission is checked on: the object configured, or Jenkins if it is not access controlled. */
-    private static AccessControlled accessControlled(Object owner) {
-        return owner instanceof AccessControlled ac ? ac : Jenkins.get();
+    /**
+     * Whether the current user may render on the object configured. The permission is checked on the object, unless it
+     * is to administer Jenkins, or the object is not access controlled: a user, for one, has every permission on itself.
+     */
+    private static boolean mayRender(Object owner) {
+        Permission p = owner instanceof DescriptorByNameOwner o ? o.getDescriptorPagePermission() : Jenkins.ADMINISTER;
+        AccessControlled on = p != Jenkins.ADMINISTER && owner instanceof AccessControlled ac ? ac : Jenkins.get();
+        return on.hasPermission(p);
     }
 
     /**

@@ -1138,11 +1138,7 @@ function evalInnerHtmlScripts(text, callback) {
     var m = s.match(srcAttr);
     if (m) {
       q.push(function (cont) {
-        if (isAdjunctLoaded(m[1])) {
-          cont();
-        } else {
-          loadScript(m[1], cont);
-        }
+        loadAdjunctOnce(m[1], cont);
       });
     } else {
       q.push(function (cont) {
@@ -1156,24 +1152,34 @@ function evalInnerHtmlScripts(text, callback) {
 }
 
 /**
- * Whether a script is an adjunct already on the page, or already loaded with content rendered on demand.
+ * Loads a script, unless it is an adjunct already on the page or already loaded, then continues once it has run.
  * An adjunct runs once per page; content rendered on demand without a closure in the session (see
  * hudson.widgets.DescriptorPage) does not know which adjuncts the page already has, and includes all it needs.
+ * The adjuncts on the page are those it had when it loaded: scripts inserted since with content are not run.
  */
-var loadedAdjuncts = new Set();
-function isAdjunctLoaded(src) {
+var adjunctLoads = new Map();
+function loadAdjunctOnce(src, cont) {
   var url = new URL(src, document.baseURI).href;
   if (!url.includes("/adjuncts/")) {
-    return false;
+    loadScript(src, cont);
+    return;
   }
-  if (loadedAdjuncts.has(url)) {
-    return true;
+  var load = adjunctLoads.get(url);
+  if (!load) {
+    load = new Promise(function (resolve) {
+      loadScript(src, resolve);
+    });
+    adjunctLoads.set(url, load);
   }
-  loadedAdjuncts.add(url);
-  return Array.from(document.scripts).some(function (script) {
-    return script.src === url;
-  });
+  load.then(cont);
 }
+document.addEventListener("DOMContentLoaded", function () {
+  Array.from(document.scripts).forEach(function (script) {
+    if (script.src.includes("/adjuncts/") && !adjunctLoads.has(script.src)) {
+      adjunctLoads.set(script.src, Promise.resolve());
+    }
+  });
+});
 
 /**
  * Take an array of (typically async) functions and run them in a sequence.

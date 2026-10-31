@@ -8,11 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.slaves.DumbSlave;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.net.URL;
 import java.util.regex.Matcher;
@@ -27,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
@@ -53,11 +56,7 @@ class DescriptorPageTest {
         }
         assertThat(shellUrl(page), endsWith("/job/p/descriptorByName/hudson.tasks.Shell/page/heteroList"));
 
-        ((HtmlElement) page.querySelector("button.hetero-list-add[suffix='builder']")).click();
-        page.getWebClient().waitForBackgroundJavaScript(2000);
-        HtmlElement item = page.querySelectorAll(".jenkins-dropdown__item").stream().map(HtmlElement.class::cast)
-                .filter(e -> e.getTextContent().contains("Execute shell")).findFirst().orElseThrow();
-        item.click();
+        addBuildStep(page, "Execute shell");
         page.getWebClient().waitForBackgroundJavaScript(5000);
         assertNotNull(page.querySelector("div[descriptorId='hudson.tasks.Shell'] [name='command']"), "the build step is rendered");
     }
@@ -99,6 +98,73 @@ class DescriptorPageTest {
     }
 
     @Test
+    void theStoredConfigurationOfJenkinsIsNotRendered() throws Exception {
+        String page = "descriptorByName/jenkins.model.GlobalNodePropertiesConfiguration/page/heteroList";
+        assertEquals(404, render(j.createWebClient().login("configurer"), "job/p/" + page));
+        assertEquals(404, render(j.createWebClient().login("reader"), "user/reader/" + page));
+    }
+
+    @Test
+    void aUserNeedsAdministerToRenderOnThemselves() throws Exception {
+        String page = "descriptorByName/hudson.tasks.Shell/page/heteroList";
+        assertEquals(403, render(j.createWebClient().login("reader"), "user/reader/" + page));
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
+        assertEquals(200, render(j.createWebClient().login("admin"), "user/admin/" + page));
+    }
+
+    @Test
+    void anAdjunctNotOnThePageSetsUpEveryStepUsingIt() throws Exception {
+        HtmlPage page = j.createWebClient().login("configurer").getPage(p, "configure");
+        assertThat(proxyUrl(page, WithAdjunct.class.getName()), endsWith("/page/heteroList"));
+        addBuildStep(page, "With adjunct");
+        addBuildStep(page, "With adjunct");
+        page.getWebClient().waitForBackgroundJavaScript(5000);
+        assertEquals(2, page.querySelectorAll(".descriptor-page-test").size());
+        for (var e : page.querySelectorAll(".descriptor-page-test")) {
+            assertEquals("ready", e.getTextContent(), "the adjunct ran before the step was set up");
+        }
+    }
+
+    /**
+     * Scripts inserted with content are not run by browsers, so an adjunct inserted, but not run, is not on the page;
+     * and content rendered while the adjunct loads for other content waits for it.
+     * (HtmlUnit runs inserted scripts, so the build steps above cannot show either.)
+     */
+    @Test
+    void anAdjunctRunsOnceBeforeAllTheContentUsingIt() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient().login("configurer");
+        WebResponse step = renderResponse(wc, "job/p/descriptorByName/" + WithAdjunct.class.getName() + "/page/heteroList");
+        Matcher m = Pattern.compile("<script[^>]*src=['\"]([^'\"]*DescriptorPageTest/adjunct\\.js)['\"]").matcher(step.getContentAsString());
+        assertTrue(m.find(), "the step includes its adjunct");
+        HtmlPage page = wc.getPage(p, "configure");
+        page.executeJavaScript("const s = document.createElement('script');"
+                + "s.type = 'text/x-inserted';"
+                + "s.src = '" + m.group(1) + "';"
+                + "document.body.appendChild(s);"
+                + "window.runsBefore = [];"
+                + "for (let i = 0; i < 2; i++) {"
+                + "  evalInnerHtmlScripts('<script src=\"" + m.group(1) + "\"></script>', () => runsBefore.push(window.descriptorPageTestAdjunctRuns));"
+                + "}");
+        page.getWebClient().waitForBackgroundJavaScript(5000);
+        assertEquals("[1,1]", page.executeJavaScript("JSON.stringify(window.runsBefore)").getJavaScriptResult());
+    }
+
+    public static class WithAdjunct extends Builder {
+        @TestExtension({"anAdjunctNotOnThePageSetsUpEveryStepUsingIt", "anAdjunctRunsOnceBeforeAllTheContentUsingIt"})
+        public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
+            @Override
+            public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+                return true;
+            }
+
+            @Override
+            public String getDisplayName() {
+                return "With adjunct";
+            }
+        }
+    }
+
+    @Test
     void aReadOnlyPageKeepsTheClosure() throws Exception {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.READ, Item.READ, Item.EXTENDED_READ).everywhere().to("reader"));
@@ -118,6 +184,15 @@ class DescriptorPageTest {
         WebResponse rsp = renderResponse(wc, url);
         assertEquals(200, rsp.getStatusCode());
         assertThat(rsp.getContentAsString(), containsString("inDemandDelay"));
+    }
+
+    /** Adds a build step as the user does, without waiting for it to render. */
+    private static void addBuildStep(HtmlPage page, String displayName) throws Exception {
+        ((HtmlElement) page.querySelector("button.hetero-list-add[suffix='builder']")).click();
+        page.getWebClient().waitForBackgroundJavaScript(2000);
+        HtmlElement item = page.querySelectorAll(".jenkins-dropdown__item").stream().map(HtmlElement.class::cast)
+                .filter(e -> e.getTextContent().contains(displayName)).findFirst().orElseThrow();
+        item.click();
     }
 
     /** The URL the page renders the Shell build step from; the page's script removes it from the page. */
