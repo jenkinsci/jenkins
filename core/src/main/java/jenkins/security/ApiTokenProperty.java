@@ -47,16 +47,19 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.FormatStyle;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
+import jenkins.security.apitoken.ApiTokenLifetimePolicy;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStats;
 import jenkins.security.apitoken.ApiTokenStore;
@@ -574,6 +577,76 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         /**
+         * The expiration that the dialog which adds a token offers, and what it says about the maximum lifetime of API tokens,
+         * see {@link ApiTokenLifetimePolicy}. The user of the page, {@code propertyOwner}, is the one that is judged, not the
+         * user who looks at it. Everything is computed here, from one date, and the view only displays it.
+         */
+        @Restricted(NoExternalUse.class) // for Jelly view
+        public ExpirationOptions getExpirationOptions(User propertyOwner) {
+            LocalDate today = LocalDate.now();
+            ApiTokenLifetimePolicy policy = new ApiTokenLifetimePolicy();
+            boolean maximumApplies = policy.appliesTo(propertyOwner, today);
+            return ExpirationOptions.of(maximumApplies, ApiTokenPropertyConfiguration.get().getMaxTokenLifetimeDays(), policy.getPendingEnforceFrom(today));
+        }
+
+        /**
+         * What the dialog that adds a token offers as expiration for the tokens of one owner, besides a date of the user's choice.
+         * <p>
+         * When the maximum applies to the owner, that is when the policy is enforcing and the owner is not exempt, only the usual
+         * choices that are not longer than the maximum are offered, and the maximum itself if it is not one of them. A token
+         * without expiration is not offered. Otherwise the usual choices are offered, and a token without expiration.
+         *
+         * @param days the numbers of days offered, in increasing order
+         * @param explicitMaximum the number of {@code days} that is offered because it is the maximum and not one of the usual
+         *                        choices, or 0 if there is none
+         * @param defaultDays the number of {@code days} that is selected when the dialog opens: the largest one that is not longer
+         *                    than 30 days
+         * @param maximumApplies whether the maximum applies to the owner, so that a token cannot be created without expiration
+         * @param pendingEnforceFrom the date from which the maximum will be enforced, when it is announced but not enforced yet,
+         *                           otherwise {@code null}
+         * @param maximumLifetimeDays the maximum lifetime of a token in days, 0 if there is none
+         */
+        @Restricted(NoExternalUse.class)
+        public record ExpirationOptions(List<Integer> days, int explicitMaximum, int defaultDays, boolean maximumApplies,
+                                        @CheckForNull LocalDate pendingEnforceFrom, int maximumLifetimeDays) {
+
+            private static final int[] USUAL_DAYS = {7, 30, 60, 90};
+
+            private static final int USUAL_DEFAULT_DAYS = 30;
+
+            public ExpirationOptions {
+                days = List.copyOf(days);
+            }
+
+            static ExpirationOptions of(boolean maximumApplies, int maximumLifetimeDays, @CheckForNull LocalDate pendingEnforceFrom) {
+                List<Integer> days = new ArrayList<>();
+                for (int usual : USUAL_DAYS) {
+                    if (!maximumApplies || usual <= maximumLifetimeDays) {
+                        days.add(usual);
+                    }
+                }
+                int explicitMaximum = 0;
+                if (maximumApplies && !days.contains(maximumLifetimeDays)) {
+                    days.add(maximumLifetimeDays);
+                    explicitMaximum = maximumLifetimeDays;
+                }
+                // the numbers are in increasing order, and there is always at least one
+                int defaultDays = days.get(0);
+                for (int offered : days) {
+                    if (offered <= USUAL_DEFAULT_DAYS) {
+                        defaultDays = offered;
+                    }
+                }
+                return new ExpirationOptions(days, explicitMaximum, defaultDays, maximumApplies, pendingEnforceFrom, maximumLifetimeDays);
+            }
+        }
+
+        /**
+         * Regenerates the legacy token of the user. A legacy token never expires, so once the maximum lifetime of API tokens
+         * is enforced (see {@link ApiTokenLifetimePolicy}) this endpoint is rejected, with an HTML message, when the owner
+         * of the token is not exempt from the maximum. The owner is the user of the page, not the user who sends the request.
+         * The Java method {@link ApiTokenProperty#changeApiToken()} does not check the maximum.
+         *
          * @deprecated use {@link #doGenerateNewToken(User, String, String, String)} instead
          */
         @Deprecated
@@ -583,6 +656,13 @@ public class ApiTokenProperty extends UserProperty {
             u.checkPermission(Jenkins.ADMINISTER);
 
             LOGGER.log(Level.FINE, "Deprecated action /changeToken used, consider using /generateNewToken instead");
+
+            LocalDate today = LocalDate.now();
+            ApiTokenLifetimePolicy policy = new ApiTokenLifetimePolicy();
+            if (policy.appliesTo(u, today)) {
+                // the regenerated legacy token would have no expiry: it would bypass the maximum lifetime
+                return HttpResponses.html(Messages.ApiTokenProperty_ChangeToken_MaximumLifetimeEnforced());
+            }
 
             if (!mustDisplayLegacyApiToken(u)) {
                 // user does not have legacy token and the capability to create one without an existing one is disabled
@@ -605,6 +685,22 @@ public class ApiTokenProperty extends UserProperty {
                     : Messages.ApiTokenProperty_ChangeToken_SuccessHidden());
         }
 
+        /**
+         * Creates a new token for the user {@code u}, the owner of the token, and answers with its value and its expiration.
+         * <p>
+         * When a maximum lifetime of API tokens is configured and enforced (see {@link ApiTokenLifetimePolicy}), this HTTP endpoint
+         * applies it, unless the owner is exempt: a token that never expires or that expires later than today plus the maximum
+         * is rejected, and an empty {@code expirationDuration} creates a token that expires on the last day that is allowed.
+         * The owner is judged, not the user who sends the request. Clients should read the expiration of the token that was
+         * created from {@code expirationDateIso} in the response.
+         * The Java API ({@link ApiTokenProperty#generateNewToken(String, LocalDate)}) and {@link ApiTokenStore} do not enforce the maximum.
+         * <p>
+         * Rejections are answered with {@link HttpResponses#errorJSON(String)} (HTTP status 200 and {@code "status":"error"}).
+         *
+         * @param newTokenName the name of the token, a default name is used if it is blank
+         * @param tokenExpiration the expiration date, as {@code yyyy-MM-dd}, used only when {@code expirationDuration} is {@code custom}
+         * @param expirationDuration a number of days, {@code custom}, {@code never} or empty
+         */
         @RequirePOST
         public HttpResponse doGenerateNewToken(@AncestorInPath User u, @QueryParameter String newTokenName,
                                                @QueryParameter String tokenExpiration, @QueryParameter String expirationDuration) throws IOException {
@@ -622,7 +718,7 @@ public class ApiTokenProperty extends UserProperty {
             // Everything that does not need the store is validated before the property is built or added:
             // User#addProperty saves the user, and a rejected request must not change anything.
             LocalDate today = LocalDate.now();
-            RequestedExpiration requestedExpiration = parseExpiration(tokenExpiration, expirationDuration, today);
+            RequestedExpiration requestedExpiration = resolveExpiration(u, tokenExpiration, expirationDuration, today);
             if (requestedExpiration.rejection() != null) {
                 return requestedExpiration.rejection();
             }
@@ -647,7 +743,8 @@ public class ApiTokenProperty extends UserProperty {
 
         /**
          * What the caller asked for as expiration: nothing, an explicit {@code never}, or a date.
-         * Currently an empty duration and {@code never} both mean "no expiry", but they are different requests.
+         * Without a maximum lifetime an empty duration and {@code never} both mean "no expiry", but they are different requests:
+         * under an enforced maximum the first one gets the latest allowed expiration and the second one is rejected.
          */
         private enum ExpirationChoice {
             /** The duration is missing or empty. */
@@ -659,10 +756,12 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         /**
-         * The outcome of {@link #parseExpiration}: either the expiration the request asks for, or the rejection to answer with.
+         * The outcome of {@link #parseExpiration} and {@link #resolveExpiration}: either the expiration of the token to create,
+         * or the rejection to answer with.
          *
          * @param choice what was asked for, {@code null} when the request is rejected
-         * @param date the expiration date, {@code null} unless {@code choice} is {@link ExpirationChoice#DATE}
+         * @param date the expiration date of the token to create, {@code null} if it does not expire. It is the date that was asked
+         *             for, or the latest date that the maximum lifetime allows when none was asked for
          * @param rejection the {@code errorJSON} response when the request is invalid, otherwise {@code null}
          */
         private record RequestedExpiration(@CheckForNull ExpirationChoice choice, @CheckForNull LocalDate date, @CheckForNull HttpResponse rejection) {
@@ -713,6 +812,51 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         /**
+         * The shared validation step of {@link #doGenerateNewToken} and {@link #doAddFixedToken}: parses the expiration of the
+         * request with {@link #parseExpiration} and applies the maximum lifetime of API tokens to it. Nothing here needs the
+         * token store, so it runs before anything is changed.
+         * <p>
+         * The maximum applies when the policy is enforcing at {@code today} and {@code owner} is not exempt, see
+         * {@link ApiTokenLifetimePolicy}. Then:
+         * <ul>
+         * <li>an empty duration gives the latest expiration that is allowed, today plus the maximum, as the endpoints are used
+         * by automation that sends only the name of the token: it keeps working and the response says when the token expires;
+         * <li>{@code never}, and a date later than today plus the maximum, are rejected. That last day is accepted, a token is
+         * valid through its expiration date.
+         * </ul>
+         * Otherwise (no maximum, a maximum that is not enforced yet, or an exempt owner) the request is left as {@link #parseExpiration}
+         * returned it. The Java API and {@link ApiTokenStore} do not enforce the maximum.
+         * <p>
+         * The messages of the rejections are static: they contain no submitted value, only the configured maximum.
+         *
+         * @param owner the user the token is created for, which is not necessarily the user who sends the request
+         * @param today the date of the request, computed once by the caller
+         */
+        private static RequestedExpiration resolveExpiration(User owner, @CheckForNull String tokenExpiration, @CheckForNull String expirationDuration, LocalDate today) {
+            RequestedExpiration requested = parseExpiration(tokenExpiration, expirationDuration, today);
+            if (requested.rejection() != null) {
+                return requested;
+            }
+
+            // a new instance per request: the configuration is read when the policy is asked, nothing is cached
+            ApiTokenLifetimePolicy policy = new ApiTokenLifetimePolicy();
+            if (!policy.appliesTo(owner, today)) {
+                return requested;
+            }
+
+            LocalDate expiration = requested.choice() == ExpirationChoice.UNSPECIFIED ? policy.maxExpiration(today) : requested.date();
+            ApiTokenLifetimePolicy.Violation violation = policy.validate(owner, expiration, today);
+            if (violation == null) {
+                return RequestedExpiration.of(requested.choice(), expiration);
+            }
+            return switch (violation) {
+                case NEVER_NOT_ALLOWED -> RequestedExpiration.rejected(Messages.ApiTokenProperty_expirationNeverNotAllowed());
+                case OVER_MAXIMUM -> RequestedExpiration.rejected(
+                        Messages.ApiTokenProperty_expirationOverMaximum(ApiTokenPropertyConfiguration.get().getMaxTokenLifetimeDays()));
+            };
+        }
+
+        /**
          * Adds the expiration to the response of a token creation: {@code expirationDate} is localized, as shown to the user,
          * {@code expirationDateIso} is the ISO-8601 date for clients. Both are {@code never} when the token does not expire.
          */
@@ -731,6 +875,12 @@ public class ApiTokenProperty extends UserProperty {
          * This method is dangerous and should not be used without caution.
          * The token passed here could have been tracked by different network system during its trip.
          * It is recommended to revoke this token after the generation of a new one.
+         * <p>
+         * The maximum lifetime of API tokens is applied as in {@link #doGenerateNewToken}: when it is configured and enforced
+         * (see {@link ApiTokenLifetimePolicy}) this HTTP endpoint rejects a token that never expires, or that expires later than
+         * today plus the maximum, unless the owner {@code u} is exempt, and an empty {@code expirationDuration} creates a token that
+         * expires on the last day that is allowed. The Java API ({@link ApiTokenProperty#addFixedNewToken(String, String, LocalDate)})
+         * and {@link ApiTokenStore} do not enforce the maximum.
          */
         @RequirePOST
         @Restricted(NoExternalUse.class)
@@ -756,7 +906,7 @@ public class ApiTokenProperty extends UserProperty {
 
             // Everything that does not need the store is validated before the property is built or added.
             LocalDate today = LocalDate.now();
-            RequestedExpiration requestedExpiration = parseExpiration(tokenExpiration, expirationDuration, today);
+            RequestedExpiration requestedExpiration = resolveExpiration(u, tokenExpiration, expirationDuration, today);
             if (requestedExpiration.rejection() != null) {
                 return requestedExpiration.rejection();
             }

@@ -25,6 +25,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
+import hudson.security.HudsonPrivateSecurityRealm;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
@@ -39,9 +40,11 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
+import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStore;
@@ -51,15 +54,21 @@ import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlSelect;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.xml.XmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -1220,6 +1229,997 @@ class ApiTokenPropertyTest {
         assertTrue(tokenList.iterator().next().isLegacy());
         checkTokenIsWorking(user.getId(), legacyToken);
         checkTokenIsNotWorking(user.getId(), otherToken.plainValue);
+    }
+
+    // ---- JENKINS-27612: the maximum lifetime of API tokens, as applied by the HTTP endpoints ----
+
+    private static final DateTimeFormatter SHORT_DATE_US = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(Locale.US);
+
+    /** Every accepted {@code addFixedToken} request registers a different secret. */
+    private int fixedTokenCounter;
+
+    /** The secret sent by the last {@code addFixedToken} request that {@link #creationParameters} built. */
+    private String lastFixedToken;
+
+    /**
+     * The parameters of a token creation request for either endpoint: the name, for {@code addFixedToken} a new secret
+     * (kept in {@link #lastFixedToken}) and the given expiration parameters, name and value pairs as in
+     * {@link #postToTokenEndpoint}.
+     */
+    private String[] creationParameters(String endpoint, String... expirationParameters) {
+        List<String> parameters = new ArrayList<>(List.of("newTokenName", "token"));
+        if (ADD_FIXED_TOKEN.equals(endpoint)) {
+            lastFixedToken = "11" + String.format("%032x", ++fixedTokenCounter);
+            parameters.addAll(List.of("newTokenPlainValue", lastFixedToken));
+        }
+        Collections.addAll(parameters, expirationParameters);
+        return parameters.toArray(String[]::new);
+    }
+
+    private JSONObject createToken(WebClient wc, String owner, String endpoint, String... expirationParameters) throws Exception {
+        return postToTokenEndpoint(wc, owner, endpoint, creationParameters(endpoint, expirationParameters));
+    }
+
+    private void assertCreationRejected(WebClient wc, User owner, String endpoint, String expectedMessage, String... expirationParameters) throws Exception {
+        assertRejected(wc, owner, endpoint, expectedMessage, creationParameters(endpoint, expirationParameters));
+    }
+
+    /** The secret of the token that an accepted request of the last {@link #creationParameters} created. */
+    private String secretOf(String endpoint, JSONObject data) {
+        return ADD_FIXED_TOKEN.equals(endpoint) ? lastFixedToken : data.getString("tokenValue");
+    }
+
+    /**
+     * Checks that the request was accepted and that the token expires on one of the given dates (more than one when
+     * midnight can pass between the test computing a date and the server doing it): what is stored, and what the answer says
+     * in the localized and in the ISO format, are the same date.
+     */
+    private static JSONObject assertAcceptedExpiring(User owner, JSONObject response, LocalDate... possibleDates) {
+        JSONObject data = assertAccepted(response);
+        LocalDate stored = findToken(owner, data.getString("tokenUuid")).getExpirationDate();
+        assertNotNull(stored, "the token must expire");
+        assertThat(stored, is(oneOf(possibleDates)));
+        assertEquals(stored.toString(), data.getString("expirationDateIso"));
+        assertEquals(stored.format(SHORT_DATE_US), data.getString("expirationDate"));
+        return data;
+    }
+
+    private static void assertAcceptedNeverExpiring(User owner, JSONObject response) {
+        JSONObject data = assertAccepted(response);
+        assertEquals("never", data.getString("expirationDate"));
+        assertEquals("never", data.getString("expirationDateIso"));
+        assertNull(findToken(owner, data.getString("tokenUuid")).getExpirationDate());
+    }
+
+    /**
+     * With the maximum lifetime off, which is the default, nothing changes: an empty duration and {@code never} give a token
+     * without expiry, and a far date is accepted.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void withoutMaximumTheEndpointsAcceptAnyExpiration(String endpoint) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        assertEquals(0, ApiTokenPropertyConfiguration.get().getMaxTokenLifetimeDays());
+
+        for (String duration : new String[]{null, "", "never"}) {
+            assertAcceptedNeverExpiring(user, createToken(wc, "user", endpoint, "expirationDuration", duration));
+        }
+        LocalDate before = LocalDate.now();
+        JSONObject response = createToken(wc, "user", endpoint, "expirationDuration", "3650");
+        LocalDate after = LocalDate.now();
+        assertAcceptedExpiring(user, response, before.plusDays(3650), after.plusDays(3650));
+        LocalDate farAway = LocalDate.now().plusDays(5000);
+        assertAcceptedExpiring(user, createToken(wc, "user", endpoint, "expirationDuration", "custom", "tokenExpiration", farAway.toString()), farAway);
+    }
+
+    /**
+     * Under an enforced maximum a request that sends no duration, like the clients that send only the name of the token, keeps
+     * working: the token expires on the last allowed day, and the answer says so.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void enforcedMaximumGivesAnEmptyDurationTheLastAllowedDay(String endpoint) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(30);
+
+        for (String duration : new String[]{null, "", "   "}) {
+            LocalDate before = LocalDate.now();
+            JSONObject response = createToken(wc, "user", endpoint, "expirationDuration", duration);
+            LocalDate after = LocalDate.now();
+            JSONObject data = assertAcceptedExpiring(user, response, before.plusDays(30), after.plusDays(30));
+            assertFalse(data.getString("tokenName").isBlank());
+            checkTokenIsWorking("user", secretOf(endpoint, data));
+        }
+        // the name is optional too
+        LocalDate before = LocalDate.now();
+        JSONObject response = postToTokenEndpoint(wc, "user", endpoint, ADD_FIXED_TOKEN.equals(endpoint)
+                ? new String[]{"newTokenPlainValue", "11" + "ef".repeat(16)}
+                : new String[]{});
+        LocalDate after = LocalDate.now();
+        assertAcceptedExpiring(user, response, before.plusDays(30), after.plusDays(30));
+    }
+
+    /**
+     * A number of days up to the maximum is accepted, today plus the maximum included: a token is valid through its
+     * expiration date. One more day is rejected, whatever the size of the number.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void enforcedMaximumAcceptsDaysUpToTheMaximumAndRejectsMore(String endpoint) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(30);
+
+        for (int days : new int[]{0, 1, 29, 30}) {
+            LocalDate before = LocalDate.now();
+            JSONObject response = createToken(wc, "user", endpoint, "expirationDuration", Integer.toString(days));
+            LocalDate after = LocalDate.now();
+            assertAcceptedExpiring(user, response, before.plusDays(days), after.plusDays(days));
+        }
+        // padding is trimmed, as without a maximum
+        LocalDate before = LocalDate.now();
+        JSONObject response = createToken(wc, "user", endpoint, "expirationDuration", " 30 ");
+        LocalDate after = LocalDate.now();
+        assertAcceptedExpiring(user, response, before.plusDays(30), after.plusDays(30));
+
+        String expected = Messages.ApiTokenProperty_expirationOverMaximum(30);
+        for (String days : List.of("31", "365", "2147483647")) {
+            assertCreationRejected(wc, user, endpoint, expected, "expirationDuration", days);
+        }
+        assertCreationRejected(wc, user, endpoint, expected, "expirationDuration", " 31 ");
+    }
+
+    /**
+     * Same boundary for a custom date: today plus the maximum is accepted, the next day is rejected.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void enforcedMaximumAcceptsACustomDateUpToTheMaximumAndRejectsLater(String endpoint) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(30);
+
+        // only wrong if midnight passes between this line and the server computing its own today
+        LocalDate today = LocalDate.now();
+        for (LocalDate date : List.of(today, today.plusDays(1), today.plusDays(29), today.plusDays(30))) {
+            assertAcceptedExpiring(user, createToken(wc, "user", endpoint, "expirationDuration", "custom", "tokenExpiration", date.toString()), date);
+        }
+
+        String expected = Messages.ApiTokenProperty_expirationOverMaximum(30);
+        for (LocalDate date : List.of(today.plusDays(31), today.plusDays(365), today.plusYears(100))) {
+            assertCreationRejected(wc, user, endpoint, expected, "expirationDuration", "custom", "tokenExpiration", date.toString());
+        }
+    }
+
+    /**
+     * The message says which maximum is configured, and the boundary follows it.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void overMaximumMessageStatesTheConfiguredMaximum(String endpoint) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        for (int max : new int[]{1, 45, 365}) {
+            ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(max);
+            String expected = Messages.ApiTokenProperty_expirationOverMaximum(max);
+            assertThat(expected, containsString(max == 1 ? "1 day " : max + " days"));
+
+            LocalDate before = LocalDate.now();
+            JSONObject response = createToken(wc, "user", endpoint, "expirationDuration", Integer.toString(max));
+            LocalDate after = LocalDate.now();
+            assertAcceptedExpiring(user, response, before.plusDays(max), after.plusDays(max));
+            assertCreationRejected(wc, user, endpoint, expected, "expirationDuration", Integer.toString(max + 1));
+
+            before = LocalDate.now();
+            response = createToken(wc, "user", endpoint);
+            after = LocalDate.now();
+            assertAcceptedExpiring(user, response, before.plusDays(max), after.plusDays(max));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void enforcedMaximumRejectsNever(String endpoint) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(30);
+
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationNeverNotAllowed(), "expirationDuration", "never");
+        // trimmed like the other durations, so the same request
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationNeverNotAllowed(), "expirationDuration", " never ");
+    }
+
+    /**
+     * What is invalid stays invalid, with its own message, under an enforced maximum: the expiration is parsed and checked
+     * for the past before the maximum is applied.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void enforcedMaximumKeepsRejectingPastDatesAndInvalidExpirations(String endpoint) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(30);
+
+        for (String days : List.of("-1", "-365")) {
+            assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationInPast(), "expirationDuration", days);
+        }
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationInPast(),
+                "expirationDuration", "custom", "tokenExpiration", LocalDate.now().minusDays(1).toString());
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationDurationInvalid(), "expirationDuration", "soon");
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationDateMissing(), "expirationDuration", "custom");
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationDateInvalid(),
+                "expirationDuration", "custom", "tokenExpiration", "31/12/2030");
+    }
+
+    /**
+     * An exempt owner keeps today's behaviour: no expiry for {@code never} and for an empty duration, any duration. The past
+     * is still rejected.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void exemptOwnerIsNotLimitedByTheMaximum(String endpoint) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("someone\n  user \n");
+
+        for (String duration : new String[]{null, "", "never", " never "}) {
+            assertAcceptedNeverExpiring(user, createToken(wc, "user", endpoint, "expirationDuration", duration));
+        }
+        LocalDate before = LocalDate.now();
+        JSONObject response = createToken(wc, "user", endpoint, "expirationDuration", "365");
+        LocalDate after = LocalDate.now();
+        assertAcceptedExpiring(user, response, before.plusDays(365), after.plusDays(365));
+        LocalDate farAway = LocalDate.now().plusDays(400);
+        assertAcceptedExpiring(user, createToken(wc, "user", endpoint, "expirationDuration", "custom", "tokenExpiration", farAway.toString()), farAway);
+
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationInPast(), "expirationDuration", "-1");
+
+        // the exemption is the user's, not a switch: another user is limited
+        config.setExemptUserIds("someone");
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationNeverNotAllowed(), "expirationDuration", "never");
+    }
+
+    private static class IdStrategySpecifyingSecurityRealm extends HudsonPrivateSecurityRealm {
+        private final IdStrategy idStrategy;
+
+        IdStrategySpecifyingSecurityRealm(IdStrategy idStrategy) {
+            super(true, false, null);
+            this.idStrategy = idStrategy;
+        }
+
+        @Override
+        public IdStrategy getUserIdStrategy() {
+            return idStrategy;
+        }
+    }
+
+    /** Creates the account, which creates the user, and returns a client logged in with its password. */
+    private WebClient createClientForAccount(HudsonPrivateSecurityRealm realm, String login) throws Exception {
+        realm.createAccount(login, login);
+        WebClient wc = j.createWebClient().withBasicCredentials(login, login);
+        // the first request of a user may save it: do it now, not during the assertions
+        wc.goToXml("whoAmI/api/xml");
+        return wc;
+    }
+
+    /**
+     * The exemptions are matched with the {@link IdStrategy} of the security realm: with a case sensitive one, the owner whose
+     * ID differs by the case is not exempt.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void exemptionIsCaseSensitiveWithACaseSensitiveIdStrategy(String endpoint) throws Exception {
+        j.jenkins.setCrumbIssuer(null);
+        HudsonPrivateSecurityRealm realm = new IdStrategySpecifyingSecurityRealm(new IdStrategy.CaseSensitive());
+        j.jenkins.setSecurityRealm(realm);
+        WebClient lowerCaseClient = createClientForAccount(realm, "alice");
+        WebClient upperCaseClient = createClientForAccount(realm, "Alice");
+        User lowerCase = User.getById("alice", false);
+        User upperCase = User.getById("Alice", false);
+        assertNotEquals(lowerCase, upperCase);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("alice");
+
+        assertAcceptedNeverExpiring(lowerCase, createToken(lowerCaseClient, "alice", endpoint, "expirationDuration", "never"));
+        assertCreationRejected(upperCaseClient, upperCase, endpoint, Messages.ApiTokenProperty_expirationNeverNotAllowed(), "expirationDuration", "never");
+        LocalDate before = LocalDate.now();
+        JSONObject response = createToken(upperCaseClient, "Alice", endpoint);
+        LocalDate after = LocalDate.now();
+        assertAcceptedExpiring(upperCase, response, before.plusDays(30), after.plusDays(30));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void exemptionIgnoresTheCaseWithACaseInsensitiveIdStrategy(String endpoint) throws Exception {
+        j.jenkins.setCrumbIssuer(null);
+        HudsonPrivateSecurityRealm realm = new IdStrategySpecifyingSecurityRealm(new IdStrategy.CaseInsensitive());
+        j.jenkins.setSecurityRealm(realm);
+        WebClient upperCaseClient = createClientForAccount(realm, "ALICE");
+        WebClient bobClient = createClientForAccount(realm, "bob");
+        User upperCase = User.getById("ALICE", false);
+        User bob = User.getById("bob", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+        config.setExemptUserIds("alice");
+
+        assertAcceptedNeverExpiring(upperCase, createToken(upperCaseClient, "ALICE", endpoint, "expirationDuration", "never"));
+        assertCreationRejected(bobClient, bob, endpoint, Messages.ApiTokenProperty_expirationNeverNotAllowed(), "expirationDuration", "never");
+    }
+
+    /**
+     * Before {@code enforceFrom} the policy only announces the maximum: nothing is rejected and nothing is filled in.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void maximumIsNotAppliedBeforeTheEnforcementDate(String endpoint) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+        // far enough from today for midnight not to matter
+        config.setEnforceFrom(LocalDate.now().plusDays(10).toString());
+
+        for (String duration : new String[]{null, "", "never"}) {
+            assertAcceptedNeverExpiring(user, createToken(wc, "user", endpoint, "expirationDuration", duration));
+        }
+        LocalDate before = LocalDate.now();
+        JSONObject response = createToken(wc, "user", endpoint, "expirationDuration", "365");
+        LocalDate after = LocalDate.now();
+        assertAcceptedExpiring(user, response, before.plusDays(365), after.plusDays(365));
+        LocalDate farAway = LocalDate.now().plusDays(400);
+        assertAcceptedExpiring(user, createToken(wc, "user", endpoint, "expirationDuration", "custom", "tokenExpiration", farAway.toString()), farAway);
+
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationInPast(), "expirationDuration", "-1");
+    }
+
+    /**
+     * The enforcement date is included, a past date enforces, and so does a blank one.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void maximumIsAppliedFromTheEnforcementDateOnAndWithoutOne(String endpoint) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+
+        // if midnight passes the date is in the past for the server, which enforces as well
+        LocalDate today = LocalDate.now();
+        for (String enforceFrom : new String[]{today.toString(), today.minusDays(1).toString(), "2000-01-01", "", "  ", null}) {
+            config.setEnforceFrom(enforceFrom);
+            assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationNeverNotAllowed(), "expirationDuration", "never");
+            assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationOverMaximum(30), "expirationDuration", "31");
+            LocalDate before = LocalDate.now();
+            JSONObject response = createToken(wc, "user", endpoint);
+            LocalDate after = LocalDate.now();
+            assertAcceptedExpiring(user, response, before.plusDays(30), after.plusDays(30));
+        }
+    }
+
+    /**
+     * A stored enforcement date that does not parse can only come from a configuration file: the policy fails closed and enforces.
+     */
+    @Test
+    @LocalData
+    @Issue("JENKINS-27612")
+    void unparsableEnforcementDateFailsClosed() throws Exception {
+        assertEquals("2026-13-01", ApiTokenPropertyConfiguration.get().getEnforceFrom());
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+
+        for (String endpoint : List.of(GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN)) {
+            assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationNeverNotAllowed(), "expirationDuration", "never");
+            assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationOverMaximum(30), "expirationDuration", "31");
+            LocalDate before = LocalDate.now();
+            JSONObject response = createToken(wc, "user", endpoint);
+            LocalDate after = LocalDate.now();
+            assertAcceptedExpiring(user, response, before.plusDays(30), after.plusDays(30));
+        }
+    }
+
+    /**
+     * The token of the owner is judged, not the user who sends the request: an administrator who creates a token for another user
+     * is limited if the owner is, and is not if the owner is exempt, whatever the administrator's own status.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void theOwnerOfTheTokenIsJudgedNotTheUserWhoSendsTheRequest(String endpoint) throws Exception {
+        WebClient adminClient = createClientForTokenEndpoints("admin");
+        User admin = User.getById("admin", false);
+        User alice = User.getById("alice", true);
+        User service = User.getById("service", true);
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().to("admin")
+                .grant(Jenkins.READ).everywhere().toAuthenticated());
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+
+        boolean previous = setAdminCanGenerateNewTokens(true);
+        try {
+            // the administrator is limited, the owner is exempt
+            config.setExemptUserIds("service");
+            assertAcceptedNeverExpiring(service, createToken(adminClient, "service", endpoint, "expirationDuration", "never"));
+            assertAcceptedNeverExpiring(service, createToken(adminClient, "service", endpoint));
+            assertCreationRejected(adminClient, alice, endpoint, Messages.ApiTokenProperty_expirationNeverNotAllowed(), "expirationDuration", "never");
+
+            // the administrator is exempt, the owner is limited
+            config.setExemptUserIds("admin");
+            assertCreationRejected(adminClient, alice, endpoint, Messages.ApiTokenProperty_expirationNeverNotAllowed(), "expirationDuration", "never");
+            assertCreationRejected(adminClient, alice, endpoint, Messages.ApiTokenProperty_expirationOverMaximum(30), "expirationDuration", "31");
+            assertCreationRejected(adminClient, service, endpoint, Messages.ApiTokenProperty_expirationNeverNotAllowed(), "expirationDuration", "never");
+            LocalDate before = LocalDate.now();
+            JSONObject response = createToken(adminClient, "alice", endpoint);
+            LocalDate after = LocalDate.now();
+            assertAcceptedExpiring(alice, response, before.plusDays(30), after.plusDays(30));
+            // and the exempt administrator is not limited for the administrator's own tokens
+            assertAcceptedNeverExpiring(admin, createToken(adminClient, "admin", endpoint, "expirationDuration", "never"));
+        } finally {
+            setAdminCanGenerateNewTokens(previous);
+        }
+    }
+
+    /**
+     * The system property is read once, when the class is initialized: the test sets the field.
+     *
+     * @return the previous value
+     */
+    private static boolean setAdminCanGenerateNewTokens(boolean value) throws ReflectiveOperationException {
+        Field field = ApiTokenProperty.class.getDeclaredField("ADMIN_CAN_GENERATE_NEW_TOKENS");
+        field.setAccessible(true);
+        boolean previous = field.getBoolean(null);
+        field.setBoolean(null, value);
+        return previous;
+    }
+
+    /**
+     * The policy is applied before the property of a user who has none is built and added, which saves the user: a rejected
+     * request leaves that user as it was.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {GENERATE_NEW_TOKEN, ADD_FIXED_TOKEN})
+    @Issue("JENKINS-27612")
+    void rejectionByTheMaximumDoesNotCreateThePropertyOfAUserWithoutOne(String endpoint) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        Field properties = User.class.getDeclaredField("properties");
+        properties.setAccessible(true);
+        ((List<?>) properties.get(user)).removeIf(ApiTokenProperty.class::isInstance);
+        assertNull(user.getProperty(ApiTokenProperty.class));
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(30);
+
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationNeverNotAllowed(), "expirationDuration", "never");
+        assertCreationRejected(wc, user, endpoint, Messages.ApiTokenProperty_expirationOverMaximum(30), "expirationDuration", "31");
+        assertNull(user.getProperty(ApiTokenProperty.class), "rejected requests must not create the property");
+
+        LocalDate before = LocalDate.now();
+        JSONObject response = createToken(wc, "user", endpoint);
+        LocalDate after = LocalDate.now();
+        assertAcceptedExpiring(user, response, before.plusDays(30), after.plusDays(30));
+    }
+
+    /**
+     * For {@code addFixedToken}: the value must be there before anything else, and the maximum is checked before the format
+     * of the value, which is the last check, the one that needs the store.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void addFixedTokenChecksTheMaximumAfterTheValueIsPresentAndBeforeItsFormat() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(30);
+        String malformed = "110123456789abcdef0123456789abcde";
+
+        assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_tokenValueMissing(),
+                "newTokenName", "fixed", "expirationDuration", "never");
+        assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_expirationOverMaximum(30),
+                "newTokenName", "fixed", "newTokenPlainValue", malformed, "expirationDuration", "31");
+        assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_expirationNeverNotAllowed(),
+                "newTokenName", "fixed", "newTokenPlainValue", malformed, "expirationDuration", "never");
+        assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_tokenValueInvalid(),
+                "newTokenName", "fixed", "newTokenPlainValue", malformed, "expirationDuration", "10");
+        assertRejected(wc, user, ADD_FIXED_TOKEN, Messages.ApiTokenProperty_tokenValueInvalid(),
+                "newTokenName", "fixed", "newTokenPlainValue", malformed);
+    }
+
+    /**
+     * The maximum is forward only: the tokens that exist when it is enabled, of any kind, keep authenticating and stay as they are.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void tokensCreatedBeforeTheMaximumKeepWorkingAfterItIsEnabled() throws Exception {
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        String legacyToken = user.getProperty(ApiTokenProperty.class).getApiTokenInsecure();
+        assertTrue(user.getProperty(ApiTokenProperty.class).hasLegacyToken());
+
+        JSONObject generated = assertAccepted(createToken(wc, "user", GENERATE_NEW_TOKEN, "expirationDuration", "never"));
+        String generatedToken = generated.getString("tokenValue");
+        LocalDate farAway = LocalDate.now().plusDays(365);
+        assertAccepted(createToken(wc, "user", ADD_FIXED_TOKEN, "expirationDuration", "custom", "tokenExpiration", farAway.toString()));
+        String fixedToken = lastFixedToken;
+        checkTokenIsWorking("user", legacyToken);
+        checkTokenIsWorking("user", generatedToken);
+        checkTokenIsWorking("user", fixedToken);
+        StoredState before = storedState(user);
+
+        config.setMaxTokenLifetimeDays(30);
+
+        checkTokenIsWorking("user", legacyToken);
+        checkTokenIsWorking("user", generatedToken);
+        checkTokenIsWorking("user", fixedToken);
+        assertNull(findToken(user, generated.getString("tokenUuid")).getExpirationDate());
+        assertEquals(before.tokenUuids(), storedState(user).tokenUuids());
+        // new tokens are limited
+        assertCreationRejected(wc, user, GENERATE_NEW_TOKEN, Messages.ApiTokenProperty_expirationNeverNotAllowed(), "expirationDuration", "never");
+    }
+
+    /**
+     * Posts to the deprecated {@code changeToken} endpoint and returns the HTML answer, after checking the HTTP status is 200.
+     */
+    private String changeToken(WebClient wc, String owner) throws Exception {
+        WebRequest request = new WebRequest(
+                new URL(j.getURL(), "user/" + owner + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/changeToken/"),
+                HttpMethod.POST
+        );
+        Page page = wc.getPage(request);
+        assertEquals(200, page.getWebResponse().getStatusCode());
+        return page.getWebResponse().getContentAsString();
+    }
+
+    /** The legacy token is regenerated: the answer does not refuse, the old value stops working and the new one works. */
+    private void assertLegacyTokenIsRegenerated(WebClient wc, User owner) throws Exception {
+        ApiTokenProperty property = owner.getProperty(ApiTokenProperty.class);
+        String before = property.getApiTokenInsecure();
+        checkTokenIsWorking(owner.getId(), before);
+
+        String response = changeToken(wc, owner.getId());
+        assertThat(response, not(containsString(Messages.ApiTokenProperty_ChangeToken_MaximumLifetimeEnforced())));
+        assertThat(response, not(containsString(Messages.ApiTokenProperty_ChangeToken_CapabilityNotAllowed())));
+        String after = property.getApiTokenInsecure();
+        assertNotEquals(before, after);
+        checkTokenIsNotWorking(owner.getId(), before);
+        checkTokenIsWorking(owner.getId(), after);
+    }
+
+    /** The legacy token is not regenerated: the answer says why, and nothing changes, in memory or in the saved user. */
+    private void assertLegacyTokenIsKept(WebClient wc, User owner) throws Exception {
+        ApiTokenProperty property = owner.getProperty(ApiTokenProperty.class);
+        String before = property.getApiTokenInsecure();
+        StoredState stored = storedState(owner);
+
+        String response = changeToken(wc, owner.getId());
+        assertThat(response, containsString(Messages.ApiTokenProperty_ChangeToken_MaximumLifetimeEnforced()));
+        assertEquals(before, property.getApiTokenInsecure());
+        assertEquals(stored, storedState(owner), "a rejected request must not change anything for the user");
+        checkTokenIsWorking(owner.getId(), before);
+    }
+
+    /**
+     * The legacy token never expires: regenerating it would give a token that the maximum does not cover, so the deprecated
+     * endpoint is rejected for an owner who is not exempt once the maximum is enforced. The Java method is not enforced.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void changeTokenIsRejectedForANonExemptOwnerWhenTheMaximumIsEnforced() throws Exception {
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenProperty property = user.getProperty(ApiTokenProperty.class);
+        assertTrue(property.hasLegacyToken());
+        String legacyToken = property.getApiTokenInsecure();
+
+        config.setMaxTokenLifetimeDays(30);
+        assertLegacyTokenIsKept(wc, user);
+        // the same with a date that is today and one that is in the past, and with a blank one
+        for (String enforceFrom : new String[]{LocalDate.now().toString(), "2000-01-01", ""}) {
+            config.setEnforceFrom(enforceFrom);
+            assertLegacyTokenIsKept(wc, user);
+        }
+        config.setExemptUserIds("someone else");
+        assertLegacyTokenIsKept(wc, user);
+
+        // only the HTTP endpoint is enforced
+        property.changeApiToken();
+        assertNotEquals(legacyToken, property.getApiTokenInsecure());
+    }
+
+    @Test
+    @LocalData
+    @Issue("JENKINS-27612")
+    void changeTokenIsRejectedWhenTheEnforcementDateDoesNotParse() throws Exception {
+        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+        WebClient wc = createClientForTokenEndpoints("user");
+        assertEquals("2026-13-01", ApiTokenPropertyConfiguration.get().getEnforceFrom());
+
+        assertLegacyTokenIsKept(wc, User.getById("user", false));
+    }
+
+    /**
+     * Without a maximum, before the enforcement date and for an exempt owner, the endpoint works as it did.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void changeTokenWorksWhenTheMaximumDoesNotApply() throws Exception {
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        assertTrue(user.getProperty(ApiTokenProperty.class).hasLegacyToken());
+
+        // no maximum
+        assertLegacyTokenIsRegenerated(wc, user);
+
+        // a maximum that is not enforced yet
+        config.setMaxTokenLifetimeDays(30);
+        config.setEnforceFrom(LocalDate.now().plusDays(10).toString());
+        assertLegacyTokenIsRegenerated(wc, user);
+
+        // an exempt owner
+        config.setEnforceFrom(null);
+        config.setExemptUserIds("user");
+        assertLegacyTokenIsRegenerated(wc, user);
+    }
+
+    /**
+     * The owner of the legacy token is judged, not the administrator who regenerates it.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void changeTokenJudgesTheOwnerNotTheUserWhoSendsTheRequest() throws Exception {
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
+        WebClient adminClient = createClientForTokenEndpoints("admin");
+        User admin = User.getById("admin", false);
+        User alice = User.getById("alice", true);
+        User service = User.getById("service", true);
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().to("admin")
+                .grant(Jenkins.READ).everywhere().toAuthenticated());
+        config.setMaxTokenLifetimeDays(30);
+
+        // the administrator is limited, the owner is exempt
+        config.setExemptUserIds("service");
+        assertLegacyTokenIsRegenerated(adminClient, service);
+        assertLegacyTokenIsKept(adminClient, alice);
+
+        // the administrator is exempt, the owner is limited
+        config.setExemptUserIds("admin");
+        assertLegacyTokenIsKept(adminClient, alice);
+        assertLegacyTokenIsKept(adminClient, service);
+        assertLegacyTokenIsRegenerated(adminClient, admin);
+    }
+
+    // ---- JENKINS-27612: the add-token dialog and the legacy token section of the page of a user ----
+
+    /** What the dialog offers when the maximum does not apply to the owner, as {@code value=label,...}. */
+    private static final String FULL_EXPIRATION_OPTIONS = "7=7 Days,30=30 Days,60=60 Days,90=90 Days,custom=Custom,never=No Expiration";
+
+    private static final String NEVER_WARNING = "It is not recommended to create tokens that never expire.";
+
+    private static HtmlPage tokenPage(WebClient wc, User owner) throws Exception {
+        return wc.goTo(owner.getUrl() + "/security/");
+    }
+
+    /** The dialog is in the page as a hidden template, which the script clones when the user adds a token. */
+    private static HtmlElement dialogTemplate(HtmlPage page) {
+        return page.getHtmlElementById("api-token-add-template");
+    }
+
+    /** The options of the expiration select, as {@code value=label,...}. */
+    private static String expirationOptions(HtmlPage page) {
+        HtmlSelect select = dialogTemplate(page).getOneHtmlElementByAttribute("select", "name", "expirationDuration");
+        return String.join(",", select.getOptions().stream()
+                .map(option -> option.getValueAttribute() + "=" + option.getTextContent().strip().replaceAll("\\s+", " "))
+                .toList());
+    }
+
+    /** The values of the options that the dialog selects when it opens. */
+    private static List<String> selectedExpirations(HtmlPage page) {
+        HtmlSelect select = dialogTemplate(page).getOneHtmlElementByAttribute("select", "name", "expirationDuration");
+        return select.getOptions().stream()
+                .filter(option -> option.hasAttribute("selected"))
+                .map(option -> option.getValueAttribute())
+                .toList();
+    }
+
+    private static void assertExpirationOptions(HtmlPage page, String expectedSelected, String expectedOptions) {
+        assertEquals(expectedOptions, expirationOptions(page));
+        assertEquals(List.of(expectedSelected), selectedExpirations(page));
+    }
+
+    /** The warning about tokens that never expire, which is an empty element when the dialog does not offer them. */
+    private static String neverWarning(HtmlPage page) {
+        HtmlElement warning = dialogTemplate(page).querySelector(".token-warning");
+        return warning.getTextContent().strip();
+    }
+
+    /** The text of the notice about the enforcement date, {@code null} if the dialog has none. */
+    private static String enforceFromNotice(HtmlPage page) {
+        HtmlElement notice = dialogTemplate(page).querySelector(".token-enforce-from-notice");
+        return notice == null ? null : notice.getTextContent().strip().replaceAll("\\s+", " ");
+    }
+
+    private static String enforceFromNoticeText(String date, String days) {
+        return "From " + date + ", tokens must expire within " + days + ", unless your account is exempt. Existing tokens are not touched.";
+    }
+
+    private static boolean hasChangeTokenButton(HtmlPage page) {
+        return page.querySelector("button[data-validate-button-method='changeToken']") != null;
+    }
+
+    /**
+     * An owner who is subject to an enforced maximum is offered the usual choices that the maximum allows, and the maximum itself
+     * when it is not one of them. The default is the largest of them that is not longer than 30 days. There is no token that never
+     * expires, so no option for it and no warning about it.
+     */
+    @ParameterizedTest
+    @CsvSource(delimiter = ';', value = {
+        "90;30;7=7 Days,30=30 Days,60=60 Days,90=90 Days",
+        "100;30;7=7 Days,30=30 Days,60=60 Days,90=90 Days,100=100 days (maximum)",
+        "45;30;7=7 Days,30=30 Days,45=45 days (maximum)",
+        "30;30;7=7 Days,30=30 Days",
+        "29;29;7=7 Days,29=29 days (maximum)",
+        "10;10;7=7 Days,10=10 days (maximum)",
+        "7;7;7=7 Days",
+        "3;3;3=3 days (maximum)",
+        "1;1;1=1 day (maximum)"
+    })
+    @Issue("JENKINS-27612")
+    void dialogOffersOnlyWhatTheEnforcedMaximumAllows(int maximum, String expectedDefault, String expectedChoices) throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration.get().setMaxTokenLifetimeDays(maximum);
+
+        HtmlPage page = tokenPage(wc, user);
+        assertExpirationOptions(page, expectedDefault, expectedChoices + ",custom=Custom");
+        assertEquals("", neverWarning(page));
+        assertThat(page.asXml(), not(containsString(NEVER_WARNING)));
+        assertNull(enforceFromNotice(page));
+    }
+
+    /** The maximum is enforced from the date, that day included, and when there is no date, a blank one or one that is not a date. */
+    @Test
+    @Issue("JENKINS-27612")
+    void dialogIsLimitedFromTheEnforcementDateOnAndWithoutOne() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(10);
+
+        // if midnight passes the date is in the past for the server, which enforces as well
+        LocalDate today = LocalDate.now();
+        for (String enforceFrom : new String[]{today.toString(), today.minusDays(1).toString(), "2000-01-01", "", "  ", null, "2026-13-01", "soon"}) {
+            config.setEnforceFrom(enforceFrom);
+            HtmlPage page = tokenPage(wc, user);
+            assertExpirationOptions(page, "10", "7=7 Days,10=10 days (maximum),custom=Custom");
+            assertNull(enforceFromNotice(page), "no notice once the maximum is enforced: " + enforceFrom);
+        }
+    }
+
+    /** With no maximum, which is the default, the dialog is what it always was. */
+    @Test
+    @Issue("JENKINS-27612")
+    void dialogIsUnchangedWithoutMaximum() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        assertEquals(0, config.getMaxTokenLifetimeDays());
+
+        HtmlPage page = tokenPage(wc, user);
+        assertExpirationOptions(page, "30", FULL_EXPIRATION_OPTIONS);
+        assertEquals(NEVER_WARNING, neverWarning(page));
+        assertNull(enforceFromNotice(page));
+
+        // the date means nothing without a maximum: no restriction and nothing to announce
+        config.setEnforceFrom(LocalDate.now().plusDays(10).toString());
+        page = tokenPage(wc, user);
+        assertExpirationOptions(page, "30", FULL_EXPIRATION_OPTIONS);
+        assertNull(enforceFromNotice(page));
+    }
+
+    /**
+     * Before the enforcement date the dialog offers everything, as without a maximum, and announces the maximum, to the owners
+     * who are subject to it and to the ones who are exempt: it states a rule of the instance.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void dialogIsUnchangedBeforeTheEnforcementDateAndAnnouncesTheMaximum() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+        // far enough from today for midnight not to matter
+        LocalDate enforceFrom = LocalDate.now().plusDays(10);
+        config.setEnforceFrom(enforceFrom.toString());
+
+        HtmlPage page = tokenPage(wc, user);
+        assertExpirationOptions(page, "30", FULL_EXPIRATION_OPTIONS);
+        assertEquals(NEVER_WARNING, neverWarning(page));
+        assertEquals(enforceFromNoticeText(enforceFrom.toString(), "30 days"), enforceFromNotice(page));
+
+        config.setExemptUserIds("user");
+        page = tokenPage(wc, user);
+        assertExpirationOptions(page, "30", FULL_EXPIRATION_OPTIONS);
+        assertEquals(enforceFromNoticeText(enforceFrom.toString(), "30 days"), enforceFromNotice(page));
+
+        // the notice gives the number of days of the maximum, in the singular when it is one
+        config.setExemptUserIds("");
+        config.setMaxTokenLifetimeDays(1);
+        assertEquals(enforceFromNoticeText(enforceFrom.toString(), "1 day"), enforceFromNotice(tokenPage(wc, user)));
+        config.setMaxTokenLifetimeDays(365);
+        assertEquals(enforceFromNoticeText(enforceFrom.toString(), "365 days"), enforceFromNotice(tokenPage(wc, user)));
+    }
+
+    /** An owner who is exempt is not limited by an enforced maximum: the dialog is the full one, and has nothing to announce. */
+    @Test
+    @Issue("JENKINS-27612")
+    void dialogIsUnchangedForAnExemptOwner() throws Exception {
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(10);
+        config.setExemptUserIds("someone\n  user \n");
+
+        HtmlPage page = tokenPage(wc, user);
+        assertExpirationOptions(page, "30", FULL_EXPIRATION_OPTIONS);
+        assertEquals(NEVER_WARNING, neverWarning(page));
+        assertNull(enforceFromNotice(page));
+    }
+
+    /**
+     * The owner of the page is judged, not the user who looks at it: an administrator who is subject to the maximum sees the
+     * full dialog on the page of an exempt user, and one who is exempt sees the limited dialog on the page of a user who is not.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void dialogIsThatOfTheOwnerOfThePageNotThatOfTheViewer() throws Exception {
+        WebClient adminClient = createClientForTokenEndpoints("admin");
+        WebClient aliceClient = createClientForTokenEndpoints("alice");
+        WebClient serviceClient = createClientForTokenEndpoints("service");
+        User admin = User.getById("admin", false);
+        User alice = User.getById("alice", false);
+        User service = User.getById("service", false);
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().to("admin")
+                .grant(Jenkins.READ).everywhere().toAuthenticated());
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setMaxTokenLifetimeDays(30);
+        String limited = "7=7 Days,30=30 Days,custom=Custom";
+
+        // the administrator is subject to the maximum, the owner of the second page is exempt
+        config.setExemptUserIds("service");
+        assertExpirationOptions(tokenPage(adminClient, alice), "30", limited);
+        assertExpirationOptions(tokenPage(adminClient, service), "30", FULL_EXPIRATION_OPTIONS);
+        assertExpirationOptions(tokenPage(adminClient, admin), "30", limited);
+        assertExpirationOptions(tokenPage(aliceClient, alice), "30", limited);
+        assertExpirationOptions(tokenPage(serviceClient, service), "30", FULL_EXPIRATION_OPTIONS);
+
+        // the administrator is exempt, the others are not
+        config.setExemptUserIds("admin");
+        assertExpirationOptions(tokenPage(adminClient, alice), "30", limited);
+        assertExpirationOptions(tokenPage(adminClient, service), "30", limited);
+        assertExpirationOptions(tokenPage(adminClient, admin), "30", FULL_EXPIRATION_OPTIONS);
+        assertExpirationOptions(tokenPage(aliceClient, alice), "30", limited);
+        assertExpirationOptions(tokenPage(serviceClient, service), "30", limited);
+    }
+
+    /**
+     * The legacy token of a user can be regenerated with the button of the legacy section as long as the maximum does not apply
+     * to the owner: without a maximum, before the enforcement date and for an exempt owner. The server rejects the request
+     * otherwise, so there is no button.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void changeTokenButtonIsNotRenderedForAnOwnerWhoIsSubjectToTheEnforcedMaximum() throws Exception {
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        assertTrue(user.getProperty(ApiTokenProperty.class).hasLegacyToken());
+
+        // no maximum
+        HtmlPage page = tokenPage(wc, user);
+        assertTrue(hasChangeTokenButton(page));
+        assertEquals(user.getProperty(ApiTokenProperty.class).getApiToken(), page.getFormByName("config").getInputByName("_.apiToken").getValue());
+
+        // a maximum that is not enforced yet
+        config.setMaxTokenLifetimeDays(30);
+        config.setEnforceFrom(LocalDate.now().plusDays(10).toString());
+        assertTrue(hasChangeTokenButton(tokenPage(wc, user)));
+
+        // an exempt owner
+        config.setEnforceFrom(null);
+        config.setExemptUserIds("user");
+        assertTrue(hasChangeTokenButton(tokenPage(wc, user)));
+
+        // the maximum is enforced: the legacy token is still shown, but it cannot be regenerated
+        config.setExemptUserIds("someone else");
+        for (String enforceFrom : new String[]{null, "", LocalDate.now().toString(), "2000-01-01", "2026-13-01"}) {
+            config.setEnforceFrom(enforceFrom);
+            page = tokenPage(wc, user);
+            assertFalse(hasChangeTokenButton(page), "no button once the maximum is enforced: " + enforceFrom);
+            assertEquals(user.getProperty(ApiTokenProperty.class).getApiToken(), page.getFormByName("config").getInputByName("_.apiToken").getValue());
+        }
+
+        // and without a maximum again
+        config.setMaxTokenLifetimeDays(0);
+        assertTrue(hasChangeTokenButton(tokenPage(wc, user)));
+    }
+
+    /**
+     * When users can create a legacy token themselves and the owner has none, the legacy section says so, and an owner who is
+     * subject to the enforced maximum has no button to create one: only the button is hidden, not the section.
+     */
+    @Test
+    @Issue("JENKINS-27612")
+    void legacySectionOfAnOwnerWithoutLegacyTokenHasNoButtonWhenTheMaximumApplies() throws Exception {
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setCreationOfLegacyTokenEnabled(true);
+        WebClient wc = createClientForTokenEndpoints("user");
+        User user = User.getById("user", false);
+        assertFalse(user.getProperty(ApiTokenProperty.class).hasLegacyToken());
+
+        HtmlPage page = tokenPage(wc, user);
+        assertTrue(hasChangeTokenButton(page));
+        assertEquals(Messages.ApiTokenProperty_NoLegacyToken(), page.getFormByName("config").getInputByName("_.apiToken").getValue());
+
+        config.setMaxTokenLifetimeDays(30);
+        page = tokenPage(wc, user);
+        assertFalse(hasChangeTokenButton(page));
+        assertEquals(Messages.ApiTokenProperty_NoLegacyToken(), page.getFormByName("config").getInputByName("_.apiToken").getValue());
+
+        config.setExemptUserIds("user");
+        assertTrue(hasChangeTokenButton(tokenPage(wc, user)));
+    }
+
+    /** The button follows the owner of the page, not the user who looks at it, as the server does. */
+    @Test
+    @Issue("JENKINS-27612")
+    void changeTokenButtonFollowsTheOwnerOfThePageNotTheViewer() throws Exception {
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
+        WebClient adminClient = createClientForTokenEndpoints("admin");
+        User admin = User.getById("admin", false);
+        User alice = User.getById("alice", true);
+        User service = User.getById("service", true);
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().to("admin")
+                .grant(Jenkins.READ).everywhere().toAuthenticated());
+        config.setMaxTokenLifetimeDays(30);
+
+        // the administrator is subject to the maximum, the owner of the second page is exempt
+        config.setExemptUserIds("service");
+        assertFalse(hasChangeTokenButton(tokenPage(adminClient, alice)));
+        assertTrue(hasChangeTokenButton(tokenPage(adminClient, service)));
+        assertFalse(hasChangeTokenButton(tokenPage(adminClient, admin)));
+
+        // the administrator is exempt, the others are not
+        config.setExemptUserIds("admin");
+        assertFalse(hasChangeTokenButton(tokenPage(adminClient, alice)));
+        assertFalse(hasChangeTokenButton(tokenPage(adminClient, service)));
+        assertTrue(hasChangeTokenButton(tokenPage(adminClient, admin)));
     }
 
     // test no token are generated for new user with the global configuration set to false

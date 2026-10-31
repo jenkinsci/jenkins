@@ -1,0 +1,32 @@
+<div>
+  The maximum number of days an API token may live, counted from the day it is
+  created. Leave the field empty, or enter 0, for no limit. This is the default,
+  and nothing is restricted then.
+  <p>
+    Once the limit is enforced (see <em>Enforce the maximum lifetime from</em>),
+    an API token that is created through the HTTP endpoints, which is what the
+    user configuration page and scripted clients use, must expire within that
+    number of days from today. A token is valid through its expiration date, so
+    the last date that is allowed is today plus the maximum. A token that never
+    expires is rejected. A request that does not ask for a duration gets a token
+    that expires on the last day that is allowed, today plus the maximum; the
+    response gives that date.
+  </p>
+  <p>
+    The limit only applies when a token is created. Tokens that exist already
+    are not touched, and neither are tokens that are created from a script or
+    from the script console through the Java API. Legacy API tokens never
+    expire, so the maximum cannot apply to them: once it is enforced, users who
+    are not exempt can no longer regenerate a legacy token from their page, but
+    the legacy tokens that are generated for new users (see the options above)
+    are not limited.
+  </p>
+  <p>
+    A maximum of less than 7 days is accepted, but then every new token is
+    flagged as about to expire as soon as it is created.
+  </p>
+  <p>
+    The users listed under <em>Users exempt from the maximum lifetime</em> are
+    not restricted.
+  </p>
+</div>

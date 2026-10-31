@@ -35,5 +35,21 @@ THE SOFTWARE.
         <f:entry field="usageStatisticsEnabled">
             <f:checkbox title="${%usageStatisticsEnabled}" />
         </f:entry>
+        <j:if test="${instance.legacyTokensBypassLimit()}">
+            <div class="jenkins-alert jenkins-alert-warning jenkins-form-item">${%legacyTokensNotice}</div>
+        </j:if>
+        <f:entry title="${%maxTokenLifetimeDays}" field="maxTokenLifetimeDays">
+            <f:number step="1" />
+        </f:entry>
+        <f:entry title="${%exemptUserIds}" field="exemptUserIds">
+            <f:textarea />
+        </f:entry>
+        <f:entry title="${%enforceFrom}" field="enforceFrom">
+            <f:textbox placeholder="yyyy-MM-dd" />
+        </f:entry>
+        <j:set var="pendingEnforceFrom" value="${instance.pendingEnforceFrom()}" />
+        <j:if test="${pendingEnforceFrom != null}">
+            <div class="jenkins-alert jenkins-alert-info jenkins-form-item">${%enforceFromNotice(pendingEnforceFrom, instance.maxTokenLifetimeDays)}</div>
+        </j:if>
     </f:section>
 </j:jelly>
