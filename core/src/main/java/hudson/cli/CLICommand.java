@@ -163,6 +163,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * authentication.
      */
     private transient Authentication transportAuth;
+    private transient CLICommand unmutatedClone;
 
     /**
      * Gets the command name.
@@ -241,6 +242,12 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.locale = locale;
         CmdLineParser p = getCmdLineParser();
 
+        try {
+            this.unmutatedClone = createClone();
+        } catch (Throwable ignored) {
+            // Fallback to the supplied parser if an unmutated clone cannot be created
+        }
+
         Authentication auth = getTransportAuthentication2();
         CLIContext context = new CLIContext(getName(), args, auth);
 
@@ -268,6 +275,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             Listeners.notify(CLIListener.class, true, listener -> listener.onThrowable(context, e));
             return exitCode;
         } finally {
+            this.unmutatedClone = null;
             if (sc != null)
                 sc.setAuthentication(old); // restore
         }
@@ -424,7 +432,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
         CmdLineParser parserForUsage = p;
         try {
-            CLICommand cleanInstance = createClone();
+            CLICommand cleanInstance = unmutatedClone != null ? unmutatedClone : createClone();
             if (cleanInstance != null) {
                 parserForUsage = cleanInstance.getCmdLineParser();
             }

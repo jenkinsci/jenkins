@@ -67,6 +67,28 @@ class CLICommandUsageTest {
         }
     }
 
+    public static class SampleCloneableCommand extends CloneableCLICommand {
+
+        @Option(name = "-reason", usage = "Reason for quiet down")
+        public String reason = "default-reason";
+
+        @Option(name = "-timeout", usage = "Timeout in seconds")
+        public int timeout = 42;
+
+        @Argument(usage = "Positional target")
+        public String target = "default-target";
+
+        @Override
+        public String getShortDescription() {
+            return "Sample cloneable command description";
+        }
+
+        @Override
+        protected int run() {
+            return 0;
+        }
+    }
+
     @Test
     void usageHelpDisplaysOriginalDefaultValuesOnError() {
         Jenkins jenkins = mock(Jenkins.class);
@@ -79,6 +101,50 @@ class CLICommandUsageTest {
 
             // Provide custom values for options, followed by an unexpected extra argument
             // "unexpectedExtraArg"
+            List<String> args = List.of(
+                    "-reason", "custom-reason",
+                    "-timeout", "999",
+                    "provided-target",
+                    "unexpectedExtraArg");
+
+            int exitCode = cmd.main(
+                    args,
+                    Locale.ENGLISH,
+                    new ByteArrayInputStream(new byte[0]),
+                    new PrintStream(stdout, true, StandardCharsets.UTF_8),
+                    new PrintStream(stderr, true, StandardCharsets.UTF_8));
+
+            assertEquals(2, exitCode, "CLI parsing should fail with exit code 2");
+
+            String err = stderr.toString(StandardCharsets.UTF_8);
+
+            // True defaults MUST be shown in the usage message
+            assertThat("Usage should display the original default reason", err,
+                    containsString("(default: default-reason)"));
+            assertThat("Usage should display the original default timeout", err, containsString("(default: 42)"));
+            assertThat("Usage should display the original default target", err,
+                    containsString("(default: default-target)"));
+
+            // Mutated user values MUST NOT be claimed to be defaults
+            assertThat("Usage must not show mutated custom-reason as default", err,
+                    not(containsString("(default: custom-reason)")));
+            assertThat("Usage must not show mutated 999 as default", err, not(containsString("(default: 999)")));
+            assertThat("Usage must not show mutated provided-target as default", err,
+                    not(containsString("(default: provided-target)")));
+        }
+    }
+
+    @Test
+    void usageHelpDisplaysOriginalDefaultValuesOnErrorForCloneableCLICommand() {
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mocked.when(Jenkins::get).thenReturn(jenkins);
+
+            SampleCloneableCommand cmd = new SampleCloneableCommand();
+            ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+            ByteArrayOutputStream stderr = new ByteArrayOutputStream();
+
+            // Provide custom values for options, followed by an unexpected extra argument
             List<String> args = List.of(
                     "-reason", "custom-reason",
                     "-timeout", "999",
