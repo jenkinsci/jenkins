@@ -101,7 +101,20 @@ public class FileParameterValue extends ParameterValue {
 
     @DataBoundConstructor
     public FileParameterValue(String name, FileItem file) {
-        this(name, file, FilenameUtils.getName(file.getName()));
+        this(name, requireUploadedFile(name, file), FilenameUtils.getName(file.getName()));
+    }
+
+    /**
+     * Stapler's JSON-binding invokes {@link #FileParameterValue(String, FileItem)} with a null
+     * {@code file} when the submitted form has no file attached for this parameter (JENKINS-18599),
+     * unlike {@link FileParameterDefinition#createValue(org.kohsuke.stapler.StaplerRequest2)}, which
+     * already treats a missing upload as "no value" rather than a server error.
+     */
+    private static FileItem requireUploadedFile(String name, FileItem file) {
+        if (file == null) {
+            throw new Failure("No file was uploaded for the '" + name + "' parameter");
+        }
+        return file;
     }
 
     /**
