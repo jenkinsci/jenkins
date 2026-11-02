@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
@@ -175,6 +176,19 @@ class HudsonPrivateSecurityRealmFIPSTest {
         HtmlForm form = configurePage.getFormByName("config");
         assertThrows(FailingHttpStatusCodeException.class, () ->
             j.submit(form));
+    }
+
+    @Test
+    void createAccountWithShortPasswordDoesNotLeaveOrphanedUser() throws Throwable {
+        rjr.then(HudsonPrivateSecurityRealmFIPSTest::createAccountWithShortPasswordDoesNotLeaveOrphanedUserStep);
+    }
+
+    private static void createAccountWithShortPasswordDoesNotLeaveOrphanedUserStep(JenkinsRule j) throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        assertThrows(IllegalArgumentException.class, () -> securityRealm.createAccount("short", "tooshort"));
+        assertNull(User.getById("short", false), "A user should not be registered when account creation is rejected for an invalid FIPS password.");
     }
 
     @Test

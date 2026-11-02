@@ -568,8 +568,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Creates a new user account by registering a password to the user.
      */
     public User createAccount(String userName, String password) throws IOException {
+        // Validate (and hash) the password before registering the user, so that a rejected
+        // password (e.g. too short for FIPS-140 compliance) does not leave a user behind.
+        Details details = Details.fromPlainPassword(password);
         User user = User.getById(userName, true);
-        user.addProperty(Details.fromPlainPassword(password));
+        user.addProperty(details);
         SecurityListener.fireUserCreated(user.getId());
         return user;
     }
