@@ -143,11 +143,13 @@ public abstract class OfflineCause implements IOfflineCause {
         private final String message;
 
         public UserCause(@CheckForNull User user, @CheckForNull String message) {
-            this(user != null ? user.getId() : null, message);
+            this(user != null ? user.getId() : null,
+                    user != null ? user.getDisplayName() : Jenkins.ANONYMOUS2.getName(),
+                    message);
         }
 
-        private UserCause(String userId, String message) {
-            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(userId != null ? userId : Jenkins.ANONYMOUS2.getName(), message != null ? " : " + message : ""));
+        private UserCause(String userId, String displayName, String message) {
+            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(displayName, message != null ? " : " + message : ""));
             this.message = message;
             this.userId = userId;
         }

@@ -136,6 +136,16 @@ class ComputerTest {
     }
 
     @Test
+    @Issue("JENKINS-73286")
+    void userCauseOfflineMessageUsesDisplayNameNotUserId() {
+        User user = User.getById("jdoe", true);
+        user.setFullName("Jane Doe");
+        OfflineCause cause = new OfflineCause.UserCause(user, "msg");
+        assertThat(cause.toString(), containsString("Jane Doe"));
+        assertThat(cause.toString(), not(containsString("jdoe")));
+    }
+
+    @Test
     void offlineCauseRemainsAfterTemporaryCauseRemoved() throws Exception {
         var agent = j.createSlave();
         var computer = agent.toComputer();
