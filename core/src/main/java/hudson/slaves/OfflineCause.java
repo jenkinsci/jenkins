@@ -31,6 +31,7 @@ import hudson.model.Computer;
 import hudson.model.User;
 import jenkins.agents.IOfflineCause;
 import jenkins.model.Jenkins;
+import jenkins.security.XStreamNotDeserializable;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -106,14 +107,24 @@ public abstract class OfflineCause implements IOfflineCause {
      * Caused by unexpected channel termination.
      */
     public static class ChannelTermination extends OfflineCause {
-        public final Exception cause;
+        /**
+         * Not persisted: an arbitrary {@link Exception}, possibly a JDK-internal type whose own
+         * fields (even {@code serialVersionUID}) are not reflectively accessible on Java 17+
+         * without {@code --add-opens}, cannot be safely serialized by XStream (JENKINS-74888).
+         * Use {@link #getShortDescription()} for a persisted summary instead.
+         */
+        @XStreamNotDeserializable
+        public final transient Exception cause;
+
+        private final String causeDescription;
 
         public ChannelTermination(Exception cause) {
             this.cause = cause;
+            this.causeDescription = cause.toString();
         }
 
         public String getShortDescription() {
-            return cause.toString();
+            return causeDescription;
         }
 
         @Override public String toString() {
