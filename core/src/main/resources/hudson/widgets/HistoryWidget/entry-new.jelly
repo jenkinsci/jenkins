@@ -36,47 +36,37 @@ THE SOFTWARE.
    </j:if>
   
   <div class="app-temporary-list__item" page-entry-id="${pageEntry.entryId}">
-    <div class="app-build-item">
-      <j:set var="iconTooltip">
-        <div>${build.iconColor.description}</div>
-        <div class="jenkins-!-text-color-secondary">${%JumpToConsole(h.getConsoleProviderFor(build).descriptor.displayName)}</div>
-      </j:set>
+    <div class="app-build-item app-build-item--columns">
+      <div class="app-build-item__column app-build-item__column--primary">
+        <j:set var="iconTooltip">
+          <div>${build.iconColor.description}</div>
+          <div class="jenkins-!-text-color-secondary">${%JumpToConsole(h.getConsoleProviderFor(build).descriptor.displayName)}</div>
+        </j:set>
 
-      <a href="${h.getConsoleUrl(build)}"
-         class="app-build-item__icon"
-         data-html-tooltip="${iconTooltip}"
-         data-tooltip-delay="500">
-        <l:icon src="symbol-status-${build.iconColor.iconName}" />
-      </a>
+        <a href="${h.getConsoleUrl(build)}"
+           class="app-build-item__icon"
+           data-html-tooltip="${iconTooltip}"
+           data-tooltip-delay="500">
+          <l:icon src="symbol-status-${build.iconColor.iconName}" />
+        </a>
 
-      <div class="app-temporary-list__item__details" href="${link}">
-        <div class="app-temporary-list__item__details__text">
-          <a class="app-temporary-list__item__label" href="${rootURL}/${build.url}">${build.displayName}</a>
-          <div class="app-temporary-list__item__description">
-            <l:details-bar it="${build}" />
+        <div class="app-temporary-list__item__details" href="${link}">
+          <div class="app-temporary-list__item__details__text">
+            <a class="app-temporary-list__item__label" href="${rootURL}/${build.url}">${build.displayName}</a>
+            <div class="app-temporary-list__item__description">
+              <l:details-bar it="${build}" context="compact" />
+            </div>
           </div>
-
-          <j:set var="badges" value="${build.badgeActions}"/>
-          <j:if test="${!empty(badges)}">
-            <div class="app-temporary-list__item__description">
-              <j:forEach var="badge" items="${badges}">
-                <st:include it="${badge}" page="badge.jelly" />
-              </j:forEach>
-            </div>
-          </j:if>
-
-          <j:if test="${!empty build.truncatedDescription}">
-            <div class="app-temporary-list__item__description">
-              <div class="jenkins-details__item">
-                <div class="jenkins-details__item__icon">
-                  <l:icon src="symbol-description" />
-                </div>
-                <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}"/>
-              </div>
-            </div>
-          </j:if>
         </div>
       </div>
+
+      <j:forEach var="entryDecorator" items="${it.widget.getEntryDecorators(pageEntry)}">
+        <div class="app-build-item__column">
+          <j:if test="${entryDecorator != null}">
+            <st:include from="${entryDecorator.decorator}" it="${entryDecorator}" page="entry.jelly" optional="true" />
+          </j:if>
+        </div>
+      </j:forEach>
 
       <div class="app-temporary-list__item__actions">
         <button class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link" data-href="${link}">
