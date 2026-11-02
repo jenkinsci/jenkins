@@ -59,6 +59,29 @@ class DescribableListTest {
         assertEquals("[1, 3]", data.toString());
     }
 
+    @Issue("JENKINS-53741")
+    @Test
+    void getSkipsCorruptedElement() {
+        DescribableList<StableDatum, Descriptor<StableDatum>> list = new DescribableList<>();
+        StableDatum datum = new StableDatum();
+        list.add(datum);
+        // Simulate a config.xml corrupted by a plugin's broken XStream serialization, which
+        // can leave a raw, non-Describable element (e.g. an <int>) in the persisted list.
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        CopyOnWriteList raw = list.data;
+        raw.add(42);
+        assertEquals(datum, list.get(datum.getDescriptor()));
+    }
+
+    private static final class StableDatum implements Describable<StableDatum> {
+        private static final Descriptor<StableDatum> DESCRIPTOR = new Descriptor<>(StableDatum.class) {};
+
+        @Override
+        public Descriptor<StableDatum> getDescriptor() {
+            return DESCRIPTOR;
+        }
+    }
+
     @Test
     void replace() throws Exception {
         AtomicInteger count = new AtomicInteger();

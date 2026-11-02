@@ -43,6 +43,7 @@ import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -130,9 +131,20 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     }
 
     public T get(D descriptor) {
-        for (T t : data)
+        for (Iterator<T> it = data.iterator(); it.hasNext();) {
+            T t;
+            try {
+                t = it.next();
+            } catch (ClassCastException e) {
+                // JENKINS-53741: a corrupted config.xml (e.g. from an old XStream serialization
+                // bug) can leave a non-Describable element in this list; skip it rather than
+                // breaking every caller of this method, including the global config save.
+                LOGGER.log(Level.WARNING, e, () -> "Skipping corrupted element in " + this);
+                continue;
+            }
             if (t.getDescriptor() == descriptor)
                 return t;
+        }
         return null;
     }
 
