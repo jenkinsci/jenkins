@@ -17,11 +17,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -181,6 +183,34 @@ class AtomicFileWriterTest {
         assertTrue(filePath.toFile().exists());
 
         assertThat(Files.getPosixFilePermissions(filePath), equalTo(DEFAULT_GIVEN_PERMISSIONS));
+    }
+
+    @Issue("JENKINS-70771")
+    @Test
+    void moveWithRetrySucceedsAfterTransientAccessDenied() throws Exception {
+        final Path source = af.toPath();
+        final Path destination = af.toPath();
+        final AtomicInteger attempts = new AtomicInteger();
+        AtomicFileWriter.moveWithRetry(source, destination, (s, d) -> {
+            if (attempts.getAndIncrement() < 2) {
+                throw new AccessDeniedException(d.toString(), null, "simulated transient file lock");
+            }
+        });
+        assertEquals(3, attempts.get());
+    }
+
+    @Issue("JENKINS-70771")
+    @Test
+    void moveWithRetryGivesUpAfterExhaustingRetries() {
+        final Path source = af.toPath();
+        final Path destination = af.toPath();
+        final AtomicInteger attempts = new AtomicInteger();
+        assertThrows(AccessDeniedException.class, () -> AtomicFileWriter.moveWithRetry(source, destination, (s, d) -> {
+            attempts.getAndIncrement();
+            throw new AccessDeniedException(d.toString(), null, "simulated permanent file lock");
+        }));
+        // One initial attempt plus the configured number of retries.
+        assertEquals(3, attempts.get());
     }
 
     private static File newFolder(File root, String... subDirs) throws IOException {

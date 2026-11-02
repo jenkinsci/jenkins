@@ -73,6 +73,22 @@ public class AtomicFileWriter extends Writer {
      */
     private static boolean atomicMoveSupported = true;
 
+    /**
+     * The number of additional times we will attempt a non-atomic move when it fails with
+     * {@link AccessDeniedException}, typically due to a transient file lock on Windows
+     * (JENKINS-70771).
+     */
+    private static /* final */ int MOVE_RETRIES = Math.max(0, SystemProperties.getInteger(
+            AtomicFileWriter.class.getName() + ".moveRetries", 2));
+
+    /**
+     * The time (in milliseconds) that we will wait between attempts to move a file when retrying.
+     *
+     * @see #MOVE_RETRIES
+     */
+    private static /* final */ long MOVE_RETRY_WAIT_MILLIS = SystemProperties.getLong(
+            AtomicFileWriter.class.getName() + ".moveRetryWaitMillis", 100L);
+
     static {
         if (DISABLE_FORCED_FLUSH) {
             LOGGER.log(Level.WARNING, "DISABLE_FORCED_FLUSH flag used, this could result in dataloss if failures happen in your storage subsystem.");
@@ -251,7 +267,43 @@ public class AtomicFileWriter extends Writer {
                 LOGGER.log(Level.INFO, e, () -> "Move " + source + " → " + destination + " failed, perhaps due to a temporary file lock. Falling back to non-atomic move.");
             }
         }
-        Files.move(source, destination, StandardCopyOption.REPLACE_EXISTING);
+        moveWithRetry(source, destination, (s, d) -> Files.move(s, d, StandardCopyOption.REPLACE_EXISTING));
+    }
+
+    /**
+     * Performs {@code moveOperation}, retrying up to {@link #MOVE_RETRIES} times if it fails with
+     * {@link AccessDeniedException}. On Windows, another process (such as an antivirus scanner or
+     * search indexer) can transiently hold the destination file open, which makes a rename fail
+     * with this exception even though no other Jenkins activity is involved (JENKINS-70771).
+     */
+    static void moveWithRetry(final Path source, final Path destination, final MoveOperation moveOperation) throws IOException {
+        for (int attempt = 0; ; attempt++) {
+            try {
+                moveOperation.move(source, destination);
+                return;
+            } catch (AccessDeniedException e) {
+                if (attempt >= MOVE_RETRIES) {
+                    throw e;
+                }
+                final int attemptNumber = attempt + 1;
+                LOGGER.log(Level.INFO, e, () -> "Move " + source + " → " + destination + " failed (attempt " + attemptNumber + "), perhaps due to a temporary file lock. Retrying.");
+                try {
+                    Thread.sleep(MOVE_RETRY_WAIT_MILLIS);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
+            }
+        }
+    }
+
+    /**
+     * The actual move of a {@link #tmpPath} to a {@link #destPath}, abstracted so that the retry
+     * logic in {@link #moveWithRetry} can be tested without relying on OS-specific file locking.
+     */
+    @FunctionalInterface
+    interface MoveOperation {
+        void move(Path source, Path destination) throws IOException;
     }
 
     private static final class CleanupChecker implements Runnable {
