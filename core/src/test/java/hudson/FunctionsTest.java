@@ -136,6 +136,18 @@ class FunctionsTest {
         }
     }
 
+    @Issue("JENKINS-33133")
+    @Test
+    void getRelativeLinkTo_nullItemDoesNotThrow() {
+        String contextPath = "/jenkins";
+        StaplerRequest2 req = createMockRequest(contextPath);
+        try (MockedStatic<Stapler> mocked = mockStatic(Stapler.class)) {
+            mocked.when(Stapler::getCurrentRequest2).thenReturn(req);
+            createMockAncestors(req);
+            assertNull(Functions.getRelativeLinkTo(null));
+        }
+    }
+
     @Test
     void testGetRelativeLinkTo_JobContainedInView() {
         String contextPath = "/jenkins";

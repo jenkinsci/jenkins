@@ -1401,6 +1401,10 @@ public class Functions {
      * Computes the relative path from the current page to the given item.
      */
     public static String getRelativeLinkTo(Item p) {
+        // JENKINS-33133: p can be null, e.g. a stale reference to a deleted item.
+        if (p == null) {
+            return null;
+        }
         Map<Object, String> ancestors = new HashMap<>();
         View view = null;
 
