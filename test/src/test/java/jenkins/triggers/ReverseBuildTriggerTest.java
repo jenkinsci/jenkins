@@ -41,6 +41,7 @@ import hudson.model.Run;
 import hudson.model.User;
 import hudson.tasks.BuildTrigger;
 import hudson.triggers.Trigger;
+import hudson.util.FormValidation;
 import java.util.List;
 import java.util.Set;
 import jenkins.model.Jenkins;
@@ -250,5 +251,13 @@ public class ReverseBuildTriggerTest {
         ReverseBuildTrigger trigger3 = new ReverseBuildTrigger("");
         String upstream3 = trigger3.getUpstreamProjects();
         assertEquals("", upstream3);
+    }
+
+    @Issue("JENKINS-56378")
+    @Test
+    void doCheckUpstreamProjectsNullAncestorNoNPE() {
+        ReverseBuildTrigger.DescriptorImpl descriptor = new ReverseBuildTrigger.DescriptorImpl();
+        FormValidation result = descriptor.doCheckUpstreamProjects(null, "nonexistent");
+        assertEquals(FormValidation.Kind.OK, result.kind);
     }
 }

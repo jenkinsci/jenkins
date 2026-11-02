@@ -206,6 +206,11 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         }
 
         public FormValidation doCheckUpstreamProjects(@AncestorInPath Job project, @QueryParameter String value) {
+            // JENKINS-56378: Behave gracefully for an unknown context, consistent with
+            // BuildTrigger.DescriptorImpl#doCheck (JENKINS-32525).
+            if (project == null) {
+                return FormValidation.ok(hudson.tasks.Messages.BuildTrigger_ok_ancestor_is_null());
+            }
             if (!project.hasPermission(Item.CONFIGURE)) {
                 return FormValidation.ok();
             }
