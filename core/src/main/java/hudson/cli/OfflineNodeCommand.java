@@ -46,7 +46,7 @@ public class OfflineNodeCommand extends CLICommand {
     @Argument(metaVar = "NAME", usage = "Agent name, or empty string for built-in node", required = true, multiValued = true)
     private List<String> nodes;
 
-    @Option(name = "-m", usage = "Record the reason about why you are disconnecting this node")
+    @Option(name = "-m", usage = "Record the reason about why you are taking this node offline")
     public String cause;
 
     @Override
