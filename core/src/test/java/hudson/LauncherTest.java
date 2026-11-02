@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -158,6 +159,22 @@ class LauncherTest {
         remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, true);
         decorated = remoteLauncher.decorateByEnv(new EnvVars());
         assertTrue(decorated.isUnix());
+    }
+
+    @Issue("JENKINS-64414")
+    @Test
+    void maskedPrintCommandLineToleratesMismatchedMaskLength() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        TaskListener l = new StreamBuildListener(baos, Charset.defaultCharset());
+        Launcher launcher = new Launcher.LocalLauncher(l);
+        String secret = "s3cr3t";
+        // A mask array shorter than the command list must not crash the build with an
+        // ArrayIndexOutOfBoundsException; the unaccounted-for arguments must be masked rather
+        // than printed, since treating them as safe to print could leak a secret.
+        launcher.maskedPrintCommandLine(List.of("echo", secret), new boolean[] {false}, null);
+        String log = baos.toString(Charset.defaultCharset());
+        assertFalse(log.contains(secret), log);
+        assertTrue(log.contains("********"), log);
     }
 
     @Issue("JENKINS-18368")

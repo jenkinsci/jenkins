@@ -831,10 +831,16 @@ public abstract class Launcher {
             return;
         }
 
-        assert mask.length == cmd.size();
+        if (mask.length != cmd.size()) {
+            // JENKINS-64414: a caller-supplied mask array that doesn't match the command list
+            // must not crash the build with an ArrayIndexOutOfBoundsException. Mask every
+            // argument we can't account for, since printing it unmasked could leak a secret.
+            LOGGER.log(Level.WARNING, () -> "Mask array length (" + mask.length
+                    + ") does not match the command length (" + cmd.size() + "); masking the extra arguments");
+        }
         final String[] masked = new String[cmd.size()];
         for (int i = 0; i < cmd.size(); i++) {
-            if (mask[i]) {
+            if (i >= mask.length || mask[i]) {
                 masked[i] = "********";
             } else {
                 masked[i] = cmd.get(i);
