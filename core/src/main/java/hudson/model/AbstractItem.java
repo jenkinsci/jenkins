@@ -363,6 +363,12 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
             throw new IOException("Trying to rename an item that does not support this operation.");
         }
 
+        // JENKINS-58681: doConfirmRename validates this via doCheckNewName before calling
+        // renameTo(), but callers that invoke renameTo() directly (e.g. plugins, scripts) would
+        // otherwise bypass subclass-specific rules such as Job#checkRename's check that a job is
+        // not renamed while it is building.
+        checkRename(newName);
+
         // always synchronize from bigger objects first
         final ItemGroup parent = getParent();
         String oldName = this.name;

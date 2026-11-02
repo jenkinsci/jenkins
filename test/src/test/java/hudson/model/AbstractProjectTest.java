@@ -89,6 +89,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.args4j.CmdLineException;
@@ -284,6 +285,34 @@ class AbstractProjectTest {
         assert job.lastBuild != null;
     }
      */
+
+    @Test
+    @Issue("JENKINS-58681")
+    void renameToEnforcesCheckRenameEvenWhenCalledDirectly() throws Exception {
+        OneShotEvent buildStarted = new OneShotEvent();
+        OneShotEvent unblock = new OneShotEvent();
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+                buildStarted.signal();
+                unblock.block();
+                return true;
+            }
+        });
+        p.scheduleBuild2(0);
+        buildStarted.block();
+        try {
+            assertTrue(p.isBuilding(), "precondition: the project should be building");
+            // Job#checkRename() rejects renaming a project while it is building; calling
+            // renameTo() directly (bypassing doConfirmRename/doCheckNewName) must still
+            // enforce that rule.
+            assertThrows(Failure.class, () -> p.renameTo("renamed-while-building"));
+        } finally {
+            unblock.signal();
+        }
+        j.waitUntilNoActivity();
+    }
 
     @Test
     @Issue("JENKINS-18678")
