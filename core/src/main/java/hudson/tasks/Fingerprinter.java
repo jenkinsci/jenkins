@@ -52,6 +52,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -311,6 +312,11 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
                 try {
                     results.add(new Record(produced, f, file.getName(), new FilePath(file).digest()));
+                } catch (NoSuchFileException e) {
+                    // JENKINS-68226: DirectoryScanner lists a broken symlink as an included
+                    // file even though it cannot actually be read; skip it rather than failing
+                    // the whole fingerprint step over one unreadable entry.
+                    logger.log(Level.WARNING, e, () -> "Skipping unreadable file while fingerprinting: " + file);
                 } catch (IOException e) {
                     throw new IOException(Messages.Fingerprinter_DigestFailed(file), e);
                 } catch (InterruptedException e) {

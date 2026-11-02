@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.Functions;
 import hudson.Launcher;
@@ -101,6 +102,25 @@ class FingerprinterTest {
     void setUp(JenkinsRule rule) {
         j = rule;
         Fingerprinter.enableFingerprintsInDependencyGraph = true;
+    }
+
+    @Issue("JENKINS-68226")
+    @Test
+    void brokenSymlinkIsSkippedNotFatal() throws Exception {
+        // Ant's DirectoryScanner lists a broken symlink as an included "file" even though it
+        // cannot actually be read, which is a POSIX-only scenario.
+        assumeFalse(Functions.isWindows());
+
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.getBuildersList().add(new Shell(
+                "echo hello > real.txt\n"
+                        + "ln -s /nonexistent-target broken-link\n"));
+        project.getPublishersList().add(new Fingerprinter("**/*", false));
+
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
+
+        Fingerprinter.FingerprintAction action = build.getAction(Fingerprinter.FingerprintAction.class);
+        assertThat(action.getRecords().keySet(), containsInAnyOrder("real.txt"));
     }
 
     @Test
