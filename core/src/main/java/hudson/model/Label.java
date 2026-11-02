@@ -65,6 +65,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import jenkins.model.IComputer;
@@ -90,6 +92,9 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public abstract class Label extends Actionable implements Comparable<Label>, ModelObjectWithChildren {
+
+    private static final Logger LOGGER = Logger.getLogger(Label.class.getName());
+
     /**
      * Display name of this label.
      */
@@ -251,7 +256,16 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
             Set<Cloud> r = new HashSet<>();
             Jenkins h = Jenkins.get();
             for (Cloud c : h.clouds) {
-                if (c.canProvision(this))
+                boolean canProvision;
+                try {
+                    canProvision = c.canProvision(this);
+                } catch (Throwable e) {
+                    // JENKINS-32116: a misbehaving Cloud implementation must not prevent this
+                    // label from being used at all, e.g. for label expression validation.
+                    LOGGER.log(Level.WARNING, e, () -> "Exception evaluating whether cloud '" + c.name + "' can provision for label '" + name + "'");
+                    canProvision = false;
+                }
+                if (canProvision)
                     r.add(c);
             }
             clouds = Collections.unmodifiableSet(r);
