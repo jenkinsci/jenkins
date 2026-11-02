@@ -15,9 +15,14 @@ import hudson.markup.MarkupFormatter;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.htmlunit.html.DomNodeUtil;
 import org.htmlunit.html.HtmlCheckBoxInput;
 import org.htmlunit.html.HtmlElement;
@@ -27,6 +32,7 @@ import org.htmlunit.html.HtmlOption;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlSelect;
 import org.htmlunit.html.HtmlTextInput;
+import org.htmlunit.util.NameValuePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
@@ -136,6 +142,26 @@ class ParametersTest {
 
         assertNotNull(builder.getEnvVars());
         assertEquals("Choice <2>", builder.getEnvVars().get("CHOICE"));
+    }
+
+    @Issue("JENKINS-49331")
+    @Test
+    void submittingValueNotAmongChoicesShowsCleanErrorNotStackTrace() throws Exception {
+        j.jenkins.setCrumbIssuer(null);
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.addProperty(new ParametersDefinitionProperty(
+                new ChoiceParameterDefinition("choice", new String[]{"a", "b"}, "choice description")));
+
+        WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
+        WebRequest req = new WebRequest(
+                new URI(wc.getContextPath() + "job/" + project.getName() + "/build?delay=0sec").toURL(), HttpMethod.POST);
+        req.setRequestParameters(List.of(
+                new NameValuePair("json", "{\"parameter\": [{\"name\": \"choice\", \"value\": \"invalid\"}]}")));
+        WebResponse rsp = wc.getPage(req).getWebResponse();
+
+        assertEquals(400, rsp.getStatusCode());
+        assertThat(rsp.getContentAsString(), containsString("Illegal choice for parameter choice: invalid"));
+        assertThat(rsp.getContentAsString(), not(containsString("Stack trace")));
     }
 
     @Test

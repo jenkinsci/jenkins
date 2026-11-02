@@ -154,7 +154,13 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     public ParameterValue createValue(StaplerRequest2 req, JSONObject jo) {
         StringParameterValue value = req.bindJSON(StringParameterValue.class, jo);
         value.setDescription(getDescription());
-        checkValue(value, value.getValue());
+        try {
+            checkValue(value, value.getValue());
+        } catch (IllegalArgumentException e) {
+            // JENKINS-49331: report invalid submissions as a user-facing error rather than
+            // letting the exception escape as an uncaught stack trace.
+            throw new Failure(e.getMessage());
+        }
         return value;
     }
 
