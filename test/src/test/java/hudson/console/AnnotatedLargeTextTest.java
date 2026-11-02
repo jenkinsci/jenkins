@@ -28,7 +28,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.matchesRegex;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import hudson.MarkupText;
 import java.io.ByteArrayOutputStream;
@@ -36,6 +39,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.logging.Level;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -44,6 +48,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 
 @For({AnnotatedLargeText.class, ConsoleNote.class, ConsoleAnnotationOutputStream.class, PlainTextConsoleOutputStream.class})
@@ -164,6 +169,24 @@ class AnnotatedLargeTextTest {
         text.writeHtmlTo(0, w);
         assertThat(w.toString(), matchesRegex("Some text[.]\nGo back to .*your home[.]\nMore text[.]\n"));
         assertThat(logging.getMessages(), hasItem(matchesRegex("Failed to resurrect annotation from .+")));
+    }
+
+    @Issue("JENKINS-70640")
+    @Test
+    void corruptedConsoleAnnotatorHeaderStartsFromScratch() throws Exception {
+        ByteBuffer buf = new ByteBuffer();
+        PrintStream ps = new PrintStream(buf, true, StandardCharsets.UTF_8);
+        ps.print("Some text.\n");
+        AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
+
+        // A truncated/corrupted X-ConsoleAnnotator header, as the client might echo back after
+        // being mangled in transit. Its length (3 bytes) is not a multiple of the AES block size,
+        // which makes decryption fail with IllegalBlockSizeException.
+        String corruptedHeader = Base64.getEncoder().encodeToString(new byte[] {1, 2, 3});
+        StaplerRequest2 req = mock(StaplerRequest2.class);
+        when(req.getHeader("X-ConsoleAnnotator")).thenReturn(corruptedHeader);
+
+        assertDoesNotThrow(() -> text.createAnnotator(req));
     }
 
     /** Simplified version of {@link HyperlinkNote}. */

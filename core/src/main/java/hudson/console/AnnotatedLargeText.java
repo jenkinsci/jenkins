@@ -44,6 +44,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.crypto.Cipher;
@@ -79,6 +81,9 @@ import org.kohsuke.stapler.framework.io.LargeText;
  * @since 1.349
  */
 public class AnnotatedLargeText<T> extends LargeText {
+
+    private static final Logger LOGGER = Logger.getLogger(AnnotatedLargeText.class.getName());
+
     /**
      * Can be null.
      */
@@ -177,10 +182,10 @@ public class AnnotatedLargeText<T> extends LargeText {
         rsp.setContentType(isHtml() ? "text/html;charset=UTF-8" : "text/plain;charset=UTF-8");
     }
 
-    private ConsoleAnnotator<T> createAnnotator(StaplerRequest2 req) throws IOException {
-        try {
-            String base64 = req != null ? req.getHeader("X-ConsoleAnnotator") : null;
-            if (base64 != null) {
+    ConsoleAnnotator<T> createAnnotator(StaplerRequest2 req) throws IOException {
+        String base64 = req != null ? req.getHeader("X-ConsoleAnnotator") : null;
+        if (base64 != null) {
+            try {
                 Cipher sym = PASSING_ANNOTATOR.decrypt();
 
                 try (ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(
@@ -190,12 +195,15 @@ public class AnnotatedLargeText<T> extends LargeText {
                     if (TimeUnit.HOURS.toMillis(1) > abs(System.currentTimeMillis() - timestamp))
                         // don't deserialize something too old to prevent a replay attack
                         return getConsoleAnnotator(ois);
-                } catch (RuntimeException ex) {
-                    throw new IOException("Could not decode input", ex);
                 }
+            } catch (IOException | ClassNotFoundException | RuntimeException ex) {
+                // JENKINS-70640: the X-ConsoleAnnotator header is just a best-effort continuity
+                // optimization echoed back by the client; if it was corrupted in transit (for
+                // example truncated by an intermediate proxy), there is nothing to recover, so
+                // fall back to starting from scratch rather than failing the whole request, the
+                // same way we already do for a token that is simply too old.
+                LOGGER.log(Level.FINE, ex, () -> "Failed to decode X-ConsoleAnnotator header, starting from scratch");
             }
-        } catch (ClassNotFoundException e) {
-            throw new IOException(e);
         }
         // start from scratch
         return ConsoleAnnotator.initial(context);
