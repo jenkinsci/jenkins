@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -659,6 +660,22 @@ class FunctionsTest {
                             Caused: p.Exc1
                             \tat p.C.method1(C.java:17)
                             """);
+    }
+
+    @Issue("JENKINS-70254")
+    @Test
+    void printThrowableToleratesCorruptedStackTraceElement() {
+        // A stack trace element can arrive as null, e.g. after being corrupted by object
+        // deserialization, which bypasses StackTraceElement's own constructor validation.
+        Throwable cause = new Throwable("oops");
+        cause.setStackTrace(new StackTraceElement[] {new StackTraceElement("p.C", "method2", "C.java", 23)});
+        Throwable wrapper = new Throwable("wrapper", cause) {
+            @Override
+            public StackTraceElement[] getStackTrace() {
+                return new StackTraceElement[] {null};
+            }
+        };
+        assertDoesNotThrow(() -> Functions.printThrowable(wrapper));
     }
 
     private static void assertPrintThrowable(Throwable t, String traditional, String custom) {

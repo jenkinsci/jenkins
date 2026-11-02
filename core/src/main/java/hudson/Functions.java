@@ -1837,7 +1837,10 @@ public class Functions {
             StackTraceElement[] higherTrace = higher.getStackTrace();
             while (end > 0) {
                 int higherEnd = end + higherTrace.length - trace.length;
-                if (higherEnd <= 0 || !higherTrace[higherEnd - 1].equals(trace[end - 1])) {
+                // A stack trace element can be null here, e.g. one corrupted by object
+                // deserialization (JENKINS-70254), so compare with Objects#equals rather
+                // than calling #equals directly on a possibly null element.
+                if (higherEnd <= 0 || !Objects.equals(higherTrace[higherEnd - 1], trace[end - 1])) {
                     break;
                 }
                 end--;
