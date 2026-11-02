@@ -62,6 +62,7 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -453,9 +454,15 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
 
         // Check each NodeProperty to see whether they object to this node
         // taking the task
-        for (NodeProperty prop : getNodeProperties()) {
+        // JENKINS-63524: iterate explicitly, not via a for-each, so a ClassCastException from a
+        // corrupted (non-NodeProperty) list element -- e.g. from a config.xml that bypassed the
+        // DescribableList XStream converter's type checking -- is caught the same way as an
+        // exception thrown by a legitimate NodeProperty's canTake(), instead of escaping
+        // uncaught and repeatedly breaking queue maintenance for every node.
+        for (Iterator<NodeProperty<?>> it = getNodeProperties().iterator(); it.hasNext();) {
             CauseOfBlockage c;
             try {
+                NodeProperty prop = it.next();
                 c = prop.canTake(item);
             } catch (Throwable t) {
                 // We cannot guarantee the task can be taken by this node because something wrong happened

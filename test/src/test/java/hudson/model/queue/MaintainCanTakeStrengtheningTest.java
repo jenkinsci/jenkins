@@ -12,6 +12,8 @@ import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,6 +70,32 @@ class MaintainCanTakeStrengtheningTest {
         // Tear down
         r.assertBuildStatusSuccess(r.waitForCompletion(good1));
         r.assertBuildStatusSuccess(r.waitForCompletion(good2));
+    }
+
+    @Issue("JENKINS-63524")
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void corruptedNodePropertyDoesNotBreakQueueMaintenance() throws Exception {
+        // A node whose nodeProperties list contains an element that is not a NodeProperty, as can
+        // happen when a config.xml is deserialized through the globally-registered DescribableList
+        // XStream converter, which does not validate element types.
+        DumbSlave corruptedAgent = r.createOnlineSlave(Label.get("corrupted"));
+        ((List) corruptedAgent.getNodeProperties()).add("not a NodeProperty");
+
+        // A good agent
+        r.createOnlineSlave(Label.get("good"));
+
+        // Queuing (but not running) a task for the corrupted agent forces queue maintenance to
+        // evaluate it on every cycle. Unrelated tasks must still be scheduled; bounded waits so a
+        // regression fails fast instead of hanging the build.
+        FreeStyleBuild good1 = scheduleBuild("good1", "good").get(60, TimeUnit.SECONDS);
+        r.assertBuildStatusSuccess(good1);
+        scheduleBuild("onCorrupted", "corrupted");
+        FreeStyleBuild good2 = scheduleBuild("good2", "good").get(60, TimeUnit.SECONDS);
+        r.assertBuildStatusSuccess(good2);
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("onCorrupted", FreeStyleProject.class)));
     }
 
     /**
