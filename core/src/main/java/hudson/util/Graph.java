@@ -36,6 +36,8 @@ import java.awt.HeadlessException;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
@@ -218,8 +220,11 @@ public abstract class Graph {
                 return;
             }
             throw e; // otherwise let the caller deal with it
-        } catch (HeadlessException e) {
-            // not available. send out error message
+        } catch (HeadlessException | ArrayIndexOutOfBoundsException e) {
+            // HeadlessException: not available.
+            // ArrayIndexOutOfBoundsException (JENKINS-54319): a broken host font configuration
+            // (e.g. after an OS migration) can make JFreeChart/AWT throw while laying out axis
+            // labels. Either way, send out an error message instead of a raw stack trace.
             rsp.sendRedirect2(req.getContextPath() + "/images/headless.png");
         }
     }
@@ -249,10 +254,19 @@ public abstract class Graph {
     private void doMapImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (req.checkIfModified(timestamp, rsp)) return;
 
-        ChartRenderingInfo info = new ChartRenderingInfo();
-        render(req, info);
-
         rsp.setContentType("text/plain;charset=UTF-8");
-        rsp.getWriter().println(ChartUtilities.getImageMap("map", info));
+        ChartRenderingInfo info = new ChartRenderingInfo();
+        try {
+            render(req, info);
+            rsp.getWriter().println(ChartUtilities.getImageMap("map", info));
+        } catch (HeadlessException | ArrayIndexOutOfBoundsException e) {
+            // JENKINS-54319: same rendering failures doPng already tolerates (headless
+            // environment, or a broken host font configuration); fall back to an empty
+            // clickable map instead of breaking the whole page.
+            LOGGER.log(Level.WARNING, e, () -> "Failed to render clickable map for " + Graph.this);
+            rsp.getWriter().println("<map name=\"map\"></map>");
+        }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(Graph.class.getName());
 }

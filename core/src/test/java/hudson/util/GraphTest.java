@@ -24,15 +24,82 @@
 
 package hudson.util;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartRenderingInfo;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 public class GraphTest {
 
     public static final int DEFAULT_W = 400;
     public static final int DEFAULT_H = 300;
+
+    @Issue("JENKINS-54319")
+    @Test
+    void doPngToleratesFontRenderingFailure() throws Exception {
+        Graph graph = brokenFontGraph();
+        StaplerRequest2 req = mock(StaplerRequest2.class);
+        StaplerResponse2 rsp = mock(StaplerResponse2.class);
+        when(req.checkIfModified(anyLong(), any())).thenReturn(false);
+        when(req.getContextPath()).thenReturn("");
+
+        graph.doPng(req, rsp);
+
+        verify(rsp).sendRedirect2("/images/headless.png");
+    }
+
+    @Issue("JENKINS-54319")
+    @Test
+    void doMapToleratesFontRenderingFailure() throws Exception {
+        Graph graph = brokenFontGraph();
+        StaplerRequest2 req = mock(StaplerRequest2.class);
+        StaplerResponse2 rsp = mock(StaplerResponse2.class);
+        when(req.checkIfModified(anyLong(), any())).thenReturn(false);
+        StringWriter sw = new StringWriter();
+        when(rsp.getWriter()).thenReturn(new PrintWriter(sw));
+
+        graph.doMap(req, rsp);
+
+        assertThat(sw.toString(), not(containsString("Exception")));
+    }
+
+    /**
+     * A graph whose chart rendering always fails the way JFreeChart/AWT does on a host with a
+     * broken font configuration (JENKINS-54319), regardless of the actual system fonts available
+     * where the test runs.
+     */
+    private static Graph brokenFontGraph() {
+        return new Graph(-1, 100, 100) {
+            @Override
+            protected JFreeChart createGraph() {
+                JFreeChart real = ChartFactory.createLineChart("t", "x", "y", new DefaultCategoryDataset());
+                return new JFreeChart(real.getPlot()) {
+                    @Override
+                    public BufferedImage createBufferedImage(int width, int height, double widthScaleFactor, double heightScaleFactor, ChartRenderingInfo info) {
+                        throw new ArrayIndexOutOfBoundsException(0);
+                    }
+                };
+            }
+        };
+    }
 
     @Test
     void testDimensions() {
