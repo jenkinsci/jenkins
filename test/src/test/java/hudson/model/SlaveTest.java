@@ -26,6 +26,7 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
@@ -159,6 +160,17 @@ class SlaveTest {
         assertJnlpJarUrlFails(slave, "..\\foo\\bar");
         assertJnlpJarUrlFails(slave, "foo/../../bar");
         assertJnlpJarUrlFails(slave, "./../foo/bar");
+    }
+
+    @Test
+    @Issue("JENKINS-56357")
+    void jnlpJarsWithEmptyPathDoesNotThrow() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
+        Page page = wc.getPage(wc.getContextPath() + "jnlpJars/");
+        // An empty path is rejected by the same allow-list check as any other disallowed file
+        // (SECURITY-195), rather than crashing earlier with an unhandled StringIndexOutOfBoundsException.
+        assertThat(page.getWebResponse().getContentAsString(), not(containsString("StringIndexOutOfBoundsException")));
+        assertThat(page.getWebResponse().getContentAsString(), containsString("not allowed due to security reasons"));
     }
 
     private void assertJnlpJarUrlFails(@NonNull Slave slave, @NonNull String url) {

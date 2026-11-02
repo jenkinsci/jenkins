@@ -4398,7 +4398,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public Slave.JnlpJar doJnlpJars(StaplerRequest2 req) {
-        return new Slave.JnlpJar(req.getRestOfPath().substring(1));
+        // JENKINS-56357: getRestOfPath() returns "" rather than "/" when nothing follows
+        // "jnlpJars", so only strip a leading slash when there is one to strip.
+        String path = req.getRestOfPath();
+        return new Slave.JnlpJar(path.startsWith("/") ? path.substring(1) : path);
     }
 
     /**
