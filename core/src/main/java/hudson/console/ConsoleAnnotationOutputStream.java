@@ -143,8 +143,18 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
 
         lineOut.flush();
         MarkupText mt = new MarkupText(strBuf.toString());
-        if (ann != null)
-            ann = ann.annotate(context, mt);
+        if (ann != null) {
+            try {
+                ann = ann.annotate(context, mt);
+            } catch (RuntimeException e) {
+                // JENKINS-23697: a buggy ConsoleNote's annotate() must not break the rendering
+                // of this (or, since ann would otherwise still carry the broken state, every
+                // subsequent) console log line.
+                final ConsoleAnnotator<T> brokenAnnotator = ann;
+                LOGGER.log(Level.WARNING, e, () -> "Failed to annotate console line with " + brokenAnnotator);
+                ann = null;
+            }
+        }
         out.write(mt.toString(true)); // this perform escapes
     }
 

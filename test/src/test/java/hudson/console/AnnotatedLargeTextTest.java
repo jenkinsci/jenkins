@@ -166,6 +166,36 @@ class AnnotatedLargeTextTest {
         assertThat(logging.getMessages(), hasItem(matchesRegex("Failed to resurrect annotation from .+")));
     }
 
+    @Issue("JENKINS-23697")
+    @Test
+    void noteAnnotateOutOfBoundsDoesNotBreakRendering() throws Exception {
+        ByteBuffer buf = new ByteBuffer();
+        PrintStream ps = new PrintStream(buf, true, StandardCharsets.UTF_8);
+        ps.print("Some text.\n");
+        ps.print(BrokenNote.encodeTo() + "More text on the same line.\n");
+        ps.print("Another line.\n");
+        AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
+        StringWriter w = new StringWriter();
+        text.writeHtmlTo(0, w);
+        assertThat(w.toString(), matchesRegex("Some text[.]\nMore text on the same line[.]\nAnother line[.]\n"));
+    }
+
+    /**
+     * A note whose {@link #annotate} always fails with an out-of-bounds markup, as a buggy
+     * plugin-contributed {@link ConsoleNote} might (JENKINS-23697).
+     */
+    private static final class BrokenNote extends ConsoleNote<Void> {
+        @Override
+        public ConsoleAnnotator<?> annotate(Void context, MarkupText text, int charPos) {
+            text.addMarkup(charPos, charPos + 100_000, "<a>", "</a>");
+            return null;
+        }
+
+        static String encodeTo() throws IOException {
+            return new BrokenNote().encode();
+        }
+    }
+
     /** Simplified version of {@link HyperlinkNote}. */
     static class TestNote extends ConsoleNote<Void> {
         private final String url;
