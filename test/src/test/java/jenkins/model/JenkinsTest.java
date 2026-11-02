@@ -148,6 +148,15 @@ public class JenkinsTest {
     }
 
     @Test
+    @Issue("JENKINS-67184")
+    void doIconSizeWithoutQueryStringDoesNotThrow() throws Exception {
+        try (WebClient wc = j.createWebClient()) {
+            HtmlPage page = wc.goTo("iconSize");
+            assertEquals(HttpServletResponse.SC_OK, page.getWebResponse().getStatusCode());
+        }
+    }
+
+    @Test
     @Issue("SECURITY-3073")
     void verifyUploadedFingerprintFilePermission() throws Exception {
         assumeFalse(Functions.isWindows());

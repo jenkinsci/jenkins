@@ -4941,14 +4941,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressFBWarnings(value = "INSECURE_COOKIE", justification = "TODO needs triage")
     public void doIconSize(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        // JENKINS-67184: a request with no query string has nothing to change the cookie to;
+        // treat it as a no-op rather than failing the request.
         String qs = req.getQueryString();
-        if (qs == null)
-            throw new ServletException();
-        Cookie cookie = new Cookie("iconSize", Functions.validateIconSize(qs));
-        cookie.setMaxAge(/* ~4 mo. */9999999); // JENKINS-762
-        cookie.setSecure(req.isSecure());
-        cookie.setHttpOnly(true);
-        rsp.addCookie(cookie);
+        if (qs != null) {
+            Cookie cookie = new Cookie("iconSize", Functions.validateIconSize(qs));
+            cookie.setMaxAge(/* ~4 mo. */9999999); // JENKINS-762
+            cookie.setSecure(req.isSecure());
+            cookie.setHttpOnly(true);
+            rsp.addCookie(cookie);
+        }
         String ref = req.getHeader("Referer");
         if (ref == null)   ref = ".";
         rsp.sendRedirect2(ref);
