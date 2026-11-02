@@ -110,7 +110,7 @@ class HelpCommandTest {
     private void assertContainsUsageOfMethodCommand(String text) {
         assertThat(text, containsString("offline-node NAME ... [-m VAL]"));
         assertThat(text, containsStrings("NAME", "Agent name, or empty string for built-in node"));
-        assertThat(text, containsStrings("-m VAL", "Record the reason about why you are disconnecting this node"));
+        assertThat(text, containsStrings("-m VAL", "Record the reason about why you are taking this node offline"));
     }
 
     private static Matcher<String> containsStrings(String... strings) {
