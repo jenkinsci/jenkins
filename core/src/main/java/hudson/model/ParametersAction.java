@@ -342,6 +342,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         List<ParameterValue> filteredParameters = new ArrayList<>();
 
         for (ParameterValue v : this.parameters) {
+            if (v == null) continue;
             if (this.parameterDefinitionNames.contains(v.getName()) || isSafeParameter(v.getName())) {
                 filteredParameters.add(v);
             } else if (shouldKeepFlag == null) {

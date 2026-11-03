@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import hudson.EnvVars;
 import hudson.model.queue.SubTask;
@@ -114,5 +115,23 @@ class ParametersActionTest {
         // Merges and overrides
         assertEquals(3, parametersAction.createUpdated(parametersAction2.getParameters()).getParameters().size());
         assertEquals(3, parametersAction.merge(parametersAction2).getParameters().size());
+    }
+
+    @Test
+    @Issue("JENKINS-44947")
+    void getParametersShouldNotThrowOnNullParameterValueOnceAttached() {
+        StringParameterValue a = new StringParameterValue("a", "foo");
+        ParametersAction parametersAction = new ParametersAction(a, null);
+
+        ParametersDefinitionProperty property = mock(ParametersDefinitionProperty.class);
+        when(property.getParameterDefinitionNames()).thenReturn(List.of("a"));
+        Job job = mock(Job.class);
+        when(job.getProperty(ParametersDefinitionProperty.class)).thenReturn(property);
+        Run run = mock(Run.class);
+        when(run.getParent()).thenReturn(job);
+
+        parametersAction.onAttached(run);
+
+        assertEquals(1, parametersAction.getParameters().size());
     }
 }
