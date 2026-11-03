@@ -608,13 +608,16 @@ public abstract class FormFieldValidator {
         protected void check() throws IOException, ServletException {
             try {
                 String v = request.getParameter("value");
+                if (v == null) {
+                    v = "";
+                }
                 if (!allowWhitespace) {
                     if (v.indexOf(' ') >= 0 || v.indexOf('\n') >= 0) {
                         fail();
                         return;
                     }
                 }
-                v = v.trim();
+                v = allowWhitespace ? v.replaceAll("\\s", "") : v.trim();
                 if (!allowEmpty && v.isEmpty()) {
                     fail();
                     return;
