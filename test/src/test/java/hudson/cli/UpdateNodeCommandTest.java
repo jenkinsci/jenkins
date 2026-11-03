@@ -30,6 +30,7 @@ import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -37,6 +38,7 @@ import hudson.model.Computer;
 import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.Slave;
+import hudson.slaves.DumbSlave;
 import jenkins.model.Jenkins;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -148,5 +150,44 @@ class UpdateNodeCommandTest {
         assertEquals(okName, node.getNodeName());
         // ensure the other data were not saved
         assertEquals(defaultDescription, node.getNodeDescription());
+    }
+
+    @Test
+    void updateNodeWithoutExecutorsShouldModifyNodeConfiguration() throws Exception {
+        createAgentWithoutExecutors("MyAgent");
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Computer.CONFIGURE, Jenkins.READ)
+                .withStdin(Computer.class.getResourceAsStream("node.xml"))
+                .invokeWithArgs("MyAgent")
+        ;
+
+        assertThat(result, succeededSilently());
+        assertThat("An agent with old name should not exist", j.jenkins.getNode("MyAgent"), nullValue());
+        assertThat(j.jenkins.getNode("AgentFromXML").getNumExecutors(), equalTo(42));
+    }
+
+    @Test
+    void updateNodeWithoutExecutorsShouldFailWithoutComputerConfigurePermission() throws Exception {
+        createAgentWithoutExecutors("MyAgent");
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Jenkins.READ)
+                .withStdin(Computer.class.getResourceAsStream("node.xml"))
+                .invokeWithArgs("MyAgent")
+        ;
+
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Configure permission"));
+        assertThat(result, failedWith(6));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(j.jenkins.getNode("MyAgent"), notNullValue());
+    }
+
+    private DumbSlave createAgentWithoutExecutors(String name) throws Exception {
+        DumbSlave agent = new DumbSlave(name, j.createTmpDir().getPath(), j.createComputerLauncher(null));
+        agent.setNumExecutors(0);
+        j.jenkins.addNode(agent);
+        assertThat("a node without executors has no computer", agent.toComputer(), nullValue());
+        return agent;
     }
 }
