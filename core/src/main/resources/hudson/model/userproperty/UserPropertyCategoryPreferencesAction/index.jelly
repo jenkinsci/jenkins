@@ -29,7 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
     <l:layout permission="${app.ADMINISTER}" title="${%title}">
         <st:include page="sidepanel.jelly" it="${it.targetUser}" />
-        <l:main-panel>
+        <l:main-panel width="narrow">
             <l:app-bar title="${%title}" />
 
             <f:form method="post" action="configSubmit" name="config">
@@ -61,9 +61,8 @@ THE SOFTWARE.
                     </j:otherwise>
                 </j:choose>
 
-                <f:saveApplyBar/>
+                <f:saveBar/>
             </f:form>
-            <st:adjunct includes="lib.form.confirm" />
         </l:main-panel>
     </l:layout>
 </j:jelly>

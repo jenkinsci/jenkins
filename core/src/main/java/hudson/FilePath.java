@@ -803,6 +803,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Creates a symlink to the specified target.
+     * <p>
+     * This method swallows symlink creation failures. Prefer
+     * {@link #symlinkToStrict(String, TaskListener)} for new call sites.
      *
      * @param target
      *      The file that the symlink should point to.
@@ -812,6 +815,28 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      */
     public void symlinkTo(final String target, final TaskListener listener) throws IOException, InterruptedException {
         act(new SymlinkTo(target, listener));
+    }
+
+    private void symlinkToStrict(final String target, final TaskListener listener) throws IOException, InterruptedException {
+        act(new SymlinkToStrict(target, listener));
+    }
+
+    private static class SymlinkToStrict extends MasterToSlaveFileCallable<Void> {
+        private final String target;
+        private final TaskListener listener;
+
+        SymlinkToStrict(String target, TaskListener listener) {
+            this.target = target;
+            this.listener = listener;
+        }
+
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public Void invoke(File f, VirtualChannel channel) throws IOException {
+            Util.createSymlinkStrict(f.getParentFile(), target, f.getName(), listener);
+            return null;
+        }
     }
 
     private static class SymlinkTo extends MasterToSlaveFileCallable<Void> {
@@ -3087,6 +3112,30 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return !trueIfPermissiveFlag;
     }
 
+    @VisibleForTesting
+    interface TarEntryHook {
+        void accept(File target) throws IOException;
+    }
+
+    /**
+     * Test hook invoked after the initial ancestor symlink check.
+     * Tests replace it to simulate race condition; defaults to a no-op.
+     */
+    @Restricted(NoExternalUse.class)
+    @VisibleForTesting
+    static TarEntryHook afterInitialAncestorCheck = target -> {};
+
+    @VisibleForTesting
+    static void requireNoSymlinkInAncestors(File parent, File absoluteBaseDir, String name, String entryName, String origin) throws IOException {
+        File current = parent;
+        while (current != null && !current.equals(absoluteBaseDir)) {
+            if (Util.isSymlink(current)) {
+                throw new IOException("Tar " + name + " attempts to write to file with symlink in path (" + origin + "): " + entryName);
+            }
+            current = current.getParentFile();
+        }
+    }
+
     /**
      * Reads from a tar stream and stores obtained files to the base dir.
      * Supports large files &gt; 10 GB since 1.627.
@@ -3124,14 +3173,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
                 if (requireReadFromTarPathTraversalValidation(ALLOW_UNTAR_SYMLINK_RESOLUTION)) {
                     // getCanonicalFile doesn't follow symlinks on Windows, so do this the hard way: Check each ancestor up to the base dir for whether it's a symlink
-                    File current = parent;
-                    while (current != null && !current.equals(absoluteBaseDir)) {
-                        if (Util.isSymlink(current)) {
-                            throw new IOException("Tar " + name + " attempts to write to file with symlink in path: " + entryName);
-                        }
-                        current = current.getParentFile();
-                    }
+                    requireNoSymlinkInAncestors(parent, absoluteBaseDir, name, entryName, "during initial ancestor check");
                 }
+                afterInitialAncestorCheck.accept(f);
 
                 if (te.isDirectory()) {
                     mkdirs(f);
@@ -3139,13 +3183,17 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     if (parent != null) mkdirs(parent);
 
                     if (te.isSymbolicLink()) {
-                        new FilePath(f).symlinkTo(te.getLinkName(), TaskListener.NULL);
+                        new FilePath(f).symlinkToStrict(te.getLinkName(), TaskListener.NULL);
                     } else {
                         if (requireReadFromTarPathTraversalValidation(ALLOW_UNTAR_SYMLINK_RESOLUTION)) {
                             if (Util.isSymlink(f)) {
                                 throw new IOException("Tar '" + name + "' entry '" + entryName + "' would write through existing symlink: " + f);
                             }
                         }
+                        if (requireReadFromTarPathTraversalValidation(ALLOW_UNTAR_SYMLINK_RESOLUTION)) {
+                            requireNoSymlinkInAncestors(parent, absoluteBaseDir, name, entryName, "during write");
+                        }
+
                         IOUtils.copy(t, f);
 
                         Files.setLastModifiedTime(Util.fileToPath(f), FileTime.from(te.getModTime().toInstant()));
