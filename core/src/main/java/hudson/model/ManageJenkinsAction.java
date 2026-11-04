@@ -25,7 +25,6 @@
 package hudson.model;
 
 import hudson.Extension;
-import hudson.Util;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
 import jakarta.servlet.ServletException;
@@ -34,14 +33,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
-import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag;
-import org.apache.commons.jelly.JellyException;
 import org.jenkinsci.Symbol;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
@@ -52,7 +46,7 @@ import org.kohsuke.stapler.StaplerResponse2;
  * @author Kohsuke Kawaguchi
  */
 @Extension(ordinal = 998) @Symbol("manageJenkins")
-public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelObjectWithContextMenu {
+public class ManageJenkinsAction implements RootAction, StaplerFallback {
 
     private static final Logger LOGGER = Logger.getLogger(ManageJenkinsAction.class.getName());
 
@@ -97,26 +91,6 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
     @Override
     public Object getStaplerFallback() {
         return Jenkins.get();
-    }
-
-    @Override
-    public ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws JellyException, IOException {
-        return new ContextMenu().from(this, request, response, "index");
-    }
-
-    /**
-     * Workaround to ensuring that links in context menus resolve correctly in the submenu of the top-level 'Dashboard'
-     * menu.
-     */
-    @Restricted(NoExternalUse.class)
-    public void addContextMenuItem(ContextMenu menu, String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge, String message) {
-        if (Stapler.getCurrentRequest2().findAncestorObject(this.getClass()) != null || !Util.isSafeToRedirectTo(url)) {
-            // Default behavior if the URL is absolute or scheme-relative, or the current object is an ancestor (i.e. would resolve correctly)
-            menu.add(url, icon, iconXml, text, post, requiresConfirmation, badge, message);
-            return;
-        }
-        // If neither is the case, rewrite the relative URL to point to inside the /manage/ URL space
-        menu.add("manage/" + url, icon, iconXml, text, post, requiresConfirmation, badge, message);
     }
 
     /** Unlike {@link Jenkins#getActiveAdministrativeMonitors} this checks for activation lazily. */

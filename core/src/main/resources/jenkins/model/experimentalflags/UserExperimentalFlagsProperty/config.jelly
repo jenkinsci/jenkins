@@ -39,9 +39,9 @@ THE SOFTWARE.
                 <table class="jenkins-table sortable jenkins-!-margin-0 experimental-flags-table">
                     <thead>
                         <tr>
-                            <th>${%FlagDisplayName}</th>
-                            <th width="45%">${%FlagDescription}</th>
-                            <th>${%FlagConfig}</th>
+                            <th width="25%">${%FlagDisplayName}</th>
+                            <th>${%FlagDescription}</th>
+                            <th width="25%">${%FlagConfig}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -49,7 +49,7 @@ THE SOFTWARE.
                             <j:set var="flagValue" value="${userProperty.getFlagValue(flagConfig.flagKey)}"/>
                             <tr>
                                 <td>
-                                    ${flagConfig.displayName}<span class="jenkins-label jenkins-label--tertiary jenkins-!-padding-left-1">${flagConfig.flagKey}</span>
+                                    ${flagConfig.displayName}<div class="jenkins-label jenkins-label--tertiary">${flagConfig.flagKey}</div>
                                 </td>
                                 <td>
                                     <st:include it="${flagConfig}" page="${flagConfig.flagDescriptionPage}"/>
