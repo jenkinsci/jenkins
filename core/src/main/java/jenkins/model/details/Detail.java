@@ -1,5 +1,7 @@
 package jenkins.model.details;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Actionable;
 import hudson.model.ModelObject;
@@ -64,5 +66,40 @@ public abstract class Detail implements ModelObject, IconSpec {
      */
     public int getOrder() {
         return 0;
+    }
+
+    /**
+     * @return where this detail should be shown, defaults to {@link Verbosity#FULL}
+     * @since TODO
+     */
+    public @NonNull Verbosity getVerbosity() {
+        return Verbosity.FULL;
+    }
+
+    /**
+     * Where a {@link Detail} should be shown.
+     * @since TODO
+     */
+    public enum Verbosity {
+        /**
+         * Only shown in condensed views, such as rows in the build history.
+         */
+        COMPACT,
+        /**
+         * Only shown in full views, such as the overview page of a run.
+         */
+        FULL,
+        /**
+         * Shown in both compact and full views.
+         */
+        BOTH;
+
+        /**
+         * @param context the view the detail is being rendered in, {@code null} or {@link #BOTH} to match any
+         * @return whether a detail with this verbosity should be shown in the given context
+         */
+        public boolean isVisibleIn(@CheckForNull Verbosity context) {
+            return this == BOTH || context == null || context == BOTH || this == context;
+        }
     }
 }

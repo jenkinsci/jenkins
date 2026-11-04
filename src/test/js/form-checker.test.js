@@ -39,8 +39,12 @@ describe("FormChecker.delayedCheck", () => {
     return new Promise((resolve) => setTimeout(resolve, 0));
   }
 
-  function respondWith(request, body) {
-    request.resolve({ text: () => Promise.resolve(body) });
+  function respondWith(request, body, status = 200) {
+    request.resolve({
+      ok: status >= 200 && status < 300,
+      status,
+      text: () => Promise.resolve(body),
+    });
     return settle();
   }
 
@@ -77,6 +81,24 @@ describe("FormChecker.delayedCheck", () => {
 
     expect(second.innerHTML).toBe("<div>second</div>");
     expect(FormChecker.queue).toHaveLength(0);
+    expect(FormChecker.inProgress).toBe(0);
+  });
+
+  it("shows a concise message instead of the error page when a check fails", async () => {
+    const target = validationArea();
+
+    FormChecker.delayedCheck("/check", "post", target);
+
+    await respondWith(
+      requests[0],
+      "<html><body><h1>Oops!</h1></body></html>",
+      500,
+    );
+
+    expect(target.textContent).toContain(
+      "An internal error occurred during form field validation (HTTP 500)",
+    );
+    expect(target.textContent).not.toContain("Oops!");
     expect(FormChecker.inProgress).toBe(0);
   });
 

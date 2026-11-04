@@ -408,10 +408,17 @@ public class Nodes implements PersistenceRoot {
 
     @CheckForNull
     public Node load(String name) {
+        if (ENFORCE_NAME_RESTRICTIONS) {
+            Jenkins.checkGoodName(name);
+        }
+
         try {
             XmlFile xmlFile = getConfigFile(name);
             if (xmlFile.exists()) {
                 Node n = (Node) xmlFile.read();
+                if (!name.equals(n.getNodeName())) {
+                    throw new IOException("Node name " + n.getNodeName() + " in " + xmlFile + " does not match " + name);
+                }
                 nodes.put(n.getNodeName(), n);
                 n.onLoad(this, n.getNodeName());
                 jenkins.updateNewComputer(n);

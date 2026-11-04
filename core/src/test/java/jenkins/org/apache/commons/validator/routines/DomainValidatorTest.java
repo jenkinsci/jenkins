@@ -150,15 +150,11 @@ class DomainValidatorTest {
 
     @Test
     void testIDNJava6OrLater() {
-        String version = System.getProperty("java.version");
-        if (version.compareTo("1.6") < 0) {
-            System.out.println("Cannot run Unicode IDN tests");
-            return; // Cannot run the test
-        } // xn--d1abbgf6aiiy.xn--p1ai http://президент.рф
-       assertTrue(validator.isValid("www.b\u00fccher.ch"), "b\u00fccher.ch should validate");
-       assertTrue(validator.isValid("xn--d1abbgf6aiiy.xn--p1ai"), "xn--d1abbgf6aiiy.xn--p1ai should validate");
-       assertTrue(validator.isValid("президент.рф"), "президент.рф should validate");
-       assertFalse(validator.isValid("www.\uFFFD.ch"), "www.\uFFFD.ch FFFD should fail");
+        // xn--d1abbgf6aiiy.xn--p1ai http://президент.рф
+        assertTrue(validator.isValid("www.b\u00fccher.ch"), "b\u00fccher.ch should validate");
+        assertTrue(validator.isValid("xn--d1abbgf6aiiy.xn--p1ai"), "xn--d1abbgf6aiiy.xn--p1ai should validate");
+        assertTrue(validator.isValid("президент.рф"), "президент.рф should validate");
+        assertFalse(validator.isValid("www.\uFFFD.ch"), "www.\uFFFD.ch FFFD should fail");
     }
 
     // RFC2396: domainlabel   = alphanum | alphanum *( alphanum | "-" ) alphanum

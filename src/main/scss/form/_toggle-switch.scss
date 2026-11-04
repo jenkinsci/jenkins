@@ -154,7 +154,7 @@
       box-shadow:
         inset 0 0 0 1.5px
           color-mix(in sRGB, var(--text-color-secondary) 9%, transparent),
-        0 0 0 4px
+        0 0 0 var(--focus-ring-width)
           color-mix(in sRGB, var(--text-color-secondary) 25%, transparent);
     }
 
