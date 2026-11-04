@@ -64,20 +64,25 @@ import org.kohsuke.accmod.restrictions.Beta;
 @Restricted(Beta.class)
 public interface PersistenceStore {
 
-    /**
-     * Expected version meaning "overwrite whatever is there, if anything".
-     */
-    long ANY = -1;
+    sealed interface Version {
+        /**
+         * Expected version meaning "overwrite whatever is there, if anything".
+         */
+        record Any() implements Version {}
+        /**
+         * Expected version meaning "only create; fail if the key already exists".
+         */
+        record Absent() implements Version {}
+        /**
+         * Expected version, in a {@link Precondition} only, meaning "the key exists, at whatever version".
+         */
+        record Present() implements Version {}
+    }
 
-    /**
-     * Expected version meaning "only create; fail if the key already exists".
-     */
-    long ABSENT = 0;
+    Version.Any ANY = new Version.Any();
+    Version.Absent ABSENT = new Version.Absent();
+    Version.Present PRESENT = new Version.Present();
 
-    /**
-     * Expected version, in a {@link Precondition} only, meaning "the key exists, at whatever version".
-     */
-    long PRESENT = -2;
 
     /**
      * Reads an entry.
@@ -104,7 +109,7 @@ public interface PersistenceStore {
      * @param expectedVersion {@link #ANY} or the version the caller last saw
      * @throws ConflictException if {@code expectedVersion} does not match the stored version
      */
-    void delete(@NonNull String key, long expectedVersion) throws IOException;
+    void delete(@NonNull String key, Version expectedVersion) throws IOException;
 
     /**
      * Lists the names directly below a key, like listing a directory.

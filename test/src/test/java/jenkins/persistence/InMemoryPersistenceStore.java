@@ -177,7 +177,7 @@ public class InMemoryPersistenceStore implements PersistenceStore {
         long version;
         synchronized (root) {
             Entry current = entries.get(key);
-            long actual = current == null ? ABSENT : current.version();
+            PersistenceStore.Version actual = current == null ? ABSENT : current.version();
             if (expectedVersion != ANY && expectedVersion != actual) {
                 throw new ConflictException(key, expectedVersion, actual);
             }
@@ -193,7 +193,7 @@ public class InMemoryPersistenceStore implements PersistenceStore {
     }
 
     @Override
-    public void delete(@NonNull String key, long expectedVersion) throws IOException {
+    public void delete(@NonNull String key, PersistenceStore.Version expectedVersion) throws IOException {
         check();
         synchronized (root) {
             Entry current = entries.get(key);
