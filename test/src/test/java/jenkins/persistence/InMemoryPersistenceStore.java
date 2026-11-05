@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
@@ -172,17 +173,17 @@ public class InMemoryPersistenceStore implements PersistenceStore {
     }
 
     @Override
-    public long write(@NonNull String key, @NonNull byte[] content, long expectedVersion) throws IOException {
+    public long write(@NonNull String key, @NonNull byte[] content, @NonNull Expected.ForWrite expected) throws IOException {
         check();
         long version;
         synchronized (root) {
             Entry current = entries.get(key);
-            PersistenceStore.Version actual = current == null ? ABSENT : current.version();
-            if (expectedVersion != ANY && expectedVersion != actual) {
-                throw new ConflictException(key, expectedVersion, actual);
+            OptionalLong actual = versionOf(current);
+            if (!expected.isMetBy(actual)) {
+                throw new ConflictException(key, expected, actual);
             }
             if (current != null && Arrays.equals(current.content(), content)) {
-                return actual;
+                return current.version();
             }
             version = ++root.clock;
             entries.put(key, new Entry(content.clone(), version));
@@ -193,20 +194,24 @@ public class InMemoryPersistenceStore implements PersistenceStore {
     }
 
     @Override
-    public void delete(@NonNull String key, PersistenceStore.Version expectedVersion) throws IOException {
+    public void delete(@NonNull String key, @NonNull Expected.ForDelete expected) throws IOException {
         check();
         synchronized (root) {
             Entry current = entries.get(key);
             if (current == null) {
                 return;
             }
-            if (expectedVersion != ANY && expectedVersion != current.version()) {
-                throw new ConflictException(key, expectedVersion, current.version());
+            if (!expected.isMetBy(versionOf(current))) {
+                throw new ConflictException(key, expected, versionOf(current));
             }
             entries.remove(key);
             outbox.add(new ChangeEvent(ChangeEvent.Kind.DELETED, key, null, ++root.clock, origin));
         }
         deliver();
+    }
+
+    private static OptionalLong versionOf(@CheckForNull Entry e) {
+        return e == null ? OptionalLong.empty() : OptionalLong.of(e.version());
     }
 
     @Override
@@ -235,18 +240,15 @@ public class InMemoryPersistenceStore implements PersistenceStore {
         List<Moved> moved = new ArrayList<>();
         synchronized (root) {
             for (Precondition p : preconditions) {
-                Entry e = entries.get(p.key());
-                long actual = e == null ? ABSENT : e.version();
-                long expected = p.expectedVersion();
-                boolean holds = expected == ANY || (expected == PRESENT ? actual != ABSENT : actual == expected);
-                if (!holds) {
-                    throw new ConflictException(p.key(), expected, actual);
+                OptionalLong actual = versionOf(entries.get(p.key()));
+                if (!p.expected().isMetBy(actual)) {
+                    throw new ConflictException(p.key(), p.expected(), actual);
                 }
             }
             List<String> keys = new ArrayList<>();
             for (String key : entries.keySet()) {
                 if (key.equals(toPrefix) || key.startsWith(toPrefix + "/")) {
-                    throw new ConflictException(key, ABSENT, entries.get(key).version());
+                    throw new ConflictException(key, ABSENT, versionOf(entries.get(key)));
                 }
                 if (key.equals(fromPrefix) || key.startsWith(fromPrefix + "/")) {
                     keys.add(key);

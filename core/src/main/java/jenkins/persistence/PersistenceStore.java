@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.function.Consumer;
 import org.kohsuke.accmod.Restricted;
@@ -64,25 +65,87 @@ import org.kohsuke.accmod.restrictions.Beta;
 @Restricted(Beta.class)
 public interface PersistenceStore {
 
-    sealed interface Version {
+    /**
+     * What a change expects of a key, which must hold for the change to be made: checked in the same transaction.
+     * Which expectations a change accepts is in its type: {@link ForWrite} for {@link PersistenceStore#write}, {@link ForDelete} for
+     * {@link PersistenceStore#delete}, and any for a {@link Precondition} of {@link PersistenceStore#move}.
+     */
+    sealed interface Expected {
+
         /**
-         * Expected version meaning "overwrite whatever is there, if anything".
+         * Whether a key meets this expectation.
+         *
+         * @param stored the version stored at the key, or empty if the key does not exist
          */
-        record Any() implements Version {}
+        boolean isMetBy(@NonNull OptionalLong stored);
+
+        /** An expectation a {@link PersistenceStore#write} accepts. */
+        sealed interface ForWrite extends Expected {}
+
+        /** An expectation a {@link PersistenceStore#delete} accepts. */
+        sealed interface ForDelete extends ForWrite {}
+
+        /** Whatever is there, if anything: the change is unconditional. See {@link PersistenceStore#ANY}. */
+        record Any() implements ForDelete {
+            @Override
+            public boolean isMetBy(@NonNull OptionalLong stored) {
+                return true;
+            }
+        }
+
+        /** Nothing is there: a write only creates. See {@link PersistenceStore#ABSENT}. */
+        record Absent() implements ForWrite {
+            @Override
+            public boolean isMetBy(@NonNull OptionalLong stored) {
+                return stored.isEmpty();
+            }
+        }
+
+        /** Something is there, at whatever version. See {@link PersistenceStore#PRESENT}. */
+        record Present() implements Expected {
+            @Override
+            public boolean isMetBy(@NonNull OptionalLong stored) {
+                return stored.isPresent();
+            }
+        }
+
         /**
-         * Expected version meaning "only create; fail if the key already exists".
+         * The key is at a version, typically the one the caller last saw: unchanged since.
+         *
+         * @param version a version from {@link Entry#version}, {@link PersistenceStore#write} or {@link Moved#version}
          */
-        record Absent() implements Version {}
-        /**
-         * Expected version, in a {@link Precondition} only, meaning "the key exists, at whatever version".
-         */
-        record Present() implements Version {}
+        record At(long version) implements ForDelete {
+            public At {
+                if (version <= 0) {
+                    throw new IllegalArgumentException("Versions are positive: " + version);
+                }
+            }
+
+            @Override
+            public boolean isMetBy(@NonNull OptionalLong stored) {
+                return stored.isPresent() && stored.getAsLong() == version;
+            }
+
+            @Override
+            public String toString() {
+                return Long.toString(version);
+            }
+        }
+
+        /** The key is at a version, typically the one the caller last saw. */
+        static At at(long version) {
+            return new At(version);
+        }
     }
 
-    Version.Any ANY = new Version.Any();
-    Version.Absent ABSENT = new Version.Absent();
-    Version.Present PRESENT = new Version.Present();
+    /** Singleton of {@link Expected.Any}: overwrite whatever is there, if anything. */
+    Expected.Any ANY = new Expected.Any();
 
+    /** Singleton of {@link Expected.Absent}: only create; fail if the key already exists. */
+    Expected.Absent ABSENT = new Expected.Absent();
+
+    /** Singleton of {@link Expected.Present}: the key exists, at whatever version. */
+    Expected.Present PRESENT = new Expected.Present();
 
     /**
      * Reads an entry.
@@ -96,20 +159,20 @@ public interface PersistenceStore {
      * Writes an entry.
      * Writing content identical to the stored content must not create a new version.
      *
-     * @param expectedVersion {@link #ANY}, {@link #ABSENT}, or the version the caller last saw
+     * @param expected {@link #ANY}, {@link #ABSENT}, or {@linkplain Expected#at the version} the caller last saw
      * @return the version of the entry after the write
-     * @throws ConflictException if {@code expectedVersion} does not match the stored version
+     * @throws ConflictException if the key does not meet {@code expected}
      */
-    long write(@NonNull String key, @NonNull byte[] content, long expectedVersion) throws IOException;
+    long write(@NonNull String key, @NonNull byte[] content, @NonNull Expected.ForWrite expected) throws IOException;
 
     /**
-     * Deletes an entry if it exists. Deleting an absent entry does nothing, whatever {@code expectedVersion} is: the
+     * Deletes an entry if it exists. Deleting an absent entry does nothing, whatever {@code expected} is: the
      * caller wanted it gone, and it is.
      *
-     * @param expectedVersion {@link #ANY} or the version the caller last saw
-     * @throws ConflictException if {@code expectedVersion} does not match the stored version
+     * @param expected {@link #ANY} or {@linkplain Expected#at the version} the caller last saw
+     * @throws ConflictException if the key exists and does not meet {@code expected}
      */
-    void delete(@NonNull String key, Version expectedVersion) throws IOException;
+    void delete(@NonNull String key, @NonNull Expected.ForDelete expected) throws IOException;
 
     /**
      * Lists the names directly below a key, like listing a directory.
@@ -148,7 +211,7 @@ public interface PersistenceStore {
      * Moved entries get new versions. Their change events are delivered shallower keys first, so that an item's
      * configuration arrives before the entries below it.
      *
-     * @param preconditions versions expected of other keys (or of keys being moved, at their source keys)
+     * @param preconditions what is expected of other keys (or of keys being moved, at their source keys)
      * @return each entry moved: its key and version before, and its key and version now
      * @throws ConflictException if a precondition fails, or {@code toPrefix} or anything below it already exists
      */
@@ -156,11 +219,11 @@ public interface PersistenceStore {
     List<Moved> move(@NonNull String fromPrefix, @NonNull String toPrefix, @NonNull List<Precondition> preconditions) throws IOException;
 
     /**
-     * A version a key must have for a {@link #move} to happen.
+     * What a key must be for a {@link #move} to happen.
      *
-     * @param expectedVersion {@link #ANY}, {@link #ABSENT}, {@link #PRESENT}, or a version
+     * @param expected {@link #ANY}, {@link #ABSENT}, {@link #PRESENT}, or {@linkplain Expected#at a version}
      */
-    record Precondition(@NonNull String key, long expectedVersion) {}
+    record Precondition(@NonNull String key, @NonNull Expected expected) {}
 
     /**
      * An entry {@linkplain #move moved}: from {@code from} at {@code fromVersion} to {@code to} at {@code version}.

@@ -25,12 +25,13 @@
 package jenkins.persistence;
 
 import java.io.IOException;
+import java.util.OptionalLong;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
 /**
- * Thrown when a conditional write or delete finds a different version than expected,
- * meaning somebody else modified the entry since the caller last read it.
+ * Thrown when a conditional change finds a key that does not meet what it {@linkplain PersistenceStore.Expected expected},
+ * typically because somebody else modified the entry since the caller last read it.
  *
  * @since TODO
  */
@@ -38,28 +39,40 @@ import org.kohsuke.accmod.restrictions.Beta;
 public class ConflictException extends IOException {
 
     private final String key;
-    private final long expectedVersion;
-    private final long actualVersion;
+    private final PersistenceStore.Expected expected;
+    private final OptionalLong actualVersion;
 
     /**
-     * @param actualVersion the stored version, or {@link PersistenceStore#ABSENT} if the key does not exist
+     * @param actualVersion the stored version, or empty if the key does not exist
      */
-    public ConflictException(String key, long expectedVersion, long actualVersion) {
-        super("Conflicting modification of " + key + ": expected version " + expectedVersion + " but found " + actualVersion);
+    public ConflictException(String key, PersistenceStore.Expected expected, OptionalLong actualVersion) {
+        super("Conflicting modification of " + key + ": expected " + describe(expected) + " but found "
+                + (actualVersion.isPresent() ? "version " + actualVersion.getAsLong() : "nothing"));
         this.key = key;
-        this.expectedVersion = expectedVersion;
+        this.expected = expected;
         this.actualVersion = actualVersion;
+    }
+
+    private static String describe(PersistenceStore.Expected expected) {
+        return switch (expected) {
+            case PersistenceStore.Expected.Any any -> "anything";
+            case PersistenceStore.Expected.Absent absent -> "nothing";
+            case PersistenceStore.Expected.Present present -> "an entry";
+            case PersistenceStore.Expected.At at -> "version " + at.version();
+        };
     }
 
     public String getKey() {
         return key;
     }
 
-    public long getExpectedVersion() {
-        return expectedVersion;
+    /** What the change expected of the key. */
+    public PersistenceStore.Expected getExpected() {
+        return expected;
     }
 
-    public long getActualVersion() {
+    /** The version found, or empty if the key does not exist. */
+    public OptionalLong getActualVersion() {
         return actualVersion;
     }
 }

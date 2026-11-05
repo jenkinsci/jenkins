@@ -24,6 +24,7 @@
 
 package jenkins.persistence;
 
+import static jenkins.persistence.PersistenceStore.Expected.at;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -34,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
@@ -52,23 +54,43 @@ class InMemoryPersistenceStoreTest {
         InMemoryPersistenceStore store = new InMemoryPersistenceStore();
         long v1 = store.write("k", b("1"), PersistenceStore.ABSENT);
         assertThrows(ConflictException.class, () -> store.write("k", b("x"), PersistenceStore.ABSENT));
-        long v2 = store.write("k", b("2"), v1);
+        long v2 = store.write("k", b("2"), at(v1));
         assertTrue(v2 > v1);
-        ConflictException e = assertThrows(ConflictException.class, () -> store.write("k", b("3"), v1));
-        assertEquals(v1, e.getExpectedVersion());
-        assertEquals(v2, e.getActualVersion());
-        assertEquals(v2, store.write("k", b("2"), v2), "writing the same content makes no new version");
+        ConflictException e = assertThrows(ConflictException.class, () -> store.write("k", b("3"), at(v1)));
+        assertEquals(at(v1), e.getExpected());
+        assertEquals(OptionalLong.of(v2), e.getActualVersion());
+        assertEquals(v2, store.write("k", b("2"), at(v2)), "writing the same content makes no new version");
         long v3 = store.write("k", b("3"), PersistenceStore.ANY);
         assertArrayEquals(b("3"), store.read("k").content());
         assertEquals(v3, store.read("k").version());
     }
 
     @Test
+    void aConflictSaysWhatWasExpectedAndWhatWasFound() throws Exception {
+        InMemoryPersistenceStore store = new InMemoryPersistenceStore();
+        long v = store.write("k", b("1"), PersistenceStore.ABSENT);
+        ConflictException created = assertThrows(ConflictException.class, () -> store.write("k", b("2"), PersistenceStore.ABSENT));
+        assertEquals(PersistenceStore.ABSENT, created.getExpected());
+        assertEquals("Conflicting modification of k: expected nothing but found version " + v, created.getMessage());
+        ConflictException gone = assertThrows(ConflictException.class, () -> store.move("x", "y",
+                List.of(new PersistenceStore.Precondition("missing", PersistenceStore.PRESENT))));
+        assertEquals(OptionalLong.empty(), gone.getActualVersion());
+        assertEquals("Conflicting modification of missing: expected an entry but found nothing", gone.getMessage());
+    }
+
+    @Test
+    void versionsArePositive() {
+        assertThrows(IllegalArgumentException.class, () -> at(0));
+        assertThrows(IllegalArgumentException.class, () -> at(-1));
+        assertEquals(at(3), at(3));
+    }
+
+    @Test
     void versionsIncreaseAcrossDeletionAndRecreation() throws Exception {
         InMemoryPersistenceStore store = new InMemoryPersistenceStore();
         long v1 = store.write("k", b("1"), PersistenceStore.ABSENT);
-        assertThrows(ConflictException.class, () -> store.delete("k", v1 + 100));
-        store.delete("k", v1);
+        assertThrows(ConflictException.class, () -> store.delete("k", at(v1 + 100)));
+        store.delete("k", at(v1));
         assertNull(store.read("k"));
         long v2 = store.write("k", b("1"), PersistenceStore.ABSENT);
         assertTrue(v2 > v1);
@@ -89,8 +111,7 @@ class InMemoryPersistenceStoreTest {
     @Test
     void deletingAnAbsentKeySucceedsWhateverTheVersion() throws Exception {
         InMemoryPersistenceStore store = new InMemoryPersistenceStore();
-        store.delete("never", 42);
-        store.delete("never", PersistenceStore.ABSENT);
+        store.delete("never", at(42));
         store.delete("never", PersistenceStore.ANY);
     }
 
@@ -117,7 +138,7 @@ class InMemoryPersistenceStoreTest {
         List<PersistenceStore.ChangeEvent> events = new ArrayList<>();
         store.subscribe(events::add);
         List<PersistenceStore.Moved> moved = store.move("jobs/a", "jobs/f/jobs/a", List.of(
-                new PersistenceStore.Precondition("jobs/a/config.xml", a),
+                new PersistenceStore.Precondition("jobs/a/config.xml", at(a)),
                 new PersistenceStore.Precondition("jobs/f/config.xml", PersistenceStore.PRESENT),
                 new PersistenceStore.Precondition("jobs/f/jobs/a/config.xml", PersistenceStore.ABSENT)));
         assertEquals(List.of("jobs/a/config.xml", "jobs/a/jobs/x/config.xml"), moved.stream().map(PersistenceStore.Moved::from).toList());
@@ -137,7 +158,7 @@ class InMemoryPersistenceStoreTest {
         store.write("jobs/b/config.xml", b("b"), PersistenceStore.ANY);
         // changed since it was read
         assertThrows(ConflictException.class, () -> store.move("jobs/a", "jobs/c",
-                List.of(new PersistenceStore.Precondition("jobs/a/config.xml", a + 100))));
+                List.of(new PersistenceStore.Precondition("jobs/a/config.xml", at(a + 100)))));
         // the destination's parent is gone (moved or deleted by another move)
         assertThrows(ConflictException.class, () -> store.move("jobs/a", "jobs/g/jobs/a",
                 List.of(new PersistenceStore.Precondition("jobs/g/config.xml", PersistenceStore.PRESENT))));
