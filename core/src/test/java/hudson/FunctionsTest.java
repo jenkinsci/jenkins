@@ -353,6 +353,17 @@ class FunctionsTest {
         assertTrue(matchesCurrentPageOrChild("/jenkins/job/my job/50/coverage/", "/jenkins/job/my%20job/50/coverage"));
     }
 
+    @Test
+    void hyperlinkMatchesCurrentPageOrChildShouldPreserveLiteralPlusSigns() {
+        assertTrue(matchesCurrentPageOrChild("/jenkins/job/a+b/50/coverage/overview/", "/jenkins/job/a+b/50/coverage"));
+        assertTrue(matchesCurrentPageOrChild("/jenkins/job/a+b/50/coverage/overview/", "/jenkins/job/a%2Bb/50/coverage"));
+        assertTrue(matchesCurrentPageOrChild("/jenkins/job/a%2Bb/50/coverage/", "/jenkins/job/a+b/50/coverage"));
+
+        assertFalse(matchesCurrentPageOrChild("/jenkins/job/a+b/50/coverage/", "/jenkins/job/a%20b/50/coverage"));
+        assertFalse(matchesCurrentPageOrChild("/jenkins/job/a%20b/50/coverage/", "/jenkins/job/a+b/50/coverage"));
+        assertFalse(matchesCurrentPageOrChild("/jenkins/job/a b/50/coverage/", "/jenkins/job/a+b/50/coverage"));
+    }
+
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {"/", "//"})

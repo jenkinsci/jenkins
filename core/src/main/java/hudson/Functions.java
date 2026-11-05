@@ -2112,12 +2112,21 @@ public class Functions {
         if (uri == null) {
             return false;
         }
-        String current = removeTrailingSlashes(URLDecoder.decode(uri, StandardCharsets.UTF_8));
-        String link = removeTrailingSlashes(URLDecoder.decode(href, StandardCharsets.UTF_8));
+        String current = removeTrailingSlashes(decodePath(uri));
+        String link = removeTrailingSlashes(decodePath(href));
         if (link.isEmpty()) {
             return false;
         }
         return current.equals(link) || current.startsWith(link + "/");
+    }
+
+    /**
+     * Decodes the given URL path. In contrast to {@link URLDecoder#decode(String, java.nio.charset.Charset)}, which
+     * decodes {@code application/x-www-form-urlencoded} content, a literal {@code +} is preserved since it has no
+     * special meaning in a URL path.
+     */
+    private static String decodePath(String path) {
+        return URLDecoder.decode(path.replace("+", "%2B"), StandardCharsets.UTF_8);
     }
 
     private static String removeTrailingSlashes(String path) {
