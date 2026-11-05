@@ -92,22 +92,7 @@ public final class PackedMap<K, V> extends AbstractMap<K, V> {
                 public Entry<K, V> next() {
                     final K k = (K) kvpairs[index++];
                     final V v = (V) kvpairs[index++];
-                    return new Entry<>() {
-                        @Override
-                        public K getKey() {
-                            return k;
-                        }
-
-                        @Override
-                        public V getValue() {
-                            return v;
-                        }
-
-                        @Override
-                        public V setValue(V value) {
-                            throw new UnsupportedOperationException();
-                        }
-                    };
+                    return new SimpleImmutableEntry<>(k, v);
                 }
 
                 @Override
@@ -152,7 +137,7 @@ public final class PackedMap<K, V> extends AbstractMap<K, V> {
         return new AbstractList<>() {
             @Override
             public V get(int index) {
-                return (V) kvpairs[index * 2];
+                return (V) kvpairs[index * 2 + 1];
             }
 
             @Override

@@ -36,13 +36,18 @@ import hudson.util.AlternativeUiTextProvider;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import jenkins.model.HistoricalBuild;
+import jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag;
 import jenkins.util.SystemProperties;
 import jenkins.widgets.HistoryPageEntry;
+import jenkins.widgets.HistoryPageEntryDecorator;
 import jenkins.widgets.HistoryPageFilter;
 import jenkins.widgets.WidgetFactory;
 import org.jenkinsci.Symbol;
@@ -94,6 +99,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     final Long newerThan;
     final Long olderThan;
     final String searchString;
+    final String status;
 
     /**
      * First transient build record. Everything >= this will be discarded when AJAX call is made.
@@ -113,6 +119,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
         this.newerThan = getPagingParam(currentRequest, "newer-than");
         this.olderThan = getPagingParam(currentRequest, "older-than");
         this.searchString = currentRequest.getParameter("search");
+        this.status = currentRequest.getParameter("status");
     }
 
     @Override
@@ -134,6 +141,22 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
 
     public String getFirstTransientBuildKey() {
         return firstTransientBuildKey;
+    }
+
+    /**
+     * Returns one entry per registered {@link HistoryPageEntryDecorator}, in extension order, so that every row
+     * renders the same columns. Decorators that aren't applicable to the build are {@code null}.
+     */
+    @Restricted(DoNotUse.class)
+    public @NonNull List<HistoryPageEntryDecorator.EntryContext> getEntryDecorators(@NonNull HistoryPageEntry<HistoricalBuild> pageEntry) {
+        List<HistoryPageEntryDecorator.EntryContext> entryDecorators = new ArrayList<>();
+        HistoricalBuild build = pageEntry.getEntry();
+        for (HistoryPageEntryDecorator decorator : HistoryPageEntryDecorator.all()) {
+            entryDecorators.add(decorator.isApplicable(this, build)
+                    ? new HistoryPageEntryDecorator.EntryContext(decorator, this, pageEntry)
+                    : null);
+        }
+        return entryDecorators;
     }
 
     /**
@@ -206,7 +229,8 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     }
 
     protected HistoryPageFilter<T> newPageFilter() {
-        HistoryPageFilter<T> historyPageFilter = new HistoryPageFilter<>(THRESHOLD);
+        int maxEntries = new NewJobPageUserExperimentalFlag().getFlagValue() ? NEW_JOB_PAGE_THRESHOLD : THRESHOLD;
+        HistoryPageFilter<T> historyPageFilter = new HistoryPageFilter<>(maxEntries);
         historyPageFilter.widget = this;
 
         if (newerThan != null) {
@@ -217,6 +241,11 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
 
         if (searchString != null) {
             historyPageFilter.setSearchString(searchString);
+        }
+
+        if (status != null && !status.isEmpty()) {
+            Set<String> statuses = new HashSet<>(Arrays.asList(status.split(",")));
+            historyPageFilter.setStatuses(statuses);
         }
 
         return historyPageFilter;
@@ -279,6 +308,11 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     }
 
     static final int THRESHOLD = SystemProperties.getInteger(HistoryWidget.class.getName() + ".threshold", 30);
+
+    /**
+     * Maximum number of builds shown in the builds list when the experimental new job page is enabled.
+     */
+    static final int NEW_JOB_PAGE_THRESHOLD = 10;
 
     public String getNextBuildNumberToFetch() {
         return nextBuildNumberToFetch;

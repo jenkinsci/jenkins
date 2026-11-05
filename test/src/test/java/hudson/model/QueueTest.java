@@ -45,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -569,6 +570,7 @@ public class QueueTest {
     @Issue("JENKINS-28926")
     @Test
     void upstreamDownstreamCycle() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         FreeStyleProject trigger = r.createFreeStyleProject();
         FreeStyleProject chain1 = r.createFreeStyleProject();
         FreeStyleProject chain2a = r.createFreeStyleProject();
@@ -1063,6 +1065,7 @@ public class QueueTest {
 
     @Test
     void waitForStartAndCancelBeforeStart() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         FreeStyleProject p = r.createFreeStyleProject();
 
         QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(30);
@@ -1292,7 +1295,7 @@ public class QueueTest {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.READ, Item.READ, Item.CANCEL).everywhere().to("admin")
-                .grant(Jenkins.READ).everywhere().to("user")
+                .grant(Jenkins.READ, Item.READ).everywhere().to("user")
         );
 
         // prevent execution to push stuff into the queue

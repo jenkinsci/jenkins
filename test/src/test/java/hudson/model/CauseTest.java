@@ -284,6 +284,17 @@ class CauseTest {
         assertNotNull(scmCause.getRun());
     }
 
+    @Test
+    @LocalData
+    void upstreamCauseCountOnLoad() throws Exception {
+        final Item item = j.jenkins.getItemByFullName("downstream");
+        assertThat(item, instanceOf(FreeStyleProject.class));
+        FreeStyleProject down = (FreeStyleProject) item;
+        final FreeStyleBuild build = down.getBuildByNumber(2);
+        Cause.UpstreamCause upstreamCause = (Cause.UpstreamCause) build.getCauses().getFirst();
+        assertNotNull(upstreamCause.getCauseCounts());
+    }
+
     public static class SimpleCause extends Cause {
         private final String description;
 
@@ -302,6 +313,18 @@ class CauseTest {
         @SuppressWarnings("checkstyle:redundantmodifier")
         public CustomBuild(FullNameChangingProject job) throws IOException {
             super(job);
+        }
+    }
+
+    public static class SimpleUpstreamCause extends Cause.UpstreamCause {
+        @SuppressWarnings("checkstyle:redundantmodifier")
+        public SimpleUpstreamCause(Run<?, ?> upstreamRun) {
+            super(upstreamRun);
+        }
+
+        @Override
+        public String getShortDescription() {
+            return "Simple upstream cause: " + getUpstreamProject() + " #" + getUpstreamBuild();
         }
     }
 

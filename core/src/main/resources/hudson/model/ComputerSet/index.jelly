@@ -60,7 +60,7 @@ THE SOFTWARE.
     </l:view>
   </j:set>
 
-  <l:settings-subpage header="${header}">
+  <l:settings-subpage header="${header}" width="wide">
     <j:set var="monitors" value="${it._monitors}"/>
     <j:set var="tableWidth" value="${3}"/>
     <t:setIconSize/>

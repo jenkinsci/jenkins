@@ -1431,6 +1431,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return null;
     }
 
+    private Object readResolve() {
+        LOGGER.log(Level.WARNING, "Blocked deserialization of PluginWrapper for security reasons", new Exception("stack trace"));
+        throw new SecurityException("Blocked deserialization of PluginWrapper for security reasons");
+    }
+
     private static final Logger LOGGER = Logger.getLogger(PluginWrapper.class.getName());
 
     /**

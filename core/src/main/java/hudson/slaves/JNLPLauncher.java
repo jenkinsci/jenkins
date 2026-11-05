@@ -36,6 +36,7 @@ import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
+import jenkins.security.XStreamDeserializable;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.SystemProperties;
 import jenkins.websocket.WebSockets;
@@ -65,6 +66,7 @@ public class JNLPLauncher extends ComputerLauncher {
      * @deprecated No longer used.
      */
     @Deprecated
+    @XStreamDeserializable
     public final transient String vmargs = null;
 
     @NonNull

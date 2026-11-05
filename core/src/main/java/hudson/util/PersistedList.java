@@ -266,14 +266,24 @@ public class PersistedList<T> extends AbstractList<T> {
         CopyOnWriteList.ConverterImpl copyOnWriteListConverter;
 
         public ConverterImpl(Mapper mapper) {
+            this(mapper, null);
+        }
+
+        ConverterImpl(Mapper mapper, Class<?> elementType) {
             super(mapper);
-            copyOnWriteListConverter = new CopyOnWriteList.ConverterImpl(mapper());
+            copyOnWriteListConverter = new CopyOnWriteList.ConverterImpl(mapper(), elementType);
         }
 
         @Override
         public boolean canConvert(Class type) {
             // handle subtypes in case the onModified method is overridden.
             return PersistedList.class.isAssignableFrom(type);
+        }
+
+        static boolean canConvertRobust(Class<?> type) {
+            // Subtypes do not use this converter by default due to how AssociatedConverterImpl works
+            // So for RobustReflectionConverter#unmarshalField, expect class equality
+            return type == PersistedList.class;
         }
 
         @Override

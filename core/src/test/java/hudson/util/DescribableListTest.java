@@ -25,8 +25,14 @@
 package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
@@ -112,6 +118,64 @@ class DescribableListTest {
 
         }
 
+    }
+
+    @Test
+    void associatedConverterUsed() {
+        XStream2 xstream = new XStream2();
+
+        final MyDescribableData data = new MyDescribableData();
+        data.describables = new DescribableList<>();
+        data.describables.add(new MyDescribable());
+        final String xml = xstream.toXML(data);
+
+        assertThat(xml, allOf(not(containsString("<data>")), not(containsString("</data>")), not(containsString("<owner"))));
+
+        String craftedXml = xml.replace("<hudson.util.DescribableListTest_-MyDescribable/>", "<string>42</string>");
+        assertThat(xml, not(equalTo(craftedXml)));
+
+        final Object o = xstream.fromXML(craftedXml);
+        assertThat(o, instanceOf(MyDescribableData.class));
+        final DescribableList<MyDescribable, MyDescribable.DescriptorImpl> list = ((MyDescribableData) o).describables;
+        assertThat(list, instanceOf(DescribableList.class));
+        assertThat(list, empty());
+    }
+
+    @Test
+    void associatedConverterUsedForSubclass() {
+        XStream2 xstream = new XStream2();
+
+        final MyDescribableData data = new MyDescribableData();
+        data.describables = new DescribableListSubtype();
+        data.describables.add(new MyDescribable());
+        final String xml = xstream.toXML(data);
+
+        assertThat(xml, allOf(not(containsString("<data>")), not(containsString("</data>")), not(containsString("<owner"))));
+
+        String craftedXml = xml.replace("<hudson.util.DescribableListTest_-MyDescribable/>", "<hudson.util.DescribableListTest_-MyOtherDescribable/>");
+        assertThat(xml, not(equalTo(craftedXml)));
+
+        final Object o = xstream.fromXML(craftedXml);
+        assertThat(o, instanceOf(MyDescribableData.class));
+        final DescribableList<MyDescribable, MyDescribable.DescriptorImpl> list = ((MyDescribableData) o).describables;
+        assertThat(list, instanceOf(DescribableListSubtype.class));
+        assertThat(list, empty());
+    }
+
+    public static class DescribableListSubtype extends DescribableList<MyDescribable, MyDescribable.DescriptorImpl> {}
+
+    private static class MyDescribableData {
+        private DescribableList<MyDescribable, MyDescribable.DescriptorImpl> describables;
+    }
+
+    public static class MyDescribable implements Describable<MyDescribable> {
+        public static class DescriptorImpl extends Descriptor<MyDescribable> {
+        }
+    }
+
+    public static class MyOtherDescribable implements Describable<MyOtherDescribable> {
+        public static class DescriptorImpl extends Descriptor<MyOtherDescribable> {
+        }
     }
 
 }

@@ -86,6 +86,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.tasks.UserAvatarResolver;
 import hudson.util.Area;
+import hudson.util.FormApply;
 import hudson.util.FormValidation.CheckMethod;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
@@ -217,6 +218,11 @@ public class Functions {
     public Functions() {
     }
 
+    @Restricted(NoExternalUse.class)
+    public @CheckForNull FormApply.Notification getFormApplyNotification() {
+        return FormApply.getAndClearNotification(Stapler.getCurrentRequest2());
+    }
+
     /**
      * Generates an unique ID.
      */
@@ -234,6 +240,16 @@ public class Functions {
 
     public static boolean isModelWithChildren(Object o) {
         return o instanceof ModelObjectWithChildren;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static boolean isInstanceOf(Object o, String className) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            return clazz.isInstance(o);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     @Deprecated
@@ -582,7 +598,8 @@ public class Functions {
         String[] oldParts = prior == null ? new String[4] : logRecordPreformat(prior);
         String[] newParts = logRecordPreformat(r);
         for (int i = 0; i < /* not 4 */3; i++) {
-            newParts[i] = "<span class='" + (newParts[i].equals(oldParts[i]) ? "logrecord-metadata-old" : "logrecord-metadata-new") + "'>" + newParts[i] + "</span>";
+            String cls = newParts[i].equals(oldParts[i]) ? "logrecord-metadata-old" : "logrecord-metadata-new";
+            newParts[i] = "<span class='" + cls + "'>" + Util.xmlEscape(newParts[i]) + "</span>";
         }
         newParts[3] = Util.xmlEscape(newParts[3]);
         return newParts;
@@ -2378,6 +2395,13 @@ public class Functions {
     }
 
     /**
+     * Returns true if we are in development mode.
+     */
+    public static boolean isDevelopmentMode() {
+        return Main.isDevelopmentMode;
+    }
+
+    /**
      * Returns {@code true} if the {@link Run#ARTIFACTS} permission is enabled,
      * {@code false} otherwise.
      *
@@ -2405,6 +2429,17 @@ public class Functions {
      */
     public static boolean isWipeOutPermissionEnabled() {
         return SystemProperties.getBoolean("hudson.security.WipeOutPermission");
+    }
+
+    /**
+     * Returns whether sticky positioning of UI elements should be disabled via the
+     * {@code disableStickyPositioning} cookie (primarily for UI acceptance tests).
+     * Sticky elements can otherwise float over the element under test and intercept clicks.
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean isStickyPositioningDisabled() {
+        String cookieValue = Functions.getCookie(Stapler.getCurrentRequest2(), "disableStickyPositioning", null);
+        return Boolean.valueOf(cookieValue);
     }
 
     @Deprecated
@@ -2686,6 +2721,16 @@ public class Functions {
      */
     @Restricted(NoExternalUse.class)
     public static Map<DetailGroup, List<Detail>> getDetailsFor(Actionable object) {
+        return getDetailsFor(object, null);
+    }
+
+    /**
+     * @param context the view the details are rendered in, one of {@link Detail.Verbosity} (case-insensitive),
+     *                or {@code null} to include all details
+     */
+    @Restricted(NoExternalUse.class)
+    public static Map<DetailGroup, List<Detail>> getDetailsFor(Actionable object, @CheckForNull String context) {
+        Detail.Verbosity verbosity = context == null || context.isEmpty() ? null : Detail.Verbosity.valueOf(context.toUpperCase(Locale.ROOT));
         ExtensionList<DetailGroup> groupsExtensionList = ExtensionList.lookup(DetailGroup.class);
         List<ExtensionComponent<DetailGroup>> components = groupsExtensionList.getComponents();
         Map<String, Double> detailGroupOrdinal = components.stream()
@@ -2697,7 +2742,9 @@ public class Functions {
         Map<DetailGroup, List<Detail>> result = new TreeMap<>(Comparator.comparingDouble(d -> detailGroupOrdinal.get(d.getClass().getName())));
         for (DetailFactory taf : DetailFactory.factoriesFor(object.getClass())) {
             List<Detail> details = taf.createFor(object);
-            details.forEach(e -> result.computeIfAbsent(e.getGroup(), k -> new ArrayList<>()).add(e));
+            details.stream()
+                    .filter(e -> e.getVerbosity().isVisibleIn(verbosity))
+                    .forEach(e -> result.computeIfAbsent(e.getGroup(), k -> new ArrayList<>()).add(e));
         }
 
         for (Map.Entry<DetailGroup, List<Detail>> entry : result.entrySet()) {

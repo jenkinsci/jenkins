@@ -3,6 +3,11 @@ import { CLOSE } from "@/util/symbols";
 import behaviorShim from "@/util/behavior-shim";
 import jenkins from "@/util/jenkins";
 
+let restrictWidth = (width) => {
+  const restricted = `min(${width}, 100%)`;
+  return CSS.supports("max-width", restricted) ? restricted : width;
+};
+
 let _defaults = {
   title: null,
   message: null,
@@ -36,8 +41,8 @@ function Dialog(dialogType, options) {
 Dialog.prototype.init = function () {
   this.dialog = document.createElement("dialog");
   this.dialog.classList.add("jenkins-dialog");
-  this.dialog.style.maxWidth = this.options.maxWidth;
-  this.dialog.style.minWidth = this.options.minWidth;
+  this.dialog.style.maxWidth = restrictWidth(this.options.maxWidth);
+  this.dialog.style.minWidth = restrictWidth(this.options.minWidth);
   document.body.appendChild(this.dialog);
 
   // Append title element
@@ -347,7 +352,7 @@ function init() {
       element.addEventListener("click", () => {
         if (element.dataset.dialogUrl != null) {
           window.dialog.wizard(element.dataset.dialogUrl, {
-            minWidth: "min(550px, 100vw)",
+            minWidth: "550px",
             preventCloseOnOutsideClick: true,
           });
         } else {
@@ -391,7 +396,10 @@ function resolveWizardFormAction(form, baseUrl) {
     !formAction.startsWith("/") &&
     !formAction.startsWith("http")
   ) {
-    form.action = new URL(formAction, baseUrl).toString();
+    // This might be flaky in the future
+    // Couldn't use new URL(...) as HTMLUnit didn't like it
+    form.action =
+      baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + formAction;
   }
 }
 
@@ -487,9 +495,20 @@ function renderWizardForm({
     dialogContents.appendChild(form);
   }
 
+  focusAutofocusField(form);
   wireCancelButton(form);
 
   return form;
+}
+
+function focusAutofocusField(form) {
+  const autofocusField = form.querySelector(
+    "input[autofocus]:not([disabled]), textarea[autofocus]:not([disabled]), select[autofocus]:not([disabled])",
+  );
+
+  if (autofocusField != null) {
+    autofocusField.focus();
+  }
 }
 
 function wireCancelButton(form) {

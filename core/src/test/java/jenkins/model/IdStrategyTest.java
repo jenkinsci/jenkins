@@ -2,11 +2,14 @@ package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
 
 class IdStrategyTest {
 
@@ -206,6 +209,40 @@ class IdStrategyTest {
 
         assertTrue(idStrategy.compare("John.Smith@acme.org", "john.smith@acme.org") < 0);
         assertTrue(idStrategy.compare("john.smith@acme.org", "John.Smith@acme.org") > 0);
+    }
+
+    @Test
+    @Issue("SECURITY-3924")
+    void caseInsensitiveEqualsIsConsistentWithKeyForForUnicode() {
+        IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
+
+        // U+0131 LATIN SMALL LETTER DOTLESS I: "admın" upper-cases to "ADMIN", so String.equalsIgnoreCase
+        assertFalse(idStrategy.equals("admin", "admın"));
+
+        // U+017F LATIN SMALL LETTER LONG S: upper-cases to 'S'.
+        assertFalse(idStrategy.equals("mass", "maſs"));
+
+        // Greek final sigma U+03C2 vs regular sigma U+03C3: both upper-case to U+03A3.
+        assertFalse(idStrategy.equals("σ", "ς"));
+    }
+
+    @Test
+    @Issue("SECURITY-3924")
+    void caseInsensitiveDotlessIDoesNotCollideWithAdmin() {
+        IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
+
+        String admin = "admin";
+        String attacker = "admın"; // 4th char is U+0131
+
+        assertThat(idStrategy.keyFor(admin), is(not(idStrategy.keyFor(attacker))));
+
+        assertFalse(idStrategy.equals(admin, attacker));
+        assertFalse(idStrategy.equals(attacker, admin));
+        assertNotEquals(0, idStrategy.compare(admin, attacker));
+
+        assertTrue(idStrategy.equals("Admin", "admin"));
+        assertThat(idStrategy.keyFor("Admin"), is(idStrategy.keyFor("admin")));
+        assertEquals(0, idStrategy.compare("Admin", "admin"));
     }
 
     @SuppressWarnings("deprecation")
