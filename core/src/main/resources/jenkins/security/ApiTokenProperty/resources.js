@@ -118,10 +118,17 @@ function appendTokenToTable(data) {
   tokenShowButton.dataset.tokenValue = data.tokenValue;
   tokenShowButton.dataset.title = data.tokenName;
   tokenShowButton.dataset.expirationDate = data.expirationDate;
+  tokenShowButton.dataset.aboutToExpire = data.aboutToExpire;
   tokenShowButton.classList.remove("jenkins-hidden");
   tokenList.appendChild(apiTokenRow);
   adjustTokenEmptyListMessage();
   Behaviour.applySubtree(apiTokenRow);
+}
+
+// The date of the custom choice is usable when there is one and it is within the
+// min and max that the server computed, which the browser checks for us.
+function isCustomDateValid(customDateInput) {
+  return customDateInput.value !== "" && customDateInput.validity.valid;
 }
 
 function addFormChangesHandling(form) {
@@ -129,37 +136,44 @@ function addFormChangesHandling(form) {
     'select[name="expirationDuration"]',
   );
   const customDateInput = form.querySelector('input[name="tokenExpiration"]');
+  // not rendered when the maximum lifetime applies, as tokens that never expire are not offered then
   const warningDiv = form.querySelector(".token-warning");
+
+  // The dialog appends its buttons next to the form, not inside it, so the OK
+  // button is looked up through the dialog. This runs on events, when the form
+  // is in the dialog already.
+  function updateSubmitButton() {
+    const submitButton = form
+      .closest("dialog")
+      ?.querySelector('button[data-id="ok"]');
+    if (submitButton == null) {
+      return;
+    }
+    submitButton.disabled =
+      expirationSelect.value === "custom" &&
+      !isCustomDateValid(customDateInput);
+  }
 
   expirationSelect.addEventListener("change", () => {
     if (expirationSelect.value === "custom") {
       customDateInput.classList.remove("jenkins-hidden");
-      const submitButton = form.querySelector('button[data-id="ok"]');
-      if (customDateInput.value !== "") {
-        submitButton.disabled = false;
-      } else {
-        submitButton.disabled = true;
-      }
     } else {
-      const submitButton = form.querySelector('button[data-id="ok"]');
-      submitButton.disabled = false;
       customDateInput.classList.add("jenkins-hidden");
     }
-    if (expirationSelect.value === "never") {
-      warningDiv.classList.remove("jenkins-hidden");
-    } else {
-      warningDiv.classList.add("jenkins-hidden");
+    updateSubmitButton();
+    if (warningDiv != null) {
+      if (expirationSelect.value === "never") {
+        warningDiv.classList.remove("jenkins-hidden");
+      } else {
+        warningDiv.classList.add("jenkins-hidden");
+      }
     }
   });
 
-  customDateInput.addEventListener("change", () => {
-    const submitButton = form.querySelector('button[data-id="ok"]');
-    if (customDateInput.value !== "") {
-      submitButton.disabled = false;
-    } else {
-      submitButton.disabled = true;
-    }
-  });
+  // browsers differ on when a typed date fires change (when a whole valid date is
+  // typed, or only on blur), so the button follows input as well
+  customDateInput.addEventListener("input", updateSubmitButton);
+  customDateInput.addEventListener("change", updateSubmitButton);
 }
 
 function addToken(button) {
@@ -170,14 +184,10 @@ function addToken(button) {
     .firstElementChild.cloneNode(true);
   const form = document.createElement("form");
   const dateInput = formTemplate.querySelector('input[name="tokenExpiration"]');
-  const now = new Date();
-  const nextYear = new Date();
-  const presetDate = new Date();
-  presetDate.setDate(now.getDate() + 30);
-  nextYear.setDate(now.getDate() + 365);
-  dateInput.min = now.toISOString().split("T")[0];
-  dateInput.max = nextYear.toISOString().split("T")[0];
-  dateInput.value = presetDate.toISOString().split("T")[0];
+  // ISO dates that the server computed, so that they follow its clock and its maximum
+  dateInput.min = dateInput.dataset.minDate;
+  dateInput.max = dateInput.dataset.maxDate;
+  dateInput.value = dateInput.dataset.presetDate;
   form.appendChild(formTemplate);
   addFormChangesHandling(form);
   dialog
@@ -353,6 +363,7 @@ Behaviour.specify(
         button.dataset.title,
         button.dataset.tokenValue,
         button.dataset.expirationDate,
+        button.dataset.aboutToExpire === "true",
         button.dataset.buttonDone,
       );
     };

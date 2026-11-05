@@ -1,0 +1,103 @@
+<div>
+  Applies the maximum lifetime without exemptions, and also to the tokens that
+  scripts and plugins create, not only to those created through the HTTP
+  endpoints. It is off by default.
+  <p>
+    Strict mode only has an effect while the maximum lifetime is greater than 0
+    and its enforcement has started. Before the date under
+    <em>Enforce the maximum lifetime from</em>
+    it is only announced: nothing changes, and the exemptions still apply until
+    that date. A stored date that cannot be read counts as already started.
+  </p>
+  <h3>What it adds</h3>
+  <ul>
+    <li>
+      The maximum is also enforced for scripts and plugins that create tokens
+      through the Java API: the script console,
+      <code>init.groovy.d</code>
+      scripts and provisioning scripts. A script that creates a token without an
+      expiration date, or with one beyond the maximum, gets an exception instead
+      of a token.
+    </li>
+    <li>
+      The maximum is also enforced when a legacy API token is regenerated.
+    </li>
+    <li>
+      Exemptions stop applying: nobody is exempt. The list under
+      <em>Users exempt from the maximum lifetime</em>
+      is kept, and applies again if you switch strict mode off.
+    </li>
+    <li>
+      A secret that a user has registered already cannot be registered again by
+      a script either, whether the token that holds it has expired or not.
+      Without strict mode, only the HTTP endpoints refuse it.
+    </li>
+  </ul>
+  <h3>What it does not cover</h3>
+  <ul>
+    <li>
+      The legacy tokens that Jenkins creates automatically for new users while
+      the legacy token options above are on. They never expire. The legacy
+      tokens that exist already still migrate when a user is loaded.
+    </li>
+    <li>
+      A script that calls the legacy regeneration of the token store directly.
+    </li>
+    <li>
+      It is best-effort against administrators: they can still edit the
+      configuration files of the users.
+    </li>
+    <li>
+      The tokens that exist already. They keep their expiration; the compliance
+      panel lists those that exceed the maximum.
+    </li>
+  </ul>
+  <h3>What to plan for</h3>
+  <ul>
+    <li>
+      A provisioning script that adds the same fixed token every time Jenkins
+      starts fails from the second start, because the secret is registered
+      already. If it gives no expiration date, it fails from the first start.
+    </li>
+    <li>Automated tests or tools that create tokens without an expiry fail.</li>
+    <li>The token of the initial administrator: see below.</li>
+  </ul>
+  <h3>The token of the initial administrator</h3>
+  <p>
+    The setup wizard can create a token for the initial administrator when
+    Jenkins starts for the first time. That token never expires, so it cannot be
+    created while strict mode is in effect. This only happens if strict mode was
+    switched on before the first start, for example by a configuration as code
+    file or by a configuration file that an installer provides, as it is off by
+    default.
+  </p>
+  <ul>
+    <li>
+      The system property
+      <code>-Djenkins.install.SetupWizard.adminInitialApiToken=true</code>
+      creates a random token: with it, Jenkins will not start until strict mode
+      is switched off or that system property is not set. The start fails the
+      same way every time until then. To switch strict mode off, set
+      <code>&lt;strict&gt;false&lt;/strict&gt;</code>
+      in the file
+      <code>jenkins.security.apitoken.ApiTokenPropertyConfiguration.xml</code>
+      under
+      <code>$JENKINS_HOME</code>
+      or in the configuration as code file, or remove the system property, then
+      restart. It only affects a first start that has no security realm
+      configured yet: a configuration as code file that sets a security realm
+      skips this step.
+    </li>
+    <li>
+      With a fixed token, given as the value of that system property, Jenkins
+      only logs a WARNING and creates no token. The start continues.
+    </li>
+  </ul>
+  <p>
+    Do not combine
+    <code>adminInitialApiToken=true</code>
+    with a pre-seeded configuration that turns strict mode on. Create the
+    initial token by script after the first start instead, with an expiration
+    date that respects the maximum.
+  </p>
+</div>
