@@ -233,9 +233,11 @@ public interface PersistenceStore {
 
     /**
      * Whether confidential keys are shared through this store, as {@code secrets/<id>}, so that every controller uses
-     * the same ones (see {@link jenkins.security.ConfidentialStore}). They stay encrypted with the master key, which is
-     * never shared. This states the store's security posture: a store not meant to hold key material, even encrypted,
-     * does not opt in.
+     * the same ones (see {@link jenkins.security.ConfidentialStore}). They stay encrypted with the master key
+     * ({@code secrets/master.key}), which is never put in the store: every controller sharing the store must be given
+     * the same master key another way, such as a mounted secret, as one with a different master key cannot decrypt
+     * them. This states the store's security posture: a store not meant to hold key material, even encrypted, does not
+     * opt in.
      */
     default boolean storesConfidentialKeys() {
         return false;
