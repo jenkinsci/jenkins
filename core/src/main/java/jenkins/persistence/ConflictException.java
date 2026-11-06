@@ -40,7 +40,8 @@ public class ConflictException extends IOException {
 
     private final String key;
     private final PersistenceStore.Expected expected;
-    private final OptionalLong actualVersion;
+    /** The version found, or 0 if the key does not exist (versions are positive): not an {@link OptionalLong}, which is not serializable. */
+    private final long actualVersion;
 
     /**
      * @param actualVersion the stored version, or empty if the key does not exist
@@ -50,7 +51,7 @@ public class ConflictException extends IOException {
                 + (actualVersion.isPresent() ? "version " + actualVersion.getAsLong() : "nothing"));
         this.key = key;
         this.expected = expected;
-        this.actualVersion = actualVersion;
+        this.actualVersion = actualVersion.orElse(0);
     }
 
     private static String describe(PersistenceStore.Expected expected) {
@@ -73,6 +74,6 @@ public class ConflictException extends IOException {
 
     /** The version found, or empty if the key does not exist. */
     public OptionalLong getActualVersion() {
-        return actualVersion;
+        return actualVersion == 0 ? OptionalLong.empty() : OptionalLong.of(actualVersion);
     }
 }

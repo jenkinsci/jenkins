@@ -32,6 +32,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +80,28 @@ class InMemoryPersistenceStoreTest {
                 List.of(new PersistenceStore.Precondition("missing", PersistenceStore.PRESENT))));
         assertEquals(OptionalLong.empty(), gone.getActualVersion());
         assertEquals("Conflicting modification of missing: expected an entry but found nothing", gone.getMessage());
+    }
+
+    @Test
+    void aConflictSurvivesSerialization() throws Exception {
+        for (ConflictException e : List.of(
+                new ConflictException("k", at(3), OptionalLong.of(4)),
+                new ConflictException("k", PersistenceStore.ABSENT, OptionalLong.of(1)),
+                new ConflictException("k", PersistenceStore.PRESENT, OptionalLong.empty()),
+                new ConflictException("k", PersistenceStore.ANY, OptionalLong.empty()))) {
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+                out.writeObject(e);
+            }
+            ConflictException copy;
+            try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray()))) {
+                copy = (ConflictException) in.readObject();
+            }
+            assertEquals(e.getKey(), copy.getKey());
+            assertEquals(e.getExpected(), copy.getExpected());
+            assertEquals(e.getActualVersion(), copy.getActualVersion());
+            assertEquals(e.getMessage(), copy.getMessage());
+        }
     }
 
     @Test

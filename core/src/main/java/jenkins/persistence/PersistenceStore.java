@@ -27,6 +27,7 @@ package jenkins.persistence;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.List;
 import java.util.OptionalLong;
 import java.util.Set;
@@ -70,7 +71,7 @@ public interface PersistenceStore {
      * Which expectations a change accepts is in its type: {@link ForWrite} for {@link PersistenceStore#write}, {@link ForDelete} for
      * {@link PersistenceStore#delete}, and any for a {@link Precondition} of {@link PersistenceStore#move}.
      */
-    sealed interface Expected {
+    sealed interface Expected extends Serializable {
 
         /**
          * Whether a key meets this expectation.
