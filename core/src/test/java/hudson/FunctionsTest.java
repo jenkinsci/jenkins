@@ -327,7 +327,7 @@ class FunctionsTest {
             "/jenkins/job/x/50/coverage/",
             "/jenkins/job/x/50/coverage/overview",
             "/jenkins/job/x/50/coverage/overview/",
-            "/jenkins/job/x/50/coverage/source.123/",
+            "/jenkins/job/x/50/coverage/source.123/"
     })
     void hyperlinkMatchesCurrentPageOrChildShouldMatchPageAndChildren(String requestUri) {
         assertTrue(matchesCurrentPageOrChild(requestUri, "/jenkins/job/x/50/coverage"));
@@ -341,7 +341,7 @@ class FunctionsTest {
             "/jenkins/job/x/50/coveragefoo",
             "/jenkins/job/x/50/testReport/coverage/",
             "/jenkins/job/x/51/coverage/",
-            "/jenkins/job/coverage/50/",
+            "/jenkins/job/coverage/50/"
     })
     void hyperlinkMatchesCurrentPageOrChildShouldNotMatchOtherPages(String requestUri) {
         assertFalse(matchesCurrentPageOrChild(requestUri, "/jenkins/job/x/50/coverage"));
