@@ -16,6 +16,7 @@
   @media (width < 740px) {
     display: flex;
     flex-direction: column;
+    margin: 0;
   }
 
   & > .app-page-body__sidebar {
@@ -113,8 +114,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
+      border-radius: 20px 20px 0 0;
     }
   }
 
