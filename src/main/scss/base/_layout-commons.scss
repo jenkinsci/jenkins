@@ -62,7 +62,7 @@
       &.app-page-body__sidebar--expanded {
         box-shadow:
           var(--elevation-3-box-shadow),
-          0 0 0 100vmax color-mix(in sRGB, var(--black) 20%, transparent);
+          0 0 0 100vmax color-mix(in sRGB, var(--background) 40%, transparent);
       }
     }
   }
