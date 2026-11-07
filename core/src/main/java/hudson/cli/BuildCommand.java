@@ -193,7 +193,7 @@ public class BuildCommand extends CLICommand {
                             }
                             catch (FileNotFoundException | NoSuchFileException e) {
                                 if (i == retryCnt) {
-                                    Exception myException = new AbortException();
+                                    Exception myException = new AbortException(e.getMessage() != null ? e.getMessage() : "Failed to read console log");
                                     myException.initCause(e);
                                     throw myException;
                                 }
@@ -212,7 +212,7 @@ public class BuildCommand extends CLICommand {
                         if (job.hasPermission(Item.CANCEL)) {
                             f.cancel(true);
                         }
-                        Exception myException = new AbortException();
+                        Exception myException = new AbortException("Build was interrupted");
                         myException.initCause(e);
                         throw myException;
                     }
