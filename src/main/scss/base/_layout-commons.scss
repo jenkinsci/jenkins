@@ -65,20 +65,12 @@
         top: var(--header-height);
         left: 0;
         bottom: 0;
-        z-index: 10;
+        z-index: 999;
         width: min(320px, 85vw);
         overflow-y: auto;
-        background: var(--background);
+        background: var(--body-background-top);
         border-right: var(--jenkins-border);
-        box-shadow: var(--elevation-3-box-shadow);
-
-        &::before {
-          content: "";
-          position: fixed;
-          inset: 0;
-          z-index: -1;
-          background: color-mix(in sRGB, black 40%, transparent);
-        }
+        box-shadow: var(--elevation-3-box-shadow), 0 0 0 100vmax color-mix(in sRGB, var(--black) 20%, transparent);
 
         .app-page-body__sidebar-toggle {
           margin-bottom: calc(var(--section-padding) / 2);
