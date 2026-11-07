@@ -35,10 +35,41 @@ THE SOFTWARE.
        data-page-has-up="${page.hasUpPage}"
        data-page-has-down="${page.hasDownPage}">
     <l:notice id="no-builds-yet"
-              icon="symbol-play"
-              title="${%No builds yet}"
-              clazz="jenkins-hidden">
+          icon="symbol-build-history"
+          title="${%No builds yet}"
+          clazz="jenkins-hidden">
       ${%Start the first build to see run history here.}
+
+      <j:set var="job" value="${it.owner}" />
+      <j:if test="${job.buildable}">
+        <l:hasPermission permission="${job.BUILD}">
+          <div class="jenkins-!-margin-top-3">
+            <j:choose>
+              <j:when test="${job.parameterized}">
+                <button type="button"
+                        class="jenkins-button jenkins-button--primary"
+                        data-type="dialog-opener"
+                        data-dialog-url="parametersDefinitionProperty/dialog">
+                  <l:icon src="symbol-play" />
+                  ${%Build with Parameters}
+                </button>
+              </j:when>
+              <j:otherwise>
+                <button type="button"
+                        class="jenkins-button jenkins-button--primary"
+                        data-type="build-now"
+                        data-base-url="${rootURL}/${job.url}"
+                        data-href="build?delay=0sec"
+                        data-build-success="${%Build scheduled}"
+                        data-build-failure="${%Failed to schedule build. Reload the page and try again.}">
+                  <l:icon src="symbol-play" />
+                  ${%Build Now}
+                </button>
+              </j:otherwise>
+            </j:choose>
+          </div>
+        </l:hasPermission>
+      </j:if>
     </l:notice>
 
     <l:notice id="no-builds"
