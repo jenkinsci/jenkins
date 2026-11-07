@@ -5,6 +5,7 @@ import { beforeAll, describe, expect, it } from "vitest";
  * hudson-behavior.js) when rendering, so stub it before they are loaded.
  */
 let Utils;
+let Templates;
 
 beforeAll(async () => {
   globalThis.Behaviour = {
@@ -13,6 +14,7 @@ beforeAll(async () => {
     applySubtree: () => {},
   };
   Utils = (await import("@/components/dropdowns/utils")).default;
+  Templates = (await import("@/components/dropdowns/templates")).default;
 });
 
 /**
@@ -71,5 +73,48 @@ describe("Utils.convertHtmlToItems", () => {
     expect(badge.textContent).toBe("1");
     expect(badge.classList.contains("jenkins-!-warning-color")).toBe(true);
     expect(badge.getAttribute("tooltip")).toBe("1 token about to expire");
+  });
+});
+
+describe("dropdown accessibility", () => {
+  it("renders the dropdown as a menu with menu items", () => {
+    const items = Utils.convertHtmlToItems(itemTemplates());
+    const dropdown = Utils.generateDropdownItems(items);
+
+    expect(dropdown.getAttribute("role")).toBe("menu");
+    expect(
+      dropdown.querySelector(".jenkins-dropdown__item").getAttribute("role"),
+    ).toBe("menuitem");
+  });
+
+  it("does not use the menu item role for inline buttons", () => {
+    const button = Templates.menuItem(
+      { displayName: "Build Now", event: { url: "build", type: "GET" } },
+      "jenkins-button",
+    );
+
+    expect(button.hasAttribute("role")).toBe(false);
+  });
+
+  it("marks click-triggered dropdowns as menu buttons", () => {
+    const button = document.createElement("button");
+    document.body.appendChild(button);
+
+    Utils.generateDropdown(button, () => {});
+
+    expect(button.getAttribute("aria-haspopup")).toBe("menu");
+    expect(button.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("does not mark suggestion or hover dropdowns as menu buttons", () => {
+    const input = document.createElement("input");
+    const link = document.createElement("a");
+    document.body.append(input, link);
+
+    Utils.generateDropdown(input, () => {}, true);
+    Utils.generateDropdown(link, () => {}, false, { trigger: "mouseenter" });
+
+    expect(input.hasAttribute("aria-haspopup")).toBe(false);
+    expect(link.hasAttribute("aria-haspopup")).toBe(false);
   });
 });
