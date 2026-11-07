@@ -42,8 +42,7 @@
     }
 
     &::before {
-      background: color-mix(in sRGB, var(--header-background) 85%, transparent);
-      backdrop-filter: contrast(1.15) blur(10px);
+      background: var(--header-background);
       z-index: -1;
     }
 
