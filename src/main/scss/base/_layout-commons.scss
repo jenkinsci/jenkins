@@ -51,7 +51,7 @@
       transition:
         translate var(--standard-transition),
         box-shadow var(--standard-transition),
-        visibility var(--standard-transition);
+        display var(--standard-transition) allow-discrete;
 
       &::after {
         border-left: none;
@@ -60,7 +60,7 @@
       }
 
       &:not(.app-page-body__sidebar--expanded) {
-        visibility: hidden;
+        display: none;
         translate: -100% 0;
         box-shadow:
           var(--elevation-3-box-shadow),
@@ -68,9 +68,17 @@
       }
 
       &.app-page-body__sidebar--expanded {
+        translate: 0 0;
         box-shadow:
           var(--elevation-3-box-shadow),
           0 0 0 100vmax color-mix(in sRGB, var(--background) 40%, transparent);
+
+        @starting-style {
+          translate: -100% 0;
+          box-shadow:
+            var(--elevation-3-box-shadow),
+            0 0 0 100vmax transparent;
+        }
       }
 
       @media (prefers-reduced-motion) {
