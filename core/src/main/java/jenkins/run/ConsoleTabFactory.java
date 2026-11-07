@@ -53,6 +53,10 @@ public class ConsoleTabFactory extends TransientActionFactory<Run> {
             return Collections.emptySet();
         }
 
+        if (Functions.isConsolePermissionEnabled() && !target.hasPermission(Run.CONSOLE)) {
+            return Collections.emptySet();
+        }
+
         return Collections.singleton(new ConsoleTab(target));
     }
 }
