@@ -1,5 +1,6 @@
 package jenkins.model.menu.event;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.util.Map;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
@@ -29,10 +30,13 @@ public final class JavaScriptEvent implements Event {
     /**
      * Create a JavaScriptEvent.
      * @param attributes attributes to add to the element as data-attributes.
-     * @param javascriptUrl the script to load relative from the jenkins root url.
+     * @param javascriptUrl the script to load relative from the jenkins root url, or empty for none.
      * @return the event
      */
     public static JavaScriptEvent of(Map<String, String> attributes, String javascriptUrl) {
+        if (javascriptUrl == null || javascriptUrl.isEmpty()) {
+            return new JavaScriptEvent(attributes, null);
+        }
         StaplerRequest2 req = Stapler.getCurrentRequest2();
         String prefix = (req != null ? req.getContextPath() : "") + Jenkins.RESOURCE_PATH + "/";
         return new JavaScriptEvent(attributes, prefix + javascriptUrl);
@@ -48,10 +52,10 @@ public final class JavaScriptEvent implements Event {
     }
 
     /**
-     * The URL of the JavaScript to load.
+     * The URL of the JavaScript to load, or {@code null} if there is none.
      */
     @Exported
-    public String getJavascriptUrl() {
+    public @CheckForNull String getJavascriptUrl() {
         return javascriptUrl;
     }
 }

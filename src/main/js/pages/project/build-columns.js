@@ -248,14 +248,16 @@ export function observeBuildColumns(container) {
     });
   };
 
-  let lastWidth;
-  new ResizeObserver(([entry]) => {
-    const width = entry.contentRect.width;
-    if (width !== lastWidth) {
-      lastWidth = width;
-      layout();
-    }
-  }).observe(container);
+  if (typeof ResizeObserver !== "undefined") {
+    let lastWidth;
+    new ResizeObserver(([entry]) => {
+      const width = entry.contentRect.width;
+      if (width !== lastWidth) {
+        lastWidth = width;
+        layout();
+      }
+    }).observe(container);
+  }
 
   // The layout itself only touches attributes, so this won't retrigger itself
   new MutationObserver(layout).observe(container, {
