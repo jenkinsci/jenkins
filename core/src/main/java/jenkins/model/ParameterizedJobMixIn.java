@@ -71,6 +71,7 @@ import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.triggers.TriggeredItem;
 import jenkins.util.TimeDuration;
+import jenkins.util.Timer;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -530,7 +531,22 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             }
             setDisabled(b);
             if (b) {
-                Jenkins.get().getQueue().cancel(this);
+                // Dispatched rather than called synchronously: this method typically runs while
+                // the caller (e.g. Job#doConfigSubmit) is synchronized on the job, and
+                // Queue#cancel needs Queue#lock. Calling it here would acquire Queue#lock while
+                // holding the job's monitor, the opposite order from Executor#run (which holds
+                // Queue#lock and then needs the job's monitor to create the build), risking a
+                // deadlock. isDisabled() is already true by this point, so any executor about to
+                // build this job will see that and decline before it would need the job's
+                // monitor; the queued item itself is removed moments later, off this thread.
+                // Queue#cancel matches by task, not by queue item, so skip it if the job was
+                // re-enabled in the meantime: any item queued since then is a legitimate new build.
+                // Checked under Queue#lock so a re-enable and reschedule cannot slip in between.
+                Timer.get().execute(() -> Queue.runWithLock(() -> {
+                    if (isDisabled()) {
+                        Jenkins.get().getQueue().cancel(this);
+                    }
+                }));
             }
             save();
             ItemListener.fireOnUpdated(this);

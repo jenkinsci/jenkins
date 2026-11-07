@@ -352,6 +352,22 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     }
 
     /**
+     * Additional lock held by {@link #renameTo} (inside this item's own monitor) while the root
+     * directory is being moved, for subclasses that write into the root directory under some other
+     * lock. Code holding the returned lock must never acquire this item's or its parent's monitor.
+     */
+    Object getRenameLock() {
+        return this;
+    }
+
+    /**
+     * Called by {@link #renameTo} with {@link #getRenameLock} held, before anything is changed, to refuse
+     * the rename if something is about to write into the current root directory.
+     */
+    void checkRootDirMovable() {
+    }
+
+    /**
      * Renames this item.
      * Not all the Items need to support this operation, but if you decide to do so,
      * you can use this method.
@@ -382,93 +398,98 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
                 // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
                 Items.verifyItemDoesNotAlreadyExist(parent, newName, this);
 
-                File oldRoot = this.getRootDir();
+                // Kept to the directory move only: anything written into the new root before the move makes it
+                // fail (or, on Windows, be overwritten by the fallback copy), and no parent/plugin code may run here.
+                synchronized (getRenameLock()) {
+                    checkRootDirMovable();
+                    File oldRoot = this.getRootDir();
 
-                doSetName(newName);
-                File newRoot = this.getRootDir();
+                    doSetName(newName);
+                    File newRoot = this.getRootDir();
 
-                boolean success = false;
+                    boolean success = false;
 
-                try { // rename data files
-                    boolean interrupted = false;
-                    boolean renamed = false;
+                    try { // rename data files
+                        boolean interrupted = false;
+                        boolean renamed = false;
 
-                    // try to rename the job directory.
-                    // this may fail on Windows due to some other processes
-                    // accessing a file.
-                    // so retry few times before we fall back to copy.
-                    for (int retry = 0; retry < 5; retry++) {
-                        try {
-                            Files.move(Util.fileToPath(oldRoot), Util.fileToPath(newRoot));
-                            renamed = true;
-                            break;
-                        } catch (java.nio.file.AccessDeniedException e) { // use FQN as we already imported one from spring here.
-                            if (!Functions.isWindows()) {
-                                throw e;
-                            }
+                        // try to rename the job directory.
+                        // this may fail on Windows due to some other processes
+                        // accessing a file.
+                        // so retry few times before we fall back to copy.
+                        for (int retry = 0; retry < 5; retry++) {
                             try {
-                                Thread.sleep(500);
-                            } catch (InterruptedException ie) {
-                                // process the interruption later
-                                interrupted = true;
-                            }
-                        }
-                    }
-
-                    if (interrupted)
-                        Thread.currentThread().interrupt();
-
-                    // Since changing the renaming api from java.io.File#renameTo to java.nio.file.Files#move,
-                    // no failure in Unix is retryable, control can only reach here on Windows.
-                    if (!renamed) {
-                        // failed to rename. it must be that some lengthy
-                        // process is going on
-                        // to prevent a rename operation. So do a copy. Ideally
-                        // we'd like to
-                        // later delete the old copy, but we can't reliably do
-                        // so, as before the VM
-                        // shuts down there might be a new job created under the
-                        // old name.
-
-                        // [SECURITY-4187] Refuse to copy if the directory contains symlinks,
-                        // as the Ant Copy task dereferences them into regular files.
-                        // As mentioned above, this only happens on Windows on rare occasion, so this is fine.
-                        try (var stream = Files.walk(Util.fileToPath(oldRoot))) {
-                            if (stream.anyMatch(Files::isSymbolicLink)) {
-                                throw new IOException("""
-                                        Rename of %s failed, possibly because another process has files \
-                                        open in the directory. Cannot fall back to recursive-copy for security reasons \
-                                        because the directory contains symbolic links. Retry may succeed \
-                                        once the other process releases its lock.""".formatted(oldRoot));
+                                Files.move(Util.fileToPath(oldRoot), Util.fileToPath(newRoot));
+                                renamed = true;
+                                break;
+                            } catch (java.nio.file.AccessDeniedException e) { // use FQN as we already imported one from spring here.
+                                if (!Functions.isWindows()) {
+                                    throw e;
+                                }
+                                try {
+                                    Thread.sleep(500);
+                                } catch (InterruptedException ie) {
+                                    // process the interruption later
+                                    interrupted = true;
+                                }
                             }
                         }
 
-                        Copy cp = new Copy();
-                        cp.setProject(new Project());
-                        cp.setTodir(newRoot);
-                        FileSet src = new FileSet();
-                        src.setDir(oldRoot);
-                        cp.addFileset(src);
-                        cp.setOverwrite(true);
-                        cp.setPreserveLastModified(true);
-                        cp.setFailOnError(false); // keep going even if
-                                                    // there's an error
-                        cp.execute();
+                        if (interrupted)
+                            Thread.currentThread().interrupt();
 
-                        // try to delete as much as possible
-                        try {
-                            Util.deleteRecursive(oldRoot);
-                        } catch (IOException e) {
-                            // but ignore the error, since we expect that
-                            LOGGER.log(Level.WARNING, "Ignoring IOException while deleting", e);
+                        // Since changing the renaming api from java.io.File#renameTo to java.nio.file.Files#move,
+                        // no failure in Unix is retryable, control can only reach here on Windows.
+                        if (!renamed) {
+                            // failed to rename. it must be that some lengthy
+                            // process is going on
+                            // to prevent a rename operation. So do a copy. Ideally
+                            // we'd like to
+                            // later delete the old copy, but we can't reliably do
+                            // so, as before the VM
+                            // shuts down there might be a new job created under the
+                            // old name.
+
+                            // [SECURITY-4187] Refuse to copy if the directory contains symlinks,
+                            // as the Ant Copy task dereferences them into regular files.
+                            // As mentioned above, this only happens on Windows on rare occasion, so this is fine.
+                            try (var stream = Files.walk(Util.fileToPath(oldRoot))) {
+                                if (stream.anyMatch(Files::isSymbolicLink)) {
+                                    throw new IOException("""
+                                            Rename of %s failed, possibly because another process has files \
+                                            open in the directory. Cannot fall back to recursive-copy for security reasons \
+                                            because the directory contains symbolic links. Retry may succeed \
+                                            once the other process releases its lock.""".formatted(oldRoot));
+                                }
+                            }
+
+                            Copy cp = new Copy();
+                            cp.setProject(new Project());
+                            cp.setTodir(newRoot);
+                            FileSet src = new FileSet();
+                            src.setDir(oldRoot);
+                            cp.addFileset(src);
+                            cp.setOverwrite(true);
+                            cp.setPreserveLastModified(true);
+                            cp.setFailOnError(false); // keep going even if
+                                                        // there's an error
+                            cp.execute();
+
+                            // try to delete as much as possible
+                            try {
+                                Util.deleteRecursive(oldRoot);
+                            } catch (IOException e) {
+                                // but ignore the error, since we expect that
+                                LOGGER.log(Level.WARNING, "Ignoring IOException while deleting", e);
+                            }
                         }
-                    }
 
-                    success = true;
-                } finally {
-                    // if failed, back out the rename.
-                    if (!success)
-                        doSetName(oldName);
+                        success = true;
+                    } finally {
+                        // if failed, back out the rename.
+                        if (!success)
+                            doSetName(oldName);
+                    }
                 }
 
                 parent.onRenamed(this, oldName, newName);
