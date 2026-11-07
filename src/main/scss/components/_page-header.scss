@@ -13,7 +13,7 @@
   color: var(--header-color);
 
   @media (width < 740px) {
-    --header-corner-radius: 1.375rem;
+    --header-corner-radius: 1.5rem;
     --header-shape:
       linear-gradient(#000 0 0) top / 100%
         calc(100% - var(--header-corner-radius)) no-repeat,
@@ -43,7 +43,7 @@
 
     &::before {
       background: color-mix(in sRGB, var(--header-background) 85%, transparent);
-      backdrop-filter: blur(15px);
+      backdrop-filter: contrast(1.15) blur(10px);
       z-index: -1;
     }
 
