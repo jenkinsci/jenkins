@@ -223,6 +223,10 @@
     align-items: center;
     justify-content: center;
     margin-block: 0.5rem;
+
+    &:empty {
+      display: none;
+    }
   }
 
   .app-build-bar__controls {
@@ -232,8 +236,24 @@
     flex: 1;
     gap: 0.5rem;
 
-    @media (width <= 600px) {
+    .jenkins-jumplist-link {
+      flex: none;
+    }
+
+    @media (width < 740px) {
       justify-content: stretch;
+      flex-wrap: wrap;
+      width: 100%;
+
+      & > * {
+        flex-grow: 1;
+        flex-basis: 0;
+      }
+
+      .jenkins-button:first-child {
+        width: 100%;
+        flex-basis: auto !important;
+      }
     }
   }
 }
@@ -249,7 +269,6 @@
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
-    margin-left: -0.25rem;
 
     svg {
       width: 1.875rem;

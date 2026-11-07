@@ -278,6 +278,10 @@ $jenkins-split-button-border-radius: 0.2rem;
     border-top-left-radius: $jenkins-split-button-border-radius;
     border-bottom-left-radius: $jenkins-split-button-border-radius;
 
+    @media (width < 740px) {
+      width: 3.25rem;
+    }
+
     svg {
       width: 0.75rem;
       height: 0.75rem;
