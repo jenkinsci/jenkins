@@ -24,93 +24,79 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.displayName}">
-    <st:include page="sidepanel.jelly" />
-    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-    <l:main-panel>
-      <l:app-bar title="${it.caption}">
-        <t:editDescriptionButton permission="${it.CONFIGURE}"/>
-        <j:if test="${it.manualLaunchAllowed}">
-          <st:include from="${it.launcher}" page="app-bar-controls.jelly" optional="true"/>
-        </j:if>
-        <!-- temporarily offline switch -->
-        <j:choose>
-          <j:when test="${it.temporarilyOffline}">
-            <l:hasPermission permission="${it.CONNECT}">
-              <form method="post" action="toggleOffline">
-                <f:submit value="${%submit.temporarilyOffline}"  />
-              </form>
-              <form method="post" action="setOfflineCause">
-              <f:submit primary="false" value="${%submit.updateOfflineCause}"  />
-              </form>
-            </l:hasPermission>
-          </j:when>
-          <j:otherwise>
-            <l:hasPermission permission="${it.DISCONNECT}">
-              <form method="post" action="markOffline">
-                <f:submit primary="false" value="${%submit.not.temporarilyOffline}"  />
-              </form>
-            </l:hasPermission>
-          </j:otherwise>
-        </j:choose>
-        <t:help href="https://www.jenkins.io/doc/book/using/using-agents/" />
-      </l:app-bar>
+  <l:userExperimentalFlag var="newAgentPage" flagClassName="jenkins.model.experimentalflags.NewAgentPageUserExperimentalFlag" />
+  <j:choose>
+    <j:when test="${newAgentPage}">
+      <st:include page="new-agent-page.jelly" />
+    </j:when>
+    <j:otherwise>
+      <l:layout title="${it.displayName}">
+        <st:include page="sidepanel.jelly" />
+        <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
+        <l:main-panel>
+          <l:app-bar title="${it.caption}">
+            <t:editDescriptionButton permission="${it.CONFIGURE}"/>
+            <st:include page="app-controls.jelly"/>
+            <t:help href="https://www.jenkins.io/doc/book/using/using-agents/" />
+          </l:app-bar>
 
-      <st:include page="index-top.jelly" it="${it}" />
+          <st:include page="index-top.jelly" it="${it}" />
 
-      <j:if test="${it.offlineCause!=null and it.offline and !it.connecting}">
-        <st:include it="${it.offlineCause}" page="cause.jelly" />
-      </j:if>
+          <j:if test="${it.offlineCause!=null and it.offline and !it.connecting}">
+            <st:include it="${it.offlineCause}" page="cause.jelly" />
+          </j:if>
 
-      <j:if test="${it.manualLaunchAllowed}">
-        <st:include from="${it.launcher}" page="main.jelly" optional="true"/>
-      </j:if>
+          <j:if test="${it.manualLaunchAllowed}">
+            <st:include from="${it.launcher}" page="main.jelly" optional="true"/>
+          </j:if>
 
-      <j:if test="${it.offline and !it.manualLaunchAllowed and it.launchSupported}">
-        <p>${%title.no_manual_launch(it.retentionStrategy.descriptor.displayName)}</p>
-      </j:if>
+          <j:if test="${it.offline and !it.manualLaunchAllowed and it.launchSupported}">
+            <p>${%title.no_manual_launch(it.retentionStrategy.descriptor.displayName)}</p>
+          </j:if>
 
-      <f:advanced title="${%Monitoring Data}">
-        <table class="jenkins-table jenkins-table--small jenkins-table--auto-width">
-          <j:forEach var="m" items="${it.monitoringData}">
-            <tr>
-              <td>${m.key.columnCaption}</td>
-              <j:set var="data" value="${m.value}"/>
-              <st:include page="column.jelly" from="${m.key}" />
-            </tr>
-          </j:forEach>
-        </table>
-      </f:advanced>
+          <f:advanced title="${%Monitoring Data}">
+            <table class="jenkins-table jenkins-table--small jenkins-table--auto-width">
+              <j:forEach var="m" items="${it.monitoringData}">
+                <tr>
+                  <td>${m.key.columnCaption}</td>
+                  <j:set var="data" value="${m.value}"/>
+                  <st:include page="column.jelly" from="${m.key}" />
+                </tr>
+              </j:forEach>
+            </table>
+          </f:advanced>
 
-      <j:if test="${it.node.assignedLabels.size() gt 1}">
-        <div class="jenkins-!-margin-bottom-3">
-          <h2>${%Labels}</h2>
-          <j:forEach var="entry" items="${it.node.labelCloud}">
-            <!-- Skip the label for this node -->
-            <j:if test="${entry.item!=it.node.selfLabel}">
-              <a class="${entry.className} model-link inside" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
-              <wbr/>
-            </j:if>
-          </j:forEach>
-        </div>
-      </j:if>
+          <j:if test="${it.node.assignedLabels.size() gt 1}">
+            <div class="jenkins-!-margin-bottom-3">
+              <h2>${%Labels}</h2>
+              <j:forEach var="entry" items="${it.node.labelCloud}">
+                <!-- Skip the label for this node -->
+                <j:if test="${entry.item!=it.node.selfLabel}">
+                  <a class="${entry.className} model-link inside" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
+                  <wbr/>
+                </j:if>
+              </j:forEach>
+            </div>
+          </j:if>
 
-      <st:include page="nodepropertysummaries.jelly" />
+          <st:include page="nodepropertysummaries.jelly" />
 
-      <h2>${%title.projects_tied_on(it.displayName)}</h2>
-      <j:set var="jobs" value="${it.tiedJobs}" />
-      <j:choose>
-        <j:when test="${empty(jobs)}">
-          <p>
-            ${%None}
-          </p>
-        </j:when>
-        <j:otherwise>
-          <t:projectView jobs="${jobs}"/>
-        </j:otherwise>
-      </j:choose>
+          <h2>${%title.projects_tied_on(it.displayName)}</h2>
+          <j:set var="jobs" value="${it.tiedJobs}" />
+          <j:choose>
+            <j:when test="${empty(jobs)}">
+              <p>
+                ${%None}
+              </p>
+            </j:when>
+            <j:otherwise>
+              <t:projectView jobs="${jobs}"/>
+            </j:otherwise>
+          </j:choose>
 
-      <st:include page="main.jelly" optional="true"/>
-    </l:main-panel>
-  </l:layout>
+          <st:include page="main.jelly" optional="true"/>
+        </l:main-panel>
+      </l:layout>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>
