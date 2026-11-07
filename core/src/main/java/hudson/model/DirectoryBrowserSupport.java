@@ -196,7 +196,8 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     private void serveFile(StaplerRequest2 req, StaplerResponse2 rsp, VirtualFile root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
         String path = getPath(req);
-        if (path.replace('\\', '/').contains("/../")) {
+        String slashedPath = path.replace('\\', '/');
+        if (slashedPath.contains("/../") || slashedPath.endsWith("/..")) {
             // don't serve anything other than files in the artifacts dir
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
@@ -309,7 +310,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             if (serveDirIndex) {
                 // serve directory index
                 var result = baseFile.run(new BuildChildPaths(baseFile, req.getLocale(), getOpenOptions()));
-                glob = result.glob;
+                glob = toEncodedPaths(result.entries);
                 containsSymlink = result.containsSymLink;
                 containsTmpDir = result.containsTmpDir;
             }
@@ -557,35 +558,30 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
     }
 
-    private record BuildChildPathsResult(List<List<Path>> glob, boolean containsSymLink, boolean containsTmpDir) implements Serializable {}
+    private record ChildEntry(String name, boolean isFolder, long size, boolean isReadable, long lastModified) implements Serializable {}
+
+    private record BuildChildPathsResult(List<List<ChildEntry>> entries, boolean containsSymLink, boolean containsTmpDir) implements Serializable {}
 
     private record BuildChildPaths(VirtualFile cur, Locale locale, OpenOption[] openOptions) implements ControllerToAgentCallable<BuildChildPathsResult, IOException> {
         @Override public BuildChildPathsResult call() throws IOException {
-            return new BuildChildPathsResult(buildChildPaths(cur, locale), cur.containsSymLinkChild(openOptions), cur.containsTmpDirChild(openOptions));
+            return new BuildChildPathsResult(listChildEntries(cur, locale), cur.containsSymLinkChild(openOptions), cur.containsTmpDirChild(openOptions));
         }
     }
-    /**
-     * Builds a list of list of {@link Path}. The inner
-     * list of {@link Path} represents one child item to be shown
-     * (this mechanism is used to skip empty intermediate directory.)
-     */
 
-    @SuppressFBWarnings(value = "SBSC_USE_STRINGBUFFER_CONCATENATION", justification = "no big deal")
-    private static List<List<Path>> buildChildPaths(VirtualFile cur, Locale locale) throws IOException {
-            List<List<Path>> r = new ArrayList<>();
+    private static List<List<ChildEntry>> listChildEntries(VirtualFile cur, Locale locale) throws IOException {
+            List<List<ChildEntry>> r = new ArrayList<>();
 
             VirtualFile[] files = cur.list(getOpenOptions());
                 Arrays.sort(files, new FileComparator(Collator.getInstance(locale)));
 
                 for (VirtualFile f : files) {
-                    Path p = new Path(Util.rawEncode(f.getName()), f.getName(), f.isDirectory(), f.length(), f.canRead(), f.lastModified());
+                    ChildEntry entry = new ChildEntry(f.getName(), f.isDirectory(), f.length(), f.canRead(), f.lastModified());
                     if (!f.isDirectory()) {
-                        r.add(List.of(p));
+                        r.add(List.of(entry));
                     } else {
                         // find all empty intermediate directory
-                        List<Path> l = new ArrayList<>();
-                        l.add(p);
-                        String relPath = Util.rawEncode(f.getName());
+                        List<ChildEntry> l = new ArrayList<>();
+                        l.add(entry);
                         while (true) {
                             // files that don't start with '.' qualify for 'meaningful files', nor SCM related files
                             List<VirtualFile> sub = new ArrayList<>();
@@ -598,14 +594,32 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                             if (sub.size() != 1 || !sub.getFirst().isDirectory())
                                 break;
                             f = sub.getFirst();
-                            relPath += '/' + Util.rawEncode(f.getName());
-                            l.add(new Path(relPath, f.getName(), true, f.length(), f.canRead(), f.lastModified()));
+                            l.add(new ChildEntry(f.getName(), true, f.length(), f.canRead(), f.lastModified()));
                         }
                         r.add(l);
                     }
                 }
 
             return r;
+    }
+
+    private static List<List<Path>> toEncodedPaths(List<List<ChildEntry>> entries) {
+        List<List<Path>> r = new ArrayList<>(entries.size());
+        for (List<ChildEntry> entryChain : entries) {
+            List<Path> l = new ArrayList<>(entryChain.size());
+            StringBuilder href = new StringBuilder();
+            boolean first = true;
+            for (ChildEntry entry : entryChain) {
+                if (!first) {
+                    href.append('/');
+                }
+                href.append(Util.rawEncode(entry.name()));
+                first = false;
+                l.add(new Path(href.toString(), entry.name(), entry.isFolder(), entry.size(), entry.isReadable(), entry.lastModified()));
+            }
+            r.add(l);
+        }
+        return r;
     }
 
     /**

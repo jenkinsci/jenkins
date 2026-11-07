@@ -28,6 +28,8 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInRelativeOrder;
 import static org.hamcrest.Matchers.empty;
@@ -64,6 +66,7 @@ import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -84,6 +87,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
 import jenkins.model.Jenkins;
@@ -684,6 +688,50 @@ class PluginManagerTest {
             // ensure data is loaded - probably unnecessary, but closer to reality
             assertSame(FormValidation.Kind.OK, uc.getSite("default").updateDirectlyNow().kind);
         });
+    }
+
+    @Test
+    @Issue("JENKINS-64840")
+    void filteringMultipleTokens() throws Throwable {
+        session.then(r -> {
+            assumeFalse(Functions.isWindows(), "TODO: Implement this test for Windows");
+            PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
+            sites.clear();
+            URL url = PluginManagerTest.class.getResource("/plugins/search-tokens-update-center.json");
+            UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
+            sites.add(site);
+            assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
+            assertNotNull(site.getData());
+
+            // words match across the plugin ID and title, ignoring punctuation
+            assertThat(searchResults(r, "build token").get(0), is("build-token-root"));
+            assertThat(searchResults(r, "Pipeline Groovy").get(0), is("workflow-cps"));
+            assertThat(searchResults(r, "pipeline cps").get(0), is("workflow-cps"));
+            assertThat(searchResults(r, "workflow cps").get(0), is("workflow-cps"));
+            assertThat(searchResults(r, "build  token").get(0), is("build-token-root"));
+
+            // plugins matching only some of the words are left out when others match all of them
+            assertThat(searchResults(r, "build token"), not(hasItem("token-macro")));
+
+            // all matches are ranked before the limit is applied, so the best match is kept even if less popular
+            assertThat(searchResults(r, "build token", 1), is(List.of("build-token-root")));
+
+            // but are returned, best match first, when nothing matches all of the words
+            assertThat(searchResults(r, "build-token-root zzznomatch").get(0), is("build-token-root"));
+        });
+    }
+
+    private static List<String> searchResults(JenkinsRule r, String query) throws Exception {
+        return searchResults(r, query, 50);
+    }
+
+    private static List<String> searchResults(JenkinsRule r, String query, int limit) throws Exception {
+        JenkinsRule.JSONWebResponse response = r.getJSON("pluginManager/pluginsSearch?query=" + URLEncoder.encode(query, StandardCharsets.UTF_8) + "&limit=" + limit);
+        JSONObject json = response.getJSONObject();
+        assertTrue(json.has("data"));
+        return json.getJSONArray("data").stream()
+                .map(obj -> ((JSONObject) obj).getString("name"))
+                .collect(Collectors.toList());
     }
 
     @Test
