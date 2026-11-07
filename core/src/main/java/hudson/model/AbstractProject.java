@@ -976,8 +976,18 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
     /**
      * Creates a new build of this project for immediate execution.
+     *
+     * <p>Not {@code synchronized}: that modifier was added in 2009 (HUDSON-2997) to serialize
+     * access to a {@code lastBuildStartTime} field that no longer exists, and this method does
+     * nothing else that needs mutual exclusion on the project itself. {@link LazyBuildMixIn#newBuild}
+     * already synchronizes on its own object, and build-number assignment now uses a dedicated
+     * lock (see {@link Job#nextBuildNumberLock}) rather than the project's own monitor. Keeping
+     * this method itself {@code synchronized} would force the caller (an executor, via
+     * {@link Queue#callWithLock}) to acquire the project's monitor while holding {@link Queue#lock}
+     * -- a lock order that risks deadlock against any other code that acquires those same two
+     * locks in the opposite order while holding the project's monitor.
      */
-    protected synchronized R newBuild() throws IOException {
+    protected R newBuild() throws IOException {
         return buildMixIn.newBuild();
     }
 
