@@ -141,9 +141,13 @@ public class OldDataMonitor extends AdministrativeMonitor {
      *            the data in its new format to disk.
      * @param version Hudson release when the data structure changed.
      */
+    @Restricted(NoExternalUse.class)
     public static void report(Saveable obj, String version) {
         if (obj instanceof Run<?, ?>) {
             return; // somewhat ephemeral
+        }
+        if (!RobustReflectionConverter.shouldReportUnloadableDataErrors()) {
+            return;
         }
         OldDataMonitor odm = get();
         try {
@@ -191,6 +195,9 @@ public class OldDataMonitor extends AdministrativeMonitor {
                 }
             }
             return; // somewhat ephemeral
+        }
+        if (!RobustReflectionConverter.shouldReportUnloadableDataErrors()) {
+            return;
         }
         StringBuilder buf = new StringBuilder();
         int i = 0;

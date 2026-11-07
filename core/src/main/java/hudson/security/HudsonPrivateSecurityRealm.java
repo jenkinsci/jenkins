@@ -398,7 +398,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public synchronized void doCreateFirstAccount(StaplerRequest2 req, StaplerResponse2 rsp)
             throws IOException, ServletException {
 
-        if (hasSomeUser()) {
+        if (!Jenkins.get().getInstallState().isSetupComplete() || hasSomeUser()) {
             rsp.sendError(SC_UNAUTHORIZED, "First user was already created");
             return;
         }
@@ -1264,7 +1264,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         private boolean needsToCreateFirstUser() {
             return !hasSomeUser()
-                && Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
+                    && Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm
+                    && Jenkins.get().getInstallState().isSetupComplete();
         }
 
         @Override

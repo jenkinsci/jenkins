@@ -32,10 +32,10 @@ import java.time.Instant;
 import jenkins.console.ConsoleUrlProvider;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-@Restricted(DoNotUse.class) // only for buildListTable.jelly
-public class BuildListTable extends RunListProgressiveRendering {
+@Restricted(NoExternalUse.class) // only for buildListTable.jelly and its data endpoints
+public class BuildListTable extends RunListData {
 
     @Override protected void calculate(Run<?, ?> build, JSONObject element) {
         BallColor iconColor = build.getIconColor();
