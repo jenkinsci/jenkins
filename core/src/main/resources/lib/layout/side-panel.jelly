@@ -30,10 +30,7 @@ THE SOFTWARE.
 
   <j:if test="${mode=='side-panel'}">
     <div id="side-panel" class="app-page-body__sidebar">
-      <button type="button" class="jenkins-button app-page-body__sidebar-toggle" aria-expanded="false" aria-controls="side-panel">
-        <l:icon src="symbol-menu-hamburger" />
-        ${%Menu}
-      </button>
+      <l:side-panel-toggle clazz="app-side-panel-toggle--fallback" />
       <d:invokeBody />
     </div>
   </j:if>

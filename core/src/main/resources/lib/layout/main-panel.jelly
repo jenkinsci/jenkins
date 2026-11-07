@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
   <st:documentation>
     Generates the body as the main content part of a Jenkins page.
     <st:attribute name="width">
@@ -64,6 +64,9 @@ THE SOFTWARE.
         </j:choose>
       </j:if>
       <a id="skip2content" />
+      <j:if test="${layoutType == 'two-column'}">
+        <l:side-panel-toggle clazz="app-side-panel-toggle--fallback" />
+      </j:if>
       <x:comment>&#10;start of main content ⇒&#10;</x:comment>
       <d:invokeBody />
       <x:comment>&#10;⇐ end of main content&#10;</x:comment>
