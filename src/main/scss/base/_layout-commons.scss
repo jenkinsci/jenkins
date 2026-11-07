@@ -124,8 +124,7 @@ $collapsible-page-body: ".app-page-body:has(> .app-page-body__sidebar):not(:has(
   }
 
   &--wide {
-    width: 70vw;
-    max-width: 1700px;
+    max-width: min(1700px, max(70vw, 740px));
     margin-inline: auto;
   }
 }
