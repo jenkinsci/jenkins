@@ -18,6 +18,10 @@ body {
   flex-direction: column;
   background: var(--header-background);
   background-attachment: fixed;
+
+  @media (width < 740px) {
+    background: var(--body-background-top);
+  }
 }
 
 *,

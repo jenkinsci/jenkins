@@ -97,109 +97,110 @@
 }
 
 // Page frame
-.app-page-frame__background {
-  position: relative;
-  pointer-events: none;
+@media (width >= 740px) {
+  .app-page-frame__background {
+    position: relative;
+    pointer-events: none;
 
-  &::before,
-  &::after {
-    content: "";
+    &::before,
+    &::after {
+      content: "";
+      position: fixed;
+      inset: var(--header-height) var(--page-inset) var(--page-inset) var(--page-inset);
+      border-radius: var(--form-input-border-radius);
+
+      @media (width < 740px) {
+        border-radius: 1.375rem 1.375rem 0 0;
+      }
+    }
+
+    &::before {
+      --background: var(--card-background);
+
+      background-color: var(--card-background);
+      background-image: linear-gradient(
+              in oklch,
+              var(--body-background-top),
+              var(--background)
+      );
+      background-size: 100% 90vh;
+      background-repeat: no-repeat;
+      z-index: -1;
+    }
+
+    &::after {
+      border: var(--jenkins-border);
+      box-shadow: var(--elevation-1-box-shadow);
+      z-index: 1;
+
+
+      @media (width < 740px) {
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+      }
+    }
+  }
+
+  .app-page-frame__mask {
+    --mask-inset: calc(var(--page-inset) + 1px);
+    --mask-top: calc(var(--header-height) + 1px);
+
     position: fixed;
-    inset: var(--header-height) var(--page-inset) var(--page-inset)
-      var(--page-inset);
-    border-radius: var(--form-input-border-radius);
-
-    @media (width < 740px) {
-      border-radius: 1.375rem 1.375rem 0 0;
-    }
-  }
-
-  &::before {
-    --background: var(--card-background);
-
-    background-color: var(--card-background);
-    background-image: linear-gradient(
-      in oklch,
-      var(--body-background-top),
-      var(--background)
-    );
-    background-size: 100% 90vh;
-    background-repeat: no-repeat;
-    z-index: -1;
-  }
-
-  &::after {
-    border: var(--jenkins-border);
-    box-shadow: var(--elevation-1-box-shadow);
-    z-index: 1;
-
-
-    @media (width < 740px) {
-      border-left: none;
-      border-right: none;
-      border-bottom: none;
-    }
-  }
-}
-
-.app-page-frame__mask {
-  --mask-inset: calc(var(--page-inset) + 1px);
-  --mask-top: calc(var(--header-height) + 1px);
-
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-
-  mask:
-          linear-gradient(#000 0 0),
-          linear-gradient(#000 0 0)
-          left var(--mask-inset) top var(--mask-top) /
-    calc(100% - var(--mask-inset) * 2)
-          calc(100% - var(--mask-top) - var(--mask-inset))
-          no-repeat;
-  mask-composite: exclude;
-
-  @media (width < 740px) {
-    --mask-inset: 0px;
-  }
-
-  &::before {
-    content: "";
-    position: absolute;
     inset: 0;
-    background: var(--header-background);
-    background-attachment: fixed;
-    opacity: 0.75;
-  }
-}
-
-.app-page-frame__blur {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-
-  &::before,
-  &::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    backdrop-filter: blur(15px);
-  }
-
-  &::before {
-    top: 0;
-    height: calc(var(--header-height) + var(--jenkins-border-width));
-  }
-
-  &::after {
-    bottom: 0;
-    height: var(--page-inset);
+    z-index: 1;
+    pointer-events: none;
 
     @media (width < 740px) {
       display: none;
+    }
+
+    mask: linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0) left var(--mask-inset) top var(--mask-top) /
+    calc(100% - var(--mask-inset) * 2) calc(100% - var(--mask-top) - var(--mask-inset)) no-repeat;
+    mask-composite: exclude;
+
+    @media (width < 740px) {
+      --mask-inset: 0px;
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--header-background);
+      background-attachment: fixed;
+      opacity: 0.75;
+    }
+  }
+
+  .app-page-frame__blur {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+
+    @media (width < 740px) {
+      display: none;
+    }
+
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      backdrop-filter: blur(15px);
+    }
+
+    &::before {
+      top: 0;
+      height: calc(var(--header-height) + var(--jenkins-border-width));
+    }
+
+    &::after {
+      bottom: 0;
+      height: var(--page-inset);
     }
   }
 }
