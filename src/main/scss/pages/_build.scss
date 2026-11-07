@@ -361,7 +361,7 @@
 
   @media (width < 740px) {
     &:has(.app-build-bar__tabs:not(:empty)) {
-      padding-bottom: calc((var(--section-padding) * 2) + 3.125rem);
+      padding-bottom: calc(var(--section-padding) + 3.125rem);
     }
   }
 }
