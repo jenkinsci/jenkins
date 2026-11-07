@@ -536,10 +536,25 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
                 // Queue#cancel needs Queue#lock. Calling it here would acquire Queue#lock while
                 // holding the job's monitor, the opposite order from Executor#run (which holds
                 // Queue#lock and then needs the job's monitor to create the build), risking a
-                // deadlock. isDisabled() is already true by this point, so any executor about to
-                // build this job will see that and decline before it would need the job's
-                // monitor; the queued item itself is removed moments later, off this thread.
-                Timer.get().execute(() -> Jenkins.get().getQueue().cancel(this));
+                // deadlock.
+                //
+                // Queue#getItem(Task) reads a lock-free snapshot, so it's safe to call here despite
+                // holding the job's monitor. Capture the specific item (if any) queued at the moment
+                // of disabling, and cancel only that one by id once Queue#lock is available: a new
+                // item queued later -- e.g. after a quick re-enable -- gets a different id and is
+                // left alone, while the original item is still canceled even if the job is re-enabled
+                // again before this task runs. Queue#cancel(Task) alone can't make either guarantee,
+                // since it matches whatever is currently queued for this task, not a specific item.
+                Queue.Item queued = Jenkins.get().getQueue().getItem(this);
+                if (queued != null) {
+                    long id = queued.getId();
+                    Timer.get().execute(() -> Queue.runWithLock(() -> {
+                        Queue.Item stillQueued = Jenkins.get().getQueue().getItem(id);
+                        if (stillQueued != null) {
+                            Jenkins.get().getQueue().cancel(stillQueued);
+                        }
+                    }));
+                }
             }
             save();
             ItemListener.fireOnUpdated(this);

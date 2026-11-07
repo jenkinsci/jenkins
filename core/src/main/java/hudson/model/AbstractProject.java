@@ -362,8 +362,18 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
             setDisabled(true);
             // Dispatched rather than called synchronously: AbstractItem#delete holds
             // synchronized (this) around performDelete(), and Queue#cancel needs Queue#lock --
-            // see the identical reasoning in ParameterizedJobMixIn#makeDisabled.
-            Timer.get().execute(() -> Jenkins.get().getQueue().cancel(this));
+            // see the identical reasoning, and why this captures a specific item by id rather
+            // than canceling by task, in ParameterizedJobMixIn#makeDisabled.
+            Queue.Item queued = Jenkins.get().getQueue().getItem(this);
+            if (queued != null) {
+                long id = queued.getId();
+                Timer.get().execute(() -> Queue.runWithLock(() -> {
+                    Queue.Item stillQueued = Jenkins.get().getQueue().getItem(id);
+                    if (stillQueued != null) {
+                        Jenkins.get().getQueue().cancel(stillQueued);
+                    }
+                }));
+            }
         }
         FilePath ws = getWorkspace();
         if (ws != null) {

@@ -78,6 +78,7 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -319,6 +320,43 @@ public class ProjectTest {
         // ParameterizedJobMixIn#makeDisabled. The item is still removed promptly, just not
         // necessarily by the time this call returns.
         await().untilAsserted(() -> assertNull(Queue.getInstance().getItem(p), "Project should be canceled."));
+    }
+
+    @Test
+    void makeDisabledThenQuicklyReEnabledStillCancelsTheOriginallyQueuedBuild() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("project");
+        p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
+        QueueTaskFuture<FreeStyleBuild> future = p.scheduleBuild2(0);
+
+        // Holding Queue#lock around disable+re-enable keeps the deferred cancel (which also needs
+        // Queue#lock) from running until after both calls have completed, regardless of how fast
+        // jenkins.util.Timer happens to pick it up.
+        Queue.runWithLock(() -> {
+            p.makeDisabled(true);
+            p.makeDisabled(false);
+        });
+
+        // The item queued before the disable is still canceled, even though the project ended up
+        // re-enabled before the deferred cancel ran.
+        await().untilAsserted(() -> assertTrue(future.getStartCondition().isCancelled(), "Originally queued build should have been canceled."));
+    }
+
+    @Test
+    void makeDisabledThenReEnabledDoesNotCancelABuildScheduledAfterReEnabling() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("project");
+        p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
+        QueueTaskFuture<FreeStyleBuild> original = p.scheduleBuild2(0);
+        p.makeDisabled(true);
+        await().untilAsserted(() -> assertTrue(original.getStartCondition().isCancelled(), "Originally queued build should have been canceled."));
+
+        // The original item is gone by now, so this schedules a genuinely new, independent item --
+        // Queue assigns ids once and never reuses them, so nothing the (already-run) deferred cancel
+        // captured could ever refer to this one.
+        p.makeDisabled(false);
+        QueueTaskFuture<FreeStyleBuild> newBuild = p.scheduleBuild2(0);
+
+        await().during(Duration.ofSeconds(1)).untilAsserted(() ->
+                assertFalse(newBuild.getStartCondition().isCancelled(), "Build scheduled after re-enabling should not be canceled."));
     }
 
     @Test
