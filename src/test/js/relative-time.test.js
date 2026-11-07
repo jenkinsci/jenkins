@@ -7,7 +7,6 @@ import {
 
 const EN = {
   locale: "en",
-  millisecond: "{0} ms",
   second: "{0} sec",
   minute: "{0} min",
   hour: "{0} hr",
@@ -37,9 +36,8 @@ describe("formatMessage", () => {
 
 describe("formatTimeSpan", () => {
   it.each([
-    [50, "50 ms"],
-    [120, "0.12 sec"],
-    [1250, "1.2 sec"],
+    [50, "0 sec"],
+    [5900, "5 sec"],
     [12 * SECOND, "12 sec"],
     [3 * MINUTE + 4 * SECOND, "3 min 4 sec"],
     [13 * MINUTE + 4 * SECOND, "13 min"],

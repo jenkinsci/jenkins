@@ -761,7 +761,11 @@ public class Functions {
 
     @Restricted(NoExternalUse.class)
     public static @NonNull String formatTimeSpan(long duration) {
-        return Util.getTimeSpanString(Math.abs(duration));
+        long wholeSeconds = Math.abs(duration) / 1000 * 1000;
+        if (wholeSeconds == 0) {
+            return Messages.Util_second(0);
+        }
+        return Util.getTimeSpanString(wholeSeconds);
     }
 
     @Restricted(NoExternalUse.class)
@@ -776,7 +780,7 @@ public class Functions {
         return patterns.toString();
     }
 
-    private static final String[] TIME_SPAN_UNITS = {"millisecond", "second", "minute", "hour", "day", "month", "year"};
+    private static final String[] TIME_SPAN_UNITS = {"second", "minute", "hour", "day", "month", "year"};
 
     private static long toEpochMillis(@NonNull Object time) {
         if (time instanceof Date date) {

@@ -65,7 +65,8 @@ export function formatMessage(pattern, number, locale) {
 }
 
 /**
- * Mirrors hudson.Util#getTimeSpanString.
+ * Mirrors hudson.Functions#formatTimeSpan: hudson.Util#getTimeSpanString,
+ * but to whole seconds so that it doesn't jitter while ticking.
  * @param {number} duration in milliseconds
  * @param {object} patterns the localized hudson.Messages Util.* patterns, plus their locale
  * @return {string}
@@ -93,7 +94,6 @@ export function formatTimeSpan(duration, patterns) {
   const minutes = Math.floor(remaining / ONE_MINUTE_MS);
   remaining %= ONE_MINUTE_MS;
   const seconds = Math.floor(remaining / ONE_SECOND_MS);
-  const millis = remaining % ONE_SECOND_MS;
 
   if (years > 0) {
     return pair(years, "year", months, "month");
@@ -110,16 +110,7 @@ export function formatTimeSpan(duration, patterns) {
   if (minutes > 0) {
     return pair(minutes, "minute", seconds, "second");
   }
-  if (seconds >= 10) {
-    return unit("second", seconds);
-  }
-  if (seconds >= 1) {
-    return unit("second", seconds + Math.floor(millis / 100) / 10);
-  }
-  if (millis >= 100) {
-    return unit("second", Math.floor(millis / 10) / 100);
-  }
-  return unit("millisecond", millis);
+  return unit("second", seconds);
 }
 
 /**

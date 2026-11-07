@@ -817,9 +817,11 @@ class FunctionsTest {
     @Test
     void timeSpanPatternsContainEveryUnit() {
         JSONObject patterns = JSONObject.fromObject(Functions.getTimeSpanPatterns());
-        for (String unit : List.of("locale", "millisecond", "second", "minute", "hour", "day", "month", "year")) {
+        for (String unit : List.of("locale", "second", "minute", "hour", "day", "month", "year")) {
             assertTrue(patterns.has(unit), unit);
         }
         assertEquals("1 min 0 sec", Functions.formatTimeSpan(-60_000));
+        assertEquals("5 sec", Functions.formatTimeSpan(5_900));
+        assertEquals("0 sec", Functions.formatTimeSpan(50));
     }
 }
