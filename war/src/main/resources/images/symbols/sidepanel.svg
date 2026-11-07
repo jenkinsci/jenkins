@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512">
-  <g fill="none" fill-rule="evenodd" stroke="currentColor" stroke-width="32">
-    <rect x="48" y="86" width="416" height="340" rx="70" fill="none" stroke="currentColor"
-          stroke-linejoin="round" stroke-width="32" />
-
-    <line x1="125" y1="170" x2="125" y2="342" stroke-linecap="round"></line>
-  </g>
-</svg>

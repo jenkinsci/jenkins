@@ -35,7 +35,6 @@ THE SOFTWARE.
 
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
-          <l:side-panel-toggle />
           <l:search-bar clazz="jenkins-search--app-bar"
                         placeholder="${%Search installed plugins}"
                         id="filter-box"

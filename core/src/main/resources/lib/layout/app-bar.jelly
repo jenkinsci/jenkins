@@ -42,9 +42,6 @@ THE SOFTWARE.
 
   <div class="jenkins-app-bar ${attrs.icon != null ? 'jenkins-app-bar--with-icon' :''}">
     <div class="jenkins-app-bar__content">
-      <j:if test="${mode == 'main-panel'}">
-        <l:side-panel-toggle />
-      </j:if>
       <j:if test="${attrs.icon != null}">
         <l:icon src="${attrs.icon}" class="jenkins-avatar" />
       </j:if>
@@ -55,9 +52,6 @@ THE SOFTWARE.
           <span class="jenkins-app-bar__subtitle">${attrs.subtitle}</span>
         </j:if>
       </x:element>
-      <j:if test="${mode == 'side-panel'}">
-        <l:side-panel-toggle />
-      </j:if>
     </div>
     <div class="jenkins-app-bar__controls">
       <d:invokeBody/>
