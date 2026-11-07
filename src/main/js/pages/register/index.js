@@ -1,12 +1,24 @@
 import { getI18n } from "@/util/i18n";
+import {
+  initCapsLockIndicator,
+  initPasswordVisibilityToggle,
+} from "@/util/password-field";
 
 const passwordField = document.querySelector("#password1");
 const password2Field = document.querySelector("#password2");
-const showPasswordField = document.querySelector("#showPassword");
 const passwordStrengthWrapper = document.querySelector(
   "#passwordStrengthWrapper",
 );
 const passwordStrengthIndicator = document.querySelector("#passwordStrength");
+
+initPasswordVisibilityToggle(
+  passwordField,
+  document.querySelector("#togglePassword"),
+);
+initCapsLockIndicator(
+  passwordField,
+  document.querySelector("#capsLockWarning"),
+);
 
 updatePasswordStrength();
 
@@ -24,15 +36,6 @@ function updatePasswordStrength() {
   passwordStrengthIndicator.style.color = passwordStrengthColor(score);
   password2Field.value = passwordField.value;
 }
-
-// Toggle password visibility
-showPasswordField.addEventListener("change", () => {
-  if (showPasswordField.checked) {
-    passwordField.type = "text";
-  } else {
-    passwordField.type = "password";
-  }
-});
 
 function passwordScore(password) {
   let score = 0;
