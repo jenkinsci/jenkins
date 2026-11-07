@@ -42,7 +42,10 @@ export function layoutBuildColumns(container) {
   const cellsByRow = rows.map((row) =>
     Array.from(row.children).filter((e) => e.classList.contains(COLUMN_CLASS)),
   );
-  const columnCount = Math.max(...cellsByRow.map((cells) => cells.length));
+  const columnCount = cellsByRow.reduce(
+    (max, cells) => Math.max(max, cells.length),
+    0,
+  );
 
   // Reset any previous layout so each cell reports its natural width
   container.classList.add(MEASURING_CLASS);
