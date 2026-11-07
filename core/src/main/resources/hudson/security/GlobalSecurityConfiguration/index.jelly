@@ -1,0 +1,64 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <l:settings-subpage permission="${app.SYSTEM_READ}">
+    <l:userExperimentalFlag var="newManageJenkins" flagClassName="jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag" />
+    <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}" />
+
+    <l:skeleton />
+    <f:form method="post" name="config" action="configure" class="jenkins-form">
+      <j:set var="instance" value="${it}" />
+      <j:set var="descriptor" value="${it.descriptor}" />
+
+      <j:invokeStatic var="securityRealms" className="hudson.security.SecurityRealm" method="all" />
+      <j:invokeStatic var="authorizationStrategies" className="hudson.security.AuthorizationStrategy" method="all" />
+      <j:invokeStatic var="markupFormatters" className="hudson.markup.MarkupFormatterDescriptor" method="all" />
+
+      <f:section title="${%Authentication}">
+        <f:entry help="/descriptor/hudson.security.GlobalSecurityConfiguration/help/disableRememberMe">
+          <f:checkbox title="${%Disable remember me}" field="disableRememberMe" />
+        </f:entry>
+        <f:dropdownDescriptorSelector title="${%Security Realm}" field="securityRealm" descriptors="${h.filterDescriptors(app, securityRealms)}" />
+        <f:dropdownDescriptorSelector title="${%Authorization}" field="authorizationStrategy" descriptors="${h.filterDescriptors(app, authorizationStrategies)}" />
+      </f:section>
+
+      <f:section title="${%Markup Formatter}">
+        <f:dropdownDescriptorSelector title="${%Markup Formatter}" field="markupFormatter" descriptors="${markupFormatters}" />
+      </f:section>
+
+      <f:section title="${%Agents}">
+        <f:entry title="${%TCP port for inbound agents}" field="slaveAgentPort">
+          <j:choose>
+            <j:when test="${it.slaveAgentPortEnforced}">
+              <j:choose>
+                <j:when test="${it.slaveAgentPort == -1}">${%slaveAgentPortEnforcedDisabled}</j:when>
+                <j:when test="${it.slaveAgentPort == 0}">${%slaveAgentPortEnforcedRandom}</j:when>
+                <j:otherwise>${%slaveAgentPortEnforced(it.slaveAgentPort)}</j:otherwise>
+              </j:choose>
+            </j:when>
+            <j:otherwise>
+              <f:serverTcpPort />
+            </j:otherwise>
+          </j:choose>
+        </f:entry>
+      </f:section>
+
+      <j:forEach var="descriptor" items="${it.securityDescriptors}">
+        <j:set var="instance" value="${descriptor}" />
+        <f:rowSet name="${descriptor.jsonSafeClassName}">
+          <st:include from="${descriptor}" page="${descriptor.globalConfigPage}" />
+        </f:rowSet>
+      </j:forEach>
+
+      <l:isAdmin>
+        <j:choose>
+          <j:when test="${newManageJenkins}">
+            <f:saveBar />
+          </j:when>
+          <j:otherwise>
+            <f:saveApplyBar />
+          </j:otherwise>
+        </j:choose>
+      </l:isAdmin>
+    </f:form>
+  </l:settings-subpage>
+</j:jelly>

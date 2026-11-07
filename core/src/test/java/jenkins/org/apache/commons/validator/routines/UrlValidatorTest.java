@@ -155,12 +155,7 @@ class UrlValidatorTest {
 
     @Test
     void testValidator235() {
-       String version = System.getProperty("java.version");
-       if (version.compareTo("1.6") < 0) {
-           System.out.println("Cannot run Unicode IDN tests");
-           return; // Cannot run the test
-       }
-       UrlValidator validator = new UrlValidator();
+        UrlValidator validator = new UrlValidator();
        assertTrue(validator.isValid("http://xn--d1abbgf6aiiy.xn--p1ai"), "xn--d1abbgf6aiiy.xn--p1ai should validate");
        assertTrue(validator.isValid("http://президент.рф"), "президент.рф should validate");
        assertTrue(validator.isValid("http://www.b\u00fccher.ch"), "www.b\u00fccher.ch should validate");

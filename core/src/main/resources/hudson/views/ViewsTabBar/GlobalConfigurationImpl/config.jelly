@@ -1,0 +1,7 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+  <j:invokeStatic var="all" className="hudson.views.ViewsTabBar" method="all" />
+  <j:if test="${all.size() > 1}">
+    <f:dropdownDescriptorSelector title="${%Views Tab Bar}" field="viewsTabBar" />
+  </j:if>
+</j:jelly>

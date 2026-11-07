@@ -29,7 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
     <l:layout permission="${app.ADMINISTER}" title="${%title}">
         <st:include page="sidepanel.jelly" it="${it.targetUser}" />
-        <l:main-panel>
+        <l:main-panel width="narrow">
             <l:app-bar title="${%title}" />
 
             <f:form method="post" action="configSubmit" name="config" class="jenkins-form">
@@ -54,14 +54,13 @@ THE SOFTWARE.
                             </j:if>
                         </j:forEach>
 
-                        <f:saveApplyBar/>
+                        <f:saveBar/>
                     </j:when>
                     <j:otherwise>
                         <l:notice title="${%warningNoItems}" icon="symbol-brush-outline" />
                     </j:otherwise>
                 </j:choose>
             </f:form>
-            <st:adjunct includes="lib.form.confirm" />
         </l:main-panel>
     </l:layout>
 </j:jelly>
