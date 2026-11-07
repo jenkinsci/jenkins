@@ -32,7 +32,7 @@ THE SOFTWARE.
     <div>
       <j:choose>
         <j:when test="${object.building}">
-          ${%beingExecuted(object.executor.timestampString)}
+          <l:relative-time value="${object.startTimeInMillis}" template="${%beingExecuted('{0}')}" />
         </j:when>
         <j:otherwise>
           ${%Took} ${object.durationString}
