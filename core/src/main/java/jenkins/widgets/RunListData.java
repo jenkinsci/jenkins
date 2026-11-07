@@ -30,6 +30,7 @@ import hudson.model.Run;
 import hudson.util.HttpResponses;
 import hudson.util.RunList;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONArray;
@@ -79,6 +80,18 @@ public abstract class RunListData {
      * @param limit the runs still needed to fill a page cut short, or {@code null} for a whole page
      */
     public HttpResponse serve(Iterable<? extends Run<?, ?>> builds, Predicate<? super Run<?, ?>> filter, @CheckForNull String olderThan, @CheckForNull String limit) {
+        return serve(builds, build -> build, filter, olderThan, limit);
+    }
+
+    /**
+     * Serves one page of the runs held by some items, such as runs paired with the source that supplied them.
+     * @param items items holding runs, newest run first, not yet filtered, so that the scan budget covers the items the filter rejects
+     * @param toRun the run an item holds
+     * @param filter selects the items whose runs to include
+     * @param olderThan cursor from a previous page's {@code next}, or {@code null} for the first page
+     * @param limit the runs still needed to fill a page cut short, or {@code null} for a whole page
+     */
+    public <T> HttpResponse serve(Iterable<? extends T> items, Function<? super T, ? extends Run<?, ?>> toRun, Predicate<? super T> filter, @CheckForNull String olderThan, @CheckForNull String limit) {
         long cursor;
         int size;
         try {
@@ -87,7 +100,7 @@ public abstract class RunListData {
         } catch (NumberFormatException e) {
             return HttpResponses.error(400, "Invalid olderThan or limit: " + olderThan + ", " + limit);
         }
-        return HttpResponses.okJSON(page(builds, filter, cursor, size));
+        return HttpResponses.okJSON(page(items, toRun, filter, cursor, size));
     }
 
     JSONObject page(Iterable<? extends Run<?, ?>> builds, Predicate<? super Run<?, ?>> filter, long cursor) {
@@ -95,12 +108,17 @@ public abstract class RunListData {
     }
 
     JSONObject page(Iterable<? extends Run<?, ?>> builds, Predicate<? super Run<?, ?>> filter, long cursor, int size) {
+        return page(builds, build -> build, filter, cursor, size);
+    }
+
+    <T> JSONObject page(Iterable<? extends T> items, Function<? super T, ? extends Run<?, ?>> toRun, Predicate<? super T> filter, long cursor, int size) {
         Long deadline = null;
         JSONArray results = new JSONArray();
         Long groupTime = null;
         Long next = null;
         boolean partial = false;
-        for (Run<?, ?> build : builds) {
+        for (T item : items) {
+            Run<?, ?> build = toRun.apply(item);
             long time = build.getTimeInMillis();
             if (time >= cursor) {
                 continue;
@@ -117,7 +135,7 @@ public abstract class RunListData {
                 }
             }
             groupTime = time;
-            if (filter.test(build)) {
+            if (filter.test(item)) {
                 JSONObject element = new JSONObject();
                 calculate(build, element);
                 results.add(element);

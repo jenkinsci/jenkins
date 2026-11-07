@@ -31,10 +31,6 @@ THE SOFTWARE.
       <h1>
         ${%title(it.displayName)}
       </h1>
-      <p>
-        <em>${%disclaimer}</em>
-      </p>
-
       <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>
   </l:layout>
