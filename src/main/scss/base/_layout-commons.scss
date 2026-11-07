@@ -317,8 +317,9 @@ $collapsible-page-body: ".app-page-body:has(> .app-page-body__sidebar):not(:has(
 
       & > .app-side-panel-toggle {
         position: absolute;
-        top: 0;
+        top: 50%;
         left: 0;
+        translate: 0 -50%;
       }
     }
 
