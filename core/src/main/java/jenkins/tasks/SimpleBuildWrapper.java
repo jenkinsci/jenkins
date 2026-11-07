@@ -260,7 +260,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          *
          * @param build a build being run
          * @param listener a way to report progress
-         * @throws AbstractMethodError if this this method is not overridden
+         * @throws AbstractMethodError if this method is not overridden
          * @throws IllegalStateException if this end-of-wrapped-block callback requires a workspace
          * @throws IOException if something fails; {@link AbortException} for user errors
          * @throws InterruptedException if tear down is interrupted

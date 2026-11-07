@@ -67,7 +67,7 @@ THE SOFTWARE.
       <li><code>consoleAnnotator</code> is equivalent to <code>X-ConsoleAnnotator</code></li>
       <li><code>startFromNewLine</code> is set to <code>true</code> when the start was moved to the first new line (e.g. when tailing)</li>
     </ul>
-    This streaming mode uses larger disk reads (64kiB instead of 1KiB) and does not normalize line endings to CRLF (previously needed for for Internet Explorer).
+    This streaming mode uses larger disk reads (64kiB instead of 1KiB) and does not normalize line endings to CRLF (previously needed for Internet Explorer).
     <br />
     The optional parameter <code>?searchNewLineUntil=previousStart</code> can be used when fetching more bytes from the start of the log to search for the first new line in the prior content. Example: Request last 150KiB from a 3MiB file, it might return 3MiB-142KiB ~ 3000000 due to new line detection when tailing. Then request one more MiB with <code>?start=2000000</code> and <code>?searchNewLineUntil=3000000</code>. This will guarantee that the new line detection stops at the start of the last response and does not return from the same "first" new line it can find.
   </p>

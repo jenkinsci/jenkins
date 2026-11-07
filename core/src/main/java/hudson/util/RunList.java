@@ -88,7 +88,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     /**
-     * Creates a a {@link RunList} combining all the runs of the supplied jobs.
+     * Creates a {@link RunList} combining all the runs of the supplied jobs.
      *
      * @param jobs the supplied jobs.
      * @param <J> the base class of job.
