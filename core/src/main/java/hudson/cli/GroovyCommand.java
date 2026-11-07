@@ -28,7 +28,6 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.Extension;
 import hudson.model.User;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -37,7 +36,6 @@ import jenkins.model.Jenkins;
 import jenkins.util.ScriptListener;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
 
 /**
  * Executes the specified groovy script.
@@ -51,13 +49,10 @@ public class GroovyCommand extends CLICommand {
         return Messages.GroovyCommand_ShortDescription();
     }
 
-    @Argument(metaVar = "SCRIPT", usage = "Script to be executed. Only '=' (to represent stdin) is supported.")
-    public String script;
-
     /**
      * Remaining arguments.
      */
-    @Argument(metaVar = "ARGUMENTS", index = 1, usage = "Command line arguments to pass into script.")
+    @Argument(metaVar = "ARGUMENTS", usage = "Command line arguments to pass into script. The first argument is ignored if it's exactly '=' for backward compatibility.")
     public List<String> remaining = new ArrayList<>();
 
     @Override
@@ -67,6 +62,10 @@ public class GroovyCommand extends CLICommand {
 
         final String scriptListenerCorrelationId = String.valueOf(System.identityHashCode(this));
 
+        if (!remaining.isEmpty() && "=".equals(remaining.get(0))) {
+            remaining.remove(0);
+        }
+
         Binding binding = new Binding();
         binding.setProperty("out", new PrintWriter(new ScriptListener.ListenerWriter(new OutputStreamWriter(stdout, getClientCharset()), GroovyCommand.class, null, scriptListenerCorrelationId, User.current()), true));
         binding.setProperty("stdin", stdin);
@@ -74,22 +73,9 @@ public class GroovyCommand extends CLICommand {
         binding.setProperty("stderr", stderr);
 
         GroovyShell groovy = new GroovyShell(Jenkins.get().getPluginManager().uberClassLoader, binding);
-        String script = loadScript();
+        String script = IOUtils.toString(stdin);
         ScriptListener.fireScriptExecution(script, binding, GroovyCommand.class, null, scriptListenerCorrelationId, User.current());
         groovy.run(script, "RemoteClass", remaining.toArray(new String[0]));
         return 0;
-    }
-
-    /**
-     * Loads the script from the argument.
-     */
-    private String loadScript() throws CmdLineException, IOException, InterruptedException {
-        if (script == null)
-            throw new CmdLineException(null, "No script is specified");
-        if (script.equals("="))
-            return IOUtils.toString(stdin);
-
-        checkChannel();
-        return null; // never called
     }
 }
