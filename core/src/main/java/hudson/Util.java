@@ -1335,9 +1335,42 @@ public class Util {
     }
 
     /**
+     * Creates a symlink to targetPath at baseDir+symlinkPath; throws {@link IOException} on failure.
+     * No-op if an identical symlink already exists.
+     * <p>
+     *
+     * @param baseDir
+     *      Base directory to resolve the 'symlinkPath' parameter.
+     * @param targetPath
+     *      The file that the symlink should point to. Usually relative to the directory of the symlink but may instead be an absolute path.
+     * @param symlinkPath
+     *      Where to create a symlink in (relative to {@code baseDir})
+     */
+    @Restricted(NoExternalUse.class)
+    static void createSymlinkStrict(@NonNull File baseDir, @NonNull String targetPath,
+            @NonNull String symlinkPath, @NonNull TaskListener listener) throws IOException {
+        File fileForSymlink = new File(baseDir, symlinkPath);
+        Path pathForSymlink = fileToPath(fileForSymlink);
+        Path target = Paths.get(targetPath, MemoryReductionUtil.EMPTY_STRING_ARRAY);
+
+        if (Files.isSymbolicLink(pathForSymlink) && Files.readSymbolicLink(pathForSymlink).equals(target)) {
+            return;
+        }
+
+        try {
+            Files.createSymbolicLink(pathForSymlink, target);
+        } catch (IOException e) {
+            listener.error("Failed to create symlink " + pathForSymlink + " -> " + target);
+            throw e;
+        }
+    }
+
+    /**
      * Creates a symlink to targetPath at baseDir+symlinkPath.
      * <p>
      * If there's a prior symlink at baseDir+symlinkPath, it will be overwritten.
+     * <p>
+     * Prefer {@link #createSymlinkStrict(File, String, String, TaskListener)} for new call sites.
      *
      * @param baseDir
      *      Base directory to resolve the 'symlinkPath' parameter.

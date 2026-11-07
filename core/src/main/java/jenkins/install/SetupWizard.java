@@ -69,6 +69,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.CompatibleFilter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -86,9 +87,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  */
 @Restricted(NoExternalUse.class)
 @Extension
-public class SetupWizard extends PageDecorator {
+public class SetupWizard extends PageDecorator implements StaplerProxy {
     public SetupWizard() {
         checkFilter();
+    }
+
+    @Override
+    public Object getTarget() {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        return this;
     }
 
     /**

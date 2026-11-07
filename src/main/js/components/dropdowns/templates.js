@@ -216,7 +216,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
           class: clazz,
           href: url,
           id: itemOptions.id,
-          "data-html-tooltip": itemOptions.tooltip,
+          tooltip: itemOptions.tooltip,
           type: tag === "button" ? "button" : null,
         })}>
           ${icon(itemOptions, type)}
