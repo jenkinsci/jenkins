@@ -7,7 +7,10 @@ import hudson.model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Set;
 import java.util.logging.Logger;
+import jenkins.security.apitoken.ApiTokenStore;
+import jenkins.security.apitoken.ScopedApiTokenAuthentication;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.core.Authentication;
@@ -29,8 +32,9 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
      */
     @Override
     public Authentication authenticate2(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws ServletException {
-        User u = BasicApiTokenHelper.isConnectingUsingApiToken(username, password);
-        if (u != null) {
+        BasicApiTokenHelper.TokenMatch match = BasicApiTokenHelper.findMatchingToken(username, password);
+        if (match != null) {
+            User u = match.user();
             Authentication auth;
             try {
                 UserDetails userDetails = u.getUserDetailsForImpersonation2();
@@ -42,6 +46,14 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
                 // so there's no point in continuing the request processing. Report this error and abort.
                 LOGGER.log(WARNING, "API token matched for user " + username + " but the impersonation failed", x);
                 throw new ServletException(x);
+            }
+
+            ApiTokenStore.HashedToken token = match.token();
+            if (token != null) {
+                Set<String> scopes = token.getScopes();
+                if (scopes != null) {
+                    auth = new ScopedApiTokenAuthentication(auth, scopes);
+                }
             }
 
             req.setAttribute(BasicHeaderApiTokenAuthenticator.class.getName(), true);
