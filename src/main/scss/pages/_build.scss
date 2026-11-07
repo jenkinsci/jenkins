@@ -358,6 +358,12 @@
 
 .app-page-body__contents:has(.app-build-bar) {
   padding-top: 0;
+
+  @media (width < 740px) {
+    &:has(.app-build-bar__tabs:not(:empty)) {
+      padding-bottom: calc((var(--section-padding) * 2) + 3.125rem);
+    }
+  }
 }
 
 .app-build-content {
