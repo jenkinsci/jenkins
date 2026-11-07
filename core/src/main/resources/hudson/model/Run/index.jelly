@@ -46,6 +46,16 @@ THE SOFTWARE.
 
           <t:buildCaption controls="${controls}">${it.displayName} (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</t:buildCaption>
 
+          <j:set var="badges" value="${it.badgeActions}"/>
+          <j:if test="${!empty(badges)}">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1em">
+              <!-- give actions a chance to contribute badge item -->
+              <j:forEach var="badge" items="${badges}">
+                <st:include it="${badge}" page="badge.jelly" />
+              </j:forEach>
+            </div>
+          </j:if>
+
           <div>
             <t:editableDescription permission="${it.UPDATE}" hideButton="true"/>
           </div>
