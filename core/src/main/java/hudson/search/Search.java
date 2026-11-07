@@ -129,11 +129,18 @@ public class Search implements StaplerProxy {
                         rsp.sendRedirect2(req.getContextPath() + target.getUrl());
                         return;
                     }
+
+                    List<SuggestedItem> suggestions = suggest(index, query, smo);
+
+                    if (suggestions.size() == 1) {
+                        rsp.sendRedirect2(req.getContextPath() + suggestions.get(0).getUrl());
+                        return;
+                    }
                 }
             }
         }
 
-        // no exact match. show the suggestions
+        // No exact match and no single suggestion.
         rsp.setStatus(SC_NOT_FOUND);
         req.getView(this, "search-failed.jelly").forward(req, rsp);
     }
