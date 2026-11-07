@@ -108,6 +108,14 @@
     inset: var(--header-height) var(--page-inset) var(--page-inset)
       var(--page-inset);
     border-radius: var(--form-input-border-radius);
+
+    @media (width < 740px) {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
   }
 
   &::before {
@@ -128,24 +136,37 @@
     border: var(--jenkins-border);
     box-shadow: var(--elevation-1-box-shadow);
     z-index: 1;
+
+
+    @media (width < 740px) {
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+    }
   }
 }
 
 .app-page-frame__mask {
+  --mask-inset: calc(var(--page-inset) + 1px);
+  --mask-top: calc(var(--header-height) + 1px);
+
   position: fixed;
   inset: 0;
   z-index: 1;
   pointer-events: none;
+
   mask:
-    linear-gradient(#000 0 0),
-    linear-gradient(#000 0 0) left calc(var(--page-inset) + 1px) top
-      calc(var(--header-height) + 1px) /
-      calc(100% - calc(var(--page-inset) + 1px) * 2)
-      calc(
-        100% - calc(var(--header-height) + 1px) - calc(var(--page-inset) + 1px)
-      )
-      no-repeat;
+          linear-gradient(#000 0 0),
+          linear-gradient(#000 0 0)
+          left var(--mask-inset) top var(--mask-top) /
+    calc(100% - var(--mask-inset) * 2)
+          calc(100% - var(--mask-top) - var(--mask-inset))
+          no-repeat;
   mask-composite: exclude;
+
+  @media (width < 740px) {
+    --mask-inset: 0px;
+  }
 
   &::before {
     content: "";
@@ -180,6 +201,10 @@
   &::after {
     bottom: 0;
     height: var(--page-inset);
+
+    @media (width < 740px) {
+      display: none;
+    }
   }
 }
 

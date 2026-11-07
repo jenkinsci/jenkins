@@ -201,10 +201,10 @@
 
   @media (width < 740px) {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    padding-block: var(--section-padding);
+    //display: flex;
+    //flex-direction: column;
+    //align-items: start;
+    padding-block: calc(var(--section-padding) / 2);
     top: 0;
   }
 
@@ -220,6 +220,11 @@
     align-items: center;
     justify-content: center;
     margin-block: 0.5rem;
+
+    @media (width < 740px) {
+      position: fixed;
+      bottom: var(--section-padding);
+    }
   }
 
   .app-build-bar__controls {
@@ -249,8 +254,8 @@
     margin-left: -0.25rem;
 
     svg {
-      width: 2rem;
-      height: 2rem;
+      width: 1.875rem;
+      height: 1.875rem;
       flex-shrink: 0;
     }
   }
