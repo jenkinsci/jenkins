@@ -164,7 +164,6 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 0.5rem 1.5rem;
   min-height: var(--header-height);
   background-color: color-mix(
     in oklch,
@@ -181,6 +180,8 @@
   border-top-right-radius: var(--form-input-border-radius);
 
   @media (width >= 740px) {
+    gap: 0.5rem 1.5rem;
+
     &::before {
       content: "";
       position: absolute;
@@ -216,6 +217,7 @@
     align-items: center;
     justify-content: start;
     min-height: 38px;
+    grid-column: 1;
   }
 
   .app-build-bar__tabs {
@@ -223,9 +225,12 @@
     align-items: center;
     justify-content: center;
     margin-block: 0.5rem;
+    grid-column: 2;
 
-    &:empty {
-      display: none;
+    @media (width < 740px) {
+      &:empty {
+        display: none;
+      }
     }
   }
 
@@ -234,6 +239,7 @@
     align-items: center;
     justify-content: end;
     flex: 1;
+    grid-column: 3;
     gap: 0.5rem;
 
     .jenkins-jumplist-link {
@@ -244,6 +250,7 @@
       justify-content: stretch;
       flex-wrap: wrap;
       width: 100%;
+      margin: 0.25rem 0;
 
       & > * {
         flex-grow: 1;
@@ -274,6 +281,10 @@
       width: 1.875rem;
       height: 1.875rem;
       flex-shrink: 0;
+
+      @media (width >= 740px) {
+        margin-left: -0.25rem;
+      }
     }
   }
 
