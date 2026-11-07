@@ -4159,10 +4159,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:17.13.0":
-  version: 17.13.0
-  resolution: "globals@npm:17.13.0"
-  checksum: 10c0/8371d9e4e5581640141b5cce70a098edd765d2e3ab063b14998e590698071e0afb4a4a6739ccfbdcbdeb2565c5553697ba07d95703c51039912cf341a7dba7a7
+"globals@npm:17.14.0":
+  version: 17.14.0
+  resolution: "globals@npm:17.14.0"
+  checksum: 10c0/422d17c24e87170d4aa566b97a53339ae451c2f4d78512594a7ca951cdb939bc4a85c10071e6dcf77ca63de48713a77f2e71eb9214e44880233dff2090e92731
   languageName: node
   linkType: hard
 
@@ -4543,7 +4543,7 @@ __metadata:
     eslint: "npm:10.14.0"
     eslint-config-prettier: "npm:10.1.8"
     eslint-formatter-checkstyle: "npm:9.0.1"
-    globals: "npm:17.13.0"
+    globals: "npm:17.14.0"
     handlebars: "npm:4.7.10"
     handlebars-loader: "npm:1.7.3"
     hotkeys-js: "npm:3.12.2"
