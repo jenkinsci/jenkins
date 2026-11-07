@@ -49,8 +49,11 @@ import hudson.model.View;
 import hudson.model.ViewGroup;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -58,6 +61,7 @@ import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -797,4 +801,25 @@ class FunctionsTest {
         }
     }
 
+
+    @Test
+    void getElapsedSinceSupportsCommonTimeTypes() {
+        long start = System.currentTimeMillis() - 60_000;
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(start);
+
+        for (Object time : List.of(start, new Date(start), calendar, Instant.ofEpochMilli(start))) {
+            long elapsed = Functions.getElapsedSince(time);
+            assertTrue(elapsed >= 60_000 && elapsed < 70_000, time.getClass() + " gave " + elapsed);
+        }
+    }
+
+    @Test
+    void timeSpanPatternsContainEveryUnit() {
+        JSONObject patterns = JSONObject.fromObject(Functions.getTimeSpanPatterns());
+        for (String unit : List.of("locale", "millisecond", "second", "minute", "hour", "day", "month", "year")) {
+            assertTrue(patterns.has(unit), unit);
+        }
+        assertEquals("1 min 0 sec", Functions.formatTimeSpan(-60_000));
+    }
 }
