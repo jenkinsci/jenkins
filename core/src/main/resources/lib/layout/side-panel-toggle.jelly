@@ -14,6 +14,6 @@
           aria-expanded="false"
           aria-label="${%toggleSidebar}"
           tooltip="${%toggleSidebar}">
-    <l:icon src="symbol-sidebar" />
+    <l:icon src="symbol-sidepanel" />
   </button>
 </j:jelly>
