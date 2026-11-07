@@ -38,7 +38,7 @@ THE SOFTWARE.
           ${%Took} ${object.durationString}
         </j:otherwise>
       </j:choose>
-      <j:if test="${!empty(app.nodes) or (object.builtOnStr != null and object.builtOnStr != '')}">
+      <j:if test="${detailContext != 'compact' and (!empty(app.nodes) or (object.builtOnStr != null and object.builtOnStr != ''))}">
         ${%on} <t:node value="${object.builtOn}" valueStr="${object.builtOnStr}"/>
       </j:if>
       <st:include page="details.jelly" optional="true" />
