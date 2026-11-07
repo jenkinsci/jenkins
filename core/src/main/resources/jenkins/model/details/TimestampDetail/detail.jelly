@@ -31,6 +31,6 @@ THE SOFTWARE.
     <div class="jenkins-details__item__icon">
       <l:icon src="symbol-clock" />
     </div>
-    <l:relative-time value="${object.timestamp}" template="${%startedAgo('{0}')}" />
+    <l:relative-time value="${object.timeInMillis}" template="${%startedAgo('{0}')}" />
   </div>
 </j:jelly>

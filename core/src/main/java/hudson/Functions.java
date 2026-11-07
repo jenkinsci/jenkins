@@ -126,11 +126,9 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -755,8 +753,8 @@ public class Functions {
     }
 
     @Restricted(NoExternalUse.class)
-    public static long getElapsedSince(@NonNull Object time) {
-        return System.currentTimeMillis() - toEpochMillis(time);
+    public static long getElapsedSince(long epochMillis) {
+        return System.currentTimeMillis() - epochMillis;
     }
 
     @Restricted(NoExternalUse.class)
@@ -774,28 +772,10 @@ public class Functions {
         ResourceBundle bundle = ResourceBundleHolder.get(Messages.class).get(locale);
         JSONObject patterns = new JSONObject();
         patterns.put("locale", locale.toLanguageTag());
-        for (String unit : TIME_SPAN_UNITS) {
+        for (String unit : List.of("second", "minute", "hour", "day", "month", "year")) {
             patterns.put(unit, bundle.getString("Util." + unit));
         }
         return patterns.toString();
-    }
-
-    private static final String[] TIME_SPAN_UNITS = {"second", "minute", "hour", "day", "month", "year"};
-
-    private static long toEpochMillis(@NonNull Object time) {
-        if (time instanceof Date date) {
-            return date.getTime();
-        }
-        if (time instanceof Calendar calendar) {
-            return calendar.getTimeInMillis();
-        }
-        if (time instanceof TemporalAccessor temporal) {
-            return Instant.from(temporal).toEpochMilli();
-        }
-        if (time instanceof Number number) {
-            return number.longValue();
-        }
-        throw new IllegalArgumentException("Unsupported time: " + time);
     }
 
     @Restricted(NoExternalUse.class)

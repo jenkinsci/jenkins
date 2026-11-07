@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
-  formatMessage,
-  formatTimeSpan,
-  update,
+  compileMessage,
+  createTimeSpanFormatter,
+  track,
+  updateAll,
 } from "@/components/relative-time";
 
 const EN = {
@@ -20,21 +21,26 @@ const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-describe("formatMessage", () => {
+describe("compileMessage", () => {
   it("picks choice sub-messages", () => {
-    const pattern = "{0} {0,choice,0#дней|1#день|1<дня|5<дней}";
-    expect(formatMessage(pattern, 0, "ru")).toBe("0 дней");
-    expect(formatMessage(pattern, 1, "ru")).toBe("1 день");
-    expect(formatMessage(pattern, 3, "ru")).toBe("3 дня");
-    expect(formatMessage(pattern, 7, "ru")).toBe("7 дней");
+    const format = compileMessage(
+      "{0} {0,choice,0#дней|1#день|1<дня|5<дней}",
+      "ru",
+    );
+    expect(format(0)).toBe("0 дней");
+    expect(format(1)).toBe("1 день");
+    expect(format(3)).toBe("3 дня");
+    expect(format(7)).toBe("7 дней");
   });
 
-  it("formats decimals for the locale", () => {
-    expect(formatMessage("{0} s", 1.2, "de")).toBe("1,2 s");
+  it("unescapes quotes", () => {
+    expect(compileMessage("{0} o''clock", "en")(3)).toBe("3 o'clock");
   });
 });
 
-describe("formatTimeSpan", () => {
+describe("createTimeSpanFormatter", () => {
+  const format = createTimeSpanFormatter(EN);
+
   it.each([
     [50, "0 sec"],
     [5900, "5 sec"],
@@ -45,31 +51,43 @@ describe("formatTimeSpan", () => {
     [DAY + 3 * HOUR, "1 day 3 hr"],
     [2 * DAY, "2 days 0 hr"],
     [400 * DAY, "1 yr 1 mo"],
+    [-90 * SECOND, "1 min 30 sec"],
   ])("formats %i ms as %s", (duration, expected) => {
-    expect(formatTimeSpan(duration, EN)).toBe(expected);
+    expect(format(duration)).toBe(expected);
   });
 });
 
-describe("update", () => {
+describe("track", () => {
+  beforeAll(() => {
+    document.body.dataset.timeSpanPatterns = JSON.stringify(EN);
+  });
+
+  afterEach(() => {
+    document.body.replaceChildren();
+  });
+
+  function element(elapsed, template) {
+    const span = document.createElement("span");
+    span.dataset.relativeTimeElapsed = String(elapsed);
+    span.dataset.relativeTimeTemplate = template;
+    document.body.append(span);
+    track(span);
+    return span;
+  }
+
   it("advances from the server-rendered elapsed time", () => {
-    const element = document.createElement("span");
-    element.dataset.relativeTimeElapsed = String(5 * SECOND);
-    element.dataset.relativeTimeTemplate = "Started {0} ago";
-    element.dataset.relativeTimePatterns = JSON.stringify(EN);
+    const span = element(5 * SECOND, "Started {0} ago");
 
-    update(element, Date.now() + 60 * SECOND);
+    updateAll(Date.now() + 60 * SECOND);
 
-    expect(element.textContent).toMatch(/^Started 1 min [56] sec ago$/);
+    expect(span.textContent).toMatch(/^Started 1 min [56] sec ago$/);
   });
 
   it("counts down to times in the future", () => {
-    const element = document.createElement("span");
-    element.dataset.relativeTimeElapsed = String(-60 * SECOND);
-    element.dataset.relativeTimeTemplate = "in {0}";
-    element.dataset.relativeTimePatterns = JSON.stringify(EN);
+    const span = element(-60 * SECOND, "in {0}");
 
-    update(element, Date.now() + 15 * SECOND);
+    updateAll(Date.now() + 15 * SECOND);
 
-    expect(element.textContent).toMatch(/^in 4[45] sec$/);
+    expect(span.textContent).toMatch(/^in 4[45] sec$/);
   });
 });

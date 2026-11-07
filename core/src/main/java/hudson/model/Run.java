@@ -108,6 +108,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import jenkins.console.ConsoleUrlProvider;
 import jenkins.console.WithConsoleUrl;
@@ -2691,10 +2692,9 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         @NonNull @Override public List<? extends Detail> createFor(@NonNull Run target) {
-            if (target.isBuilding()) {
-                return List.of(new CauseDetail(target), new DurationDetail(target), new KeptForeverDetail(target));
-            }
-            return List.of(new CauseDetail(target), new TimestampDetail(target), new DurationDetail(target), new KeptForeverDetail(target));
+            return Stream.of(new CauseDetail(target), new TimestampDetail(target), new DurationDetail(target), new KeptForeverDetail(target))
+                    .filter(detail -> !(detail instanceof TimestampDetail && target.isBuilding()))
+                    .toList();
         }
     }
 

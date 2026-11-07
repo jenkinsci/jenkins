@@ -49,11 +49,8 @@ import hudson.model.View;
 import hudson.model.ViewGroup;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.time.Instant;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -803,15 +800,9 @@ class FunctionsTest {
 
 
     @Test
-    void getElapsedSinceSupportsCommonTimeTypes() {
-        long start = System.currentTimeMillis() - 60_000;
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(start);
-
-        for (Object time : List.of(start, new Date(start), calendar, Instant.ofEpochMilli(start))) {
-            long elapsed = Functions.getElapsedSince(time);
-            assertTrue(elapsed >= 60_000 && elapsed < 70_000, time.getClass() + " gave " + elapsed);
-        }
+    void getElapsedSinceMeasuresFromEpochMillis() {
+        long elapsed = Functions.getElapsedSince(System.currentTimeMillis() - 60_000);
+        assertTrue(elapsed >= 60_000 && elapsed < 70_000, "gave " + elapsed);
     }
 
     @Test
