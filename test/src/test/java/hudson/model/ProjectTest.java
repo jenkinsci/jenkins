@@ -25,6 +25,7 @@
 package hudson.model;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
@@ -313,7 +314,11 @@ public class ProjectTest {
         p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
         p.scheduleBuild2(0);
         p.makeDisabled(true);
-        assertNull(Queue.getInstance().getItem(p), "Project should be canceled.");
+        // Queue#cancel is dispatched asynchronously (off the caller's monitor) rather than
+        // called synchronously, to avoid a lock-ordering deadlock against Executor#run -- see
+        // ParameterizedJobMixIn#makeDisabled. The item is still removed promptly, just not
+        // necessarily by the time this call returns.
+        await().untilAsserted(() -> assertNull(Queue.getInstance().getItem(p), "Project should be canceled."));
     }
 
     @Test

@@ -110,6 +110,7 @@ import jenkins.scm.SCMDecisionHandler;
 import jenkins.security.XStreamNotDeserializable;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;
+import jenkins.util.Timer;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -359,7 +360,10 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         // prevent a new build while a delete operation is in progress
         if (supportsMakeDisabled()) {
             setDisabled(true);
-            Jenkins.get().getQueue().cancel(this);
+            // Dispatched rather than called synchronously: AbstractItem#delete holds
+            // synchronized (this) around performDelete(), and Queue#cancel needs Queue#lock --
+            // see the identical reasoning in ParameterizedJobMixIn#makeDisabled.
+            Timer.get().execute(() -> Jenkins.get().getQueue().cancel(this));
         }
         FilePath ws = getWorkspace();
         if (ws != null) {
