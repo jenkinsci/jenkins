@@ -12,6 +12,7 @@ import hudson.model.Node;
 import hudson.slaves.Cloud;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -113,6 +114,25 @@ class LabelAtomTest {
         label = Label.get("label");
         assertNotNull(label);
         assertThat(label.getNodes(), empty());
+    }
+
+    @Test
+    @Issue("https://github.com/jenkinsci/jenkins/issues/27544")
+    void parseSpaceSeparatedLabelWhenAtomWithWholeNameExists() {
+        Label wholeString = j.jenkins.getLabel("alpha beta");
+        assertNotNull(wholeString);
+        assertThat(wholeString.isAtom(), is(true));
+
+        Set<LabelAtom> parsed = Label.parse("alpha beta");
+        assertThat(parsed, containsInAnyOrder(new LabelAtom("alpha"), new LabelAtom("beta")));
+        assertThat(j.jenkins.getLabel("beta").matches(parsed), is(true));
+        assertThat(j.jenkins.getLabel("alpha").matches(parsed), is(true));
+
+        Set<LabelAtom> single = Label.parse("gamma");
+        assertThat(single, containsInAnyOrder(new LabelAtom("gamma")));
+
+        Set<LabelAtom> quoted = Label.parse("\"alpha beta\" gamma");
+        assertThat(quoted, containsInAnyOrder(new LabelAtom("alpha beta"), new LabelAtom("gamma")));
     }
 
     private static class TestCloud extends Cloud {
