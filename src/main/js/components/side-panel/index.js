@@ -23,13 +23,24 @@ function init() {
     },
   );
 
-  behaviorShim.specify("#side-panel", "side-panel-backdrop", 0, (sidebar) => {
-    sidebar.addEventListener("click", (event) => {
-      if (event.target === sidebar) {
-        setExpanded(false);
+  document.addEventListener(
+    "click",
+    (event) => {
+      const sidebar = document.querySelector("#side-panel");
+      if (
+        !sidebar?.classList.contains(EXPANDED_CLASS) ||
+        sidebar.contains(event.target) ||
+        event.target.closest(".app-side-panel-toggle")
+      ) {
+        return;
       }
-    });
-  });
+
+      event.preventDefault();
+      event.stopPropagation();
+      setExpanded(false);
+    },
+    true,
+  );
 }
 
 export default { init };

@@ -1,3 +1,4 @@
+@use "../abstracts/mixins";
 @use "../base/breakpoints";
 
 .app-page-body {
@@ -38,6 +39,8 @@
     }
 
     @media (width < 740px) {
+      @include mixins.overlay-surface($opacity: 85%);
+
       position: fixed;
       top: var(--header-height);
       left: 0;
@@ -45,14 +48,16 @@
       z-index: 999;
       width: min(320px, 85vw);
       overflow-y: auto;
-      background: var(--body-background-top);
-      border-right: var(--jenkins-border);
-      border-top: 1px solid transparent;
-      border-left: 1px solid transparent;
       transition:
         translate var(--standard-transition),
         box-shadow var(--standard-transition),
         visibility var(--standard-transition);
+
+      &::after {
+        border-left: none;
+        border-top: none;
+        border-bottom: none;
+      }
 
       @media (prefers-reduced-motion) {
         transition-duration: 0s;
