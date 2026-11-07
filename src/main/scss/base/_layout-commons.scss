@@ -1,6 +1,8 @@
 @use "../abstracts/mixins";
 @use "../base/breakpoints";
 
+$collapsible-page-body: ".app-page-body:has(> .app-page-body__sidebar):not(:has(#side-panel .pane, #side-panel .jenkins-card))";
+
 .app-page-body {
   position: relative;
   display: grid;
@@ -37,54 +39,6 @@
     @media (width > breakpoints.$tablet-breakpoint) {
       width: 320px;
     }
-
-    @media (width < 740px) {
-      @include mixins.overlay-surface($opacity: 85%);
-
-      position: fixed;
-      top: var(--header-height);
-      left: 0;
-      bottom: 0;
-      z-index: 999;
-      width: min(320px, 85vw);
-      overflow-y: auto;
-      transition:
-        translate var(--standard-transition),
-        box-shadow var(--standard-transition),
-        display var(--standard-transition) allow-discrete;
-
-      &::after {
-        border-left: none;
-        border-top: none;
-        border-bottom: none;
-      }
-
-      &:not(.app-page-body__sidebar--expanded) {
-        display: none;
-        translate: -100% 0;
-        box-shadow:
-          var(--elevation-3-box-shadow),
-          0 0 0 100vmax transparent;
-      }
-
-      &.app-page-body__sidebar--expanded {
-        translate: 0 0;
-        box-shadow:
-          var(--elevation-3-box-shadow),
-          0 0 0 100vmax color-mix(in sRGB, var(--background) 40%, transparent);
-
-        @starting-style {
-          translate: -100% 0;
-          box-shadow:
-            var(--elevation-3-box-shadow),
-            0 0 0 100vmax transparent;
-        }
-      }
-
-      @media (prefers-reduced-motion) {
-        transition: none;
-      }
-    }
   }
 
   & > .app-page-body__contents {
@@ -107,6 +61,56 @@
       .pane-frame {
         margin-inline: -0.5rem;
       }
+    }
+  }
+}
+
+@media (width < 740px) {
+  #{$collapsible-page-body} > .app-page-body__sidebar {
+    @include mixins.overlay-surface($opacity: 85%);
+
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    bottom: 0;
+    z-index: 999;
+    width: min(320px, 85vw);
+    overflow-y: auto;
+    transition:
+      translate var(--standard-transition),
+      box-shadow var(--standard-transition),
+      display var(--standard-transition) allow-discrete;
+
+    &::after {
+      border-left: none;
+      border-top: none;
+      border-bottom: none;
+    }
+
+    &:not(.app-page-body__sidebar--expanded) {
+      display: none;
+      translate: -100% 0;
+      box-shadow:
+        var(--elevation-3-box-shadow),
+        0 0 0 100vmax transparent;
+    }
+
+    &.app-page-body__sidebar--expanded {
+      translate: 0 0;
+      box-shadow:
+        var(--elevation-3-box-shadow),
+        0 0 0 100vmax color-mix(in sRGB, var(--background) 40%, transparent);
+
+      @starting-style {
+        translate: -100% 0;
+        box-shadow:
+          var(--elevation-3-box-shadow),
+          0 0 0 100vmax transparent;
+      }
+    }
+
+    @media (prefers-reduced-motion) {
+      transition: none;
     }
   }
 }
@@ -303,28 +307,13 @@
 }
 
 @media (width < 740px) {
-  .app-page-body:has(> .app-page-body__sidebar) .app-side-panel-toggle {
+  #{$collapsible-page-body} .app-side-panel-toggle {
     display: inline-flex;
   }
 
-  #main-panel:has(.jenkins-app-bar .app-side-panel-toggle),
-  #side-panel:has(.jenkins-app-bar .app-side-panel-toggle) {
-    & > .app-side-panel-toggle--fallback {
-      display: none;
-    }
-  }
-
-  #main-panel > .app-side-panel-toggle--fallback {
-    margin-bottom: 0.875rem;
-  }
-
-  #side-panel > .app-side-panel-toggle--fallback {
-    display: flex;
-    margin-left: auto;
-    margin-bottom: calc(var(--section-padding) / 2);
-  }
-
-  .jenkins-app-bar .jenkins-app-bar__content:has(> .app-side-panel-toggle) {
+  #{$collapsible-page-body}
+    .jenkins-app-bar
+    .jenkins-app-bar__content:has(> .app-side-panel-toggle) {
     flex-direction: row;
     justify-content: start;
     align-items: center;

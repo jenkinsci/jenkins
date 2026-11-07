@@ -23,14 +23,13 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
   <st:documentation>
     Generates a left side content as part of a Jenkins page. Typically known as two-column or left-side +  main-content layouts
   </st:documentation>
 
   <j:if test="${mode=='side-panel'}">
     <div id="side-panel" class="app-page-body__sidebar">
-      <l:side-panel-toggle clazz="app-side-panel-toggle--fallback" />
       <d:invokeBody />
     </div>
   </j:if>
