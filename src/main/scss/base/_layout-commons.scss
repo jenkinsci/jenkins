@@ -51,7 +51,6 @@
       .app-page-body__sidebar-toggle {
         display: inline-flex;
         justify-content: start;
-        width: 100%;
       }
 
       &#side-panel:not(.app-page-body__sidebar--expanded) {
@@ -70,6 +69,8 @@
         overflow-y: auto;
         background: var(--body-background-top);
         border-right: var(--jenkins-border);
+        border-top: 1px solid red;
+        border-left: 1px solid red;
         box-shadow: var(--elevation-3-box-shadow), 0 0 0 100vmax color-mix(in sRGB, var(--black) 20%, transparent);
 
         .app-page-body__sidebar-toggle {
