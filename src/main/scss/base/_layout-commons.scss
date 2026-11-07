@@ -307,20 +307,30 @@ $collapsible-page-body: ".app-page-body:has(> .app-page-body__sidebar):not(:has(
 }
 
 @media (width < 740px) {
-  #{$collapsible-page-body} .app-side-panel-toggle {
-    display: inline-flex;
-  }
+  #{$collapsible-page-body} {
+    .app-side-panel-toggle {
+      display: inline-flex;
+    }
 
-  #{$collapsible-page-body}
-    .jenkins-app-bar
     .jenkins-app-bar__content:has(> .app-side-panel-toggle) {
-    flex-direction: row;
-    justify-content: start;
-    align-items: center;
-    gap: 0.75rem;
-  }
+      position: relative;
+      padding-left: calc(2.375rem + 0.75rem);
 
-  #side-panel .jenkins-app-bar__content > .app-side-panel-toggle:last-child {
-    margin-left: auto;
+      & > .app-side-panel-toggle {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    }
+
+    #side-panel .jenkins-app-bar__content:has(> .app-side-panel-toggle) {
+      padding-left: 0;
+      padding-right: calc(2.375rem + 0.75rem);
+
+      & > .app-side-panel-toggle {
+        left: auto;
+        right: 0;
+      }
+    }
   }
 }
