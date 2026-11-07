@@ -133,20 +133,32 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * @see ContextMenuVisibility
          */
         public ContextMenu add(Action action) {
+            if (!Functions.isContextMenuVisible(action)) {
+                return this;
+            }
+
             MenuItem menuItem = new MenuItem()
                     .withDisplayName(action.getDisplayName());
 
             menuItem.semantic = action.getSemantic();
             menuItem.description = action.getDescription();
             menuItem.group = action.getGroup();
-            menuItem.event = action.getEvent();
 
-            if (!Functions.isContextMenuVisible(action)) {
-                return this;
+            Event event = action.getEvent();
+            String urlName = action.getUrlName();
+
+            // Action#getUrlName() defines a leading / as relative to the context path.
+            // Functions.getActionUrl already does the same for the classic side panel, so pointing to it explains why this branch exists.
+            if (urlName != null && urlName.startsWith("/") && event instanceof LinkEvent link && urlName.equals(link.getUrl())) {
+                String fullUrl = Stapler.getCurrentRequest2().getContextPath() + urlName;
+                menuItem.url = fullUrl;
+                menuItem.event = LinkEvent.of(fullUrl, link.getType());
+            } else {
+                menuItem.event = event;
             }
 
             // Move actions to subMenu so we can access them from JavaScript
-            if (action.getEvent() instanceof DropdownEvent dropdownEvent) {
+            if (event instanceof DropdownEvent dropdownEvent) {
                 menuItem.subMenu = new ContextMenu();
                 menuItem.subMenu.addAll(dropdownEvent.getActions());
             }
