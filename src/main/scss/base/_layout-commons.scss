@@ -48,10 +48,6 @@
       z-index: 999;
       width: min(320px, 85vw);
       overflow-y: auto;
-      transition:
-        translate var(--standard-transition),
-        box-shadow var(--standard-transition),
-        visibility var(--standard-transition);
 
       &::after {
         border-left: none;
@@ -59,16 +55,8 @@
         border-bottom: none;
       }
 
-      @media (prefers-reduced-motion) {
-        transition-duration: 0s;
-      }
-
       &:not(.app-page-body__sidebar--expanded) {
-        visibility: hidden;
-        translate: -100% 0;
-        box-shadow:
-          var(--elevation-3-box-shadow),
-          0 0 0 100vmax transparent;
+        display: none;
       }
 
       &.app-page-body__sidebar--expanded {
