@@ -44,7 +44,7 @@ class NumberTest {
         input = form.getInputByName("min-5");
 
         errorMessage = typeValueAndGetErrorMessage(input, "2");
-        assertEquals("This value should be larger than 5", errorMessage);
+        assertEquals("This value should be larger than or equal to 5", errorMessage);
 
         errorMessage = typeValueAndGetErrorMessage(input, "5");
         assertThat(errorMessage, emptyString());
@@ -81,7 +81,7 @@ class NumberTest {
         assertThat(errorMessage, emptyString());
 
         errorMessage = typeValueAndGetErrorMessage(input, "87");
-        assertEquals("This value should be less than 70", errorMessage);
+        assertEquals("This value should be less than or equal to 70", errorMessage);
 
 
         // <input type="number" max="wow">
@@ -139,7 +139,7 @@ class NumberTest {
         input = form.getInputByName("min-5-max-wow");
 
         errorMessage = typeValueAndGetErrorMessage(input, "2");
-        assertEquals("This value should be larger than 5", errorMessage);
+        assertEquals("This value should be larger than or equal to 5", errorMessage);
 
         errorMessage = typeValueAndGetErrorMessage(input, "5");
         assertThat(errorMessage, emptyString());
@@ -158,7 +158,7 @@ class NumberTest {
         assertThat(errorMessage, emptyString());
 
         errorMessage = typeValueAndGetErrorMessage(input, "95");
-        assertEquals("This value should be less than 70", errorMessage);
+        assertEquals("This value should be less than or equal to 70", errorMessage);
 
 
         // <input type="number" min="wow" max="jen">
