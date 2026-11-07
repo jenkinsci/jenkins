@@ -318,9 +318,9 @@ $collapsible-page-body: ".app-page-body:has(> .app-page-body__sidebar):not(:has(
     justify-content: start;
     align-items: center;
     gap: 0.75rem;
+  }
 
-    .app-side-panel-toggle:last-child {
-      margin-left: auto;
-    }
+  #side-panel .jenkins-app-bar__content > .app-side-panel-toggle:last-child {
+    margin-left: auto;
   }
 }
