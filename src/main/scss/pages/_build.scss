@@ -201,9 +201,9 @@
 
   @media (width < 740px) {
     position: relative;
-    //display: flex;
-    //flex-direction: column;
-    //align-items: start;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
     padding-block: calc(var(--section-padding) / 2);
     top: 0;
   }
@@ -220,11 +220,6 @@
     align-items: center;
     justify-content: center;
     margin-block: 0.5rem;
-
-    @media (width < 740px) {
-      position: fixed;
-      bottom: var(--section-padding);
-    }
   }
 
   .app-build-bar__controls {
