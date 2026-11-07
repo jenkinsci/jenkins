@@ -111,13 +111,13 @@
   }
 
   &::before {
-    --background: var(--card-background);
+    --background: var(--body-background-bottom);
 
-    background-color: var(--card-background);
+    background-color: var(--body-background-bottom);
     background-image: linear-gradient(
       in oklch,
       var(--body-background-top),
-      var(--background)
+      var(--body-background-bottom)
     );
     background-size: 100% 90vh;
     background-repeat: no-repeat;

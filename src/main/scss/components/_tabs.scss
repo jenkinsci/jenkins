@@ -11,7 +11,7 @@ $border-radius: 19px;
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
-  background: var(--table-background);
+  background: var(--elevation-2-background);
   border-radius: $border-radius;
   padding: 2px;
   margin-bottom: var(--section-padding);
@@ -20,7 +20,7 @@ $border-radius: 19px;
     content: "";
     position: absolute;
     inset: 0;
-    border: var(--jenkins-border-width) solid var(--card-border-color);
+    border: var(--jenkins-border);
     border-radius: inherit;
     pointer-events: none;
   }
@@ -68,7 +68,7 @@ $border-radius: 19px;
   &::before {
     background-clip: padding-box;
     background-color: var(--tabs-item-background--selected) !important;
-    border: var(--jenkins-border--subtle) !important;
+    border: var(--jenkins-border) !important;
   }
 
   &::after {
