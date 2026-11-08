@@ -326,8 +326,8 @@
   .jenkins-button {
     aspect-ratio: 1;
     padding: 0;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.625rem;
+    height: 1.625rem;
     min-height: 0;
     border-radius: 100px;
 
@@ -356,7 +356,7 @@
   .app-build__navigation {
     display: flex;
     gap: var(--jenkins-border-width);
-    margin-left: -0.375rem;
+    margin-left: -0.25rem;
 
     @media (width < 740px) {
       margin-left: auto;
