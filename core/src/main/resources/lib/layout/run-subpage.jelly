@@ -48,12 +48,12 @@ THE SOFTWARE.
                 <l:run-navigation-button href="${buildUrl.previousBuildUrl}"
                                          menu="${rootURL}/${it.object.url}previousBuildsMenu"
                                          label="${%Previous build}"
-                                         icon="symbol-arrow-down"
+                                         icon="symbol-arrow-left"
                                          disabled="${it.object.previousBuild == null}" />
                 <l:run-navigation-button href="${buildUrl.nextBuildUrl}"
                                          menu="${rootURL}/${it.object.url}nextBuildsMenu"
                                          label="${%Next build}"
-                                         icon="symbol-arrow-up"
+                                         icon="symbol-arrow-right"
                                          disabled="${it.object.nextBuild == null}" />
               </div>
             </div>
