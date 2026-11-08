@@ -844,12 +844,15 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
             builds.sort(Comparator.comparingInt(Run<?, ?>::getNumber).reversed());
 
+            String rest = request.getParameter("rest");
+            String subpage = rest == null ? "" : rest.replaceFirst("^/+", "");
+
             ContextMenu menu = new ContextMenu().addHeader(title);
             for (Run<?, ?> b : builds) {
                 menu.add(new MenuItem()
                         .withDisplayName(b.getDisplayName())
                         .withIconClass("symbol-status-" + b.getIconColor().getIconName())
-                        .withContextRelativeUrl(b.getUrl()));
+                        .withContextRelativeUrl(b.getUrl() + subpage));
             }
             return menu;
         }
