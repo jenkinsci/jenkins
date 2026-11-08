@@ -321,6 +321,11 @@ public class QueueTest {
     @Timeout(10)
     void disablingProjectDoesNotDeadlockWithConcurrentQueueMaintenance() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
+        // Without something actually queued, makeDisabled's queued-item branch -- the new
+        // deferred-cancellation code path this test exists to cover -- is never entered at all,
+        // and the test would only prove the (already-trivial) no-op path is deadlock-free.
+        p.setAssignedLabel(r.jenkins.getLabel("nonExist"));
+        p.scheduleBuild2(0);
 
         CountDownLatch projectMonitorHeld = new CountDownLatch(1);
         CountDownLatch queueLockHeld = new CountDownLatch(1);

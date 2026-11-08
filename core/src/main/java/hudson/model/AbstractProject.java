@@ -364,13 +364,18 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
             // synchronized (this) around performDelete(), and Queue#cancel needs Queue#lock --
             // see the identical reasoning, and why this captures a specific item by id rather
             // than canceling by task, in ParameterizedJobMixIn#makeDisabled.
-            Queue.Item queued = Jenkins.get().getQueue().getItem(this);
+            Queue.Item queued = Jenkins.get().getQueue().getCancellableItem(this);
             if (queued != null) {
                 long id = queued.getId();
+                Jenkins.get().getQueue().markPendingCancellation(id);
                 Timer.get().execute(() -> Queue.runWithLock(() -> {
-                    Queue.Item stillQueued = Jenkins.get().getQueue().getItem(id);
-                    if (stillQueued != null) {
-                        Jenkins.get().getQueue().cancel(stillQueued);
+                    try {
+                        Queue.Item stillQueued = Jenkins.get().getQueue().getItem(id);
+                        if (stillQueued != null) {
+                            Jenkins.get().getQueue().cancel(stillQueued);
+                        }
+                    } finally {
+                        Jenkins.get().getQueue().clearPendingCancellation(id);
                     }
                 }));
             }

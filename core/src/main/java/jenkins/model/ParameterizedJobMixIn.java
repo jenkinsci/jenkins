@@ -538,20 +538,33 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
                 // Queue#lock and then needs the job's monitor to create the build), risking a
                 // deadlock.
                 //
-                // Queue#getItem(Task) reads a lock-free snapshot, so it's safe to call here despite
-                // holding the job's monitor. Capture the specific item (if any) queued at the moment
-                // of disabling, and cancel only that one by id once Queue#lock is available: a new
-                // item queued later -- e.g. after a quick re-enable -- gets a different id and is
-                // left alone, while the original item is still canceled even if the job is re-enabled
-                // again before this task runs. Queue#cancel(Task) alone can't make either guarantee,
-                // since it matches whatever is currently queued for this task, not a specific item.
-                Queue.Item queued = Jenkins.get().getQueue().getItem(this);
+                // Queue#getCancellableItem(Task) reads a lock-free snapshot, so it's safe to call
+                // here despite holding the job's monitor. Capture the specific item (if any) queued
+                // at the moment of disabling, mark it so a fresh schedule request can't be folded
+                // into it (Queue#markPendingCancellation), then cancel it by id once Queue#lock is
+                // available: a build requested later -- e.g. after a quick re-enable -- gets a
+                // genuinely new item and is left alone, while the original item is still canceled
+                // even if the job is re-enabled again before this task runs. Queue#cancel(Task)
+                // alone can't make either guarantee, since it matches whatever is currently queued
+                // for this task, not a specific item.
+                //
+                // Best-effort, not an absolute guarantee: the lock-free read can in principle miss
+                // an item queued in the same instant (see Queue#getCancellableItem's own caveat),
+                // and an item already picked up by an executor before this deferred task acquires
+                // Queue#lock can no longer be canceled -- same inherent limitation as any other
+                // queue cancellation, just with a slightly wider window due to the deferral.
+                Queue.Item queued = Jenkins.get().getQueue().getCancellableItem(this);
                 if (queued != null) {
                     long id = queued.getId();
+                    Jenkins.get().getQueue().markPendingCancellation(id);
                     Timer.get().execute(() -> Queue.runWithLock(() -> {
-                        Queue.Item stillQueued = Jenkins.get().getQueue().getItem(id);
-                        if (stillQueued != null) {
-                            Jenkins.get().getQueue().cancel(stillQueued);
+                        try {
+                            Queue.Item stillQueued = Jenkins.get().getQueue().getItem(id);
+                            if (stillQueued != null) {
+                                Jenkins.get().getQueue().cancel(stillQueued);
+                            }
+                        } finally {
+                            Jenkins.get().getQueue().clearPendingCancellation(id);
                         }
                     }));
                 }

@@ -89,6 +89,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
@@ -346,17 +347,30 @@ public class ProjectTest {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
         QueueTaskFuture<FreeStyleBuild> original = p.scheduleBuild2(0);
-        p.makeDisabled(true);
+
+        // Holding Queue#lock around disable, re-enable, and the reschedule keeps the deferred
+        // cancel (which also needs Queue#lock) from running until after all three complete --
+        // the race this test exists to cover is a fresh schedule request landing while the
+        // original item is still live, before the deferred cancel gets a chance to run. Without
+        // Queue#markPendingCancellation excluding that original item from deduplication, this
+        // reschedule would fold into it and get wrongly canceled along with it.
+        AtomicReference<QueueTaskFuture<FreeStyleBuild>> newBuildRef = new AtomicReference<>();
+        Queue.runWithLock(() -> {
+            p.makeDisabled(true);
+            p.makeDisabled(false);
+            newBuildRef.set(p.scheduleBuild2(0));
+        });
+        QueueTaskFuture<FreeStyleBuild> newBuild = newBuildRef.get();
+
+        // The originally queued build is still canceled, even though the job ended up
+        // re-enabled again before the deferred cancel ran.
         await().untilAsserted(() -> assertTrue(original.getStartCondition().isCancelled(), "Originally queued build should have been canceled."));
 
-        // The original item is gone by now, so this schedules a genuinely new, independent item --
-        // Queue assigns ids once and never reuses them, so nothing the (already-run) deferred cancel
-        // captured could ever refer to this one.
-        p.makeDisabled(false);
-        QueueTaskFuture<FreeStyleBuild> newBuild = p.scheduleBuild2(0);
-
+        // The build requested while re-enabling must not be swept up by that same deferred
+        // cancel, even though at the moment it was requested it was still the same live item
+        // from Queue's own deduplication perspective.
         await().during(Duration.ofSeconds(1)).untilAsserted(() ->
-                assertFalse(newBuild.getStartCondition().isCancelled(), "Build scheduled after re-enabling should not be canceled."));
+                assertFalse(newBuild.getStartCondition().isCancelled(), "Build scheduled while re-enabling should not be canceled."));
     }
 
     @Test

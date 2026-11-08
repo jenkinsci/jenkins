@@ -102,6 +102,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -218,6 +219,16 @@ public class Queue extends ResourceController implements Saveable {
     private final ItemList<BuildableItem> pendings = new ItemList<>();
 
     private transient volatile Snapshot snapshot = new Snapshot(waitingList, blockedProjects, buildables, pendings);
+
+    /**
+     * Ids of items captured by code that cannot hold {@link #lock} at the moment of capture (e.g.
+     * {@code ParameterizedJobMixIn#makeDisabled}, which runs while holding a job's own monitor) for
+     * cancellation once {@link #lock} is next available. Tracked so {@link #scheduleInternal} can
+     * avoid folding a fresh schedule request into an item that is already on its way out --
+     * otherwise the fresh request would be canceled along with it. Entries are removed once the
+     * deferred cancellation actually runs, whether or not the item was still there to cancel.
+     */
+    private final Set<Long> itemsAwaitingDeferredCancellation = ConcurrentHashMap.newKeySet();
 
     /**
      * Items that left queue would stay here for a while to enable tracking via {@link Item#getId()}.
@@ -622,6 +633,13 @@ public class Queue extends ResourceController implements Saveable {
             // Do we already have this task in the queue? Because if so, we won't schedule a new one.
             List<Item> duplicatesInQueue = new ArrayList<>();
             for (Item item : liveGetItems(p)) {
+                if (itemsAwaitingDeferredCancellation.contains(item.id)) {
+                    // Someone captured this item's id for cancellation once #lock is next available
+                    // (see #getCancellableItem) but hasn't gotten there yet. Don't fold this request
+                    // into it: a build requested now is a genuinely new request, not a continuation
+                    // of whatever is about to be canceled.
+                    continue;
+                }
                 boolean shouldScheduleItem = false;
                 for (QueueAction action : item.getActions(QueueAction.class)) {
                     shouldScheduleItem |= action.shouldSchedule(actions);
@@ -1102,6 +1120,62 @@ public class Queue extends ResourceController implements Saveable {
             }
         }
         return null;
+    }
+
+    /**
+     * Finds the queue item for {@code t}, if any, that {@link #cancel(Task)} would cancel: the
+     * first match in {@link #waitingList}, else the first match among {@link #blockedProjects} or
+     * {@link #buildables}. Unlike {@link #getItem(Task)}, never returns a {@link #pendings} item --
+     * cancelling one of those is a no-op, so preferring it over a genuinely cancelable item (as
+     * {@link #getItem(Task)} does, for display purposes) would silently fail to cancel anything.
+     *
+     * <p>Reads the lock-free {@link #snapshot}, so safe to call without {@link #lock} held -- e.g.
+     * from code that must not acquire {@link #lock} while holding some other lock also taken in
+     * the opposite order elsewhere (see {@code ParameterizedJobMixIn#makeDisabled}).
+     *
+     * @return null if there is nothing cancelable queued for {@code t}.
+     */
+    @Restricted(NoExternalUse.class)
+    public @CheckForNull Item getCancellableItem(Task t) {
+        Snapshot snapshot = this.snapshot;
+        for (Item item : snapshot.waitingList) {
+            if (item.task.equals(t)) {
+                return item;
+            }
+        }
+        for (Item item : snapshot.blockedProjects) {
+            if (item.task.equals(t)) {
+                return item;
+            }
+        }
+        for (Item item : snapshot.buildables) {
+            if (item.task.equals(t)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Marks {@code id} so {@link #scheduleInternal} will not fold a new schedule request into it.
+     * Call right after capturing an item's id for deferred cancellation (see
+     * {@link #getCancellableItem}), before {@link #lock} is available to actually cancel it, so a
+     * build requested in the meantime gets a genuinely new item instead of reusing the one that is
+     * about to be canceled.
+     */
+    @Restricted(NoExternalUse.class)
+    public void markPendingCancellation(long id) {
+        itemsAwaitingDeferredCancellation.add(id);
+    }
+
+    /**
+     * Reverses {@link #markPendingCancellation}. Call once the deferred cancellation this id was
+     * captured for has actually run, whether or not the item was still there to cancel --
+     * otherwise the id would stay excluded from deduplication forever.
+     */
+    @Restricted(NoExternalUse.class)
+    public void clearPendingCancellation(long id) {
+        itemsAwaitingDeferredCancellation.remove(id);
     }
 
     /**
