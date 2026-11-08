@@ -43,7 +43,7 @@ import jenkins.model.HistoricalBuild;
  * width by default; to let its column shrink rather than be hidden, give the view's root element an explicit
  * CSS {@code min-width}, and the column will be shrunk down to that first.
  *
- * @since TODO
+ * @since 2.589
  */
 public abstract class HistoryPageEntryDecorator implements ExtensionPoint {
 
