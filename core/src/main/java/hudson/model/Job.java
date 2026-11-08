@@ -203,6 +203,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * after its number is assigned, so {@link #updateNextBuildNumber} also checks this to avoid
      * rewinding onto a number that a build being created already holds.
      */
+    @XStreamNotDeserializable
     private transient int highestAssignedBuildNumber;
 
     /**
@@ -210,6 +211,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Such a build has already resolved its directory from the job's name but may not have created it
      * yet, so {@link #renameTo} refuses to move the job meanwhile.
      */
+    @XStreamNotDeserializable
     private transient int buildsBeingCreated;
 
     /**

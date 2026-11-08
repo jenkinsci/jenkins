@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -48,6 +49,7 @@ import java.io.UncheckedIOException;
 import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -68,6 +70,7 @@ import org.htmlunit.html.HtmlFormUtil;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -173,6 +176,73 @@ class JobTest {
         renaming.join(30_000);
         assertEquals("after", p.getName());
         assertEquals(String.valueOf(assigned.get() + 1), p.getNextBuildNumberFile().readTrim());
+    }
+
+    /**
+     * Reproduces the lock-ordering deadlock this change exists to prevent, using the real
+     * {@link Job#DefaultBuildNumberAssigner} rather than a test double: one thread holds the
+     * project's own monitor and then needs {@link Queue#lock} (modeling any code that acquires
+     * the monitor first, the same shape {@code QueueTest}'s own disabling-deadlock test uses by
+     * hand rather than going through a specific caller), while another holds {@link Queue#lock}
+     * (as {@link Executor#run} does via {@link Queue#callWithLock}) and calls
+     * {@link AbstractProject#newBuild} -- which, before this change, was {@code synchronized} and
+     * internally assigned the build number under the project's monitor too. Fails via the JVM's
+     * own deadlock detection ({@code ThreadMXBean#findDeadlockedThreads}) on timeout; passes once
+     * neither {@code newBuild} nor build-number assignment needs the project's monitor.
+     */
+    @Test
+    @Timeout(10)
+    void buildNumberAssignmentDoesNotDeadlockWithConcurrentMonitorHolder() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        CountDownLatch monitorHeld = new CountDownLatch(1);
+        CountDownLatch queueLockHeld = new CountDownLatch(1);
+
+        Thread monitorHolder = new Thread(() -> {
+            synchronized (p) {
+                monitorHeld.countDown();
+                try {
+                    queueLockHeld.await();
+                    Queue.runWithLock(() -> { }); // needs Queue#lock while still holding the monitor
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }, "simulated monitor-holder for " + p.getName());
+
+        Thread buildCreator = new Thread(() ->
+            Queue.callWithLock(() -> { // what Executor#run does to grab Queue#lock
+                queueLockHeld.countDown();
+                try {
+                    monitorHeld.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+                try {
+                    return p.newBuild();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }), "simulated Executor building " + p.getName());
+
+        buildCreator.setDaemon(true);
+        monitorHolder.setDaemon(true);
+
+        buildCreator.start();
+        monitorHolder.start();
+
+        monitorHolder.join(3000);
+        buildCreator.join(3000);
+
+        if (monitorHolder.isAlive() || buildCreator.isAlive()) {
+            long[] deadlocked = ManagementFactory.getThreadMXBean().findDeadlockedThreads();
+            String message = "build-number assignment deadlocked against a concurrent monitor holder "
+                    + "(Queue#lock and the project monitor acquired in opposite order); "
+                    + "JVM-reported deadlocked thread ids: " + Arrays.toString(deadlocked);
+            System.err.println(message);
+            fail(message);
+        }
     }
 
     @Test
