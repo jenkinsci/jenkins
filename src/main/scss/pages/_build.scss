@@ -219,6 +219,11 @@
     justify-content: start;
     min-height: 38px;
     grid-column: 1;
+
+    @media (width < 740px) {
+      display: flex;
+      width: 100%;
+    }
   }
 
   .app-build-bar__tabs {
@@ -324,12 +329,7 @@
     width: 1.5rem;
     height: 1.5rem;
     min-height: 0;
-    border-radius: 0;
-
-    &::before,
-    &::after {
-      border-radius: 100px;
-    }
+    border-radius: 100px;
 
     &:not(:hover) {
       color: var(--text-color-secondary) !important;
@@ -357,6 +357,15 @@
     display: flex;
     gap: var(--jenkins-border-width);
     margin-left: -0.375rem;
+
+    @media (width < 740px) {
+      margin-left: auto;
+
+      .jenkins-button {
+        width: 2rem;
+        height: 2rem;
+      }
+    }
   }
 }
 
