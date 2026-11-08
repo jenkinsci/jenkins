@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.589</revision>
+    <revision>2.590</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2026-10-26T15:08:20Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-11-03T06:08:35Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3391.va_37fa_a_305d6d</remoting.version>
+    <remoting.version>3395.v6e5377b_0fb_3c</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
@@ -104,7 +104,7 @@ THE SOFTWARE.
          war/src/main/webapp/jsbundles is already populated from an earlier build. -->
     <skip.frontend>false</skip.frontend>
     <winstone.version>8.1053.v85e6c1a_3b_278</winstone.version>
-    <node.version>24.22.0</node.version>
+    <node.version>24.22.2</node.version>
   </properties>
 
   <!--
@@ -274,7 +274,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>14.3.0</version>
+              <version>14.4.0</version>
             </dependency>
           </dependencies>
           <executions>
@@ -290,7 +290,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.15</version>
+          <version>0.8.16</version>
         </plugin>
       </plugins>
     </pluginManagement>

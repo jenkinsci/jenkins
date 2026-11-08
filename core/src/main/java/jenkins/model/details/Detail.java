@@ -70,7 +70,7 @@ public abstract class Detail implements ModelObject, IconSpec {
 
     /**
      * @return where this detail should be shown, defaults to {@link Verbosity#FULL}
-     * @since TODO
+     * @since 2.589
      */
     public @NonNull Verbosity getVerbosity() {
         return Verbosity.FULL;
@@ -78,7 +78,7 @@ public abstract class Detail implements ModelObject, IconSpec {
 
     /**
      * Where a {@link Detail} should be shown.
-     * @since TODO
+     * @since 2.589
      */
     public enum Verbosity {
         /**
