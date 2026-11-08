@@ -76,15 +76,14 @@ $collapsible-page-body: ".app-page-body:has(> .app-page-body__sidebar):not(:has(
     z-index: 999;
     width: min(320px, 85vw);
     overflow-y: auto;
+    border-right: var(--jenkins-border-width) solid color-mix(in sRGB, var(--white) 10%, transparent);
     transition:
       translate var(--standard-transition),
       box-shadow var(--standard-transition),
       display var(--standard-transition) allow-discrete;
 
     &::after {
-      border-left: none;
-      border-top: none;
-      border-bottom: none;
+      content: none;
     }
 
     &:not(.app-page-body__sidebar--expanded) {
