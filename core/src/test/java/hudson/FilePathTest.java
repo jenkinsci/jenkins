@@ -1307,8 +1307,8 @@ class FilePathTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void ancestorSymlinkCheck() throws Exception {
-        assumeFalse(Functions.isWindows());
         File base = new File(temp, "base").getAbsoluteFile();
         File outside = new File(temp, "outside").getAbsoluteFile();
         assertTrue(base.mkdirs());
