@@ -1133,23 +1133,29 @@ public class Queue extends ResourceController implements Saveable {
      * from code that must not acquire {@link #lock} while holding some other lock also taken in
      * the opposite order elsewhere (see {@code ParameterizedJobMixIn#makeDisabled}).
      *
+     * Skips any item already captured for deferred cancellation ({@link #markPendingCancellation}):
+     * it is still present in this lock-free snapshot until its own deferred task actually runs, so
+     * without this exclusion a second disable (e.g. disable, re-enable, reschedule, disable again,
+     * all before either deferred task gets {@link #lock}) would keep re-selecting that same stale
+     * item instead of the newer live one that the second disable actually needs to cancel.
+     *
      * @return null if there is nothing cancelable queued for {@code t}.
      */
     @Restricted(NoExternalUse.class)
     public @CheckForNull Item getCancellableItem(Task t) {
         Snapshot snapshot = this.snapshot;
         for (Item item : snapshot.waitingList) {
-            if (item.task.equals(t)) {
+            if (item.task.equals(t) && !itemsAwaitingDeferredCancellation.contains(item.id)) {
                 return item;
             }
         }
         for (Item item : snapshot.blockedProjects) {
-            if (item.task.equals(t)) {
+            if (item.task.equals(t) && !itemsAwaitingDeferredCancellation.contains(item.id)) {
                 return item;
             }
         }
         for (Item item : snapshot.buildables) {
-            if (item.task.equals(t)) {
+            if (item.task.equals(t) && !itemsAwaitingDeferredCancellation.contains(item.id)) {
                 return item;
             }
         }

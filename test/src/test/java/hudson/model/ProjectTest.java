@@ -374,6 +374,31 @@ public class ProjectTest {
     }
 
     @Test
+    void secondDisableBeforeFirstDeferredCancelRunsCancelsTheReplacementNotTheOriginal() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("project");
+        p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
+        QueueTaskFuture<FreeStyleBuild> original = p.scheduleBuild2(0);
+
+        // All four calls happen while still holding Queue#lock, so neither deferred cancel gets a
+        // chance to run until after this block completes. Without Queue#getCancellableItem
+        // excluding items already captured for deferred cancellation, the second makeDisabled(true)
+        // would keep re-selecting the original (stale, already-pending-cancellation) item instead
+        // of the replacement scheduled in between -- leaving the replacement to survive even though
+        // the job ended this sequence disabled.
+        AtomicReference<QueueTaskFuture<FreeStyleBuild>> replacementRef = new AtomicReference<>();
+        Queue.runWithLock(() -> {
+            p.makeDisabled(true);
+            p.makeDisabled(false);
+            replacementRef.set(p.scheduleBuild2(0));
+            p.makeDisabled(true);
+        });
+        QueueTaskFuture<FreeStyleBuild> replacement = replacementRef.get();
+
+        await().untilAsserted(() -> assertTrue(original.getStartCondition().isCancelled(), "Original build should have been canceled."));
+        await().untilAsserted(() -> assertTrue(replacement.getStartCondition().isCancelled(), "Replacement build should also have been canceled by the second disable."));
+    }
+
+    @Test
     void testAddProperty() throws IOException {
         FreeStyleProject p = j.createFreeStyleProject("project");
         JobProperty prop = new JobPropertyImp();
