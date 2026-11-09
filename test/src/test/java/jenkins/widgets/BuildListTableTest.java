@@ -25,15 +25,35 @@
 package jenkins.widgets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.AbstractItem;
+import hudson.model.Computer;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Job;
 import hudson.model.ListView;
+import hudson.model.Slave;
+import hudson.slaves.JNLPLauncher;
+import hudson.slaves.SlaveComputer;
+import hudson.util.RunList;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONNull;
+import net.sf.json.JSONObject;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTable;
+import org.htmlunit.util.WebConnectionWrapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -83,6 +103,131 @@ class BuildListTableTest {
         target = URI.create(page.getUrl().toExternalForm()).resolve(href).toURL();
         wc.getPage(target);
         assertEquals(r.getURL() + "job/d/job/d2/job/p/", target.toString(), href);
+    }
+
+    @Test
+    void retryingAPageCutShortLoadsOnlyTheRest() throws Exception {
+        int pageSize = RunListData.PAGE_SIZE;
+        long scanBudget = RunListData.SCAN_BUDGET_MS;
+        RunListData.PAGE_SIZE = 3;
+        RunListData.SCAN_BUDGET_MS = 0; // every page is cut short after one build
+        try {
+            FreeStyleProject p = r.createFreeStyleProject("p");
+            for (int i = 0; i < 4; i++) {
+                r.buildAndAssertSuccess(p);
+                Thread.sleep(2); // so that the builds have different timestamps
+            }
+            JenkinsRule.WebClient wc = r.createWebClient();
+            wc.getOptions().setThrowExceptionOnScriptError(false);
+            List<String> requests = new ArrayList<>();
+            new WebConnectionWrapper(wc) {
+                @Override
+                public WebResponse getResponse(WebRequest request) throws IOException {
+                    String url = request.getUrl().toString();
+                    if (url.contains("/buildList")) {
+                        requests.add(url.replaceAll(".*/buildList", "buildList").replaceAll("olderThan=\\d+&?", ""));
+                        if (requests.size() == 2) {
+                            throw new IOException("the second request fails");
+                        }
+                    }
+                    return super.getResponse(request);
+                }
+            };
+            HtmlPage page = wc.goTo("view/all/builds");
+            wc.waitForBackgroundJavaScript(120000);
+            HtmlTable table = page.getHtmlElementById("projectStatus");
+            assertEquals(1, table.getRowCount() - 1);
+            HtmlButton more = page.querySelector(".jenkins-runs__more");
+            assertFalse(more.getAttribute("class").contains("jenkins-hidden"), "the user can try again");
+
+            more.click();
+            wc.waitForBackgroundJavaScript(120000);
+            assertEquals(List.of("buildList", "buildList?limit=2", "buildList?limit=2", "buildList?limit=1"), requests);
+            assertEquals(3, table.getRowCount() - 1, "a page of 3 builds");
+        } finally {
+            RunListData.PAGE_SIZE = pageSize;
+            RunListData.SCAN_BUDGET_MS = scanBudget;
+        }
+    }
+
+    @Test
+    void showOlderBuildsLoadsTheNextPage() throws Exception {
+        int pageSize = RunListData.PAGE_SIZE;
+        RunListData.PAGE_SIZE = 2;
+        try {
+            FreeStyleProject p = r.createFreeStyleProject("p");
+            for (int i = 0; i < 3; i++) {
+                r.buildAndAssertSuccess(p);
+            }
+            JenkinsRule.WebClient wc = r.createWebClient();
+            HtmlPage page = wc.goTo("view/all/builds");
+            assertEquals(0, wc.waitForBackgroundJavaScript(120000));
+            HtmlTable table = page.getHtmlElementById("projectStatus");
+            // the header row plus one row per build
+            assertEquals(2, table.getRowCount() - 1);
+            HtmlButton more = page.querySelector(".jenkins-runs__more");
+            assertFalse(more.getAttribute("class").contains("jenkins-hidden"));
+
+            more.click();
+            assertEquals(0, wc.waitForBackgroundJavaScript(120000));
+            assertEquals(3, table.getRowCount() - 1);
+            assertTrue(more.getAttribute("class").contains("jenkins-hidden"));
+        } finally {
+            RunListData.PAGE_SIZE = pageSize;
+        }
+    }
+
+    @Test
+    void buildListEndpoints() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("p");
+        FreeStyleBuild b = r.buildAndAssertSuccess(p);
+        JenkinsRule.WebClient wc = r.createWebClient();
+        for (String url : List.of("view/all/buildList", "computer/(built-in)/buildList", "job/p/buildTimeTrendData")) {
+            JSONObject data = wc.getJSON(url).getJSONObject().getJSONObject("data");
+            assertEquals(1, data.getJSONArray("builds").size(), url);
+            assertEquals(JSONNull.getInstance(), data.get("next"), url);
+            assertEquals(JSONNull.getInstance(), wc.getJSON(url + "?olderThan=" + b.getTimeInMillis()).getJSONObject().getJSONObject("data").get("next"), url);
+            assertEquals(0, wc.getJSON(url + "?olderThan=" + b.getTimeInMillis()).getJSONObject().getJSONObject("data").getJSONArray("builds").size(), url);
+        }
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        assertEquals(400, wc.goTo("view/all/buildList?olderThan=nope", null).getWebResponse().getStatusCode());
+        assertEquals(400, wc.goTo("view/all/buildList?limit=nope", null).getWebResponse().getStatusCode());
+    }
+
+    @Test
+    void theRestOfAPageIsLimited() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("p");
+        r.buildAndAssertSuccess(p);
+        Thread.sleep(2); // so that the builds have different timestamps
+        r.buildAndAssertSuccess(p);
+        JSONObject data = r.createWebClient().getJSON("view/all/buildList?limit=1").getJSONObject().getJSONObject("data");
+        assertEquals(1, data.getJSONArray("builds").size());
+        assertEquals(p.getLastBuild().getTimeInMillis(), data.getLong("next"));
+    }
+
+    @Test
+    void aComputerListsTheBuildsItSays() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("p");
+        r.buildAndAssertSuccess(p);
+        r.jenkins.addNode(new AllBuildsAgent());
+        JSONObject data = r.createWebClient().getJSON("computer/all-builds/buildList").getJSONObject().getJSONObject("data");
+        assertEquals(1, data.getJSONArray("builds").size(), "the build on the built-in node, as getBuilds() says");
+    }
+
+    private static class AllBuildsAgent extends Slave {
+        AllBuildsAgent() throws Exception {
+            super("all-builds", "/tmp", new JNLPLauncher());
+        }
+
+        @Override
+        public Computer createComputer() {
+            return new SlaveComputer(this) {
+                @Override
+                public RunList getBuilds() {
+                    return RunList.fromJobs((Iterable) Jenkins.get().allItems(Job.class));
+                }
+            };
+        }
     }
 
 }

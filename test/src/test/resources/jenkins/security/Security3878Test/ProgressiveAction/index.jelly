@@ -1,0 +1,10 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <l:layout title="SECURITY-3878">
+    <l:main-panel>
+      <st:adjunct includes="jenkins.security.Security3878Test.callback"/>
+      <l:progressiveRendering handler="${it.handler}" callback="security3878Callback"/>
+      <div id="security3878-result"/>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

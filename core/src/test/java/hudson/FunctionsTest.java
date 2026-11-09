@@ -47,7 +47,6 @@ import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.model.ViewGroup;
-import hudson.util.VersionNumber;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -320,6 +319,65 @@ class FunctionsTest {
         when(action.getUrlName()).thenReturn(uri);
         when(action.isPrimaryAction()).thenReturn(primary);
         return action;
+    }
+
+    @ParameterizedTest(name = "[{index}] {0} matches")
+    @ValueSource(strings = {
+            "/jenkins/job/x/50/coverage",
+            "/jenkins/job/x/50/coverage/",
+            "/jenkins/job/x/50/coverage/overview",
+            "/jenkins/job/x/50/coverage/overview/",
+            "/jenkins/job/x/50/coverage/source.123/"
+    })
+    void hyperlinkMatchesCurrentPageOrChildShouldMatchPageAndChildren(String requestUri) {
+        assertTrue(matchesCurrentPageOrChild(requestUri, "/jenkins/job/x/50/coverage"));
+        assertTrue(matchesCurrentPageOrChild(requestUri, "/jenkins/job/x/50/coverage/"));
+    }
+
+    @ParameterizedTest(name = "[{index}] {0} does not match")
+    @ValueSource(strings = {
+            "/jenkins/job/x/50/",
+            "/jenkins/job/x/50/coverage-jacoco/",
+            "/jenkins/job/x/50/coveragefoo",
+            "/jenkins/job/x/50/testReport/coverage/",
+            "/jenkins/job/x/51/coverage/",
+            "/jenkins/job/coverage/50/"
+    })
+    void hyperlinkMatchesCurrentPageOrChildShouldNotMatchOtherPages(String requestUri) {
+        assertFalse(matchesCurrentPageOrChild(requestUri, "/jenkins/job/x/50/coverage"));
+    }
+
+    @Test
+    void hyperlinkMatchesCurrentPageOrChildShouldDecodeUrls() {
+        assertTrue(matchesCurrentPageOrChild("/jenkins/job/my%20job/50/coverage/overview/", "/jenkins/job/my job/50/coverage"));
+        assertTrue(matchesCurrentPageOrChild("/jenkins/job/my job/50/coverage/", "/jenkins/job/my%20job/50/coverage"));
+    }
+
+    @Test
+    void hyperlinkMatchesCurrentPageOrChildShouldPreserveLiteralPlusSigns() {
+        assertTrue(matchesCurrentPageOrChild("/jenkins/job/a+b/50/coverage/overview/", "/jenkins/job/a+b/50/coverage"));
+        assertTrue(matchesCurrentPageOrChild("/jenkins/job/a+b/50/coverage/overview/", "/jenkins/job/a%2Bb/50/coverage"));
+        assertTrue(matchesCurrentPageOrChild("/jenkins/job/a%2Bb/50/coverage/", "/jenkins/job/a+b/50/coverage"));
+
+        assertFalse(matchesCurrentPageOrChild("/jenkins/job/a+b/50/coverage/", "/jenkins/job/a%20b/50/coverage"));
+        assertFalse(matchesCurrentPageOrChild("/jenkins/job/a%20b/50/coverage/", "/jenkins/job/a+b/50/coverage"));
+        assertFalse(matchesCurrentPageOrChild("/jenkins/job/a b/50/coverage/", "/jenkins/job/a+b/50/coverage"));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"/", "//"})
+    void hyperlinkMatchesCurrentPageOrChildShouldNotMatchEmptyLinks(String href) {
+        assertFalse(matchesCurrentPageOrChild("/jenkins/job/x/50/", href));
+    }
+
+    private static boolean matchesCurrentPageOrChild(String requestUri, String href) {
+        StaplerRequest2 req = createMockRequest("/jenkins");
+        when(req.getRequestURI()).thenReturn(requestUri);
+        try (MockedStatic<Stapler> mocked = mockStatic(Stapler.class)) {
+            mocked.when(Stapler::getCurrentRequest2).thenReturn(req);
+            return new Functions().hyperlinkMatchesCurrentPageOrChild(href);
+        }
     }
 
     private static StaplerRequest2 createMockRequest(String contextPath) {
@@ -645,11 +703,7 @@ class FunctionsTest {
         Stack stack2 = new Stack("p.Exc2", "p.C.method2:27");
         stack1.cause(stack2);
         stack2.cause(stack1);
-        //Format changed in 11.0.9 / 8.0.272 (JDK-8226809 / JDK-8252444 / JDK-8252489)
-
-        if (getVersion().isNewerThanOrEqualTo(new VersionNumber("11.0.9")) ||
-                (getVersion().getDigitAt(0) == 8 && getVersion().isNewerThanOrEqualTo(new VersionNumber("8.0.272")))) {
-            assertPrintThrowable(stack1,
+        assertPrintThrowable(stack1,
                     """
                             p.Exc1
                             \tat p.C.method1(C.java:17)
@@ -664,31 +718,6 @@ class FunctionsTest {
                             Caused: p.Exc1
                             \tat p.C.method1(C.java:17)
                             """);
-        } else {
-            assertPrintThrowable(stack1,
-                    """
-                            p.Exc1
-                            \tat p.C.method1(C.java:17)
-                            Caused by: p.Exc2
-                            \tat p.C.method2(C.java:27)
-                            \t[CIRCULAR REFERENCE:p.Exc1]
-                            """,
-                    """
-                            <cycle to p.Exc1>
-                            Caused: p.Exc2
-                            \tat p.C.method2(C.java:27)
-                            Caused: p.Exc1
-                            \tat p.C.method1(C.java:17)
-                            """);
-        }
-    }
-
-    private static VersionNumber getVersion() {
-        String version = System.getProperty("java.version");
-        if (version.startsWith("1.")) {
-            version = version.substring(2).replace("_", ".");
-        }
-        return new VersionNumber(version);
     }
 
     private static void assertPrintThrowable(Throwable t, String traditional, String custom) {
