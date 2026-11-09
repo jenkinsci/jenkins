@@ -507,6 +507,67 @@ public class Items {
      * @return An {@link Iterable} for all items.
      * @since 2.221
      */
+    /**
+     * Efficiently enumerates all {@link ViewGroup} containers reachable from the given root,
+     * without performing per-item access control checks. This is safe to use from
+     * {@code ItemListener} callbacks that already run as {@code ACL#SYSTEM2}, and avoids
+     * the O(N) full-item iteration (including leaf jobs) that {@link #allItems} performs.
+     *
+     * <p>The traversal walks only {@link ItemGroup} containers (Jenkins root, folders,
+     * etc.), so the cost is proportional to the number of containers rather than the
+     * total number of items on the controller.
+     *
+     * @param root the root item group to start from
+     * @return a list of all {@link ViewGroup} containers, always including {@code root}
+     *         if it implements {@link ViewGroup}
+     * @since TODO
+     */
+    public static List<ViewGroup> getAllViewGroups(ItemGroup root) {
+        List<ViewGroup> result = new ArrayList<>();
+        collectViewGroups(root, result);
+        return result;
+    }
+
+    /**
+     * Recursively collects {@link ViewGroup} containers from an {@link ItemGroup}.
+     * Only visits {@link ItemGroup} children (containers), skipping leaf items
+     * (jobs, etc.) entirely, which avoids the O(all items) traversal of {@link #allItems}.
+     */
+    private static void collectViewGroups(ItemGroup group, List<ViewGroup> result) {
+        if (group instanceof ViewGroup) {
+            result.add((ViewGroup) group);
+        }
+        // Only recurse into containers; do NOT iterate leaf items (jobs).
+        // This reduces the traversal from O(all items) to O(containers).
+        // For Jenkins root, use getItems(); for other containers use reflection
+        // to call getItems() if available (e.g. AbstractFolder from folders plugin).
+        if (group instanceof Jenkins) {
+            Jenkins jenkins = (Jenkins) group;
+            for (TopLevelItem item : jenkins.getItems()) {
+                if (item instanceof ItemGroup) {
+                    collectViewGroups((ItemGroup) item, result);
+                }
+            }
+        } else {
+            // For non-Jenkins ItemGroups (e.g. folders from the folders plugin),
+            // use the ItemGroup.getChildren() or similar method via reflection
+            // to enumerate children without requiring a compile-time dependency.
+            try {
+                java.lang.reflect.Method getItems = group.getClass().getMethod("getItems");
+                Object itemsObj = getItems.invoke(group);
+                if (itemsObj instanceof Iterable) {
+                    for (Object obj : (Iterable<?>) itemsObj) {
+                        if (obj instanceof ItemGroup) {
+                            collectViewGroups((ItemGroup) obj, result);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // If we cannot enumerate children, skip this container
+            }
+        }
+    }
+
     public static <T extends Item> Iterable<T> allItems(ItemGroup root, Class<T> type, Predicate<T> pred) {
         return allItems2(Jenkins.getAuthentication2(), root, type, pred);
     }

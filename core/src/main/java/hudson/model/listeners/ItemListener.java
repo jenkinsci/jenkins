@@ -29,6 +29,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Failure;
 import hudson.model.Item;
+import java.util.List;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
 import hudson.security.ACL;
@@ -233,6 +234,54 @@ public class ItemListener implements ExtensionPoint {
     /** @since 1.548 */
     public static void fireOnDeleted(final Item item) {
         Listeners.notify(ItemListener.class, false, l -> l.onDeleted(item));
+    }
+
+    /**
+     * Fires the {@link #onDeleted} event for a batch of items that were deleted together,
+     * such as orphaned children of a {@code ComputedFolder}.  Batch-aware listeners can
+     * override {@link #onDeletedBatch} to process the entire set at once instead of
+     * handling each item individually, which avoids O(D×N) scans when D items are
+     * deleted from a controller containing N items.
+     *
+     * @param items the non-null, possibly empty list of items that were deleted
+     * @since TODO
+     */
+    public static void fireOnDeletedBatch(final @NonNull List<Item> items) {
+        if (items.isEmpty()) {
+            return;
+        }
+        // First, notify listeners that support batch processing.
+        Listeners.notify(ItemListener.class, false, l -> {
+            if (l instanceof BatchAwareItemListener) {
+                ((BatchAwareItemListener) l).onDeletedBatch(items);
+            } else {
+                for (Item item : items) {
+                    l.onDeleted(item);
+                }
+            }
+        });
+    }
+
+    /**
+     * A marker sub-interface for {@link ItemListener} implementations that can
+     * efficiently handle batch item deletions.  Listeners that implement this
+     * interface will receive a single {@link #onDeletedBatch} call for a group
+     * of items deleted together, instead of individual {@link #onDeleted} calls.
+     *
+     * @since TODO
+     */
+    public interface BatchAwareItemListener extends ItemListener {
+        /**
+         * Called for a batch of items that were deleted together.
+         * The default implementation delegates to individual {@link #onDeleted} calls.
+         *
+         * @param items the list of items that were deleted
+         */
+        default void onDeletedBatch(@NonNull List<Item> items) {
+            for (Item item : items) {
+                onDeleted(item);
+            }
+        }
     }
 
     /**

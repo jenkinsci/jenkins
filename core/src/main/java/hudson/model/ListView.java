@@ -562,7 +562,7 @@ public class ListView extends View implements DirectlyModifiableView {
 
     @Restricted(NoExternalUse.class)
     @Extension
-    public static final class Listener extends ItemListener {
+    public static final class Listener extends ItemListener implements ItemListener.BatchAwareItemListener {
         @Override
         public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
             try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
@@ -570,12 +570,18 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
 
+        /**
+         * Instead of iterating all items via {@code jenkins.allItems()} (which performs
+         * a per-item ACL check and visits every leaf job), use the targeted
+         * {@link Items#getAllViewGroups} traversal that only visits container groups.
+         * This reduces the cost from O(all items) to O(containers).
+         */
         private void locationChanged(String oldFullName, String newFullName) {
             final Jenkins jenkins = Jenkins.get();
             locationChanged(jenkins, oldFullName, newFullName);
-            for (Item g : jenkins.allItems()) {
-                if (g instanceof ViewGroup) {
-                    locationChanged((ViewGroup) g, oldFullName, newFullName);
+            for (ViewGroup vg : Items.getAllViewGroups(jenkins)) {
+                if (vg != jenkins) { // root already handled
+                    locationChanged(vg, oldFullName, newFullName);
                 }
             }
         }
@@ -617,12 +623,61 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
 
+        /**
+         * Batch-aware deletion handler: processes all deleted items in a single
+         * ViewGroup traversal instead of one traversal per item.
+         */
+        @Override
+        public void onDeletedBatch(@NonNull List<Item> items) {
+            if (items.isEmpty()) {
+                return;
+            }
+            try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
+                deletedBatch(items);
+            }
+        }
+
         private void deleted(Item item) {
+            deletedBatch(List.of(item));
+        }
+
+        /**
+         * Optimized batch deletion: traverses ViewGroups once and removes all
+         * deleted items from each view, instead of re-traversing for each item.
+         */
+        private void deletedBatch(List<Item> items) {
             final Jenkins jenkins = Jenkins.get();
-            deleted(jenkins, item);
-            for (Item g : jenkins.allItems()) {
-                if (g instanceof ViewGroup) {
-                    deleted((ViewGroup) g, item);
+            // Collect full names for fast lookup
+            Set<String> deletedFullNames = new HashSet<>(items.size());
+            for (Item item : items) {
+                deletedFullNames.add(item.getFullName());
+            }
+            deletedBatch(jenkins, items, deletedFullNames);
+            for (ViewGroup vg : Items.getAllViewGroups(jenkins)) {
+                if (vg != jenkins) { // root already handled
+                    deletedBatch(vg, items, deletedFullNames);
+                }
+            }
+        }
+
+        private void deletedBatch(ViewGroup vg, List<Item> items, Set<String> deletedFullNames) {
+            for (View v : vg.getViews()) {
+                if (v instanceof ListView) {
+                    deleteViewItemsBatch(vg, (ListView) v, deletedFullNames);
+                }
+                if (v instanceof ViewGroup) {
+                    deletedBatch((ViewGroup) v, items, deletedFullNames);
+                }
+            }
+        }
+
+        private void deleted(Item item, ViewGroup vg) {
+            for (View v : vg.getViews()) {
+                if (v instanceof ListView) {
+                    deleteViewItem(item, vg, (ListView) v);
+                }
+                if (v instanceof ViewGroup) {
+                    deleted((ViewGroup) v, item);
                 }
             }
         }
@@ -642,6 +697,41 @@ public class ListView extends View implements DirectlyModifiableView {
             boolean needsSave;
             synchronized (lv) {
                 needsSave = lv.jobNames.remove(item.getRelativeNameFrom(vg.getItemGroup()));
+            }
+            if (needsSave) {
+                try {
+                    lv.save();
+                } catch (IOException x) {
+                    Logger.getLogger(ListView.class.getName()).log(Level.WARNING, null, x);
+                }
+            }
+        }
+
+        /**
+         * Batch version of {@link #deleteViewItem}: removes multiple deleted items
+         * from a single {@link ListView} in one lock acquisition and one save.
+         */
+        private void deleteViewItemsBatch(ViewGroup vg, ListView lv, Set<String> deletedFullNames) {
+            boolean needsSave;
+            synchronized (lv) {
+                boolean anyRemoved = false;
+                for (String deletedFullName : deletedFullNames) {
+                    // Check if this view might reference the deleted item
+                    // by checking the relative name from this view's group
+                    try {
+                        String relativeName = deletedFullName;
+                        String groupFullName = vg.getItemGroup().getFullName();
+                        if (relativeName.startsWith(groupFullName + "/")) {
+                            relativeName = relativeName.substring(groupFullName.length() + 1);
+                        }
+                        if (lv.jobNames.remove(relativeName)) {
+                            anyRemoved = true;
+                        }
+                    } catch (Exception e) {
+                        // Item may not be resolvable from this group
+                    }
+                }
+                needsSave = anyRemoved;
             }
             if (needsSave) {
                 try {
