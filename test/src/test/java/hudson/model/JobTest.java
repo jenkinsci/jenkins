@@ -49,6 +49,7 @@ import java.io.UncheckedIOException;
 import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -197,19 +198,30 @@ class JobTest {
 
         CountDownLatch monitorHeld = new CountDownLatch(1);
         CountDownLatch queueLockHeld = new CountDownLatch(1);
+        AtomicReference<Boolean> monitorHolderAcquiredQueueLock = new AtomicReference<>();
+        AtomicReference<Throwable> monitorHolderError = new AtomicReference<>();
 
         Thread monitorHolder = new Thread(() -> {
             synchronized (p) {
                 monitorHeld.countDown();
                 try {
                     queueLockHeld.await();
-                    Queue.runWithLock(() -> { }); // needs Queue#lock while still holding the monitor
+                    // Bounded, not Queue#runWithLock: on an actual regression this lets the thread
+                    // give up and release the project monitor rather than block forever holding
+                    // Queue#lock on a daemon thread nothing else interrupts -- which would otherwise
+                    // make Jenkins' own teardown (e.g. Queue#save, which also needs Queue#lock) hang
+                    // instead of this test reporting a clean failure.
+                    monitorHolderAcquiredQueueLock.set(Queue.tryWithLock(() -> { }, Duration.ofSeconds(3)));
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
+                } catch (Throwable t) {
+                    monitorHolderError.set(t);
                 }
             }
         }, "simulated monitor-holder for " + p.getName());
 
+        AtomicReference<FreeStyleBuild> createdBuild = new AtomicReference<>();
+        AtomicReference<Throwable> buildCreatorError = new AtomicReference<>();
         Thread buildCreator = new Thread(() ->
             Queue.callWithLock(() -> { // what Executor#run does to grab Queue#lock
                 queueLockHeld.countDown();
@@ -220,10 +232,11 @@ class JobTest {
                     return null;
                 }
                 try {
-                    return p.newBuild();
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
+                    createdBuild.set(p.newBuild());
+                } catch (Throwable t) {
+                    buildCreatorError.set(t);
                 }
+                return null;
             }), "simulated Executor building " + p.getName());
 
         buildCreator.setDaemon(true);
@@ -232,8 +245,8 @@ class JobTest {
         buildCreator.start();
         monitorHolder.start();
 
-        monitorHolder.join(3000);
-        buildCreator.join(3000);
+        monitorHolder.join(4000);
+        buildCreator.join(4000);
 
         if (monitorHolder.isAlive() || buildCreator.isAlive()) {
             long[] deadlocked = ManagementFactory.getThreadMXBean().findDeadlockedThreads();
@@ -243,6 +256,20 @@ class JobTest {
             System.err.println(message);
             fail(message);
         }
+
+        // A thrown exception on either worker thread terminates it quietly (daemon threads don't
+        // surface uncaught exceptions to the test) -- without these checks, newBuild() failing for
+        // an unrelated reason would make both threads exit and this test pass without ever having
+        // proven the two sides don't deadlock.
+        if (buildCreatorError.get() != null) {
+            throw new AssertionError("Build creation failed", buildCreatorError.get());
+        }
+        if (monitorHolderError.get() != null) {
+            throw new AssertionError("Monitor holder failed", monitorHolderError.get());
+        }
+        assertNotNull(createdBuild.get(), "Build should have been created.");
+        assertEquals(Boolean.TRUE, monitorHolderAcquiredQueueLock.get(),
+                "Monitor holder should have acquired Queue#lock within the bounded wait.");
     }
 
     @Test

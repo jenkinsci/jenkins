@@ -194,7 +194,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * <p>Lock order: {@link AbstractItem#renameTo} takes this inside the job's own monitor (see
      * {@link #getRenameLock}), so code holding this lock must never acquire the job's or its parent's
      * monitor, nor {@link Queue#lock}.
+     *
+     * <p>{@code @XStreamNotDeserializable} even though {@code RobustReflectionConverter} already
+     * refuses by default to deserialize into any {@code Object}-typed field (it would throw rather
+     * than replace this instance, unless the site has opted into the {@code ALLOW_ALL_OBJECT_FIELDS}
+     * escape hatch): that default-refusal depends on a system property staying at its default, so
+     * this annotation is a second, independent line of defense -- consistent with the two counters
+     * below, which need it for the more direct reason that they aren't Object-typed and so have no
+     * such built-in refusal at all.
      */
+    @XStreamNotDeserializable
     private transient volatile Object nextBuildNumberLock = new Object();
 
     /**
