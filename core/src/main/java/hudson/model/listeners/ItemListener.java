@@ -235,6 +235,7 @@ public class ItemListener implements ExtensionPoint {
         Listeners.notify(ItemListener.class, false, l -> l.onDeleted(item));
     }
 
+
     /**
      * Calls {@link #onRenamed} and {@link #onLocationChanged} as appropriate.
      * @param rootItem the topmost item whose location has just changed
