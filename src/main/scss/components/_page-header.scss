@@ -12,6 +12,47 @@
   min-height: var(--header-height);
   color: var(--header-color);
 
+  @media (width < 740px) {
+    --header-corner-radius: 1.5rem;
+    --header-shape:
+      linear-gradient(#000 0 0) top / 100%
+        calc(100% - var(--header-corner-radius)) no-repeat,
+      radial-gradient(
+          circle farthest-side at 100% 100%,
+          transparent 99%,
+          #000 100%
+        )
+        bottom left / var(--header-corner-radius) var(--header-corner-radius)
+        no-repeat,
+      radial-gradient(
+          circle farthest-side at 0 100%,
+          transparent 99%,
+          #000 100%
+        )
+        bottom right / var(--header-corner-radius) var(--header-corner-radius)
+        no-repeat;
+
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0 0 calc(var(--header-corner-radius) * -1);
+      pointer-events: none;
+      mask: var(--header-shape);
+    }
+
+    &::before {
+      background: var(--header-background);
+      z-index: -1;
+    }
+
+    &::after {
+      translate: 0 var(--jenkins-border-width);
+      background: var(--jenkins-border-color);
+      z-index: -2;
+    }
+  }
+
   .app-jenkins-logo {
     @include mixins.item($border: false);
 
