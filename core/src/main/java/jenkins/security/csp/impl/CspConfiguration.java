@@ -57,7 +57,7 @@ import org.kohsuke.stapler.verb.POST;
 public class CspConfiguration extends GlobalConfiguration implements PersistentDescriptor {
 
     /**
-     * Package-private to allow setting by {@link CspRecommendation} without saving.
+     * Package-private to allow reading by {@link CspRecommendation}.
      * Also exposes the "unconfigured" state as {@code null}, unlike the public getter used by Jelly.
      */
     protected Boolean enforce;
@@ -71,7 +71,7 @@ public class CspConfiguration extends GlobalConfiguration implements PersistentD
     }
 
     public boolean isEnforce() {
-        return enforce != null && enforce;
+        return enforce == null || enforce;
     }
 
     @DataBoundSetter
@@ -102,19 +102,8 @@ public class CspConfiguration extends GlobalConfiguration implements PersistentD
         if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
             return FormValidation.ok();
         }
-        if (!getConfigFile().exists()) {
-            // The configuration has not been saved yet
-            if (enforce) {
-                if (ResourceDomainConfiguration.isResourceDomainConfigured()) {
-                    return FormValidation.ok(Messages.CspConfiguration_UndefinedToTrueWithResourceDomain());
-                }
-                return FormValidation.okWithMarkup(Messages.CspConfiguration_UndefinedToTrueWithoutResourceDomain(Jenkins.get().getRootUrlFromRequest()));
-            }
-            // Warning because we're here just after the admin confirmed they wanted to set it up.
-            return FormValidation.warning(Messages.CspConfiguration_UndefinedToFalse());
-        }
         if (enforce && !ResourceDomainConfiguration.isResourceDomainConfigured()) {
-            if (ExtensionList.lookupSingleton(CspConfiguration.class).isEnforce()) {
+            if (isEnforce()) {
                 return FormValidation.warningWithMarkup(Messages.CspConfiguration_TrueToTrueWithoutResourceDomain(Jenkins.get().getRootUrlFromRequest()));
             }
             return FormValidation.okWithMarkup(Messages.CspConfiguration_FalseToTrueWithoutResourceDomain(Jenkins.get().getRootUrlFromRequest()));
@@ -144,12 +133,8 @@ public class CspConfiguration extends GlobalConfiguration implements PersistentD
 
         @Override
         public Optional<CspHeader> decide() {
-            Boolean enforce = ExtensionList.lookupSingleton(CspConfiguration.class).enforce;
+            boolean enforce = ExtensionList.lookupSingleton(CspConfiguration.class).isEnforce();
 
-            if (enforce == null) {
-                // If no configuration is present, use FallbackDecider to show initial UI
-                return Optional.empty();
-            }
             if (enforce) {
                 return Optional.of(CspHeader.ContentSecurityPolicy);
             }
