@@ -57,7 +57,7 @@ import org.kohsuke.stapler.verb.POST;
 public class CspConfiguration extends GlobalConfiguration implements PersistentDescriptor {
 
     /**
-     * Package-private to allow reading by {@link CspRecommendation}.
+     * Protected to allow reading by {@link CspRecommendation}.
      * Also exposes the "unconfigured" state as {@code null}, unlike the public getter used by Jelly.
      */
     protected Boolean enforce;
