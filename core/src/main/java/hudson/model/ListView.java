@@ -570,12 +570,17 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
 
+        /**
+         * Instead of iterating all items via {@code jenkins.allItems()} (which performs
+         * a per-item ACL check and visits every leaf job), use the targeted
+         * {@link Items#getAllViewGroups} traversal that only visits container groups.
+         */
         private void locationChanged(String oldFullName, String newFullName) {
             final Jenkins jenkins = Jenkins.get();
             locationChanged(jenkins, oldFullName, newFullName);
-            for (Item g : jenkins.allItems()) {
-                if (g instanceof ViewGroup) {
-                    locationChanged((ViewGroup) g, oldFullName, newFullName);
+            for (ViewGroup vg : Items.getAllViewGroups(jenkins)) {
+                if (vg != jenkins) {
+                    locationChanged(vg, oldFullName, newFullName);
                 }
             }
         }
@@ -601,7 +606,7 @@ public class ListView extends View implements DirectlyModifiableView {
                 }
                 needsSave = !oldJobNames.equals(lv.jobNames);
             }
-            if (needsSave) { // do not hold ListView lock at the time
+            if (needsSave) {
                 try {
                     lv.save();
                 } catch (IOException x) {
@@ -617,12 +622,16 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
 
+        /**
+         * Uses {@link Items#getAllViewGroups} instead of {@code jenkins.allItems()}
+         * to avoid the O(N) full-item scan.
+         */
         private void deleted(Item item) {
             final Jenkins jenkins = Jenkins.get();
             deleted(jenkins, item);
-            for (Item g : jenkins.allItems()) {
-                if (g instanceof ViewGroup) {
-                    deleted((ViewGroup) g, item);
+            for (ViewGroup vg : Items.getAllViewGroups(jenkins)) {
+                if (vg != jenkins) {
+                    deleted(vg, item);
                 }
             }
         }
