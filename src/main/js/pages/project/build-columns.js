@@ -118,7 +118,8 @@ export function layoutBuildColumns(container) {
     rows[0].clientWidth - (actions ? actions.getBoundingClientRect().width : 0);
 
   // Show columns in order for as long as they fit at their smallest
-  const [first, ...rest] = columns;
+  const first = columns[0];
+  const rest = columns.slice(1);
   first.visible = true;
   let used = first.width;
   let full = false;
