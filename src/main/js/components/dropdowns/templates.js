@@ -273,7 +273,7 @@ function tryOnKeyPressEvent(element, opt) {
  * If scripts have been provided with the menu item, load them
  */
 function tryLoadScripts(element, opt, context) {
-  if (!opt.event || !opt.event.attributes || !opt.event.javascriptUrl) {
+  if (!opt.event || !opt.event.attributes) {
     return;
   }
 
@@ -286,6 +286,10 @@ function tryLoadScripts(element, opt, context) {
 
   // Dialog URLs should open relative to the context path, not the base URL
   element.dataset.dialogUrl = context + element.dataset.dialogUrl;
+
+  if (!opt.event.javascriptUrl) {
+    return;
+  }
 
   loadScriptIfNotLoaded(opt.event.javascriptUrl, element);
 }
