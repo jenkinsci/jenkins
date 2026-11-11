@@ -46,15 +46,15 @@ THE SOFTWARE.
               <h1>${it.object.displayName}</h1>
               <div class="app-build__navigation">
                 <l:run-navigation-button href="${buildUrl.previousBuildUrl}"
-                                         menu="${rootURL}/${it.object.url}previousBuildsMenu?rest=${h.urlEncode(buildUrl.rest)}"
+                                         menu="${rootURL}/${buildUrl.run.url}previousBuildsMenu?rest=${h.urlEncode(buildUrl.rest)}"
                                          label="${%Previous build}"
                                          icon="symbol-arrow-left"
-                                         disabled="${it.object.previousBuild == null}" />
+                                         disabled="${buildUrl.run.previousBuild == null}" />
                 <l:run-navigation-button href="${buildUrl.nextBuildUrl}"
-                                         menu="${rootURL}/${it.object.url}nextBuildsMenu?rest=${h.urlEncode(buildUrl.rest)}"
+                                         menu="${rootURL}/${buildUrl.run.url}nextBuildsMenu?rest=${h.urlEncode(buildUrl.rest)}"
                                          label="${%Next build}"
                                          icon="symbol-arrow-right"
-                                         disabled="${it.object.nextBuild == null}" />
+                                         disabled="${buildUrl.run.nextBuild == null}" />
               </div>
             </div>
 

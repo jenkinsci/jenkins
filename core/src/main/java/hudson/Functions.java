@@ -510,6 +510,11 @@ public class Functions {
         }
 
         @Restricted(NoExternalUse.class)
+        public Run getRun() {
+            return run;
+        }
+
+        @Restricted(NoExternalUse.class)
         public String getRest() {
             return rest;
         }
