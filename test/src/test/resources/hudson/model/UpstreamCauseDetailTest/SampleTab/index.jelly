@@ -1,0 +1,8 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <l:layout title="${it.displayName}">
+    <l:main-panel>
+      <l:details-bar it="${it.object}" />
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

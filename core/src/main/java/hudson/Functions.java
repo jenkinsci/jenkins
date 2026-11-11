@@ -168,6 +168,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.SimplePageDecorator;
+import jenkins.model.Tab;
 import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DetailGroup;
@@ -534,6 +535,34 @@ public class Functions {
             else {
                 return head + n.getNumber() + rest;
             }
+        }
+
+        /**
+         * Returns the URL of another run, relative to the context path, on the {@link Tab} the current page shows
+         * when that run has the same tab, and the run's own page otherwise.
+         * Links between related runs, such as to an upstream build, then keep the user on the view they are using.
+         *
+         * @param other the run to link to
+         * @return a URL relative to the context path, without a leading slash
+         * @since TODO
+         */
+        public @NonNull String getSameTabUrl(@NonNull Run<?, ?> other) {
+            String tab = getTabUrlName();
+            if (tab != null) {
+                for (Action action : other.getAllActions()) {
+                    if (action instanceof Tab && tab.equals(action.getUrlName())) {
+                        return other.getUrl() + tab + '/';
+                    }
+                }
+            }
+            return other.getUrl();
+        }
+
+        private @CheckForNull String getTabUrlName() {
+            String path = rest.replaceFirst("^/+", "");
+            int slash = path.indexOf('/');
+            String segment = slash < 0 ? path : path.substring(0, slash);
+            return segment.isEmpty() ? null : segment;
         }
     }
 
