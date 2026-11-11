@@ -62,11 +62,19 @@ function init() {
     );
   });
 
+  const mobileViewport = window.matchMedia("(width < 740px)");
+  mobileViewport.addEventListener("change", ({ matches }) => {
+    if (!matches && document.querySelector("#side-panel")) {
+      setExpanded(false);
+    }
+  });
+
   document.addEventListener(
     "click",
     (event) => {
       const sidebar = document.querySelector("#side-panel");
       if (
+        !mobileViewport.matches ||
         !sidebar?.classList.contains(EXPANDED_CLASS) ||
         sidebar.contains(event.target) ||
         event.target.closest(".app-side-panel-toggle")
