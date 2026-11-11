@@ -28,22 +28,20 @@ THE SOFTWARE.
     <st:redirect url="setOfflineCause"/>
   </j:if>
 
-  <l:layout title="${%title(it.displayName)}">
-    <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Mark offline}" />
-    <l:main-panel>
-      <l:hasPermission permission="${it.DISCONNECT}">
-        <h2>${%title(it.displayName)}</h2>
+  <l:agent-subpage title="${%Mark offline}" agent="${it}">
+    <l:userExperimentalFlag var="newAgentPage" flagClassName="jenkins.model.experimentalflags.NewAgentPageUserExperimentalFlag" />
+
+    <l:app-bar title="${newAgentPage ? '%Take Offline' : '%title(it.displayName)'}"/>
+    <l:hasPermission permission="${it.DISCONNECT}">
+      <p>
+        ${%blurb}
+      </p>
+      <form method="post" action="toggleOffline">
+        <f:textarea name="offlineMessage" />
         <p>
-          ${%blurb}
+          <f:submit value="${%submit}"  />
         </p>
-        <form method="post" action="toggleOffline">
-          <f:textarea name="offlineMessage" />
-          <p>
-            <f:submit value="${%submit}"  />
-          </p>
-        </form>
-      </l:hasPermission>
-    </l:main-panel>
-  </l:layout>
+      </form>
+    </l:hasPermission>
+  </l:agent-subpage>
 </j:jelly>
