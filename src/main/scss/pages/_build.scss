@@ -1,3 +1,4 @@
+@use "../abstracts/mixins";
 @use "../base/breakpoints";
 @use "../components/cards";
 @use "../components/dialogs";
@@ -164,7 +165,6 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 0.5rem 1.5rem;
   min-height: var(--header-height);
   background-color: color-mix(
     in oklch,
@@ -180,14 +180,18 @@
   border-top-left-radius: var(--form-input-border-radius);
   border-top-right-radius: var(--form-input-border-radius);
 
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    backdrop-filter: blur(15px);
-    border-radius: inherit;
+  @media (width >= 740px) {
+    gap: 0.5rem 1.5rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      backdrop-filter: blur(15px);
+      border-radius: inherit;
+    }
   }
 
   @supports (animation-timeline: scroll()) {
@@ -204,8 +208,9 @@
     display: flex;
     flex-direction: column;
     align-items: start;
-    padding-block: var(--section-padding);
+    padding-block: calc((var(--section-padding) / 2) + 0.125rem);
     top: 0;
+    background-color: transparent;
   }
 
   .app-build-bar__content {
@@ -213,6 +218,7 @@
     align-items: center;
     justify-content: start;
     min-height: 38px;
+    grid-column: 1;
   }
 
   .app-build-bar__tabs {
@@ -220,6 +226,35 @@
     align-items: center;
     justify-content: center;
     margin-block: 0.5rem;
+    grid-column: 2;
+
+    @media (width < 740px) {
+      @include mixins.overlay-surface($opacity: 75%);
+
+      position: fixed;
+      bottom: calc(var(--section-padding) / 2);
+      left: 50%;
+      translate: -50% 0;
+      max-width: calc(100% - (var(--section-padding) * 2) + 0.25rem);
+      border-radius: 100px;
+      overflow: hidden;
+
+      .app-build-tabs {
+        overflow-x: auto;
+        justify-content: start;
+        flex-wrap: nowrap;
+        min-width: 0;
+        padding: 0.25rem;
+
+        &::before {
+          display: none;
+        }
+      }
+
+      &:empty {
+        display: none;
+      }
+    }
   }
 
   .app-build-bar__controls {
@@ -227,10 +262,28 @@
     align-items: center;
     justify-content: end;
     flex: 1;
+    grid-column: 3;
     gap: 0.5rem;
 
-    @media (width <= 600px) {
+    .jenkins-jumplist-link {
+      flex: none;
+    }
+
+    @media (width < 740px) {
       justify-content: stretch;
+      flex-wrap: wrap;
+      width: 100%;
+      margin: 0.75rem 0 0.25rem;
+
+      & > * {
+        flex-grow: 1;
+        flex-basis: 0;
+      }
+
+      .jenkins-button:first-child {
+        width: 100%;
+        flex-basis: auto !important;
+      }
     }
   }
 }
@@ -246,12 +299,15 @@
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
-    margin-left: -0.25rem;
 
     svg {
-      width: 2rem;
-      height: 2rem;
+      width: 1.875rem;
+      height: 1.875rem;
       flex-shrink: 0;
+
+      @media (width >= 740px) {
+        margin-left: -0.25rem;
+      }
     }
   }
 
@@ -302,6 +358,12 @@
 
 .app-page-body__contents:has(.app-build-bar) {
   padding-top: 0;
+
+  @media (width < 740px) {
+    &:has(.app-build-bar__tabs:not(:empty)) {
+      padding-bottom: calc(var(--section-padding) + 3.125rem);
+    }
+  }
 }
 
 .app-build-content {

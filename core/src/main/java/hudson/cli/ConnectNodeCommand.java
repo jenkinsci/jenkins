@@ -42,7 +42,7 @@ import org.kohsuke.args4j.Option;
 public class ConnectNodeCommand extends CLICommand {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    @Argument(metaVar = "NAME", usage = "Agent name, or empty string for built-in node; comma-separated list is supported", required = true, multiValued = true)
+    @Argument(metaVar = "NAME", usage = "Agent name, or empty string for built-in node", required = true, multiValued = true)
     private List<String> nodes;
 
     @Option(name = "-f", usage = "Cancel any currently pending connect operation and retry from scratch")
