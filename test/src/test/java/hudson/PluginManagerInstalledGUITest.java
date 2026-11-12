@@ -24,7 +24,9 @@
 
 package hudson;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -59,7 +61,7 @@ class PluginManagerInstalledGUITest {
             .addPlugins("plugins/dependee-0.0.2.hpi", "plugins/depender-0.0.2.hpi", "plugins/mandatory-depender-0.0.2.hpi")
             .addSyntheticPlugin(new RealJenkinsExtension.SyntheticPlugin(Marker.class.getPackage()).shortName("detached-test"));
 
-    @Issue("JENKINS-33843")
+    @Issue({"JENKINS-33843", "JENKINS-69347"})
     @Test
     void test_enable_disable_uninstall() throws Throwable {
         rjr.then(j -> {
@@ -201,6 +203,7 @@ class PluginManagerInstalledGUITest {
         }
 
         public void assertEnabledStateChangeable() {
+            assertNotEquals("none", enableTogglePointerEvents(), "The enable toggle of plugin '" + getId() + "' cannot be clicked.");
             if (!hasDependents() && !hasDisabledDependency() && !allDependentsDisabled()) {
                 return;
             }
@@ -212,6 +215,7 @@ class PluginManagerInstalledGUITest {
         }
 
         public void assertEnabledStateNotChangeable() {
+            assertEquals("none", enableTogglePointerEvents(), "The enable toggle of plugin '" + getId() + "' can be clicked.");
             if (hasDependents() && !hasDisabledDependency() && !allDependentsDisabled()) {
                 return;
             }
@@ -236,6 +240,13 @@ class PluginManagerInstalledGUITest {
 
         public void assertHasNoDependents() {
             assertFalse(hasDependents(), "Plugin '" + getId() + "' is expected to have no dependents.");
+        }
+
+        /** The row classes only describe the intended state; the stylesheet decides whether the toggle takes clicks. */
+        private String enableTogglePointerEvents() {
+            HtmlPage page = (HtmlPage) pluginRow.getPage();
+            return page.executeJavaScript("getComputedStyle(document.querySelector('tr[data-plugin-id=\"" + getId()
+                    + "\"] .enable .jenkins-toggle-switch label')).pointerEvents").getJavaScriptResult().toString();
         }
 
         private boolean hasClassName(String className) {
