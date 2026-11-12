@@ -79,6 +79,7 @@ import jenkins.security.NonePasswordComplexityRule;
 import jenkins.security.PasswordComplexityException;
 import jenkins.security.PasswordComplexityRule;
 import jenkins.security.SecurityListener;
+import jenkins.security.XStreamDeserializable;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
@@ -397,7 +398,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public synchronized void doCreateFirstAccount(StaplerRequest2 req, StaplerResponse2 rsp)
             throws IOException, ServletException {
 
-        if (hasSomeUser()) {
+        if (!Jenkins.get().getInstallState().isSetupComplete() || hasSomeUser()) {
             rsp.sendError(SC_UNAUTHORIZED, "First user was already created");
             return;
         }
@@ -703,6 +704,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          * but now marked transient so field is no longer saved.
          */
         @Deprecated
+        @XStreamDeserializable
         private transient String password;
 
         private Details(String passwordHash) {
@@ -1262,7 +1264,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         private boolean needsToCreateFirstUser() {
             return !hasSomeUser()
-                && Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
+                    && Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm
+                    && Jenkins.get().getInstallState().isSetupComplete();
         }
 
         @Override

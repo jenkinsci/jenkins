@@ -76,7 +76,6 @@ import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
-import org.jvnet.hudson.test.recipes.LocalData;
 
 @Tag("SmokeTest")
 @WithJenkins
@@ -170,13 +169,6 @@ class ComputerTest {
         j.configRoundtrip(agent);
         agent = (DumbSlave) j.jenkins.getNode(agent.getNodeName());
         assertThat(agent.getTemporaryOfflineCause(), equalTo(offlineCause));
-    }
-
-    @Test
-    @LocalData
-    void removeUserDetailsFromOfflineCause() throws Exception {
-        Computer computer = j.jenkins.getComputer("deserialized");
-        verifyOfflineCause(computer);
     }
 
     private void verifyOfflineCause(Computer computer) throws Exception {

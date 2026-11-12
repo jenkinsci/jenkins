@@ -339,6 +339,12 @@ class DoActionFilterTest extends StaplerAbstractTest {
             public void validateCrumb(StaplerRequest2 request, String submittedCrumb) {
                 // no exception thrown = validated
             }
+
+            @Override
+            public String getCrumbExpression() {
+                // intentionally invalid JS expression to cause error on evaluation if ever used
+                return "unused";
+            }
         });
 
 

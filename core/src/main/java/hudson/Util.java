@@ -96,14 +96,12 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.HexFormat;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.SimpleTimeZone;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -121,7 +119,6 @@ import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.PathRemover;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
@@ -1338,9 +1335,42 @@ public class Util {
     }
 
     /**
+     * Creates a symlink to targetPath at baseDir+symlinkPath; throws {@link IOException} on failure.
+     * No-op if an identical symlink already exists.
+     * <p>
+     *
+     * @param baseDir
+     *      Base directory to resolve the 'symlinkPath' parameter.
+     * @param targetPath
+     *      The file that the symlink should point to. Usually relative to the directory of the symlink but may instead be an absolute path.
+     * @param symlinkPath
+     *      Where to create a symlink in (relative to {@code baseDir})
+     */
+    @Restricted(NoExternalUse.class)
+    static void createSymlinkStrict(@NonNull File baseDir, @NonNull String targetPath,
+            @NonNull String symlinkPath, @NonNull TaskListener listener) throws IOException {
+        File fileForSymlink = new File(baseDir, symlinkPath);
+        Path pathForSymlink = fileToPath(fileForSymlink);
+        Path target = Paths.get(targetPath, MemoryReductionUtil.EMPTY_STRING_ARRAY);
+
+        if (Files.isSymbolicLink(pathForSymlink) && Files.readSymbolicLink(pathForSymlink).equals(target)) {
+            return;
+        }
+
+        try {
+            Files.createSymbolicLink(pathForSymlink, target);
+        } catch (IOException e) {
+            listener.error("Failed to create symlink " + pathForSymlink + " -> " + target);
+            throw e;
+        }
+    }
+
+    /**
      * Creates a symlink to targetPath at baseDir+symlinkPath.
      * <p>
      * If there's a prior symlink at baseDir+symlinkPath, it will be overwritten.
+     * <p>
+     * Prefer {@link #createSymlinkStrict(File, String, String, TaskListener)} for new call sites.
      *
      * @param baseDir
      *      Base directory to resolve the 'symlinkPath' parameter.
@@ -1935,22 +1965,8 @@ public class Util {
                 "<!--%n", Functions.htmlAttributeEscape(redirectUrl), message);
     }
 
-    /**
-     * @deprecated use {@link #XS_DATETIME_FORMATTER2}
-     */
-    @Deprecated
-    public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'", new SimpleTimeZone(0, "GMT"));
-
     public static final DateTimeFormatter XS_DATETIME_FORMATTER2 =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC);
-
-    // Note: RFC822 dates must not be localized!
-    /**
-     * @deprecated use {@link DateTimeFormatter#RFC_1123_DATE_TIME}
-     */
-    @Deprecated
-    public static final FastDateFormat RFC822_DATETIME_FORMATTER
-            = FastDateFormat.getInstance("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 
     private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 

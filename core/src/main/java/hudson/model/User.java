@@ -82,16 +82,20 @@ import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
+import jenkins.widgets.BuildListTable;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.GET;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -124,7 +128,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Loadable, Saveable, Comparable<User>, ModelObjectWithContextMenu, StaplerProxy {
+public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Loadable, Saveable, Comparable<User>, ModelObjectWithContextMenu, StaplerProxy, PersistenceRoot {
 
     public static final XStream2 XSTREAM = new XStream2();
     private static final Logger LOGGER = Logger.getLogger(User.class.getName());
@@ -718,7 +722,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             or greater issues in the realm change, could affect currently logged
             in users and even the user making the change. */
         try {
-            var subdirectories = getRootDir().listFiles();
+            var subdirectories = getUsersDirectory().listFiles();
             if (subdirectories != null) {
                 for (var oldDirectory : subdirectories) {
                     var dirName = oldDirectory.getName();
@@ -782,8 +786,21 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(List.class)
     public @NonNull RunList getBuilds() {
-        return RunList.fromJobs((Iterable) Jenkins.get().
-                allItems(Job.class)).filter((Predicate<Run<?, ?>>) this::relatedTo);
+        return allBuilds().filter((Predicate<Run<?, ?>>) this::relatedTo);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static RunList<Run<?, ?>> allBuilds() {
+        return RunList.fromJobs((Iterable) Jenkins.get().allItems(Job.class));
+    }
+
+    /**
+     * Serves a page of {@link #getBuilds()} as JSON for {@code buildListTable.jelly}.
+     */
+    @GET
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doBuildList(@QueryParameter String olderThan, @QueryParameter String limit) {
+        return new BuildListTable().serve(allBuilds(), this::relatedTo, olderThan, limit);
     }
 
     /**
@@ -834,8 +851,12 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Gets the directory where Hudson stores user information.
      */
-    static File getRootDir() {
+    static File getUsersDirectory() {
         return new File(Jenkins.get().getRootDir(), "users");
+    }
+
+    public File getRootDir() {
+        return getUserFolderFor(id);
     }
 
     private static final int PREFIX_MAX = 14;
@@ -850,7 +871,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "sanitized")
     static File getUserFolderFor(String id) {
-        return new File(getRootDir(), getUserFolderNameFor(id));
+        return new File(getUsersDirectory(), getUserFolderNameFor(id));
     }
 
     /**
@@ -1118,7 +1139,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             DIRNAMES.createMac(); // force the key to be saved during startup
             var instance = getInstance();
             instance.migrateUserIdMapper();
-            var subdirectories = getRootDir().listFiles();
+            var subdirectories = getUsersDirectory().listFiles();
             if (subdirectories == null) {
                 return;
             }

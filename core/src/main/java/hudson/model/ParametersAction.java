@@ -29,7 +29,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Util;
-import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Queue.QueueAction;
 import hudson.model.labels.LabelAssignmentAction;
 import hudson.model.queue.SubTask;
@@ -49,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.RunAction2;
 import jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag;
+import jenkins.security.XStreamNotDeserializable;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -90,13 +90,18 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     private List<String> parameterDefinitionNames;
 
-    /**
-     * @deprecated since 1.283; kept to avoid warnings loading old build data, but now transient.
-     */
-    @Deprecated
-    private transient AbstractBuild<?, ?> build;
-
+    @XStreamNotDeserializable
     private transient Run<?, ?> run;
+
+    /**
+     * Returns the {@link Run} this action is attached to, or {@code null} before being attached to a {@link Run}.
+     * Note that this can be non-{@code null} while being accessed from a {@link hudson.model.Queue.Item}.
+     */
+    @Restricted(NoExternalUse.class) // Jelly
+    @CheckForNull
+    public Run<?, ?> getRun() {
+        return run;
+    }
 
     public ParametersAction(@NonNull List<ParameterValue> parameters) {
         this.parameters = new ArrayList<>(parameters);
@@ -298,8 +303,6 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         if (parameters == null) { // JENKINS-39495
             parameters = Collections.emptyList();
         }
-        if (build != null)
-            OldDataMonitor.report(build, "1.283");
         if (safeParameters == null) {
             safeParameters = Collections.emptySet();
         }

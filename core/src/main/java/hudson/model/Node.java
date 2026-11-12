@@ -69,6 +69,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.model.Nodes;
+import jenkins.security.XStreamNotDeserializable;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
@@ -116,8 +117,10 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Newly copied agents get this flag set, so that Jenkins doesn't try to start/remove this node until its configuration
      * is saved once.
      */
+    @XStreamNotDeserializable
     protected transient volatile boolean holdOffLaunchUntilSave;
 
+    @XStreamNotDeserializable
     private transient Nodes parent;
 
     @Override

@@ -86,6 +86,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.tasks.UserAvatarResolver;
 import hudson.util.Area;
+import hudson.util.FormApply;
 import hudson.util.FormValidation.CheckMethod;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
@@ -217,6 +218,11 @@ public class Functions {
     public Functions() {
     }
 
+    @Restricted(NoExternalUse.class)
+    public @CheckForNull FormApply.Notification getFormApplyNotification() {
+        return FormApply.getAndClearNotification(Stapler.getCurrentRequest2());
+    }
+
     /**
      * Generates an unique ID.
      */
@@ -234,6 +240,16 @@ public class Functions {
 
     public static boolean isModelWithChildren(Object o) {
         return o instanceof ModelObjectWithChildren;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static boolean isInstanceOf(Object o, String className) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            return clazz.isInstance(o);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     @Deprecated
@@ -493,6 +509,16 @@ public class Functions {
             return base;
         }
 
+        @Restricted(NoExternalUse.class)
+        public Run getRun() {
+            return run;
+        }
+
+        @Restricted(NoExternalUse.class)
+        public String getRest() {
+            return rest;
+        }
+
         /**
          * Returns the same page in the next build.
          */
@@ -582,7 +608,8 @@ public class Functions {
         String[] oldParts = prior == null ? new String[4] : logRecordPreformat(prior);
         String[] newParts = logRecordPreformat(r);
         for (int i = 0; i < /* not 4 */3; i++) {
-            newParts[i] = "<span class='" + (newParts[i].equals(oldParts[i]) ? "logrecord-metadata-old" : "logrecord-metadata-new") + "'>" + newParts[i] + "</span>";
+            String cls = newParts[i].equals(oldParts[i]) ? "logrecord-metadata-old" : "logrecord-metadata-new";
+            newParts[i] = "<span class='" + cls + "'>" + Util.xmlEscape(newParts[i]) + "</span>";
         }
         newParts[3] = Util.xmlEscape(newParts[3]);
         return newParts;
@@ -2071,6 +2098,56 @@ public class Functions {
     }
 
     /**
+     * Returns {@code true} if the current page is the page referenced by the given absolute {@code href}, or any
+     * page below it. The comparison is done on complete path segments, i.e., {@code /job/x/1/coverage} matches
+     * {@code /job/x/1/coverage/} and {@code /job/x/1/coverage/overview/}, but not {@code /job/x/1/coverage-jacoco/}.
+     * Query parameters of the current request are ignored.
+     *
+     * <p>
+     * Used in {@code tabs.jelly} to highlight a tab while one of its subpages is shown. In contrast to
+     * {@link #hyperlinkMatchesCurrentPage(String)} the given {@code href} must be an absolute path (including the
+     * context path), e.g., {@code /jenkins/job/x/1/coverage}.
+     *
+     * @param href
+     *         the absolute path of the link to check
+     *
+     * @return {@code true} if the current page is the referenced page or one of its children, {@code false} otherwise
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean hyperlinkMatchesCurrentPageOrChild(String href) {
+        if (href == null || href.isEmpty()) {
+            return false;
+        }
+        String uri = Stapler.getCurrentRequest2().getRequestURI();
+        if (uri == null) {
+            return false;
+        }
+        String current = removeTrailingSlashes(decodePath(uri));
+        String link = removeTrailingSlashes(decodePath(href));
+        if (link.isEmpty()) {
+            return false;
+        }
+        return current.equals(link) || current.startsWith(link + "/");
+    }
+
+    /**
+     * Decodes the given URL path. In contrast to {@link URLDecoder#decode(String, java.nio.charset.Charset)}, which
+     * decodes {@code application/x-www-form-urlencoded} content, a literal {@code +} is preserved since it has no
+     * special meaning in a URL path.
+     */
+    private static String decodePath(String path) {
+        return URLDecoder.decode(path.replace("+", "%2B"), StandardCharsets.UTF_8);
+    }
+
+    private static String removeTrailingSlashes(String path) {
+        int end = path.length();
+        while (end > 0 && path.charAt(end - 1) == '/') {
+            end--;
+        }
+        return path.substring(0, end);
+    }
+
+    /**
      * If the given {@code Action} is a {@link RootAction#isPrimaryAction() primary} {@code RootAction}, or a parent of the current page, return {@code true}.
      * Used in {@code actions.jelly} to decide if the action should shown in the main header or the hamburger.
      */
@@ -2704,6 +2781,16 @@ public class Functions {
      */
     @Restricted(NoExternalUse.class)
     public static Map<DetailGroup, List<Detail>> getDetailsFor(Actionable object) {
+        return getDetailsFor(object, null);
+    }
+
+    /**
+     * @param context the view the details are rendered in, one of {@link Detail.Verbosity} (case-insensitive),
+     *                or {@code null} to include all details
+     */
+    @Restricted(NoExternalUse.class)
+    public static Map<DetailGroup, List<Detail>> getDetailsFor(Actionable object, @CheckForNull String context) {
+        Detail.Verbosity verbosity = context == null || context.isEmpty() ? null : Detail.Verbosity.valueOf(context.toUpperCase(Locale.ROOT));
         ExtensionList<DetailGroup> groupsExtensionList = ExtensionList.lookup(DetailGroup.class);
         List<ExtensionComponent<DetailGroup>> components = groupsExtensionList.getComponents();
         Map<String, Double> detailGroupOrdinal = components.stream()
@@ -2715,7 +2802,9 @@ public class Functions {
         Map<DetailGroup, List<Detail>> result = new TreeMap<>(Comparator.comparingDouble(d -> detailGroupOrdinal.get(d.getClass().getName())));
         for (DetailFactory taf : DetailFactory.factoriesFor(object.getClass())) {
             List<Detail> details = taf.createFor(object);
-            details.forEach(e -> result.computeIfAbsent(e.getGroup(), k -> new ArrayList<>()).add(e));
+            details.stream()
+                    .filter(e -> e.getVerbosity().isVisibleIn(verbosity))
+                    .forEach(e -> result.computeIfAbsent(e.getGroup(), k -> new ArrayList<>()).add(e));
         }
 
         for (Map.Entry<DetailGroup, List<Detail>> entry : result.entrySet()) {

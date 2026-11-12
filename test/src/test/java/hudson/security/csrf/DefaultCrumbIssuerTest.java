@@ -265,6 +265,37 @@ class DefaultCrumbIssuerTest {
         r.submit(p.getFormByName("config"));
     }
 
+    @Issue("https://github.com/jenkinsci/jenkins/issues/27431")
+    @Test
+    void crumbUnderLegacyDotCrumbFieldNameIsRejected() throws Exception {
+        MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
+        authorizationStrategy.grant(Jenkins.ADMINISTER).everywhere().toEveryone();
+        r.jenkins.setAuthorizationStrategy(authorizationStrategy);
+
+        WebClient wc = r.createWebClient();
+        String responseForCrumb = wc.goTo("crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)", "text/plain")
+                .getWebResponse().getContentAsString();
+        // responseForCrumb = Jenkins-Crumb=xxxx
+        String crumb = responseForCrumb.substring(CrumbIssuer.DEFAULT_CRUMB_NAME.length() + "=".length());
+
+        // control: the same valid crumb under the configured field name is accepted
+        WebRequest accepted = createRequestForJobCreation("crumbConfiguredFieldName");
+        accepted.setAdditionalHeader(r.jenkins.getCrumbIssuer().getCrumbRequestField(), crumb);
+        wc.getPage(accepted);
+        assertNotNull(r.jenkins.getItem("crumbConfiguredFieldName"));
+
+        // the same valid crumb value under the obsolete ".crumb" field name is rejected
+        WebRequest rejected = createRequestForJobCreation("crumbLegacyFieldName");
+        rejected.setAdditionalHeader(".crumb", crumb);
+        FailingHttpStatusCodeException e = assertThrows(
+                FailingHttpStatusCodeException.class,
+                () -> wc.getPage(rejected),
+                "the obsolete \".crumb\" field name must not authenticate the request");
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
+        assertThat(e.getResponse().getContentAsString(), containsString("No valid crumb"));
+        assertNull(r.jenkins.getItem("crumbLegacyFieldName"));
+    }
+
     @Test
     @Issue("https://github.com/jenkinsci/jenkins/issues/18841")
     void adminMonitorShowsWhenSessionIsExcluded() {

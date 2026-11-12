@@ -53,6 +53,7 @@ function init() {
   }
 
   function updateSuggestions(e) {
+    const requestId = e.autoCompleteRequestId;
     const text = e.value.trim();
     const delimiter = e.getAttribute("autoCompleteDelimChar");
     const word = delimiter ? text.split(delimiter).reverse()[0].trim() : text;
@@ -87,7 +88,16 @@ function init() {
       body: parameters,
     })
       .then((rsp) => (rsp.ok ? rsp.json() : {}))
-      .then((response) => createAndShowDropdown(e, response.suggestions || []));
+      .then((response) => {
+        // Discard responses for an outdated value or once the field lost focus
+        if (
+          requestId !== e.autoCompleteRequestId ||
+          document.activeElement !== e
+        ) {
+          return;
+        }
+        createAndShowDropdown(e, response.suggestions || []);
+      });
   }
 
   behaviorShim.specify(
@@ -100,15 +110,24 @@ function init() {
       e.style.position = "relative";
       // otherwise menu won't hide on tab with nothing selected
       // needs delay as without that it blocks click selection of an item
-      e.addEventListener("focusout", () =>
-        setTimeout(() => e.dropdown && e.dropdown.hide(), 200),
-      );
-      e.addEventListener(
-        "input",
-        Utils.debounce(() => {
-          updateSuggestions(e);
-        }),
-      );
+      e.addEventListener("focusout", (event) => {
+        if (
+          event.relatedTarget &&
+          e.dropdown &&
+          e.dropdown.popper.contains(event.relatedTarget)
+        ) {
+          return;
+        }
+        setTimeout(() => e.dropdown && e.dropdown.hide(), 200);
+      });
+      const debouncedUpdateSuggestions = Utils.debounce(() => {
+        updateSuggestions(e);
+      });
+      e.addEventListener("input", () => {
+        // Invalidate pending responses right away, not after the debounce delay
+        e.autoCompleteRequestId = (e.autoCompleteRequestId || 0) + 1;
+        debouncedUpdateSuggestions();
+      });
     },
   );
 }

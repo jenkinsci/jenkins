@@ -58,7 +58,7 @@ public class UserIdMapper {
     @SuppressWarnings("deprecation")
     static void migrate() throws IOException {
         var idStrategy = User.idStrategy();
-        var usersDirectory = User.getRootDir();
+        var usersDirectory = User.getUsersDirectory();
         var data = new UserIdMapper();
         var mapperXml = new XmlFile(XSTREAM, new File(usersDirectory, "users.xml"));
         if (mapperXml.exists()) { // need to migrate

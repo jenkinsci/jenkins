@@ -1760,6 +1760,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
         // local constants
         private final int sizeOf_kinfo_proc;
+        // originally from https://github.com/jenkinsci/jenkins/commit/cbdbbf4619e2b4d44f0ae9d5474d185dd942fa25
         private static final int sizeOf_kinfo_proc_32 = 492; // on 32bit Mac OS X.
         private static final int sizeOf_kinfo_proc_64 = 648; // on 64bit Mac OS X.
         private final int kinfo_proc_pid_offset;

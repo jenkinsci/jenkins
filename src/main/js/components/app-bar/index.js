@@ -1,6 +1,7 @@
 import behaviorShim from "@/util/behavior-shim";
 import Utils from "@/components/dropdowns/utils";
 import Templates from "@/components/dropdowns/templates";
+import { xmlEscape } from "@/util/security";
 
 /**
  * Generates inline actions and an overflow menu if necessary.
@@ -15,11 +16,20 @@ function init() {
       const topLevelActions = Utils.mapChildrenItemsToDropdownItems(
         template.items,
       );
+      const compact = element.dataset.compact === "true";
 
       // Append top-level items next to the overflow menu
       topLevelActions.forEach((item, index) => {
-        // Only the first button in an app bar should have an icon
-        if (index > 0) {
+        if (compact) {
+          // Dense contexts such as list rows have no room for labels,
+          // so fall back to a tooltip and match the tertiary button styling
+          item.tooltip = xmlEscape(item.displayName);
+          item.displayName = "";
+          item.clazz = [item.clazz, "jenkins-button--tertiary"]
+            .filter(Boolean)
+            .join(" ");
+        } else if (index > 0) {
+          // Only the first button in an app bar should have an icon
           item.icon = null;
           item.iconXml = null;
         }

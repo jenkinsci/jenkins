@@ -30,7 +30,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.thoughtworks.xstream.XStream;
@@ -75,7 +75,7 @@ class ClassFilterImplTest {
 
     @Test
     void controllerToAgentBypassesWhitelist() throws Exception {
-        assumeTrue(ClassFilterImpl.WHITELISTED_CLASSES.stream().noneMatch(clazz -> clazz.equals(LinkedListMultimap.class.getName())));
+        assertTrue(ClassFilterImpl.WHITELISTED_CLASSES.stream().noneMatch(clazz -> clazz.equals(LinkedListMultimap.class.getName())));
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
         p.getBuildersList().add(new M2SBuilder());
@@ -112,7 +112,7 @@ class ClassFilterImplTest {
 
     @Test
     void agentToControllerRequiresWhitelist() throws Exception {
-        assumeTrue(ClassFilterImpl.WHITELISTED_CLASSES.stream().noneMatch(clazz -> clazz.equals(LinkedListMultimap.class.getName())));
+        assertTrue(ClassFilterImpl.WHITELISTED_CLASSES.stream().noneMatch(clazz -> clazz.equals(LinkedListMultimap.class.getName())));
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
         p.getBuildersList().add(new S2MBuilder());
@@ -145,7 +145,7 @@ class ClassFilterImplTest {
 
     @Test
     void xstreamRequiresWhitelist() throws Exception {
-        assumeTrue(ClassFilterImpl.WHITELISTED_CLASSES.stream().noneMatch(clazz -> clazz.equals(LinkedListMultimap.class.getName())));
+        assertTrue(ClassFilterImpl.WHITELISTED_CLASSES.stream().noneMatch(clazz -> clazz.equals(LinkedListMultimap.class.getName())));
         Config config = GlobalConfiguration.all().get(Config.class);
         config.save();
         config.obj = LinkedListMultimap.create();
@@ -173,6 +173,19 @@ class ClassFilterImplTest {
         protected XmlFile getConfigFile() {
             return super.getConfigFile();
         }
+    }
+
+    @Test
+    void throwableImplementingHttpResponseIsRejected() {
+        ClassFilterImpl filter = new ClassFilterImpl();
+        assertEquals(true, filter.isBlacklisted(hudson.util.FormFillFailure.class));
+        assertEquals(true, filter.isBlacklisted(org.kohsuke.stapler.HttpRedirect.class));
+    }
+
+    @Test
+    void plainThrowableIsAllowed() {
+        ClassFilterImpl filter = new ClassFilterImpl();
+        assertEquals(false, filter.isBlacklisted(IOException.class));
     }
 
 }

@@ -248,18 +248,29 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
             @Override
             public String issueCrumb(StaplerRequest2 request) {
                 CrumbIssuer ci = Jenkins.get().getCrumbIssuer();
-                return ci != null ? ci.getCrumb(request) : DEFAULT.issueCrumb(request);
+                return ci != null ? ci.getCrumb(request) : NONE.issueCrumb(request);
             }
 
             @Override
             public void validateCrumb(StaplerRequest2 request, String submittedCrumb) {
                 CrumbIssuer ci = Jenkins.get().getCrumbIssuer();
                 if (ci == null) {
-                    DEFAULT.validateCrumb(request, submittedCrumb);
+                    NONE.validateCrumb(request, submittedCrumb);
                 } else {
                     if (!ci.validateCrumb(request, ci.getDescriptor().getCrumbSalt(), submittedCrumb))
                         throw new SecurityException("Crumb didn't match");
                 }
+            }
+
+            @Override
+            public String getCrumbExpression() {
+                CrumbIssuer ci = Jenkins.get().getCrumbIssuer();
+                if (ci == null) {
+                    return NONE.getCrumbExpression();
+                } else {
+                    return "document.head.dataset.crumbValue";
+                }
+
             }
         });
     }

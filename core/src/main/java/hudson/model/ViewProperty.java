@@ -28,6 +28,7 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import jenkins.model.Jenkins;
+import jenkins.security.XStreamNotDeserializable;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -55,6 +56,7 @@ public class ViewProperty implements ReconfigurableDescribable<ViewProperty>, Ex
      * This value will be set by the core code.
      * Derived classes can expect this value to be always set.
      */
+    @XStreamNotDeserializable
     protected transient View view;
 
     /*package*/ final void setView(View view) {

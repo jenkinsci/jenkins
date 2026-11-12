@@ -318,7 +318,10 @@ var FormChecker = {
           x.text()
             .then((responseText) => {
               if (!(next.signal && next.signal.aborted)) {
-                updateValidationArea(next.target, responseText);
+                updateValidationArea(
+                  next.target,
+                  formatValidationResponse(x, responseText),
+                );
                 layoutUpdateCallback.call();
               }
             })
@@ -681,6 +684,13 @@ function fireEvent(element, event) {
 //========================================================
 // using tag names in CSS selector makes the processing faster
 
+function formatValidationResponse(response, responseText) {
+  // TODO Add i18n support
+  return response.ok
+    ? responseText
+    : `<div class="error">An internal error occurred during form field validation (HTTP ${response.status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
+}
+
 /**
  * Updates the validation area for a form element
  * @param {HTMLElement} validationArea The validation area for a given form element
@@ -778,12 +788,10 @@ function registerValidator(e) {
     FormChecker.sendRequest(this.targetUrl(), {
       method: method,
       onComplete: function (response) {
-        // TODO Add i18n support
         response.text().then((responseText) => {
-          const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${response.status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
           updateValidationArea(
             validationArea,
-            response.status === 200 ? responseText : errorMessage,
+            formatValidationResponse(response, responseText),
           );
         });
       },
@@ -2099,14 +2107,6 @@ function AutoScroller(scrollContainer) {
     return null;
   }
 
-  function isViewportScroller(scrollDiv) {
-    return (
-      scrollDiv === document.body ||
-      scrollDiv === document.documentElement ||
-      scrollDiv === document.scrollingElement
-    );
-  }
-
   return {
     bottomThreshold: 25,
     scrollContainer: scrollContainer,
@@ -2130,13 +2130,14 @@ function AutoScroller(scrollContainer) {
 
       // when used with the BODY tag, the height needs to be the viewport height, instead of
       // the element height.
-      const height = isViewportScroller(scrollDiv)
-        ? getViewportHeight()
-        : scrollDiv.clientHeight;
-      const scrollPos = isViewportScroller(scrollDiv)
-        ? Math.max(scrollDiv.scrollTop, document.documentElement.scrollTop)
-        : scrollDiv.scrollTop;
-      const diff = currentHeight - scrollPos - height;
+      //var height = ((scrollDiv.style.pixelHeight) ? scrollDiv.style.pixelHeight : scrollDiv.offsetHeight);
+      var height = getViewportHeight();
+      var scrollPos = Math.max(
+        scrollDiv.scrollTop,
+        document.documentElement.scrollTop,
+      );
+      var diff = currentHeight - scrollPos - height;
+      // window.alert("currentHeight=" + currentHeight + ",scrollTop=" + scrollDiv.scrollTop + ",height=" + height);
 
       return diff < this.bottomThreshold;
     },
@@ -2145,7 +2146,7 @@ function AutoScroller(scrollContainer) {
       var scrollDiv = this.scrollContainer;
       var currentHeight = this.getCurrentHeight();
 
-      if (isViewportScroller(scrollDiv)) {
+      if (scrollDiv === document.body) {
         window.scrollTo({
           top: currentHeight,
         });

@@ -32,6 +32,7 @@ import hudson.ExtensionList;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Computer;
+import hudson.model.Failure;
 import hudson.model.Node;
 import hudson.model.PersistenceRoot;
 import hudson.model.Queue;
@@ -282,6 +283,10 @@ public class Nodes implements PersistenceRoot {
         if (oldOne == nodes.get(oldOne.getNodeName())) {
             // use the queue lock until Nodes has a way of directly modifying a single node.
             Queue.runWithLock(() -> {
+                if (!newOne.getNodeName().equals(oldOne.getNodeName())
+                        && nodes.containsKey(newOne.getNodeName())) {
+                    throw new Failure("Node already exists: " + newOne.getNodeName());
+                }
                 Nodes.this.nodes.remove(oldOne.getNodeName());
                 Nodes.this.nodes.put(newOne.getNodeName(), newOne);
                 newOne.onLoad(Nodes.this, newOne.getNodeName());
@@ -403,10 +408,17 @@ public class Nodes implements PersistenceRoot {
 
     @CheckForNull
     public Node load(String name) {
+        if (ENFORCE_NAME_RESTRICTIONS) {
+            Jenkins.checkGoodName(name);
+        }
+
         try {
             XmlFile xmlFile = getConfigFile(name);
             if (xmlFile.exists()) {
                 Node n = (Node) xmlFile.read();
+                if (!name.equals(n.getNodeName())) {
+                    throw new IOException("Node name " + n.getNodeName() + " in " + xmlFile + " does not match " + name);
+                }
                 nodes.put(n.getNodeName(), n);
                 n.onLoad(this, n.getNodeName());
                 jenkins.updateNewComputer(n);

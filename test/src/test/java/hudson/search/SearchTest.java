@@ -348,6 +348,7 @@ public class SearchTest {
     @Test
     void testCompletionOutsideView() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo-bar");
+        p.setDisplayName("display-name-only");
         ListView v = new ListView("empty1", j.jenkins);
         ListView w = new ListView("empty2", j.jenkins);
         j.jenkins.addView(v);
@@ -360,6 +361,7 @@ public class SearchTest {
         assertFalse(j.jenkins.getPrimaryView().contains(p));
 
         assertTrue(suggest(j.jenkins.getSearchIndex(), "foo").contains(p));
+        assertTrue(suggest(j.jenkins.getSearchIndex(), "display-name").contains(p));
     }
 
     @Issue("SECURITY-385")
@@ -500,5 +502,20 @@ public class SearchTest {
         JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
         assertNotNull(jsonArray);
         return jsonArray;
+    }
+
+    @Issue("27210")
+    @Test
+    void testOpenSearchXml() throws Exception {
+        WebClient wc = j.createWebClient();
+        Page page = wc.goTo("opensearch.xml", "application/opensearchdescription+xml");
+        assertNotNull(page);
+        j.assertGoodStatus(page);
+
+        assertEquals("application/opensearchdescription+xml", page.getWebResponse().getContentType());
+
+        String content = page.getWebResponse().getContentAsString();
+        assertTrue(content.contains("xmlns:moz=\"http://www.mozilla.org/2006/browser/search/\""));
+        assertTrue(content.contains("<moz:SearchForm>"));
     }
 }
