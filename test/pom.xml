@@ -67,7 +67,7 @@ THE SOFTWARE.
         <!-- Required by workflow-support -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>caffeine-api</artifactId>
-        <version>3.3.0-210.v71b_2985ce530</version>
+        <version>3.3.1-214.v18eb_56b_34920</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -132,7 +132,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
-        <version>1413.v2ff1a_5e720fa_</version>
+        <version>1429.v7a_1b_efb_a_f7c5</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -143,7 +143,7 @@ THE SOFTWARE.
         <!-- Required by plugin-util-api -->
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-support</artifactId>
-        <version>1015.v785e5a_b_b_8b_22</version>
+        <version>1028.vc22910142650</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -232,7 +232,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.1106.v3a_d9a_6d2465e</version>
+      <version>6.1107.v31f8955765c8</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -280,6 +280,11 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-reporting</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -376,7 +381,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>483.v401c307fdd1b_</version>
+                  <version>496.v2b_52d8396f0c</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>

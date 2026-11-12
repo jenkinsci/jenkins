@@ -35,8 +35,16 @@ THE SOFTWARE.
   <j:if test="${items.size() gt 1}">
     <div class="app-build-tabs">
       <j:forEach var="tab" items="${items}">
+        <j:choose>
+          <j:when test="${tab.urlName == null}">
+            <j:set var="isCurrentTab" value="${h.hyperlinkMatchesCurrentPage(url)}" />
+          </j:when>
+          <j:otherwise>
+            <j:set var="isCurrentTab" value="${h.hyperlinkMatchesCurrentPageOrChild(url + '/' + tab.urlName)}" />
+          </j:otherwise>
+        </j:choose>
         <a href="${url}/${tab.urlName}"
-           class="jenkins-button ${h.hyperlinkMatchesCurrentPage(tab.urlName ?: url) ? '' : 'jenkins-button--tertiary'}">
+           class="jenkins-button ${isCurrentTab ? '' : 'jenkins-button--tertiary'}">
           <j:if test="${tab.iconFileName != null}">
             <l:icon src="${tab.iconFileName}" />
           </j:if>
