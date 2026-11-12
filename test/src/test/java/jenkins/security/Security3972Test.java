@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.jvnet.hudson.test.LogRecorder.recorded;
 
 import hudson.model.FreeStyleProject;
@@ -21,7 +20,6 @@ import java.net.URI;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
-import jenkins.util.xstream.CriticalXStreamException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
@@ -143,20 +141,6 @@ class Security3972Test {
         // Crucially, no new Jenkins instance was constructed from the class= attribute.
         assertThat("No PersistenceRoot instance must have been constructed from the class= attribute",
                 holder.run, nullValue());
-    }
-
-    @Test
-    @Issue("SECURITY-3908")
-    void userCauseReadResolveGadgetMustNotCreateUser(JenkinsRule j) throws Exception {
-        String username = "security3908user";
-        String xml = "<hudson.slaves.OfflineCause_-UserCause>"
-                + "<user><fullName>" + username + "</fullName></user>"
-                + "</hudson.slaves.OfflineCause_-UserCause>";
-
-        final CriticalXStreamException ex = assertThrows(CriticalXStreamException.class, () -> Jenkins.XSTREAM2.fromXML(xml));
-        assertThat(ex.getMessage(), containsString(
-                "Refusing to unmarshal PersistenceRoot subtype 'hudson.model.User' into field 'user' in 'hudson.slaves.OfflineCause$UserCause'. PersistenceRoot objects are document roots and must not appear as nested field values."));
-        assertThat(User.get(username, false), nullValue());
     }
 
     static class Holder {

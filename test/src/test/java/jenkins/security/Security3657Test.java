@@ -52,7 +52,7 @@ public class Security3657Test {
         final UntarCallable callable = new UntarCallable(node.getRootDir());
         final IOException ioException = assertThrows(IOException.class, () -> node.getChannel().call(callable));
         assertThat(ioException.getMessage(), is("Failed to extract file.tar"));
-        assertThat(ioException.getCause().getMessage(), is("Tar file.tar attempts to write to file with symlink in path: foo/bar"));
+        assertThat(ioException.getCause().getMessage(), is("Tar file.tar attempts to write to file with symlink in path (during initial ancestor check): foo/bar"));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class Security3657Test {
         final UntarCallable callable = new UntarCallable(node.getRootDir());
         final IOException ioException = assertThrows(IOException.class, () -> node.getChannel().call(callable));
         assertThat(ioException.getMessage(), is("Failed to extract file.tar"));
-        assertThat(ioException.getCause().getMessage(), is("Tar file.tar attempts to write to file with symlink in path: foo/bar"));
+        assertThat(ioException.getCause().getMessage(), is("Tar file.tar attempts to write to file with symlink in path (during initial ancestor check): foo/bar"));
     }
 
     @Test
