@@ -1209,7 +1209,7 @@ function helpButtonOnClick() {
             div.innerHTML =
               responseText +
               (from
-                ? "<div class='from-plugin'>" + escapeHTML(from) + "</div>"
+                ? "<div class='from-plugin'>" + from + "</div>"
                 : "");
 
             // Ensure links open in new window unless explicitly specified otherwise
