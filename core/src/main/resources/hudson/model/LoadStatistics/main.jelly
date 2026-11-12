@@ -41,10 +41,10 @@ THE SOFTWARE.
     </div>
   </f:entry>
 
-  <div class="js-load-graph"
-       data-graph-type="${type}" data-graph-parent-selector="#main-panel"
+  <div class="js-load-graph jenkins-load-graph"
+       data-graph-type="${type}"
        data-graph-base-url="${prefix?:'loadStatistics'}" data-graph-alt="${%Load statistics graph}">
-    <!-- The graph will be loaded dynamically by JS -->
+    <!-- The graph will be loaded dynamically by JS as an inline SVG -->
   </div>
   <noscript>
     <!-- The noscript alternative does not have the possibility to adjust the image to the available space -->

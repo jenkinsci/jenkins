@@ -24,6 +24,8 @@
 
 package hudson.model;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.Functions;
@@ -33,11 +35,15 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import javax.imageio.ImageIO;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.jfree.chart.JFreeChart;
 import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -82,5 +88,41 @@ class LoadStatisticsTest {
         } finally {
             tempFile.delete();
         }
+    }
+
+    @Test
+    void svg() throws Exception {
+        LoadStatistics ls = new LoadStatistics(0, 0) {
+            @Override
+            protected Iterable<Node> getNodes() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            protected boolean matches(Queue.Item item, SubTask subTask) {
+                throw new UnsupportedOperationException();
+            }
+        };
+
+        for (int i = 0; i < 50; i++) {
+            ls.onlineExecutors.update(4);
+            ls.busyExecutors.update(3);
+            ls.availableExecutors.update(1);
+            ls.queueLength.update(3);
+        }
+
+        String svg = ls.createTrendChart(TimeScale.SEC10).createSvg();
+
+        assertTrue(svg.startsWith("<svg"), svg);
+        // one line per plotted series
+        assertTrue(svg.contains("<polyline"), svg);
+        // theme-aware: colors reference CSS custom properties instead of baked-in values
+        assertTrue(svg.contains("var(--"), svg);
+
+        // the generated markup must be well-formed XML so it can be inlined into the DOM
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        Document doc = dbf.newDocumentBuilder().parse(new InputSource(new StringReader(svg)));
+        assertEquals("svg", doc.getDocumentElement().getLocalName());
     }
 }

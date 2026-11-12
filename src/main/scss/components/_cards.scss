@@ -153,3 +153,19 @@ $card-padding: 1rem;
   border-radius: var(--form-input-border-radius);
   max-width: 100%;
 }
+
+// Container for the inline, theme-aware load-statistics SVG. Unlike .jenkins-graph-card it does
+// not force a white background, so the chart adapts to the active theme; the SVG scales to the
+// container width via its viewBox.
+.jenkins-load-graph {
+  padding: 0.5rem;
+  border: var(--jenkins-border);
+  border-radius: var(--form-input-border-radius);
+  max-width: 100%;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}
