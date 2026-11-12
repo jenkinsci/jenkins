@@ -694,10 +694,10 @@ class PluginManagerTest {
     @Issue("JENKINS-64840")
     void filteringMultipleTokens() throws Throwable {
         session.then(r -> {
-            assumeFalse(Functions.isWindows(), "TODO: Implement this test for Windows");
             PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
             sites.clear();
-            URL url = PluginManagerTest.class.getResource("/plugins/search-tokens-update-center.json");
+            // UpdateSite appends a query string, which cannot be read as a file URL on Windows.
+            URL url = new URL(r.getURL(), "searchTokensUpdateCenter/update-center.json");
             UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
             sites.add(site);
             assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
@@ -719,6 +719,28 @@ class PluginManagerTest {
             // but are returned, best match first, when nothing matches all of the words
             assertThat(searchResults(r, "build-token-root zzznomatch").get(0), is("build-token-root"));
         });
+    }
+
+    @TestExtension("filteringMultipleTokens")
+    public static final class SearchTokensUpdateCenter implements RootAction {
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @Override
+        public String getUrlName() {
+            return "searchTokensUpdateCenter";
+        }
+
+        public void doDynamic(StaplerRequest2 request, StaplerResponse2 response) throws ServletException, IOException {
+            response.serveFile(request, PluginManagerTest.class.getResource("/plugins/search-tokens-update-center.json"));
+        }
     }
 
     private static List<String> searchResults(JenkinsRule r, String query) throws Exception {
