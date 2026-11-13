@@ -25,7 +25,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     const timespanSelect = document.querySelector("#timespan-select");
     timespanSelect.addEventListener("change", () => {
-      const graphLocation = document.querySelector(".js-load-graph");
+      const graphLocation = document.querySelector(".jenkins-load-graph");
       if (graphLocation) {
         const type = timespanSelect.value;
         const baseUrl = graphLocation.getAttribute("data-graph-base-url");

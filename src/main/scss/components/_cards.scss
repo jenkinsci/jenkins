@@ -153,30 +153,3 @@ $card-padding: 1rem;
   border-radius: var(--form-input-border-radius);
   max-width: 100%;
 }
-
-// Container for an inline, theme-aware trend-graph SVG (load statistics, memory usage). Unlike
-// .jenkins-graph-card it does not force a white background, so the chart adapts to the active
-// theme; the SVG scales to the container width via its viewBox.
-.jenkins-trend-graph {
-  --jenkins-graph-font-size: 10;
-
-  padding: 0.5rem;
-  border: var(--jenkins-border);
-  border-radius: var(--form-input-border-radius);
-  max-width: 100%;
-
-  @media screen and (max-width: $tablet-breakpoint) {
-    --jenkins-graph-font-size: 14;
-  }
-
-  svg {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
-
-  .jenkins-load-graph__label {
-    font-size: var(--jenkins-graph-font-size, 10);
-    fill: var(--text-color);
-  }
-}
