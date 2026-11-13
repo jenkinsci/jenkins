@@ -29,7 +29,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
-import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
@@ -242,15 +241,6 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public ComputerLauncher getLauncher() {
-        if (launcher == null && agentCommand != null && !agentCommand.isEmpty()) {
-            try {
-                launcher = (ComputerLauncher) Jenkins.get().getPluginManager().uberClassLoader.loadClass("hudson.slaves.CommandLauncher").getConstructor(String.class, EnvVars.class).newInstance(agentCommand, null);
-                agentCommand = null;
-                save();
-            } catch (Exception x) {
-                LOGGER.log(Level.WARNING, "could not update historical agentCommand setting to CommandLauncher", x);
-            }
-        }
         return launcher == null ? new JNLPLauncher() : launcher;
     }
 
@@ -738,18 +728,6 @@ public abstract class Slave extends Node implements Serializable {
 
     }
 
-
-//
-// backward compatibility
-//
-    /**
-     * Command line to launch the agent, like
-     * "ssh myagent java -jar /path/to/hudson-remoting.jar"
-     * @deprecated in 1.216
-     */
-    @Deprecated
-    @XStreamDeserializable
-    private transient String agentCommand; // this was called 'agentCommand' from the beginning; not an accidental 2016 rename
 
     /**
      * Obtains the clock difference between this side and that side of the channel.

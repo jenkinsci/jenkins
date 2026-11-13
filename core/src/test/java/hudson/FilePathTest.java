@@ -25,7 +25,10 @@
 package hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -272,6 +275,7 @@ class FilePathTest {
     @Issue("JENKINS-9540")
     @Test
     void errorMessageInRemoteCopyRecursive() throws Exception {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Expensive to run and not Windows specific");
         File src = newFolder(temp, "src");
         File dst = newFolder(temp, "dst");
             FilePath from = new FilePath(src);
@@ -430,7 +434,7 @@ class FilePathTest {
         final File tarFile = new File(tmpDir, filePrefix + ".tar");
 
         file.setLength(fileSize);
-        assumeTrue(fileSize == file.length());
+        assertEquals(fileSize, file.length(), "fileSize != file.length() for '" + filePrefix + "'");
         file.close();
 
         // Compress archive
@@ -1296,5 +1300,27 @@ class FilePathTest {
             throw new IOException("Couldn't create folders " + root);
         }
         return result;
+    }
+
+    @Test
+    void ancestorSymlinkCheck() throws Exception {
+        assumeFalse(Functions.isWindows());
+        File base = new File(temp, "base").getAbsoluteFile();
+        File outside = new File(temp, "outside").getAbsoluteFile();
+        assertTrue(base.mkdirs());
+        assertTrue(outside.mkdirs());
+        File parent = new File(base, "subdir");
+        assertTrue(parent.mkdirs());
+        assertDoesNotThrow(() -> FilePath.requireNoSymlinkInAncestors(parent, base, "crafted.tar", "subdir/file1.txt", "during write"));
+
+        Files.delete(parent.toPath());
+        Files.createSymbolicLink(parent.toPath(), outside.toPath());
+        IOException e = assertThrows(IOException.class,
+                () -> FilePath.requireNoSymlinkInAncestors(parent, base, "crafted.tar", "subdir/file1.txt", "during write"));
+        assertThat(e.getMessage(), allOf(
+                containsString("Tar crafted.tar"),
+                containsString("attempts to write to file with symlink in path"),
+                containsString("(during write)"),
+                containsString("subdir/file1.txt")));
     }
 }

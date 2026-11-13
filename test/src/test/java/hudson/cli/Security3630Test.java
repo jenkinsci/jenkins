@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.jvnet.hudson.test.LoggerRule.recorded;
 
 import hudson.Functions;
@@ -80,6 +81,8 @@ public class Security3630Test {
 
     @Test
     void testConcurrentCliSessionPairing() throws InterruptedException, IOException {
+        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Expensive to run and not Windows specific");
+
         // This test simulates the Jenkins CLI full-duplex HTTP protocol natively using CLI._main.
         // It concurrently establishes 'download' and 'upload' connections
         // to verify that the FullDuplexHttpService's session map handles concurrent put/get
