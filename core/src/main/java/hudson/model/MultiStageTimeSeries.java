@@ -392,7 +392,7 @@ public class MultiStageTimeSeries implements Serializable {
                     points.append(fmt(x)).append(',').append(fmt(y));
                 }
                 buf.append("<polyline fill=\"none\" stroke=\"").append(cssColor(series.get(j).color))
-                   .append("\" stroke-width=\"2.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\" points=\"")
+                   .append("\" stroke-width=\"1\" stroke-linejoin=\"round\" stroke-linecap=\"round\" points=\"")
                    .append(points).append("\"/>");
             }
 
@@ -403,7 +403,7 @@ public class MultiStageTimeSeries implements Serializable {
                 String label = s.title.toString();
                 buf.append("<line x1=\"").append(fmt(lx)).append("\" y1=\"").append(fmt(ly))
                    .append("\" x2=\"").append(fmt(lx + 18)).append("\" y2=\"").append(fmt(ly))
-                   .append("\" stroke=\"").append(cssColor(s.color)).append("\" stroke-width=\"3\" stroke-linecap=\"round\"/>");
+                   .append("\" stroke=\"").append(cssColor(s.color)).append("\" stroke-width=\"1\" stroke-linecap=\"round\"/>");
                 buf.append("<text x=\"").append(fmt(lx + 24)).append("\" y=\"").append(fmt(ly + 4))
                    .append("\" font-size=\"11\" fill=\"var(--text-color)\">")
                    .append(Util.xmlEscape(label)).append("</text>");
