@@ -11,7 +11,7 @@ import java.util.Collections;
 /**
  * @deprecated Unused.
  */
-@Deprecated(since = "TODO")
+@Deprecated(since = "2.590")
 public abstract class AbstractTopLevelItem extends AbstractItem implements TopLevelItem {
     protected AbstractTopLevelItem(ItemGroup parent, String name) {
         super(parent, name);
