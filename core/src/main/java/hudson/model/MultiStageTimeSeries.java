@@ -317,7 +317,7 @@ public class MultiStageTimeSeries implements Serializable {
             // Keep the plot area roughly its original size (its bottom was at 344 when the chart was
             // 400 tall); the taller canvas devotes the extra height to the bottom margin, which holds
             // the x-axis labels. Those are rotated 90° and so extend downward and need the room.
-            final double plotBottom = 344;
+            final double plotBottom = 435;
             final double plotH = plotBottom - plotTop;
 
             // Gather the raw data (newest-first) and x-axis labels (oldest -> newest), mirroring createDataset().
@@ -375,13 +375,13 @@ public class MultiStageTimeSeries implements Serializable {
                    .append(formatYLabel(v)).append("</text>");
             }
 
-            // Draw the x-axis labels rotated 90° so long timestamps hang vertically below the axis
-            // instead of overflowing the right edge of the chart.
+            // Draw the x-axis labels rotated 90° (reading bottom-to-top) so long timestamps hang
+            // vertically below the axis instead of overflowing the right edge of the chart.
             for (int k = 0; k < len; k += labelStep) {
                 double x = len <= 1 ? plotLeft : plotLeft + plotW * k / (len - 1);
                 double y = plotBottom + 8;
                 buf.append("<text x=\"").append(fmt(x)).append("\" y=\"").append(fmt(y))
-                   .append("\" text-anchor=\"start\" dominant-baseline=\"central\" transform=\"rotate(90 ")
+                   .append("\" text-anchor=\"end\" dominant-baseline=\"central\" transform=\"rotate(-90 ")
                    .append(fmt(x)).append(' ').append(fmt(y))
                    .append(")\" class=\"jenkins-load-graph__label\">")
                    .append(Util.xmlEscape(labels[k])).append("</text>");
