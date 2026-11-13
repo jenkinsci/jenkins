@@ -509,6 +509,16 @@ public class Functions {
             return base;
         }
 
+        @Restricted(NoExternalUse.class)
+        public Run getRun() {
+            return run;
+        }
+
+        @Restricted(NoExternalUse.class)
+        public String getRest() {
+            return rest;
+        }
+
         /**
          * Returns the same page in the next build.
          */
