@@ -312,11 +312,9 @@ public class MultiStageTimeSeries implements Serializable {
             // Logical coordinate system; the on-screen size is controlled by CSS via the viewBox.
             final int width = 1000;
             final int height = 400;
-            final double plotLeft = 48;
             final double plotRight = width - 12;
             final double plotTop = 32;
             final double plotBottom = height - 56;
-            final double plotW = plotRight - plotLeft;
             final double plotH = plotBottom - plotTop;
 
             // Gather the raw data (newest-first) and x-axis labels (oldest -> newest), mirroring createDataset().
@@ -342,6 +340,14 @@ public class MultiStageTimeSeries implements Serializable {
             int yStep = Math.max(1, (int) Math.ceil(yMax / 5.0));
             yMax = ((yMax + yStep - 1) / yStep) * yStep;
 
+            // Size the left margin to fit the widest y-axis label, so large values (e.g. memory
+            // usage in KB) are not clipped.
+            int widestLabel = 0;
+            for (int v = 0; v <= yMax; v += yStep)
+                widestLabel = Math.max(widestLabel, formatYLabel(v).length());
+            double plotLeft = Math.max(48, widestLabel * 6.5 + 10);
+            double plotW = plotRight - plotLeft;
+
             StringBuilder buf = new StringBuilder();
             buf.append("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 ")
                .append(width).append(' ').append(height)
@@ -355,7 +361,7 @@ public class MultiStageTimeSeries implements Serializable {
                    .append("\" stroke=\"var(--text-color-secondary)\" stroke-opacity=\"0.25\" stroke-width=\"1\"/>");
                 buf.append("<text x=\"").append(fmt(plotLeft - 6)).append("\" y=\"").append(fmt(y + 4))
                    .append("\" text-anchor=\"end\" font-size=\"11\" fill=\"var(--text-color)\">")
-                   .append(v).append("</text>");
+                   .append(formatYLabel(v)).append("</text>");
             }
 
             // X-axis labels, thinned to roughly ten to avoid overlap.
@@ -410,6 +416,30 @@ public class MultiStageTimeSeries implements Serializable {
 
         private static String fmt(double d) {
             return String.format(Locale.ROOT, "%.1f", d);
+        }
+
+        /**
+         * Formats a y-axis tick value compactly so large magnitudes (e.g. memory usage in KB) stay
+         * short: values below 1000 are shown verbatim, larger ones use a k/M/G suffix with at most
+         * one decimal. Unit-agnostic — it compacts whatever unit the series already stores.
+         */
+        private static String formatYLabel(long v) {
+            if (v < 1000) return Long.toString(v);
+            String suffix;
+            double scaled;
+            if (v < 1_000_000) {
+                scaled = v / 1000.0;
+                suffix = "k";
+            } else if (v < 1_000_000_000) {
+                scaled = v / 1_000_000.0;
+                suffix = "M";
+            } else {
+                scaled = v / 1_000_000_000.0;
+                suffix = "G";
+            }
+            String s = String.format(Locale.ROOT, "%.1f", scaled);
+            if (s.endsWith(".0")) s = s.substring(0, s.length() - 2);
+            return s + suffix;
         }
 
         /**

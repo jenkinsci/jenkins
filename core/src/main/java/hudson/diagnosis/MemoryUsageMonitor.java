@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Monitors the memory usage of the system in OS specific way.
@@ -96,6 +97,20 @@ public final class MemoryUsageMonitor extends PeriodicWork {
         public TrendChart doGraph(@QueryParameter String type) throws IOException {
             Jenkins.get().checkAnyPermission(Jenkins.SYSTEM_READ, Jenkins.MANAGE);
             return MultiStageTimeSeries.createTrendChart(TimeScale.parse(type), used, max);
+        }
+
+        /**
+         * Renders the memory usage statistics graph as an inline, theme-aware SVG.
+         *
+         * <p>
+         * In contrast to {@link #doGraph(String)}, which serves a fixed-size PNG, this serves an SVG
+         * document meant to be embedded directly into the page DOM so that it picks up the active
+         * theme (via CSS custom properties) and rescales with its container.
+         */
+        public void doGraphSvg(StaplerResponse2 rsp, @QueryParameter String type) throws IOException {
+            Jenkins.get().checkAnyPermission(Jenkins.SYSTEM_READ, Jenkins.MANAGE);
+            rsp.setContentType("image/svg+xml;charset=UTF-8");
+            rsp.getWriter().write(MultiStageTimeSeries.createTrendChart(TimeScale.parse(type), used, max).createSvg());
         }
     }
 

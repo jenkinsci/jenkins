@@ -25,6 +25,7 @@
 package hudson.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
@@ -120,6 +121,42 @@ class LoadStatisticsTest {
         assertTrue(svg.contains("var(--"), svg);
 
         // the generated markup must be well-formed XML so it can be inlined into the DOM
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        Document doc = dbf.newDocumentBuilder().parse(new InputSource(new StringReader(svg)));
+        assertEquals("svg", doc.getDocumentElement().getLocalName());
+    }
+
+    @Test
+    void svgWithLargeValues() throws Exception {
+        // Mirrors the memory usage chart, whose values are large (KB). The y-axis labels must be
+        // compacted (k/M/G) rather than rendered as long raw integers that would clip.
+        LoadStatistics ls = new LoadStatistics(0, 0) {
+            @Override
+            protected Iterable<Node> getNodes() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            protected boolean matches(Queue.Item item, SubTask subTask) {
+                throw new UnsupportedOperationException();
+            }
+        };
+
+        for (int i = 0; i < 50; i++) {
+            ls.onlineExecutors.update(2_000_000);
+            ls.busyExecutors.update(1_500_000);
+            ls.availableExecutors.update(500_000);
+            ls.queueLength.update(250_000);
+        }
+
+        String svg = ls.createTrendChart(TimeScale.SEC10).createSvg();
+
+        // compact labels, not the raw integer
+        assertTrue(svg.contains("M</text>"), svg);
+        assertFalse(svg.contains("2000000</text>"), svg);
+
+        // still well-formed XML
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
         Document doc = dbf.newDocumentBuilder().parse(new InputSource(new StringReader(svg)));
