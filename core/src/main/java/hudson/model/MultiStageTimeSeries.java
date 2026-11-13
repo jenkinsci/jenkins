@@ -311,10 +311,13 @@ public class MultiStageTimeSeries implements Serializable {
         public String createSvg() {
             // Logical coordinate system; the on-screen size is controlled by CSS via the viewBox.
             final int width = 1000;
-            final int height = 400;
+            final int height = 500;
             final double plotRight = width - 12;
             final double plotTop = 32;
-            final double plotBottom = height - 56;
+            // Keep the plot area roughly its original size (its bottom was at 344 when the chart was
+            // 400 tall); the taller canvas devotes the extra height to the bottom margin, which holds
+            // the x-axis labels. Those are rotated 90° and so extend downward and need the room.
+            final double plotBottom = 344;
             final double plotH = plotBottom - plotTop;
 
             // Gather the raw data (newest-first) and x-axis labels (oldest -> newest), mirroring createDataset().
@@ -330,6 +333,11 @@ public class MultiStageTimeSeries implements Serializable {
                 dt = new Date(dt.getTime() + timeScale.tick);
                 labels[k] = format.format(dt);
             }
+
+            // X-axis labels, thinned to roughly twenty. Because they are drawn vertically (rotated
+            // 90°), adjacent labels no longer overlap horizontally the way wide horizontal text did,
+            // so the chart can afford more ticks than the ~10 that fit when labels were horizontal.
+            int labelStep = Math.max(1, (int) Math.ceil(len / 20.0));
 
             // Determine the y-axis range. Pick a "nice" step (1, 2 or 5 times a power of ten) so
             // the gridlines land on round numbers, then round the upper bound up to a multiple of
@@ -367,12 +375,15 @@ public class MultiStageTimeSeries implements Serializable {
                    .append(formatYLabel(v)).append("</text>");
             }
 
-            // X-axis labels, thinned to roughly ten to avoid overlap.
-            int labelStep = Math.max(1, (int) Math.ceil(len / 10.0));
+            // Draw the x-axis labels rotated 90° so long timestamps hang vertically below the axis
+            // instead of overflowing the right edge of the chart.
             for (int k = 0; k < len; k += labelStep) {
                 double x = len <= 1 ? plotLeft : plotLeft + plotW * k / (len - 1);
-                buf.append("<text x=\"").append(fmt(x)).append("\" y=\"").append(fmt(plotBottom + 16))
-                   .append("\" text-anchor=\"middle\" class=\"jenkins-load-graph__label\">")
+                double y = plotBottom + 8;
+                buf.append("<text x=\"").append(fmt(x)).append("\" y=\"").append(fmt(y))
+                   .append("\" text-anchor=\"start\" dominant-baseline=\"central\" transform=\"rotate(90 ")
+                   .append(fmt(x)).append(' ').append(fmt(y))
+                   .append(")\" class=\"jenkins-load-graph__label\">")
                    .append(Util.xmlEscape(labels[k])).append("</text>");
             }
 
