@@ -331,19 +331,22 @@ public class MultiStageTimeSeries implements Serializable {
                 labels[k] = format.format(dt);
             }
 
-            // Determine the y-axis range, rounded up to a "nice" integer grid (mirrors the integer tick units).
+            // Determine the y-axis range. Pick a "nice" step (1, 2 or 5 times a power of ten) so
+            // the gridlines land on round numbers, then round the upper bound up to a multiple of
+            // that step. Aiming for roughly ten gridlines gives finer resolution than a fixed
+            // division by five, and keeps large magnitudes (e.g. memory usage in KB) on readable
+            // increments such as 100k or 500k instead of awkward values like 209k.
             double maxValue = 0;
             for (float[] data : dataPoints)
                 for (float v : data)
                     if (v > maxValue) maxValue = v;
-            int yMax = Math.max(1, (int) Math.ceil(maxValue));
-            int yStep = Math.max(1, (int) Math.ceil(yMax / 5.0));
-            yMax = ((yMax + yStep - 1) / yStep) * yStep;
+            long yStep = niceStep(maxValue, 10);
+            long yMax = Math.max(yStep, (long) Math.ceil(maxValue / yStep) * yStep);
 
             // Size the left margin to fit the widest y-axis label, so large values (e.g. memory
             // usage in KB) are not clipped.
             int widestLabel = 0;
-            for (int v = 0; v <= yMax; v += yStep)
+            for (long v = 0; v <= yMax; v += yStep)
                 widestLabel = Math.max(widestLabel, formatYLabel(v).length());
             double plotLeft = Math.max(48, widestLabel * 6.5 + 10);
             double plotW = plotRight - plotLeft;
@@ -354,13 +357,13 @@ public class MultiStageTimeSeries implements Serializable {
                .append("\" preserveAspectRatio=\"xMidYMid meet\" role=\"img\" class=\"jenkins-load-graph__svg\">");
 
             // Range gridlines + y-axis tick labels.
-            for (int v = 0; v <= yMax; v += yStep) {
+            for (long v = 0; v <= yMax; v += yStep) {
                 double y = plotBottom - plotH * v / yMax;
                 buf.append("<line x1=\"").append(fmt(plotLeft)).append("\" y1=\"").append(fmt(y))
                    .append("\" x2=\"").append(fmt(plotRight)).append("\" y2=\"").append(fmt(y))
                    .append("\" stroke=\"var(--text-color-secondary)\" stroke-opacity=\"0.25\" stroke-width=\"1\"/>");
                 buf.append("<text x=\"").append(fmt(plotLeft - 6)).append("\" y=\"").append(fmt(y + 4))
-                   .append("\" text-anchor=\"end\" font-size=\"11\" fill=\"var(--text-color)\">")
+                   .append("\" text-anchor=\"end\" font-size=\"10\" fill=\"var(--text-color)\">")
                    .append(formatYLabel(v)).append("</text>");
             }
 
@@ -405,7 +408,7 @@ public class MultiStageTimeSeries implements Serializable {
                    .append("\" x2=\"").append(fmt(lx + 18)).append("\" y2=\"").append(fmt(ly))
                    .append("\" stroke=\"").append(cssColor(s.color)).append("\" stroke-width=\"1\" stroke-linecap=\"round\"/>");
                 buf.append("<text x=\"").append(fmt(lx + 24)).append("\" y=\"").append(fmt(ly + 4))
-                   .append("\" font-size=\"11\" fill=\"var(--text-color)\">")
+                   .append("\" font-size=\"10\" fill=\"var(--text-color)\">")
                    .append(Util.xmlEscape(label)).append("</text>");
                 lx += 24 + label.length() * 7.0 + 24;
             }
@@ -416,6 +419,31 @@ public class MultiStageTimeSeries implements Serializable {
 
         private static String fmt(double d) {
             return String.format(Locale.ROOT, "%.1f", d);
+        }
+
+        /**
+         * Picks a "nice" axis step: the value of the form 1, 2 or 5 times a power of ten closest to
+         * {@code range / targetTicks}, with a floor of 1 so the ticks stay whole numbers. This keeps
+         * gridlines on round increments (e.g. 100k or 500k for memory usage) while aiming for roughly
+         * {@code targetTicks} lines, giving finer resolution for small ranges (such as a handful of
+         * executors) and readable steps for large ones.
+         */
+        private static long niceStep(double range, int targetTicks) {
+            double raw = range / targetTicks;
+            if (raw <= 1) return 1;
+            double pow = Math.pow(10, Math.floor(Math.log10(raw)));
+            long best = Math.max(1, Math.round(pow));
+            double bestDist = Double.MAX_VALUE;
+            // Candidate multipliers span the current decade and the start of the next (…, 1, 2, 5, 10).
+            for (double mult : new double[] {1, 2, 5, 10}) {
+                double candidate = mult * pow;
+                double dist = Math.abs(candidate - raw);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    best = Math.max(1, Math.round(candidate));
+                }
+            }
+            return best;
         }
 
         /**
