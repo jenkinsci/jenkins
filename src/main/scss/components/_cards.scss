@@ -174,4 +174,9 @@ $card-padding: 1rem;
     width: 100%;
     height: auto;
   }
+
+  .jenkins-load-graph__label {
+    font-size: var(--jenkins-graph-font-size, 10);
+    fill: var(--text-color);
+  }
 }
