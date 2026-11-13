@@ -58,6 +58,7 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
@@ -431,6 +432,8 @@ public abstract class FormValidation extends IOException implements HttpResponse
         return ok();
     }
 
+    private static final Pattern WHITESPACE = Pattern.compile("\\s");
+
     /**
      * Makes sure that the given string is a base64 encoded text.
      *
@@ -452,7 +455,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
                 if (v.indexOf(' ') >= 0 || v.indexOf('\n') >= 0)
                     return error(errorMessage);
             }
-            v = allowWhitespace ? v.replaceAll("\\s", "") : v.trim();
+            v = allowWhitespace ? WHITESPACE.matcher(v).replaceAll("") : v.trim();
             if (!allowEmpty && v.isEmpty())
                 return error(errorMessage);
 
