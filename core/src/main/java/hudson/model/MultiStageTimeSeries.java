@@ -363,7 +363,7 @@ public class MultiStageTimeSeries implements Serializable {
                    .append("\" x2=\"").append(fmt(plotRight)).append("\" y2=\"").append(fmt(y))
                    .append("\" stroke=\"var(--text-color-secondary)\" stroke-opacity=\"0.25\" stroke-width=\"1\"/>");
                 buf.append("<text x=\"").append(fmt(plotLeft - 6)).append("\" y=\"").append(fmt(y + 4))
-                   .append("\" text-anchor=\"end\" font-size=\"10\" fill=\"var(--text-color)\">")
+                   .append("\" text-anchor=\"end\" style=\"font-size: var(--jenkins-graph-font-size, 10)\" fill=\"var(--text-color)\">")
                    .append(formatYLabel(v)).append("</text>");
             }
 
@@ -372,7 +372,7 @@ public class MultiStageTimeSeries implements Serializable {
             for (int k = 0; k < len; k += labelStep) {
                 double x = len <= 1 ? plotLeft : plotLeft + plotW * k / (len - 1);
                 buf.append("<text x=\"").append(fmt(x)).append("\" y=\"").append(fmt(plotBottom + 16))
-                   .append("\" text-anchor=\"middle\" font-size=\"10\" fill=\"var(--text-color)\">")
+                   .append("\" text-anchor=\"middle\" style=\"font-size: var(--jenkins-graph-font-size, 10)\" fill=\"var(--text-color)\">")
                    .append(Util.xmlEscape(labels[k])).append("</text>");
             }
 
@@ -408,7 +408,7 @@ public class MultiStageTimeSeries implements Serializable {
                    .append("\" x2=\"").append(fmt(lx + 18)).append("\" y2=\"").append(fmt(ly))
                    .append("\" stroke=\"").append(cssColor(s.color)).append("\" stroke-width=\"1\" stroke-linecap=\"round\"/>");
                 buf.append("<text x=\"").append(fmt(lx + 24)).append("\" y=\"").append(fmt(ly + 4))
-                   .append("\" font-size=\"10\" fill=\"var(--text-color)\">")
+                   .append("\" style=\"font-size: var(--jenkins-graph-font-size, 10)\" fill=\"var(--text-color)\">")
                    .append(Util.xmlEscape(label)).append("</text>");
                 lx += 24 + label.length() * 7.0 + 24;
             }
