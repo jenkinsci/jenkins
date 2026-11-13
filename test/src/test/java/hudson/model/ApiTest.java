@@ -30,12 +30,17 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.util.RunList;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import net.sf.json.JSONObject;
 import org.htmlunit.Page;
 import org.htmlunit.WebResponse;
@@ -46,6 +51,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.xml.sax.SAXException;
 
@@ -60,6 +66,56 @@ class ApiTest {
     @BeforeEach
     void setUp(JenkinsRule rule) {
         j = rule;
+    }
+
+    @Test
+    void interruptedBuildHistory() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
+        for (String range : List.of("", "{0,1}")) {
+            for (String flavor : List.of("json", "xml", "python")) {
+                WebResponse response = wc.goTo("interruptedBuildHistory/api/" + flavor + "?tree=allBuilds[number]" + range, null).getWebResponse();
+                assertEquals(503, response.getStatusCode());
+                assertEquals("text/plain", response.getContentType());
+                assertEquals("Resource-intensive request interrupted before a complete result could be produced.", response.getContentAsString());
+            }
+        }
+        assertEquals(200, wc.goTo("api/json?tree=nodeName", "application/json").getWebResponse().getStatusCode());
+    }
+
+    @TestExtension("interruptedBuildHistory")
+    public static class InterruptedBuildHistory implements RootAction {
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @Override
+        public String getUrlName() {
+            return "interruptedBuildHistory";
+        }
+
+        public Api getApi() {
+            return new Api(new InterruptedData());
+        }
+    }
+
+    @ExportedBean
+    public static class InterruptedData {
+        @Exported(name = "allBuilds")
+        public RunList<Run> getBuilds() {
+            AtomicInteger visited = new AtomicInteger();
+            return RunList.fromRuns(List.of(mock(Run.class), mock(Run.class))).filter((Predicate<Run>) run -> {
+                if (visited.incrementAndGet() == 2) {
+                    Thread.currentThread().interrupt();
+                }
+                return true;
+            });
+        }
     }
 
     @Test

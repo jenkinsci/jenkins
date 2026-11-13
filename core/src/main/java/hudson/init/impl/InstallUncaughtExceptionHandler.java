@@ -2,6 +2,7 @@ package hudson.init.impl;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.init.Initializer;
+import hudson.util.RunListInterruptedException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -45,7 +46,11 @@ public class InstallUncaughtExceptionHandler {
         }
     }
 
-    private static void handleException(Jenkins j, Throwable e, HttpServletRequest req, HttpServletResponse rsp, int code) throws IOException, ServletException {
+    static void handleException(Jenkins j, Throwable e, HttpServletRequest req, HttpServletResponse rsp, int code) throws IOException, ServletException {
+        if (isInterruptedRunList(e)) {
+            handleInterruptedRequest(e, req, rsp);
+            return;
+        }
         if (rsp.isCommitted()) {
             LOGGER.log(isEOFException(e) ? Level.FINE : Level.WARNING, null, e);
             return;
@@ -61,6 +66,29 @@ public class InstallUncaughtExceptionHandler {
             if (!Stapler.isSocketException(x)) {
                 throw x;
             }
+        }
+    }
+
+    private static boolean isInterruptedRunList(Throwable e) {
+        for (Throwable cause = e; cause != null; cause = cause.getCause()) {
+            if (cause instanceof RunListInterruptedException) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void handleInterruptedRequest(Throwable e, HttpServletRequest req, HttpServletResponse rsp) throws IOException {
+        LOGGER.log(Level.FINE, "Build history request interrupted", e);
+        if (rsp.isCommitted()) {
+            return;
+        }
+        rsp.resetBuffer();
+        rsp.setHeader("Content-Length", null);
+        rsp.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+        rsp.setContentType("text/plain;charset=UTF-8");
+        if (!"HEAD".equals(req.getMethod())) {
+            rsp.getWriter().write("Resource-intensive request interrupted before a complete result could be produced.");
         }
     }
 

@@ -25,11 +25,18 @@
 package hudson.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import hudson.model.Run;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -37,6 +44,51 @@ import org.jvnet.hudson.test.Issue;
  * @author Ignacio Albors
  */
 class RunListTest {
+
+    @Test
+    void sizeAndOldestBuildAreCachedOnlyAfterCompletion() {
+        Run newest = mock(Run.class);
+        Run oldest = mock(Run.class);
+        AtomicInteger visited = new AtomicInteger();
+        RunList<Run> runList = RunList.fromRuns(List.of(newest, oldest)).filter((Predicate<Run>) run -> {
+            if (visited.incrementAndGet() == 2) {
+                Thread.currentThread().interrupt();
+            }
+            return true;
+        });
+        List<Run> runs = runList;
+        try {
+            assertThrows(RunListInterruptedException.class, runs::size);
+            assertTrue(Thread.currentThread().isInterrupted());
+            assertNull(runList.getCachedFirstBuild());
+        } finally {
+            Thread.interrupted();
+        }
+        assertEquals(2, runs.size());
+        assertSame(oldest, runList.getCachedFirstBuild());
+        assertEquals(4, visited.get());
+        assertEquals(2, runs.size());
+        assertEquals(4, visited.get());
+    }
+
+    @Test
+    void sizeHonorsAnExistingInterrupt() {
+        List<Run> runs = RunList.fromRuns(List.of(mock(Run.class)));
+        try {
+            Thread.currentThread().interrupt();
+            assertThrows(RunListInterruptedException.class, runs::size);
+            assertTrue(Thread.currentThread().isInterrupted());
+        } finally {
+            Thread.interrupted();
+        }
+        assertEquals(1, runs.size());
+    }
+
+    @Test
+    void emptySize() {
+        List<Run> runs = new RunList<>();
+        assertEquals(0, runs.size());
+    }
 
     // RunList for byTimestamp tests
     private RunList rlist;
