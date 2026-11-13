@@ -616,7 +616,7 @@ class AbstractProjectTest {
          *   Permissions or other restrictions provided by plugins may prevent this job from running on those nodes.
          * </div>
          */
-        DomNodeList<DomNode> domNodes = htmlPage.getDocumentElement().querySelectorAll("*");
+        DomNodeList<DomNode> domNodes = htmlPage.getDocumentElement().querySelectorAll("*", htmlPage);
         assertThat(domNodes, hasSize(4));
         assertEquals("head", domNodes.get(0).getNodeName());
         assertEquals("body", domNodes.get(1).getNodeName());

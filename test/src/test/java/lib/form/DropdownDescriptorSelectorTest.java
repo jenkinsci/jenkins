@@ -51,11 +51,11 @@ class DropdownDescriptorSelectorTest {
         DomElement fruitBlock = p.querySelector("div[name='fruit']");
         assertNotNull(fruitBlock, "expected the dropdown block to be rendered");
 
-        assertNull(fruitBlock.querySelector("input[name='_.value']"),
+        assertNull(fruitBlock.querySelector("input[name='_.value']", fruitBlock),
                 "the lazily-loaded, non-selected descriptor fragment must not expose an editable 'value' field"
                         + " when readOnlyMode is true, even though test1.jelly's f:dropdownDescriptorSelector"
                         + " does not pass capture=\"readOnlyMode\"");
-        assertNotNull(fruitBlock.querySelector(".jenkins-not-applicable"),
+        assertNotNull(fruitBlock.querySelector(".jenkins-not-applicable", fruitBlock),
                 "read-only mode should instead render the standard N/A read-only placeholder");
     }
 

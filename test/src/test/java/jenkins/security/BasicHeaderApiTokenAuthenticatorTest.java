@@ -72,7 +72,7 @@ class BasicHeaderApiTokenAuthenticatorTest {
                     // and so the user is persisted
                     wc.login("user1");
                     HtmlPage page = wc.goTo("user/user1/security/");
-                    String tokenValue = ((HtmlTextInput) page.getDocumentElement().querySelector("#apiToken")).getText();
+                    String tokenValue = ((HtmlTextInput) page.getDocumentElement().querySelector("#apiToken", page)).getText();
                     token.set(tokenValue);
                 }
         });
@@ -120,7 +120,7 @@ class BasicHeaderApiTokenAuthenticatorTest {
                     JenkinsRule.WebClient wc = j.createWebClient();
                     wc.login("user1");
                     HtmlPage page = wc.goTo("user/user1/security/");
-                    String tokenValue = ((HtmlTextInput) page.getDocumentElement().querySelector("#apiToken")).getText();
+                    String tokenValue = ((HtmlTextInput) page.getDocumentElement().querySelector("#apiToken", page)).getText();
                     token.set(tokenValue);
                 }
         });

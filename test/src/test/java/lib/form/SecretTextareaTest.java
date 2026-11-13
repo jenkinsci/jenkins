@@ -118,7 +118,7 @@ class SecretTextareaTest {
     }
 
     private static void clickSecretUpdateButton(HtmlForm configForm) throws IOException {
-        ((HtmlElement) configForm.querySelector("button.secret-update-btn")).click();
+        ((HtmlElement) configForm.querySelector("button.secret-update-btn", configForm)).click();
     }
 
     private static String getHiddenSecretValue(HtmlForm configForm) {

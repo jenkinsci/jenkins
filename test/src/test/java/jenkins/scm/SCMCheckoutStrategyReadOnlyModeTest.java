@@ -65,10 +65,10 @@ class SCMCheckoutStrategyReadOnlyModeTest {
         DomElement strategyBlock = page.querySelector("div[name='scmCheckoutStrategy']");
         assertNotNull(strategyBlock, "expected the SCM Checkout Strategy dropdown block to be rendered");
 
-        assertNull(strategyBlock.querySelector("input[name='_.value']"),
+        assertNull(strategyBlock.querySelector("input[name='_.value']", strategyBlock),
                 "the lazily-loaded FieldSCMCheckoutStrategy fragment must not expose an editable 'value' field"
                         + " to a read-only (Item.EXTENDED_READ, no Item.CONFIGURE) viewer");
-        assertNotNull(strategyBlock.querySelector(".jenkins-not-applicable"),
+        assertNotNull(strategyBlock.querySelector(".jenkins-not-applicable", strategyBlock),
                 "the read-only viewer should instead see the field rendered as the standard N/A read-only placeholder");
     }
 

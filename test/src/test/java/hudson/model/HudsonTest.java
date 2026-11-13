@@ -156,7 +156,7 @@ class HudsonTest {
     void breadcrumb() throws Exception {
         HtmlPage root = j.createWebClient().goTo("");
         DomElement navbar = root.getElementById("breadcrumbs");
-        assertEquals(0, navbar.querySelectorAll(".jenkins-breadcrumbs__list-item").size());
+        assertEquals(0, navbar.querySelectorAll(".jenkins-breadcrumbs__list-item", navbar).size());
     }
 
     /**

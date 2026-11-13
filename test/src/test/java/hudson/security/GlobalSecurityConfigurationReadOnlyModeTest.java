@@ -63,10 +63,10 @@ class GlobalSecurityConfigurationReadOnlyModeTest {
         DomElement authorizationBlock = page.querySelector("div[name='authorizationStrategy']");
         assertNotNull(authorizationBlock, "expected the Authorization dropdown block to be rendered");
 
-        assertNull(authorizationBlock.querySelector("input[name='_.value']"),
+        assertNull(authorizationBlock.querySelector("input[name='_.value']", authorizationBlock),
                 "the lazily-loaded FieldAuthorizationStrategy fragment must not expose an editable 'value' field"
                         + " to a viewer with only Jenkins.SYSTEM_READ (no Jenkins.ADMINISTER)");
-        assertNotNull(authorizationBlock.querySelector(".jenkins-not-applicable"),
+        assertNotNull(authorizationBlock.querySelector(".jenkins-not-applicable", authorizationBlock),
                 "the read-only viewer should instead see the field rendered as the standard N/A read-only placeholder");
     }
 
