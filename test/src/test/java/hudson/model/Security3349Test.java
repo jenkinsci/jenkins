@@ -31,7 +31,7 @@ class Security3349Test {
 
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
         MockAuthorizationStrategy mockAuthorizationStrategy = new MockAuthorizationStrategy();
-        mockAuthorizationStrategy.grant(Jenkins.READ, View.READ).everywhere().to("user");
+        mockAuthorizationStrategy.grant(Jenkins.READ, View.EXTENDED_READ).everywhere().to("user");
         mockAuthorizationStrategy.grant(Jenkins.ADMINISTER).everywhere().to("admin");
         rule.jenkins.setAuthorizationStrategy(mockAuthorizationStrategy);
 
