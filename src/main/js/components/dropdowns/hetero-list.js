@@ -61,10 +61,10 @@ function generateButtons() {
     "repeatable",
     2,
     function (n) {
+      const chunk = n.closest(".repeated-chunk");
+      const container = chunk?.closest(".hetero-list-container");
       n.addEventListener("click", function () {
-        n = n.closest(".repeated-chunk");
-        if (n.classList.contains("hetero-list-chunk")) {
-          const container = n.closest(".hetero-list-container");
+        if (chunk?.classList.contains("hetero-list-chunk") && container) {
           updateTopButton(container);
         }
       });
@@ -185,7 +185,7 @@ function generateButtons() {
               let children = Array.from(c.children).filter(function (n) {
                 return n.classList.contains("repeated-chunk");
               });
-              c.insertBefore(nc, children[0]);
+              c.insertBefore(nc, children[0] || insertionPoint);
             } else {
               referenceNode.parentNode.insertBefore(nc, referenceNode);
             }
