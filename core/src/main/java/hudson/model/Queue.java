@@ -3056,7 +3056,7 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         private void periodic() {
-            long interval = 5000;
+            long interval = SystemProperties.getDuration(Queue.class.getName() + ".maintainInterval", Duration.ofMillis(5000L)).toMillis();
             Timer.get().scheduleWithFixedDelay(this, interval, interval, TimeUnit.MILLISECONDS);
         }
 
