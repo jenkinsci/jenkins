@@ -1,4 +1,5 @@
 @use "../abstracts/mixins";
+@use "../base/breakpoints";
 
 .jenkins-breadcrumbs {
   display: flex;
@@ -45,6 +46,10 @@
         @extend %breadcrumb-interactive-base;
 
         padding: 0 0.3125rem;
+
+        @media (max-width: breakpoints.$tablet-breakpoint) {
+          display: none;
+        }
       }
 
       & > a,
@@ -67,15 +72,23 @@
 
       // '/' separator between two items
       &::before {
-        content: "/";
+        content: "";
         position: relative;
+        width: 1rem;
+        height: 1.25rem;
         flex-shrink: 0;
-        color: color-mix(in sRGB, var(--text-color-secondary) 30%, transparent);
-        padding-left: 4px;
-        padding-right: 4px;
+        mask-size: contain;
+        mask-position: center;
+        mask-repeat: no-repeat;
+        mask-image: url("../images/svgs/mask-breadcrumbs__separator.svg");
+        background: color-mix(
+          in sRGB,
+          var(--text-color-secondary) 30%,
+          transparent
+        );
 
         @media (prefers-contrast: more) {
-          color: var(--text-color);
+          background: var(--text-color);
         }
       }
     }
