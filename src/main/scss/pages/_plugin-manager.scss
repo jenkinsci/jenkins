@@ -18,9 +18,12 @@
     background-color: var(--plugin-manager-bg-color-already-upgraded);
   }
 
-  tr.all-dependents-disabled .enable input,
-  tr.all-dependents-disabled .enable button,
-  tr.all-dependents-disabled .enable .jenkins-toggle-switch label {
+  tr.all-dependents-disabled:not(.has-disabled-dependency) .enable input,
+  tr.all-dependents-disabled:not(.has-disabled-dependency) .enable button,
+  tr.all-dependents-disabled:not(.has-disabled-dependency)
+    .enable
+    .jenkins-toggle-switch
+    label {
     pointer-events: auto !important;
     opacity: 1 !important;
     visibility: visible;
@@ -36,9 +39,12 @@
     opacity: 0.25;
   }
 
-  tr.has-dependents-but-disabled .enable input,
-  tr.has-dependents-but-disabled .enable button,
-  tr.has-dependents-but-disabled .enable .jenkins-toggle-switch label {
+  tr.has-dependents-but-disabled:not(.has-disabled-dependency) .enable input,
+  tr.has-dependents-but-disabled:not(.has-disabled-dependency) .enable button,
+  tr.has-dependents-but-disabled:not(.has-disabled-dependency)
+    .enable
+    .jenkins-toggle-switch
+    label {
     pointer-events: auto;
     opacity: 1;
     visibility: visible;
