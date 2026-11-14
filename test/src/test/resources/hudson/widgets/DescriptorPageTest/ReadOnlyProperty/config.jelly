@@ -1,0 +1,7 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+  <j:if test="${descriptor.readOnly}">
+    <j:set var="readOnlyMode" value="true"/>
+  </j:if>
+  <f:dropdownDescriptorSelector field="fruit" title="Fruit"/>
+</j:jelly>

@@ -1138,7 +1138,7 @@ function evalInnerHtmlScripts(text, callback) {
     var m = s.match(srcAttr);
     if (m) {
       q.push(function (cont) {
-        loadScript(m[1], cont);
+        loadAdjunctOnce(m[1], cont);
       });
     } else {
       q.push(function (cont) {
@@ -1150,6 +1150,54 @@ function evalInnerHtmlScripts(text, callback) {
   q.push(callback);
   sequencer(q);
 }
+
+/**
+ * Loads a script, unless it is an adjunct already on the page or already loaded, then continues once it has run.
+ * An adjunct runs once per page; content rendered on demand without a closure in the session (see
+ * hudson.widgets.DescriptorPage) does not know which adjuncts the page already has, and includes all it needs.
+ * The adjuncts on the page are those it had when it loaded: scripts inserted since with content are not run.
+ * Adjuncts are told apart by their path without the hash of the server that rendered them, which may be another.
+ */
+var adjunctLoads = new Map();
+function adjunctKey(src) {
+  var url = new URL(src, document.baseURI).href;
+  return url.includes("/adjuncts/")
+    ? url.replace(/\/adjuncts\/[^/]+\//, "/adjuncts/")
+    : null;
+}
+function loadAdjunctOnce(src, cont) {
+  var key = adjunctKey(src);
+  if (key === null) {
+    loadScript(src, cont);
+    return;
+  }
+  var load = adjunctLoads.get(key);
+  if (!load) {
+    load = new Promise(function (resolve, reject) {
+      loadScript(src, resolve, reject);
+    });
+    adjunctLoads.set(key, load);
+    // so that content rendered later tries again
+    load.catch(function () {
+      adjunctLoads.delete(key);
+      console.error("Failed to load " + src);
+    });
+  }
+  // the content is set up without an adjunct that failed to load, rather than never
+  load.then(cont, cont);
+}
+document.addEventListener("DOMContentLoaded", function (event) {
+  // not the events content rendered on demand dispatches, when it may have inserted scripts not run
+  if (event.target !== document) {
+    return;
+  }
+  Array.from(document.scripts).forEach(function (script) {
+    var key = script.src ? adjunctKey(script.src) : null;
+    if (key !== null && !adjunctLoads.has(key)) {
+      adjunctLoads.set(key, Promise.resolve());
+    }
+  });
+});
 
 /**
  * Take an array of (typically async) functions and run them in a sequence.
@@ -2640,9 +2688,11 @@ window.addEventListener("load", function () {
  *      The URL of the script to load.
  * @param callback
  *      If specified, this function will be invoked after the script is loaded.
+ * @param onError
+ *      If specified, this function will be invoked if the script fails to load.
  * @see http://stackoverflow.com/questions/4845762/onload-handler-for-script-tag-in-internet-explorer
  */
-function loadScript(href, callback) {
+function loadScript(href, callback, onError) {
   var head =
     document.getElementsByTagName("head")[0] || document.documentElement;
   var script = document.createElement("script");
@@ -2669,6 +2719,12 @@ function loadScript(href, callback) {
           head.removeChild(script);
         }
       }
+    };
+  }
+  if (onError) {
+    script.onerror = function () {
+      script.remove();
+      onError();
     };
   }
 

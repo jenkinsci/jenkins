@@ -44,6 +44,7 @@ import hudson.util.FormValidation.CheckMethod;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
 import hudson.views.ListViewColumn;
+import hudson.widgets.DescriptorPage;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -379,6 +380,17 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
      */
     public final String getDescriptorFullUrl() {
         return getCurrentDescriptorByNameUrl() + '/' + getDescriptorUrl();
+    }
+
+    /**
+     * Renders the configuration page of this descriptor for a new instance on demand, without keeping anything in the
+     * session.
+     *
+     * @see DescriptorPage
+     */
+    @Restricted(NoExternalUse.class)
+    public DescriptorPage getPage(String name) {
+        return DescriptorPage.of(this, name);
     }
 
     /**
