@@ -29,7 +29,7 @@ public class ContentSecurityPolicyTest {
     void basics(JenkinsRule j) { // arg required to actually get a Jenkins
         final ContentSecurityPolicy csp = ExtensionList.lookupSingleton(ContentSecurityPolicy.class);
         final JSONObject content = csp.createContent();
-        assertThat(content.get("enforce"), is(false));
+        assertThat(content.get("enforce"), is(true));
         assertThat(content.get("decider"), is(DevelopmentHeaderDecider.class.getName()));
         assertThat(content.get("header"), is(CspHeader.ContentSecurityPolicy.getHeaderName()));
         assertThat(content.getJSONArray("contributors"),
