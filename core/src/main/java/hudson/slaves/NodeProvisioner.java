@@ -48,9 +48,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -724,17 +728,21 @@ public class NodeProvisioner {
                                 }
                             }
 
-                            Collection<PlannedNode> additionalCapacities = c.provision(cloudState, workloadToProvision);
+                            ProvisionOutcome outcome = provisionWithTimeout(c, cloudState, workloadToProvision, state);
 
-                            fireOnStarted(c, state.getLabel(), additionalCapacities);
-
-                            for (PlannedNode ac : additionalCapacities) {
+                            for (PlannedNode ac : outcome.plannedNodes()) {
                                 excessWorkload -= ac.numExecutors;
                                 LOGGER.log(Level.INFO, "Started provisioning {0} from {1} with {2,number,integer} "
                                                 + "executors. Remaining excess workload: {3,number,#.###}",
                                         new Object[]{ac.displayName, c.name, ac.numExecutors, excessWorkload});
                             }
-                            state.recordPendingLaunches(additionalCapacities);
+                            if (outcome.pending()) {
+                                // c.provision() is still working on this demand in the background. Treat it
+                                // as spoken for so neither the next cloud in this loop nor a later strategy
+                                // also provisions for it; otherwise both results would eventually be applied
+                                // for the same demand once the backgrounded call completes.
+                                excessWorkload -= workloadToProvision;
+                            }
                         }
                     }
                     // we took action, only pass on to other strategies if our action was insufficient
@@ -744,6 +752,172 @@ public class NodeProvisioner {
             // if we reach here then the standard strategy obviously decided to do nothing, so let any other strategies
             // take their considerations.
             return StrategyDecision.CONSULT_REMAINING_STRATEGIES;
+        }
+
+        /**
+         * Maximum time, in milliseconds, that {@link #apply(StrategyState)} will wait for a single
+         * {@link Cloud#provision} call to return before moving on to the next cloud/strategy.
+         *
+         * <p>{@link Cloud#provision} is documented to start provisioning asynchronously, but this is not
+         * enforced: {@link #apply(StrategyState)} runs on the shared {@link jenkins.util.Timer} pool (via
+         * {@link NodeProvisionerInvoker}), which is also used for every other periodic task in Jenkins core
+         * and in plugins. A {@link Cloud} implementation that blocks on a slow or hung provider API inside
+         * {@link Cloud#provision} would otherwise tie up one of that pool's few threads for the duration of
+         * the call. This timeout bounds that exposure: once it elapses, the call is left to complete in the
+         * background on {@link Computer#threadPoolForRemoting} instead, and its result (if any) is applied
+         * once it arrives, rather than blocking the calling thread any further.
+         *
+         * <p>This bounds the wait for a single call, not the total time {@link #apply(StrategyState)}
+         * spends on the Timer thread across one invocation: clouds for one label, and labels within one
+         * {@link NodeProvisionerInvoker#doRun()} cycle, are still visited serially, so a Timer thread can
+         * still be occupied for up to roughly {@code labels × clouds × PROVISION_TIMEOUT_MS} in the worst
+         * case where every {@link Cloud#provision} call is slow. Bounding that aggregate exposure would
+         * need clouds or labels to be dispatched concurrently instead, which is a larger change than this
+         * timeout; this field only prevents any single slow call from blocking indefinitely.
+         */
+        private static final long PROVISION_TIMEOUT_MS = SystemProperties.getLong(
+                NodeProvisioner.class.getName() + ".provisionTimeoutMillis", TimeUnit.SECONDS.toMillis(30));
+
+        /**
+         * Identifies one outstanding {@link Cloud#provision} call, by the exact {@link Cloud} instance
+         * rather than its name: a cloud can be reconfigured (deleted and re-added, normally keeping the
+         * same name) while a previous call for the old instance is still hung in the background, and the
+         * new instance must not be blocked by a key it never registered.
+         *
+         * <p>Equality is deliberately reference identity on {@link #cloud}, using {@code ==} and
+         * {@link System#identityHashCode}, not {@link Cloud#equals}/{@code hashCode()}: a plugin's
+         * {@link Cloud} subclass is free to define value equality (for example, by name), which would
+         * otherwise let a replacement instance inherit the previous instance's outstanding entry again,
+         * exactly the problem this key exists to avoid.
+         */
+        private static final class ProvisionKey {
+            private final Cloud cloud;
+            private final String labelName;
+
+            ProvisionKey(Cloud cloud, String labelName) {
+                this.cloud = cloud;
+                this.labelName = labelName;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                return o instanceof ProvisionKey other && this.cloud == other.cloud && this.labelName.equals(other.labelName);
+            }
+
+            @Override
+            public int hashCode() {
+                return System.identityHashCode(cloud) * 31 + labelName.hashCode();
+            }
+        }
+
+        /**
+         * The outcome of {@link #provisionWithTimeout}: the nodes actually applied synchronously (always
+         * empty when {@link #pending} is true), and whether the underlying {@link Cloud#provision} call is
+         * still running in the background rather than genuinely finished.
+         */
+        private record ProvisionOutcome(Collection<PlannedNode> plannedNodes, boolean pending) {
+        }
+
+        /**
+         * Cloud/label pairs with a {@link Cloud#provision} call currently outstanding, whether still
+         * within {@link #PROVISION_TIMEOUT_MS} or running past it in the background. Prevents
+         * {@link #apply(StrategyState)}, on a later cycle, from issuing another provisioning request for
+         * the same demand before the first one has had a chance to report back via
+         * {@link StrategyState#recordPendingLaunches}: the key for a given cloud/label is only removed
+         * once that call's result has been applied, so the two can never race.
+         */
+        private static final Set<ProvisionKey> PENDING_PROVISION_REQUESTS = ConcurrentHashMap.newKeySet();
+
+        /**
+         * Calls {@link Cloud#provision} with a bound on how long the calling thread will wait for it to
+         * return.
+         *
+         * <p>If the call completes within {@link #PROVISION_TIMEOUT_MS}, its result is applied
+         * ({@link #fireOnStarted} and {@link StrategyState#recordPendingLaunches}) synchronously, in this
+         * thread, before this method returns; {@link #apply(StrategyState)} is therefore guaranteed to see
+         * up-to-date capacity accounting for this cloud/label on its very next iteration of the loop. This
+         * is expected to be the common case, since {@link #PROVISION_TIMEOUT_MS} defaults to 30 seconds.
+         *
+         * <p>If the call does not complete in time, {@link ProvisionOutcome#pending} is returned true so
+         * the caller reserves this demand rather than offering it to the next cloud/strategy, and the
+         * original call is left running on {@link Computer#threadPoolForRemoting}. Its result is applied
+         * once it arrives, but only on whichever thread happens to complete it; {@link #apply(StrategyState)}
+         * may by then have already moved on to another cloud, label, or strategy using capacity numbers
+         * that do not yet reflect this call. That staleness window is the accepted cost of not blocking the
+         * shared {@link jenkins.util.Timer} pool past the timeout — it is not possible to both bound this
+         * thread's wait and guarantee the result is visible before this method returns. In either case, the
+         * cloud/label is not eligible for another {@code provision()} call until this one's result has been
+         * applied, so demand is never double-counted even though it may be under-counted for a short time.
+         */
+        private static ProvisionOutcome provisionWithTimeout(Cloud c, Cloud.CloudState cloudState, int workloadToProvision, StrategyState state) {
+            Label label = state.getLabel();
+            ProvisionKey key = new ProvisionKey(c, label == null ? "" : label.getName());
+            if (!PENDING_PROVISION_REQUESTS.add(key)) {
+                LOGGER.log(Level.FINE, "Skipping provision() for cloud {0}; a previous call for the same "
+                        + "label has not completed yet", c.name);
+                return new ProvisionOutcome(List.of(), true);
+            }
+
+            CompletableFuture<Collection<PlannedNode>> provisionFuture = CompletableFuture.supplyAsync(
+                    () -> c.provision(cloudState, workloadToProvision), Computer.threadPoolForRemoting);
+
+            try {
+                Collection<PlannedNode> additionalCapacities = provisionFuture.get(PROVISION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                fireOnStarted(c, label, additionalCapacities);
+                state.recordPendingLaunches(additionalCapacities);
+                PENDING_PROVISION_REQUESTS.remove(key);
+                return new ProvisionOutcome(additionalCapacities, false);
+            } catch (TimeoutException e) {
+                LOGGER.log(Level.WARNING,
+                        "Cloud {0} did not return from provision() within {1}ms; not waiting any longer so as to "
+                                + "avoid blocking other provisioning work. It will keep running in the background "
+                                + "and its result, if any, will be applied once it completes.",
+                        new Object[]{c.name, PROVISION_TIMEOUT_MS});
+                applyWhenComplete(provisionFuture, c, label, state, key);
+                return new ProvisionOutcome(List.of(), true);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                if (provisionFuture.cancel(true)) {
+                    // Cancellation is confirmed to have won the race against provision() producing a
+                    // result: nothing will ever be applied for this call, so the cloud/label is free to
+                    // be provisioned again rather than reserved.
+                    PENDING_PROVISION_REQUESTS.remove(key);
+                    return new ProvisionOutcome(List.of(), false);
+                }
+                // The call was already running (or had already finished) by the time cancellation was
+                // attempted, so it cannot be stopped: treat it exactly like a timeout rather than
+                // discarding whatever result it eventually produces.
+                applyWhenComplete(provisionFuture, c, label, state, key);
+                return new ProvisionOutcome(List.of(), true);
+            } catch (ExecutionException e) {
+                PENDING_PROVISION_REQUESTS.remove(key);
+                Throwable cause = e.getCause();
+                if (cause instanceof RuntimeException re) {
+                    throw re;
+                }
+                if (cause instanceof Error er) {
+                    throw er;
+                }
+                throw new RuntimeException(cause);
+            }
+        }
+
+        /**
+         * Applies the eventual result of a {@link Cloud#provision} call that this thread stopped waiting
+         * on, once it completes, on whichever thread that turns out to be. The key is only removed after
+         * that result (or failure) has been applied, so {@code key} stays reserved for the entire time this
+         * call remains outstanding.
+         */
+        private static void applyWhenComplete(CompletableFuture<Collection<PlannedNode>> provisionFuture, Cloud c, Label label, StrategyState state, ProvisionKey key) {
+            provisionFuture.handle((additionalCapacities, error) -> {
+                if (error != null) {
+                    LOGGER.log(Level.WARNING, "Cloud " + c.name + " failed to provision", error);
+                } else {
+                    fireOnStarted(c, label, additionalCapacities);
+                    state.recordPendingLaunches(additionalCapacities);
+                }
+                return null;
+            }).whenComplete((ignored, ignoredError) -> PENDING_PROVISION_REQUESTS.remove(key));
         }
 
         /**
