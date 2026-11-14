@@ -72,12 +72,12 @@ THE SOFTWARE.
           <j:choose>
             <j:when test="${shouldShowTitle}">
               <a tooltip="${attrs.title}" href="${attrs.href}">
-                ${attrs.title}
+                <span>${attrs.title}</span>
               </a>
             </j:when>
             <j:otherwise>
               <a href="${attrs.href}">
-                ${attrs.title}
+                <span>${attrs.title}</span>
               </a>
             </j:otherwise>
           </j:choose>
