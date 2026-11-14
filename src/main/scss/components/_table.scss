@@ -12,6 +12,7 @@
   border-spacing: 0 var(--jenkins-border-width);
   background-clip: padding-box;
   margin-bottom: var(--section-padding);
+  box-shadow: var(--elevation-2-box-shadow);
 
   * {
     -webkit-border-horizontal-spacing: 0;
