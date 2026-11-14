@@ -139,6 +139,9 @@ public class ApiTokenStore {
     }
 
     private void deleteAllLegacyAndGenerateNewOne(@NonNull Secret newLegacyApiToken, boolean migrationFromExistingLegacy) {
+        if (!migrationFromExistingLegacy) {
+            ApiTokenPropertyConfiguration.get().validateExpirationDate(null);
+        }
         deleteAllLegacyTokens();
         addLegacyToken(newLegacyApiToken, migrationFromExistingLegacy);
     }
@@ -227,6 +230,7 @@ public class ApiTokenStore {
     }
 
     private @NonNull HashedToken prepareAndStoreToken(@NonNull String name, @NonNull String tokenPlainValue, LocalDate expirationDate) {
+        ApiTokenPropertyConfiguration.get().validateExpirationDate(expirationDate);
         String secretValueHashed = this.plainSecretToHashInHex(tokenPlainValue);
 
         HashValue hashValue = new HashValue(HASH_VERSION, secretValueHashed);
