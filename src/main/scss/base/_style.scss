@@ -154,7 +154,7 @@ pre {
   white-space: pre-wrap;
   overflow-wrap: break-word;
   margin: 0 0 var(--section-padding);
-  padding: 0.8rem 1rem;
+  padding: 0.75rem 1rem;
   border-radius: var(--form-input-border-radius);
   background: var(--card-background);
   border: var(--jenkins-border);
@@ -162,6 +162,7 @@ pre {
   font-family: var(--font-family-mono);
   font-weight: 400;
   line-height: 1.66;
+  box-shadow: var(--elevation-2-box-shadow);
 
   a {
     overflow-wrap: break-word;
