@@ -1,0 +1,217 @@
+<!--
+The MIT License
+
+Copyright (c) 2026, Aitor Lopez
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<?jelly escape-by-default='true'?>
+<!--
+  What users choose (the ID and the full name of the owner, the name of a token) is shown only as escaped text, and in data
+  attributes. It is never written with j:out nor with a WithMarkup tag, and it is never put in an id, a class, a tooltip
+  or a URL, but for the link to the user, which core encodes.
+  The buttons carry what the script of the page will need, as data-* attributes. The labels and the texts to confirm are static.
+  The row says which token it is (data-user-id and data-uuid), and, in data-shared-with, as a JSON array of strings, the names of the
+  other tokens that Revoke removes with it: the script writes them only as text, in the message of the confirmation.
+-->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:i="jelly:fmt">
+    <l:layout title="${%title}" permission="${app.ADMINISTER}">
+        <st:adjunct includes="jenkins.security.apitoken.ApiTokenLifetimeAdministrativeMonitor.resources"/>
+        <st:include page="sidepanel.jelly" it="${app}"/>
+        <l:breadcrumb title="${%breadcrumb}" />
+        <l:main-panel>
+            <j:set var="report" value="${it.report}"/>
+            <div class="api-token-lifetime">
+                <h1>${%title}</h1>
+                <p>${%blurb}</p>
+
+                <j:choose>
+                    <j:when test="${report.active}">
+                        <div class="jenkins-alert jenkins-alert-info token-lifetime-phase">
+                            <strong class="token-lifetime-phase-label">${report.phaseLabel}</strong>
+                            <j:if test="${report.countdown != null}">
+                                <div class="token-lifetime-countdown">${report.countdown}</div>
+                            </j:if>
+                        </div>
+                        <p class="token-lifetime-maximum">${%maximum(report.maxDays)}</p>
+                        <ul class="token-lifetime-counts">
+                            <li class="token-lifetime-count-non-compliant">${%nonCompliantCount(report.nonCompliantCount)}</li>
+                            <li class="token-lifetime-count-shared-secrets">${%sharedSecretCount(report.sharedSecretGroupCount)}</li>
+                        </ul>
+                    </j:when>
+                    <j:otherwise>
+                        <div class="jenkins-alert jenkins-alert-info token-lifetime-phase">
+                            <strong class="token-lifetime-phase-label">${report.phaseLabel}</strong>
+                        </div>
+                    </j:otherwise>
+                </j:choose>
+
+                <div class="jenkins-table__wrapper">
+                    <table class="jenkins-table token-lifetime-table">
+                        <thead>
+                            <tr>
+                                <th>${%UserId}</th>
+                                <th>${%UserFullName}</th>
+                                <th>${%TokenName}</th>
+                                <th>${%Status}</th>
+                                <th>${%Created}</th>
+                                <th>${%LastUse}</th>
+                                <th>${%NumOfUse}</th>
+                                <th>${%Actions}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <j:choose>
+                                <j:when test="${report.rows.isEmpty()}">
+                                    <tr class="no-token-line">
+                                        <td colspan="8">
+                                            <div class="no-token">
+                                                ${%NothingToReport}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </j:when>
+                                <j:otherwise>
+                                    <j:forEach var="row" items="${report.rows}">
+                                        <tr data-user-id="${row.userId}" data-uuid="${row.uuid}"
+                                            data-shares-secret="${row.sharesSecret}" data-shared-with="${row.liveSharedNamesJson}">
+                                            <td class="token-user-id">
+                                                <a href="${rootURL}/${row.userUrl}">${row.userId}</a>
+                                            </td>
+                                            <td class="token-user-full-name">
+                                                ${row.userFullName}
+                                            </td>
+                                            <td class="token-name">
+                                                ${row.name}
+                                            </td>
+                                            <td class="token-status">
+                                                <j:choose>
+                                                    <j:when test="${row.legacy}">
+                                                        <div class="token-status-legacy">${%StatusLegacy}</div>
+                                                    </j:when>
+                                                    <j:when test="${row.neverExpires}">
+                                                        <div class="token-status-never">${%StatusNever}</div>
+                                                    </j:when>
+                                                    <j:when test="${row.overMaximum}">
+                                                        <div class="token-status-over">${%StatusOver(row.expiration, row.daysOverMaximum)}</div>
+                                                    </j:when>
+                                                    <j:otherwise>
+                                                        <div class="token-status-expires">${%StatusExpires(row.expiration)}</div>
+                                                    </j:otherwise>
+                                                </j:choose>
+                                                <j:if test="${row.sharesSecret}">
+                                                    <!-- The text is built in Java, from the names, so that they are one escaped text node, not an i18n argument -->
+                                                    <div class="token-status-shared">${row.sharedWithMarker}</div>
+                                                </j:if>
+                                                <j:if test="${row.exemptUntil != null}">
+                                                    <!-- The date is the one of the configuration, as an ISO date: an argument of the text, shown as one escaped text node -->
+                                                    <div class="token-status-exempt-until">${%StatusExemptUntil(row.exemptUntil)}</div>
+                                                </j:if>
+                                            </td>
+                                            <td class="token-created">
+                                                <j:choose>
+                                                    <j:when test="${row.token.creationDate == null}">
+                                                        ${%CreatedUnknown}
+                                                    </j:when>
+                                                    <j:otherwise>
+                                                        <i:formatDate var="creationDateFormat" value="${row.token.creationDate}" type="both" dateStyle="medium" timeStyle="medium" />
+                                                        <span title="${creationDateFormat}">${row.token.createdDaysAgo()}</span>
+                                                    </j:otherwise>
+                                                </j:choose>
+                                            </td>
+                                            <td class="token-last-use">
+                                                <j:choose>
+                                                    <j:when test="${!report.usageStatisticsEnabled}">
+                                                        ${%StatisticsDisabled}
+                                                    </j:when>
+                                                    <j:when test="${row.token.lastUseDate == null}">
+                                                        ${%NeverUsed}
+                                                    </j:when>
+                                                    <j:otherwise>
+                                                        <i:formatDate var="lastUseDateFormat" value="${row.token.lastUseDate}" type="both" dateStyle="medium" timeStyle="medium" />
+                                                        <span title="${lastUseDateFormat}">${row.token.lastUsedDaysAgo()}</span>
+                                                    </j:otherwise>
+                                                </j:choose>
+                                            </td>
+                                            <td class="token-uses">
+                                                <j:choose>
+                                                    <j:when test="${!report.usageStatisticsEnabled}">
+                                                        ${%StatisticsDisabled}
+                                                    </j:when>
+                                                    <j:otherwise>
+                                                        ${row.token.useCounter}
+                                                    </j:otherwise>
+                                                </j:choose>
+                                            </td>
+                                            <td class="token-actions">
+                                                <div class="jenkins-buttons-row">
+                                                    <button type="button" class="jenkins-button jenkins-button--destructive token-lifetime-action"
+                                                            data-token-action="revoke"
+                                                            data-url="${rootURL}/${it.url}/revoke"
+                                                            data-confirm-title="${%RevokeTitle}"
+                                                            data-confirm-message="${%RevokeConfirm}"
+                                                            data-confirm-message-shared="${%RevokeSharedConfirm}"
+                                                            data-ok-text="${%Revoke}"
+                                                            data-cancel-text="${%Cancel}"
+                                                            data-error-title="${%ErrorTitle}"
+                                                            data-error-message="${%ErrorMessage}">
+                                                        ${%Revoke}
+                                                    </button>
+                                                    <!-- Never for the legacy token: it has no expiration to shorten, only Revoke applies -->
+                                                    <j:if test="${row.shortenable}">
+                                                        <button type="button" class="jenkins-button token-lifetime-action"
+                                                                data-token-action="shorten"
+                                                                data-url="${rootURL}/${it.url}/shorten"
+                                                                data-confirm-title="${%ShortenTitle}"
+                                                                data-confirm-message="${%ShortenConfirm}"
+                                                                data-ok-text="${%Shorten}"
+                                                                data-cancel-text="${%Cancel}"
+                                                                data-error-title="${%ErrorTitle}"
+                                                                data-error-message="${%ErrorMessage}">
+                                                            ${%Shorten}
+                                                        </button>
+                                                    </j:if>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </j:forEach>
+                                </j:otherwise>
+                            </j:choose>
+                        </tbody>
+                    </table>
+                </div>
+
+                <j:if test="${report.active}">
+                    <h2>${%ActionsTitle}</h2>
+                    <ul class="token-lifetime-help">
+                        <li>${%ActionRevoke}</li>
+                        <li>${%ActionShorten}</li>
+                        <li>${%ActionLegacy}</li>
+                        <j:if test="${report.exemptUntil != null}">
+                            <li class="token-lifetime-help-exempt-until">${%ActionExemptUntil(report.exemptUntil)}</li>
+                        </j:if>
+                        <li>${%ActionOtherPages}</li>
+                        <li>${%ActionAgain}</li>
+                    </ul>
+                    <p class="token-lifetime-statistics-note">${%StatisticsNote}</p>
+                </j:if>
+            </div>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

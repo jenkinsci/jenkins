@@ -1,0 +1,6 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<jenkins.security.apitoken.ApiTokenPropertyConfiguration>
+  <tokenGenerationOnCreationEnabled>true</tokenGenerationOnCreationEnabled>
+  <creationOfLegacyTokenEnabled>false</creationOfLegacyTokenEnabled>
+  <usageStatisticsEnabled>false</usageStatisticsEnabled>
+</jenkins.security.apitoken.ApiTokenPropertyConfiguration>

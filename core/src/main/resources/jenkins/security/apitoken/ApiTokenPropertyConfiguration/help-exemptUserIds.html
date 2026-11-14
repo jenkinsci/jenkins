@@ -1,0 +1,29 @@
+<div>
+  The IDs of the users whose API tokens are not restricted by the maximum
+  lifetime, one ID per line. Use it for service accounts that cannot rotate
+  their tokens yet.
+  <p>
+    This list is a migration aid, not a permanent state: plan to rotate the
+    tokens of these accounts and to empty the list.
+  </p>
+  <p>
+    Exemptions stop applying when
+    <em>Strict mode</em>
+    is in effect: nobody is exempt then, from the day the maximum lifetime is
+    enforced. The list is kept, and applies again if strict mode is switched
+    off. While strict mode is switched on and has not started yet, the tokens of
+    these accounts that exceed the maximum are already listed in the compliance
+    panel, marked with that day.
+  </p>
+  <p>
+    The exemption belongs to the ID, not to the person. If an account is deleted
+    and its ID is used again, the new account inherits the exemption. An ID that
+    is listed before its account exists is exempt for whoever creates that
+    account, including a user who signs up by themselves.
+  </p>
+  <p>
+    The field warns about the IDs that Jenkins does not know yet. With an
+    external security realm, users only appear after their first login, so the
+    warning does not mean that the ID is wrong.
+  </p>
+</div>
