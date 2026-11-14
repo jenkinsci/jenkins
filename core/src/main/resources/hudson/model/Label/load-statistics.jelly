@@ -24,11 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.displayName} Load Statistics">
-    <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%Load Statistics}" />
-    <l:main-panel>
+  <l:label-subpage title="${%Load Statistics}">
+    <j:set var="skipAppBar" value="true" />
+    <div class="jenkins-!-margin-top-2">
       <st:include page="main.jelly" from="${it.loadStatistics}" />
-    </l:main-panel>
-  </l:layout>
+    </div>
+  </l:label-subpage>
 </j:jelly>
