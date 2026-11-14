@@ -112,7 +112,8 @@ function generateDropdownItems(items, compact = false, context = "") {
         context,
       );
 
-      if (item.event && item.event.actions != null) {
+      // Split buttons only show their primary action in a dropdown, so get no submenu
+      if (item.event && item.event.actions != null && !item.event.event) {
         tippy(
           menuItem,
           Object.assign({}, Templates.dropdown(), {
