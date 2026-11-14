@@ -229,7 +229,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
           type: tag === "button" ? "button" : null,
         })}>
           ${icon(itemOptions, type)}
-          ${label}
+          <span class="jenkins-dropdown__item__label">${label}</span>
           ${description}
           ${badge(itemOptions)}
           ${
