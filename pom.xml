@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.590</revision>
+    <revision>2.591</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2026-11-03T06:08:35Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-11-10T06:05:06Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -104,7 +104,7 @@ THE SOFTWARE.
          war/src/main/webapp/jsbundles is already populated from an earlier build. -->
     <skip.frontend>false</skip.frontend>
     <winstone.version>8.1053.v85e6c1a_3b_278</winstone.version>
-    <node.version>24.22.2</node.version>
+    <node.version>24.22.3</node.version>
   </properties>
 
   <!--
