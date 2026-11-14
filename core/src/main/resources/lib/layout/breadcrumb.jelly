@@ -70,6 +70,9 @@ THE SOFTWARE.
         </j:when>
         <j:otherwise>
           <j:choose>
+            <j:when test="${!hasLink}">
+              <span tooltip="${shouldShowTitle ? attrs.title : null}">${attrs.title}</span>
+            </j:when>
             <j:when test="${shouldShowTitle}">
               <a tooltip="${attrs.title}" href="${attrs.href}">
                 <span>${attrs.title}</span>
