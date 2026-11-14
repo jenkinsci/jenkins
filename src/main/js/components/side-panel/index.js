@@ -44,10 +44,10 @@ function init() {
     "side-panel-toggle",
     0,
     (button) => {
-      button.addEventListener("click", () => {
+      button.onclick = () => {
         const sidebar = document.querySelector("#side-panel");
         setExpanded(!sidebar.classList.contains(EXPANDED_CLASS));
-      });
+      };
     },
   );
 

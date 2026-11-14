@@ -1,3 +1,4 @@
+import behaviorSource from "../../../war/src/main/webapp/scripts/behavior.js?raw";
 import {
   afterEach,
   beforeAll,
@@ -13,36 +14,18 @@ let width;
 let mediaQuery;
 let documentListeners;
 let mediaListeners;
+let previousOnload;
+let previousSelector;
 
 beforeAll(async () => {
   sidebar = (await import("@/components/side-panel")).default;
 });
 
 beforeEach(() => {
-  const behaviors = new Map();
-  const applied = new WeakMap();
-  globalThis.Behaviour = {
-    specify(selector, id, priority, callback) {
-      behaviors.set(id, { selector, callback });
-    },
-    applySubtree(node, includeSelf) {
-      for (const [id, { selector, callback }] of behaviors) {
-        const elements = [...node.querySelectorAll(selector)];
-        if (includeSelf && node.matches(selector)) {
-          elements.unshift(node);
-        }
-        for (const element of elements) {
-          const ids = applied.get(element) || new Set();
-          if (ids.has(id)) {
-            continue;
-          }
-          ids.add(id);
-          applied.set(element, ids);
-          callback(element);
-        }
-      }
-    },
-  };
+  previousOnload = window.onload;
+  previousSelector = document.getElementsBySelector;
+  // Like other classic-script tests, load the real global Behaviour API.
+  (0, eval)(behaviorSource);
   width = 739;
   mediaQuery = new EventTarget();
   Object.defineProperty(mediaQuery, "matches", { get: () => width < 740 });
@@ -66,6 +49,13 @@ afterEach(() => {
   }
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  window.onload = previousOnload;
+  if (previousSelector === undefined) {
+    delete document.getElementsBySelector;
+  } else {
+    document.getElementsBySelector = previousSelector;
+  }
+  delete globalThis.findElementsBySelector;
   delete globalThis.Behaviour;
   document.body.innerHTML = "";
 });
@@ -211,18 +201,26 @@ describe("mobile sidebar", () => {
     },
   );
 
-  it("does not duplicate toggles or capture handlers when behaviors are reapplied", () => {
+  it("keeps toggles and capture handling consistent after each behavior application", () => {
     initialize();
-    globalThis.Behaviour.applySubtree(document.body, true);
-    globalThis.Behaviour.applySubtree(document.body, true);
-    expect(document.querySelectorAll(".app-side-panel-toggle")).toHaveLength(2);
-    expect(
-      documentListeners.mock.calls.filter(
-        ([type, , capture]) => type === "click" && capture === true,
-      ),
-    ).toHaveLength(1);
-    mainToggle().click();
-    expectExpanded(true);
+    for (let application = 0; application < 3; application++) {
+      if (application > 0) {
+        globalThis.Behaviour.applySubtree(document.body, true);
+      }
+      const toggles = document.querySelectorAll(".app-side-panel-toggle");
+      expect(toggles).toHaveLength(2);
+      expect(
+        documentListeners.mock.calls.filter(
+          ([type, , capture]) => type === "click" && capture === true,
+        ),
+      ).toHaveLength(1);
+      for (const toggle of toggles) {
+        toggle.click();
+        expectExpanded(true);
+        toggle.click();
+        expectExpanded(false);
+      }
+    }
   });
 
   it.each(["pane", "jenkins-card"])(
