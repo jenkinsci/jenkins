@@ -5,7 +5,8 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-left: -2rem;
+  margin: -0.25rem 0 -0.25rem -2rem;
+  padding-block: 0.25rem;
   overflow: hidden;
 
   &__list {
