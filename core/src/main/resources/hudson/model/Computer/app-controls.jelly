@@ -37,7 +37,7 @@ THE SOFTWARE.
             <button form="toggleForm" type="submit" class="jenkins-button jenkins-button--primary">
               ${%submit.temporarilyOffline}
             </button>
-            <form id="toggleForm" method="post" action="toggleOffline" class="jenkins-hidden">
+            <form id="toggleForm" method="post" action="${rootURL}/${it.url}toggleOffline" class="jenkins-hidden">
             </form>
             <l:hasPermission permission="${it.DISCONNECT}">
               <l:overflowButton icon="symbol-chevron-down"
@@ -45,7 +45,7 @@ THE SOFTWARE.
                                 id="agent-offline-overflow-button">
                 <dd:custom>
                   <l:dialog title="${%Set Offline Reason}">
-                    <f:form method="post" action="changeOfflineCause" name="changeOfflineCause">
+                    <f:form method="post" action="${rootURL}/${it.url}changeOfflineCause" name="changeOfflineCause">
                       <div class="jenkins-!-margin-bottom-1">
                       ${%blurb}
                       </div>
@@ -67,12 +67,12 @@ THE SOFTWARE.
                     ${%submit.updateOfflineCause}
                   </button>
                 </dd:custom>
-                <j:if test="${it.isConnected()}">
+                <j:if test="${it.isConnected() and it.class.name != 'hudson.model.Hudson$MasterComputer'}">
                   <dd:separator/>
                   <dd:custom>
                     <button class="jenkins-dropdown__item jenkins-!-destructive-color"
                             data-type="dialog-opener"
-                            data-dialog-url="disconnectDialog">
+                            data-dialog-url="${rootURL}/${it.url}disconnectDialog">
                       <div class="jenkins-dropdown__item__icon">
                         <l:icon src="symbol-disconnect" />
                       </div>
@@ -89,7 +89,7 @@ THE SOFTWARE.
     <j:otherwise>
       <l:hasPermission permission="${it.DISCONNECT}">
         <l:dialog title="${%Take Offline}">
-          <f:form method="post" action="toggleOffline" name="toggleOffline">
+          <f:form method="post" action="${rootURL}/${it.url}toggleOffline" name="toggleOffline">
             <f:textarea name="offlineMessage" class="jenkins-form-item"/>
             <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request2)}" />
             <f:bottomButtonBar borderless="true">
@@ -112,7 +112,7 @@ THE SOFTWARE.
               <dd:custom>
                 <button class="jenkins-dropdown__item jenkins-!-destructive-color"
                         data-type="dialog-opener"
-                        data-dialog-url="disconnectDialog">
+                        data-dialog-url="${rootURL}/${it.url}disconnectDialog">
                   <div class="jenkins-dropdown__item__icon">
                     <l:icon src="symbol-disconnect" />
                   </div>
@@ -127,7 +127,7 @@ THE SOFTWARE.
     </j:otherwise>
   </j:choose>
   <j:if test="${it.hasPermission(it.EXTENDED_READ)}">
-    <a class="jenkins-button" href="configure">
+    <a class="jenkins-button" href="${rootURL}/${it.url}configure">
       ${it.hasPermission(it.CONFIGURE) ? '%Configure' : '%View Configuration'}
     </a>
   </j:if>
