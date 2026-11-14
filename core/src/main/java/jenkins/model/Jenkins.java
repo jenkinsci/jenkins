@@ -2293,7 +2293,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         this.getNodes().forEach(n -> nodeLabels.add(n.getAssignedLabels()));
         for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
             Label l = itr.next();
-            if (includedLabels == null || includedLabels.contains(l) || l.matches(includedLabels)) {
+            if (includedLabels == null || l.matches(includedLabels) || !Collections.disjoint(l.listAtoms(), includedLabels)) {
                 if (nodeLabels.stream().anyMatch(l::matches) || !l.getClouds().isEmpty()) {
                     // there is at least one static agent or one cloud that currently claims it can handle the label.
                     // if the cloud has been removed, or its labels updated such that it can not handle this, this is handle in later calls
