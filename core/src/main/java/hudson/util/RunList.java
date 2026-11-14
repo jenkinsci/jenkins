@@ -24,6 +24,7 @@
 
 package hudson.util;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -59,6 +60,11 @@ public class RunList<R extends Run> extends AbstractList<R> {
 
     private R first;
     private Integer size;
+
+    @VisibleForTesting
+    R getCachedFirstBuild() {
+        return first;
+    }
 
     public RunList() {
         base = Collections.emptyList();
@@ -121,6 +127,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     /**
+     * @throws RunListInterruptedException if the thread is interrupted while counting builds
      * @deprecated as of 1.485
      *      {@link RunList}, despite its name, should be really used as {@link Iterable}, not as {@link List}.
      */
@@ -129,10 +136,15 @@ public class RunList<R extends Run> extends AbstractList<R> {
     public int size() {
         if (size == null) {
             int sz = 0;
+            R oldest = null;
             for (R r : this) {
-                first = r;
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new RunListInterruptedException();
+                }
+                oldest = r;
                 sz++;
             }
+            first = oldest;
             size = sz;
         }
         return size;
