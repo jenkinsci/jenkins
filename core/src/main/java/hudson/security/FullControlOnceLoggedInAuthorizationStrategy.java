@@ -32,6 +32,7 @@ import jakarta.inject.Inject;
 import java.util.Collections;
 import java.util.List;
 import jenkins.model.Jenkins;
+import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -81,12 +82,10 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
     private static final SparseACL ANONYMOUS_READ = new SparseACL(null);
 
     static {
-        ANONYMOUS_READ.add(ACL.EVERYONE, Jenkins.ADMINISTER, true);
-        ANONYMOUS_READ.add(ACL.ANONYMOUS, Jenkins.ADMINISTER, false);
+        ANONYMOUS_READ.add(new GrantedAuthoritySid("authenticated"), Jenkins.ADMINISTER, true);
         ANONYMOUS_READ.add(ACL.ANONYMOUS, Permission.READ, true);
 
-        AUTHENTICATED_READ.add(ACL.EVERYONE, Jenkins.ADMINISTER, true);
-        AUTHENTICATED_READ.add(ACL.ANONYMOUS, Jenkins.ADMINISTER, false);
+        AUTHENTICATED_READ.add(new GrantedAuthoritySid("authenticated"), Jenkins.ADMINISTER, true);
     }
 
     /**
