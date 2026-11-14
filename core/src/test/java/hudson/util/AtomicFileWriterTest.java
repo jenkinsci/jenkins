@@ -126,6 +126,18 @@ class AtomicFileWriterTest {
     }
 
     @Test
+    void commitSupplementaryCharacterAcrossWrites() throws Exception {
+        try (AtomicFileWriter writer = new AtomicFileWriter(af.toPath(), StandardCharsets.UTF_8)) {
+            writer.write("\uD83D");
+            writer.flush();
+            writer.write("\uDE80");
+            writer.commit();
+        }
+
+        assertEquals("\uD83D\uDE80", Files.readString(af.toPath(), StandardCharsets.UTF_8));
+    }
+
+    @Test
     void abortDeletesTmpFile() throws Exception {
         // Given
         afw.write(expectedContent, 0, expectedContent.length());

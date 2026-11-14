@@ -33,6 +33,54 @@ class FileChannelWriterTest {
     }
 
     @Test
+    void supplementaryCharacterAcrossWrites() throws Exception {
+        writer.write("\uD83D");
+        writer.write("\uDE80");
+        writer.close();
+
+        assertContent("\uD83D\uDE80");
+    }
+
+    @Test
+    void supplementaryCharacterAcrossFlush() throws Exception {
+        writer.write("\uD83D");
+        writer.flush();
+        writer.write("\uDE80");
+        writer.close();
+
+        assertContent("\uD83D\uDE80");
+    }
+
+    @Test
+    void utf16ByteOrderMarkIsWrittenOnce() throws Exception {
+        writer.close();
+        writer = new FileChannelWriter(file, StandardCharsets.UTF_16, true, true, StandardOpenOption.WRITE);
+        writer.write("first");
+        writer.write("second");
+        writer.close();
+
+        assertThat(Files.readString(file, StandardCharsets.UTF_16), equalTo("firstsecond"));
+    }
+
+    @Test
+    void closeReplacesUnpairedSurrogate() throws Exception {
+        writer.write("\uD83D");
+        writer.close();
+
+        assertContent("?");
+    }
+
+    @Test
+    void replacesUnmappableCharacter() throws Exception {
+        writer.close();
+        writer = new FileChannelWriter(file, StandardCharsets.US_ASCII, true, true, StandardOpenOption.WRITE);
+        writer.write("hello é");
+        writer.close();
+
+        assertContent("hello ?");
+    }
+
+    @Test
     void flush() throws Exception {
         writer.write("hello é è à".toCharArray());
 
