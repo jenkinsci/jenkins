@@ -24,7 +24,9 @@
 
 package hudson.model;
 
+import hudson.Util;
 import hudson.util.ChartUtil;
+import hudson.util.ColorPalette;
 import hudson.util.NoOverlapCategoryAxis;
 import jakarta.servlet.ServletException;
 import java.awt.BasicStroke;
@@ -294,6 +296,196 @@ public class MultiStageTimeSeries implements Serializable {
 
             configureRenderer((LineAndShapeRenderer) plot.getRenderer());
             configureDomainAxis(plot);
+        }
+
+        /**
+         * Renders this trend chart as an inline SVG document.
+         *
+         * <p>
+         * Unlike {@link #generateResponse}, which produces a theme-agnostic PNG via JFreeChart,
+         * this builds an SVG string meant to be embedded directly into the page DOM. Line and
+         * text colors reference CSS custom properties (e.g. {@code var(--red)}), so the chart
+         * adapts to the active theme (such as dark mode) automatically, and the {@code viewBox}
+         * lets it scale fluidly with its container instead of being a fixed-size raster.
+         */
+        public String createSvg() {
+            // Logical coordinate system; the on-screen size is controlled by CSS via the viewBox.
+            final int width = 1000;
+            final int height = 500;
+            final double plotRight = width - 12;
+            final double plotTop = 32;
+            final double plotBottom = 420;
+            final double plotH = plotBottom - plotTop;
+
+            // Gather the raw data (newest-first) and x-axis labels (oldest -> newest), mirroring createDataset().
+            float[][] dataPoints = new float[series.size()][];
+            for (int i = 0; i < series.size(); i++)
+                dataPoints[i] = series.get(i).pick(timeScale).getHistory();
+            int len = dataPoints[0].length;
+
+            DateFormat format = timeScale.createDateFormat();
+            String[] labels = new String[len];
+            Date dt = new Date(System.currentTimeMillis() - timeScale.tick * len);
+            for (int k = 0; k < len; k++) {
+                dt = new Date(dt.getTime() + timeScale.tick);
+                labels[k] = format.format(dt);
+            }
+
+            int labelStep = Math.max(1, (int) Math.ceil(len / 30.0));
+
+            // Determine the y-axis range. Pick a "nice" step (1, 2 or 5 times a power of ten) so
+            // the gridlines land on round numbers, then round the upper bound up to a multiple of
+            // that step. Aiming for roughly ten gridlines gives finer resolution than a fixed
+            // division by five, and keeps large magnitudes (e.g. memory usage in KB) on readable
+            // increments such as 100k or 500k instead of awkward values like 209k.
+            double maxValue = 0;
+            for (float[] data : dataPoints)
+                for (float v : data)
+                    if (v > maxValue) maxValue = v;
+            long yStep = niceStep(maxValue, 10);
+            long yMax = Math.max(yStep, (long) Math.ceil(maxValue / yStep) * yStep);
+
+            // Size the left margin to fit the widest y-axis label, so large values (e.g. memory
+            // usage in KB) are not clipped.
+            int widestLabel = 0;
+            for (long v = 0; v <= yMax; v += yStep)
+                widestLabel = Math.max(widestLabel, formatYLabel(v).length());
+            double plotLeft = Math.max(48, widestLabel * 6.5 + 10);
+            double plotW = plotRight - plotLeft;
+
+            StringBuilder buf = new StringBuilder();
+            buf.append("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 ")
+               .append(width).append(' ').append(height)
+               .append("\" preserveAspectRatio=\"xMidYMid meet\" role=\"img\">");
+
+            // Range gridlines + y-axis tick labels.
+            for (long v = 0; v <= yMax; v += yStep) {
+                double y = plotBottom - plotH * v / yMax;
+                buf.append("<line x1=\"").append(fmt(plotLeft)).append("\" y1=\"").append(fmt(y))
+                   .append("\" x2=\"").append(fmt(plotRight)).append("\" y2=\"").append(fmt(y))
+                   .append("\" stroke=\"var(--text-color-secondary, grey)\" stroke-opacity=\"0.25\" stroke-width=\"1\"/>");
+                buf.append("<text x=\"").append(fmt(plotLeft - 6)).append("\" y=\"").append(fmt(y + 4))
+                   .append("\" text-anchor=\"end\" class=\"jenkins-svg-graph__label\">")
+                   .append(formatYLabel(v)).append("</text>");
+            }
+
+            // Draw the x-axis labels rotated 90° (reading bottom-to-top) so long timestamps hang
+            // vertically below the axis instead of overflowing the right edge of the chart.
+            for (int k = 0; k < len; k += labelStep) {
+                double x = len <= 1 ? plotLeft : plotLeft + plotW * k / (len - 1);
+                double y = plotBottom + 8;
+                buf.append("<text x=\"").append(fmt(x)).append("\" y=\"").append(fmt(y))
+                   .append("\" text-anchor=\"end\" dominant-baseline=\"central\" transform=\"rotate(-90 ")
+                   .append(fmt(x)).append(' ').append(fmt(y))
+                   .append(")\" class=\"jenkins-svg-graph__label\">")
+                   .append(Util.xmlEscape(labels[k])).append("</text>");
+            }
+
+            // Axis lines.
+            buf.append("<line x1=\"").append(fmt(plotLeft)).append("\" y1=\"").append(fmt(plotTop))
+               .append("\" x2=\"").append(fmt(plotLeft)).append("\" y2=\"").append(fmt(plotBottom))
+               .append("\" stroke=\"var(--text-color-secondary, grey)\" stroke-width=\"1\"/>");
+            buf.append("<line x1=\"").append(fmt(plotLeft)).append("\" y1=\"").append(fmt(plotBottom))
+               .append("\" x2=\"").append(fmt(plotRight)).append("\" y2=\"").append(fmt(plotBottom))
+               .append("\" stroke=\"var(--text-color-secondary, grey)\" stroke-width=\"1\"/>");
+
+            // One polyline per series, drawn oldest -> newest (history is newest-first).
+            for (int j = 0; j < series.size(); j++) {
+                float[] data = dataPoints[j];
+                StringBuilder points = new StringBuilder();
+                for (int k = 0; k < len; k++) {
+                    double x = len <= 1 ? plotLeft : plotLeft + plotW * k / (len - 1);
+                    double y = plotBottom - plotH * data[len - 1 - k] / yMax;
+                    if (k > 0) points.append(' ');
+                    points.append(fmt(x)).append(',').append(fmt(y));
+                }
+                buf.append("<polyline fill=\"none\" stroke=\"").append(cssColor(series.get(j).color))
+                   .append("\" stroke-width=\"1\" stroke-linejoin=\"round\" stroke-linecap=\"round\" points=\"")
+                   .append(points).append("\"/>");
+            }
+
+            // Legend across the top.
+            double lx = plotLeft;
+            double ly = 16;
+            for (MultiStageTimeSeries s : series) {
+                String label = s.title.toString();
+                buf.append("<line x1=\"").append(fmt(lx)).append("\" y1=\"").append(fmt(ly))
+                   .append("\" x2=\"").append(fmt(lx + 18)).append("\" y2=\"").append(fmt(ly))
+                   .append("\" stroke=\"").append(cssColor(s.color)).append("\" stroke-width=\"1\" stroke-linecap=\"round\"/>");
+                buf.append("<text x=\"").append(fmt(lx + 24)).append("\" y=\"").append(fmt(ly + 4))
+                   .append("\" class=\"jenkins-svg-graph__label\">")
+                   .append(Util.xmlEscape(label)).append("</text>");
+                lx += 24 + label.length() * 7.0 + 24;
+            }
+
+            buf.append("</svg>");
+            return buf.toString();
+        }
+
+        private static String fmt(double d) {
+            return String.format(Locale.ROOT, "%.1f", d);
+        }
+
+        /**
+         * Picks a "nice" axis step: the value of the form 1, 2 or 5 times a power of ten closest to
+         * {@code range / targetTicks}, with a floor of 1 so the ticks stay whole numbers. This keeps
+         * gridlines on round increments (e.g. 100k or 500k for memory usage) while aiming for roughly
+         * {@code targetTicks} lines, giving finer resolution for small ranges (such as a handful of
+         * executors) and readable steps for large ones.
+         */
+        private static long niceStep(double range, int targetTicks) {
+            double raw = range / targetTicks;
+            if (raw <= 1) return 1;
+            double pow = Math.pow(10, Math.floor(Math.log10(raw)));
+            long best = Math.max(1, Math.round(pow));
+            double bestDist = Double.MAX_VALUE;
+            // Candidate multipliers span the current decade and the start of the next (…, 1, 2, 5, 10).
+            for (double mult : new double[] {1, 2, 5, 10}) {
+                double candidate = mult * pow;
+                double dist = Math.abs(candidate - raw);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    best = Math.max(1, Math.round(candidate));
+                }
+            }
+            return best;
+        }
+
+        /**
+         * Formats a y-axis tick value compactly so large magnitudes (e.g. memory usage in KB) stay
+         * short: values below 1000 are shown verbatim, larger ones use a k/M/G suffix with at most
+         * one decimal. Unit-agnostic — it compacts whatever unit the series already stores.
+         */
+        private static String formatYLabel(long v) {
+            if (v < 1000) return Long.toString(v);
+            String suffix;
+            double scaled;
+            if (v < 1_000_000) {
+                scaled = v / 1000.0;
+                suffix = "k";
+            } else if (v < 1_000_000_000) {
+                scaled = v / 1_000_000.0;
+                suffix = "M";
+            } else {
+                scaled = v / 1_000_000_000.0;
+                suffix = "G";
+            }
+            String s = String.format(Locale.ROOT, "%.1f", scaled);
+            if (s.endsWith(".0")) s = s.substring(0, s.length() - 2);
+            return s + suffix;
+        }
+
+        /**
+         * Maps a series {@link Color} to a theme-aware CSS color. Known {@link ColorPalette}
+         * constants are mapped to CSS custom properties so they adapt to the active theme;
+         * anything else falls back to its literal hex value.
+         */
+        private static String cssColor(Color c) {
+            if (ColorPalette.BLUE.equals(c)) return "var(--green, green)";
+            if (ColorPalette.RED.equals(c)) return "var(--red, red)";
+            if (ColorPalette.GREY.equals(c)) return "var(--text-color-secondary, grey)";
+            if (ColorPalette.YELLOW.equals(c)) return "var(--orange, orange)";
+            return String.format(Locale.ROOT, "#%06x", c.getRGB() & 0xFFFFFF);
         }
 
         /**

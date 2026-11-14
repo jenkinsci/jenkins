@@ -1,0 +1,47 @@
+// Container for an inline, theme-aware trend-graph SVG (load statistics, memory usage). Unlike
+// .jenkins-graph-card it does not force a white background, so the chart adapts to the active
+// theme; the SVG scales to the container width via its viewBox.
+.jenkins-svg-graph {
+  container-name: jenkins-svg-graph;
+  container-type: inline-size;
+
+  padding: 0.5rem;
+  border: var(--jenkins-border);
+  border-radius: var(--form-input-border-radius);
+  max-width: 100%;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .jenkins-svg-graph__label {
+    fill: var(--text-color);
+    font-size: var(--jenkins-graph-font-size, 8px);
+
+    @container jenkins-svg-graph (width < 550px) {
+      --jenkins-graph-font-size: 16px;
+    }
+
+    @container jenkins-svg-graph (550px <= width < 700px) {
+      --jenkins-graph-font-size: 14px;
+    }
+
+    @container jenkins-svg-graph (700px <= width <= 900px) {
+      --jenkins-graph-font-size: 12px;
+    }
+
+    @container jenkins-svg-graph (900px < width < 1100px) {
+      --jenkins-graph-font-size: 11px;
+    }
+
+    @container jenkins-svg-graph (width >= 1100px) {
+      --jenkins-graph-font-size: 10px;
+    }
+  }
+}
+
+.jenkins-load-graph {
+  max-width: 1318px;
+}
