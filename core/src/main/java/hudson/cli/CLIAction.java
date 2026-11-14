@@ -292,6 +292,19 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
         @Override
         protected void onEncoding(String text) {
+            boolean wasReady;
+            synchronized (this) {
+                wasReady = ready;
+            }
+            if (wasReady) {
+                // Keep the download stream active when receiving client keep-alive pings (JENKINS-46659)
+                try {
+                    streamStdout().write(new byte[0]);
+                } catch (IOException x) {
+                    LOGGER.log(Level.FINE, "Failed to send keep-alive response", x);
+                }
+                return;
+            }
             try {
                 encoding = Charset.forName(text);
             } catch (UnsupportedCharsetException x) {
