@@ -118,6 +118,7 @@ function appendTokenToTable(data) {
   tokenShowButton.dataset.tokenValue = data.tokenValue;
   tokenShowButton.dataset.title = data.tokenName;
   tokenShowButton.dataset.expirationDate = data.expirationDate;
+  tokenShowButton.dataset.aboutToExpire = data.aboutToExpire;
   tokenShowButton.classList.remove("jenkins-hidden");
   tokenList.appendChild(apiTokenRow);
   adjustTokenEmptyListMessage();
@@ -353,6 +354,7 @@ Behaviour.specify(
         button.dataset.title,
         button.dataset.tokenValue,
         button.dataset.expirationDate,
+        button.dataset.aboutToExpire === "true",
         button.dataset.buttonDone,
       );
     };
