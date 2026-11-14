@@ -190,7 +190,11 @@ public class Nodes implements PersistenceRoot {
 
     private void handleAddedNode(final @NonNull Node node, final Node old) throws IOException {
         node.onLoad(this, node.getNodeName());
-        jenkins.updateNewComputer(node);
+        if (old != null) {
+            jenkins.updateComputers(node);
+        } else {
+            jenkins.updateNewComputer(node);
+        }
         jenkins.trimLabels(node, old);
         // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
         try {
@@ -200,7 +204,7 @@ public class Nodes implements PersistenceRoot {
             // memory before propagating the exception.
             Queue.runWithLock(() -> {
                 nodes.compute(node.getNodeName(), (ignoredNodeName, ignoredNode) -> old);
-                jenkins.updateComputers(node);
+                jenkins.updateComputers(old != null ? old : node);
                 if (old != null) {
                     jenkins.trimLabels(node, old);
                 } else {
