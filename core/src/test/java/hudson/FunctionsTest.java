@@ -58,6 +58,7 @@ import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -856,4 +857,21 @@ class FunctionsTest {
         }
     }
 
+
+    @Test
+    void getElapsedSinceMeasuresFromEpochMillis() {
+        long elapsed = Functions.getElapsedSince(System.currentTimeMillis() - 60_000);
+        assertTrue(elapsed >= 60_000 && elapsed < 70_000, "gave " + elapsed);
+    }
+
+    @Test
+    void timeSpanPatternsContainEveryUnit() {
+        JSONObject patterns = JSONObject.fromObject(Functions.getTimeSpanPatterns());
+        for (String unit : List.of("locale", "second", "minute", "hour", "day", "month", "year")) {
+            assertTrue(patterns.has(unit), unit);
+        }
+        assertEquals("1 min 0 sec", Functions.formatTimeSpan(-60_000));
+        assertEquals("5 sec", Functions.formatTimeSpan(5_900));
+        assertEquals("0 sec", Functions.formatTimeSpan(50));
+    }
 }

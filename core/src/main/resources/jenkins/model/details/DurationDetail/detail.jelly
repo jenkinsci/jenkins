@@ -32,13 +32,13 @@ THE SOFTWARE.
     <div>
       <j:choose>
         <j:when test="${object.building}">
-          ${%beingExecuted(object.executor.timestampString)}
+          <l:relative-time value="${object.startTimeInMillis}" template="${%beingExecuted('{0}')}" />
         </j:when>
         <j:otherwise>
           ${%Took} ${object.durationString}
         </j:otherwise>
       </j:choose>
-      <j:if test="${!empty(app.nodes) or (object.builtOnStr != null and object.builtOnStr != '')}">
+      <j:if test="${detailContext != 'compact' and (!empty(app.nodes) or (object.builtOnStr != null and object.builtOnStr != ''))}">
         ${%on} <t:node value="${object.builtOn}" valueStr="${object.builtOnStr}"/>
       </j:if>
       <st:include page="details.jelly" optional="true" />

@@ -27,6 +27,7 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.isA;
@@ -66,6 +67,8 @@ import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.ArtifactManagerFactoryDescriptor;
 import jenkins.model.Jenkins;
 import jenkins.model.Tab;
+import jenkins.model.details.DurationDetail;
+import jenkins.model.details.TimestampDetail;
 import jenkins.util.VirtualFile;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.html.HtmlPage;
@@ -448,4 +451,23 @@ class RunTest  {
         }
     }
 
+
+    @Test
+    void startTimeDetailIsHiddenWhileBuilding() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new SleepBuilder(60_000));
+        FreeStyleBuild running = p.scheduleBuild2(0).waitForStart();
+
+        assertThat(detailTypes(running), not(hasItem(TimestampDetail.class)));
+        assertThat(detailTypes(running), hasItem(DurationDetail.class));
+
+        running.getExecutor().interrupt();
+        j.waitForCompletion(running);
+
+        assertThat(detailTypes(running), hasItem(TimestampDetail.class));
+    }
+
+    private static List<Class<?>> detailTypes(Run<?, ?> run) {
+        return new Run.BasicRunDetailFactory().createFor(run).stream().<Class<?>>map(Object::getClass).toList();
+    }
 }
