@@ -429,7 +429,14 @@ function submitWizardForm(form) {
     method: form.method.toUpperCase(),
     headers: crumb.wrap({}),
     body: body,
+    redirect: "manual",
   }).then((rsp) => {
+    if (rsp.type === "opaqueredirect") {
+      form.closest("dialog")?.dispatchEvent(new Event("cancel"));
+      window.location.reload();
+      return;
+    }
+
     if (rsp.redirected) {
       window.location.assign(rsp.url);
       return;
