@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.EnvVars;
 import hudson.Launcher;
@@ -24,6 +23,7 @@ import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -63,8 +63,10 @@ class CLIEnvVarTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "JENKINS_URL", // Defined on CI agents
+                                   matches = "^http.*",   // Test started by Jenkins
+                                   disabledReason = "TODO instead remove it from the process env?")
     void testWithoutSOptionAndWithoutJENKINS_URL() throws Exception {
-        assumeTrue(System.getenv("JENKINS_URL") == null); // TODO instead remove it from the process env?
         assertNotEquals(0, launch("java",
                 "-Duser.home=" + home,
                 "-jar", jar.getAbsolutePath(),

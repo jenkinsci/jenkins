@@ -6,9 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import hudson.Functions;
 import hudson.cli.CLICommandInvoker;
 import hudson.cli.CreateJobCommand;
 import java.io.File;
@@ -25,6 +23,8 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.util.NameValuePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -51,9 +51,8 @@ class Security4187Test {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "POSIX rename-onto-non-empty-directory semantics assumed")
     void jobRenameFallbackLeaksControllerSecretViaSymLink() throws Exception {
-        assumeFalse(Functions.isWindows(), "POSIX rename-onto-non-empty-directory semantics assumed");
-
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         var mas = new MockAuthorizationStrategy();
         mas.grant(Jenkins.READ, Item.READ, Item.CREATE, Item.CONFIGURE, Item.BUILD).everywhere().to("dev");

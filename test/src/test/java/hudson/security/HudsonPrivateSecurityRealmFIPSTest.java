@@ -30,9 +30,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import hudson.Functions;
 import hudson.logging.LogRecorder;
 import hudson.logging.LogRecorderManager;
 import hudson.model.User;
@@ -47,8 +45,8 @@ import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPasswordInput;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -68,12 +66,10 @@ class HudsonPrivateSecurityRealmFIPSTest {
     private final RealJenkinsExtension rjr = new RealJenkinsExtension().includeTestClasspathPlugins(false)
                                                        .javaOptions("-Xmx256M", "-Djenkins.security.FIPS140.COMPLIANCE=true");
 
-    @BeforeEach
-    void skipTestsOnWindowsCI() {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Expensive to run and not Windows specific");
-    }
-
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void generalLogin() throws Throwable {
         rjr.then(HudsonPrivateSecurityRealmFIPSTest::generalLoginStep);
     }
@@ -97,6 +93,9 @@ class HudsonPrivateSecurityRealmFIPSTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void userCreationWithHashedPasswords() throws Throwable {
         rjr.then(HudsonPrivateSecurityRealmFIPSTest::userCreationWithHashedPasswordsStep);
     }
@@ -119,6 +118,9 @@ class HudsonPrivateSecurityRealmFIPSTest {
 
     @Test
     @LocalData
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void userLoginAfterEnablingFIPS() throws Throwable {
         rjr.then(HudsonPrivateSecurityRealmFIPSTest::userLoginAfterEnablingFIPSStep);
     }
@@ -137,6 +139,9 @@ class HudsonPrivateSecurityRealmFIPSTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void userCreationWithJBCryptPasswords() throws Throwable {
         rjr.then(HudsonPrivateSecurityRealmFIPSTest::userCreationWithJBCryptPasswordsStep);
 
@@ -152,6 +157,9 @@ class HudsonPrivateSecurityRealmFIPSTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void validatePasswordLengthForFIPS() throws Throwable {
         rjr.then(HudsonPrivateSecurityRealmFIPSTest::validatePasswordLengthForFIPSStep);
     }
@@ -178,6 +186,9 @@ class HudsonPrivateSecurityRealmFIPSTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void validatePasswordMismatchForFIPS() throws Throwable {
         rjr.then(HudsonPrivateSecurityRealmFIPSTest::validatePasswordMismatchForFIPSStep);
     }
@@ -205,6 +216,9 @@ class HudsonPrivateSecurityRealmFIPSTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Expensive to run and not Windows specific")
     void validatePasswordSuccessForFIPS() throws Throwable {
         rjr.then(HudsonPrivateSecurityRealmFIPSTest::validatePasswordSuccessForFIPSStep);
     }

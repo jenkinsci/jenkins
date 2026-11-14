@@ -27,15 +27,15 @@ package jenkins.security.stapler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import hudson.Functions;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -52,9 +52,8 @@ class Security914Test {
     }
 
     @Test
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void cannotUseInvalidLocale_toTraverseFolder() throws Exception {
-        assumeTrue(Functions.isWindows());
-
         assertNotNull(j.getPluginManager().getPlugin("matrix-project"));
         j.createWebClient().goTo("plugin/matrix-project/images/matrixproject.svg", "image/svg+xml");
 
@@ -72,9 +71,8 @@ class Security914Test {
     }
 
     @Test
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void cannotUseInvalidLocale_toAnyFileInSystem() throws Exception {
-        assumeTrue(Functions.isWindows());
-
         assertNotNull(j.getPluginManager().getPlugin("matrix-project"));
         j.createWebClient().goTo("plugin/matrix-project/images/matrixproject.svg", "image/svg+xml");
 

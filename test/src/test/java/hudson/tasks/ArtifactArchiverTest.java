@@ -32,8 +32,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import hudson.AbortException;
 import hudson.FilePath;
@@ -67,6 +65,9 @@ import org.jenkinsci.plugins.structs.describable.DescribableModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
@@ -218,7 +219,6 @@ class ArtifactArchiverTest {
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
         FilePath ws = b.getWorkspace();
         assertNotNull(ws);
-        assumeTrue(ws.child("dir/lodge").exists(), "May not be testable on Windows:\n" + JenkinsRule.getLog(b));
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(1, artifacts.size());
         FreeStyleBuild.Artifact artifact = artifacts.getFirst();
@@ -254,7 +254,6 @@ class ArtifactArchiverTest {
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
         FilePath ws = b.getWorkspace();
         assertNotNull(ws);
-        assumeTrue(ws.child("dir/lodge").exists(), "May not be testable on Windows:\n" + JenkinsRule.getLog(b));
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(0, artifacts.size());
     }
@@ -265,8 +264,7 @@ class ArtifactArchiverTest {
 
         FreeStyleProject p = j.jenkins.getItemByFullName(Functions.isWindows() ? "sample-windows" : "sample", FreeStyleProject.class);
 
-        FreeStyleBuild b = p.scheduleBuild2(0).get();
-        assumeTrue(b.getResult() == Result.SUCCESS, "May not be testable on Windows:\n" + JenkinsRule.getLog(b));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
         FilePath ws = b.getWorkspace();
         assertNotNull(ws);
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
@@ -281,8 +279,8 @@ class ArtifactArchiverTest {
 
     @Issue("SECURITY-162")
     @Test
+    @DisabledIfEnvironmentVariable(named = "DISABLE_SYMLINK_TESTS", matches = "true")
     void outsideSymlinks() throws Exception {
-        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         final FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -493,9 +491,8 @@ class ArtifactArchiverTest {
 
     @Test
     @Issue({"JENKINS-21905", "https://github.com/jenkinsci/jenkins/issues/27188"})
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void archiveNotReadable() throws Exception {
-        assumeFalse(Functions.isWindows()); // No permission support
-
         final String FILENAME = "myfile";
         DumbSlave slave = j.createOnlineSlave(Label.get("target"));
 
@@ -512,7 +509,6 @@ class ArtifactArchiverTest {
         p.setAssignedNode(slave);
 
         FreeStyleBuild build = j.buildAndAssertStatus(Result.FAILURE, p);
-        assumeFalse(new File(build.getWorkspace().child(FILENAME).getRemote()).canRead(), FILENAME + " should not be readable by " + System.getProperty("user.name"));
         String expectedPath = build.getWorkspace().child(FILENAME).getRemote();
         String expectedMessage = Messages.ArtifactArchiver_AccessDenied(expectedPath, build.getWorkspace().getRemote());
         j.assertLogContains("ERROR: Step ‘Archive the artifacts’ failed: " + expectedMessage, build);
@@ -521,8 +517,8 @@ class ArtifactArchiverTest {
 
     @Test
     @Issue("JENKINS-55049")
+    @DisabledIfEnvironmentVariable(named = "DISABLE_SYMLINK_TESTS", matches = "true")
     void lengthOfArtifactIsCorrect_eventForInvalidSymlink() throws Exception {
-        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {

@@ -28,10 +28,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.Functions;
 import hudson.XmlFile;
 import hudson.model.FreeStyleProject;
 import hudson.model.ItemGroup;
@@ -53,6 +51,7 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
@@ -70,8 +69,10 @@ class BuildTimeTrendTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "TODO: Windows agents do not have enough resources to run this test")
     void withAbstractJob_OnBuiltInNode() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         FreeStyleProject p = j.createFreeStyleProject();
         j.buildAndAssertSuccess(p);
 
@@ -85,8 +86,10 @@ class BuildTimeTrendTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "TODO: Windows agents do not have enough resources to run this test")
     void withAbstractJob_OnAgentNode() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         DumbSlave agent = j.createSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
@@ -105,8 +108,10 @@ class BuildTimeTrendTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "TODO: Windows agents do not have enough resources to run this test")
     void withAbstractJob_OnBoth() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         DumbSlave agent = j.createSlave();
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -139,8 +144,10 @@ class BuildTimeTrendTest {
 
     @Test
     @LocalData("localDataNonAbstractJob")
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "TODO: Windows agents do not have enough resources to run this test")
     void withNonAbstractJob_withoutAgents() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         JenkinsRule.WebClient wc = j.createWebClient();
         TopLevelItem p = j.jenkins.getItem("job0");
         assertThat(p, instanceOf(NonAbstractJob.class));
@@ -159,8 +166,10 @@ class BuildTimeTrendTest {
     @Test
     @LocalData("localDataNonAbstractJob")
     @Issue("JENKINS-63232")
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "TODO: Windows agents do not have enough resources to run this test")
     void withNonAbstractJob_withAgents() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Windows container agents do not have enough resources to run this test");
         // just to trigger data-is-distributed-build-enabled = true
         j.createSlave();
 

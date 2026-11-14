@@ -25,15 +25,14 @@
 package jenkins.slaves.restarter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import hudson.Functions;
 import hudson.model.Slave;
 import hudson.slaves.DumbSlave;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import jenkins.security.MasterToSlaveCallable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.LogRecorder;
@@ -52,25 +51,29 @@ class JnlpSlaveRestarterInstallerTest {
 
     @Issue("JENKINS-19055")
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "TODO: Test fails on Windows VM")
     void tcpReconnection() throws Throwable {
         // TODO Enable when test is reliable on Windows agents of ci.jenkins.io
         // When builds switched from ACI containers to virtual machines, this test consistently failed
         // When the test is run on local Windows computers, it passes
         // Disable the test on ci.jenkins.io and friends when running Windows
         // Do not disable for Windows developers generally
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Test fails on Windows VM");
         reconnection(false);
     }
 
     @Issue("JENKINS-66446")
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "TODO: Test fails on Windows VM")
     void webSocketReconnection() throws Throwable {
         // TODO Enable when test is reliable on Windows agents of ci.jenkins.io
         // When builds switched from ACI containers to virtual machines, this test consistently failed
         // When the test is run on local Windows computers, it passes
         // Disable the test on ci.jenkins.io and friends when running Windows
         // Do not disable for Windows developers generally
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "TODO: Test fails on Windows VM");
         reconnection(true);
     }
 

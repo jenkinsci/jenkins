@@ -3,10 +3,8 @@ package jenkins.security;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
-import hudson.Functions;
 import hudson.model.Action;
 import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
@@ -20,6 +18,7 @@ import jenkins.model.Jenkins;
 import org.htmlunit.Page;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -41,8 +40,10 @@ class Security1809Test {
 
     @Test
     @Issue("SECURITY-1809")
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Low value, high cost on Windows")
     void passwordIsMaskedForView() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         final PasswordView view = new PasswordView("view1", secretPassword);
         j.jenkins.addView(view);
 
@@ -146,8 +147,10 @@ class Security1809Test {
 
     @Test
     @Issue("SECURITY-1809")
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Low value, high cost on Windows")
     void permissionIsCorrectlyCheckedOnNestedObject() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         final Folder folder = j.jenkins.createProject(Folder.class, "folder1");
         final FreeStyleProject job = folder.createProject(FreeStyleProject.class, "job1");
         FreeStyleBuild build = j.buildAndAssertSuccess(job);

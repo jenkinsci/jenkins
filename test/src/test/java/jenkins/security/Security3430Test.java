@@ -8,9 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import hudson.Functions;
 import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.Launcher;
@@ -34,6 +32,7 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -53,14 +52,18 @@ class Security3430Test {
     private File tmp;
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // A Windows CI workspace path
+                                   disabledReason = "Low value, high cost on Windows")
     void runWithOldestSupportedAgentJar() throws Throwable {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         runWithRemoting(RemotingVersionInfo.getMinimumSupportedVersion().toString(), "/old-remoting/remoting-minimum-supported.jar", true);
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // A Windows CI workspace path
+                                   disabledReason = "Low value, high cost on Windows")
     void runWithCurrentAgentJar() throws Throwable {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         runWithRemoting(Launcher.VERSION, null, false);
     }
 

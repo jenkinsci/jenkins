@@ -28,7 +28,6 @@ import static java.util.Objects.requireNonNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
@@ -50,14 +49,9 @@ import org.junit.jupiter.api.Test;
 class UpdateCenterTest {
 
     @Test
-    void data() {
-        try {
-            doData("https://updates.jenkins.io/update-center.json?version=build");
-            doData("https://updates.jenkins.io/stable/update-center.json?version=build");
-        } catch (Exception x) {
-            // TODO this should not be in core at all; should be in repo built by a separate job somewhere
-            assumeTrue(false, "Might be no Internet connectivity, or might start failing due to expiring certificate through no fault of code changes: " + x);
-        }
+    void data() throws Exception {
+        doData("https://updates.jenkins.io/update-center.json?version=build");
+        doData("https://updates.jenkins.io/stable/update-center.json?version=build");
     }
 
     private void doData(String location) throws Exception {
