@@ -770,6 +770,23 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
                                 setResult(Result.FAILURE);
                             }
                         }
+                    } catch (InterruptedException e) {
+                        Executor executor = Executor.currentExecutor();
+                        if (executor != null && executor.hasPendingInterruptStatus()) {
+                            // The build was interrupted (aborted / superseded / reclaimed) while a step
+                            // was running. Honor the interrupt's result as an abort rather than FAILURE.
+                            if (phase) {
+                                setResult(executor.abortResult());
+                                executor.recordCauseOfInterruption(AbstractBuild.this, listener);
+                                listener.getLogger().println(Messages.Run_BuildAborted());
+                            }
+                            r = false;
+                        } else {
+                            // A step threw InterruptedException for its own reasons with no executor
+                            // abort pending; treat it as a step failure, as before.
+                            reportError(bs, e, listener, phase);
+                            r = false;
+                        }
                     } catch (Exception | LinkageError e) {
                         reportError(bs, e, listener, phase);
                         r = false;
