@@ -48,7 +48,7 @@
     "sass": "1.108.1",
     "sass-loader": "17.1.0",
     "style-loader": "4.0.0",
-    "stylelint": "17.16.0",
+    "stylelint": "18.0.0",
     "stylelint-checkstyle-reporter": "1.1.1",
     "stylelint-config-standard-scss": "17.0.0",
     "vite": "^8.2.2",
