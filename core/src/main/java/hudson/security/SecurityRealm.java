@@ -661,7 +661,6 @@ public abstract class SecurityRealm implements Describable<SecurityRealm>, Exten
             BasicAuthenticationEntryPoint basicAuthenticationEntryPoint = new BasicAuthenticationEntryPoint();
             basicAuthenticationEntryPoint.setRealmName("Jenkins");
             bhp.setAuthenticationEntryPoint(basicAuthenticationEntryPoint);
-            bhp.setRememberMeServices(sc.rememberMe2);
             filters.add(bhp);
         }
         {

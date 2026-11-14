@@ -262,7 +262,7 @@
   }
 }
 
-$jenkins-split-button-border-radius: 0.2rem;
+$jenkins-split-button-border-radius: 0.25rem;
 
 .jenkins-split-button {
   display: flex;
@@ -279,8 +279,15 @@ $jenkins-split-button-border-radius: 0.2rem;
     border-bottom-left-radius: $jenkins-split-button-border-radius;
 
     svg {
-      width: 0.75rem;
-      height: 0.75rem;
+      width: 0.875rem;
+      height: 0.875rem;
+    }
+  }
+
+  @media (width < 740px) {
+    & > :first-child + * {
+      flex: none;
+      width: 3.25rem;
     }
   }
 }

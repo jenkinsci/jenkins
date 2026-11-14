@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -36,7 +37,6 @@ class PersistedListTest {
         assertThat(list, empty());
     }
 
-    // Arguably not the "expected" behavior.
     @Test
     void defaultSerializationForSubclass() {
         XStream2 xstream = new XStream2();
@@ -60,9 +60,7 @@ class PersistedListTest {
 
         final Object o = xstream.fromXML(craftedXml);
         assertThat(o, instanceOf(Data.class));
-        final PersistedList<String> list = ((Data) o).strings;
-        assertThat(list, instanceOf(PersistedListSubtype.class));
-        assertThat(list, contains(instanceOf(Integer.class))); // TODO FIXME this seems wrong
+        assertThat(((Data) o).strings, nullValue());
     }
 
     @Test
@@ -98,8 +96,7 @@ class PersistedListTest {
                 </hudson.util.PersistedListTest_-Data>""";
         final Object fromXML = xstream.fromXML(serialized);
         assertThat(fromXML, instanceOf(Data.class));
-        final PersistedList<String> strings = ((Data) fromXML).strings;
-        assertThat(strings, contains(instanceOf(Integer.class))); // TODO FIXME this seems wrong
+        assertThat(((Data) fromXML).strings, nullValue());
     }
 
     @Test
