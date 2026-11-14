@@ -29,9 +29,11 @@ import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import hudson.model.Computer;
+import hudson.slaves.DumbSlave;
 import jenkins.model.Jenkins;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -208,5 +210,41 @@ class DeleteNodeCommandTest {
         assertThat(result, succeededSilently());
         assertThat(j.jenkins.getView("aNode1"), nullValue());
         assertThat(j.jenkins.getView("aNode2"), nullValue());
+    }
+
+    @Test
+    void deleteNodeWithoutExecutorsShouldSucceed() throws Exception {
+        createAgentWithoutExecutors("aNode");
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Computer.DELETE, Jenkins.READ)
+                .invokeWithArgs("aNode")
+        ;
+
+        assertThat(result, succeededSilently());
+        assertThat(j.jenkins.getNode("aNode"), nullValue());
+    }
+
+    @Test
+    void deleteNodeWithoutExecutorsShouldFailWithoutNodeDeletePermission() throws Exception {
+        createAgentWithoutExecutors("aNode");
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Jenkins.READ)
+                .invokeWithArgs("aNode")
+        ;
+
+        assertThat(result, failedWith(6));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Delete permission"));
+        assertThat(j.jenkins.getNode("aNode"), notNullValue());
+    }
+
+    private DumbSlave createAgentWithoutExecutors(String name) throws Exception {
+        DumbSlave agent = new DumbSlave(name, j.createTmpDir().getPath(), j.createComputerLauncher(null));
+        agent.setNumExecutors(0);
+        j.jenkins.addNode(agent);
+        assertThat("a node without executors has no computer", agent.toComputer(), nullValue());
+        return agent;
     }
 }
