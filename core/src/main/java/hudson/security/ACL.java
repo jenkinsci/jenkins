@@ -41,6 +41,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import jenkins.security.NonSerializableSecurityContext;
+import jenkins.security.apitoken.ApiTokenScope;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
 import org.kohsuke.accmod.Restricted;
@@ -72,7 +73,7 @@ public abstract class ACL {
         if (a.equals(SYSTEM2)) { // perhaps redundant given check in AccessControlled
             return;
         }
-        if (!hasPermission2(a, p)) {
+        if (!ApiTokenScope.permits(a, p) || !hasPermission2(a, p)) {
             while (!p.enabled && p.impliedBy != null) {
                 p = p.impliedBy;
             }
@@ -134,7 +135,7 @@ public abstract class ACL {
         if (a.equals(SYSTEM2)) { // perhaps redundant given check in AccessControlled
             return true;
         }
-        return hasPermission2(a, p);
+        return ApiTokenScope.permits(a, p) && hasPermission2(a, p);
     }
 
     /**
