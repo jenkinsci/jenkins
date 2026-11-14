@@ -1596,7 +1596,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Serves a page of {@link #getBuilds()} as JSON for {@code buildTimeTrend.jelly}.
+     * Serves a page of {@link #getBuilds()} as JSON for {@code index.jelly}.
      */
     @GET
     @Restricted(NoExternalUse.class)
