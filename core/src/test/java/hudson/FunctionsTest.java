@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -44,6 +45,7 @@ import hudson.model.Action;
 import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import hudson.model.Run;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.model.ViewGroup;
@@ -854,6 +856,80 @@ class FunctionsTest {
             mocked.when(Stapler::getCurrentRequest2).thenReturn(req);
             assertFalse(Functions.showInPrimaryHeader(action));
         }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static Run mockRun(Action... actions) {
+        Run run = mock(Run.class);
+        doReturn(List.of(actions)).when(run).getAllActions();
+        return run;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static Functions.RunUrl runUrl(Run current, Run previous, Run next, String rest) {
+        when(current.getPreviousBuild()).thenReturn(previous);
+        when(current.getNextBuild()).thenReturn(next);
+        return new Functions.RunUrl(current, "job/x/", "job/x/2/", rest);
+    }
+
+    @Test
+    void runUrlShouldDisableNavigationWhenNeighbourLacksSubPage() {
+        Run current = mockRun(createMockAction("coverage"));
+        Run previous = mockRun();
+        Run next = mockRun();
+
+        Functions.RunUrl url = runUrl(current, previous, next, "/coverage/");
+
+        assertFalse(url.isPreviousBuildAvailable());
+        assertFalse(url.isNextBuildAvailable());
+    }
+
+    @Test
+    void runUrlShouldEnableNavigationWhenNeighboursHaveSubPage() {
+        Run current = mockRun(createMockAction("coverage"));
+        Run previous = mockRun(createMockAction("coverage"));
+        Run next = mockRun(createMockAction("coverage"));
+
+        Functions.RunUrl url = runUrl(current, previous, next, "/coverage/overview/");
+
+        assertTrue(url.isPreviousBuildAvailable());
+        assertTrue(url.isNextBuildAvailable());
+    }
+
+    @Test
+    void runUrlShouldEnableNavigationOnMainPageAndBuiltInPages() {
+        Run current = mockRun(createMockAction("coverage"));
+        Run previous = mockRun();
+        Run next = mockRun();
+
+        Functions.RunUrl mainPage = runUrl(current, previous, next, "");
+        assertTrue(mainPage.isPreviousBuildAvailable());
+        assertTrue(mainPage.isNextBuildAvailable());
+
+        // "console" is not an action of the current build, so it is treated as a built-in page
+        Functions.RunUrl console = runUrl(current, previous, next, "/console");
+        assertTrue(console.isPreviousBuildAvailable());
+        assertTrue(console.isNextBuildAvailable());
+    }
+
+    @Test
+    void runUrlShouldDisableNavigationWithoutNeighbours() {
+        Run current = mockRun();
+
+        Functions.RunUrl url = runUrl(current, null, null, "");
+
+        assertFalse(url.isPreviousBuildAvailable());
+        assertFalse(url.isNextBuildAvailable());
+    }
+
+    @Test
+    void runUrlShouldDecodeSubPageName() {
+        Run current = mockRun(createMockAction("my report"));
+        Run previous = mockRun();
+
+        Functions.RunUrl url = runUrl(current, previous, null, "/my%20report/");
+
+        assertFalse(url.isPreviousBuildAvailable());
     }
 
 }

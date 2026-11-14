@@ -533,6 +533,56 @@ public class Functions {
             return getUrl(run.getPreviousBuild());
         }
 
+        /**
+         * Whether the "next build" link should be offered: there is a next build and, if the current
+         * page is backed by an action, the next build has the same page.
+         */
+        @Restricted(NoExternalUse.class)
+        public boolean isNextBuildAvailable() {
+            Run<?, ?> next = run.getNextBuild();
+            return next != null && isRestResolvableOn(next);
+        }
+
+        /**
+         * Whether the "previous build" link should be offered: there is a previous build and, if the
+         * current page is backed by an action, the previous build has the same page.
+         */
+        @Restricted(NoExternalUse.class)
+        public boolean isPreviousBuildAvailable() {
+            Run<?, ?> previous = run.getPreviousBuild();
+            return previous != null && isRestResolvableOn(previous);
+        }
+
+        private boolean isRestResolvableOn(Run<?, ?> target) {
+            String segment = firstSegmentOfRest();
+            if (segment.isEmpty()) {
+                return true; // main build page
+            }
+            if (!hasActionWithUrlName(run, segment)) {
+                return true; // built-in view or method, present on every build
+            }
+            return hasActionWithUrlName(target, segment);
+        }
+
+        private String firstSegmentOfRest() {
+            String s = rest;
+            int start = 0;
+            while (start < s.length() && s.charAt(start) == '/') {
+                start++;
+            }
+            int end = s.indexOf('/', start);
+            return decodePath(end < 0 ? s.substring(start) : s.substring(start, end));
+        }
+
+        private static boolean hasActionWithUrlName(Run<?, ?> r, String urlName) {
+            for (Action a : r.getAllActions()) {
+                if (urlName.equals(a.getUrlName())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private String getUrl(Run n) {
             if (n == null)
                 return null;
