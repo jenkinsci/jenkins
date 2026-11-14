@@ -42,7 +42,10 @@ export function layoutBuildColumns(container) {
   const cellsByRow = rows.map((row) =>
     Array.from(row.children).filter((e) => e.classList.contains(COLUMN_CLASS)),
   );
-  const columnCount = Math.max(...cellsByRow.map((cells) => cells.length));
+  const columnCount = cellsByRow.reduce(
+    (max, cells) => Math.max(max, cells.length),
+    0,
+  );
 
   // Reset any previous layout so each cell reports its natural width
   container.classList.add(MEASURING_CLASS);
@@ -115,7 +118,8 @@ export function layoutBuildColumns(container) {
     rows[0].clientWidth - (actions ? actions.getBoundingClientRect().width : 0);
 
   // Show columns in order for as long as they fit at their smallest
-  const [first, ...rest] = columns;
+  const first = columns[0];
+  const rest = columns.slice(1);
   first.visible = true;
   let used = first.width;
   let full = false;
@@ -245,14 +249,16 @@ export function observeBuildColumns(container) {
     });
   };
 
-  let lastWidth;
-  new ResizeObserver(([entry]) => {
-    const width = entry.contentRect.width;
-    if (width !== lastWidth) {
-      lastWidth = width;
-      layout();
-    }
-  }).observe(container);
+  if (typeof ResizeObserver !== "undefined") {
+    let lastWidth;
+    new ResizeObserver(([entry]) => {
+      const width = entry.contentRect.width;
+      if (width !== lastWidth) {
+        lastWidth = width;
+        layout();
+      }
+    }).observe(container);
+  }
 
   // The layout itself only touches attributes, so this won't retrigger itself
   new MutationObserver(layout).observe(container, {
