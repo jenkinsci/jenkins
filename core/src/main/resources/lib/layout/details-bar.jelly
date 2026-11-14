@@ -32,9 +32,11 @@ THE SOFTWARE.
     <st:attribute name="context" since="TODO">
       The view the bar is rendered in, either 'compact' or 'full'.
       Details whose verbosity doesn't match are hidden. Omit to show all details.
+      Each detail's view can read it from the detailContext variable.
     </st:attribute>
   </st:documentation>
 
+  <j:set var="detailContext" value="${attrs.context}" />
   <div class="jenkins-details">
     <j:forEach var="group" items="${h.getDetailsFor(it, attrs.context)}" indexVar="index">
       <j:if test="${index gt 0}">
