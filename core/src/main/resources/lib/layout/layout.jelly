@@ -106,6 +106,7 @@ THE SOFTWARE.
   <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}"
         data-extensions-available="${extensionsAvailable}"
         data-crumb-header="${h.getCrumbRequestField()}" data-crumb-value="${h.getCrumb(request2)}"
+        data-dropdown-post-error="${%dropdownPostError}"
         data-unit-test="${h.isUnitTest}">
     ${h.checkPermission(it,permission)}
     ${h.checkAnyPermission(it, permissions)}
