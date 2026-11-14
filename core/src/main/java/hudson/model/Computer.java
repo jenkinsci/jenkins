@@ -113,6 +113,7 @@ import jenkins.model.DisplayExecutor;
 import jenkins.model.IComputer;
 import jenkins.model.IDisplayExecutor;
 import jenkins.model.Jenkins;
+import jenkins.model.NodeBuildsProvider;
 import jenkins.search.SearchGroup;
 import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.ImpersonatingExecutorService;
@@ -796,13 +797,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return node != null ? node.getSelfLabel().getTiedJobs() : Collections.emptyList();
     }
 
+    /**
+     * Lists the runs that used this node, as supplied by {@link NodeBuildsProvider}s, newest first.
+     */
     public RunList getBuilds() {
-        return allBuilds().node(getNode());
-    }
-
-    @SuppressWarnings("unchecked")
-    private static RunList<Run<?, ?>> allBuilds() {
-        return RunList.fromJobs((Iterable) Jenkins.get().allItems(AbstractProject.class));
+        Node node = getNode();
+        return node != null ? NodeBuildsProvider.builds(node) : new RunList();
     }
 
     /**
@@ -816,7 +816,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             return new BuildListTable().serve(getBuilds(), olderThan, limit);
         }
         Node node = getNode();
-        return new BuildListTable().serve(allBuilds(), r -> r instanceof AbstractBuild && ((AbstractBuild<?, ?>) r).getBuiltOn() == node, olderThan, limit);
+        return node != null ? NodeBuildsProvider.serve(new BuildListTable(), node, olderThan, limit) : new BuildListTable().serve(List.of(), olderThan, limit);
     }
 
     /**
