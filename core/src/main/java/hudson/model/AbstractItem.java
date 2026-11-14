@@ -42,6 +42,7 @@ import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
+import hudson.security.Permission;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.FormValidation;
@@ -1127,4 +1128,9 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
      */
     public static final Message<AbstractItem> TASK_NOUN = new Message<>();
 
+    @Restricted(Beta.class)
+    @Override
+    public Permission getDescriptorPagePermission() {
+        return CONFIGURE;
+    }
 }

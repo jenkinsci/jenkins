@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <st:adjunct includes="hudson.widgets.DescriptorPageTest.adjunct"/>
+  <div class="descriptor-page-test"/>
+</j:jelly>
