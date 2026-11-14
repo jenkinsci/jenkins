@@ -118,3 +118,51 @@ describe("dropdown accessibility", () => {
     expect(link.hasAttribute("aria-haspopup")).toBe(false);
   });
 });
+
+/**
+ * A split button item, shaped like the JSON SplitButtonEvent produces.
+ */
+function splitButtonItem() {
+  const subItem = {
+    type: "ITEM",
+    displayName: "Edit and replay",
+    event: { url: "replay", type: "GET" },
+  };
+  return {
+    type: "ITEM",
+    displayName: "Replay",
+    semantic: "BUILD",
+    event: {
+      event: { url: "replay/rebuild", type: "GET" },
+      actions: [subItem],
+    },
+    subMenu: { items: [subItem] },
+  };
+}
+
+describe("split buttons", () => {
+  it("renders as a split button in the app bar", () => {
+    const element = Templates.menuItem(splitButtonItem(), "jenkins-button");
+
+    expect(element.classList.contains("jenkins-split-button")).toBe(true);
+    expect(element.children).toHaveLength(2);
+    expect(element.firstElementChild.getAttribute("href")).toBe(
+      "replay/rebuild",
+    );
+  });
+
+  it("renders only the primary action in a dropdown", () => {
+    const dropdown = Utils.generateDropdownItems([splitButtonItem()]);
+
+    expect(dropdown.querySelector(".jenkins-split-button")).toBeNull();
+    expect(dropdown.querySelector(".jenkins-button")).toBeNull();
+    expect(dropdown.children).toHaveLength(1);
+
+    const item = dropdown.firstElementChild;
+    expect(item.classList.contains("jenkins-dropdown__item")).toBe(true);
+    expect(item.classList.contains("jenkins-!-build-color")).toBe(true);
+    expect(item.getAttribute("href")).toBe("replay/rebuild");
+    expect(item.querySelector(".jenkins-dropdown__item__chevron")).toBeNull();
+    expect(item._tippy).toBeUndefined();
+  });
+});

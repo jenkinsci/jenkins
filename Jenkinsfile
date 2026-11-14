@@ -123,12 +123,17 @@ axes.values().combinations {
               mavenOptions.add(0, "-Dsurefire.excludesFile=${excludesFile}")
             }
             withChecks(name: 'Tests', includeStage: true) {
-              realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,target/vitest-reports/*.xml') {
+              // Stream JUnit Platform results live; passed to the forked test JVMs by Surefire rather than JAVA_TOOL_OPTIONS,
+              // which would print to stderr in every JVM launched during the build
+              withOpenTestReporting(healthScaleFactor: 20.0, javaToolOptions: false) {
+                mavenOptions.add(0, '-Djunit.platform.reporting.open.xml.enabled=true')
+                mavenOptions.add(0, "-Djunit.platform.reporting.open.xml.socket=${env.JUNIT_OTR_SOCKET_PORT}")
                 infra.runMaven(mavenOptions, jdk)
                 if (isUnix()) {
                   sh 'git add . && git diff --exit-code HEAD'
                 }
               }
+              junit healthScaleFactor: 20.0, testResults: 'target/vitest-reports/*.xml'
             }
           }
         }

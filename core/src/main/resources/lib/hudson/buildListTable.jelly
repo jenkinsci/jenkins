@@ -26,8 +26,10 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <st:documentation>
     Creates a table of builds.
-    <st:attribute name="builds" use="required">
-      A collection of builds to be displayed.
+    The builds are fetched page by page from the buildList endpoint of the current model object
+    (a view, user or computer), which serves its getBuilds().
+    <st:attribute name="builds" use="optional" deprecated="true">
+      Ignored; the builds are read from it.getBuilds().
     </st:attribute>
   </st:documentation>
   <template id="jenkins-build-status-icons">
@@ -48,12 +50,15 @@ THE SOFTWARE.
 
   <t:setIconSize/>
   <st:adjunct includes="hudson.model.Job.buildTimeTrend_resources" />
-  <j:new var="handler" className="jenkins.widgets.BuildListTable"/>
-  ${handler.setBuilds(attrs.builds)}
-  <l:progressiveRendering handler="${handler}" callback="displayBuilds"/>
+  <j:set var="ownerUrl" value="${h.getNearestAncestorUrl(request2, it)}"/>
+  <j:set var="runsUrl" value="buildList"/>
+  <j:if test="${ownerUrl != null}">
+    <j:set var="runsUrl" value="${ownerUrl}/buildList"/>
+  </j:if>
   <j:set var="consoleOutputIcon" trim="true">
     <l:icon src="symbol-terminal" alt="${%Console output}" />
   </j:set>
+  <div class="jenkins-runs" data-runs-url="${runsUrl}" data-runs-renderer="displayBuilds" data-load-error="${%Failed to load builds}">
   <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="projectStatus" style="display: none;" data-icon-size-class="${iconSizeClass}"  data-console-output-icon="${consoleOutputIcon}">
     <thead>
         <tr>
@@ -66,5 +71,10 @@ THE SOFTWARE.
     </thead>
     <tbody></tbody>
   </table>
+    <div class="jenkins-runs__loading">
+      <l:spinner text="${%Loading builds}"/>
+    </div>
+    <button type="button" class="jenkins-button jenkins-runs__more jenkins-hidden">${%Show older builds}</button>
+  </div>
   <t:rssBar-with-iconSize/>
 </j:jelly>

@@ -1,0 +1,4 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<jenkins.security.csp.impl.CspConfiguration>
+    <enforce>false</enforce>
+</jenkins.security.csp.impl.CspConfiguration>
