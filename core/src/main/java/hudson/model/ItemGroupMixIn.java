@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import jenkins.model.ItemUuids;
 import jenkins.model.Jenkins;
 import jenkins.security.ExtendedReadRedaction;
 import jenkins.util.xml.XMLUtils;
@@ -265,6 +266,16 @@ public abstract class ItemGroupMixIn {
         final File rootDir = result.getRootDir();
         result = Items.callWhileUpdatingByXml(() -> (T) Items.load(parent, rootDir));
         result.onCopiedFrom(src);
+        // a copy is another item, so it does not keep the source's pinned identity: it gets one of its own if new items
+        // are pinned, else none (and so derives one from its name)
+        if (result instanceof AbstractItem copy && (ItemUuids.pinsNewItems() || copy.isItemUuidPinned())) {
+            if (ItemUuids.pinsNewItems()) {
+                copy.newItemUuid();
+            } else {
+                copy.unpinItemUuid();
+            }
+            copy.save();
+        }
 
         add(result);
         ItemListener.fireOnCopied(src, result);
@@ -301,6 +312,11 @@ public abstract class ItemGroupMixIn {
             }
             if (!applicableIn) {
                 throw new AccessDeniedException(result.getDescriptor().clazz.getName() + " is not applicable in " + parent.getFullName());
+            }
+            if (ItemUuids.pinsNewItems() && result instanceof AbstractItem created) {
+                // a new item, with an identity of its own whatever the posted configuration had, as for a copy
+                created.newItemUuid();
+                created.save();
             }
 
             add(result);
