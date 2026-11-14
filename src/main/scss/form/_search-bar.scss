@@ -9,6 +9,7 @@
   --search-bar-height: 2.375rem;
 
   position: relative;
+  user-select: none;
   display: grid;
   grid-template-columns: auto 1fr auto;
   background: var(--input-color);
