@@ -83,7 +83,9 @@ THE SOFTWARE.
         </div>
         <t:iconSize/>
       </div>
-      <img class="build-time-graph jenkins-graph-card" src="${ownerUrl}/buildTimeGraph/png" width="500" height="400" lazymap="${ownerUrl}/buildTimeGraph/map" alt="[${%Build time graph}]" />
+      <div class="build-time-graph" role="img" aria-label="${%Build time graph}">
+        <j:out value="${it.buildTimeGraphSvg}"/>
+      </div>
     </div>
   </l:job-subpage>
 </j:jelly>
