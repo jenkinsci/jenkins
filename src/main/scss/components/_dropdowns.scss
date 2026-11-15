@@ -9,8 +9,12 @@ $dropdown-padding: 0.375rem;
   display: flex;
   flex-direction: column;
   border-radius: $dropdown-border-radius;
-  max-width: min(400px, calc(100vw - 10px)) !important;
+  max-width: 400px !important;
   max-height: 60vh;
+
+  @media (width <= 410px) {
+    max-width: calc(100vw - 10px) !important;
+  }
 
   .tippy-content {
     display: flex;
