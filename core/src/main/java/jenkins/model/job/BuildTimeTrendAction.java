@@ -3,14 +3,13 @@ package jenkins.model.job;
 import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.Job;
+import java.util.Collection;
+import java.util.List;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.experimentalflags.UserExperimentalFlag;
 import jenkins.model.menu.Group;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
-
-import java.util.Collection;
-import java.util.List;
 
 public class BuildTimeTrendAction implements Action {
     private final Job<?, ?> target;
