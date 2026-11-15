@@ -18,7 +18,7 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
         return Messages.SetBuildDescriptionCommand_ShortDescription();
      }
 
-    @Argument(metaVar = "JOB", usage = "Name of the job to build", required = true, index = 0)
+    @Argument(metaVar = "JOB", usage = "Name of the job", required = true, index = 0)
     public transient Job<?, ?> job;
 
     @Argument(metaVar = "BUILD#", usage = "Number of the build", required = true, index = 1)
