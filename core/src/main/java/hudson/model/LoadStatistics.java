@@ -249,16 +249,17 @@ public abstract class LoadStatistics {
     }
 
     /**
-     * Generates the load statistics graph as an inline SVG.
+     * Generates the load statistics graph as an inline SVG with an HTML legend.
      *
      * <p>
-     * In contrast to {@link #doGraph(String)}, which serves a fixed-size PNG, this serves an SVG
-     * document that is meant to be embedded directly into the page DOM so that it picks up the
-     * active theme (via CSS custom properties) and rescales with its container.
+     * In contrast to {@link #doGraph(String)}, which serves a fixed-size PNG, this serves an HTML
+     * fragment (an HTML legend followed by an inline SVG) meant to be embedded directly into the
+     * page DOM so that it picks up the active theme (via CSS custom properties) and rescales with
+     * its container.
      */
     public void doGraphSvg(StaplerResponse2 rsp, @QueryParameter String type) throws IOException {
-        rsp.setContentType("image/svg+xml;charset=UTF-8");
-        rsp.getWriter().write(createTrendChart(TimeScale.parse(type)).createSvg());
+        rsp.setContentType("text/html;charset=UTF-8");
+        rsp.getWriter().write(createTrendChart(TimeScale.parse(type)).createSvgWithLegend());
     }
 
     public Api getApi() {

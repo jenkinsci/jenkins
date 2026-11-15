@@ -162,4 +162,53 @@ class LoadStatisticsTest {
         Document doc = dbf.newDocumentBuilder().parse(new InputSource(new StringReader(svg)));
         assertEquals("svg", doc.getDocumentElement().getLocalName());
     }
+
+    @Test
+    void legend() throws Exception {
+        LoadStatistics ls = new LoadStatistics(0, 0) {
+            @Override
+            protected Iterable<Node> getNodes() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            protected boolean matches(Queue.Item item, SubTask subTask) {
+                throw new UnsupportedOperationException();
+            }
+        };
+
+        for (int i = 0; i < 50; i++) {
+            ls.onlineExecutors.update(4);
+            ls.busyExecutors.update(3);
+            ls.availableExecutors.update(1);
+            ls.queueLength.update(3);
+        }
+
+        MultiStageTimeSeries.TrendChart chart = ls.createTrendChart(TimeScale.SEC10);
+        String legend = chart.createLegendHtml();
+
+        // the legend is an HTML list with one item per plotted series (online/busy/available/queue)
+        assertTrue(legend.contains("jenkins-svg-graph__legend"), legend);
+        assertEquals(4, countOccurrences(legend, "<li"), legend);
+        // each series label is present as real HTML text, and swatches are decorative
+        assertTrue(legend.contains(Messages.LoadStatistics_Legends_BusyExecutors()), legend);
+        assertTrue(legend.contains("aria-hidden=\"true\""), legend);
+
+        // the combined fragment keeps the legend first and a single, still well-formed <svg>
+        String combined = chart.createSvgWithLegend();
+        assertTrue(combined.indexOf("<ul") < combined.indexOf("<svg"), combined);
+        String svg = combined.substring(combined.indexOf("<svg"));
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        Document doc = dbf.newDocumentBuilder().parse(new InputSource(new StringReader(svg)));
+        assertEquals("svg", doc.getDocumentElement().getLocalName());
+    }
+
+    private static int countOccurrences(String haystack, String needle) {
+        int count = 0;
+        for (int idx = haystack.indexOf(needle); idx >= 0; idx = haystack.indexOf(needle, idx + needle.length())) {
+            count++;
+        }
+        return count;
+    }
 }

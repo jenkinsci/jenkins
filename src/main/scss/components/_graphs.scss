@@ -4,7 +4,6 @@
 .jenkins-svg-graph {
   container-name: jenkins-svg-graph;
   container-type: inline-size;
-
   padding: 0.5rem;
   border: var(--jenkins-border);
   border-radius: var(--form-input-border-radius);
@@ -39,6 +38,33 @@
     @container jenkins-svg-graph (width >= 1100px) {
       --jenkins-graph-font-size: 10px;
     }
+  }
+
+  .jenkins-svg-graph__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 2rem;
+    margin: 0.5rem;
+    padding: 0;
+    list-style: none;
+    color: var(--text-color);
+    font-size: var(--font-size-sm);
+    justify-self: center;
+  }
+
+  .jenkins-svg-graph__legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .jenkins-svg-graph__legend-swatch {
+    display: inline-block;
+    inline-size: 1.25rem;
+    block-size: 1px;
+    flex-shrink: 0;
+    border-radius: 2px;
+    background: var(--swatch-color);
   }
 }
 

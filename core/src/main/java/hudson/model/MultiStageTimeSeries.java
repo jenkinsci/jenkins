@@ -313,7 +313,7 @@ public class MultiStageTimeSeries implements Serializable {
             final int width = 1000;
             final int height = 500;
             final double plotRight = width - 12;
-            final double plotTop = 32;
+            final double plotTop = 16;
             final double plotBottom = 420;
             final double plotH = plotBottom - plotTop;
 
@@ -404,22 +404,43 @@ public class MultiStageTimeSeries implements Serializable {
                    .append(points).append("\"/>");
             }
 
-            // Legend across the top.
-            double lx = plotLeft;
-            double ly = 16;
-            for (MultiStageTimeSeries s : series) {
-                String label = s.title.toString();
-                buf.append("<line x1=\"").append(fmt(lx)).append("\" y1=\"").append(fmt(ly))
-                   .append("\" x2=\"").append(fmt(lx + 18)).append("\" y2=\"").append(fmt(ly))
-                   .append("\" stroke=\"").append(cssColor(s.color)).append("\" stroke-width=\"1\" stroke-linecap=\"round\"/>");
-                buf.append("<text x=\"").append(fmt(lx + 24)).append("\" y=\"").append(fmt(ly + 4))
-                   .append("\" class=\"jenkins-svg-graph__label\">")
-                   .append(Util.xmlEscape(label)).append("</text>");
-                lx += 24 + label.length() * 7.0 + 24;
-            }
-
             buf.append("</svg>");
             return buf.toString();
+        }
+
+        /**
+         * Renders the chart legend as an HTML fragment (a swatch and label per series).
+         *
+         * <p>
+         * The legend lives in HTML rather than inside the {@link #createSvg() SVG} so the browser
+         * measures each label natively and reflows items with {@code flex-wrap}; this avoids the
+         * per-glyph width guesses that overlapped for wide (e.g. CJK) or enlarged labels. It also
+         * makes the labels readable to assistive technology, which treats the {@code role="img"}
+         * SVG as an opaque image and never exposes text drawn inside it.
+         */
+        public String createLegendHtml() {
+            StringBuilder buf = new StringBuilder();
+            buf.append("<ul class=\"jenkins-svg-graph__legend\">");
+            for (MultiStageTimeSeries s : series) {
+                buf.append("<li class=\"jenkins-svg-graph__legend-item\">")
+                   .append("<span class=\"jenkins-svg-graph__legend-swatch\" aria-hidden=\"true\" style=\"--swatch-color: ")
+                   .append(cssColor(s.color)).append("\"></span>")
+                   .append("<span class=\"jenkins-svg-graph__legend-label\">")
+                   .append(Util.xmlEscape(s.title.toString()))
+                   .append("</span></li>");
+            }
+            buf.append("</ul>");
+            return buf.toString();
+        }
+
+        /**
+         * Convenience wrapper returning the {@link #createLegendHtml() legend} followed by the
+         * {@link #createSvg() chart SVG} as a single HTML fragment for embedding into the page DOM.
+         * The legend comes first so it renders above the chart; the lone {@code <svg>} element is
+         * preserved so callers can still locate it (e.g. to set an accessible name).
+         */
+        public String createSvgWithLegend() {
+            return createLegendHtml() + createSvg();
         }
 
         private static String fmt(double d) {

@@ -100,17 +100,18 @@ public final class MemoryUsageMonitor extends PeriodicWork {
         }
 
         /**
-         * Renders the memory usage statistics graph as an inline, theme-aware SVG.
+         * Renders the memory usage statistics graph as an inline, theme-aware SVG with an HTML legend.
          *
          * <p>
-         * In contrast to {@link #doGraph(String)}, which serves a fixed-size PNG, this serves an SVG
-         * document meant to be embedded directly into the page DOM so that it picks up the active
-         * theme (via CSS custom properties) and rescales with its container.
+         * In contrast to {@link #doGraph(String)}, which serves a fixed-size PNG, this serves an HTML
+         * fragment (an HTML legend followed by an inline SVG) meant to be embedded directly into the
+         * page DOM so that it picks up the active theme (via CSS custom properties) and rescales with
+         * its container.
          */
         public void doGraphSvg(StaplerResponse2 rsp, @QueryParameter String type) throws IOException {
             Jenkins.get().checkAnyPermission(Jenkins.SYSTEM_READ, Jenkins.MANAGE);
-            rsp.setContentType("image/svg+xml;charset=UTF-8");
-            rsp.getWriter().write(MultiStageTimeSeries.createTrendChart(TimeScale.parse(type), used, max).createSvg());
+            rsp.setContentType("text/html;charset=UTF-8");
+            rsp.getWriter().write(MultiStageTimeSeries.createTrendChart(TimeScale.parse(type), used, max).createSvgWithLegend());
         }
     }
 

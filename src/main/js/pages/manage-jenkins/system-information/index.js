@@ -13,6 +13,9 @@ timespanSelect.addEventListener("change", () => {
   )
     .then((response) => response.text())
     .then((svg) => {
+      if (timespanSelect.value !== type) {
+        return;
+      }
       graphHost.innerHTML = svg;
       // The injected <svg> already carries role="img"; give it an accessible name.
       const svgElement = graphHost.querySelector("svg");

@@ -45,9 +45,6 @@ THE SOFTWARE.
        data-graph-base-url="${prefix?:'loadStatistics'}" data-graph-alt="${%Load statistics graph}">
     <!-- The graph will be loaded dynamically by JS as an inline SVG -->
   </div>
-  <noscript>
-    <img src="${prefix?:'loadStatistics'}/graphSvg?type=min&amp;width=500&amp;height=300" srcset="${prefix?:'loadStatistics'}/graphSvg?type=min" alt="[${%Load statistics graph}]" class="jenkins-graph-card" />
-  </noscript>
   <p>
     ${%blurb}
   </p>
