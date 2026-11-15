@@ -558,7 +558,7 @@ THE SOFTWARE.
                 <goals>
                   <goal>corepack</goal>
                 </goals>
-                <phase>test</phase>
+                <phase>verify</phase>
                 <configuration>
                   <arguments>yarn lint:ci</arguments>
                   <skip>${yarn.lint.skip}</skip>
@@ -569,7 +569,7 @@ THE SOFTWARE.
                 <goals>
                   <goal>corepack</goal>
                 </goals>
-                <phase>test</phase>
+                <phase>verify</phase>
                 <configuration>
                   <arguments>yarn exec prettier --check .</arguments>
                   <skip>${yarn.lint.skip}</skip>
@@ -603,7 +603,7 @@ THE SOFTWARE.
                 <goals>
                   <goal>corepack</goal>
                 </goals>
-                <phase>test</phase>
+                <phase>verify</phase>
                 <configuration>
                   <arguments>yarn lint</arguments>
                   <skip>${yarn.lint.skip}</skip>
