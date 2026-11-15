@@ -976,8 +976,14 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
     /**
      * Creates a new build of this project for immediate execution.
+     *
+     * <p>Must not be {@code synchronized}: the caller (an executor, via {@link Queue#callWithLock})
+     * holds {@link Queue#lock}, and acquiring the project's monitor here too would deadlock against
+     * any code that acquires those two locks in the opposite order while holding the monitor.
+     * Build-number assignment, formerly the reason this needed the project's monitor, now uses a
+     * dedicated lock instead (see {@link Job#nextBuildNumberLock}).
      */
-    protected synchronized R newBuild() throws IOException {
+    protected R newBuild() throws IOException {
         return buildMixIn.newBuild();
     }
 
