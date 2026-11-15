@@ -70,7 +70,7 @@ THE SOFTWARE.
 
       <div class="app-temporary-list__item__actions">
         <j:choose>
-          <j:when test="${build.building and build.appBarActions != null}">
+          <j:when test="${build.building}">
             <l:actions it="${build}" url="${rootURL}/${build.url}" compact="true" />
           </j:when>
           <j:otherwise>
