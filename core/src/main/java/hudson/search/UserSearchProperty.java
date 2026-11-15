@@ -33,7 +33,8 @@ public class UserSearchProperty extends hudson.model.UserProperty {
             return DEFAULT_SEARCH_CASE_INSENSITIVE_MODE;
         }
 
-        return user.getProperty(UserSearchProperty.class).getInsensitiveSearch();
+        UserSearchProperty property = user.getProperty(UserSearchProperty.class);
+        return property != null ? property.getInsensitiveSearch() : DEFAULT_SEARCH_CASE_INSENSITIVE_MODE;
     }
 
 
