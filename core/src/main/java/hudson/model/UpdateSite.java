@@ -85,7 +85,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
@@ -1223,6 +1222,12 @@ public class UpdateSite {
         @Exported
         public final String excerpt;
         /**
+         * {@link #name} and {@link #title} normalized by {@link UpdateSite#normalizeForSearch(String)}.
+         * Computed once when update site data is loaded rather than on every search.
+         */
+        private final String searchName;
+        private final String searchTitle;
+        /**
          * Optional version # from which this plugin release is configuration-compatible.
          */
         @Exported
@@ -1293,6 +1298,8 @@ public class UpdateSite {
             this.wiki = get(o, "wiki");
             this.title = get(o, "title");
             this.excerpt = get(o, "excerpt");
+            this.searchName = normalizeForSearch(name);
+            this.searchTitle = normalizeForSearch(getDisplayName());
             this.compatibleSinceVersion = Util.intern(get(o, "compatibleSinceVersion"));
             this.requiredCore = Util.intern(get(o, "requiredCore"));
             final String releaseTimestamp = get(o, "releaseTimestamp");
@@ -1343,6 +1350,32 @@ public class UpdateSite {
                 }
             }
 
+        }
+
+        /**
+         * Counts how many of the given words appear in this plugin's name or title.
+         *
+         * @param normalizedWords words already normalized by {@link UpdateSite#normalizeForSearch(String)}
+         */
+        @Restricted(NoExternalUse.class)
+        public int countSearchMatches(String[] normalizedWords) {
+            int matches = 0;
+            for (String word : normalizedWords) {
+                if (searchName.contains(word) || searchTitle.contains(word)) {
+                    matches++;
+                }
+            }
+            return matches;
+        }
+
+        /**
+         * Whether this plugin's name or title is exactly the given query, ignoring case and punctuation.
+         *
+         * @param normalizedQuery a query already normalized by {@link UpdateSite#normalizeForSearch(String)}
+         */
+        @Restricted(NoExternalUse.class)
+        public boolean isExactSearchMatch(String normalizedQuery) {
+            return searchName.equals(normalizedQuery) || searchTitle.equals(normalizedQuery);
         }
 
         @Restricted(NoExternalUse.class)
@@ -1636,7 +1669,7 @@ public class UpdateSite {
         /**
          * @since 2.40
          */
-        @Restricted(DoNotUse.class)
+        @Restricted(NoExternalUse.class)
         public boolean hasWarnings() {
             return !getWarnings().isEmpty();
         }
@@ -1754,6 +1787,20 @@ public class UpdateSite {
             deployBackup();
             return HttpResponses.redirectTo("../..");
         }
+    }
+
+    private static final Pattern SEARCH_SEPARATORS = Pattern.compile("[^\\p{L}\\p{N}]+");
+
+    /**
+     * Lower-cases text and collapses everything other than letters and digits into single spaces,
+     * so that {@code workflow-cps} and {@code Pipeline: Groovy} become {@code workflow cps} and {@code pipeline groovy}.
+     */
+    @Restricted(NoExternalUse.class)
+    public static String normalizeForSearch(@CheckForNull String text) {
+        if (text == null) {
+            return "";
+        }
+        return SEARCH_SEPARATORS.matcher(text.toLowerCase(Locale.ROOT)).replaceAll(" ").strip();
     }
 
     private static final long DAY = DAYS.toMillis(1);

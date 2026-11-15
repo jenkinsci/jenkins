@@ -9,10 +9,9 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * Default base implementation of {@link TopLevelItem}.
- *
- * @author Kohsuke Kawaguchi
+ * @deprecated Unused.
  */
+@Deprecated(since = "2.590")
 public abstract class AbstractTopLevelItem extends AbstractItem implements TopLevelItem {
     protected AbstractTopLevelItem(ItemGroup parent, String name) {
         super(parent, name);

@@ -187,6 +187,9 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
         rsp.setContentType("text/html;charset=UTF-8");
         rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         rsp.setHeader("X-Jenkins-Select-Error", selectionCleared ? "clear" : "retain");
+        if (FormValidation.APPLY_CONTENT_SECURITY_POLICY_HEADERS) {
+            rsp.setHeader("Content-Security-Policy", "sandbox; default-src 'none';");
+        }
         rsp.getWriter().print(renderHtml());
     }
 

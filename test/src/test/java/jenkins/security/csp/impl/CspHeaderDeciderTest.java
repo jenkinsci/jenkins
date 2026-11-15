@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.ExtensionList;
-import hudson.Main;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
@@ -19,13 +18,13 @@ import jenkins.security.csp.CspHeaderDecider;
 import org.hamcrest.Matcher;
 import org.htmlunit.Page;
 import org.htmlunit.html.DomElement;
-import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlCheckBoxInput;
 import org.htmlunit.html.HtmlFormUtil;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.jvnet.hudson.test.junit.jupiter.WithLocalData;
 import org.xml.sax.SAXException;
 
 @WithJenkins
@@ -158,88 +157,109 @@ public class CspHeaderDeciderTest {
     }
 
     @Test
-    public void testFallback(JenkinsRule j) throws IOException, SAXException {
-        // This would be more convincing with a "real" Jenkins run, but it doesn't look like JTH allows for not setting these flags.
-        Main.isDevelopmentMode = false;
-        Main.isUnitTest = false;
-        try (JenkinsRule.WebClient webClient = j.createWebClient()) {
-            final Optional<CspHeaderDecider> decider = CspHeaderDecider.getCurrentDecider();
-            assertTrue(decider.isPresent());
-            assertThat(decider.get(), instanceOf(FallbackDecider.class));
-
-            assertTrue(ExtensionList.lookupSingleton(CspRecommendation.class).isActivated());
-
-            final HtmlPage htmlPage = webClient.goTo("configureSecurity");
-            assertThat(
-                    // Workaround to placeholder for context path in this string
-                    htmlPage.querySelector("body").asXml().replace("/jenkins/", "{0}/"),
-                    hasBlurb(jellyResource(FallbackDecider.class, "message.properties")));
-            assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), nullValue());
-            assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), not(nullValue()));
-
-            // submit form and confirm this didn't create a config file
-            htmlPage.getFormByName("config").submit(htmlPage.getFormByName("config").getButtonByName("Submit"));
-            assertFalse(ExtensionList.lookupSingleton(CspConfiguration.class).getConfigFile().exists());
-        } finally {
-            Main.isDevelopmentMode = true;
-            Main.isUnitTest = true;
-        }
-    }
-
-    @Test
-    public void testFallbackAdminMonitorAndSetup(JenkinsRule j) throws IOException, SAXException {
+    public void testAdminMonitorAndSetup(JenkinsRule j) throws IOException, SAXException {
         // This needs to be done by disabling DevelopmentHeaderDecider, otherwise HtmlUnit will throw in
         // https://github.com/jenkinsci/jenkins/blob/320a149f7640d31f4fb7c4ee8eee81124cd6c588/src/main/js/components/search-bar/index.js#L93
         DevelopmentHeaderDecider.DISABLED = true;
         try (JenkinsRule.WebClient webClient = j.createWebClient()) {
             final Optional<CspHeaderDecider> decider = CspHeaderDecider.getCurrentDecider();
             assertTrue(decider.isPresent());
-            assertThat(decider.get(), instanceOf(FallbackDecider.class));
+            assertThat(decider.get(), instanceOf(CspConfiguration.ConfigurationHeaderDecider.class));
 
             assertTrue(ExtensionList.lookupSingleton(CspRecommendation.class).isActivated());
 
-            final HtmlPage htmlPage = webClient.goTo("manage/");
-            HtmlAnchor link = htmlPage.querySelector("div[data-monitor-id=\"jenkins.security.csp.impl.CspRecommendation\"] a");
-            final Page recommendationClick = link.click();
-            assertThat(recommendationClick, instanceOf(HtmlPage.class));
-            HtmlPage recommendationPage = (HtmlPage) recommendationClick;
-            assertThat(
-                    // Workaround to placeholder for context path in this string
-                    recommendationPage.getUrl().getPath(),
-                    is(j.contextPath + "/manage/administrativeMonitor/jenkins.security.csp.impl.CspRecommendation/"));
-            assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), nullValue());
-            assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), not(nullValue()));
+            final HtmlPage managePage = webClient.goTo("manage/");
+            // CSP is enforced by default (enforce==null treated as true)
+            assertThat(managePage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), not(nullValue()));
+            assertThat(managePage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), nullValue());
 
-            assertTrue(ExtensionList.lookupSingleton(CspRecommendation.class).isActivated());
+            // Click "Go to Security configuration" button in the admin monitor
+            DomElement setupButton = managePage.querySelector("[data-monitor-id='jenkins.security.csp.impl.CspRecommendation'] [name='setup']");
+            final Page configureSecurityPage = setupButton.click();
+            assertThat(configureSecurityPage, instanceOf(HtmlPage.class));
+            final HtmlPage setupPage = (HtmlPage) configureSecurityPage;
 
-            final Page setupClick = recommendationPage.getElementByName("setup").click();
-            assertThat(setupClick, instanceOf(HtmlPage.class));
-            final HtmlPage setupPage = (HtmlPage) setupClick;
-
-            // Once we select an option on this page, the admin monitor gets deactivated
-            assertFalse(ExtensionList.lookupSingleton(CspRecommendation.class).isActivated());
-
-            // We can see the checkbox now
+            // Checkbox is visible and checked (CSP enforced by default)
             assertThat(setupPage.querySelector("body").asXml(), containsString("Enforce Content Security Policy"));
-            assertThat(setupPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), nullValue());
-            assertThat(setupPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), not(nullValue()));
-
-            // check the box
             final DomElement enforceCheckbox = setupPage.getElementByName("_.enforce");
             assertThat(enforceCheckbox, instanceOf(HtmlCheckBoxInput.class));
-            enforceCheckbox.click();
+            assertTrue(((HtmlCheckBoxInput) enforceCheckbox).isChecked());
 
-            // no config file yet
+            // No config file yet
             assertFalse(ExtensionList.lookupSingleton(CspConfiguration.class).getConfigFile().exists());
 
+            // Submit the form (checkbox is checked by default, saves enforce=true)
             final Page afterSavingPage = HtmlFormUtil.submit(setupPage.getFormByName("config"), setupPage.getFormByName("config").getButtonByName("Submit"));
             assertThat(afterSavingPage, instanceOf(HtmlPage.class));
             assertThat(afterSavingPage.getUrl().getPath(), is(j.contextPath + "/manage/configureSecurity/"));
             assertThat(afterSavingPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), not(nullValue()));
             assertThat(afterSavingPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), nullValue());
 
-            // confirm that submitting created a config file
+            // Config file is now created and monitor is deactivated
             assertTrue(ExtensionList.lookupSingleton(CspConfiguration.class).getConfigFile().exists());
+            assertFalse(ExtensionList.lookupSingleton(CspRecommendation.class).isActivated());
+        } finally {
+            DevelopmentHeaderDecider.DISABLED = false;
+        }
+    }
+
+    @Test
+    @WithLocalData
+    public void testExistingEnforceTrue(JenkinsRule j) throws IOException, SAXException {
+        DevelopmentHeaderDecider.DISABLED = true;
+        try (JenkinsRule.WebClient webClient = j.createWebClient()) {
+            // Confirm local data
+            assertTrue(ExtensionList.lookupSingleton(CspConfiguration.class).getConfigFile().exists());
+            assertTrue(ExtensionList.lookupSingleton(CspConfiguration.class).isEnforce());
+
+            // No admin monitor with explicit configuration
+            assertFalse(ExtensionList.lookupSingleton(CspRecommendation.class).isActivated());
+
+            // ConfigurationHeaderDecider is active
+            final Optional<CspHeaderDecider> decider = CspHeaderDecider.getCurrentDecider();
+            assertTrue(decider.isPresent());
+            assertThat(decider.get(), instanceOf(CspConfiguration.ConfigurationHeaderDecider.class));
+
+            // CSP is enforced
+            final HtmlPage htmlPage = webClient.goTo("configureSecurity");
+            assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), not(nullValue()));
+            assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), nullValue());
+
+            // Checkbox is shown and checked
+            final DomElement enforceCheckbox = htmlPage.getElementByName("_.enforce");
+            assertThat(enforceCheckbox, instanceOf(HtmlCheckBoxInput.class));
+            assertTrue(((HtmlCheckBoxInput) enforceCheckbox).isChecked());
+        } finally {
+            DevelopmentHeaderDecider.DISABLED = false;
+        }
+    }
+
+    @Test
+    @WithLocalData
+    public void testExistingEnforceFalse(JenkinsRule j) throws IOException, SAXException {
+        DevelopmentHeaderDecider.DISABLED = true;
+        try (JenkinsRule.WebClient webClient = j.createWebClient()) {
+            // Confirm local data
+            assertTrue(ExtensionList.lookupSingleton(CspConfiguration.class).getConfigFile().exists());
+            assertFalse(ExtensionList.lookupSingleton(CspConfiguration.class).isEnforce());
+
+            // No admin monitor with explicit configuration
+            assertFalse(ExtensionList.lookupSingleton(CspRecommendation.class).isActivated());
+
+            // ConfigurationHeaderDecider is active
+            final Optional<CspHeaderDecider> decider = CspHeaderDecider.getCurrentDecider();
+            assertTrue(decider.isPresent());
+            assertThat(decider.get(), instanceOf(CspConfiguration.ConfigurationHeaderDecider.class));
+
+            // CSP is report-only (not enforced)
+            final HtmlPage htmlPage = webClient.goTo("configureSecurity");
+            assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy"), nullValue());
+            assertThat(htmlPage.getWebResponse().getResponseHeaderValue("Content-Security-Policy-Report-Only"), not(nullValue()));
+
+            // Checkbox is shown and unchecked
+            final DomElement enforceCheckbox = htmlPage.getElementByName("_.enforce");
+            assertThat(enforceCheckbox, instanceOf(HtmlCheckBoxInput.class));
+            assertFalse(((HtmlCheckBoxInput) enforceCheckbox).isChecked());
         } finally {
             DevelopmentHeaderDecider.DISABLED = false;
         }

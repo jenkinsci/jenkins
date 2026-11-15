@@ -161,8 +161,17 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
     .filter(Boolean)
     .join(" ");
 
-  // If submenu
+  // If split button
   if (itemOptions.event && itemOptions.event.event) {
+    // In a dropdown, only show the primary action
+    if (type === "jenkins-dropdown__item") {
+      return menuItem(
+        Object.assign({}, dropdownItem, { event: dropdownItem.event.event }),
+        type,
+        context,
+      );
+    }
+
     const wrapper = createElementFromHtml(
       `<div class="jenkins-split-button"></div>`,
     );
@@ -216,7 +225,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
           class: clazz,
           href: url,
           id: itemOptions.id,
-          "data-html-tooltip": itemOptions.tooltip,
+          tooltip: itemOptions.tooltip,
           type: tag === "button" ? "button" : null,
         })}>
           ${icon(itemOptions, type)}
