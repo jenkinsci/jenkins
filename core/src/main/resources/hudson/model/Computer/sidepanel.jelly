@@ -31,6 +31,7 @@ THE SOFTWARE.
   <l:side-panel>
     <l:tasks>
       <l:task contextMenu="false" href="${rootURL}/${it.url}" icon="${it.iconClassName}" title="${%Status}"/>
+      <st:include page="sidepanel2.jelly" optional="true" /><!-- hook for derived class to add more items -->
       <t:actions actions="${it.appBarActions}"/>
     </l:tasks>
     <j:forEach var="box" items="${it.computerPanelBoxs}">
