@@ -806,6 +806,15 @@ public class Functions {
     }
 
     @Restricted(NoExternalUse.class)
+    public static @NonNull String formatTimeSpanToMinute(long duration) {
+        long minutes = Math.abs(duration) / 60_000;
+        if (minutes < 60) {
+            return Messages.Util_minute(minutes);
+        }
+        return Util.getTimeSpanString(minutes * 60_000);
+    }
+
+    @Restricted(NoExternalUse.class)
     public static @NonNull String getTimeSpanPatterns() {
         Locale locale = LocaleProvider.getLocale();
         ResourceBundle bundle = ResourceBundleHolder.get(Messages.class).get(locale);

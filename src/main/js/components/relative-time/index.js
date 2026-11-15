@@ -8,6 +8,7 @@ const ONE_HOUR_MS = 60 * ONE_MINUTE_MS;
 const ONE_DAY_MS = 24 * ONE_HOUR_MS;
 
 // Largest first, as in hudson.Util#getTimeSpanString
+const MINUTE_INDEX = 4;
 const UNITS = [
   ["year", 365 * ONE_DAY_MS],
   ["month", 30 * ONE_DAY_MS],
@@ -20,7 +21,7 @@ const UNITS = [
 /**
  * The client time each element's time span is measured from, and the
  * template it's shown in.
- * @type {Map<Element, {origin: number, template: string}>}
+ * @type {Map<Element, {origin: number, template: string, recent?: string}>}
  */
 const tracked = new Map();
 
@@ -85,15 +86,15 @@ export function compileMessage(pattern, locale) {
  * Mirrors hudson.Functions#formatTimeSpan: hudson.Util#getTimeSpanString,
  * but to whole seconds so that it doesn't jitter while ticking.
  * @param {object} patterns the localized hudson.Messages Util.* patterns, plus their locale
- * @return {(duration: number) => string}
+ * @return {(duration: number, toMinute?: boolean) => string}
  */
 export function createTimeSpanFormatter(patterns) {
   const formats = UNITS.map(([name]) =>
     compileMessage(patterns[name], patterns.locale),
   );
-  const last = UNITS.length - 1;
 
-  return (duration) => {
+  return (duration, toMinute = false) => {
+    const last = toMinute ? MINUTE_INDEX : UNITS.length - 1;
     let remaining = Math.abs(duration);
     const values = UNITS.map(([, size]) => {
       const value = Math.floor(remaining / size);
@@ -126,6 +127,23 @@ function getFormatter() {
 }
 
 /**
+ * @param {number} elapsed
+ * @param {string} template
+ * @param {string | undefined} recent
+ * @param {(duration: number, toMinute?: boolean) => string} format
+ * @return {string}
+ */
+function describe(elapsed, template, recent, format) {
+  if (!recent) {
+    return template.replace("{0}", format(elapsed));
+  }
+  if (Math.abs(elapsed) < ONE_MINUTE_MS) {
+    return recent;
+  }
+  return template.replace("{0}", format(elapsed, true));
+}
+
+/**
  * @param {number} now
  */
 export function updateAll(now = Date.now()) {
@@ -133,12 +151,12 @@ export function updateAll(now = Date.now()) {
     return;
   }
   const format = getFormatter();
-  tracked.forEach(({ origin, template }, element) => {
+  tracked.forEach(({ origin, template, recent }, element) => {
     if (!element.isConnected) {
       tracked.delete(element);
       return;
     }
-    const text = template.replace("{0}", format(now - origin));
+    const text = describe(now - origin, template, recent, format);
     if (element.textContent !== text) {
       element.textContent = text;
     }
@@ -159,6 +177,7 @@ export function track(element) {
   tracked.set(element, {
     origin: Date.now() - Number(element.dataset.relativeTimeElapsed),
     template: element.dataset.relativeTimeTemplate,
+    recent: element.dataset.relativeTimeRecent,
   });
   interval ??= window.setInterval(updateAll, ONE_SECOND_MS);
 }

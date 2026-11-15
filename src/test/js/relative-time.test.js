@@ -55,6 +55,15 @@ describe("createTimeSpanFormatter", () => {
   ])("formats %i ms as %s", (duration, expected) => {
     expect(format(duration)).toBe(expected);
   });
+
+  it.each([
+    [3 * MINUTE + 4 * SECOND, "3 min"],
+    [59 * MINUTE + 59 * SECOND, "59 min"],
+    [2 * HOUR + 5 * MINUTE + 30 * SECOND, "2 hr 5 min"],
+    [DAY + 3 * HOUR, "1 day 3 hr"],
+  ])("formats %i ms to the minute as %s", (duration, expected) => {
+    expect(format(duration, true)).toBe(expected);
+  });
 });
 
 describe("track", () => {
@@ -66,10 +75,13 @@ describe("track", () => {
     document.body.replaceChildren();
   });
 
-  function element(elapsed, template) {
+  function element(elapsed, template, recent) {
     const span = document.createElement("span");
     span.dataset.relativeTimeElapsed = String(elapsed);
     span.dataset.relativeTimeTemplate = template;
+    if (recent) {
+      span.dataset.relativeTimeRecent = recent;
+    }
     document.body.append(span);
     track(span);
     return span;
@@ -89,5 +101,15 @@ describe("track", () => {
     updateAll(Date.now() + 15 * SECOND);
 
     expect(span.textContent).toMatch(/^in 4[45] sec$/);
+  });
+
+  it("shows the recent text under a minute, then whole minutes", () => {
+    const span = element(5 * SECOND, "Started {0} ago", "Started just now");
+
+    updateAll(Date.now() + 30 * SECOND);
+    expect(span.textContent).toBe("Started just now");
+
+    updateAll(Date.now() + 2 * MINUTE + 10 * SECOND);
+    expect(span.textContent).toBe("Started 2 min ago");
   });
 });

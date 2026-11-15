@@ -874,4 +874,11 @@ class FunctionsTest {
         assertEquals("5 sec", Functions.formatTimeSpan(5_900));
         assertEquals("0 sec", Functions.formatTimeSpan(50));
     }
+
+    @Test
+    void formatTimeSpanToMinuteDropsSeconds() {
+        assertEquals("3 min", Functions.formatTimeSpanToMinute(3 * 60_000 + 4_000));
+        assertEquals("59 min", Functions.formatTimeSpanToMinute(-(59 * 60_000 + 59_000)));
+        assertEquals("2 hr 5 min", Functions.formatTimeSpanToMinute(125 * 60_000 + 30_000));
+    }
 }
