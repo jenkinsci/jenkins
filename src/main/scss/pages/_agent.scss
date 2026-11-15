@@ -9,7 +9,6 @@ $agent-widget-breakpoint-side-panel: 1090px;
 
 .app-agent-bar {
   @media (width < 900px) {
-    position: relative !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: start !important;
@@ -20,7 +19,6 @@ $agent-widget-breakpoint-side-panel: 1090px;
     border-bottom: none !important;
 
     @media (width < 1140px) {
-      position: relative !important;
       display: flex !important;
       flex-direction: column !important;
       align-items: start !important;
