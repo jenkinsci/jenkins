@@ -3,13 +3,12 @@ package jenkins.model.agent;
 import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.Computer;
+import java.util.Collection;
+import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
-
-import java.util.Collection;
-import java.util.Set;
 
 @Restricted(Beta.class) // for now, until we have a better story for agent configuration
 public class ConfigureAgentAction implements Action {
