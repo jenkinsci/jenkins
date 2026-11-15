@@ -84,20 +84,8 @@ function scrollAndSelect(selectedItem, selectedClass, items) {
   if (selectedItem) {
     selectedItem.scrollIntoView({ block: "nearest", behavior: "smooth" });
     selectedItem.classList.add(selectedClass);
-    // Move focus so screen readers announce the item, unless the user is typing in a field (e.g. search)
-    if (
-      items.includes(document.activeElement) ||
-      !isTextField(document.activeElement)
-    ) {
+    if (items.includes(document.activeElement)) {
       selectedItem.focus();
     }
   }
-}
-
-function isTextField(element) {
-  return (
-    element instanceof HTMLInputElement ||
-    element instanceof HTMLTextAreaElement ||
-    element?.isContentEditable === true
-  );
 }
