@@ -25,24 +25,32 @@
 
 package hudson.model;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionList;
 import hudson.Functions;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.RetentionStrategy;
 import hudson.util.TextFile;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.text.MessageFormat;
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -63,6 +71,7 @@ import org.htmlunit.html.HtmlFormUtil;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -112,6 +121,267 @@ class JobTest {
 
         assertTrue(test2.passed, test1.message);
         assertTrue(test2.passed, test2.message);
+    }
+
+    @Test
+    void updateNextBuildNumberDoesNotRewindOntoAssignedNumber() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        // Models a build that holds its number but is not yet visible to getLastBuild().
+        int assigned = p.assignBuildNumber();
+        assertEquals(assigned + 1, p.getNextBuildNumber());
+
+        p.updateNextBuildNumber(assigned);
+        assertEquals(assigned + 1, p.getNextBuildNumber());
+        assertEquals(String.valueOf(assigned + 1), p.getNextBuildNumberFile().readTrim());
+
+        p.updateNextBuildNumber(assigned + 5);
+        assertEquals(assigned + 5, p.getNextBuildNumber());
+    }
+
+    @Test
+    void renameWaitsForInFlightBuildNumberAssignment() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("before");
+        BlockingBuildNumberAssigner assigner = ExtensionList.lookupSingleton(BlockingBuildNumberAssigner.class);
+        AtomicReference<Integer> assigned = new AtomicReference<>();
+        Thread assigning = new Thread(() -> {
+            try {
+                assigned.set(p.assignBuildNumber());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }, "assigning");
+        Thread renaming = new Thread(() -> {
+            try {
+                p.renameTo("after");
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }, "renaming");
+        assigning.setDaemon(true);
+        renaming.setDaemon(true);
+        try {
+            assigning.start();
+            assertTrue(assigner.entered.await(30, TimeUnit.SECONDS), "assigner was not called");
+            renaming.start();
+            // The rename must wait for the assignment (which holds the build-number lock) rather than move the
+            // root directory while the next build number may still be written into it.
+            await().atMost(30, TimeUnit.SECONDS).until(() -> {
+                var info = ManagementFactory.getThreadMXBean().getThreadInfo(renaming.threadId());
+                return info != null && info.getLockOwnerId() == assigning.threadId();
+            });
+            assertEquals("before", p.getName());
+        } finally {
+            assigner.release.countDown();
+        }
+        assigning.join(30_000);
+        renaming.join(30_000);
+        assertEquals("after", p.getName());
+        assertEquals(String.valueOf(assigned.get() + 1), p.getNextBuildNumberFile().readTrim());
+    }
+
+    /**
+     * Reproduces the lock-ordering deadlock this change exists to prevent, using the real
+     * {@link Job#DefaultBuildNumberAssigner} rather than a test double: one thread holds the
+     * project's own monitor and then needs {@link Queue#lock} (modeling any code that acquires
+     * the monitor first, the same shape {@code QueueTest}'s own disabling-deadlock test uses by
+     * hand rather than going through a specific caller), while another holds {@link Queue#lock}
+     * (as {@link Executor#run} does via {@link Queue#callWithLock}) and calls
+     * {@link AbstractProject#newBuild} -- which, before this change, was {@code synchronized} and
+     * internally assigned the build number under the project's monitor too. Fails via the JVM's
+     * own deadlock detection ({@code ThreadMXBean#findDeadlockedThreads}) on timeout; passes once
+     * neither {@code newBuild} nor build-number assignment needs the project's monitor.
+     */
+    @Test
+    @Timeout(10)
+    void buildNumberAssignmentDoesNotDeadlockWithConcurrentMonitorHolder() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        CountDownLatch monitorHeld = new CountDownLatch(1);
+        CountDownLatch queueLockHeld = new CountDownLatch(1);
+        AtomicReference<Boolean> monitorHolderAcquiredQueueLock = new AtomicReference<>();
+        AtomicReference<Throwable> monitorHolderError = new AtomicReference<>();
+
+        Thread monitorHolder = new Thread(() -> {
+            synchronized (p) {
+                monitorHeld.countDown();
+                try {
+                    queueLockHeld.await();
+                    // Bounded, not Queue#runWithLock: on an actual regression this lets the thread
+                    // give up and release the project monitor rather than block forever holding
+                    // Queue#lock on a daemon thread nothing else interrupts -- which would otherwise
+                    // make Jenkins' own teardown (e.g. Queue#save, which also needs Queue#lock) hang
+                    // instead of this test reporting a clean failure.
+                    monitorHolderAcquiredQueueLock.set(Queue.tryWithLock(() -> { }, Duration.ofSeconds(3)));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (Throwable t) {
+                    monitorHolderError.set(t);
+                }
+            }
+        }, "simulated monitor-holder for " + p.getName());
+
+        AtomicReference<FreeStyleBuild> createdBuild = new AtomicReference<>();
+        AtomicReference<Throwable> buildCreatorError = new AtomicReference<>();
+        Thread buildCreator = new Thread(() ->
+            Queue.callWithLock(() -> { // what Executor#run does to grab Queue#lock
+                queueLockHeld.countDown();
+                try {
+                    monitorHeld.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+                try {
+                    createdBuild.set(p.newBuild());
+                } catch (Throwable t) {
+                    buildCreatorError.set(t);
+                }
+                return null;
+            }), "simulated Executor building " + p.getName());
+
+        buildCreator.setDaemon(true);
+        monitorHolder.setDaemon(true);
+
+        buildCreator.start();
+        monitorHolder.start();
+
+        monitorHolder.join(4000);
+        buildCreator.join(4000);
+
+        if (monitorHolder.isAlive() || buildCreator.isAlive()) {
+            long[] deadlocked = ManagementFactory.getThreadMXBean().findDeadlockedThreads();
+            String message = "build-number assignment deadlocked against a concurrent monitor holder "
+                    + "(Queue#lock and the project monitor acquired in opposite order); "
+                    + "JVM-reported deadlocked thread ids: " + Arrays.toString(deadlocked);
+            System.err.println(message);
+            fail(message);
+        }
+
+        // A thrown exception on either worker thread terminates it quietly (daemon threads don't
+        // surface uncaught exceptions to the test) -- without these checks, newBuild() failing for
+        // an unrelated reason would make both threads exit and this test pass without ever having
+        // proven the two sides don't deadlock.
+        if (buildCreatorError.get() != null) {
+            throw new AssertionError("Build creation failed", buildCreatorError.get());
+        }
+        if (monitorHolderError.get() != null) {
+            throw new AssertionError("Monitor holder failed", monitorHolderError.get());
+        }
+        assertNotNull(createdBuild.get(), "Build should have been created.");
+        assertEquals(Boolean.TRUE, monitorHolderAcquiredQueueLock.get(),
+                "Monitor holder should have acquired Queue#lock within the bounded wait.");
+    }
+
+    @Test
+    void renameRefusedWhileBuildIsBeingCreated() throws Exception {
+        PausingProject p = j.createProject(PausingProject.class, "before");
+        PausingBuild.entered = new CountDownLatch(1);
+        PausingBuild.release = new CountDownLatch(1);
+        AtomicReference<Throwable> creationError = new AtomicReference<>();
+        Thread creating = new Thread(() -> {
+            try {
+                p.newBuild();
+            } catch (Throwable t) {
+                creationError.set(t);
+            }
+        }, "creating");
+        creating.setDaemon(true);
+        try {
+            creating.start();
+            // The build has its number (the build-number lock is free again) but is still inside newBuild().
+            assertTrue(PausingBuild.entered.await(30, TimeUnit.SECONDS), "build constructor was not reached");
+            Failure failure = assertThrows(Failure.class, () -> p.renameTo("after"));
+            assertEquals(Messages.Job_NoRenameWhileBuilding(), failure.getMessage());
+            assertEquals("before", p.getName());
+            PausingBuild.release.countDown();
+            creating.join(30_000);
+            assertNull(creationError.get());
+            p.renameTo("after");
+            assertEquals("after", p.getName());
+
+            // A failed creation must not leave the job permanently unrenamable.
+            PausingBuild.failNext = true;
+            assertThrows(IOException.class, p::newBuild);
+            p.renameTo("again");
+            assertEquals("again", p.getName());
+        } finally {
+            PausingBuild.release.countDown();
+            PausingBuild.entered = null;
+            PausingBuild.release = null;
+            PausingBuild.failNext = false;
+        }
+    }
+
+    public static class PausingBuild extends Build<PausingProject, PausingBuild> {
+        static volatile CountDownLatch entered;
+        static volatile CountDownLatch release;
+        static volatile boolean failNext;
+
+        @SuppressWarnings("checkstyle:redundantmodifier")
+        public PausingBuild(PausingProject job) throws IOException {
+            super(job);
+            if (failNext) {
+                failNext = false;
+                throw new IOException("simulated build creation failure");
+            }
+            CountDownLatch e = entered;
+            CountDownLatch r = release;
+            if (e != null && r != null) {
+                e.countDown();
+                try {
+                    r.await();
+                } catch (InterruptedException x) {
+                    Thread.currentThread().interrupt();
+                    throw new IOException(x);
+                }
+            }
+        }
+    }
+
+    public static class PausingProject extends Project<PausingProject, PausingBuild> implements TopLevelItem {
+        @SuppressWarnings("checkstyle:redundantmodifier")
+        public PausingProject(ItemGroup parent, String name) {
+            super(parent, name);
+        }
+
+        @Override
+        protected Class<PausingBuild> getBuildClass() {
+            return PausingBuild.class;
+        }
+
+        @Override
+        public TopLevelItemDescriptor getDescriptor() {
+            return (TopLevelItemDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
+        }
+
+        @TestExtension("renameRefusedWhileBuildIsBeingCreated")
+        public static class DescriptorImpl extends AbstractProjectDescriptor {
+            @Override
+            public PausingProject newInstance(ItemGroup parent, String name) {
+                return new PausingProject(parent, name);
+            }
+        }
+    }
+
+    @TestExtension("renameWaitsForInFlightBuildNumberAssignment")
+    public static final class BlockingBuildNumberAssigner implements Job.BuildNumberAssigner {
+        final CountDownLatch entered = new CountDownLatch(1);
+        final CountDownLatch release = new CountDownLatch(1);
+
+        @Override
+        public int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException {
+            entered.countDown();
+            try {
+                release.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException(e);
+            }
+            int r = job.getNextBuildNumber();
+            job.fastUpdateNextBuildNumber(r + 1);
+            saveNextBuildNumber.call();
+            return r;
+        }
     }
 
     public static class BuildNumberSyncTester implements Runnable {
