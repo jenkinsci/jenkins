@@ -69,9 +69,16 @@ THE SOFTWARE.
       </j:forEach>
 
       <div class="app-temporary-list__item__actions">
-        <button class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link" data-href="${link}">
-          <l:icon src="symbol-menu" />
-        </button>
+        <j:choose>
+          <j:when test="${build.building}">
+            <l:actions it="${build}" url="${rootURL}/${build.url}" compact="true" />
+          </j:when>
+          <j:otherwise>
+            <button class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link" data-href="${link}">
+              <l:icon src="symbol-menu" />
+            </button>
+          </j:otherwise>
+        </j:choose>
       </div>
     </div>
   </div>

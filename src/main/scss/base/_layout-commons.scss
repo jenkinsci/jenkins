@@ -1,4 +1,7 @@
+@use "../abstracts/mixins";
 @use "../base/breakpoints";
+
+$collapsible-page-body: ".app-page-body:has(> .app-page-body__sidebar):not(:has(#side-panel .pane, #side-panel .jenkins-card))";
 
 .app-page-body {
   position: relative;
@@ -46,7 +49,9 @@
   // Remove this when sidepanels no longer contain widgets
   &:has(#side-panel .pane, #side-panel .jenkins-card) {
     & > .app-page-body__sidebar {
-      padding-right: 0;
+      @media (width >= 740px) {
+        padding-right: 0;
+      }
 
       #tasks {
         margin-bottom: 1rem;
@@ -60,6 +65,56 @@
   }
 }
 
+@media (width < 740px) {
+  #{$collapsible-page-body} > .app-page-body__sidebar {
+    @include mixins.overlay-surface($opacity: 85%);
+
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    bottom: 0;
+    z-index: 999;
+    width: min(320px, 85vw);
+    overflow-y: auto;
+    border-right: var(--jenkins-border-width) solid
+      color-mix(in sRGB, var(--white) 10%, transparent);
+    transition:
+      translate var(--standard-transition),
+      box-shadow var(--standard-transition),
+      display var(--standard-transition) allow-discrete;
+
+    &::after {
+      content: none;
+    }
+
+    &:not(.app-page-body__sidebar--expanded) {
+      display: none;
+      translate: -100% 0;
+      box-shadow:
+        var(--elevation-3-box-shadow),
+        0 0 0 100vmax transparent;
+    }
+
+    &.app-page-body__sidebar--expanded {
+      translate: 0 0;
+      box-shadow:
+        var(--elevation-3-box-shadow),
+        0 0 0 100vmax color-mix(in sRGB, var(--background) 40%, transparent);
+
+      @starting-style {
+        translate: -100% 0;
+        box-shadow:
+          var(--elevation-3-box-shadow),
+          0 0 0 100vmax transparent;
+      }
+    }
+
+    @media (prefers-reduced-motion) {
+      transition: none;
+    }
+  }
+}
+
 .app-main-panel {
   margin-bottom: var(--section-padding);
 
@@ -69,8 +124,7 @@
   }
 
   &--wide {
-    width: 70vw;
-    max-width: 1700px;
+    max-width: min(1700px, max(70vw, 740px));
     margin-inline: auto;
   }
 }
@@ -242,4 +296,41 @@
 .panel-body::after,
 .modal-footer::after {
   clear: both;
+}
+
+.jenkins-button.app-side-panel-toggle {
+  display: none;
+  flex: none;
+  width: 2.375rem;
+  padding: 0;
+}
+
+@media (width < 740px) {
+  #{$collapsible-page-body} {
+    .app-side-panel-toggle {
+      display: inline-flex;
+    }
+
+    .jenkins-app-bar__content:has(> .app-side-panel-toggle) {
+      position: relative;
+      padding-left: calc(2.375rem + 0.75rem);
+
+      & > .app-side-panel-toggle {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        translate: 0 -50%;
+      }
+    }
+
+    #side-panel .jenkins-app-bar__content:has(> .app-side-panel-toggle) {
+      padding-left: 0;
+      padding-right: calc(2.375rem + 0.75rem);
+
+      & > .app-side-panel-toggle {
+        left: auto;
+        right: 0;
+      }
+    }
+  }
 }

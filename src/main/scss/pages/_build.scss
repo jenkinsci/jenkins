@@ -219,6 +219,11 @@
     justify-content: start;
     min-height: 38px;
     grid-column: 1;
+
+    @media (width < 740px) {
+      display: flex;
+      width: 100%;
+    }
   }
 
   .app-build-bar__tabs {
@@ -315,26 +320,27 @@
     margin-bottom: 0;
     font-size: 1.1875rem;
     font-weight: 550;
+    font-variant-numeric: tabular-nums;
   }
 
   .jenkins-button {
-    border-radius: 100px;
     aspect-ratio: 1;
     padding: 0;
-    margin-inline: -1rem;
-    transition: translate var(--standard-transition);
+    width: 1.625rem;
+    height: 1.625rem;
+    min-height: 0;
+    border-radius: 100px;
 
     &:not(:hover) {
-      color: color-mix(
-        in sRGB,
-        var(--text-color-secondary) 75%,
-        transparent
-      ) !important;
+      color: var(--text-color-secondary) !important;
     }
 
-    &::before,
-    &::after {
-      inset: 7px;
+    &[disabled="true"] {
+      pointer-events: none;
+
+      svg {
+        opacity: 0.25;
+      }
     }
 
     svg {
@@ -347,17 +353,25 @@
     }
   }
 
-  .app-build__navigation-previous:hover {
-    translate: -0.0625rem 0;
-  }
+  .app-build__navigation {
+    display: flex;
+    gap: var(--jenkins-border-width);
+    margin-left: -0.25rem;
 
-  .app-build__navigation-next:hover {
-    translate: 0.0625rem 0;
+    @media (width < 740px) {
+      margin-left: auto;
+
+      .jenkins-button {
+        width: 2rem;
+        height: 2rem;
+      }
+    }
   }
 }
 
 .app-page-body__contents:has(.app-build-bar) {
   padding-top: 0;
+  min-width: 0;
 
   @media (width < 740px) {
     &:has(.app-build-bar__tabs:not(:empty)) {

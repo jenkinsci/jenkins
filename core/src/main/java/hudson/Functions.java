@@ -168,6 +168,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.SimplePageDecorator;
+import jenkins.model.Tab;
 import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DetailGroup;
@@ -509,6 +510,16 @@ public class Functions {
             return base;
         }
 
+        @Restricted(NoExternalUse.class)
+        public Run getRun() {
+            return run;
+        }
+
+        @Restricted(NoExternalUse.class)
+        public String getRest() {
+            return rest;
+        }
+
         /**
          * Returns the same page in the next build.
          */
@@ -529,6 +540,34 @@ public class Functions {
             else {
                 return head + n.getNumber() + rest;
             }
+        }
+
+        /**
+         * Returns the URL of another run, relative to the context path, on the {@link Tab} the current page shows
+         * when that run has the same tab, and the run's own page otherwise.
+         * Links between related runs, such as to an upstream build, then keep the user on the view they are using.
+         *
+         * @param other the run to link to
+         * @return a URL relative to the context path, without a leading slash
+         * @since TODO
+         */
+        public @NonNull String getSameTabUrl(@NonNull Run<?, ?> other) {
+            String tab = getTabUrlName();
+            if (tab != null) {
+                for (Action action : other.getAllActions()) {
+                    if (action instanceof Tab && tab.equals(action.getUrlName())) {
+                        return other.getUrl() + tab + '/';
+                    }
+                }
+            }
+            return other.getUrl();
+        }
+
+        private @CheckForNull String getTabUrlName() {
+            String path = rest.replaceFirst("^/+", "");
+            int slash = path.indexOf('/');
+            String segment = slash < 0 ? path : path.substring(0, slash);
+            return segment.isEmpty() ? null : segment;
         }
     }
 
@@ -2085,6 +2124,56 @@ public class Functions {
         if (href.endsWith("/")) href = href.substring(0, href.length() - 1);
 
         return url.endsWith(href);
+    }
+
+    /**
+     * Returns {@code true} if the current page is the page referenced by the given absolute {@code href}, or any
+     * page below it. The comparison is done on complete path segments, i.e., {@code /job/x/1/coverage} matches
+     * {@code /job/x/1/coverage/} and {@code /job/x/1/coverage/overview/}, but not {@code /job/x/1/coverage-jacoco/}.
+     * Query parameters of the current request are ignored.
+     *
+     * <p>
+     * Used in {@code tabs.jelly} to highlight a tab while one of its subpages is shown. In contrast to
+     * {@link #hyperlinkMatchesCurrentPage(String)} the given {@code href} must be an absolute path (including the
+     * context path), e.g., {@code /jenkins/job/x/1/coverage}.
+     *
+     * @param href
+     *         the absolute path of the link to check
+     *
+     * @return {@code true} if the current page is the referenced page or one of its children, {@code false} otherwise
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean hyperlinkMatchesCurrentPageOrChild(String href) {
+        if (href == null || href.isEmpty()) {
+            return false;
+        }
+        String uri = Stapler.getCurrentRequest2().getRequestURI();
+        if (uri == null) {
+            return false;
+        }
+        String current = removeTrailingSlashes(decodePath(uri));
+        String link = removeTrailingSlashes(decodePath(href));
+        if (link.isEmpty()) {
+            return false;
+        }
+        return current.equals(link) || current.startsWith(link + "/");
+    }
+
+    /**
+     * Decodes the given URL path. In contrast to {@link URLDecoder#decode(String, java.nio.charset.Charset)}, which
+     * decodes {@code application/x-www-form-urlencoded} content, a literal {@code +} is preserved since it has no
+     * special meaning in a URL path.
+     */
+    private static String decodePath(String path) {
+        return URLDecoder.decode(path.replace("+", "%2B"), StandardCharsets.UTF_8);
+    }
+
+    private static String removeTrailingSlashes(String path) {
+        int end = path.length();
+        while (end > 0 && path.charAt(end - 1) == '/') {
+            end--;
+        }
+        return path.substring(0, end);
     }
 
     /**

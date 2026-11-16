@@ -3,6 +3,7 @@ function combinePath(pathOne, pathTwo) {
   let i = pathOne.indexOf("?");
   if (i >= 0) {
     queryParams = pathOne.substring(i);
+    pathOne = pathOne.substring(0, i);
   } else {
     queryParams = "";
   }
