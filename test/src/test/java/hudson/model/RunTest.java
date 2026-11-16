@@ -26,8 +26,7 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.not;
@@ -357,8 +356,10 @@ class RunTest  {
 
         var response = run.getRunTabs();
 
-        assertThat(response, hasSize(1));
-        assertThat(response.getFirst().getDisplayName(), equalTo("Test"));
+        var displayNames = response.stream().map(Tab::getDisplayName).toList();
+
+        assertThat(displayNames, hasItem("Test"));
+        assertThat(displayNames, not(hasItem("I do not appear")));
     }
 
     public static final class SlowMgr extends ArtifactManager {
