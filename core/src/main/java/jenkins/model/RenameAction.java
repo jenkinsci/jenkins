@@ -30,6 +30,7 @@ import hudson.model.Action;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import jenkins.model.menu.Group;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -39,6 +40,11 @@ public class RenameAction implements Action {
     @Override
     public String getIconFileName() {
         return "symbol-edit";
+    }
+
+    @Override
+    public Group getGroup() {
+        return Group.FIRST_IN_MENU;
     }
 
     @Override
