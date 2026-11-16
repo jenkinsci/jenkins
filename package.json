@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@babel/cli": "8.1.0",
-    "@babel/core": "8.1.0",
+    "@babel/core": "8.1.2",
     "@babel/preset-env": "8.0.7",
     "@eslint/js": "10.0.1",
     "babel-loader": "10.1.1",
@@ -44,7 +44,7 @@
     "postcss-loader": "8.2.1",
     "postcss-preset-env": "11.6.2",
     "postcss-scss": "4.0.9",
-    "prettier": "3.9.10",
+    "prettier": "3.10.1",
     "sass": "1.108.2",
     "sass-loader": "17.1.0",
     "style-loader": "4.0.0",
