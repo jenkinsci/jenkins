@@ -1,0 +1,21 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+  <j:invokeStatic var="all" className="hudson.security.csrf.CrumbIssuer" method="all" />
+  <j:set var="disableCsrf" value="${descriptor.csrfProtectionDisabled}" />
+  <j:set var="onlyDefaultIssuer" value="${all.size() == 1 and all.get(0).id == 'hudson.security.csrf.DefaultCrumbIssuer'}" />
+  <j:if test="${!onlyDefaultIssuer or disableCsrf}">
+    <f:section title="${%CSRF Protection}">
+      <j:choose>
+        <j:when test="${disableCsrf}">
+          <f:entry>
+            <p>${%disabled}</p>
+            <p>${%unsupported}</p>
+          </f:entry>
+        </j:when>
+        <j:otherwise>
+          <f:dropdownDescriptorSelector title="${%Crumb Issuer}" descriptors="${all}" field="crumbIssuer" />
+        </j:otherwise>
+      </j:choose>
+    </f:section>
+  </j:if>
+</j:jelly>

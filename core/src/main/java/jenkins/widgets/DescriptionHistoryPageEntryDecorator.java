@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011, CloudBees, Inc.
+ * Copyright (c) 2026, Jan Faracik
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,16 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security.QueueItemAuthenticatorConfiguration
 
-import jenkins.security.QueueItemAuthenticatorDescriptor
+package jenkins.widgets;
 
-f=namespace(lib.FormTagLib)
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.Util;
+import hudson.widgets.HistoryWidget;
+import jenkins.model.HistoricalBuild;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-if (!QueueItemAuthenticatorDescriptor.all().isEmpty()) {
-    f.section(title:_("Access Control for Builds")) {
-        f.block() {
-            f.repeatableHeteroProperty(field:"authenticators",hasHeader:true)
-        }
+@Extension(ordinal = -100)
+@Restricted(NoExternalUse.class)
+public class DescriptionHistoryPageEntryDecorator extends HistoryPageEntryDecorator {
+
+    @Override
+    public boolean isApplicable(@NonNull HistoryWidget<?, ?> widget, @NonNull HistoricalBuild build) {
+        return Util.fixEmptyAndTrim(build.getTruncatedDescription()) != null
+                || !build.getBadgeActions().isEmpty();
     }
 }

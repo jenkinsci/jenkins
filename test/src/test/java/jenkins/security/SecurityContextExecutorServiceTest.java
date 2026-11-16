@@ -26,13 +26,17 @@ package jenkins.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.model.User;
 import hudson.security.ACL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import jenkins.model.Jenkins;
@@ -160,26 +164,27 @@ class SecurityContextExecutorServiceTest {
     }
 
     @Test
-    void testFailedRunnableResetsContext() {
-        Runnable r = () -> {
-            SecurityContextHolder.setContext(nullContext);
-            throw new RuntimeException("Simulate a failure");
-        };
-
-        SecurityContextHolder.setContext(systemContext);
+    void testFailedRunnableResetsContext() throws Exception {
+        // A single worker thread, so that the thread-local context left behind by a failed task is observable.
+        ExecutorService single = Executors.newSingleThreadExecutor();
         try {
-            wrappedService.execute(r);
-        } catch (AssertionError expectedException) {
-            // Assert the current context is once again ACL.SYSTEM2
-            assertEquals(systemContext, SecurityContextHolder.getContext());
-        }
+            ExecutorService wrapped = new SecurityContextExecutorService(single);
+            Callable<SecurityContext> currentContext = SecurityContextHolder::getContext;
+            SecurityContext workerContextBefore = single.submit(currentContext).get();
 
-        SecurityContextHolder.setContext(userContext);
-        try {
-            wrappedService.execute(r);
-        } catch (AssertionError expectedException) {
-            // Assert the current context is once again the userContext
-            assertEquals(userContext, SecurityContextHolder.getContext());
+            Runnable r = () -> {
+                SecurityContextHolder.setContext(nullContext);
+                throw new RuntimeException("Simulate a failure");
+            };
+
+            for (SecurityContext callerContext : new SecurityContext[] {systemContext, userContext}) {
+                SecurityContextHolder.setContext(callerContext);
+                assertThrows(ExecutionException.class, () -> wrapped.submit(r).get());
+                // Assert the worker thread's context was restored even though the task failed
+                assertSame(workerContextBefore, single.submit(currentContext).get());
+            }
+        } finally {
+            single.shutdownNow();
         }
     }
 }
