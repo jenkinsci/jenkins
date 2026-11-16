@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.util.ChartUtil;
 import hudson.util.ColorPalette;
@@ -308,6 +309,7 @@ public class MultiStageTimeSeries implements Serializable {
          * adapts to the active theme (such as dark mode) automatically, and the {@code viewBox}
          * lets it scale fluidly with its container instead of being a fixed-size raster.
          */
+        @SuppressFBWarnings(value = "POTENTIAL_XML_INJECTION", justification = "formatYLabel only returns digits and the safe suffixes k/M/G")
         public String createSvg() {
             // Logical coordinate system; the on-screen size is controlled by CSS via the viewBox.
             final int width = 1000;
