@@ -49,6 +49,7 @@ import java.io.IOError;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -256,38 +257,36 @@ class SlaveComputerTest {
     @Test
     @Issue("JENKINS-35272")
     void afterDisconnectShouldBeCalledOnlyOnce() throws Exception {
-        DumbSlave node = j.createOnlineSlave();
+        CountingLauncher launcher = new CountingLauncher(j.createComputerLauncher(null));
+        DumbSlave node = new DumbSlave("disconnect-test", j.jenkins.getRootDir().toPath().resolve("disconnect-test").toString(), launcher);
+        j.jenkins.addNode(node);
+        j.waitOnline(node);
         SlaveComputer computer = (SlaveComputer) node.getComputer();
         assertNotNull(computer);
 
-        // Reset counter before test
-        AfterDisconnectListener.reset();
-
         // Trigger disconnect twice
-        computer.disconnect(null);
-        computer.disconnect(null);
+        var firstDisconnect = computer.disconnect(null);
+        var secondDisconnect = computer.disconnect(null);
 
-        // Wait until Jenkins finishes processing
-        j.waitUntilNoActivity();
+        firstDisconnect.get(30, TimeUnit.SECONDS);
+        secondDisconnect.get(30, TimeUnit.SECONDS);
 
-        assertEquals(1, AfterDisconnectListener.count.get(),
+        assertEquals(1, launcher.count.get(),
                 "afterDisconnect should be called exactly once");
     }
 
-    @TestExtension
-    public static class AfterDisconnectListener extends ComputerListener {
+    static class CountingLauncher extends ComputerLauncherFilter {
 
-        static final AtomicInteger count = new AtomicInteger();
+        final transient AtomicInteger count = new AtomicInteger(0);
 
-        static void reset() {
-            count.set(0);
+        protected CountingLauncher(ComputerLauncher core) {
+            super(core);
         }
 
         @Override
-        public void onOffline(Computer c, OfflineCause cause) {
-            if (c instanceof SlaveComputer) {
-                count.incrementAndGet();
-            }
+        public void afterDisconnect(SlaveComputer computer, TaskListener listener) {
+            count.incrementAndGet();
+            super.afterDisconnect(computer, listener);
         }
     }
 
