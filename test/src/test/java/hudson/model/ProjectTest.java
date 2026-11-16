@@ -25,6 +25,7 @@
 package hudson.model;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
@@ -77,6 +78,7 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -87,6 +89,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
@@ -313,7 +316,86 @@ public class ProjectTest {
         p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
         p.scheduleBuild2(0);
         p.makeDisabled(true);
-        assertNull(Queue.getInstance().getItem(p), "Project should be canceled.");
+        // Queue#cancel is dispatched asynchronously (off the caller's monitor) rather than
+        // called synchronously, to avoid a lock-ordering deadlock against Executor#run -- see
+        // ParameterizedJobMixIn#makeDisabled. The item is still removed promptly, just not
+        // necessarily by the time this call returns.
+        await().untilAsserted(() -> assertNull(Queue.getInstance().getItem(p), "Project should be canceled."));
+    }
+
+    @Test
+    void makeDisabledThenQuicklyReEnabledStillCancelsTheOriginallyQueuedBuild() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("project");
+        p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
+        QueueTaskFuture<FreeStyleBuild> future = p.scheduleBuild2(0);
+
+        // Holding Queue#lock around disable+re-enable keeps the deferred cancel (which also needs
+        // Queue#lock) from running until after both calls have completed, regardless of how fast
+        // jenkins.util.Timer happens to pick it up.
+        Queue.runWithLock(() -> {
+            p.makeDisabled(true);
+            p.makeDisabled(false);
+        });
+
+        // The item queued before the disable is still canceled, even though the project ended up
+        // re-enabled before the deferred cancel ran.
+        await().untilAsserted(() -> assertTrue(future.getStartCondition().isCancelled(), "Originally queued build should have been canceled."));
+    }
+
+    @Test
+    void makeDisabledThenReEnabledDoesNotCancelABuildScheduledAfterReEnabling() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("project");
+        p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
+        QueueTaskFuture<FreeStyleBuild> original = p.scheduleBuild2(0);
+
+        // Holding Queue#lock around disable, re-enable, and the reschedule keeps the deferred
+        // cancel (which also needs Queue#lock) from running until after all three complete --
+        // the race this test exists to cover is a fresh schedule request landing while the
+        // original item is still live, before the deferred cancel gets a chance to run. Without
+        // Queue#markPendingCancellation excluding that original item from deduplication, this
+        // reschedule would fold into it and get wrongly canceled along with it.
+        AtomicReference<QueueTaskFuture<FreeStyleBuild>> newBuildRef = new AtomicReference<>();
+        Queue.runWithLock(() -> {
+            p.makeDisabled(true);
+            p.makeDisabled(false);
+            newBuildRef.set(p.scheduleBuild2(0));
+        });
+        QueueTaskFuture<FreeStyleBuild> newBuild = newBuildRef.get();
+
+        // The originally queued build is still canceled, even though the job ended up
+        // re-enabled again before the deferred cancel ran.
+        await().untilAsserted(() -> assertTrue(original.getStartCondition().isCancelled(), "Originally queued build should have been canceled."));
+
+        // The build requested while re-enabling must not be swept up by that same deferred
+        // cancel, even though at the moment it was requested it was still the same live item
+        // from Queue's own deduplication perspective.
+        await().during(Duration.ofSeconds(1)).untilAsserted(() ->
+                assertFalse(newBuild.getStartCondition().isCancelled(), "Build scheduled while re-enabling should not be canceled."));
+    }
+
+    @Test
+    void secondDisableBeforeFirstDeferredCancelRunsCancelsTheReplacementNotTheOriginal() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("project");
+        p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
+        QueueTaskFuture<FreeStyleBuild> original = p.scheduleBuild2(0);
+
+        // All four calls happen while still holding Queue#lock, so neither deferred cancel gets a
+        // chance to run until after this block completes. Without Queue#getCancellableItem
+        // excluding items already captured for deferred cancellation, the second makeDisabled(true)
+        // would keep re-selecting the original (stale, already-pending-cancellation) item instead
+        // of the replacement scheduled in between -- leaving the replacement to survive even though
+        // the job ended this sequence disabled.
+        AtomicReference<QueueTaskFuture<FreeStyleBuild>> replacementRef = new AtomicReference<>();
+        Queue.runWithLock(() -> {
+            p.makeDisabled(true);
+            p.makeDisabled(false);
+            replacementRef.set(p.scheduleBuild2(0));
+            p.makeDisabled(true);
+        });
+        QueueTaskFuture<FreeStyleBuild> replacement = replacementRef.get();
+
+        await().untilAsserted(() -> assertTrue(original.getStartCondition().isCancelled(), "Original build should have been canceled."));
+        await().untilAsserted(() -> assertTrue(replacement.getStartCondition().isCancelled(), "Replacement build should also have been canceled by the second disable."));
     }
 
     @Test
