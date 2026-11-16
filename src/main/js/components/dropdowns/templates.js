@@ -227,9 +227,10 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
           id: itemOptions.id,
           tooltip: itemOptions.tooltip,
           type: tag === "button" ? "button" : null,
+          role: type === "jenkins-dropdown__item" ? "menuitem" : null,
         })}>
           ${icon(itemOptions, type)}
-          ${label}
+          ${label ? `<span class="jenkins-dropdown__item__label">${label}</span>` : ""}
           ${description}
           ${badge(itemOptions)}
           ${
