@@ -136,9 +136,7 @@ function badge(opt) {
  * @return {Element}
  */
 function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
-  if (dropdownItem.baseUrl) {
-    context = dropdownItem.baseUrl;
-  }
+  context = dropdownItem.baseUrl || context;
 
   /**
    * @type {DropdownItem}

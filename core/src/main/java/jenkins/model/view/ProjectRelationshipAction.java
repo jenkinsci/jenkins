@@ -31,12 +31,8 @@ import hudson.model.View;
 import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag;
-import jenkins.model.menu.event.Event;
-import jenkins.model.menu.event.LinkEvent;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * App bar action that links to the project relationship page.
@@ -59,12 +55,6 @@ public final class ProjectRelationshipAction implements Action {
     @Override
     public String getUrlName() {
         return "/projectRelationship";
-    }
-
-    @Override
-    public Event getEvent() {
-        StaplerRequest2 req = Stapler.getCurrentRequest2();
-        return LinkEvent.of((req != null ? req.getContextPath() : "") + getUrlName());
     }
 
     @Extension

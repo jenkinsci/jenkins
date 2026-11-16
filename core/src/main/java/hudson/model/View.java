@@ -84,6 +84,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
@@ -605,19 +606,21 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Restricted(NoExternalUse.class)
     public List<Action> getAppBarActions() {
-        List<Action> actions = new ArrayList<>();
-
-        getActions().stream()
+        String viewUrl = getViewUrl();
+        Stream<Action> viewActions = getActions().stream()
                 .filter(Actionable::isAppBarAction)
-                .forEach(action -> actions.add(new BaseUrlAction(action, getViewUrl())));
+                .map(action -> new BaseUrlAction(action, viewUrl));
 
-        if (owner instanceof Actionable actionable) {
-            actionable.getAppBarActions()
-                    .forEach(action -> actions.add(new BaseUrlAction(action, owner.getUrl())));
+        if (!(owner instanceof Actionable actionable)) {
+            return viewActions.sorted(Actionable.APP_BAR_ORDER).toList();
         }
 
-        actions.sort(Actionable.APP_BAR_ORDER);
-        return Collections.unmodifiableList(actions);
+        String ownerUrl = owner.getUrl();
+        Stream<Action> ownerActions = actionable.getAllActions().stream()
+                .filter(Actionable::isAppBarAction)
+                .map(action -> new BaseUrlAction(action, ownerUrl));
+
+        return Stream.concat(viewActions, ownerActions).sorted(Actionable.APP_BAR_ORDER).toList();
     }
 
     @Restricted(NoExternalUse.class)
