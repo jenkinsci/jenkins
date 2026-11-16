@@ -84,7 +84,6 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
@@ -99,7 +98,6 @@ import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
 import jenkins.model.menu.action.BaseUrlAction;
-import jenkins.model.view.ViewAppBarActions;
 import jenkins.search.SearchGroup;
 import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.stapler.StaplerNotDispatchable;
@@ -609,15 +607,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public List<Action> getAppBarActions() {
         List<Action> actions = new ArrayList<>();
 
-        Stream.concat(ViewAppBarActions.createFor(this).stream(), getActions().stream().filter(Actionable::isAppBarAction))
+        getActions().stream()
+                .filter(Actionable::isAppBarAction)
                 .forEach(action -> actions.add(new BaseUrlAction(action, getViewUrl())));
 
-        ViewAppBarActions.createForRoot()
-                .forEach(action -> actions.add(new BaseUrlAction(action, "")));
-
-        if (owner instanceof AbstractItem item) {
-            Stream.concat(ViewAppBarActions.createFor(item).stream(), item.getAppBarActions().stream())
-                    .forEach(action -> actions.add(new BaseUrlAction(action, item.getUrl())));
+        if (owner instanceof Actionable actionable) {
+            actionable.getAppBarActions()
+                    .forEach(action -> actions.add(new BaseUrlAction(action, owner.getUrl())));
         }
 
         actions.sort(Actionable.APP_BAR_ORDER);

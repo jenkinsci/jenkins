@@ -10,6 +10,8 @@ import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.Run;
+import hudson.model.View;
+import hudson.model.ViewGroup;
 import hudson.slaves.Cloud;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
@@ -20,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import jenkins.management.Badge;
 import jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag;
+import jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag;
 import jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
@@ -363,6 +366,13 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
             if (self instanceof Run<?, ?> run && new NewBuildPageUserExperimentalFlag().getFlagValue()) {
                 return run.getAppBarActions();
+            }
+
+            if (self instanceof ViewGroup viewGroup && new NewDashboardPageUserExperimentalFlag().getFlagValue()) {
+                View primaryView = viewGroup.getPrimaryView();
+                if (primaryView != null) {
+                    return primaryView.getAppBarActions();
+                }
             }
 
             return null;

@@ -3,6 +3,8 @@
   <st:setHeader name="X-Dialog-Title" value="${%Legend}" />
 
   <l:ajax>
-    <st:include page="_legend.jelly" it="${app}" />
+    <form>
+      <st:include page="_legend.jelly" it="${app}" />
+    </form>
   </l:ajax>
 </j:jelly>
