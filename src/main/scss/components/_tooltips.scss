@@ -10,6 +10,7 @@
   line-height: 1.6;
   max-width: min(50vw, 1000px) !important;
   white-space: pre-line;
+  overflow-wrap: anywhere;
   z-index: 0;
 
   .tippy-content {
