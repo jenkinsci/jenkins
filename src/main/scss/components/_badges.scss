@@ -1,7 +1,9 @@
 @use "../abstracts/mixins";
 
 a.jenkins-badge,
-button.jenkins-badge {
+button.jenkins-badge,
+.jenkins-badge[tooltip],
+.jenkins-badge[data-html-tooltip] {
   pointer-events: auto;
 }
 
