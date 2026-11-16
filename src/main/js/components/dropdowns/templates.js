@@ -23,8 +23,36 @@ const hideOnPopperBlur = {
   },
 };
 
+const MINIMUM_HEIGHT = 150;
+
+const maxHeightToViewport = {
+  name: "maxHeightToViewport",
+  enabled: true,
+  phase: "beforeWrite",
+  requires: ["computeStyles"],
+  fn({ state }) {
+    const box = state.elements.popper.querySelector(".tippy-box");
+    if (!box) {
+      return;
+    }
+
+    const reference = state.elements.reference.getBoundingClientRect();
+    let space = window.innerHeight - reference.bottom;
+    if (state.placement.startsWith("top")) {
+      space = reference.top;
+    } else if (!state.placement.startsWith("bottom")) {
+      space = window.innerHeight - reference.top;
+    }
+
+    box.style.maxHeight = `max(${MINIMUM_HEIGHT}px, calc(${space}px - var(--section-padding)))`;
+  },
+};
+
 function dropdown() {
   return {
+    popperOptions: {
+      modifiers: [maxHeightToViewport],
+    },
     content: "<p class='jenkins-spinner'></p>",
     interactive: true,
     trigger: "click",
