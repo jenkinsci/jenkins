@@ -126,6 +126,7 @@ import jenkins.widgets.BuildListTable;
 import jenkins.widgets.HasWidgets;
 import net.jcip.annotations.GuardedBy;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
@@ -1819,4 +1820,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             new Permission[] { EXTENDED_READ, CONNECT };
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
+
+    @Restricted(Beta.class)
+    @Override
+    public Permission getDescriptorPagePermission() {
+        return CONFIGURE;
+    }
 }

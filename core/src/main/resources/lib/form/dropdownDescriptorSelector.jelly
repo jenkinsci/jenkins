@@ -64,7 +64,7 @@ THE SOFTWARE.
     <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
       <f:dropdownListBlock value="${loop.index}" title="${descriptor.displayName}"
         selected="${current.descriptor==descriptor || (current==null and descriptor==attrs.default)}" staplerClass="${descriptor.clazz.name}"
-        lazy="descriptor,it,readOnlyMode,${capture}">
+        lazy="descriptor,it,readOnlyMode,${capture}" lazyPrototype="dropdownListBlock">
         <l:ajax>
           <j:set var="instance" value="${current.descriptor==descriptor ? current : null}" />
           <j:set var="help" value="${descriptor.helpFile}"/>
