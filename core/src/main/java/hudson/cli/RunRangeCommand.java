@@ -12,10 +12,10 @@ import org.kohsuke.args4j.Argument;
  * @since 2.62
  */
 public abstract class RunRangeCommand extends CLICommand {
-    @Argument(metaVar = "JOB", usage = "Name of the job to build", required = true, index = 0)
+    @Argument(metaVar = "JOB", usage = "Name of the job", required = true, index = 0)
     public Job<?, ?> job;
 
-    @Argument(metaVar = "RANGE", usage = "Range of the build records to delete. 'N-M', 'N,M', or 'N'", required = true, index = 1)
+    @Argument(metaVar = "RANGE", usage = "Range of the build records. 'N-M', 'N,M', or 'N'", required = true, index = 1)
     public String range;
 
     @Override

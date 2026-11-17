@@ -198,6 +198,23 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         public abstract String getMsg();
 
         /**
+         * Gets the full commit message or comment.
+         *
+         * <p>
+         * While {@link #getMsg()} may return a summary or first line of the commit message
+         * in some SCM implementations, this method returns the entire comment where available.
+         * The default implementation returns {@link #getMsg()}.
+         *
+         * @return
+         *      the full commit message, or {@link #getMsg()} if not distinguished. Can be empty but never null.
+         * @since TODO
+         */
+        @Exported
+        public String getComment() {
+            return getMsg();
+        }
+
+        /**
          * The user who made this change.
          *
          * @return

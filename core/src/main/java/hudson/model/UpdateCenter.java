@@ -391,7 +391,13 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
             // Do not display message during this page load, but possibly later.
             return null;
         }
-        List<Plugin> plugins = getUpdates();
+        // Match the updates page, which disables successfully installed versions awaiting restart.
+        List<Plugin> plugins = getUpdates().stream()
+                .filter(plugin -> {
+                    InstallationJob job = getJob(plugin);
+                    return job == null || !job.status.isSuccess() || !job.plugin.version.equals(plugin.version);
+                })
+                .toList();
         int size = plugins.size();
         if (size > 0) {
             StringBuilder tooltip = new StringBuilder();
