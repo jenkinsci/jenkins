@@ -36,11 +36,11 @@ THE SOFTWARE.
       <st:include page="delete.jelly" />
       <st:include page="actions.jelly"/>
       <t:actions actions="${it.transientActions}"/>
-      <j:if test="${it.previousBuild!=null}">
+      <j:if test="${buildUrl.previousBuildAvailable}">
         <l:task contextMenu="false" href="${buildUrl.previousBuildUrl}" icon="icon-previous icon-md"
                 title="${%Previous Build}"/>
       </j:if>
-      <j:if test="${it.nextBuild!=null}">
+      <j:if test="${buildUrl.nextBuildAvailable}">
         <l:task contextMenu="false" href="${buildUrl.nextBuildUrl}" icon="icon-next icon-md" title="${%Next Build}"/>
       </j:if>
     </l:tasks>

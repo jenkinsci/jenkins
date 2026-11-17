@@ -49,12 +49,12 @@ THE SOFTWARE.
                                          menu="${rootURL}/${buildUrl.run.url}previousBuildsMenu?rest=${h.urlEncode(buildUrl.rest)}"
                                          label="${%Previous build}"
                                          icon="symbol-arrow-left"
-                                         disabled="${buildUrl.run.previousBuild == null}" />
+                                         disabled="${!buildUrl.previousBuildAvailable}" />
                 <l:run-navigation-button href="${buildUrl.nextBuildUrl}"
                                          menu="${rootURL}/${buildUrl.run.url}nextBuildsMenu?rest=${h.urlEncode(buildUrl.rest)}"
                                          label="${%Next build}"
                                          icon="symbol-arrow-right"
-                                         disabled="${buildUrl.run.nextBuild == null}" />
+                                         disabled="${!buildUrl.nextBuildAvailable}" />
               </div>
             </div>
 
