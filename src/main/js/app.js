@@ -8,7 +8,6 @@ import StopButtonLink from "@/components/stop-button-link";
 import ConfirmationLink from "@/components/confirmation-link";
 import Dialogs from "@/components/dialogs";
 import Defer from "@/components/defer";
-import RelativeTime from "@/components/relative-time";
 import SidePanel from "@/components/side-panel";
 
 AppBar.init();
@@ -21,5 +20,4 @@ Tooltips.init();
 StopButtonLink.init();
 ConfirmationLink.init();
 Dialogs.init();
-RelativeTime.init();
 SidePanel.init();

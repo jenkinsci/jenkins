@@ -25,14 +25,14 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:i="jelly:fmt" xmlns:l="/lib/layout">
   <j:set var="object" value="${it.getObject()}" />
-  <j:if test="${!object.building}">
-    <i:formatDate var="tooltip" value="${object.timestamp.time}" type="both" dateStyle="long" timeStyle="medium" />
+  <i:formatDate var="tooltip" value="${object.timestamp.time}" type="both" dateStyle="long" timeStyle="medium" />
 
-    <div class="jenkins-details__item" tooltip="${tooltip}" data-tooltip-delay="500">
-      <div class="jenkins-details__item__icon">
-        <l:icon src="symbol-clock" />
-      </div>
-      <l:relative-time value="${object.timeInMillis}" template="${%startedAgo('{0}')}" recent="${%startedJustNow}" />
+  <div class="jenkins-details__item" tooltip="${tooltip}" data-tooltip-delay="500">
+    <div class="jenkins-details__item__icon">
+      <l:icon src="symbol-clock" />
     </div>
-  </j:if>
+    <span>
+      ${%startedAgo(object.timestampString)}
+    </span>
+  </div>
 </j:jelly>
