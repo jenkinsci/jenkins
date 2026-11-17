@@ -869,6 +869,7 @@ class FunctionsTest {
         JSONObject patterns = JSONObject.fromObject(Functions.getTimeSpanPatterns());
         for (String unit : List.of("locale", "second", "minute", "hour", "day", "month", "year")) {
             assertTrue(patterns.has(unit), unit);
+            assertFalse(patterns.getString(unit).contains("{0}"), unit);
         }
         assertEquals("1 min 0 sec", Functions.formatTimeSpan(-60_000));
         assertEquals("5 sec", Functions.formatTimeSpan(5_900));

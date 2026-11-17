@@ -36,6 +36,12 @@ describe("compileMessage", () => {
   it("unescapes quotes", () => {
     expect(compileMessage("{0} o''clock", "en")(3)).toBe("3 o'clock");
   });
+
+  it("formats the {0,number} placeholder", () => {
+    expect(
+      compileMessage("{0,number} {0,choice,0#days|1#day|1<days}", "en")(1200),
+    ).toBe("1,200 days");
+  });
 });
 
 describe("createTimeSpanFormatter", () => {
@@ -88,7 +94,7 @@ describe("track", () => {
   }
 
   it("advances from the server-rendered elapsed time", () => {
-    const span = element(5 * SECOND, "Started {0} ago");
+    const span = element(5 * SECOND, "Started {0,number} ago");
 
     updateAll(Date.now() + 60 * SECOND);
 
@@ -96,7 +102,7 @@ describe("track", () => {
   });
 
   it("counts down to times in the future", () => {
-    const span = element(-60 * SECOND, "in {0}");
+    const span = element(-60 * SECOND, "in {0,number}");
 
     updateAll(Date.now() + 15 * SECOND);
 
@@ -104,7 +110,11 @@ describe("track", () => {
   });
 
   it("shows the recent text under a minute, then whole minutes", () => {
-    const span = element(5 * SECOND, "Started {0} ago", "Started just now");
+    const span = element(
+      5 * SECOND,
+      "Started {0,number} ago",
+      "Started just now",
+    );
 
     updateAll(Date.now() + 30 * SECOND);
     expect(span.textContent).toBe("Started just now");
