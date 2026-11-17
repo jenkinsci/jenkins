@@ -6,13 +6,13 @@
     <ul>
         <j:forEach items="${it.properties.entrySet()}" var="e">
             <li>
-                <tt>${e.key}</tt>
+                <code>${e.key}</code>
                 <j:choose>
                     <j:when test="${e.value == null}">
                         (current value: <em>undefined</em>)
                     </j:when>
                     <j:otherwise>
-                        (current value: <tt>${e.value}</tt>)
+                        (current value: <code>${e.value}</code>)
                     </j:otherwise>
                 </j:choose>
             </li>
