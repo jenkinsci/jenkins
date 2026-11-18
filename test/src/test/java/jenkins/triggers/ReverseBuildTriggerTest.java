@@ -41,6 +41,7 @@ import hudson.model.Run;
 import hudson.model.User;
 import hudson.tasks.BuildTrigger;
 import hudson.triggers.Trigger;
+import hudson.util.FormValidation;
 import java.util.List;
 import java.util.Set;
 import jenkins.model.Jenkins;
@@ -250,5 +251,20 @@ public class ReverseBuildTriggerTest {
         ReverseBuildTrigger trigger3 = new ReverseBuildTrigger("");
         String upstream3 = trigger3.getUpstreamProjects();
         assertEquals("", upstream3);
+    }
+
+    @Issue("JENKINS-56378")
+    @Test
+    void doCheckUpstreamProjects() throws Exception {
+        ReverseBuildTrigger.DescriptorImpl d = r.jenkins.getDescriptorByType(ReverseBuildTrigger.DescriptorImpl.class);
+        FreeStyleProject p = r.createFreeStyleProject("p");
+
+        FormValidation nullContextValidation = d.doCheckUpstreamProjects(null, "some-project");
+        assertEquals(FormValidation.Kind.OK, nullContextValidation.kind);
+        assertEquals(hudson.tasks.Messages.BuildTrigger_ok_ancestor_is_null(), nullContextValidation.getMessage());
+
+        assertEquals(FormValidation.Kind.OK, d.doCheckUpstreamProjects(p, "p").kind);
+        assertEquals(FormValidation.Kind.ERROR, d.doCheckUpstreamProjects(p, "non-existent").kind);
+        assertEquals(FormValidation.Kind.ERROR, d.doCheckUpstreamProjects(p, "").kind);
     }
 }

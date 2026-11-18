@@ -206,6 +206,9 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         }
 
         public FormValidation doCheckUpstreamProjects(@AncestorInPath Job project, @QueryParameter String value) {
+            if (project == null) {
+                return FormValidation.ok(hudson.tasks.Messages.BuildTrigger_ok_ancestor_is_null());
+            }
             if (!project.hasPermission(Item.CONFIGURE)) {
                 return FormValidation.ok();
             }
