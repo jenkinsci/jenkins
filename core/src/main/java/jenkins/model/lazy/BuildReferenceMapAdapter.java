@@ -2,6 +2,7 @@ package jenkins.model.lazy;
 
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
+import hudson.util.RunList;
 import java.util.AbstractCollection;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
@@ -282,7 +283,9 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R>
                 private Map.Entry<Integer, R> current;
                 private final Iterator<Map.Entry<Integer, R>> it = Iterators.removeNull(Iterators.map(
                         BuildReferenceMapAdapter.this.core.entrySet().iterator(), coreEntry -> {
+                            RunList.checkInterrupted();
                             R r = resolver.resolveBuildRef(coreEntry.getValue());
+                            RunList.checkInterrupted();
                             // if null - load not allowed or build is unloadable
                             return r == null ? null : new AbstractMap.SimpleImmutableEntry<>(coreEntry.getKey(), r);
                         }));

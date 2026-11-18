@@ -86,6 +86,8 @@ public class InstallUncaughtExceptionHandler {
 
     private static void handleInterruptedRequest(Throwable e, HttpServletRequest req, HttpServletResponse rsp) throws IOException {
         LOGGER.log(Level.FINE, "Build history request interrupted", e);
+        // 503 is best effort: committed exports retain their original status and may be truncated.
+        // TODO: Ask maintainers whether API exports should be buffered to disk before sending output.
         if (rsp.isCommitted()) {
             return;
         }

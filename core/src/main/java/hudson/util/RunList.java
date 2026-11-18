@@ -49,6 +49,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Predicate;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.AlwaysIterate;
 import org.kohsuke.stapler.export.Range;
 
@@ -60,6 +62,8 @@ import org.kohsuke.stapler.export.Range;
  * @author Kohsuke Kawaguchi
  */
 public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIterate {
+
+    private static final ThreadLocal<Boolean> INTERRUPTIBLE = new ThreadLocal<>();
 
     private Iterable<R> base;
 
@@ -140,40 +144,40 @@ public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIte
     @Deprecated
     public int size() {
         if (size == null) {
-            int sz = 0;
-            R oldest = null;
-            checkInterrupted();
-            Iterator<R> runs = base instanceof FilteredHistory<R> history ? history.iterator(true) : iterator();
-            while (runs.hasNext()) {
-                oldest = runs.next();
+            Boolean previous = INTERRUPTIBLE.get();
+            INTERRUPTIBLE.set(true);
+            try {
+                int sz = 0;
+                R oldest = null;
                 checkInterrupted();
-                sz++;
+                for (R run : this) {
+                    oldest = run;
+                    checkInterrupted();
+                    sz++;
+                }
+                checkInterrupted();
+                first = oldest;
+                size = sz;
+            } finally {
+                if (previous == null) {
+                    INTERRUPTIBLE.remove();
+                } else {
+                    INTERRUPTIBLE.set(previous);
+                }
             }
-            checkInterrupted();
-            first = oldest;
-            size = sz;
         }
         return size;
     }
 
-    private static void checkInterrupted() {
-        if (Thread.currentThread().isInterrupted()) {
+    /**
+     * Checks for interruption inside a {@link #size()} scan, including nested filters and lazy build loading.
+     * Ordinary iteration outside a scan is unaffected.
+     */
+    @Restricted(NoExternalUse.class)
+    public static void checkInterrupted() {
+        if (Boolean.TRUE.equals(INTERRUPTIBLE.get()) && Thread.currentThread().isInterrupted()) {
             throw new RunListInterruptedException();
         }
-    }
-
-    @FunctionalInterface
-    private interface FilteredHistory<T> extends Iterable<T> {
-        Iterator<T> iterator(boolean interruptible);
-
-        @Override
-        default Iterator<T> iterator() {
-            return iterator(false);
-        }
-    }
-
-    private static <T> Iterator<T> historyIterator(Iterable<T> history, boolean interruptible) {
-        return history instanceof FilteredHistory<T> filtered ? filtered.iterator(interruptible) : history.iterator();
     }
 
     /**
@@ -287,22 +291,13 @@ public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIte
         first = null;
         Iterable<R> nested = base;
         Objects.requireNonNull(predicate);
-        base = new FilteredHistory<>() {
-            @Override
-            public Iterator<R> iterator(boolean interruptible) {
-                // A filtered iterator may inspect many rejected builds in one hasNext() call.
-                return Iterators.filter(historyIterator(nested, interruptible),
-                        interruptible ? run -> {
-                            checkInterrupted();
-                            return predicate.apply(run);
-                        } : predicate);
-            }
-
-            @Override
-            public Spliterator<R> spliterator() {
-                return Iterables.filter(nested, predicate).spliterator();
-            }
-        };
+        base = Iterables.filter(nested, run -> {
+            // A filtered iterator may inspect many rejected builds in one hasNext() call.
+            checkInterrupted();
+            boolean accepted = predicate.apply(run);
+            checkInterrupted();
+            return accepted;
+        });
         return this;
     }
 
@@ -315,7 +310,7 @@ public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIte
         size = null;
         first = null;
         final Iterable<R> nested = base;
-        base = (FilteredHistory<R>) interruptible -> hudson.util.Iterators.limit(historyIterator(nested, interruptible), predicate);
+        base = () -> hudson.util.Iterators.limit(nested.iterator(), predicate);
         return this;
     }
 

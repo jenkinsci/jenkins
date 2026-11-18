@@ -30,6 +30,9 @@ import java.util.concurrent.CancellationException;
 /**
  * Indicates that a build history scan was cancelled by interrupting its thread.
  * The interrupted status is preserved for the caller.
+ * <p>
+ * HTTP requests failing with this exception receive a best-effort 503 response. If the response
+ * is already committed, its original status is retained and its body may be truncated.
  *
  * @see RunList#size()
  * @since 2.591
