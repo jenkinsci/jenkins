@@ -179,7 +179,7 @@ public final class DeleteAction implements Action {
                 return List.of();
             }
 
-            return List.of(new DeleteAction("View", target.getDisplayName()));
+            return List.of(new DeleteAction(Messages.DeleteAction_View(), target.getDisplayName()));
         }
     }
 }

@@ -25,12 +25,15 @@
 package jenkins.model.view;
 
 import hudson.Extension;
+import hudson.Functions;
 import hudson.model.Action;
 import hudson.model.TransientViewActionFactory;
 import hudson.model.View;
 import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag;
+import jenkins.model.menu.event.Event;
+import jenkins.model.menu.event.LinkEvent;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
@@ -49,12 +52,21 @@ public final class FingerprintCheckAction implements Action {
 
     @Override
     public String getIconFileName() {
+        if (!Jenkins.get().getFingerprintMap().isReady()) {
+            return null;
+        }
+
         return "symbol-fingerprint";
     }
 
     @Override
     public String getUrlName() {
         return "/fingerprintCheck";
+    }
+
+    @Override
+    public Event getEvent() {
+        return LinkEvent.of(Functions.getActionUrl("", this));
     }
 
     @Override
@@ -73,8 +85,7 @@ public final class FingerprintCheckAction implements Action {
                 return List.of();
             }
 
-            Jenkins jenkins = Jenkins.get();
-            if (!jenkins.hasPermission(Jenkins.READ) || !jenkins.getFingerprintMap().isReady()) {
+            if (!Jenkins.get().hasPermission(Jenkins.READ)) {
                 return List.of();
             }
 
