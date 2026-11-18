@@ -156,6 +156,7 @@ THE SOFTWARE.
   </head>
   <body id="jenkins" class="${layoutType} jenkins-${h.version}" data-version="${h.version}" data-model-type="${it.class.name}"
         data-search-url="${rootURL + '/search/suggest'}"
+        data-time-span-patterns="${h.timeSpanPatterns}"
         data-search-help-url="${%searchBox.url}"
         data-notification-message="${formApplyNotification.message}"
         data-notification-type="${formApplyNotification.notificationType}">
