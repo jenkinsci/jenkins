@@ -1781,8 +1781,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                     if (builtOn != null && !builtOn.isEmpty())
                         tooltip.append("\nAgent: ").append(builtOn);
                 }
-                buf.append("<a href=\"").append(Util.xmlEscape(String.valueOf(r.getNumber()))).append("\" tooltip=\"");
-                buf.append(Util.xmlEscape(tooltip.toString())).append("\">");
+                buf.append("<a href=\"../").append(r.getNumber()).append("\" tooltip=\"");
+                buf.append(Util.xmlEscape(tooltip.toString()).replace("\"", "&quot;")).append("\">");
                 buf.append("<rect x=\"").append(svgFmt(x)).append("\" y=\"").append(svgFmt(y))
                    .append("\" width=\"").append(svgFmt(barW)).append("\" height=\"").append(svgFmt(barH))
                    .append("\" fill=\"").append(cssColor(label.getColor())).append("\"/>");

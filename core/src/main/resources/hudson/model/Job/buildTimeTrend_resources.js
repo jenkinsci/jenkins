@@ -27,7 +27,7 @@ window.buildTimeTrend_displayBuilds = function (data) {
     td.setAttribute("data", e.number);
 
     let link = document.createElement("a");
-    link.href = e.number + "/";
+    link.href = "../" + e.number + "/";
     link.classList.add("model-link", "inside");
     link.innerText = escapeHTML(e.displayName);
 
