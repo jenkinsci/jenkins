@@ -57,6 +57,11 @@ public final class ProjectRelationshipAction implements Action {
         return "/projectRelationship";
     }
 
+    @Override
+    public boolean isVisibleInContextMenu() {
+        return false;
+    }
+
     @Extension
     @Restricted(Beta.class)
     public static final class Factory extends TransientViewActionFactory {

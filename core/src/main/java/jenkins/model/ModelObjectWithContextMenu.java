@@ -371,7 +371,9 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             if (self instanceof ViewGroup viewGroup && new NewDashboardPageUserExperimentalFlag().getFlagValue()) {
                 View primaryView = viewGroup.getPrimaryView();
                 if (primaryView != null) {
-                    return primaryView.getAppBarActions();
+                    return primaryView.getAppBarActions().stream()
+                            .filter(Action::isVisibleInContextMenu)
+                            .toList();
                 }
             }
 

@@ -56,6 +56,11 @@ public final class BuildHistoryAction implements Action {
         return "builds";
     }
 
+    @Override
+    public boolean isVisibleInContextMenu() {
+        return false;
+    }
+
     @Extension
     @Restricted(Beta.class)
     public static final class Factory extends TransientViewActionFactory {

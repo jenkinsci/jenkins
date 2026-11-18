@@ -57,6 +57,11 @@ public final class FingerprintCheckAction implements Action {
         return "/fingerprintCheck";
     }
 
+    @Override
+    public boolean isVisibleInContextMenu() {
+        return false;
+    }
+
     @Extension
     @Restricted(Beta.class)
     public static final class Factory extends TransientViewActionFactory {
