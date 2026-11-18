@@ -25,15 +25,12 @@
 package jenkins.model.view;
 
 import hudson.Extension;
-import hudson.Functions;
 import hudson.model.Action;
 import hudson.model.TransientViewActionFactory;
 import hudson.model.View;
 import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag;
-import jenkins.model.menu.event.Event;
-import jenkins.model.menu.event.LinkEvent;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
@@ -52,21 +49,12 @@ public final class ProjectRelationshipAction implements Action {
 
     @Override
     public String getIconFileName() {
-        if (!Jenkins.get().getFingerprintMap().isReady()) {
-            return null;
-        }
-
         return "symbol-project-relationship";
     }
 
     @Override
     public String getUrlName() {
         return "/projectRelationship";
-    }
-
-    @Override
-    public Event getEvent() {
-        return LinkEvent.of(Functions.getActionUrl("", this));
     }
 
     @Override
@@ -85,7 +73,8 @@ public final class ProjectRelationshipAction implements Action {
                 return List.of();
             }
 
-            if (!Jenkins.get().hasPermission(Jenkins.READ)) {
+            Jenkins jenkins = Jenkins.get();
+            if (!jenkins.hasPermission(Jenkins.READ) || !jenkins.getFingerprintMap().isReady()) {
                 return List.of();
             }
 

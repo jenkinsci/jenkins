@@ -99,6 +99,7 @@ class ViewAppBarActionsTest {
         assertThat(items.get("Build History"), hasEntry("baseUrl", j.contextPath + "/job/folder/view/other/"));
         assertThat(items.get("Folder action"), hasEntry("baseUrl", j.contextPath + "/job/folder/"));
         assertThat(items.keySet(), hasItem("Delete View"));
+        assertThat(items.get("Root action").getJSONObject("event"), hasEntry("url", j.contextPath + "/root-action"));
     }
 
     @Test
@@ -136,6 +137,24 @@ class ViewAppBarActionsTest {
         }
     }
 
+    private record TestAction(String displayName, String urlName) implements Action {
+
+        @Override
+        public String getIconFileName() {
+            return "symbol-settings";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @Override
+        public String getUrlName() {
+            return urlName;
+        }
+    }
+
     @TestExtension
     public static final class FolderActionFactory extends TransientActionFactory<MockFolder> {
 
@@ -146,22 +165,7 @@ class ViewAppBarActionsTest {
 
         @Override
         public Collection<? extends Action> createFor(MockFolder target) {
-            return Set.of(new Action() {
-                @Override
-                public String getIconFileName() {
-                    return "symbol-settings";
-                }
-
-                @Override
-                public String getDisplayName() {
-                    return "Folder action";
-                }
-
-                @Override
-                public String getUrlName() {
-                    return "folder-action";
-                }
-            });
+            return Set.of(new TestAction("Folder action", "folder-action"), new TestAction("Root action", "/root-action"));
         }
     }
 }

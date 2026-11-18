@@ -29,6 +29,7 @@ import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
 import jenkins.model.menu.event.Event;
+import jenkins.model.menu.event.LinkEvent;
 import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -44,6 +45,8 @@ public final class BaseUrlAction implements Action, IconSpec, ModelObjectWithCon
 
     private final Action delegate;
 
+    private final String contextPath;
+
     private final String baseUrl;
 
     /**
@@ -53,7 +56,8 @@ public final class BaseUrlAction implements Action, IconSpec, ModelObjectWithCon
     public BaseUrlAction(Action delegate, String url) {
         this.delegate = delegate;
         StaplerRequest2 req = Stapler.getCurrentRequest2();
-        this.baseUrl = (req != null ? req.getContextPath() : "") + "/" + url;
+        this.contextPath = req != null ? req.getContextPath() : "";
+        this.baseUrl = contextPath + "/" + url;
     }
 
     public String getBaseUrl() {
@@ -96,7 +100,12 @@ public final class BaseUrlAction implements Action, IconSpec, ModelObjectWithCon
 
     @Override
     public Event getEvent() {
-        return delegate.getEvent();
+        Event event = delegate.getEvent();
+        if (!(event instanceof LinkEvent linkEvent) || linkEvent.getUrl() == null || !linkEvent.getUrl().startsWith("/")) {
+            return event;
+        }
+
+        return LinkEvent.of(contextPath + linkEvent.getUrl(), linkEvent.getType());
     }
 
     @Override
