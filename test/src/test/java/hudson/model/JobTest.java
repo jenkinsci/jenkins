@@ -48,11 +48,13 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -63,12 +65,16 @@ import jenkins.model.ProjectNamingStrategy;
 import jenkins.model.Tab;
 import jenkins.model.TransientActionFactory;
 import org.hamcrest.Matchers;
+import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.TextPage;
 import org.htmlunit.WebAssert;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlFormUtil;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.NameValuePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -566,6 +572,19 @@ class JobTest {
         assertEquals("description", ((TextPage) wc.goTo("job/project/description", "text/plain")).getContent());
         project.setDescription(null);
         assertEquals("", ((TextPage) wc.goTo("job/project/description", "text/plain")).getContent());
+    }
+
+    @Issue("27800")
+    @Test
+    void setDescriptionViaPostReturnsNoContent() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject("project");
+        JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
+        WebRequest req = new WebRequest(new URL(j.getURL(), project.getUrl() + "description"), HttpMethod.POST);
+        req.setRequestParameters(List.of(new NameValuePair("description", "Updated description")));
+        WebResponse response = wc.loadWebResponse(wc.addCrumb(req));
+        assertEquals(HttpURLConnection.HTTP_NO_CONTENT, response.getStatusCode());
+        assertEquals("", response.getContentAsString());
+        assertEquals("Updated description", project.getDescription());
     }
 
     @Test
