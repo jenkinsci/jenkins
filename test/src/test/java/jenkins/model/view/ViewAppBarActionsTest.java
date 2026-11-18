@@ -37,10 +37,15 @@ import hudson.model.User;
 import java.io.File;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.experimentalflags.UserExperimentalFlagsProperty;
+import jenkins.model.menu.event.DropdownEvent;
+import jenkins.model.menu.event.Event;
+import jenkins.model.menu.event.LinkEvent;
+import jenkins.model.menu.event.SplitButtonEvent;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.htmlunit.Page;
@@ -100,6 +105,13 @@ class ViewAppBarActionsTest {
         assertThat(items.get("Folder action"), hasEntry("baseUrl", j.contextPath + "/job/folder/"));
         assertThat(items.keySet(), hasItem("Delete View"));
         assertThat(items.get("Root action").getJSONObject("event"), hasEntry("url", j.contextPath + "/root-action"));
+
+        JSONObject nested = items.get("Dropdown action").getJSONObject("subMenu").getJSONArray("items").getJSONObject(0);
+        assertThat(nested.getJSONObject("event"), hasEntry("url", j.contextPath + "/nested-action"));
+        assertThat(nested, hasEntry("baseUrl", j.contextPath + "/job/folder/"));
+
+        JSONObject splitButton = items.get("Split action").getJSONObject("event");
+        assertThat(splitButton.getJSONObject("event"), hasEntry("url", j.contextPath + "/split-action"));
     }
 
     @Test
@@ -155,6 +167,29 @@ class ViewAppBarActionsTest {
         }
     }
 
+    private record EventAction(String displayName, Event event) implements Action {
+
+        @Override
+        public String getIconFileName() {
+            return "symbol-settings";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @Override
+        public String getUrlName() {
+            return null;
+        }
+
+        @Override
+        public Event getEvent() {
+            return event;
+        }
+    }
+
     @TestExtension
     public static final class FolderActionFactory extends TransientActionFactory<MockFolder> {
 
@@ -165,7 +200,13 @@ class ViewAppBarActionsTest {
 
         @Override
         public Collection<? extends Action> createFor(MockFolder target) {
-            return Set.of(new TestAction("Folder action", "folder-action"), new TestAction("Root action", "/root-action"));
+            Action nested = new TestAction("Nested action", "/nested-action");
+
+            return Set.of(
+                    new TestAction("Folder action", "folder-action"),
+                    new TestAction("Root action", "/root-action"),
+                    new EventAction("Dropdown action", DropdownEvent.of(List.of(nested))),
+                    new EventAction("Split action", SplitButtonEvent.of(LinkEvent.of("/split-action"), List.of(nested))));
         }
     }
 }

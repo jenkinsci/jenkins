@@ -25,11 +25,14 @@
 package jenkins.model.menu.action;
 
 import hudson.model.Action;
+import java.util.List;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
+import jenkins.model.menu.event.DropdownEvent;
 import jenkins.model.menu.event.Event;
 import jenkins.model.menu.event.LinkEvent;
+import jenkins.model.menu.event.SplitButtonEvent;
 import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -45,6 +48,8 @@ public final class BaseUrlAction implements Action, IconSpec, ModelObjectWithCon
 
     private final Action delegate;
 
+    private final String url;
+
     private final String contextPath;
 
     private final String baseUrl;
@@ -55,6 +60,7 @@ public final class BaseUrlAction implements Action, IconSpec, ModelObjectWithCon
      */
     public BaseUrlAction(Action delegate, String url) {
         this.delegate = delegate;
+        this.url = url;
         StaplerRequest2 req = Stapler.getCurrentRequest2();
         this.contextPath = req != null ? req.getContextPath() : "";
         this.baseUrl = contextPath + "/" + url;
@@ -100,12 +106,27 @@ public final class BaseUrlAction implements Action, IconSpec, ModelObjectWithCon
 
     @Override
     public Event getEvent() {
-        Event event = delegate.getEvent();
+        return resolve(delegate.getEvent());
+    }
+
+    private Event resolve(Event event) {
+        if (event instanceof SplitButtonEvent splitButtonEvent) {
+            return SplitButtonEvent.of(resolve(splitButtonEvent.getEvent()), wrap(splitButtonEvent.getActions()));
+        }
+
+        if (event instanceof DropdownEvent dropdownEvent) {
+            return DropdownEvent.of(wrap(dropdownEvent.getActions()));
+        }
+
         if (!(event instanceof LinkEvent linkEvent) || linkEvent.getUrl() == null || !linkEvent.getUrl().startsWith("/")) {
             return event;
         }
 
         return LinkEvent.of(contextPath + linkEvent.getUrl(), linkEvent.getType());
+    }
+
+    private List<Action> wrap(List<Action> actions) {
+        return actions.stream().map(action -> (Action) new BaseUrlAction(action, url)).toList();
     }
 
     @Override

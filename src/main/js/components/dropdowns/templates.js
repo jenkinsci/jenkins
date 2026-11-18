@@ -192,7 +192,11 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
       button,
       (instance) => {
         instance.setContent(
-          Utils.generateDropdownItems(dropdownItem.subMenu.items),
+          Utils.generateDropdownItems(
+            dropdownItem.subMenu.items,
+            false,
+            context,
+          ),
         );
         instance.loaded = true;
       },
