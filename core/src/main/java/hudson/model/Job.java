@@ -1607,7 +1607,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             // submission
             if (req.getParameter("description") != null) {
                 this.setDescription(req.getParameter("description"));
-                rsp.sendError(SC_NO_CONTENT);
+                rsp.setStatus(SC_NO_CONTENT);
                 return;
             }
         }
