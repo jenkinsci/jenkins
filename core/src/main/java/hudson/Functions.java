@@ -145,6 +145,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TimeZone;
@@ -185,6 +186,8 @@ import org.apache.commons.jexl.util.Introspector;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
+import org.jvnet.localizer.LocaleProvider;
+import org.jvnet.localizer.ResourceBundleHolder;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -786,6 +789,41 @@ public class Functions {
 
     public static boolean isCollapsed(String paneId) {
         return PaneStatusProperties.forCurrentUser().isCollapsed(paneId);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static long getElapsedSince(long epochMillis) {
+        return System.currentTimeMillis() - epochMillis;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static @NonNull String formatTimeSpan(long duration) {
+        long wholeSeconds = Math.abs(duration) / 1000 * 1000;
+        if (wholeSeconds == 0) {
+            return Messages.Util_second(0);
+        }
+        return Util.getTimeSpanString(wholeSeconds);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static @NonNull String formatTimeSpanToMinute(long duration) {
+        long minutes = Math.abs(duration) / 60_000;
+        if (minutes < 60) {
+            return Messages.Util_minute(minutes);
+        }
+        return Util.getTimeSpanString(minutes * 60_000);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static @NonNull String getTimeSpanPatterns() {
+        Locale locale = LocaleProvider.getLocale();
+        ResourceBundle bundle = ResourceBundleHolder.get(Messages.class).get(locale);
+        JSONObject patterns = new JSONObject();
+        patterns.put("locale", locale.toLanguageTag());
+        for (String unit : List.of("second", "minute", "hour", "day", "month", "year")) {
+            patterns.put(unit, bundle.getString("Util." + unit).replace("{0}", "{0,number}"));
+        }
+        return patterns.toString();
     }
 
     @Restricted(NoExternalUse.class)
