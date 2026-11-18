@@ -8,6 +8,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,16 +52,16 @@ public class InstallUncaughtExceptionHandler {
     }
 
     static void handleException(Jenkins j, Throwable e, HttpServletRequest req, HttpServletResponse rsp, int code) throws IOException, ServletException {
-        if (isInterruptedRunList(e)) {
+        if (hasCause(e, RunListInterruptedException.class)) {
             handleInterruptedRequest(e, req, rsp);
             return;
         }
         if (rsp.isCommitted()) {
-            LOGGER.log(isEOFException(e) ? Level.FINE : Level.WARNING, null, e);
+            LOGGER.log(hasCause(e, EOFException.class) ? Level.FINE : Level.WARNING, null, e);
             return;
         }
         String id = UUID.randomUUID().toString();
-        LOGGER.log(isEOFException(e) ? Level.FINE : Level.WARNING, "Caught unhandled exception with ID " + id, e);
+        LOGGER.log(hasCause(e, EOFException.class) ? Level.FINE : Level.WARNING, "Caught unhandled exception with ID " + id, e);
         req.setAttribute("jenkins.exception.id", id);
         req.setAttribute("jakarta.servlet.error.exception", e);
         rsp.setStatus(code);
@@ -69,9 +74,10 @@ public class InstallUncaughtExceptionHandler {
         }
     }
 
-    private static boolean isInterruptedRunList(Throwable e) {
-        for (Throwable cause = e; cause != null; cause = cause.getCause()) {
-            if (cause instanceof RunListInterruptedException) {
+    private static boolean hasCause(Throwable e, Class<? extends Throwable> type) {
+        Set<Throwable> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (Throwable cause = e; cause != null && seen.add(cause); cause = cause.getCause()) {
+            if (type.isInstance(cause)) {
                 return true;
             }
         }
@@ -88,7 +94,16 @@ public class InstallUncaughtExceptionHandler {
         rsp.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
         rsp.setContentType("text/plain;charset=UTF-8");
         if (!"HEAD".equals(req.getMethod())) {
-            rsp.getWriter().write("Resource-intensive request interrupted before a complete result could be produced.");
+            String message = "Resource-intensive request interrupted before a complete result could be produced.";
+            PrintWriter writer;
+            try {
+                writer = rsp.getWriter();
+            } catch (IllegalStateException streamSelected) {
+                // resetBuffer() leaves the servlet's output mode selected.
+                rsp.getOutputStream().write(message.getBytes(StandardCharsets.UTF_8));
+                return;
+            }
+            writer.write(message);
         }
     }
 
@@ -107,16 +122,6 @@ public class InstallUncaughtExceptionHandler {
                     handleException(Jenkins.get(), cause, req, rsp, code);
                 }
             };
-        }
-    }
-
-    private static boolean isEOFException(Throwable e) {
-        if (e == null) {
-            return false;
-        } else if (e instanceof EOFException) {
-            return true;
-        } else {
-            return isEOFException(e.getCause());
         }
     }
 

@@ -15,6 +15,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.concurrent.CancellationException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 class InstallUncaughtExceptionHandlerTest {
 
@@ -45,6 +46,17 @@ class InstallUncaughtExceptionHandlerTest {
         verify(rsp, never()).resetBuffer();
         verify(rsp, never()).setStatus(503);
         verify(rsp, never()).getWriter();
+    }
+
+    @Test
+    @Timeout(value = 5, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+    void cyclicCauseChainOnCommittedResponse() throws Exception {
+        Exception failure = new Exception();
+        failure.initCause(new Exception(failure));
+        HttpServletResponse rsp = mock(HttpServletResponse.class);
+        when(rsp.isCommitted()).thenReturn(true);
+        InstallUncaughtExceptionHandler.handleException(null, failure, mock(HttpServletRequest.class), rsp, 500);
+        verify(rsp, never()).setStatus(503);
     }
 
     @Test

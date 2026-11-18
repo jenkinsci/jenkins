@@ -34,6 +34,7 @@ import static org.mockito.Mockito.mock;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.util.RunList;
+import hudson.util.RunListInterruptedException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
@@ -51,6 +52,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.xml.sax.SAXException;
@@ -82,7 +84,18 @@ class ApiTest {
         assertEquals(200, wc.goTo("api/json?tree=nodeName", "application/json").getWebResponse().getStatusCode());
     }
 
-    @TestExtension("interruptedBuildHistory")
+    @Test
+    void interruptedBuildHistoryAfterSelectingOutputStream() throws Exception {
+        try (JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false)) {
+            WebResponse response = wc.goTo("interruptedBuildHistory/binary", null).getWebResponse();
+            assertEquals(503, response.getStatusCode());
+            assertEquals("text/plain", response.getContentType());
+            assertEquals("preserved", response.getResponseHeaderValue("X-Test-Header"));
+            assertEquals("Resource-intensive request interrupted before a complete result could be produced.", response.getContentAsString());
+        }
+    }
+
+    @TestExtension({"interruptedBuildHistory", "interruptedBuildHistoryAfterSelectingOutputStream"})
     public static class InterruptedBuildHistory implements RootAction {
         @Override
         public String getIconFileName() {
@@ -101,6 +114,13 @@ class ApiTest {
 
         public Api getApi() {
             return new Api(new InterruptedData());
+        }
+
+        public void doBinary(StaplerResponse2 rsp) throws IOException {
+            rsp.setHeader("X-Test-Header", "preserved");
+            rsp.setContentLength(1000);
+            rsp.getOutputStream().write('x');
+            throw new RunListInterruptedException();
         }
     }
 

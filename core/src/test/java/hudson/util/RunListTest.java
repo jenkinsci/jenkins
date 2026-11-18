@@ -34,7 +34,9 @@ import static org.mockito.Mockito.when;
 
 import hudson.model.Run;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Spliterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
@@ -44,6 +46,22 @@ import org.jvnet.hudson.test.Issue;
  * @author Ignacio Albors
  */
 class RunListTest {
+
+    @Test
+    void filteredParallelStreamPreservesEncounterOrder() {
+        Run newest = mock(Run.class);
+        Run oldest = mock(Run.class);
+        List<Run> orderedRuns = new ArrayList<>();
+        orderedRuns.add(newest);
+        orderedRuns.addAll(Collections.nCopies(4096, oldest));
+        RunList<Run> runs = RunList.fromRuns(orderedRuns);
+
+        for (int i = 0; i < 2; i++) {
+            runs.filter((Predicate<Run>) run -> true);
+            assertTrue(runs.spliterator().hasCharacteristics(Spliterator.ORDERED));
+            assertSame(newest, runs.parallelStream().findFirst().orElseThrow());
+        }
+    }
 
     @Test
     void sizeAndOldestBuildAreCachedOnlyAfterCompletion() {
@@ -82,6 +100,47 @@ class RunListTest {
             Thread.interrupted();
         }
         assertEquals(1, runs.size());
+    }
+
+    @Test
+    void sizeStopsWhileSkippingRejectedBuilds() {
+        Run run = mock(Run.class);
+        AtomicInteger visited = new AtomicInteger();
+        List<Run> runs = RunList.fromRuns(List.of(run, run, run)).filter((Predicate<Run>) candidate -> {
+            if (visited.incrementAndGet() == 1) {
+                Thread.currentThread().interrupt();
+            }
+            return false;
+        }).limit(3);
+        try {
+            assertThrows(RunListInterruptedException.class, runs::size);
+            assertTrue(Thread.currentThread().isInterrupted());
+            assertEquals(1, visited.get());
+        } finally {
+            Thread.interrupted();
+        }
+        assertEquals(0, runs.size());
+        assertEquals(4, visited.get());
+    }
+
+    @Test
+    void sizeChecksInterruptionAfterLastRejectedBuild() {
+        Run first = mock(Run.class);
+        Run last = mock(Run.class);
+        RunList<Run> runList = RunList.fromRuns(List.of(first, last)).filter((Predicate<Run>) run -> {
+            if (run == last) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+            return true;
+        });
+        List<Run> runs = runList;
+        try {
+            assertThrows(RunListInterruptedException.class, runs::size);
+            assertNull(runList.getCachedFirstBuild());
+        } finally {
+            Thread.interrupted();
+        }
     }
 
     @Test

@@ -45,6 +45,7 @@ import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Predicate;
@@ -141,17 +142,38 @@ public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIte
         if (size == null) {
             int sz = 0;
             R oldest = null;
-            for (R r : this) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new RunListInterruptedException();
-                }
-                oldest = r;
+            checkInterrupted();
+            Iterator<R> runs = base instanceof FilteredHistory<R> history ? history.iterator(true) : iterator();
+            while (runs.hasNext()) {
+                oldest = runs.next();
+                checkInterrupted();
                 sz++;
             }
+            checkInterrupted();
             first = oldest;
             size = sz;
         }
         return size;
+    }
+
+    private static void checkInterrupted() {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new RunListInterruptedException();
+        }
+    }
+
+    @FunctionalInterface
+    private interface FilteredHistory<T> extends Iterable<T> {
+        Iterator<T> iterator(boolean interruptible);
+
+        @Override
+        default Iterator<T> iterator() {
+            return iterator(false);
+        }
+    }
+
+    private static <T> Iterator<T> historyIterator(Iterable<T> history, boolean interruptible) {
+        return history instanceof FilteredHistory<T> filtered ? filtered.iterator(interruptible) : history.iterator();
     }
 
     /**
@@ -263,7 +285,24 @@ public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIte
     public RunList<R> filter(com.google.common.base.Predicate<R> predicate) {
         size = null;
         first = null;
-        base = Iterables.filter(base, predicate);
+        Iterable<R> nested = base;
+        Objects.requireNonNull(predicate);
+        base = new FilteredHistory<>() {
+            @Override
+            public Iterator<R> iterator(boolean interruptible) {
+                // A filtered iterator may inspect many rejected builds in one hasNext() call.
+                return Iterators.filter(historyIterator(nested, interruptible),
+                        interruptible ? run -> {
+                            checkInterrupted();
+                            return predicate.apply(run);
+                        } : predicate);
+            }
+
+            @Override
+            public Spliterator<R> spliterator() {
+                return Iterables.filter(nested, predicate).spliterator();
+            }
+        };
         return this;
     }
 
@@ -276,17 +315,7 @@ public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIte
         size = null;
         first = null;
         final Iterable<R> nested = base;
-        base = new Iterable<>() {
-            @Override
-            public Iterator<R> iterator() {
-                return hudson.util.Iterators.limit(nested.iterator(), predicate);
-            }
-
-            @Override
-            public String toString() {
-                return Iterables.toString(this);
-            }
-        };
+        base = (FilteredHistory<R>) interruptible -> hudson.util.Iterators.limit(historyIterator(nested, interruptible), predicate);
         return this;
     }
 
