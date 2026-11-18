@@ -821,7 +821,7 @@ public class Functions {
         JSONObject patterns = new JSONObject();
         patterns.put("locale", locale.toLanguageTag());
         for (String unit : List.of("second", "minute", "hour", "day", "month", "year")) {
-            patterns.put(unit, bundle.getString("Util." + unit));
+            patterns.put(unit, bundle.getString("Util." + unit).replace("{0}", "{0,number}"));
         }
         return patterns.toString();
     }

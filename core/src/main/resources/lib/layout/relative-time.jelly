@@ -61,6 +61,6 @@ THE SOFTWARE.
 
   <span class="${attrs.class}"
         data-relative-time-elapsed="${elapsed}"
-        data-relative-time-template="${template}"
+        data-relative-time-template="${template.replace('{0}', '{0,number}')}"
         data-relative-time-recent="${attrs.recent}">${text}</span>
 </j:jelly>

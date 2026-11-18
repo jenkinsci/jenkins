@@ -1,6 +1,7 @@
 import behaviorShim from "@/util/behavior-shim";
 
 const SELECTOR = "[data-relative-time-elapsed]";
+const PLACEHOLDER = "{0,number}";
 
 const ONE_SECOND_MS = 1000;
 const ONE_MINUTE_MS = 60 * ONE_SECOND_MS;
@@ -49,7 +50,7 @@ function choose(options, number) {
 
 /**
  * Compiles a java.text.MessageFormat pattern with a single numeric argument,
- * supporting "{0}" and the "{0,choice,0#days|1#day|1<days}" form used by the
+ * supporting "{0}", "{0,number}" and the "{0,choice,0#days|1#day|1<days}" form used by the
  * hudson.Messages Util.* patterns.
  * @param {string} pattern
  * @param {string} locale
@@ -59,7 +60,7 @@ export function compileMessage(pattern, locale) {
   const numberFormat = new Intl.NumberFormat(locale);
   const pieces = pattern
     .replace(/''/g, "'")
-    .split(/(\{0(?:,\s*choice\s*,[^}]*)?\})/)
+    .split(/(\{0(?:,\s*(?:number|choice\s*,[^}]*))?\})/)
     .map((part, index) => {
       if (index % 2 === 0) {
         return () => part;
@@ -135,12 +136,12 @@ function getFormatter() {
  */
 function describe(elapsed, template, recent, format) {
   if (!recent) {
-    return template.replace("{0}", format(elapsed));
+    return template.replace(PLACEHOLDER, format(elapsed));
   }
   if (Math.abs(elapsed) < ONE_MINUTE_MS) {
     return recent;
   }
-  return template.replace("{0}", format(elapsed, true));
+  return template.replace(PLACEHOLDER, format(elapsed, true));
 }
 
 /**
