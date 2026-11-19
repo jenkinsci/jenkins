@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2025, CloudBees, Inc.
+ * Copyright (c) 2026, Markus Winter
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,24 +22,50 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security.csp.impl;
+package jenkins.model.agent;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import java.util.Optional;
-import jenkins.security.csp.CspHeader;
-import jenkins.security.csp.CspHeaderDecider;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+import hudson.model.Action;
+import hudson.model.Computer;
+import java.util.Collection;
+import java.util.Set;
+import jenkins.model.TransientActionFactory;
+import jenkins.model.menu.Group;
 
-/**
- * Fallback implementation: Choose {@link jenkins.security.csp.CspHeader#ContentSecurityPolicyReportOnly}.
- * The UI for this lets the user enable {@link CspConfiguration} via {@link CspRecommendation}.
- */
-@Restricted(NoExternalUse.class)
-@Extension(ordinal = -100000)
-public class FallbackDecider implements CspHeaderDecider {
+@Extension
+public class LoadStatisticsAction extends TransientActionFactory<Computer> {
+
     @Override
-    public Optional<CspHeader> decide() {
-        return Optional.of(CspHeader.ContentSecurityPolicyReportOnly);
+    public Class<Computer> type() {
+        return Computer.class;
     }
+
+    @NonNull
+    @Override
+    public Collection<? extends Action> createFor(@NonNull Computer target) {
+
+        return Set.of(new Action() {
+            @Override
+            public String getIconFileName() {
+                return "symbol-analytics";
+            }
+
+            @Override
+            public String getDisplayName() {
+                return Messages.LoadStatisticsAction_Title();
+            }
+
+            @Override
+            public String getUrlName() {
+                return "load-statistics";
+            }
+
+            @Override
+            public Group getGroup() {
+                return Group.FIRST_IN_MENU;
+            }
+        });
+    }
+
 }

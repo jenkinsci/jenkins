@@ -25,38 +25,26 @@
   document.addEventListener("DOMContentLoaded", function () {
     const timespanSelect = document.querySelector("#timespan-select");
     timespanSelect.addEventListener("change", () => {
-      const graphLocation = document.querySelector(".js-load-graph");
+      const graphLocation = document.querySelector(".jenkins-load-graph");
       if (graphLocation) {
         const type = timespanSelect.value;
-        const parentSelector = graphLocation.getAttribute(
-          "data-graph-parent-selector",
-        );
         const baseUrl = graphLocation.getAttribute("data-graph-base-url");
         const graphAlt = graphLocation.getAttribute("data-graph-alt");
 
-        const parent = document.querySelector(parentSelector);
-        if (parent) {
-          const availableWidth = parent.offsetWidth;
-          const padding = 30;
-          // for some browsers, the perfect width is not enough
-          const quirkyBrowserAdjustment = 15;
-          const graphWidth = availableWidth - padding - quirkyBrowserAdjustment;
-
-          // type in {sec10, min, hour}
-          const graphUrl =
-            baseUrl +
-            "/graph?type=" +
-            type +
-            "&width=" +
-            graphWidth +
-            "&height=500";
-          const graphImgTag = document.createElement("img");
-          graphImgTag.src = graphUrl;
-          graphImgTag.classList.add("jenkins-graph-card");
-          graphImgTag.srcset = graphUrl + "&scale=2 2x";
-          graphImgTag.alt = graphAlt;
-          graphLocation.innerHTML = graphImgTag.outerHTML;
-        }
+        // type in {sec10, min, hour}
+        // The SVG is inlined into the DOM (rather than referenced via an <img>) so that it
+        // resolves the page's theme CSS variables and scales with its container via its viewBox.
+        const graphUrl = baseUrl + "/graphSvg?type=" + type;
+        fetch(graphUrl)
+          .then((response) => response.text())
+          .then((svg) => {
+            graphLocation.innerHTML = svg;
+            // The injected <svg> already carries role="img"; give it an accessible name.
+            const svgElement = graphLocation.querySelector("svg");
+            if (svgElement) {
+              svgElement.setAttribute("aria-label", graphAlt);
+            }
+          });
       }
     });
 

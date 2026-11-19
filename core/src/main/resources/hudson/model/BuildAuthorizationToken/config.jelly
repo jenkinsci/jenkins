@@ -42,7 +42,7 @@ THE SOFTWARE.
         ${%or}
         /buildWithParameters?token=<code>TOKEN_NAME</code>
         <br/>
-        ${%Optionally append &lt;tt>&amp;cause=Cause+Text&lt;/tt> to provide text that will be included in the recorded build cause.}
+        ${%Optionally append &lt;code>&amp;cause=Cause+Text&lt;/code> to provide text that will be included in the recorded build cause.}
       </f:entry>
   </f:optionalBlock>
   </j:if>

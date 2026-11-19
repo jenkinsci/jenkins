@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2025 CloudBees, Inc.
+Copyright (c) 2026 Markus Winter
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
+
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:description>${%blurb(rootURL)}</f:description>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+  <l:dialog title="${%Monitoring Data}">
+    <div class="app-agent-details">
+      <j:forEach var="m" items="${it.object.monitoringData}">
+        <div class="app-agent-details__line">
+          <div>${m.key.columnCaption}</div>
+          <j:set var="data" value="${m.value}"/>
+          <div><st:include page="column.jelly" from="${m.key}" /></div>
+        </div>
+      </j:forEach>
+    </div>
+  </l:dialog>
+
+  <button class="jenkins-details__item"
+          data-type="dialog-opener"
+          data-dialog-id="${dialogId}">
+    <div class="jenkins-details__item__icon">
+      <l:icon src="symbol-list" />
+    </div>
+    <span>
+      ${%Monitoring Data}
+    </span>
+  </button>
+
 </j:jelly>
