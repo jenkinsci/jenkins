@@ -1455,42 +1455,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(NoExternalUse.class)
     public HttpResponse doPluginsSearch(@QueryParameter String query, @QueryParameter Integer limit) {
-        List<JSONObject> plugins = new ArrayList<>();
+        List<UpdateSite.Plugin> available = new ArrayList<>();
         for (UpdateSite site : Jenkins.get().getUpdateCenter().getSiteList()) {
-            List<JSONObject> sitePlugins = site.getAvailables().stream()
-                .filter(plugin -> {
-                    if (query == null || query.isBlank()) {
-                        return true;
-                    }
-                    return (plugin.name != null && plugin.name.toLowerCase(Locale.ROOT).contains(query.toLowerCase(Locale.ROOT))) ||
-                        (plugin.title != null && plugin.title.toLowerCase(Locale.ROOT).contains(query.toLowerCase(Locale.ROOT))) ||
-                        (plugin.excerpt != null && plugin.excerpt.toLowerCase(Locale.ROOT).contains(query.toLowerCase(Locale.ROOT))) ||
-                        plugin.hasCategory(query) ||
-                        plugin.getCategoriesStream()
-                            .map(UpdateCenter::getCategoryDisplayName)
-                            .anyMatch(category -> category != null && category.toLowerCase(Locale.ROOT).contains(query.toLowerCase(Locale.ROOT))) ||
-                        plugin.hasWarnings() && query.equalsIgnoreCase("warning:");
-                })
-                .limit(Math.max(limit - plugins.size(), 1))
-                .sorted((o1, o2) -> {
-                    String o1DisplayName = o1.getDisplayName();
-                    if (o1.name.equalsIgnoreCase(query) ||
-                        o1DisplayName.equalsIgnoreCase(query)) {
-                        return -1;
-                    }
-                    String o2DisplayName = o2.getDisplayName();
-                    if (o2.name.equalsIgnoreCase(query) || o2DisplayName.equalsIgnoreCase(query)) {
-                        return 1;
-                    }
-                    if (o1.name.equals(o2.name)) {
-                        return 0;
-                    }
-                    final int pop = Double.compare(o2.popularity, o1.popularity);
-                    if (pop != 0) {
-                        return pop; // highest popularity first
-                    }
-                    return o1DisplayName.compareTo(o2DisplayName);
-                })
+            available.addAll(site.getAvailables());
+        }
+
+        // getAvailables() is already ordered by popularity, so a blank query needs no further ranking
+        List<UpdateSite.Plugin> results = query == null || query.isBlank() ? available : searchAvailablePlugins(query, available);
+
+        List<JSONObject> plugins = results.stream()
+                .limit(Math.max(limit, 1))
                 .map(plugin -> {
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("name", plugin.name);
@@ -1550,16 +1524,70 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     return jsonObject;
                 })
                 .collect(toList());
-            plugins.addAll(sitePlugins);
-            if (plugins.size() >= limit) {
-                break;
-            }
-        }
 
         JSONArray mappedPlugins = new JSONArray();
         mappedPlugins.addAll(plugins);
 
         return hudson.util.HttpResponses.okJSON(mappedPlugins);
+    }
+
+    /**
+     * Finds and ranks the available plugins matching a search query.
+     * A plugin matches if every word of the query appears in its name or title, or if the whole query appears in its
+     * name, title, excerpt or categories. Only if no plugin matches that way are plugins matching some of the words returned.
+     */
+    private static List<UpdateSite.Plugin> searchAvailablePlugins(String query, List<UpdateSite.Plugin> available) {
+        if (query.equalsIgnoreCase("warning:")) {
+            return available.stream().filter(UpdateSite.Plugin::hasWarnings).collect(toList());
+        }
+
+        String normalizedQuery = UpdateSite.normalizeForSearch(query);
+        String[] tokens = normalizedQuery.isEmpty() ? new String[0] : normalizedQuery.split(" ");
+        String lQuery = query.toLowerCase(Locale.ROOT);
+
+        List<SearchResult> allTokensMatched = new ArrayList<>();
+        List<SearchResult> someTokensMatched = new ArrayList<>();
+        for (UpdateSite.Plugin plugin : available) {
+            int matchedTokens = plugin.countSearchMatches(tokens);
+            boolean allMatched = tokens.length > 0 && matchedTokens == tokens.length;
+            if (allMatched || searchQueryMatches(query, plugin, lQuery)) {
+                allTokensMatched.add(new SearchResult(plugin, normalizedQuery, matchedTokens));
+            } else if (matchedTokens > 0 && allTokensMatched.isEmpty()) {
+                someTokensMatched.add(new SearchResult(plugin, normalizedQuery, matchedTokens));
+            }
+        }
+
+        List<SearchResult> results = allTokensMatched.isEmpty() ? someTokensMatched : allTokensMatched;
+        return results.stream()
+                .sorted(SEARCH_RESULT_ORDER)
+                .map(SearchResult::plugin)
+                .collect(toList());
+    }
+
+    private record SearchResult(UpdateSite.Plugin plugin, boolean exactMatch, boolean deprecated, int matchedTokens) {
+        SearchResult(UpdateSite.Plugin plugin, String normalizedQuery, int matchedTokens) {
+            this(plugin,
+                    plugin.isExactSearchMatch(normalizedQuery),
+                    plugin.isDeprecated(),
+                    matchedTokens);
+        }
+    }
+
+    private static final Comparator<SearchResult> SEARCH_RESULT_ORDER = Comparator
+            .comparing((SearchResult result) -> !result.exactMatch())
+            .thenComparing(SearchResult::deprecated)
+            .thenComparing(Comparator.comparingInt(SearchResult::matchedTokens).reversed())
+            .thenComparing(result -> result.plugin().popularity, Comparator.reverseOrder())
+            .thenComparing(result -> result.plugin().getDisplayName());
+
+    private static boolean searchQueryMatches(String query, UpdateSite.Plugin plugin, String lQuery) {
+        return (plugin.name != null && plugin.name.toLowerCase(Locale.ROOT).contains(lQuery)) ||
+                (plugin.title != null && plugin.title.toLowerCase(Locale.ROOT).contains(lQuery)) ||
+                (plugin.excerpt != null && plugin.excerpt.toLowerCase(Locale.ROOT).contains(lQuery)) ||
+                plugin.hasCategory(query) ||
+                plugin.getCategoriesStream()
+                        .map(UpdateCenter::getCategoryDisplayName)
+                        .anyMatch(category -> category != null && category.toLowerCase(Locale.ROOT).contains(lQuery));
     }
 
     /**

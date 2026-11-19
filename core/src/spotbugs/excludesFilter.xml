@@ -155,6 +155,7 @@
           <Class name="hudson.FilePath$MoveAllChildrenTo"/>
           <Class name="hudson.FilePath$RenameTo"/>
           <Class name="hudson.FilePath$SymlinkTo"/>
+          <Class name="hudson.FilePath$SymlinkToStrict"/>
           <Class name="hudson.FilePath$UnzipLocal"/>
           <Class name="hudson.init.InitStrategy"/>
           <Class name="hudson.Launcher$LocalLauncher"/>

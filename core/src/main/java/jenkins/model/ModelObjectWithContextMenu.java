@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import jenkins.management.Badge;
+import jenkins.model.experimentalflags.NewAgentPageUserExperimentalFlag;
 import jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag;
 import jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag;
 import jenkins.model.menu.Group;
@@ -39,8 +40,6 @@ import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkins.ui.symbol.Symbol;
 import org.jenkins.ui.symbol.SymbolRequest;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -180,7 +179,6 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          *
          * @since 2.231
          */
-        @Restricted(DoNotUse.class) // manage.jelly only
         public ContextMenu addHeader(String title) {
             final MenuItem item = new MenuItem().withDisplayName(title);
             item.type = MenuItemType.HEADER;
@@ -354,6 +352,10 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
             if (self instanceof Run) {
                 return new NewBuildPageUserExperimentalFlag().getFlagValue();
+            }
+
+            if (self instanceof Computer) {
+                return new NewAgentPageUserExperimentalFlag().getFlagValue();
             }
 
             if (self instanceof Label) {

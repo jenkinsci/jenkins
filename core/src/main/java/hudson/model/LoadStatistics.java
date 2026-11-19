@@ -52,6 +52,7 @@ import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -245,6 +246,20 @@ public abstract class LoadStatistics {
      */
     public TrendChart doGraph(@QueryParameter String type) throws IOException {
         return createTrendChart(TimeScale.parse(type));
+    }
+
+    /**
+     * Generates the load statistics graph as an inline SVG with an HTML legend.
+     *
+     * <p>
+     * In contrast to {@link #doGraph(String)}, which serves a fixed-size PNG, this serves an HTML
+     * fragment (an HTML legend followed by an inline SVG) meant to be embedded directly into the
+     * page DOM so that it picks up the active theme (via CSS custom properties) and rescales with
+     * its container.
+     */
+    public void doGraphSvg(StaplerResponse2 rsp, @QueryParameter String type) throws IOException {
+        rsp.setContentType("text/html;charset=UTF-8");
+        rsp.getWriter().write(createTrendChart(TimeScale.parse(type)).createSvgWithLegend());
     }
 
     public Api getApi() {

@@ -27,8 +27,10 @@ THE SOFTWARE.
     <j:when test="${it.upstreamUrl!=null and app.getItemByFullName(it.upstreamProject)!=null}">
       <j:choose>
         <j:when test="${app.getItemByFullName(it.upstreamProject).getBuildByNumber(it.upstreamBuild)!=null}">
+          <j:set var="upstreamRun" value="${app.getItemByFullName(it.upstreamProject).getBuildByNumber(it.upstreamBuild)}" />
+          <j:set var="currentRunUrl" value="${h.decompose(request2)}" />
           <a class="jenkins-details__item"
-             href="${rootURL}/${it.upstreamUrl}${it.upstreamBuild.toString()}">
+             href="${rootURL}/${currentRunUrl != null ? currentRunUrl.getSameTabUrl(upstreamRun) : upstreamRun.url}">
             <div class="jenkins-details__item__icon">
               <l:icon src="symbol-cause" />
             </div>
@@ -39,7 +41,7 @@ THE SOFTWARE.
         </j:when>
         <j:otherwise>
           <a class="jenkins-details__item"
-             href="${rootURL}${it.upstreamUrl}">
+             href="${rootURL}/${it.upstreamUrl}">
             <div class="jenkins-details__item__icon">
               <l:icon src="symbol-cause" />
             </div>
