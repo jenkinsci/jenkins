@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -209,6 +210,7 @@ class RunTest  {
 
     private void ensureXssIsPrevented(FreeStyleProject upProject, String validationPart, String dangerousPart) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setCssEnabled(false);
         HtmlPage htmlPage = wc.goTo(upProject.getUrl());
 
         // trigger the tooltip display
@@ -448,4 +450,54 @@ class RunTest  {
         }
     }
 
+
+    @Test
+    void buildNavigationSkipsBuildsMissingSubpage() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        FreeStyleBuild b1 = j.buildAndAssertSuccess(project);
+        b1.addAction(new CustomReportAction(b1));
+        j.buildAndAssertSuccess(project);
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        var reportPage = wc.goTo(b1.getUrl() + "customReport/");
+        assertFalse(reportPage.getWebResponse().getContentAsString().contains("/2/customReport/"));
+        assertNotNull(reportPage.querySelector(".task.disabled"));
+
+        var menuResponse = wc.getPage(j.getURL() + b1.getUrl() + "nextBuildsMenu/contextMenu?rest=customReport/");
+        assertFalse(menuResponse.getWebResponse().getContentAsString().contains("#2"));
+
+        var consolePage = wc.goTo(b1.getUrl() + "console");
+        assertNotNull(consolePage.querySelector("a[href$='/2/console']"));
+    }
+
+    public static final class CustomReportAction implements Action {
+        private final Run<?, ?> run;
+
+        CustomReportAction(Run<?, ?> run) {
+            this.run = run;
+        }
+
+        public Run<?, ?> getObject() {
+            return run;
+        }
+
+        public Run<?, ?> getRun() {
+            return run;
+        }
+
+        @Override
+        public String getIconFileName() {
+            return "symbol-document";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Custom Report";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "customReport";
+        }
+    }
 }

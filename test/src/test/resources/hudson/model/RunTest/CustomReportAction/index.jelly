@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <l:run-subpage>
+    <h1>Custom Report</h1>
+  </l:run-subpage>
+</j:jelly>
