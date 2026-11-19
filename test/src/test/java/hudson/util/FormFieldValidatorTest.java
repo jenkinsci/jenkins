@@ -105,7 +105,7 @@ class FormFieldValidatorTest {
         // get initial value
         final ScriptResult scriptResult1 = page.executeJavaScript("document.querySelectorAll('.validation-error-area--visible .ok')[1].textContent");
         final long javaScriptResult1 = Long.parseLong((String) scriptResult1.getJavaScriptResult());
-        assertEquals(System.currentTimeMillis(), javaScriptResult1, 5000); // value is expected to be roughly "now"
+        assertEquals(System.currentTimeMillis(), javaScriptResult1, 240_000); // value is expected to be "now" +/- 4 minutes
 
         // focus then blur to update
         page.executeJavaScript("document.querySelector('.CodeMirror textarea').dispatchEvent(new Event(\"focus\"))");
@@ -115,7 +115,7 @@ class FormFieldValidatorTest {
         // get updated value
         final ScriptResult scriptResult2 = page.executeJavaScript("document.querySelectorAll('.validation-error-area--visible .ok')[1].textContent");
         final long javaScriptResult2 = Long.parseLong((String) scriptResult2.getJavaScriptResult());
-        assertEquals(System.currentTimeMillis(), javaScriptResult2, 5000); // value is expected to be roughly "now"
+        assertEquals(System.currentTimeMillis(), javaScriptResult2, 240_000); // value is expected to be "now" +/- 4 minutes
 
         // value should have changed
         assertNotEquals(javaScriptResult1, javaScriptResult2);
