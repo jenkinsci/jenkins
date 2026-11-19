@@ -2,7 +2,6 @@ package jenkins.model.lazy;
 
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
-import hudson.util.RunList;
 import java.util.AbstractCollection;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
@@ -18,6 +17,7 @@ import java.util.SortedMap;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.IntConsumer;
+import jenkins.util.InterruptibleIterable;
 
 /**
  * Take {@code SortedMap<Integer,BuildReference<R>>} and make it look like {@code SortedMap<Integer,R>}.
@@ -52,7 +52,7 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R>
 
     private final Set<Integer> keySet = new KeySetAdapter();
     private final Collection<R> values = new ValuesAdapter();
-    private final Set<Map.Entry<Integer, R>> entrySet = new EntrySetAdapter();
+    private final EntrySetAdapter entrySet = new EntrySetAdapter();
 
     BuildReferenceMapAdapter(NavigableMap<Integer, BuildReference<R>> core, BuildReferenceResolver<R> resolver,
                              BuildTypeDescriptor<R> typeDescriptor) {
@@ -211,7 +211,7 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R>
         }
     }
 
-    private class ValuesAdapter extends AbstractCollection<R> {
+    private class ValuesAdapter extends AbstractCollection<R> implements InterruptibleIterable<R> {
         @Override
         public int size() {
             return BuildReferenceMapAdapter.this.size();
@@ -235,7 +235,12 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R>
 
         @Override
         public Iterator<R> iterator() {
-            return new AdaptedIterator<>(BuildReferenceMapAdapter.this.entrySet().iterator()) {
+            return InterruptibleIterable.super.iterator();
+        }
+
+        @Override
+        public Iterator<R> iterator(Runnable checkInterrupted) {
+            return new AdaptedIterator<>(entrySet.iterator(checkInterrupted)) {
                 @Override
                 protected R adapt(Map.Entry<Integer, R> e) {
                     return e.getValue();
@@ -279,13 +284,17 @@ class BuildReferenceMapAdapter<R> extends AbstractMap<Integer, R>
 
         @Override
         public Iterator<Map.Entry<Integer, R>> iterator() {
+            return iterator(() -> {});
+        }
+
+        private Iterator<Map.Entry<Integer, R>> iterator(Runnable checkInterrupted) {
             return new Iterator<>() {
                 private Map.Entry<Integer, R> current;
                 private final Iterator<Map.Entry<Integer, R>> it = Iterators.removeNull(Iterators.map(
                         BuildReferenceMapAdapter.this.core.entrySet().iterator(), coreEntry -> {
-                            RunList.checkInterrupted();
+                            checkInterrupted.run();
                             R r = resolver.resolveBuildRef(coreEntry.getValue());
-                            RunList.checkInterrupted();
+                            checkInterrupted.run();
                             // if null - load not allowed or build is unloadable
                             return r == null ? null : new AbstractMap.SimpleImmutableEntry<>(coreEntry.getKey(), r);
                         }));
