@@ -24,6 +24,7 @@
 
 package hudson;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -128,6 +129,22 @@ class PluginManagerInstalledGUITest {
         });
     }
 
+    @Test
+    void test_enabled_column_sort_keys() throws Throwable {
+        rjr.then(j -> {
+            InstalledPlugins installedPlugins = new InstalledPlugins(j);
+
+            installedPlugins.get("mandatory-depender").assertEnabledCellSortKey("2");
+            installedPlugins.get("dependee").assertEnabledCellSortKey("1");
+            installedPlugins.get("depender").assertEnabledCellSortKey("2");
+
+            installedPlugins.get("mandatory-depender").clickEnabledWidget();
+
+            InstalledPlugins reloaded = new InstalledPlugins(j);
+            reloaded.get("mandatory-depender").assertEnabledCellSortKey("0");
+        });
+    }
+
     private static class InstalledPlugins {
 
         private final List<InstalledPlugin> installedPlugins;
@@ -183,6 +200,18 @@ class PluginManagerInstalledGUITest {
         private HtmlInput getEnableWidget() {
             HtmlElement input = pluginRow.getCells().get(hasHealth ? 2 : 1).getElementsByTagName("input").getFirst();
             return (HtmlInput) input;
+        }
+
+        public String getEnabledCellSortKey() {
+            DomElement enabledCell = pluginRow.getCells().get(hasHealth ? 2 : 1);
+            return enabledCell.getAttribute("data");
+        }
+
+        public void assertEnabledCellSortKey(String expected) {
+            assertEquals(
+                    expected,
+                    getEnabledCellSortKey(),
+                    "Unexpected sort key for plugin '" + getId() + "'.");
         }
 
         public void assertEnabled() {
