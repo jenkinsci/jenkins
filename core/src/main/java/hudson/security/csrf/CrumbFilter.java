@@ -133,7 +133,8 @@ public class CrumbFilter implements CompatibleFilter {
             // throw. The crumb cannot be validated yet, so fail closed.
             if (Jenkins.get().getDescriptor(crumbIssuer.getClass()) == null) {
                 LOGGER.warning(() -> "Crumb issuer descriptor not yet registered, rejecting POST request for " + httpRequest.getRequestURI());
-                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "No valid crumb was included in the request");
+                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,
+                    "CSRF crumb issuer is not yet available (Jenkins startup in progress); retry after initialization");
                 return;
             }
 
