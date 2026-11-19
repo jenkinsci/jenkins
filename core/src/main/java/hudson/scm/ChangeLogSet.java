@@ -207,7 +207,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          *
          * @return
          *      the full commit message, or {@link #getMsg()} if not distinguished. Can be empty but never null.
-         * @since TODO
+         * @since 2.591
          */
         @Exported
         public String getComment() {
