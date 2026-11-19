@@ -151,6 +151,8 @@ class VirtualFileTest {
             assertEquals("[sub/mid.txt, sub/subsub/lowest.txt]", new TreeSet<>(vf.list("sub/", "**/notthere/", false)).toString());
             assertEquals("[top.txt]", new TreeSet<>(vf.list("*.txt", null, false)).toString());
             assertEquals("[sub/subsub/lowest.txt, top.txt, very/deep/path/here]", new TreeSet<>(vf.list("**", "**/mid*,**/conf*", false)).toString());
+            assertEquals("[sub/mid.txt, top.txt]", new TreeSet<>(vf.list("top.txt, sub/mid.txt", null, false)).toString());
+            assertEquals("[sub/subsub/lowest.txt, top.txt, very/deep/path/here]", new TreeSet<>(vf.list("**", "**/mid* , **/conf*", false)).toString());
         }
     }
     /** Roughly analogous to {@code org.jenkinsci.plugins.compress_artifacts.ZipStorage}. */

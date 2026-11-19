@@ -27,6 +27,8 @@ package jenkins.model;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import hudson.model.Action;
+import hudson.model.Item;
+import hudson.security.AccessControlled;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -67,11 +69,25 @@ public class RenameAction implements Action {
 
         @Override
         public Collection<? extends Action> createFor(AbstractItem target) {
-            if (target.isNameEditable()) {
-                return Set.of(new RenameAction());
-            } else {
+            if (!canRename(target)) {
                 return Collections.emptyList();
             }
+
+            return Set.of(new RenameAction());
+        }
+
+        private static boolean canRename(AbstractItem target) {
+            if (!target.isNameEditable()) {
+                return false;
+            }
+
+            if (target.hasPermission(Item.CONFIGURE)) {
+                return true;
+            }
+
+            return target.getParent() instanceof AccessControlled parent
+                    && parent.hasPermission(Item.CREATE)
+                    && target.hasPermission(Item.DELETE);
         }
     }
 }

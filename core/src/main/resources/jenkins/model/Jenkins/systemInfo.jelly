@@ -93,7 +93,7 @@ THE SOFTWARE.
         </div>
       </f:entry>
 
-      <div id="graph-host" />
+      <div id="graph-host" class="jenkins-svg-graph" data-graph-alt="${%Memory usage graph}" />
     </l:tabPane>
 
     <l:isAdmin>

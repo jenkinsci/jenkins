@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Util;
@@ -352,8 +353,12 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         return !(old.isEmpty() && found);
     }
 
-    /** @deprecated No clear purpose, since subclasses may have overridden {@link #getActions}, and does not consider {@link TransientActionFactory}. */
+    /**
+     * @return the action at {@code index}, or {@code null} if the persisted action list has not been initialized
+     * @deprecated No clear purpose, since subclasses may have overridden {@link #getActions}, and does not consider {@link TransientActionFactory}.
+     */
     @Deprecated
+    @CheckForNull
     public Action getAction(int index) {
         if (actions == null)   return null;
         return actions.get(index);
@@ -365,6 +370,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return The action or {@code null} if no such actions exist.
      * @see #getActions(Class)
      */
+    @CheckForNull
     public <T extends Action> T getAction(Class<T> type) {
         // Shortcut: if the persisted list has one, return it.
         for (Action a : getActions()) {
@@ -386,6 +392,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     /**
      * @since 2.475
      */
+    @CheckForNull
     public Object getDynamic(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
         if (Util.isOverridden(Actionable.class, getClass(), "getDynamic", String.class, StaplerRequest.class, StaplerResponse.class)) {
             return getDynamic(token, StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
@@ -398,10 +405,12 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @deprecated use {@link #getDynamic(String, StaplerRequest2, StaplerResponse2)}
      */
     @Deprecated
+    @CheckForNull
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         return getDynamicImpl(token, StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
     }
 
+    @CheckForNull
     private Object getDynamicImpl(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
         for (Action a : getAllActions()) {
             if (a == null)
