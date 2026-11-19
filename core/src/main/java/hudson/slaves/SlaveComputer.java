@@ -891,6 +891,9 @@ public class SlaveComputer extends Computer {
     @WebMethod(name = "agent-secret")
     public HttpResponse doAgentSecret(StaplerRequest2 req, StaplerResponse2 rsp) throws  IOException {
         checkPermission(CONNECT);
+        rsp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        rsp.setHeader("Pragma", "no-cache");
+        rsp.setHeader("Expires", "0");
 
         rsp.setContentType("text/plain;charset=UTF-8");
         rsp.getWriter().write(getJnlpMac());

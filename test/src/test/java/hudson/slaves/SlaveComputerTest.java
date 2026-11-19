@@ -303,6 +303,14 @@ class SlaveComputerTest {
         // Verify response
         assertEquals(200, response.getStatusCode());
 
+        // verify cache-control headers
+        assertEquals(
+            "no-cache, no-store, must-revalidate",
+            response.getResponseHeaderValue("Cache-Control")
+        );
+        assertEquals("no-cache", response.getResponseHeaderValue("Pragma"));
+        assertEquals("0", response.getResponseHeaderValue("Expires"));
+
         String secret = response.getContentAsString().trim();
         assertNotNull(secret);
         assertEquals(testAgent.getComputer().getJnlpMac(), secret);
