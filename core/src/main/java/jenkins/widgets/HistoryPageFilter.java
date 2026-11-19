@@ -56,6 +56,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class HistoryPageFilter<T> {
 
     private final int maxEntries;
+    private boolean newUi;
     private Long newerThan;
     private Long olderThan;
     private String searchString;
@@ -129,6 +130,16 @@ public class HistoryPageFilter<T> {
     @Restricted(NoExternalUse.class)
     public void setStatuses(@NonNull Set<String> statuses) {
         this.statuses = statuses;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public boolean isNewUi() {
+        return newUi;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void setNewUi(boolean newUi) {
+        this.newUi = newUi;
     }
 
     /**
