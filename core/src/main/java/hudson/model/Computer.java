@@ -113,6 +113,10 @@ import jenkins.model.DisplayExecutor;
 import jenkins.model.IComputer;
 import jenkins.model.IDisplayExecutor;
 import jenkins.model.Jenkins;
+import jenkins.model.Tab;
+import jenkins.model.details.Detail;
+import jenkins.model.details.DetailFactory;
+import jenkins.model.details.MonitoringDetails;
 import jenkins.search.SearchGroup;
 import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.ImpersonatingExecutorService;
@@ -122,6 +126,7 @@ import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.ErrorLoggingExecutorService;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
+import jenkins.widgets.BuildListTable;
 import jenkins.widgets.HasWidgets;
 import net.jcip.annotations.GuardedBy;
 import org.kohsuke.accmod.Restricted;
@@ -141,6 +146,7 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.GET;
 import org.kohsuke.stapler.verb.POST;
 
 /**
@@ -795,7 +801,26 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public RunList getBuilds() {
-        return RunList.fromJobs((Iterable) Jenkins.get().allItems(AbstractProject.class)).node(getNode());
+        return allBuilds().node(getNode());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static RunList<Run<?, ?>> allBuilds() {
+        return RunList.fromJobs((Iterable) Jenkins.get().allItems(AbstractProject.class));
+    }
+
+    /**
+     * Serves a page of {@link #getBuilds()} as JSON for {@code buildListTable.jelly}.
+     * Unless {@link #getBuilds()} is overridden, the builds of other nodes count towards the scan budget.
+     */
+    @GET
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doBuildList(@QueryParameter String olderThan, @QueryParameter String limit) {
+        if (Util.isOverridden(Computer.class, getClass(), "getBuilds")) {
+            return new BuildListTable().serve(getBuilds(), olderThan, limit);
+        }
+        Node node = getNode();
+        return new BuildListTable().serve(allBuilds(), r -> r instanceof AbstractBuild && ((AbstractBuild<?, ?>) r).getBuiltOn() == node, olderThan, limit);
     }
 
     /**
@@ -1738,6 +1763,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
+    /**
+     * Retrieves the tabs for a given job
+     */
+    @Restricted(NoExternalUse.class)
+    public List<Tab> getAgentTabs() {
+        return getActions(Tab.class).stream().filter(e -> e.getIconFileName() != null).toList();
+    }
+
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Computer.class, Messages._Computer_Permissions_Title());
     public static final Permission CONFIGURE =
             new Permission(
@@ -1798,4 +1831,18 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             new Permission[] { EXTENDED_READ, CONNECT };
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
+
+    @Extension
+    public static final class BasicComputerDetailFactory extends DetailFactory<Computer> {
+
+        @Override
+        public Class<Computer> type() {
+            return Computer.class;
+        }
+
+        @NonNull @Override public List<? extends Detail> createFor(@NonNull Computer target) {
+            return List.of(new MonitoringDetails(target));
+        }
+    }
+
 }

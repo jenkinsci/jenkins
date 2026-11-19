@@ -5,6 +5,7 @@ import { beforeAll, describe, expect, it } from "vitest";
  * hudson-behavior.js) when rendering, so stub it before they are loaded.
  */
 let Utils;
+let Templates;
 
 beforeAll(async () => {
   globalThis.Behaviour = {
@@ -13,6 +14,7 @@ beforeAll(async () => {
     applySubtree: () => {},
   };
   Utils = (await import("@/components/dropdowns/utils")).default;
+  Templates = (await import("@/components/dropdowns/templates")).default;
 });
 
 /**
@@ -71,5 +73,96 @@ describe("Utils.convertHtmlToItems", () => {
     expect(badge.textContent).toBe("1");
     expect(badge.classList.contains("jenkins-!-warning-color")).toBe(true);
     expect(badge.getAttribute("tooltip")).toBe("1 token about to expire");
+  });
+});
+
+describe("dropdown accessibility", () => {
+  it("renders the dropdown as a menu with menu items", () => {
+    const items = Utils.convertHtmlToItems(itemTemplates());
+    const dropdown = Utils.generateDropdownItems(items);
+
+    expect(dropdown.getAttribute("role")).toBe("menu");
+    expect(
+      dropdown.querySelector(".jenkins-dropdown__item").getAttribute("role"),
+    ).toBe("menuitem");
+  });
+
+  it("does not use the menu item role for inline buttons", () => {
+    const button = Templates.menuItem(
+      { displayName: "Build Now", event: { url: "build", type: "GET" } },
+      "jenkins-button",
+    );
+
+    expect(button.hasAttribute("role")).toBe(false);
+  });
+
+  it("marks click-triggered dropdowns as menu buttons", () => {
+    const button = document.createElement("button");
+    document.body.appendChild(button);
+
+    Utils.generateDropdown(button, () => {});
+
+    expect(button.getAttribute("aria-haspopup")).toBe("menu");
+    expect(button.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("does not mark suggestion or hover dropdowns as menu buttons", () => {
+    const input = document.createElement("input");
+    const link = document.createElement("a");
+    document.body.append(input, link);
+
+    Utils.generateDropdown(input, () => {}, true);
+    Utils.generateDropdown(link, () => {}, false, { trigger: "mouseenter" });
+
+    expect(input.hasAttribute("aria-haspopup")).toBe(false);
+    expect(link.hasAttribute("aria-haspopup")).toBe(false);
+  });
+});
+
+/**
+ * A split button item, shaped like the JSON SplitButtonEvent produces.
+ */
+function splitButtonItem() {
+  const subItem = {
+    type: "ITEM",
+    displayName: "Edit and replay",
+    event: { url: "replay", type: "GET" },
+  };
+  return {
+    type: "ITEM",
+    displayName: "Replay",
+    semantic: "BUILD",
+    event: {
+      event: { url: "replay/rebuild", type: "GET" },
+      actions: [subItem],
+    },
+    subMenu: { items: [subItem] },
+  };
+}
+
+describe("split buttons", () => {
+  it("renders as a split button in the app bar", () => {
+    const element = Templates.menuItem(splitButtonItem(), "jenkins-button");
+
+    expect(element.classList.contains("jenkins-split-button")).toBe(true);
+    expect(element.children).toHaveLength(2);
+    expect(element.firstElementChild.getAttribute("href")).toBe(
+      "replay/rebuild",
+    );
+  });
+
+  it("renders only the primary action in a dropdown", () => {
+    const dropdown = Utils.generateDropdownItems([splitButtonItem()]);
+
+    expect(dropdown.querySelector(".jenkins-split-button")).toBeNull();
+    expect(dropdown.querySelector(".jenkins-button")).toBeNull();
+    expect(dropdown.children).toHaveLength(1);
+
+    const item = dropdown.firstElementChild;
+    expect(item.classList.contains("jenkins-dropdown__item")).toBe(true);
+    expect(item.classList.contains("jenkins-!-build-color")).toBe(true);
+    expect(item.getAttribute("href")).toBe("replay/rebuild");
+    expect(item.querySelector(".jenkins-dropdown__item__chevron")).toBeNull();
+    expect(item._tippy).toBeUndefined();
   });
 });

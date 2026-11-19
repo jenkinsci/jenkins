@@ -2,6 +2,7 @@ package jenkins.security;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.WARNING;
 
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -59,7 +60,7 @@ public class BasicHeaderProcessor implements CompatibleFilter {
     }
 
     public void setRememberMeServices(RememberMeServices rememberMeServices) {
-        this.rememberMeServices = rememberMeServices;
+        LOGGER.log(WARNING, "No-op: SECURITY-4189 this should not have been called, please report an issue", new Throwable());
     }
 
     @Override

@@ -28,15 +28,15 @@ THE SOFTWARE.
     <j:choose>
       <j:when test="${it.isConnecting()}">
         <l:hasPermission permission="${it.CONNECT}">
-          <form method="post" action="launchSlaveAgent">
-            <f:submit value="${%Relaunch agent}"/>
+          <form method="post" action="${rootURL}/${it.url}launchSlaveAgent">
+            <f:submit value="${%Relaunch}"/>
           </form>
         </l:hasPermission>
       </j:when>
       <j:otherwise>
         <l:hasPermission permission="${it.CONNECT}">
-          <form method="post" action="launchSlaveAgent">
-            <f:submit value="${%Launch agent}"/>
+          <form method="post" action="${rootURL}/${it.url}launchSlaveAgent">
+            <f:submit value="${%Launch}"/>
           </form>
         </l:hasPermission>
       </j:otherwise>

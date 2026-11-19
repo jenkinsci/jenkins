@@ -145,6 +145,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TimeZone;
@@ -168,6 +169,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.SimplePageDecorator;
+import jenkins.model.Tab;
 import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DetailGroup;
@@ -184,6 +186,8 @@ import org.apache.commons.jexl.util.Introspector;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
+import org.jvnet.localizer.LocaleProvider;
+import org.jvnet.localizer.ResourceBundleHolder;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -509,6 +513,16 @@ public class Functions {
             return base;
         }
 
+        @Restricted(NoExternalUse.class)
+        public Run getRun() {
+            return run;
+        }
+
+        @Restricted(NoExternalUse.class)
+        public String getRest() {
+            return rest;
+        }
+
         /**
          * Returns the same page in the next build.
          */
@@ -529,6 +543,34 @@ public class Functions {
             else {
                 return head + n.getNumber() + rest;
             }
+        }
+
+        /**
+         * Returns the URL of another run, relative to the context path, on the {@link Tab} the current page shows
+         * when that run has the same tab, and the run's own page otherwise.
+         * Links between related runs, such as to an upstream build, then keep the user on the view they are using.
+         *
+         * @param other the run to link to
+         * @return a URL relative to the context path, without a leading slash
+         * @since TODO
+         */
+        public @NonNull String getSameTabUrl(@NonNull Run<?, ?> other) {
+            String tab = getTabUrlName();
+            if (tab != null) {
+                for (Action action : other.getAllActions()) {
+                    if (action instanceof Tab && tab.equals(action.getUrlName())) {
+                        return other.getUrl() + tab + '/';
+                    }
+                }
+            }
+            return other.getUrl();
+        }
+
+        private @CheckForNull String getTabUrlName() {
+            String path = rest.replaceFirst("^/+", "");
+            int slash = path.indexOf('/');
+            String segment = slash < 0 ? path : path.substring(0, slash);
+            return segment.isEmpty() ? null : segment;
         }
     }
 
@@ -747,6 +789,41 @@ public class Functions {
 
     public static boolean isCollapsed(String paneId) {
         return PaneStatusProperties.forCurrentUser().isCollapsed(paneId);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static long getElapsedSince(long epochMillis) {
+        return System.currentTimeMillis() - epochMillis;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static @NonNull String formatTimeSpan(long duration) {
+        long wholeSeconds = Math.abs(duration) / 1000 * 1000;
+        if (wholeSeconds == 0) {
+            return Messages.Util_second(0);
+        }
+        return Util.getTimeSpanString(wholeSeconds);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static @NonNull String formatTimeSpanToMinute(long duration) {
+        long minutes = Math.abs(duration) / 60_000;
+        if (minutes < 60) {
+            return Messages.Util_minute(minutes);
+        }
+        return Util.getTimeSpanString(minutes * 60_000);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static @NonNull String getTimeSpanPatterns() {
+        Locale locale = LocaleProvider.getLocale();
+        ResourceBundle bundle = ResourceBundleHolder.get(Messages.class).get(locale);
+        JSONObject patterns = new JSONObject();
+        patterns.put("locale", locale.toLanguageTag());
+        for (String unit : List.of("second", "minute", "hour", "day", "month", "year")) {
+            patterns.put(unit, bundle.getString("Util." + unit).replace("{0}", "{0,number}"));
+        }
+        return patterns.toString();
     }
 
     @Restricted(NoExternalUse.class)
@@ -2088,6 +2165,56 @@ public class Functions {
     }
 
     /**
+     * Returns {@code true} if the current page is the page referenced by the given absolute {@code href}, or any
+     * page below it. The comparison is done on complete path segments, i.e., {@code /job/x/1/coverage} matches
+     * {@code /job/x/1/coverage/} and {@code /job/x/1/coverage/overview/}, but not {@code /job/x/1/coverage-jacoco/}.
+     * Query parameters of the current request are ignored.
+     *
+     * <p>
+     * Used in {@code tabs.jelly} to highlight a tab while one of its subpages is shown. In contrast to
+     * {@link #hyperlinkMatchesCurrentPage(String)} the given {@code href} must be an absolute path (including the
+     * context path), e.g., {@code /jenkins/job/x/1/coverage}.
+     *
+     * @param href
+     *         the absolute path of the link to check
+     *
+     * @return {@code true} if the current page is the referenced page or one of its children, {@code false} otherwise
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean hyperlinkMatchesCurrentPageOrChild(String href) {
+        if (href == null || href.isEmpty()) {
+            return false;
+        }
+        String uri = Stapler.getCurrentRequest2().getRequestURI();
+        if (uri == null) {
+            return false;
+        }
+        String current = removeTrailingSlashes(decodePath(uri));
+        String link = removeTrailingSlashes(decodePath(href));
+        if (link.isEmpty()) {
+            return false;
+        }
+        return current.equals(link) || current.startsWith(link + "/");
+    }
+
+    /**
+     * Decodes the given URL path. In contrast to {@link URLDecoder#decode(String, java.nio.charset.Charset)}, which
+     * decodes {@code application/x-www-form-urlencoded} content, a literal {@code +} is preserved since it has no
+     * special meaning in a URL path.
+     */
+    private static String decodePath(String path) {
+        return URLDecoder.decode(path.replace("+", "%2B"), StandardCharsets.UTF_8);
+    }
+
+    private static String removeTrailingSlashes(String path) {
+        int end = path.length();
+        while (end > 0 && path.charAt(end - 1) == '/') {
+            end--;
+        }
+        return path.substring(0, end);
+    }
+
+    /**
      * If the given {@code Action} is a {@link RootAction#isPrimaryAction() primary} {@code RootAction}, or a parent of the current page, return {@code true}.
      * Used in {@code actions.jelly} to decide if the action should shown in the main header or the hamburger.
      */
@@ -2721,6 +2848,16 @@ public class Functions {
      */
     @Restricted(NoExternalUse.class)
     public static Map<DetailGroup, List<Detail>> getDetailsFor(Actionable object) {
+        return getDetailsFor(object, null);
+    }
+
+    /**
+     * @param context the view the details are rendered in, one of {@link Detail.Verbosity} (case-insensitive),
+     *                or {@code null} to include all details
+     */
+    @Restricted(NoExternalUse.class)
+    public static Map<DetailGroup, List<Detail>> getDetailsFor(Actionable object, @CheckForNull String context) {
+        Detail.Verbosity verbosity = context == null || context.isEmpty() ? null : Detail.Verbosity.valueOf(context.toUpperCase(Locale.ROOT));
         ExtensionList<DetailGroup> groupsExtensionList = ExtensionList.lookup(DetailGroup.class);
         List<ExtensionComponent<DetailGroup>> components = groupsExtensionList.getComponents();
         Map<String, Double> detailGroupOrdinal = components.stream()
@@ -2732,7 +2869,9 @@ public class Functions {
         Map<DetailGroup, List<Detail>> result = new TreeMap<>(Comparator.comparingDouble(d -> detailGroupOrdinal.get(d.getClass().getName())));
         for (DetailFactory taf : DetailFactory.factoriesFor(object.getClass())) {
             List<Detail> details = taf.createFor(object);
-            details.forEach(e -> result.computeIfAbsent(e.getGroup(), k -> new ArrayList<>()).add(e));
+            details.stream()
+                    .filter(e -> e.getVerbosity().isVisibleIn(verbosity))
+                    .forEach(e -> result.computeIfAbsent(e.getGroup(), k -> new ArrayList<>()).add(e));
         }
 
         for (Map.Entry<DetailGroup, List<Detail>> entry : result.entrySet()) {
@@ -2773,5 +2912,10 @@ public class Functions {
         }
 
         return MessageFormat.format(format, args);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static String getActionEventType(Action action) {
+        return action.getEvent().getClass().getSimpleName();
     }
 }

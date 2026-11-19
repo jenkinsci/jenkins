@@ -79,4 +79,10 @@ public class GlobalCrumbIssuerConfiguration extends GlobalConfiguration {
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* non-final */ boolean DISABLE_CSRF_PROTECTION = SystemProperties.getBoolean(GlobalCrumbIssuerConfiguration.class.getName() + ".DISABLE_CSRF_PROTECTION");
+
+    /** Whether CSRF protection is disabled by {@link #DISABLE_CSRF_PROTECTION}, for {@code config.jelly}. */
+    @Restricted(NoExternalUse.class)
+    public boolean isCsrfProtectionDisabled() {
+        return DISABLE_CSRF_PROTECTION;
+    }
 }

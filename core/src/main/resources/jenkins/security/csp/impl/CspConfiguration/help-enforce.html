@@ -1,0 +1,32 @@
+<div>
+  <p>
+    Content Security Policy is a security mechanism that can reduce or eliminate
+    the impact of web security vulnerabilities like cross-site-scripting (XSS).
+  </p>
+  <p>
+    Most popular Jenkins plugins are compatible with Jenkins's default rule set,
+    but not everything currently installed may be. For resources on determining
+    whether your current setup is compatible with Content Security Policy
+    enforcement, visit
+    <a href="https://www.jenkins.io/redirect/csp-compatibility" target="_blank">
+      the documentation website
+    </a>
+    .
+  </p>
+  <p>
+    When checked, Jenkins will set the
+    <code>Content-Security-Policy</code>
+    header that enforces its configuration. Otherwise, it will set the
+    <code>Content-Security-Policy-Report-Only</code>
+    header, which only requests that browsers report violations, but does not
+    enforce them.
+  </p>
+  <p>
+    If you choose to enforce Content Security Policy and it causes the Jenkins
+    UI to break, you can start Jenkins with the Java system property
+    <code>jenkins.security.csp.CspHeader.headerName</code>
+    set to
+    <code>Content-Security-Policy-Report-Only</code>
+    to disable protections again.
+  </p>
+</div>

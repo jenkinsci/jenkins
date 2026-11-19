@@ -36,10 +36,9 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
 
 /**
- * This administrative monitor recommends that admins set up CSP.
- * It is shown when no higher priority {@link jenkins.security.csp.CspHeaderDecider}
- * determines the header, but {@link CspConfiguration#enforce}
- * is {@code null}, indicating admins didn't configure it yet.
+ * This administrative monitor informs admins that CSP is now enforced by default.
+ * It is shown when {@link CspConfiguration#enforce} is {@code null}
+ * (not yet explicitly configured), indicating the default enforcement is active.
  */
 @Restricted(NoExternalUse.class)
 @Extension
@@ -53,11 +52,13 @@ public class CspRecommendation extends AdministrativeMonitor {
     @Override
     public boolean isActivated() {
         if (ExtensionList.lookupSingleton(CspConfiguration.class).enforce != null) {
-            // already being configured
+            // configuration was already saved
             return false;
         }
-        // If the current decider is the fallback one that advertises setting up configuration, this should show
-        return CspHeaderDecider.getCurrentDecider().filter(d -> d instanceof FallbackDecider).isPresent();
+        // Only show when ConfigurationHeaderDecider is in control (not in dev mode or overridden by system property)
+        return CspHeaderDecider.getCurrentDecider()
+                .filter(d -> d instanceof CspConfiguration.ConfigurationHeaderDecider)
+                .isPresent();
     }
 
     @Override
@@ -66,19 +67,13 @@ public class CspRecommendation extends AdministrativeMonitor {
     }
 
     @POST
-    public void doAct(@QueryParameter String setup, @QueryParameter String more, @QueryParameter String dismiss, @QueryParameter String defer) throws IOException {
-        if (more != null) {
-            throw HttpResponses.redirectViaContextPath("manage/administrativeMonitor/jenkins.security.csp.impl.CspRecommendation");
-        }
+    public void doAct(@QueryParameter String setup, @QueryParameter String dismiss) throws IOException {
         if (setup != null) {
-            // Go through field to not call #save in case the admin abandons configuration
-            ExtensionList.lookupSingleton(CspConfiguration.class).enforce = false;
             throw HttpResponses.redirectViaContextPath("manage/configureSecurity/#contentSecurityPolicy");
         }
         if (dismiss != null) {
             disable(true);
         }
-        // Since we no longer show admins monitors just everywhere, we can explicitly navigate here for the monitor and take care of the index view at the same time
         throw HttpResponses.redirectViaContextPath("manage/");
     }
 }
