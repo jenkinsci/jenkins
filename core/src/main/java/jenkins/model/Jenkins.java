@@ -3205,7 +3205,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Like {@link #getItemByFullName(String, Class)}, but returns null instead of throwing {@link AccessDeniedException}.
-     * @since TODO
+     * @since 2.591
      */
     public @CheckForNull <T extends Item> T getItemByFullNameOrNull(@NonNull String fullName, Class<T> type) {
         try {
@@ -3217,7 +3217,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Like {@link #getItemByFullName(String)}, but returns null instead of throwing {@link AccessDeniedException}.
-     * @since TODO
+     * @since 2.591
      */
     public @CheckForNull Item getItemByFullNameOrNull(@NonNull String fullName) {
         return getItemByFullNameOrNull(fullName, Item.class);
@@ -3225,7 +3225,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Like {@link #getItem(String, Item, Class)}, but returns null instead of throwing {@link AccessDeniedException}.
-     * @since TODO
+     * @since 2.591
      */
     public @CheckForNull <T extends Item> T getItemOrNull(
             @NonNull String pathName, Item context, @NonNull Class<T> type) {
