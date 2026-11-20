@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import jenkins.management.Badge;
+import jenkins.model.experimentalflags.NewAgentPageUserExperimentalFlag;
 import jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag;
 import jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag;
 import jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag;
@@ -366,6 +367,10 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
             if (self instanceof Run<?, ?> run && new NewBuildPageUserExperimentalFlag().getFlagValue()) {
                 return run.getAppBarActions();
+            }
+
+            if (self instanceof Computer computer && new NewAgentPageUserExperimentalFlag().getFlagValue()) {
+                return computer.getAppBarActions();
             }
 
             if (self instanceof ViewGroup viewGroup && new NewDashboardPageUserExperimentalFlag().getFlagValue()) {

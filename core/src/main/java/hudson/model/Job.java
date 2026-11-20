@@ -373,8 +373,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * If this job is in the build queue, return its item.
+     * @return the queue item, or {@code null} if this job is not queued
      */
     @Exported
+    @CheckForNull
     public Queue.Item getQueueItem() {
         return null;
     }
@@ -568,6 +570,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns the configured build discarder for this job, via {@link BuildDiscarderProperty}, or null if none.
      */
+    @CheckForNull
     public synchronized BuildDiscarder getBuildDiscarder() {
         BuildDiscarderProperty prop = _getProperty(BuildDiscarderProperty.class);
         return prop != null ? prop.getStrategy() : /* settings compatibility */ logRotator;
@@ -591,6 +594,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *      Use {@link #getBuildDiscarder()}.
      */
     @Deprecated
+    @CheckForNull
     public LogRotator getLogRotator() {
         BuildDiscarder buildDiscarder = getBuildDiscarder();
         return buildDiscarder instanceof LogRotator ? (LogRotator) buildDiscarder : null;
@@ -681,9 +685,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Removes the property of the given type.
      *
      * @return
-     *      The property that was just removed.
+     *      The property that was just removed, or {@code null} if no property of this type was configured.
      * @since 1.279
      */
+    @CheckForNull
     public <T extends JobProperty> T removeProperty(Class<T> clazz) throws IOException {
         for (JobProperty<? super JobT> p : properties) {
             if (clazz.isInstance(p)) {
@@ -719,6 +724,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Gets the specific property, or null if the property is not configured for
      * this job.
      */
+    @CheckForNull
     public <T extends JobProperty> T getProperty(Class<T> clazz) {
         if (clazz == BuildDiscarderProperty.class && logRotator != null) {
             return clazz.cast(new BuildDiscarderProperty(logRotator));
@@ -726,6 +732,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return _getProperty(clazz);
     }
 
+    @CheckForNull
     private <T extends JobProperty> T _getProperty(Class<T> clazz) {
         for (JobProperty p : properties) {
             if (clazz.isInstance(p))
@@ -737,8 +744,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Bind {@link JobProperty}s to URL spaces.
      *
+     * @return the property with the given class name, or {@code null} if none is configured
      * @since 1.403
      */
+    @CheckForNull
     public JobProperty getProperty(String className) {
         for (JobProperty p : properties)
             if (p.getClass().getName().equals(className))
@@ -943,8 +952,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Looks up a build by its ID.
+     * @return the build, or {@code null} if no build has this ID
      * @see LazyBuildMixIn#getBuild
      */
+    @CheckForNull
     public RunT getBuild(String id) {
         for (RunT r : _getRuns().values()) {
             if (r.getId().equals(id))
@@ -960,6 +971,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see Run#getNumber()
      * @see LazyBuildMixIn#getBuildByNumber
      */
+    @CheckForNull
     public RunT getBuildByNumber(int n) {
         return _getRuns().get(n);
     }
@@ -995,8 +1007,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
+     * @return the oldest build at or after {@code n}, or {@code null} if none exists
      * @see LazyBuildMixIn#getNearestBuild
      */
+    @CheckForNull
     public RunT getNearestBuild(int n) {
         SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n - 1); // the map should
                                                                           // include n, so n-1
@@ -1010,8 +1024,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
+     * @return the newest build at or before {@code n}, or {@code null} if none exists
      * @see LazyBuildMixIn#getNearestOldBuild
      */
+    @CheckForNull
     public RunT getNearestOldBuild(int n) {
         SortedMap<Integer, ? extends RunT> m = _getRuns().tailMap(n);
         if (m.isEmpty())
@@ -1023,6 +1039,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @since 2.475
      */
     @Override
+    @CheckForNull
     public Object getDynamic(String token, StaplerRequest2 req,
                              StaplerResponse2 rsp) {
         try {
@@ -1084,11 +1101,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     protected abstract void removeRun(RunT run);
 
     /**
-     * Returns the newest build.
+     * Returns the newest build, or {@code null} if there are no builds.
      * @see LazyBuildMixIn#getLastBuild
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastBuild() {
         SortedMap<Integer, ? extends RunT> runs = _getRuns();
 
@@ -1098,11 +1116,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Returns the oldest build in the record.
+     * Returns the oldest build in the record, or {@code null} if there are no builds.
      * @see LazyBuildMixIn#getFirstBuild
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getFirstBuild() {
         SortedMap<Integer, ? extends RunT> runs = _getRuns();
 
@@ -1119,6 +1138,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastSuccessfulBuild() {
         return (RunT) PeepholePermalink.LAST_SUCCESSFUL_BUILD.resolve(this);
     }
@@ -1129,6 +1149,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastUnsuccessfulBuild() {
         return (RunT) PeepholePermalink.LAST_UNSUCCESSFUL_BUILD.resolve(this);
     }
@@ -1139,6 +1160,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastUnstableBuild() {
         return (RunT) PeepholePermalink.LAST_UNSTABLE_BUILD.resolve(this);
     }
@@ -1149,6 +1171,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastStableBuild() {
         return (RunT) PeepholePermalink.LAST_STABLE_BUILD.resolve(this);
     }
@@ -1158,6 +1181,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastFailedBuild() {
         return (RunT) PeepholePermalink.LAST_FAILED_BUILD.resolve(this);
     }
@@ -1167,6 +1191,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastCompletedBuild() {
         return (RunT) PeepholePermalink.LAST_COMPLETED_BUILD.resolve(this);
     }
@@ -1451,6 +1476,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return reports;
     }
 
+    @CheckForNull
     private HealthReport getBuildStabilityHealthReport() {
         // we can give a simple view of build health from the last five builds
         int failCount = 0;
