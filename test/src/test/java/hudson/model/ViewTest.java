@@ -478,7 +478,7 @@ class ViewTest {
         FreeStyleProject job3 = j.createFreeStyleProject("not-included");
         view.jobNames.add(job2.getDisplayName());
         view.jobNames.add(job1.getDisplayName());
-        assertEquals(job1,  view.getItem("free"),  "View should return job " + job1.getDisplayName());
+        assertEquals(job1, view.getItem("free"), "View should return job " + job1.getDisplayName());
         assertNotNull(view.getItem("not-included"), "View should return null.");
     }
 
@@ -983,6 +983,27 @@ class ViewTest {
         assertThat(spanB.getInnerText(), is("w"));
     }
 
+    @Test
+    void buildHistoryLinkVisibleInFolderWithoutInheritedPermissions() throws Exception {
+        MockFolder folder = j.createFolder("team-folder");
+        folder.createProject(FreeStyleProject.class, "team-job");
+
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).onRoot().to("dev")
+                .grant(Item.READ, View.READ).onFolders(folder).to("dev"));
+
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            wc.login("dev");
+
+            HtmlPage rootPage = wc.goTo("");
+            assertNotNull(rootPage.getAnchorByHref(j.getURL().getPath() + j.jenkins.getPrimaryView().getViewUrl() + "builds"));
+
+            HtmlPage folderPage = wc.goTo("job/team-folder/");
+            assertNotNull(folderPage.getAnchorByHref(j.getURL().getPath() + folder.getPrimaryView().getViewUrl() + "builds"));
+        }
+    }
+
     @TestExtension
     public static class CustomizableTLID extends TopLevelItemDescriptor {
 
@@ -1115,7 +1136,7 @@ class ViewTest {
         }
 
         @Override
-        protected void submit(StaplerRequest2 req) {
+        public void submit(StaplerRequest2 req) {
         }
 
         @Override
