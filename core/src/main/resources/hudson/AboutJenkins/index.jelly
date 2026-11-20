@@ -47,7 +47,7 @@ THE SOFTWARE.
   <l:settings-subpage header="${header}"
                       placeholder="${null}"
                       permissions="${app.MANAGE_AND_SYSTEM_READ}">
-    <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
+    <script src="${resURL}/jsbundles/section-to-tabs.js" type="module" />
 
     <l:branding clazz="app-about-branding" />
 

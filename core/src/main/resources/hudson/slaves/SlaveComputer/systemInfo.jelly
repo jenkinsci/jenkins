@@ -34,7 +34,7 @@ THE SOFTWARE.
 
     <j:choose>
       <j:when test="${it.channel != null}">
-        <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
+        <script src="${resURL}/jsbundles/section-to-tabs.js" type="module" />
         <h4>${it.oSDescription} agent, version ${it.slaveVersion}</h4>
 
         <j:forEach var="instance" items="${it.systemInfoExtensions}">

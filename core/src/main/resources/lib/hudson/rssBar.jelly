@@ -40,5 +40,5 @@ THE SOFTWARE.
     <st:include page="_legend.jelly" it="${app}" />
   </template>
 
-  <script src="${resURL}/jsbundles/pages/dashboard.js" type="text/javascript" defer="true" />
+  <script src="${resURL}/jsbundles/pages/dashboard.js" type="module" />
 </j:jelly>

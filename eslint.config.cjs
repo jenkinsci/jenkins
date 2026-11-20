@@ -108,7 +108,7 @@ module.exports = [
     files: [
       "eslint.config.cjs",
       "postcss.config.js",
-      "webpack.config.js",
+      "vite.config.mjs",
       ".stylelintrc.js",
     ],
     languageOptions: {

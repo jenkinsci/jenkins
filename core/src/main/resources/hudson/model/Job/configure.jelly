@@ -31,7 +31,7 @@ THE SOFTWARE.
     <j:set var="readOnlyMode" value="${!it.hasPermission(it.CONFIGURE)}" />
 
     <l:header>
-      <script src="${resURL}/jsbundles/section-to-sidebar-items.js" type="text/javascript" defer="true" />
+      <script src="${resURL}/jsbundles/section-to-sidebar-items.js" type="module" />
     </l:header>
 
     <l:breadcrumb title="${readOnlyMode ? '%Configuration' : '%Configure'}" />

@@ -60,7 +60,7 @@ THE SOFTWARE.
     <j:choose>
       <j:when test="${it.cloudAvailable and it.hasClouds()}">
         <l:isAdmin>
-          <script src="${resURL}/jsbundles/pages/cloud-set.js" type="text/javascript" />
+          <script src="${resURL}/jsbundles/pages/cloud-set.js" type="module" />
           <link rel="stylesheet" href="${resURL}/jsbundles/pages/cloud-set.css" type="text/css" />
         </l:isAdmin>
 
