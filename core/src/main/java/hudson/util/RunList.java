@@ -24,6 +24,7 @@
 
 package hudson.util;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -44,9 +45,15 @@ import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import jenkins.util.InterruptibleIterable;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.AlwaysIterate;
 import org.kohsuke.stapler.export.Range;
 
@@ -57,12 +64,17 @@ import org.kohsuke.stapler.export.Range;
  *
  * @author Kohsuke Kawaguchi
  */
-public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIterate {
+public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIterate, InterruptibleIterable<R> {
 
     private Iterable<R> base;
 
     private R first;
     private Integer size;
+
+    @VisibleForTesting
+    R getCachedFirstBuild() {
+        return first;
+    }
 
     public RunList() {
         base = Collections.emptyList();
@@ -108,11 +120,9 @@ public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIte
     }
 
     private static <R extends Run> Iterable<R> combine(Iterable<Iterable<R>> runLists) {
-        return Iterables.mergeSorted(runLists, (o1, o2) -> {
-            long lhs = o1.getTimeInMillis();
-            long rhs = o2.getTimeInMillis();
-            return Long.compare(rhs, lhs);
-        });
+        return new Iteration<>(checkInterrupted -> Iterators.mergeSorted(
+                Iterables.transform(runLists, runs -> InterruptibleIterable.iterator(runs, checkInterrupted)),
+                (o1, o2) -> Long.compare(o2.getTimeInMillis(), o1.getTimeInMillis())));
     }
 
     private RunList(Iterable<R> c) {
@@ -124,7 +134,15 @@ public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIte
         return base.iterator();
     }
 
+    @Restricted(NoExternalUse.class)
+    @Override
+    public Iterator<R> iterator(Runnable checkInterrupted) {
+        // Preserve custom iterator behavior. Such iterators are checked at the scan boundary.
+        return getClass() == RunList.class ? InterruptibleIterable.iterator(base, checkInterrupted) : iterator();
+    }
+
     /**
+     * @throws RunListInterruptedException if the thread is interrupted while counting builds
      * @deprecated as of 1.485
      *      {@link RunList}, despite its name, should be really used as {@link Iterable}, not as {@link List}.
      */
@@ -133,13 +151,37 @@ public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIte
     public int size() {
         if (size == null) {
             int sz = 0;
-            for (R r : this) {
-                first = r;
+            R oldest = null;
+            checkInterrupted();
+            Iterator<R> runs = iterator(RunList::checkInterrupted);
+            while (runs.hasNext()) {
+                oldest = runs.next();
+                checkInterrupted();
                 sz++;
             }
+            checkInterrupted();
+            first = oldest;
             size = sz;
         }
         return size;
+    }
+
+    private static void checkInterrupted() {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new RunListInterruptedException();
+        }
+    }
+
+    private record Iteration<T>(Function<Runnable, Iterator<T>> factory) implements InterruptibleIterable<T> {
+        @Override
+        public Iterator<T> iterator(Runnable checkInterrupted) {
+            return factory.apply(checkInterrupted);
+        }
+
+        @Override
+        public Spliterator<T> spliterator() {
+            return Spliterators.spliteratorUnknownSize(iterator(), Spliterator.ORDERED);
+        }
     }
 
     /**
@@ -251,7 +293,16 @@ public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIte
     public RunList<R> filter(com.google.common.base.Predicate<R> predicate) {
         size = null;
         first = null;
-        base = Iterables.filter(base, predicate);
+        Iterable<R> nested = base;
+        Objects.requireNonNull(predicate);
+        base = new Iteration<>(checkInterrupted -> Iterators.filter(
+                InterruptibleIterable.iterator(nested, checkInterrupted), run -> {
+                    // A filtered iterator may inspect many rejected builds in one hasNext() call.
+                    checkInterrupted.run();
+                    boolean accepted = predicate.apply(run);
+                    checkInterrupted.run();
+                    return accepted;
+                }));
         return this;
     }
 
@@ -264,17 +315,8 @@ public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIte
         size = null;
         first = null;
         final Iterable<R> nested = base;
-        base = new Iterable<>() {
-            @Override
-            public Iterator<R> iterator() {
-                return hudson.util.Iterators.limit(nested.iterator(), predicate);
-            }
-
-            @Override
-            public String toString() {
-                return Iterables.toString(this);
-            }
-        };
+        base = new Iteration<>(checkInterrupted -> hudson.util.Iterators.limit(
+                InterruptibleIterable.iterator(nested, checkInterrupted), predicate));
         return this;
     }
 

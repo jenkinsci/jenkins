@@ -2,11 +2,17 @@ package hudson.init.impl;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.init.Initializer;
+import hudson.util.RunListInterruptedException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,13 +51,17 @@ public class InstallUncaughtExceptionHandler {
         }
     }
 
-    private static void handleException(Jenkins j, Throwable e, HttpServletRequest req, HttpServletResponse rsp, int code) throws IOException, ServletException {
+    static void handleException(Jenkins j, Throwable e, HttpServletRequest req, HttpServletResponse rsp, int code) throws IOException, ServletException {
+        if (hasCause(e, RunListInterruptedException.class)) {
+            handleInterruptedRequest(e, req, rsp);
+            return;
+        }
         if (rsp.isCommitted()) {
-            LOGGER.log(isEOFException(e) ? Level.FINE : Level.WARNING, null, e);
+            LOGGER.log(hasCause(e, EOFException.class) ? Level.FINE : Level.WARNING, null, e);
             return;
         }
         String id = UUID.randomUUID().toString();
-        LOGGER.log(isEOFException(e) ? Level.FINE : Level.WARNING, "Caught unhandled exception with ID " + id, e);
+        LOGGER.log(hasCause(e, EOFException.class) ? Level.FINE : Level.WARNING, "Caught unhandled exception with ID " + id, e);
         req.setAttribute("jenkins.exception.id", id);
         req.setAttribute("jakarta.servlet.error.exception", e);
         rsp.setStatus(code);
@@ -61,6 +71,41 @@ public class InstallUncaughtExceptionHandler {
             if (!Stapler.isSocketException(x)) {
                 throw x;
             }
+        }
+    }
+
+    private static boolean hasCause(Throwable e, Class<? extends Throwable> type) {
+        Set<Throwable> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (Throwable cause = e; cause != null && seen.add(cause); cause = cause.getCause()) {
+            if (type.isInstance(cause)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void handleInterruptedRequest(Throwable e, HttpServletRequest req, HttpServletResponse rsp) throws IOException {
+        LOGGER.log(Level.FINE, "Build history request interrupted", e);
+        // 503 is best effort: committed exports retain their original status and may be truncated.
+        // TODO: Ask maintainers whether API exports should be buffered to disk before sending output.
+        if (rsp.isCommitted()) {
+            return;
+        }
+        rsp.resetBuffer();
+        rsp.setHeader("Content-Length", null);
+        rsp.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+        rsp.setContentType("text/plain;charset=UTF-8");
+        if (!"HEAD".equals(req.getMethod())) {
+            String message = "Resource-intensive request interrupted before a complete result could be produced.";
+            PrintWriter writer;
+            try {
+                writer = rsp.getWriter();
+            } catch (IllegalStateException streamSelected) {
+                // resetBuffer() leaves the servlet's output mode selected.
+                rsp.getOutputStream().write(message.getBytes(StandardCharsets.UTF_8));
+                return;
+            }
+            writer.write(message);
         }
     }
 
@@ -79,16 +124,6 @@ public class InstallUncaughtExceptionHandler {
                     handleException(Jenkins.get(), cause, req, rsp, code);
                 }
             };
-        }
-    }
-
-    private static boolean isEOFException(Throwable e) {
-        if (e == null) {
-            return false;
-        } else if (e instanceof EOFException) {
-            return true;
-        } else {
-            return isEOFException(e.getCause());
         }
     }
 

@@ -25,11 +25,24 @@
 package hudson.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import hudson.model.Job;
 import hudson.model.Run;
+import java.util.AbstractCollection;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Spliterator;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -37,6 +50,242 @@ import org.jvnet.hudson.test.Issue;
  * @author Ignacio Albors
  */
 class RunListTest {
+
+    @Test
+    void sizeUsesOverriddenIteratorAfterFilteringAndLimiting() {
+        Run newest = mock(Run.class);
+        Run oldest = mock(Run.class);
+        Job job = mock(Job.class);
+        when(job.getBuilds()).thenReturn(RunList.fromRuns(List.of(newest, oldest)));
+        RunList<Run> runs = new RunList<>(job) {
+            @Override
+            public Iterator<Run> iterator() {
+                return com.google.common.collect.Iterators.limit(super.iterator(), 1);
+            }
+        };
+
+        runs.filter((Predicate<Run>) run -> true);
+        assertEquals(1, runs.size());
+        assertSame(newest, runs.getCachedFirstBuild());
+        runs.limit(2);
+        assertEquals(1, runs.size());
+        assertSame(newest, runs.getCachedFirstBuild());
+    }
+
+    @Test
+    void filteredParallelStreamPreservesEncounterOrder() {
+        Run newest = mock(Run.class);
+        Run oldest = mock(Run.class);
+        List<Run> orderedRuns = new ArrayList<>();
+        orderedRuns.add(newest);
+        orderedRuns.addAll(Collections.nCopies(4096, oldest));
+        RunList<Run> runs = RunList.fromRuns(orderedRuns);
+
+        for (int i = 0; i < 2; i++) {
+            runs.filter((Predicate<Run>) run -> true);
+            assertTrue(runs.spliterator().hasCharacteristics(Spliterator.ORDERED));
+            assertSame(newest, runs.parallelStream().findFirst().orElseThrow());
+        }
+    }
+
+    @Test
+    void sizeAndOldestBuildAreCachedOnlyAfterCompletion() {
+        Run newest = mock(Run.class);
+        Run oldest = mock(Run.class);
+        AtomicInteger visited = new AtomicInteger();
+        RunList<Run> runList = RunList.fromRuns(List.of(newest, oldest)).filter((Predicate<Run>) run -> {
+            if (visited.incrementAndGet() == 2) {
+                Thread.currentThread().interrupt();
+            }
+            return true;
+        });
+        List<Run> runs = runList;
+        try {
+            assertThrows(RunListInterruptedException.class, runs::size);
+            assertTrue(Thread.currentThread().isInterrupted());
+            assertNull(runList.getCachedFirstBuild());
+        } finally {
+            Thread.interrupted();
+        }
+        assertEquals(2, runs.size());
+        assertSame(oldest, runList.getCachedFirstBuild());
+        assertEquals(4, visited.get());
+        assertEquals(2, runs.size());
+        assertEquals(4, visited.get());
+    }
+
+    @Test
+    void sizeHonorsAnExistingInterrupt() {
+        List<Run> runs = RunList.fromRuns(List.of(mock(Run.class)));
+        try {
+            Thread.currentThread().interrupt();
+            assertThrows(RunListInterruptedException.class, runs::size);
+            assertTrue(Thread.currentThread().isInterrupted());
+        } finally {
+            Thread.interrupted();
+        }
+        assertEquals(1, runs.size());
+    }
+
+    @Test
+    void sizeStopsWhileSkippingRejectedBuilds() {
+        Run run = mock(Run.class);
+        AtomicInteger fetched = new AtomicInteger();
+        AtomicInteger visited = new AtomicInteger();
+        List<Run> runs = RunList.fromRuns(new AbstractCollection<Run>() {
+            @Override
+            public Iterator<Run> iterator() {
+                return List.of(run, run, run).stream().peek(candidate -> fetched.incrementAndGet()).iterator();
+            }
+
+            @Override
+            public int size() {
+                return 3;
+            }
+        }).filter((Predicate<Run>) candidate -> {
+            if (visited.incrementAndGet() == 1) {
+                Thread.currentThread().interrupt();
+            }
+            return false;
+        }).limit(3);
+        try {
+            assertThrows(RunListInterruptedException.class, runs::size);
+            assertTrue(Thread.currentThread().isInterrupted());
+            assertEquals(1, visited.get());
+            assertEquals(1, fetched.get());
+        } finally {
+            Thread.interrupted();
+        }
+        assertEquals(0, runs.size());
+        assertEquals(4, visited.get());
+    }
+
+    @Test
+    void sizeStopsInsideNestedRejectingFilters() {
+        for (boolean outerFilter : List.of(false, true)) {
+            AtomicInteger visited = new AtomicInteger();
+            Run run = mock(Run.class);
+            RunList<Run> inner = RunList.fromRuns(List.of(run, run, run)).filter((Predicate<Run>) candidate -> {
+                visited.incrementAndGet();
+                Thread.currentThread().interrupt();
+                return false;
+            });
+            RunList<Run> outer = RunList.fromRuns(inner);
+            if (outerFilter) {
+                outer.filter((Predicate<Run>) candidate -> true);
+            }
+            try {
+                assertThrows(RunListInterruptedException.class, outer::size);
+                assertTrue(Thread.currentThread().isInterrupted());
+                assertEquals(1, visited.get());
+                assertNull(inner.getCachedFirstBuild());
+                assertNull(outer.getCachedFirstBuild());
+                // Ordinary iteration has its own context, even on an interrupted thread.
+                assertFalse(outer.iterator().hasNext());
+                assertEquals(4, visited.get());
+            } finally {
+                Thread.interrupted();
+            }
+        }
+    }
+
+    @Test
+    void nestedSizeDoesNotAffectOuterInterruptionChecks() {
+        RunList<Run> runs = RunList.fromRuns(List.of(mock(Run.class))).filter((Predicate<Run>) run -> {
+            assertEquals(0, new RunList<>().size());
+            Thread.currentThread().interrupt();
+            return false;
+        });
+        try {
+            assertThrows(RunListInterruptedException.class, runs::size);
+            assertTrue(Thread.currentThread().isInterrupted());
+        } finally {
+            Thread.interrupted();
+        }
+    }
+
+    @Test
+    void ordinaryIterationDoesNotCheckInterruption() {
+        Run run = mock(Run.class);
+        RunList<Run> runs = RunList.fromRuns(List.of(run)).filter((Predicate<Run>) candidate -> true);
+        assertEquals(1, runs.size());
+        try {
+            Thread.currentThread().interrupt();
+            assertSame(run, runs.iterator().next());
+            assertTrue(Thread.currentThread().isInterrupted());
+        } finally {
+            Thread.interrupted();
+        }
+    }
+
+    @Test
+    void sizeDoesNotMakeUnrelatedIterationInterruptible() {
+        Run run = mock(Run.class);
+        RunList<Run> unrelated = RunList.fromRuns(List.of(run)).filter((Predicate<Run>) candidate -> true);
+        AtomicInteger visited = new AtomicInteger();
+        RunList<Run> runs = RunList.fromRuns(List.of(run)).filter((Predicate<Run>) candidate -> {
+            Thread.currentThread().interrupt();
+            assertSame(run, unrelated.iterator().next());
+            visited.incrementAndGet();
+            return false;
+        });
+        try {
+            assertThrows(RunListInterruptedException.class, runs::size);
+            assertEquals(1, visited.get());
+            assertTrue(Thread.currentThread().isInterrupted());
+            assertNull(runs.getCachedFirstBuild());
+        } finally {
+            Thread.interrupted();
+        }
+    }
+
+    @Test
+    void sizeStopsInsideMergedRejectingFilters() {
+        AtomicInteger visited = new AtomicInteger();
+        Run run = mock(Run.class);
+        RunList<Run> inner = RunList.fromRuns(List.of(run, run, run)).filter((Predicate<Run>) candidate -> {
+            visited.incrementAndGet();
+            Thread.currentThread().interrupt();
+            return false;
+        });
+        Job job = mock(Job.class);
+        when(job.getBuilds()).thenReturn(inner);
+        RunList<Run> runs = new RunList<>(List.of(job));
+        try {
+            assertThrows(RunListInterruptedException.class, runs::size);
+            assertEquals(1, visited.get());
+            assertTrue(Thread.currentThread().isInterrupted());
+            assertNull(runs.getCachedFirstBuild());
+        } finally {
+            Thread.interrupted();
+        }
+    }
+
+    @Test
+    void sizeChecksInterruptionAfterLastRejectedBuild() {
+        Run first = mock(Run.class);
+        Run last = mock(Run.class);
+        RunList<Run> runList = RunList.fromRuns(List.of(first, last)).filter((Predicate<Run>) run -> {
+            if (run == last) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+            return true;
+        });
+        List<Run> runs = runList;
+        try {
+            assertThrows(RunListInterruptedException.class, runs::size);
+            assertNull(runList.getCachedFirstBuild());
+        } finally {
+            Thread.interrupted();
+        }
+    }
+
+    @Test
+    void emptySize() {
+        List<Run> runs = new RunList<>();
+        assertEquals(0, runs.size());
+    }
 
     // RunList for byTimestamp tests
     private RunList rlist;
