@@ -1,0 +1,9 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<jenkins.security.apitoken.ApiTokenPropertyConfiguration>
+  <tokenGenerationOnCreationEnabled>false</tokenGenerationOnCreationEnabled>
+  <creationOfLegacyTokenEnabled>false</creationOfLegacyTokenEnabled>
+  <usageStatisticsEnabled>true</usageStatisticsEnabled>
+  <maxTokenLifetimeDays>30</maxTokenLifetimeDays>
+  <exemptUserIds>alice</exemptUserIds>
+  <strict>true</strict>
+</jenkins.security.apitoken.ApiTokenPropertyConfiguration>

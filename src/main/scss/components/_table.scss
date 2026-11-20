@@ -154,6 +154,15 @@
     white-space: nowrap;
   }
 
+  // Wraps a wide table, so that it scrolls on its own and not the whole page.
+  // The containment keeps the width of the table from widening the column of a grid that holds the wrapper.
+  // It also makes the intrinsic width of the wrapper zero, so do not use it in a parent that shrinks to its content
+  // (an inline-block, a float, a flex item that does not grow, a grid track sized `auto`): the wrapper would collapse.
+  &__wrapper {
+    overflow-x: auto;
+    contain: inline-size;
+  }
+
   &__button {
     display: inline-flex;
   }

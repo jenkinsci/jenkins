@@ -1,0 +1,27 @@
+<div>
+  The date, in the format
+  <code>yyyy-MM-dd</code>
+  , from which the maximum lifetime is enforced. Leave the field empty to
+  enforce it right away. Until this date, tokens can still be created as before,
+  so that users and integrations have time to adapt.
+  <p>
+    The date governs the
+    <strong>creation</strong>
+    of tokens only. Tokens that exist already are never touched, and a token
+    that is created before this date, even one that never expires, remains
+    valid.
+  </p>
+  <p>
+    If
+    <em>Strict mode</em>
+    is switched on, it starts on this date too. Until then it is only announced,
+    and the exemptions still apply.
+  </p>
+  <p>
+    If the stored date is not a valid date, for example after editing the
+    configuration file, the maximum lifetime is enforced right away and a
+    warning is logged. Saving the Security page then fails until the field is
+    corrected or emptied, even when the maximum lifetime is 0. The settings that
+    are configured before this section on the page are already saved by then.
+  </p>
+</div>
