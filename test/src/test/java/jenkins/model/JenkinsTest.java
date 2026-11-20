@@ -33,12 +33,15 @@ import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -62,6 +65,7 @@ import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
+import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
@@ -703,6 +707,19 @@ public class JenkinsTest {
 
         j.jenkins.trimLabels();
         assertThat(j.jenkins.getLabels().contains(l), is(true));
+    }
+
+    @Test
+    @Issue("#27452")
+    void trimmedQuotedAtomIsNotHandedOutAgain() {
+        Label first = j.jenkins.getLabel("\"z&&w\"");
+        assertThat(first, instanceOf(LabelAtom.class));
+
+        j.jenkins.trimLabels(); // no node or cloud carries z&&w, so the atom is trimmed
+
+        Label second = j.jenkins.getLabel("\"z&&w\"");
+        assertNotSame(first, second);
+        assertSame(second, j.jenkins.getLabelAtom("z&&w"));
     }
 
     @Test

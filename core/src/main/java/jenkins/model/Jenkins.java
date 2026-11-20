@@ -676,14 +676,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private volatile CrumbIssuer crumbIssuer = GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer();
 
     /**
-     * All labels known to Jenkins. This allows us to reuse the same label instances
-     * as much as possible, even though that's not a strict requirement.
+     * Set of active {@link LabelAtom}s in the system, keyed by their names.
      */
-    private final transient ConcurrentHashMap<String, Label> labels = new ConcurrentHashMap<>();
+    private final transient ConcurrentHashMap<String, LabelAtom> labels = new ConcurrentHashMap<>();
 
     /**
-     * Label expressions keyed by their canonical name, so that whitespace variants resolve to the same instance.
-     * Kept apart from {@link #labels} because a quoted {@link LabelAtom} may have the same name as an expression.
+     * Cache of parsed label expressions, keyed by the input expression and canonical name.
+     * Kept separate from {@link #labels} so an atom (e.g. {@code "a&&b"}) does not collide with the expression {@code a&&b}.
      */
     private final transient ConcurrentHashMap<String, Label> labelExpressions = new ConcurrentHashMap<>();
 
@@ -2025,30 +2024,30 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @CheckForNull
     public Label getLabel(String expr) {
         if (expr == null)  return null;
-        expr = QuotedStringTokenizer.unquote(expr);
-        while (true) {
-            Label l = labels.get(expr);
-            if (l != null)
-                return l;
-
-            // non-existent
-            Label parsed;
-            try {
-                parsed = Label.parseExpression(expr);
-            } catch (IllegalArgumentException e) {
-                // laxly accept it as a single label atom for backward compatibility
-                return getLabelAtom(expr);
-            }
-            if (!parsed.isAtom()) {
-                Label existing = labelExpressions.putIfAbsent(parsed.getName(), parsed);
-                if (existing != null) {
-                    parsed = existing;
-                }
-            }
-            // For the record, this method creates temporary labels but there is a periodic task
-            // calling "trimLabels" to remove unused labels running every 5 minutes.
-            labels.putIfAbsent(expr, parsed);
+        Label cached = labelExpressions.get(expr);
+        if (cached != null) {
+            // Resolve atoms through labels so trimmed atoms aren't reused
+            return cached.isAtom() ? getLabelAtom(cached.getName()) : cached;
         }
+
+        // non-existent
+        Label parsed;
+        try {
+            parsed = Label.parseExpression(expr);
+        } catch (IllegalArgumentException e) {
+            // laxly accept it as a single label atom for backward compatibility
+            parsed = getLabelAtom(QuotedStringTokenizer.unquote(expr));
+        }
+        if (!parsed.isAtom()) {
+            Label existing = labelExpressions.putIfAbsent(parsed.getName(), parsed);
+            if (existing != null) {
+                parsed = existing;
+            }
+        }
+        // For the record, this method creates temporary labels but there is a periodic task
+        // calling "trimLabels" to remove unused labels running every 5 minutes.
+        labelExpressions.put(expr, parsed);
+        return parsed;
     }
 
     /**
@@ -2059,16 +2058,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (name == null)  return null;
 
         while (true) {
-            Label l = labels.get(name);
-            if (l != null)
-                return (LabelAtom) l;
+            LabelAtom la = labels.get(name);
+            if (la != null)
+                return la;
 
             // non-existent
-            LabelAtom la = new LabelAtom(name);
+            la = new LabelAtom(name);
             // For the record, this method creates temporary labels but there is a periodic task
             // calling "trimLabels" to remove unused labels running every 5 minutes.
-            if (labels.putIfAbsent(name, la) == null)
+            if (labels.putIfAbsent(name, la) == null) {
                 la.load();
+                return la;
+            }
         }
     }
 
@@ -2078,11 +2079,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Restricted(NoExternalUse.class)
     public @Nullable LabelAtom tryGetLabelAtom(@NonNull String name) {
-        Label label = labels.get(name);
-        if (label instanceof LabelAtom) {
-            return (LabelAtom) label;
-        }
-        return null;
+        return labels.get(name);
     }
 
 
@@ -2090,9 +2087,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets all the active labels in the current system.
      */
     public Set<Label> getLabels() {
-        Set<Label> r = new TreeSet<>();
-        for (Label l : labels.values()) {
+        // An atom and an expression can share a name (e.g. atom "a&&b" and expression a&&b); break ties on expression
+        Set<Label> r = new TreeSet<>(Comparator.<Label>naturalOrder().thenComparing(Label::getExpression));
+        for (LabelAtom l : labels.values()) {
             if (!l.isEmpty())
+                r.add(l);
+        }
+        for (Label l : labelExpressions.values()) {
+            if (!l.isAtom() && !l.isEmpty())
                 r.add(l);
         }
         return r;
@@ -2108,9 +2110,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     public Set<LabelAtom> getLabelAtoms() {
         Set<LabelAtom> r = new TreeSet<>();
-        for (Label l : labels.values()) {
-            if (!l.isEmpty() && l instanceof LabelAtom)
-                r.add((LabelAtom) l);
+        for (LabelAtom l : labels.values()) {
+            if (!l.isEmpty())
+                r.add(l);
         }
         return r;
     }
@@ -2291,9 +2293,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         Set<Set<LabelAtom>> nodeLabels = new HashSet<>();
         nodeLabels.add(this.getAssignedLabels());
         this.getNodes().forEach(n -> nodeLabels.add(n.getAssignedLabels()));
-        for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
-            Label l = itr.next();
-            if (includedLabels == null || includedLabels.contains(l) || l.matches(includedLabels)) {
+        for (Iterator<LabelAtom> itr = labels.values().iterator(); itr.hasNext();) {
+            LabelAtom l = itr.next();
+            if (includedLabels == null || includedLabels.contains(l)) {
                 if (nodeLabels.stream().anyMatch(l::matches) || !l.getClouds().isEmpty()) {
                     // there is at least one static agent or one cloud that currently claims it can handle the label.
                     // if the cloud has been removed, or its labels updated such that it can not handle this, this is handle in later calls
@@ -2302,7 +2304,22 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     resetLabel(l);
                 } else {
                     itr.remove();
-                    labelExpressions.remove(l.getName(), l);
+                }
+            }
+        }
+        for (Iterator<Label> itr = labelExpressions.values().iterator(); itr.hasNext();) {
+            Label l = itr.next();
+            if (l.isAtom()) {
+                if (labels.get(l.getName()) != l) {
+                    itr.remove();
+                }
+                continue;
+            }
+            if (includedLabels == null || l.matches(includedLabels)) {
+                if (nodeLabels.stream().anyMatch(l::matches) || !l.getClouds().isEmpty()) {
+                    resetLabel(l);
+                } else {
+                    itr.remove();
                 }
             }
         }
