@@ -37,7 +37,10 @@ THE SOFTWARE.
         <l:main-panel>
           <j:set var="buildUrl" value="${h.decompose(request2)}" />
 
-          <div class="app-build-bar">
+          <div class="app-build-bar"
+               data-progress="${it.object.executor.progress}"
+               data-status-url="${rootURL}/${it.object.url}statusIcon"
+               data-actions-url="${rootURL}/${it.object.url}app-bar-actions">
             <div class="app-build-bar__content">
               <a class="app-build-bar__content__headline" href="${rootURL}/${it.object.url}" tabindex="-1">
                 <l:icon alt="${it.iconColor.description}"
@@ -67,6 +70,10 @@ THE SOFTWARE.
             <div class="app-build-bar__controls">
               <l:actions it="${it.object}" />
             </div>
+
+            <j:if test="${it.object.building}">
+              <st:adjunct includes="lib.hudson.app-build-bar" />
+            </j:if>
           </div>
 
           <div class="app-build-content">
