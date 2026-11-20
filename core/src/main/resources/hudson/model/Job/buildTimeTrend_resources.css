@@ -1,10 +1,16 @@
 #buildTimeTrend {
   display: flex;
   gap: 15px;
+  flex-wrap: wrap-reverse;
 }
 
-@media (max-width: 1300px) {
-  #buildTimeTrend {
-    flex-direction: column-reverse;
+#buildTimeTrend .build-time-graph {
+  align-self: flex-end;
+  padding: 0.5rem;
+  border: var(--jenkins-border);
+  border-radius: var(--form-input-border-radius);
+
+  svg {
+    fill: var(--text-color);
   }
 }

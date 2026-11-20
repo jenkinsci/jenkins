@@ -84,6 +84,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -1740,7 +1741,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Serves a page of {@link #getBuilds()} as JSON for {@code buildTimeTrend.jelly}.
+     * Serves a page of {@link #getBuilds()} as JSON for {@code index.jelly}.
      */
     @GET
     @Restricted(NoExternalUse.class)
@@ -1804,6 +1805,186 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 return chart;
             }
         };
+    }
+
+    /**
+     * Builds an inline SVG bar chart of recent build durations for {@code buildTimeTrend.jelly}.
+     *
+     * <p>
+     * Each completed build is drawn as a vertical bar whose height is its duration. The bar links
+     * to the corresponding run and carries a {@code <title>} tooltip with the build's display name,
+     * the agent it ran on, and the duration; the x-axis label is just the build number. Colors
+     * reference CSS custom properties so the chart adapts to the active theme (e.g. dark mode), and
+     * the {@code viewBox} lets it scale with its container instead of being a fixed-size raster.
+     *
+     * <p>
+     * This is the inline replacement for the JFreeChart PNG produced by {@link #getBuildTimeGraph}
+     * (previously embedded as an {@code <img>} with a client-side image map).
+     */
+    @Restricted(NoExternalUse.class)
+    public String getBuildTimeGraphSvg() {
+        List<ChartLabel> labels = new ArrayList<>();
+        for (Run r : getNewBuilds()) {
+            if (r.isBuilding())
+                continue;
+            labels.add(new ChartLabel(r));
+        }
+        // getNewBuilds() is newest-first; draw oldest -> newest, left to right.
+        Collections.sort(labels);
+
+        // Logical coordinate system rendered at 2:1 scale: the SVG's width attribute is half the
+        // viewBox width, so 1 screen px = 2 viewBox units and the chart is 400px tall (800 / 2)
+        // via the preserved aspect ratio. The plot (bars) area has a fixed width (plotW); the
+        // total viewBox width is the variable left margin plus that fixed plot area, so only a
+        // wider y-axis label grows the chart - the plot area itself never changes size.
+        final int height = 800;
+        final double plotTop = 20;
+
+        int len = labels.size();
+
+        // Reserve only as much room below the axis as the rotated build-number labels need, so the
+        // common case of short build numbers gives the plot more height instead of wasting space.
+        // The estimate uses the largest (newest, hence most digits) build number at the largest
+        // responsive label font (~16 user units); rotated text hangs down by roughly its length.
+        // Capped so a pathologically long number cannot shrink the plot to nothing.
+        int maxLabelChars = 1 + (len == 0 ? 1 : Integer.toString(labels.get(len - 1).run.getNumber()).length());
+        final double plotBottom = height - Math.min(160, 8 + Math.ceil(maxLabelChars * 0.6 * 16) + 6);
+        final double plotH = plotBottom - plotTop;
+
+        // y-axis: build duration in minutes. Pick a "nice" step (1, 2 or 5 times a power of ten) so
+        // the gridlines land on round numbers, then round the upper bound up to a multiple of it.
+        double maxMinutes = 0;
+        for (ChartLabel label : labels)
+            maxMinutes = Math.max(maxMinutes, label.run.getDuration() / (1000.0 * 60));
+        long yStep = niceStep(maxMinutes, 10);
+        long yMax = Math.max(yStep, (long) Math.ceil(maxMinutes / yStep) * yStep);
+
+        // Size the left margin to fit the widest y-axis label plus the rotated axis title.
+        int widestLabel = 0;
+        for (long v = 0; v <= yMax; v += yStep)
+            widestLabel = Math.max(widestLabel, Long.toString(v).length());
+        double plotLeft = Math.max(48, widestLabel * 6.5 + 56);
+        final double plotW = 1202;
+        final double width = plotLeft + plotW + 12;
+        final double plotRight = plotLeft + plotW;
+
+        StringBuilder buf = new StringBuilder();
+        buf.append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"").append(svgFmt(width / 2))
+           .append("\" viewBox=\"0 0 ").append(svgFmt(width)).append(' ').append(height)
+           .append("\" preserveAspectRatio=\"xMidYMid meet\" role=\"img\">");
+
+        // Range gridlines + y-axis tick labels.
+        for (long v = 0; v <= yMax; v += yStep) {
+            double y = plotBottom - plotH * v / yMax;
+            buf.append("<line x1=\"").append(svgFmt(plotLeft)).append("\" y1=\"").append(svgFmt(y))
+               .append("\" x2=\"").append(svgFmt(plotRight)).append("\" y2=\"").append(svgFmt(y))
+               .append("\" stroke=\"var(--text-color-secondary, grey)\" stroke-opacity=\"0.25\" stroke-width=\"1\"/>");
+            buf.append("<text x=\"").append(svgFmt(plotLeft - 6)).append("\" y=\"").append(svgFmt(y + 4))
+               .append("\" text-anchor=\"end\" font-size=\"18\">")
+               .append(v).append("</text>");
+        }
+
+        // Rotated y-axis title (the duration unit).
+        double titleX = 26;
+        double titleY = plotTop + plotH / 2;
+        buf.append("<text tooltip=\"").append(Util.xmlEscape(Messages.Job_durationMinutes())).append("\" x=\"").append(svgFmt(titleX)).append("\" y=\"").append(svgFmt(titleY))
+           .append("\" text-anchor=\"middle\" transform=\"rotate(-90 ")
+           .append(svgFmt(titleX)).append(' ').append(svgFmt(titleY))
+           .append(")\" font-size=\"36\">")
+           .append(Util.xmlEscape(Messages.Job_minutes())).append("</text>");
+
+        // Axis lines.
+        buf.append("<line x1=\"").append(svgFmt(plotLeft)).append("\" y1=\"").append(svgFmt(plotTop))
+           .append("\" x2=\"").append(svgFmt(plotLeft)).append("\" y2=\"").append(svgFmt(plotBottom))
+           .append("\" stroke=\"var(--text-color-secondary, grey)\" stroke-width=\"1\"/>");
+        buf.append("<line x1=\"").append(svgFmt(plotLeft)).append("\" y1=\"").append(svgFmt(plotBottom))
+           .append("\" x2=\"").append(svgFmt(plotRight)).append("\" y2=\"").append(svgFmt(plotBottom))
+           .append("\" stroke=\"var(--text-color-secondary, grey)\" stroke-width=\"1\"/>");
+
+        if (len > 0) {
+            double slotW = plotW / len;
+            double barW = Math.max(1, slotW * 0.8);
+            // Show only every n-th build number so the labels do not overlap (e.g. every 4th at the
+            // 100-build maximum), mirroring the label thinning the old JFreeChart PNG applied.
+            int labelStep = Math.max(1, (int) Math.ceil(len / 25.0));
+
+            for (int i = 0; i < len; i++) {
+                ChartLabel label = labels.get(i);
+                Run r = label.run;
+                double minutes = r.getDuration() / (1000.0 * 60);
+                double barH = plotH * minutes / yMax;
+                double x = plotLeft + slotW * i + (slotW - barW) / 2;
+                double y = plotBottom - barH;
+
+                // Tooltip: the run's display name, the agent it ran on, and the duration. The
+                // display name can contain user-provided text, so the whole string is XML-escaped.
+                StringBuilder tooltip = new StringBuilder(r.getDisplayName());
+                tooltip.append(": ").append(r.getDurationString());
+                if (r instanceof AbstractBuild b) {
+                    String builtOn = b.getBuiltOnStr();
+                    if (builtOn != null && !builtOn.isEmpty())
+                        tooltip.append("\nAgent: ").append(builtOn);
+                }
+                buf.append("<a href=\"../").append(r.getNumber()).append("\" tooltip=\"");
+                buf.append(Util.xmlEscape(tooltip.toString()).replace("\"", "&quot;")).append("\">");
+                buf.append("<rect x=\"").append(svgFmt(x)).append("\" y=\"").append(svgFmt(y))
+                   .append("\" width=\"").append(svgFmt(barW)).append("\" height=\"").append(svgFmt(barH))
+                   .append("\" fill=\"").append(cssColor(label.getColor())).append("\"/>");
+                buf.append("</a>");
+
+                // x-axis label: the build number (e.g. "#48"), rotated 90° (reading bottom-to-top)
+                // so it hangs vertically below the axis instead of overflowing sideways.
+                if (i % labelStep == 0) {
+                    double lx = x + barW / 2;
+                    double ly = plotBottom + 8;
+                    buf.append("<text x=\"").append(svgFmt(lx)).append("\" y=\"").append(svgFmt(ly))
+                       .append("\" text-anchor=\"end\" dominant-baseline=\"central\" transform=\"rotate(-90 ")
+                       .append(svgFmt(lx)).append(' ').append(svgFmt(ly))
+                       .append(")\" font-size=\"18\">#")
+                       .append(r.getNumber()).append("</text>");
+                }
+            }
+        }
+
+        buf.append("</svg>");
+        return buf.toString();
+    }
+
+    private static String svgFmt(double d) {
+        return String.format(Locale.ROOT, "%.1f", d);
+    }
+
+    /**
+     * Picks a "nice" axis step: the value of the form 1, 2 or 5 times a power of ten closest to
+     * {@code range / targetTicks}, with a floor of 1 so the ticks stay whole numbers.
+     */
+    private static long niceStep(double range, int targetTicks) {
+        double raw = range / targetTicks;
+        if (raw <= 1) return 1;
+        double pow = Math.pow(10, Math.floor(Math.log10(raw)));
+        long best = Math.max(1, Math.round(pow));
+        double bestDist = Double.MAX_VALUE;
+        for (double mult : new double[] {1, 2, 5, 10}) {
+            double candidate = mult * pow;
+            double dist = Math.abs(candidate - raw);
+            if (dist < bestDist) {
+                bestDist = dist;
+                best = Math.max(1, Math.round(candidate));
+            }
+        }
+        return best;
+    }
+
+    /**
+     * Maps a build-result {@link Color} (from {@link ChartLabel#getColor}) to a theme-aware CSS
+     * color, so the bars follow the active theme; unknown colors fall back to their literal hex.
+     */
+    private static String cssColor(Color c) {
+        if (ColorPalette.RED.equals(c)) return "var(--error-color, red)";
+        if (ColorPalette.YELLOW.equals(c)) return "var(--warning-color, orange)";
+        if (ColorPalette.BLUE.equals(c)) return "var(--success-color, green)";
+        if (ColorPalette.DARK_GREY.equals(c)) return "var(--text-color-secondary, grey)";
+        return String.format(Locale.ROOT, "#%06x", c.getRGB() & 0xFFFFFF);
     }
 
     private Calendar getLastBuildTime() {
