@@ -307,7 +307,7 @@ public class NodeProvisioner {
             int availableSnapshot = snapshot.getAvailableExecutors();
             int queueLengthSnapshot = snapshot.getQueueLength();
 
-            if (queueLengthSnapshot <= availableSnapshot) {
+            if (queueLengthSnapshot <= availableSnapshot && snapshot.getRejectedQueueLength() == 0) {
                 LOGGER.log(Level.FINER,
                         "Queue length {0} is less than the available capacity {1}. No provisioning strategy required",
                         new Object[]{queueLengthSnapshot, availableSnapshot});
@@ -662,8 +662,11 @@ public class NodeProvisioner {
             boolean needSomeWhenNoneAtAll = snapshot.getAvailableExecutors() + snapshot.getConnectingExecutors() == 0
                     && snapshot.getOnlineExecutors() + state.getPlannedCapacitySnapshot() + state.getAdditionalPlannedCapacity() == 0
                     && snapshot.getQueueLength() > 0;
+            // Some of the queued work was refused by every available executor, so the available executors are
+            // not capacity that can absorb the current load and must not hold off provisioning.
+            boolean availableCapacityCannotTakeQueue = snapshot.getRejectedQueueLength() > 0;
             float available = Math.max(snapshot.getAvailableExecutors(), state.getAvailableExecutorsLatest());
-            if (available < MARGIN || needSomeWhenNoneAtAll) {
+            if (available < MARGIN || needSomeWhenNoneAtAll || availableCapacityCannotTakeQueue) {
                 // make sure the system is fully utilized before attempting any new launch.
 
                 // this is the amount of work left to be done
