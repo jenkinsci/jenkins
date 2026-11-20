@@ -128,6 +128,16 @@ public class CrumbFilter implements CompatibleFilter {
                     return;
             }
 
+            // JENKINS-63385: during startup the crumb issuer can be configured
+            // before its descriptor is registered, and getDescriptorOrDie would
+            // throw. The crumb cannot be validated yet, so fail closed.
+            if (Jenkins.get().getDescriptor(crumbIssuer.getClass()) == null) {
+                LOGGER.warning(() -> "Crumb issuer descriptor not yet registered, rejecting POST request for " + httpRequest.getRequestURI());
+                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,
+                    "CSRF crumb issuer is not yet available (Jenkins startup in progress); retry after initialization");
+                return;
+            }
+
             String crumbFieldName = crumbIssuer.getDescriptor().getCrumbRequestField();
             String crumbSalt = crumbIssuer.getDescriptor().getCrumbSalt();
 
