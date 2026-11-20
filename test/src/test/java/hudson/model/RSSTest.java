@@ -36,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,6 +44,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import org.htmlunit.xml.XmlPage;
 import org.junit.jupiter.api.BeforeEach;
@@ -287,6 +289,36 @@ class RSSTest {
         String buildTitle = FAILED_BUILD_TITLE;
         XmlPage page = getRssFailedPage(wc, pathPrefix);
         checkSingleBuild_Rss(page, pathPrefix, displayName, buildType, buildTitle);
+    }
+
+    @Test
+    void checkUserRssFailedAppliesNewBuildsFiltering() throws Exception {
+        String userId = "alice";
+        JenkinsRule.WebClient wc = loginAsUser(userId);
+
+        // Create 12 failing builds attributed to the user, each in its own project
+        // so that every failing build is a regression (worse than the previous build).
+        List<FreeStyleProject> projects = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            FreeStyleProject p = j.createFreeStyleProject();
+            p.getBuildersList().add(new FailureBuilder());
+            j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0, new Cause.UserIdCause(userId)).get());
+            projects.add(p);
+        }
+
+        // Backdate the oldest four failing builds beyond the 7-day RSS window
+        long eightDaysAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(8);
+        Field timestampField = Run.class.getDeclaredField("timestamp");
+        timestampField.setAccessible(true);
+        for (int i = 0; i < 4; i++) {
+            timestampField.setLong(projects.get(i).getBuildByNumber(1), eightDaysAgo);
+        }
+
+        XmlPage page = getRssFailedPage(wc, "user/alice");
+        NodeList items = page.getXmlDocument().getElementsByTagName("item");
+        // The ten newest regression builds are always kept; the remaining builds are
+        // older than the 7-day window and are omitted, as on the job and view feeds.
+        assertEquals(10, items.getLength());
     }
 
     @Test
