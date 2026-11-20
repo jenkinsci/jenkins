@@ -89,10 +89,13 @@ class CloudTest {
     }
 
     @Test
-    void cloudNameIsEncodedInGetUrl() {
+    void cloudUrlUsesUuidInsteadOfName() {
         ACloud aCloud = new ACloud("../../gibberish", "0");
 
-        assertEquals("cloud/..%2F..%2Fgibberish/", aCloud.getUrl(), "Cloud name is encoded in Cloud#getUrl");
+        // After UUID changes, URLs use UUID instead of encoded name
+        String url = aCloud.getUrl();
+        assertTrue(url.startsWith("cloud/"), "Cloud URL uses UUID-based format");
+        assertTrue(url.matches("cloud/[0-9a-f-]{36}/"), "Cloud URL contains valid UUID");
     }
 
     public static final class ACloud extends AbstractCloudImpl {
