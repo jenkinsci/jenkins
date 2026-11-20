@@ -136,7 +136,7 @@
   &::before {
     content: "";
     position: absolute;
-    inset: -10px;
+    inset: 0 -10px;
   }
 
   &::after {
