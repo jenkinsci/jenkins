@@ -27,10 +27,7 @@ package jenkins.tasks.filters.impl;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import hudson.Functions;
 import hudson.model.Build;
 import hudson.model.Cause;
 import hudson.model.FreeStyleBuild;
@@ -46,6 +43,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
@@ -60,8 +60,8 @@ class RetainVariablesLocalRuleTest {
     }
 
     @Test
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void retainVariable_removeUnwantedVariables_batch() throws Exception {
-        assumeTrue(Functions.isWindows());
 
         FreeStyleProject p = j.createFreeStyleProject();
         BatchFile batch = new BatchFile("echo \"begin %what% %who% end\"");
@@ -101,8 +101,8 @@ class RetainVariablesLocalRuleTest {
     }
 
     @Test
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void retainVariable_removeModifiedSystemEnv_batch() throws Exception {
-        assumeTrue(Functions.isWindows());
 
         FreeStyleProject p = j.createFreeStyleProject();
         BatchFile batch = new BatchFile("echo \"begin %what% [=[%path%]=] end\"");
@@ -161,8 +161,8 @@ class RetainVariablesLocalRuleTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void retainVariable_removeModifiedSystemEnv_shell() throws Exception {
-        assumeFalse(Functions.isWindows());
 
         FreeStyleProject p = j.createFreeStyleProject();
         Shell batch = new Shell("echo \"begin $what [=[$PATH]=] end\"");
@@ -221,8 +221,8 @@ class RetainVariablesLocalRuleTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void retainVariable_removeUnwantedVariables_shell() throws Exception {
-        assumeFalse(Functions.isWindows());
 
         FreeStyleProject p = j.createFreeStyleProject();
         Shell shell = new Shell("echo \"begin $what $who end\"");
@@ -248,8 +248,8 @@ class RetainVariablesLocalRuleTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void retainVariable_removeSystemVariables_shell() throws Exception {
-        assumeFalse(Functions.isWindows());
 
         FreeStyleProject p = j.createFreeStyleProject();
         Shell shell = new Shell("env");
@@ -282,8 +282,8 @@ class RetainVariablesLocalRuleTest {
     }
 
     @Test
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities only available on Windows")
     void multipleBuildSteps_haveSeparateRules_batch() throws Exception {
-        assumeTrue(Functions.isWindows());
 
         FreeStyleProject p = j.createFreeStyleProject();
         BatchFile batch1 = new BatchFile("echo \"Step1: %what% %who%\"");
@@ -319,8 +319,8 @@ class RetainVariablesLocalRuleTest {
     }
 
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void multipleBuildSteps_haveSeparateRules_shell() throws Exception {
-        assumeFalse(Functions.isWindows());
 
         FreeStyleProject p = j.createFreeStyleProject();
         Shell batch1 = new Shell("echo \"Step1: $what $who\"");
