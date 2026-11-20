@@ -33,7 +33,6 @@ THE SOFTWARE.
     <f:hetero-list name="builder" hasHeader="true"
                    descriptors="${h.getBuilderDescriptors(it)}"
                    items="${it.builders}"
-                   addCaption="${%Add build step}"
-                   enableTopButton="true"/>
+                   addCaption="${%Add build step}"/>
   </f:section>
 </j:jelly>
