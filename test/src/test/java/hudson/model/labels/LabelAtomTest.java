@@ -115,6 +115,38 @@ class LabelAtomTest {
         assertThat(label.getNodes(), empty());
     }
 
+    @Test
+    @Issue("https://github.com/jenkinsci/jenkins/issues/27546")
+    void negatedLabelExpressionUpdatesWhenNodeLabelsChange() throws Exception {
+        var agent = j.createSlave("node", "win", null);
+        var notWin = Label.get("!win");
+        assertNotNull(notWin);
+        assertThat(notWin.contains(agent), is(false));
+
+        // 1. Removing the excluded label from an agent via Jenkins#updateNode (win -> linux) updates !win so contains(agent) is true.
+        agent.setLabelString("linux");
+        j.jenkins.updateNode(agent);
+        assertThat(notWin.contains(agent), is(true));
+
+        // 2. Adding the excluded label to an agent via Jenkins#updateNode (linux -> linux win) updates !win so contains(agent) is false.
+        agent.setLabelString("linux win");
+        j.jenkins.updateNode(agent);
+        assertThat(notWin.contains(agent), is(false));
+
+        // 3. Adding the excluded label to an agent via the agent's Configure UI form (Nodes#replaceNode) updates !win so contains(updatedAgent) is false.
+        agent.setLabelString("linux");
+        j.jenkins.updateNode(agent);
+        assertThat(notWin.contains(agent), is(true));
+
+        var form = j.createWebClient().getPage(agent, "configure").getFormByName("config");
+        form.getInputByName("_.labelString").setValue("linux win");
+        j.submit(form);
+        var updatedAgent = j.jenkins.getNode(agent.getNodeName());
+        assertNotNull(updatedAgent);
+        assertThat(notWin.contains(updatedAgent), is(false));
+        assertThat(notWin.contains(agent), is(false));
+    }
+
     private static class TestCloud extends Cloud {
 
         private final List<Label> labels;
