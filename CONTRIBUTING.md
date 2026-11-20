@@ -103,7 +103,7 @@ On one terminal, start a development server:
 mvn -pl war hpi:run
 ```
 
-Open another terminal and start a [webpack](https://webpack.js.org/) dev server, after [optionally adding Node and Yarn to your path](#running-the-yarn-frontend-build):
+Open another terminal and start a [Vite](https://vite.dev/) build in watch mode, after [optionally adding Node and Yarn to your path](#running-the-yarn-frontend-build):
 
 ```sh
 yarn start
