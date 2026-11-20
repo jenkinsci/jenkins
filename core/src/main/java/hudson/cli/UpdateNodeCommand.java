@@ -25,9 +25,11 @@
 package hudson.cli;
 
 import hudson.Extension;
+import hudson.model.Computer;
 import hudson.model.Node;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -49,7 +51,18 @@ public class UpdateNodeCommand extends CLICommand {
     @Override
     protected int run() throws IOException, ServletException {
 
-        node.toComputer().updateByXml(stdin);
+        Computer computer = node.toComputer();
+        if (computer != null) {
+            computer.updateByXml(stdin);
+        } else {
+            // a node without executors has no computer; same steps as Computer.updateByXml
+            node.checkPermission(Computer.CONFIGURE);
+            Node result = (Node) Jenkins.XSTREAM2.fromXML(stdin);
+            if (node.getClass() != result.getClass()) {
+                throw new IllegalArgumentException("Node types do not match");
+            }
+            Jenkins.get().getNodesObject().replaceNode(node, result);
+        }
 
         return 0;
     }
