@@ -24,7 +24,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
-  <script src="${resURL}/jsbundles/pages/project/builds-card.js" type="text/javascript" defer="true" />
+  <script src="${resURL}/jsbundles/pages/project/builds-card.js" type="module" />
 
   <j:set var="page" value="${it.historyPageFilter}" />
 

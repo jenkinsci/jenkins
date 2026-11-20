@@ -29,7 +29,7 @@ THE SOFTWARE.
   <l:layout type="one-column" permission="${permission}" title="${%NewJob(it.newPronoun)}">
     <l:header>
       <link rel="stylesheet" href="${resURL}/jsbundles/add-item.css" type="text/css" />
-      <script src="${resURL}/jsbundles/add-item.js" type="text/javascript" defer="true" />
+      <script src="${resURL}/jsbundles/add-item.js" type="module" />
     </l:header>
 
     <l:breadcrumb title="${%NewJob(it.newPronoun)}" />

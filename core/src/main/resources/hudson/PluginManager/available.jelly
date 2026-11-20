@@ -66,7 +66,7 @@ THE SOFTWARE.
         </div>
       </div>
 
-      <script src="${resURL}/jsbundles/plugin-manager-ui.js" type="text/javascript"/>
+      <script src="${resURL}/jsbundles/plugin-manager-ui.js" type="module"/>
 
       <form id="form" method="post" action="install">
         <table id="plugins" class="jenkins-table sortable"

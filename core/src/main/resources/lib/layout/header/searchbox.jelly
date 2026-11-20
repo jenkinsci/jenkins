@@ -23,5 +23,5 @@
       <l:icon src="symbol-search" />
     </button>
   </div>
-  <script src="${resURL}/jsbundles/keyboard-shortcuts.js" type="text/javascript"/>
+  <script src="${resURL}/jsbundles/keyboard-shortcuts.js" type="module"/>
 </j:jelly>
