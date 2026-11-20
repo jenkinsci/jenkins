@@ -24,5 +24,14 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <td align="right">${data}</td>
+  <!-- the computer is "c" on the node list and "it" on the page of a single node -->
+  <j:set var="details" value="${from.descriptor.getDetails(c != null ? c : it)}"/>
+  <td align="right">
+    <j:choose>
+      <j:when test="${details != null}">
+        <span tooltip="${details}">${data}</span>
+      </j:when>
+      <j:otherwise>${data}</j:otherwise>
+    </j:choose>
+  </td>
 </j:jelly>
