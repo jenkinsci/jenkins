@@ -30,7 +30,7 @@ THE SOFTWARE.
   <l:userExperimentalFlag var="newJobPage" flagClassName="jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag" />
 
   <j:choose>
-    <j:when test="${newJobPage and !(it.widget != null and it.widget.sidepanel)}">
+    <j:when test="${newJobPage and empty(request2.getParameter('sidepanel'))}">
       <st:include page="/hudson/widgets/HistoryWidget/entries-new" />
     </j:when>
     <j:otherwise>

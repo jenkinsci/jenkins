@@ -51,7 +51,12 @@ THE SOFTWARE.
     </l:overflowButton>
   </j:set>
 
-  <div id="buildHistoryPage" page-ajax="${it.baseUrl}/buildHistory/ajax?sidepanel=true"
+  <j:set var="buildHistoryAjaxUrl" value="${it.baseUrl}/buildHistory/ajax" />
+  <j:if test="${it.sidepanel}">
+    <j:set var="buildHistoryAjaxUrl" value="${buildHistoryAjaxUrl}?sidepanel=true" />
+  </j:if>
+
+  <div id="buildHistoryPage" page-ajax="${buildHistoryAjaxUrl}"
        data-page-entry-newest="${page.newestOnPage}"
        data-page-entry-oldest="${page.oldestOnPage}"
        data-page-has-up="${page.hasUpPage}"
