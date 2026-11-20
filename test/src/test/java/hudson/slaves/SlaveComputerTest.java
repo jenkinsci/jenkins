@@ -49,6 +49,8 @@ import java.io.IOError;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -252,6 +254,41 @@ class SlaveComputerTest {
         }
     }
 
+    @Test
+    @Issue("JENKINS-35272")
+    void afterDisconnectShouldBeCalledOnlyOnce() throws Exception {
+        CountingLauncher launcher = new CountingLauncher(j.createComputerLauncher(null));
+        DumbSlave node = new DumbSlave("disconnect-test", j.jenkins.getRootDir().toPath().resolve("disconnect-test").toString(), launcher);
+        j.jenkins.addNode(node);
+        j.waitOnline(node);
+        SlaveComputer computer = (SlaveComputer) node.getComputer();
+        assertNotNull(computer);
+
+        // Trigger disconnect twice
+        var firstDisconnect = computer.disconnect(null);
+        var secondDisconnect = computer.disconnect(null);
+
+        firstDisconnect.get(30, TimeUnit.SECONDS);
+        secondDisconnect.get(30, TimeUnit.SECONDS);
+
+        assertEquals(1, launcher.count.get(),
+                "afterDisconnect should be called exactly once");
+    }
+
+    static class CountingLauncher extends ComputerLauncherFilter {
+
+        final transient AtomicInteger count = new AtomicInteger(0);
+
+        protected CountingLauncher(ComputerLauncher core) {
+            super(core);
+        }
+
+        @Override
+        public void afterDisconnect(SlaveComputer computer, TaskListener listener) {
+            count.incrementAndGet();
+            super.afterDisconnect(computer, listener);
+        }
+    }
 
     /**
      * Get remote path through json api
