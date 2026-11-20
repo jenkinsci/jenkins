@@ -339,6 +339,13 @@ public class CLI {
         return new File(args.get(1));
     }
 
+    static void addHeaders(Map<String, List<String>> headers, String authorization) {
+        if (authorization != null) {
+            headers.put("Authorization", List.of(authorization));
+        }
+        headers.put("User-Agent", List.of("Jenkins-cli-" + computeVersion()));
+    }
+
     private static int webSocketConnection(String url, List<String> args, CLIConnectionFactory factory) throws Exception {
         LOGGER.fine(() -> "Trying to connect to " + url + " via plain protocol over WebSocket");
         class CLIEndpoint extends Endpoint {
@@ -351,9 +358,7 @@ public class CLI {
 
             @Override
             public void beforeRequest(Map<String, List<String>> headers) {
-                if (factory.authorization != null) {
-                    headers.put("Authorization", List.of(factory.authorization));
-                }
+                addHeaders(headers, factory.authorization);
             }
 
             @Override
@@ -522,7 +527,7 @@ public class CLI {
 
     }
 
-    private static String computeVersion() {
+    static String computeVersion() {
         Properties props = new Properties();
         try (InputStream is = CLI.class.getResourceAsStream("/jenkins/cli/jenkins-cli-version.properties")) {
             if (is != null) {
