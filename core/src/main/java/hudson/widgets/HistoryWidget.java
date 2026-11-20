@@ -229,8 +229,10 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     }
 
     protected HistoryPageFilter<T> newPageFilter() {
-        int maxEntries = new NewJobPageUserExperimentalFlag().getFlagValue() ? NEW_JOB_PAGE_THRESHOLD : THRESHOLD;
+        boolean newJobPageEnabled = new NewJobPageUserExperimentalFlag().getFlagValue();
+        int maxEntries = newJobPageEnabled ? NEW_JOB_PAGE_THRESHOLD : THRESHOLD;
         HistoryPageFilter<T> historyPageFilter = new HistoryPageFilter<>(maxEntries);
+        historyPageFilter.setNewUi(newJobPageEnabled);
         historyPageFilter.widget = this;
 
         if (newerThan != null) {
@@ -304,6 +306,10 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
         }
 
         HistoryPageFilter page = getHistoryPageFilter();
+        String newUi = req.getParameter("newUi");
+        if (newUi != null) {
+            page.setNewUi(Boolean.parseBoolean(newUi));
+        }
         req.getView(page, "ajaxBuildHistory.jelly").forward(req, rsp);
     }
 

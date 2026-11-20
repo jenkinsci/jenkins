@@ -24,10 +24,8 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <l:userExperimentalFlag var="newJobPage" flagClassName="jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag" />
-
   <j:choose>
-    <j:when test="${newJobPage}">
+    <j:when test="${it.newUi}">
       <st:include page="queue-items-new.jelly"/>
     </j:when>
     <j:otherwise>

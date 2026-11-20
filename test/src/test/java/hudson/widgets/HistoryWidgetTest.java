@@ -14,8 +14,11 @@ import hudson.ExtensionList;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
+import hudson.model.User;
 import java.util.List;
+import java.util.Map;
 import jenkins.model.HistoricalBuild;
+import jenkins.model.experimentalflags.UserExperimentalFlagsProperty;
 import jenkins.widgets.DescriptionHistoryPageEntryDecorator;
 import jenkins.widgets.HistoryPageEntry;
 import jenkins.widgets.HistoryPageEntryDecorator;
@@ -68,6 +71,34 @@ class HistoryWidgetTest {
             HtmlPage page = wc.goTo("job/" + p.getName());
             DomNode searchInputContainer = page.querySelector("#jenkins-builds .jenkins-search");
             assertFalse(searchInputContainer.getAttributes().getNamedItem("class").getNodeValue().contains("jenkins-hidden"));
+        }
+    }
+
+    @Test
+    void workspaceUsesLegacyBuildHistoryWithNewJobPageEnabled() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
+        User.getById("alice", true)
+                .addProperty(new UserExperimentalFlagsProperty(
+                        Map.of("new-job-page.flag", "true")));
+
+        FreeStyleProject project = j.createFreeStyleProject();
+        j.buildAndAssertSuccess(project);
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            HtmlPage workspace = wc.goTo("job/" + project.getName() + "/ws/");
+            assertThat(workspace.getElementById("buildHistoryPage"), notNullValue());
+            assertThat(workspace.querySelector(".app-builds-container"), notNullValue());
+            assertTrue(workspace.getWebResponse().getContentAsString().contains("builds-card.js"));
+
+            HtmlPage legacyResponse = wc.goTo("job/" + project.getName() + "/buildHistory/ajax?newUi=false");
+            String legacyHtml = legacyResponse.getWebResponse().getContentAsString();
+            assertTrue(legacyHtml.contains("app-builds-container__item"));
+            assertFalse(legacyHtml.contains("app-build-item--columns"));
+
+            HtmlPage newResponse = wc.goTo("job/" + project.getName() + "/buildHistory/ajax?newUi=true");
+            String newHtml = newResponse.getWebResponse().getContentAsString();
+            assertTrue(newHtml.contains("app-build-item--columns"));
         }
     }
 

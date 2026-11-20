@@ -27,10 +27,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:i="jelly:fmt" xmlns:l="/lib/layout">
-  <l:userExperimentalFlag var="newJobPage" flagClassName="jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag" />
-
   <j:choose>
-    <j:when test="${newJobPage}">
+    <j:when test="${it.newUi}">
       <st:include page="/hudson/widgets/HistoryWidget/entries-new" />
     </j:when>
     <j:otherwise>

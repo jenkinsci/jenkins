@@ -28,7 +28,10 @@ const updateBuildsRefreshInterval = 5000;
 function load(options = {}) {
   /** @type {QueryParameters} */
   cancelRefreshTimeout();
-  const params = Object.assign({}, options, { search: pageSearchInput.value });
+  const params = Object.assign({}, options, {
+    search: pageSearchInput.value,
+    newUi: false,
+  });
   const paginationOrFirst =
     buildHistoryPage.dataset.pageHasUp === "false" ||
     "older-than" in params ||
