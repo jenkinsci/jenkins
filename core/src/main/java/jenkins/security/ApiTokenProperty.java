@@ -404,6 +404,7 @@ public class ApiTokenProperty extends UserProperty {
         // just to keep the same level of security
         user.checkPermission(Jenkins.ADMINISTER);
 
+        ApiTokenPropertyConfiguration.get().validateExpirationDate(null);
         LOGGER.log(Level.FINE, "Deprecated usage of changeApiToken");
 
         ApiTokenStore.HashedToken existingLegacyToken = tokenStore.getLegacyToken();
@@ -566,6 +567,17 @@ public class ApiTokenProperty extends UserProperty {
             return canCurrentUserControlObject(ADMIN_CAN_GENERATE_NEW_TOKENS, propertyOwner);
         }
 
+        @Restricted(NoExternalUse.class)
+        public int getMaxTokenLifetimeDays() {
+            return ApiTokenPropertyConfiguration.get().getMaxTokenLifetimeDays();
+        }
+
+        @Restricted(NoExternalUse.class)
+        public String getMaxTokenExpirationDate() {
+            int days = getMaxTokenLifetimeDays();
+            return days == 0 ? "" : LocalDate.now().plusDays(days).toString();
+        }
+
         /**
          * @deprecated use {@link #doGenerateNewToken(User, String, String, String)} instead
          */
@@ -575,6 +587,9 @@ public class ApiTokenProperty extends UserProperty {
             // you are the user or you have ADMINISTER permission
             u.checkPermission(Jenkins.ADMINISTER);
 
+            if (getMaxTokenLifetimeDays() > 0) {
+                return HttpResponses.html(jenkins.security.apitoken.Messages.ApiTokenPropertyConfiguration_MaximumLifetimeExceeded(getMaxTokenLifetimeDays()));
+            }
             LOGGER.log(Level.FINE, "Deprecated action /changeToken used, consider using /generateNewToken instead");
 
             if (!mustDisplayLegacyApiToken(u)) {
@@ -631,7 +646,12 @@ public class ApiTokenProperty extends UserProperty {
                 return HttpResponses.errorJSON(Messages.ApiTokenProperty_expirationInPast());
             }
 
-            TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName, expirationDate);
+            TokenUuidAndPlainValue tokenUuidAndPlainValue;
+            try {
+                tokenUuidAndPlainValue = p.generateNewToken(tokenName, expirationDate);
+            } catch (IllegalArgumentException e) {
+                return HttpResponses.errorJSON(e.getMessage());
+            }
 
             data.put("tokenUuid", tokenUuidAndPlainValue.tokenUuid);
             data.put("tokenName", tokenName);
@@ -694,7 +714,12 @@ public class ApiTokenProperty extends UserProperty {
                 u.addProperty(p);
             }
 
-            String tokenUuid = p.tokenStore.addFixedNewToken(tokenName, newTokenPlainValue, expirationDate);
+            String tokenUuid;
+            try {
+                tokenUuid = p.tokenStore.addFixedNewToken(tokenName, newTokenPlainValue, expirationDate);
+            } catch (IllegalArgumentException e) {
+                return HttpResponses.errorJSON(e.getMessage());
+            }
             u.save();
 
             Map<String, String> data = new HashMap<>();

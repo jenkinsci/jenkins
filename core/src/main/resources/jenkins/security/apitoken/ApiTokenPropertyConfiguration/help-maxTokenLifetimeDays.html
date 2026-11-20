@@ -1,0 +1,13 @@
+<div>
+  Limits the lifetime of newly generated or imported API tokens, in calendar
+  days from their creation date. Tokens remain valid through their expiration
+  date. Set to
+  <code>0</code>
+  to allow any expiration date, including no expiration. When a limit is set,
+  new tokens must have an expiration date within the limit, and creation or
+  regeneration of legacy tokens is disabled because they cannot expire.
+  <p>
+    Existing tokens are unaffected. Review and revoke existing non-expiring or
+    long-lived tokens separately before relying on this policy for all tokens.
+  </p>
+</div>

@@ -24,11 +24,17 @@
 
 package jenkins.security.apitoken;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.model.PersistentDescriptor;
+import hudson.util.FormValidation;
+import java.time.LocalDate;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Configuration for the new token generation when a user is created
@@ -56,6 +62,42 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
      */
     private boolean usageStatisticsEnabled = true;
 
+    /** Maximum lifetime of newly created tokens in days; zero means unrestricted. */
+    private int maxTokenLifetimeDays;
+
+    /**
+     * @since TODO
+     */
+    public int getMaxTokenLifetimeDays() {
+        return maxTokenLifetimeDays;
+    }
+
+    /**
+     * Set the maximum lifetime for new tokens, without changing existing tokens.
+     * @param maxTokenLifetimeDays maximum lifetime in days, or zero for no limit
+     * @since TODO
+     */
+    public void setMaxTokenLifetimeDays(int maxTokenLifetimeDays) {
+        if (maxTokenLifetimeDays < 0) {
+            throw new IllegalArgumentException("Maximum token lifetime must not be negative");
+        }
+        this.maxTokenLifetimeDays = maxTokenLifetimeDays;
+        save();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public FormValidation doCheckMaxTokenLifetimeDays(@QueryParameter String value) {
+        return FormValidation.validateNonNegativeInteger(value);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void validateExpirationDate(@CheckForNull LocalDate expirationDate) {
+        if (maxTokenLifetimeDays > 0
+                && (expirationDate == null || expirationDate.isAfter(LocalDate.now().plusDays(maxTokenLifetimeDays)))) {
+            throw new IllegalArgumentException(Messages.ApiTokenPropertyConfiguration_MaximumLifetimeExceeded(maxTokenLifetimeDays));
+        }
+    }
+
     public static ApiTokenPropertyConfiguration get() {
         return GlobalConfiguration.all().get(ApiTokenPropertyConfiguration.class);
     }
@@ -65,7 +107,7 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
     }
 
     public boolean isTokenGenerationOnCreationEnabled() {
-        return tokenGenerationOnCreationEnabled;
+        return maxTokenLifetimeDays == 0 && tokenGenerationOnCreationEnabled;
     }
 
     public void setTokenGenerationOnCreationEnabled(boolean tokenGenerationOnCreationEnabled) {
@@ -74,7 +116,7 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
     }
 
     public boolean isCreationOfLegacyTokenEnabled() {
-        return creationOfLegacyTokenEnabled;
+        return maxTokenLifetimeDays == 0 && creationOfLegacyTokenEnabled;
     }
 
     public void setCreationOfLegacyTokenEnabled(boolean creationOfLegacyTokenEnabled) {
