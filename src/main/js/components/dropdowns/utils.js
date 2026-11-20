@@ -126,7 +126,7 @@ function generateDropdownItems(items, compact = false, context = "") {
         tippy(
           menuItem,
           Object.assign({}, Templates.dropdown(), {
-            content: generateDropdownItems(item.subMenu.items),
+            content: generateDropdownItems(item.subMenu.items, false, context),
             trigger: "mouseenter",
             placement: "right-start",
             offset: [-8, 0],

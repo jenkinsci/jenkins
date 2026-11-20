@@ -1,0 +1,10 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:setHeader name="X-Dialog-Title" value="${%Legend}" />
+
+  <l:ajax>
+    <form>
+      <st:include page="_legend.jelly" it="${app}" />
+    </form>
+  </l:ajax>
+</j:jelly>
