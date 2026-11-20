@@ -1,4 +1,3 @@
-import { getWindow } from "window-handle";
 import storage from "./localStorage";
 
 /**
@@ -19,7 +18,7 @@ function getGlobalItem(name, defaultVal) {
  * Store a Jenkins page scoped value.
  */
 function setPageItem(name, value) {
-  name = "jenkins:" + name + ":" + getWindow().location.href;
+  name = "jenkins:" + name + ":" + window.location.href;
   storage.setItem(name, value);
 }
 
@@ -27,7 +26,7 @@ function setPageItem(name, value) {
  * Get a Jenkins page scoped value.
  */
 function getPageItem(name, defaultVal) {
-  name = "jenkins:" + name + ":" + getWindow().location.href;
+  name = "jenkins:" + name + ":" + window.location.href;
   return storage.getItem(name, defaultVal);
 }
 

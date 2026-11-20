@@ -1,6 +1,4 @@
-import { getWindow } from "window-handle";
-
-let storage = getWindow().localStorage;
+let storage = window.localStorage;
 
 function setMock() {
   storage = {

@@ -1,7 +1,6 @@
 /**
  * Jenkins JS Modules common utility functions
  */
-import wh from "window-handle";
 
 var debug = false;
 var jenkins = {};
@@ -15,7 +14,7 @@ jenkins.baseUrl = function () {
  * redirect
  */
 jenkins.goTo = function (url) {
-  wh.getWindow().location.replace(jenkins.baseUrl() + url);
+  window.location.replace(jenkins.baseUrl() + url);
 };
 
 /**
@@ -49,12 +48,11 @@ jenkins.post = function (url, data, success, options) {
   }
 
   var headers = {};
-  var wnd = wh.getWindow();
   var crumb;
   if (options && "crumb" in options) {
     crumb = options.crumb;
-  } else if ("crumb" in wnd) {
-    crumb = wnd.crumb;
+  } else if ("crumb" in window) {
+    crumb = window.crumb;
   }
 
   if (crumb) {

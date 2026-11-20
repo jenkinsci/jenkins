@@ -4380,7 +4380,6 @@ __metadata:
     webpack: "npm:5.112.2"
     webpack-cli: "npm:7.3.1"
     webpack-remove-empty-scripts: "npm:1.1.1"
-    window-handle: "npm:1.0.1"
   languageName: unknown
   linkType: soft
 
@@ -7052,13 +7051,6 @@ __metadata:
   version: 2.0.1
   resolution: "wildcard@npm:2.0.1"
   checksum: 10c0/08f70cd97dd9a20aea280847a1fe8148e17cae7d231640e41eb26d2388697cbe65b67fd9e68715251c39b080c5ae4f76d71a9a69fa101d897273efdfb1b58bf7
-  languageName: node
-  linkType: hard
-
-"window-handle@npm:1.0.1":
-  version: 1.0.1
-  resolution: "window-handle@npm:1.0.1"
-  checksum: 10c0/128474ff9fe6699f88f74d64f7187e801165cfd9ad52160f1c8bb9841481b90b9b6a32106bbaa96c65d2275df8f47b74c46c3a271869b38661b7592c3be2cb5b
   languageName: node
   linkType: hard
 
