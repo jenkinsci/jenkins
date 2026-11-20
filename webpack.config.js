@@ -3,6 +3,46 @@ const MiniCSSExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const RemoveEmptyScriptsPlugin = require("webpack-remove-empty-scripts");
 const { CleanWebpackPlugin: CleanPlugin } = require("clean-webpack-plugin");
+const { promisify } = require("util");
+const { Compilation, sources } = require("webpack");
+
+const legacyScripts = ["behavior.js", "hudson-behavior.js", "sortable.js"].map(
+  (file) => path.join(__dirname, "war/src/main/webapp/scripts", file),
+);
+
+// Joins these files as plain scripts rather than modules, so plugins can keep calling their functions and variables directly
+class LegacyScriptsPlugin {
+  apply(compiler) {
+    compiler.hooks.thisCompilation.tap("LegacyScriptsPlugin", (compilation) => {
+      const readFile = promisify(
+        compiler.inputFileSystem.readFile.bind(compiler.inputFileSystem),
+      );
+      compilation.hooks.processAssets.tapPromise(
+        {
+          name: "LegacyScriptsPlugin",
+          stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
+        },
+        async () => {
+          const contents = await Promise.all(
+            legacyScripts.map((file) => readFile(file)),
+          );
+          const source = new sources.ConcatSource();
+          legacyScripts.forEach((file, i) => {
+            compilation.fileDependencies.add(file);
+            source.add(
+              new sources.OriginalSource(
+                contents[i].toString("utf8"),
+                path.relative(__dirname, file),
+              ),
+            );
+            source.add(";\n");
+          });
+          compilation.emitAsset("legacy.js", source);
+        },
+      );
+    });
+  }
+}
 
 module.exports = (env, argv) => ({
   mode: "development",
@@ -78,6 +118,7 @@ module.exports = (env, argv) => ({
     // Clean all assets within the specified output.
     // It will not clean copied fonts
     new CleanPlugin(),
+    new LegacyScriptsPlugin(),
   ],
   module: {
     rules: [
@@ -170,6 +211,7 @@ module.exports = (env, argv) => ({
       },
     },
     minimizer: [
+      "...",
       new CssMinimizerPlugin({
         minimizerOptions: {
           preset: [
