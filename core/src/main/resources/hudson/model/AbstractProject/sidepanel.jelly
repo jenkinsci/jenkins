@@ -51,6 +51,9 @@ THE SOFTWARE.
     <st:include page="sidepanel2.jelly" optional="true" />
 
     <j:forEach var="w" items="${it.widgets}">
+      <j:if test="${w.class.name == 'hudson.widgets.BuildHistoryWidget'}">
+        <j:set target="${w}" property="sidepanel" value="true" />
+      </j:if>
       <st:include it="${w}" page="index.jelly" />
     </j:forEach>
   </l:side-panel>
