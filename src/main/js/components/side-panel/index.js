@@ -77,6 +77,7 @@ function init() {
         !mobileViewport.matches ||
         !sidebar?.classList.contains(EXPANDED_CLASS) ||
         sidebar.contains(event.target) ||
+        event.target.closest("dialog:modal") ||
         event.target.closest(".app-side-panel-toggle")
       ) {
         return;
