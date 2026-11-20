@@ -7,6 +7,7 @@ import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.Computer;
 import hudson.model.Job;
+import hudson.model.Label;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.Run;
@@ -355,6 +356,10 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
             if (self instanceof Computer) {
                 return new NewAgentPageUserExperimentalFlag().getFlagValue();
+            }
+
+            if (self instanceof Label) {
+                return true;
             }
 
             return false;

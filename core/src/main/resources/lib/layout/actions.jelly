@@ -41,7 +41,7 @@ THE SOFTWARE.
   <j:set var="url" value="${attrs.url ?: h.getNearestAncestorUrl(request2, it) + '/'}" />
   <j:set var="actions" value="${attrs.it.appBarActions}" />
 
-  <j:if test="${actions != null}">
+  <j:if test="${actions != null and not actions.isEmpty()}">
     <button data-type="auto-overflow"
             class="jenkins-button jenkins-jumplist-link ${attrs.compact ? 'jenkins-button--tertiary' : ''}"
             tooltip="${%More actions}"
