@@ -93,6 +93,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
     public final O owner;
 
     private boolean trimmed;
+    private boolean sidepanel;
 
     public final Adapter<? super T> adapter;
 
@@ -257,6 +258,14 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
 
     public void setTrimmed(boolean trimmed) {
         this.trimmed = trimmed;
+    }
+
+    public boolean isSidepanel() {
+        return sidepanel;
+    }
+
+    public void setSidepanel(boolean sidepanel) {
+        this.sidepanel = sidepanel;
     }
 
     /**
