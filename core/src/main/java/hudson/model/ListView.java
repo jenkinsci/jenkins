@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -618,12 +619,28 @@ public class ListView extends View implements DirectlyModifiableView {
         }
 
         private void deleted(Item item) {
-            final Jenkins jenkins = Jenkins.get();
-            deleted(jenkins, item);
-            for (Item g : jenkins.allItems()) {
-                if (g instanceof ViewGroup) {
-                    deleted((ViewGroup) g, item);
+            forEachViewGroupThatMayList(item, vg -> deleted(vg, item));
+        }
+
+        /**
+         * Visits {@link Jenkins} and each ancestor of {@code item} that is a {@link ViewGroup}.
+         * A {@link ListView} only lists descendants of its owner's {@link ItemGroup} (see {@link ListView#getItems()}),
+         * so views in any other {@link ViewGroup} cannot list the item, and there is no need to look for them.
+         * This assumes that a {@link ViewGroup} which is also an {@link Item} lists items of its own subtree,
+         * as folders do ({@link ViewGroup#getItemGroup} is then the folder itself).
+         * A {@link ViewGroup} that is not an ancestor of the item is skipped, even if its
+         * {@link ViewGroup#getItemGroup} is some other group, such as {@link Jenkins}, which is the default.
+         * Names that {@link ListView#getItems()} can never resolve, such as {@code ../x} or a path through
+         * an {@link ItemGroup} that is not an {@link Item}, are left in the views that hold them.
+         */
+        private static void forEachViewGroupThatMayList(Item item, Consumer<ViewGroup> action) {
+            action.accept(Jenkins.get());
+            ItemGroup<?> group = item.getParent();
+            while (group instanceof Item ancestor) {
+                if (group instanceof ViewGroup vg) {
+                    action.accept(vg);
                 }
+                group = ancestor.getParent();
             }
         }
 
