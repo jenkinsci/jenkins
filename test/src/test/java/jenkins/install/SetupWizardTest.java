@@ -27,6 +27,7 @@ package jenkins.install;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -105,6 +106,13 @@ class SetupWizardTest {
         HtmlForm form = page.getForms().getFirst();
         form.getInputByName("j_password").setValue(initialAdminPassword);
         HtmlFormUtil.submit(form, null);
+    }
+
+    @Test
+    void shouldNotConfigureExecutorsOnBuiltInNode() {
+        // setUp transitioned to INITIAL_SECURITY_SETUP, which runs SetupWizard#init for a new install.
+        assertEquals(0, j.jenkins.getNumExecutors(),
+                "New installs should not run builds on the built-in node");
     }
 
     @Test

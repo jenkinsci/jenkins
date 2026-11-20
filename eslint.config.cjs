@@ -77,6 +77,7 @@ module.exports = [
         qs: "readonly",
         refillOnChange: "readonly",
         refreshPart: "readonly",
+        refreshPartNow: "readonly",
         registerSortableDragDrop: "readonly",
         renderOnDemand: "readonly",
         rootURL: "readonly",
