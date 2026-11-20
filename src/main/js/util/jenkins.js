@@ -115,23 +115,29 @@ function request(args) {
     body: args.data,
     cache: "no-store",
     signal: controller.signal,
-  }).then(
-    function (response) {
+  })
+    .then(function (response) {
       return response.text().then(function (responseText) {
+        return { response: response, responseText: responseText };
+      });
+    })
+    .then(
+      function (result) {
         clearTimeout(timer);
+        var response = result.response;
         var xhr = {
           status: response.status,
           statusText: response.statusText,
-          responseText: responseText,
+          responseText: result.responseText,
         };
         if (!response.ok) {
           fail(xhr, "error", response.statusText);
           return;
         }
-        var data = responseText;
+        var data = result.responseText;
         if (args.dataType === "json" && response.status !== 204) {
           try {
-            data = JSON.parse(responseText);
+            data = JSON.parse(result.responseText);
           } catch (e) {
             fail(xhr, "parsererror", e);
             return;
@@ -140,18 +146,17 @@ function request(args) {
         if (args.success) {
           args.success(data);
         }
-      });
-    },
-    function (e) {
-      clearTimeout(timer);
-      var xhr = { status: 0, statusText: "error", responseText: "" };
-      if (timedOut) {
-        fail(xhr, "timeout", "timeout");
-        return;
-      }
-      fail(xhr, "error", e.message);
-    },
-  );
+      },
+      function (e) {
+        clearTimeout(timer);
+        var xhr = { status: 0, statusText: "error", responseText: "" };
+        if (timedOut) {
+          fail(xhr, "timeout", "timeout");
+          return;
+        }
+        fail(xhr, "error", e.message);
+      },
+    );
 }
 
 /**
