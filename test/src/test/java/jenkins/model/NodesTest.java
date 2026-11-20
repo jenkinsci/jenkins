@@ -169,6 +169,25 @@ class NodesTest {
     }
 
     @Test
+    @Issue("https://github.com/jenkinsci/jenkins/issues/26692")
+    void addNodeShouldUpdateComputerWhenReplacingNode() throws Exception {
+        ComputerLauncher launcher1 = r.createComputerLauncher(null);
+        DumbSlave oldNode = new DumbSlave("agent-replace", r.createTmpDir().getAbsolutePath(), launcher1);
+        r.jenkins.addNode(oldNode);
+
+        assertThat(oldNode.getComputer(), notNullValue());
+        assertThat(oldNode.getComputer().getLauncher(), sameInstance(launcher1));
+
+        ComputerLauncher launcher2 = r.createComputerLauncher(null);
+        DumbSlave newNode = new DumbSlave("agent-replace", r.createTmpDir().getAbsolutePath(), launcher2);
+        r.jenkins.addNode(newNode);
+
+        assertThat(r.jenkins.getNode("agent-replace"), sameInstance(newNode));
+        assertThat(newNode.getComputer(), notNullValue());
+        assertThat(newNode.getComputer().getLauncher(), sameInstance(launcher2));
+    }
+
+    @Test
     @Issue("JENKINS-56403")
     void replaceNodeShouldRemoveOldNode() throws Exception {
         // Manually creating agents because we don't want then #add'ed to the nodes list before we do that
