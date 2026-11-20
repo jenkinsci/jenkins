@@ -1,5 +1,6 @@
 import debounce from "lodash/debounce";
 import BehaviorShim from "@/util/behavior-shim";
+import { setClass } from "@/util/dom";
 import { observeBuildColumns } from "@/pages/project/build-columns";
 import { updateEntries } from "@/pages/project/build-entries";
 
@@ -47,8 +48,8 @@ BehaviorShim.specify(
      * @param {boolean}  visible
      */
     function setSearchControlsVisible(visible) {
-      pageSearchContainer.classList.toggle("jenkins-hidden", !visible);
-      statusFilterButton.classList.toggle("jenkins-hidden", !visible);
+      setClass(pageSearchContainer, "jenkins-hidden", !visible);
+      setClass(statusFilterButton, "jenkins-hidden", !visible);
     }
 
     /**
@@ -147,7 +148,8 @@ BehaviorShim.specify(
      * @param {CardControlsOptions}  parameters
      */
     function updateCardControls(parameters) {
-      paginationControls.classList.toggle(
+      setClass(
+        paginationControls,
         "jenkins-hidden",
         !parameters.pageHasUp && !parameters.pageHasDown,
       );
@@ -232,10 +234,7 @@ BehaviorShim.specify(
         .querySelectorAll(`.${STATUS_ITEM_CLASS}`)
         .forEach((item) => {
           const isSelected = selectedStatuses.has(statusOf(item));
-          item.classList.toggle(
-            MUTED_STATUS_ITEM_CLASS,
-            hasSelection && !isSelected,
-          );
+          setClass(item, MUTED_STATUS_ITEM_CLASS, hasSelection && !isSelected);
           item.setAttribute("aria-pressed", String(isSelected));
         });
 
@@ -243,17 +242,11 @@ BehaviorShim.specify(
         `#${RESET_BUTTON_ID}`,
       );
       if (resetButton) {
-        resetButton.classList.toggle("jenkins-hidden", !hasSelection);
+        setClass(resetButton, "jenkins-hidden", !hasSelection);
       }
 
-      statusFilterButton.classList.toggle(
-        "jenkins-button--tertiary",
-        !hasSelection,
-      );
-      statusFilterButton.classList.toggle(
-        "jenkins-!-accent-color",
-        hasSelection,
-      );
+      setClass(statusFilterButton, "jenkins-button--tertiary", !hasSelection);
+      setClass(statusFilterButton, "jenkins-!-accent-color", hasSelection);
     }
 
     statusFilterDropdown.addEventListener("click", (event) => {

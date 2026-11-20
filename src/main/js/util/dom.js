@@ -10,3 +10,11 @@ export function toId(string) {
     .map((c) => c.codePointAt(0).toString(16))
     .join("-");
 }
+
+export function setClass(element, className, enabled) {
+  if (enabled) {
+    element.classList.add(className);
+    return;
+  }
+  element.classList.remove(className);
+}

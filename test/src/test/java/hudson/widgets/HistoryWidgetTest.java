@@ -20,6 +20,7 @@ import jenkins.widgets.DescriptionHistoryPageEntryDecorator;
 import jenkins.widgets.HistoryPageEntry;
 import jenkins.widgets.HistoryPageEntryDecorator;
 import org.htmlunit.html.DomNode;
+import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,18 +58,25 @@ class HistoryWidgetTest {
         JenkinsRule.WebClient wc = j.createWebClient();
 
         { // Filter input shouldn't display when there's no build
-            HtmlPage page = wc.goTo("job/" + p.getName());
-            DomNode searchInputContainer = page.querySelector("#jenkins-builds .jenkins-search");
+            DomNode searchInputContainer = buildHistorySearch(wc, p);
             assertTrue(searchInputContainer.getAttributes().getNamedItem("class").getNodeValue().contains("jenkins-hidden"));
         }
 
         j.buildAndAssertSuccess(p);  // Add a build
 
         { // Filter input should display when there's a build
-            HtmlPage page = wc.goTo("job/" + p.getName());
-            DomNode searchInputContainer = page.querySelector("#jenkins-builds .jenkins-search");
+            DomNode searchInputContainer = buildHistorySearch(wc, p);
             assertFalse(searchInputContainer.getAttributes().getNamedItem("class").getNodeValue().contains("jenkins-hidden"));
         }
+    }
+
+    private static DomNode buildHistorySearch(JenkinsRule.WebClient wc, FreeStyleProject p) throws Exception {
+        HtmlPage page = wc.goTo("job/" + p.getName());
+        HtmlElement loading = page.getHtmlElementById("loading-builds");
+        for (int i = 0; i < 50 && !loading.getAttribute("style").contains("display: none"); i++) {
+            wc.waitForBackgroundJavaScript(200);
+        }
+        return page.getFirstByXPath("//div[contains(@class, 'jenkins-search-container')][.//*[@id='build-history-search']]");
     }
 
     /** Each build gets one entry per decorator, in extension order, with {@code null} for an inapplicable decorator. */
