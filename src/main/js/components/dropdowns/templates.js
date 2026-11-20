@@ -333,6 +333,7 @@ function tryPost(element, opt, context) {
     fetch(context + xmlEscape(opt.event.url), {
       method: "post",
       headers: crumb.wrap({}),
+      keepalive: true,
     });
     window.location.href = ".";
   });
