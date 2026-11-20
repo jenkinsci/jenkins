@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
@@ -44,10 +45,14 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import jenkins.plugins.DetachedPluginsUtil;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.jupiter.api.Test;
@@ -62,6 +67,57 @@ class PluginManagerTest {
 
     @TempDir
     private Path tmp;
+
+    @Issue("JENKINS-37545")
+    @Test
+    void uploadedPluginForOlderCoreGetsImpliedDependencies() {
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().putValue("Jenkins-Version", "1.400");
+        manifest.getMainAttributes().putValue("Plugin-Dependencies", "matrix-auth:3.0,credentials:2.0;resolution:=optional");
+
+        JSONArray dependencies = PluginManager.getUploadedPluginDependencies("ownership", manifest);
+
+        // declared dependencies keep their version and optionality
+        assertThat(dependencies, hasItem(dependency("matrix-auth", "3.0", false)));
+        assertThat(dependencies, hasItem(dependency("credentials", "2.0", true)));
+        // every other plugin detached since 1.400 is added as an implied dependency, and nothing is listed twice
+        List<PluginWrapper.Dependency> implied = DetachedPluginsUtil.getImpliedDependencies("ownership", "1.400");
+        assertThat(implied.stream().map(d -> d.shortName).toList(), hasItem("mailer"));
+        for (PluginWrapper.Dependency dep : implied) {
+            if (!dep.shortName.equals("matrix-auth") && !dep.shortName.equals("credentials")) {
+                assertThat(dependencies, hasItem(dependency(dep.shortName, dep.version, false)));
+            }
+        }
+        assertEquals(dependencies.size(), dependencies.stream().map(d -> ((JSONObject) d).getString("name")).distinct().count());
+    }
+
+    @Issue("JENKINS-37545")
+    @Test
+    void uploadedPluginForOlderCoreUsesHudsonVersion() {
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().putValue("Hudson-Version", "1.400");
+
+        JSONArray dependencies = PluginManager.getUploadedPluginDependencies("ownership", manifest);
+
+        assertThat(dependencies, hasItem(dependency("mailer", "1.2", false)));
+    }
+
+    @Issue("JENKINS-37545")
+    @Test
+    void uploadedPluginForCurrentCoreHasOnlyDeclaredDependencies() {
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().putValue("Jenkins-Version", "2.500");
+        manifest.getMainAttributes().putValue("Plugin-Dependencies", "matrix-auth:3.0");
+
+        JSONArray dependencies = PluginManager.getUploadedPluginDependencies("ownership", manifest);
+
+        assertEquals(1, dependencies.size());
+        assertThat(dependencies, hasItem(dependency("matrix-auth", "3.0", false)));
+    }
+
+    private static JSONObject dependency(String name, String version, boolean optional) {
+        return new JSONObject().element("name", name).element("version", version).element("optional", optional);
+    }
 
     @Test
     void parseRequestedPlugins() throws Exception {
