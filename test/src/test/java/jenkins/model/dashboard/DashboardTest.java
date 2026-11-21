@@ -64,6 +64,7 @@ import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.FakeChangeLogSCM;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
@@ -264,6 +265,10 @@ class DashboardTest {
                 HtmlPage rows = (HtmlPage) wc.goTo("defaultTab/rows", null);
                 assertThat(sectionLabels(rows, "running"), contains(startsWith("running")));
                 assertThat(rows.querySelector("[data-section=finished] .app-build-item__icon svg"), notNullValue());
+                // It also carries the tab's badge, so the tab bar can be updated
+                String fragment = rows.getWebResponse().getContentAsString();
+                assertThat(fragment, containsString("app-dashboard-recent__badge"));
+                assertThat(fragment, containsString("1 build running"));
             }
             try (JenkinsRule.WebClient wc = j.createWebClient().login("admin")) {
                 HtmlPage page = wc.goTo("");
@@ -343,6 +348,46 @@ class DashboardTest {
             HtmlPage page = wc.goTo("");
             assertThat(sectionLabels(page, "finished"), contains(startsWith("other"), startsWith("mine")));
             assertThat(page.getWebResponse().getContentAsString(), not(containsString("Started by you")));
+        }
+    }
+
+    @Test
+    void recentTabRanksTheUsersFinishedBuildsBeforeTheLimit() throws Exception {
+        enableFlag("alice");
+        // alice's build is the oldest, so it would fall past the limit if it were not ranked first
+        FreeStyleProject mine = j.createFreeStyleProject("mine");
+        j.assertBuildStatusSuccess(mine.scheduleBuild2(0, new CauseAction(new Cause.UserIdCause("alice"))));
+        for (int i = 0; i < RecentTab.LIMIT; i++) {
+            j.buildAndAssertSuccess(j.createFreeStyleProject("other-" + i));
+        }
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            List<String> finished = sectionLabels(wc.goTo(""), "finished");
+            assertThat(finished, hasSize(RecentTab.LIMIT));
+            assertThat(finished.get(0), startsWith("mine"));
+        }
+    }
+
+    @Test
+    void recentTabListsBuildsWithTheUsersChangesFirst() throws Exception {
+        enableFlag("alice");
+        enableFlag("bob");
+        FreeStyleProject withChanges = j.createFreeStyleProject("with-changes");
+        FakeChangeLogSCM scm = new FakeChangeLogSCM();
+        scm.addChange().withAuthor("alice").withMsg("Fix the thing");
+        withChanges.setScm(scm);
+        j.buildAndAssertSuccess(withChanges);
+        j.buildAndAssertSuccess(j.createFreeStyleProject("other"));
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            HtmlPage page = wc.goTo("");
+            assertThat(sectionLabels(page, "finished"), contains(startsWith("with-changes"), startsWith("other")));
+            assertThat(page.getWebResponse().getContentAsString(), containsString("Includes your changes"));
+        }
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+            HtmlPage page = wc.goTo("");
+            assertThat(sectionLabels(page, "finished"), contains(startsWith("other"), startsWith("with-changes")));
+            assertThat(page.getWebResponse().getContentAsString(), not(containsString("Includes your changes")));
         }
     }
 

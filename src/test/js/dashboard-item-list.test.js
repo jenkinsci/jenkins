@@ -381,6 +381,30 @@ describe("dashboard recent tab", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it("updates the tab's badge in the tab bar", async () => {
+    const withBadge = (count) =>
+      recent([{ id: "running", rows: [row("a#1", "x")] }]).replace(
+        '<div class="app-dashboard-recent">',
+        `<div class="app-dashboard-recent"><template class="app-dashboard-recent__badge">${
+          count ? `<span class="jenkins-badge">${count}</span>` : ""
+        }</template>`,
+      );
+    await setUp(withBadge(1), withBadge(2));
+    document.body.insertAdjacentHTML(
+      "afterbegin",
+      '<div data-testid="dashboard-tabs"><a aria-current="page">Recent</a></div>',
+    );
+    const badge = () =>
+      document.querySelector("[data-testid=dashboard-tabs] .jenkins-badge");
+
+    await recentTab.refresh();
+    expect(badge().textContent).toBe("2");
+
+    recentTab.fetch.mockImplementation(() => response(withBadge(0)));
+    await recentTab.refresh();
+    expect(badge()).toBeNull();
+  });
+
   it("does nothing when the content is unchanged", async () => {
     const html = recent([{ id: "finished", rows: [row("b#1", "x")] }]);
     const applySubtree = await setUp(html, html);

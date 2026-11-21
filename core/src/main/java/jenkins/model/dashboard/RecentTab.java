@@ -33,6 +33,7 @@ import hudson.model.Item;
 import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.model.User;
+import hudson.scm.ChangeLogSet;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,7 +43,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
@@ -150,7 +150,8 @@ public class RecentTab extends Tab {
                 rank(sortedByStart(running.keySet()), run -> involvement(run, userId)),
                 rank(queued, item -> startedBy(item.getCauses(), userId) ? Involvement.STARTED : Involvement.NONE),
                 queued.size(),
-                rank(RecentRuns.get().getCompleted(LIMIT), run -> involvement(run, userId)),
+                // All of the index, so that the user's own builds are ranked before the list is capped
+                rank(RecentRuns.get().getCompleted(RecentRuns.CAPACITY), run -> involvement(run, userId)),
                 running);
     }
 
@@ -179,7 +180,11 @@ public class RecentTab extends Tab {
             for (Executor executor : computer.getAllExecutors()) {
                 Queue.Executable executable = executor.getCurrentExecutable();
                 Run<?, ?> run = owningRun(executable);
-                if (run != null && (executable == run || !runs.containsKey(run)) && run.getParent().hasPermission(Item.READ)) {
+                // An executor keeps a build for a while after it completes
+                if (run != null
+                        && run.isBuilding()
+                        && (executable == run || !runs.containsKey(run))
+                        && run.getParent().hasPermission(Item.READ)) {
                     runs.put(run, executor);
                 }
             }
@@ -228,9 +233,13 @@ public class RecentTab extends Tab {
         }
         if (run instanceof RunWithSCM<?, ?> withScm) {
             try {
-                Set<String> culprits = withScm.getCulpritIds();
-                if (culprits != null && culprits.contains(userId)) {
-                    return Involvement.CHANGES;
+                // The build's own changes, unlike culprits, which include changes from earlier failed builds
+                for (ChangeLogSet<? extends ChangeLogSet.Entry> changeSet : withScm.getChangeSets()) {
+                    for (ChangeLogSet.Entry entry : changeSet) {
+                        if (userId.equals(entry.getAuthor().getId())) {
+                            return Involvement.CHANGES;
+                        }
+                    }
                 }
             } catch (RuntimeException e) {
                 // A broken SCM integration must not break the dashboard

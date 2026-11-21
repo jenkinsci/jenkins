@@ -134,6 +134,10 @@ THE SOFTWARE.
   <l:ajax>
     <j:set var="model" value="${it.model}" />
     <div class="app-dashboard-recent">
+      <!-- The tab's badge, so that a refresh can update it in the tab bar -->
+      <template class="app-dashboard-recent__badge">
+        <l:badge badge="${it.badge}" />
+      </template>
       <j:choose>
         <j:when test="${model.isEmpty()}">
           <l:notice title="${%Nothing has run recently}" icon="symbol-clock">

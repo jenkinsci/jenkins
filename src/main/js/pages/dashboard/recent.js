@@ -6,6 +6,8 @@ const HEADER = ".app-dashboard-section__header";
 const BODY = ".app-dashboard-section__body";
 const TOGGLE = ".app-dashboard-section__toggle";
 const EXPANDED = "app-dashboard-section--expanded";
+const BADGE_TEMPLATE = "template.app-dashboard-recent__badge";
+const CURRENT_TAB = "[data-testid=dashboard-tabs] a[aria-current=page]";
 
 /**
  * Refreshes the Recent tab's content while the page is visible, and expands or
@@ -72,6 +74,29 @@ export function initRecent(root, options = {}) {
     applySubtree(incoming);
   }
 
+  /**
+   * Shows the badge from the refreshed content on this tab in the tab bar,
+   * which is outside the refreshed element.
+   */
+  function updateBadge(incoming) {
+    const template = incoming.querySelector(BADGE_TEMPLATE);
+    const tab = document.querySelector(CURRENT_TAB);
+    if (!template || !tab) {
+      return;
+    }
+    const badge = template.content.firstElementChild;
+    const existing = tab.querySelector(".jenkins-badge");
+    if (existing && badge && existing.outerHTML === badge.outerHTML) {
+      return;
+    }
+    existing?.remove();
+    if (badge) {
+      const added = badge.cloneNode(true);
+      tab.append(added);
+      applySubtree(added);
+    }
+  }
+
   function update(html) {
     const template = document.createElement("template");
     template.innerHTML = html;
@@ -80,6 +105,7 @@ export function initRecent(root, options = {}) {
     if (!incoming) {
       return;
     }
+    updateBadge(incoming);
 
     const ids = sectionIds(incoming);
     if (!current || !ids || ids !== sectionIds(current)) {
