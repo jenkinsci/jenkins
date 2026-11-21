@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import jenkins.management.Badge;
+import jenkins.model.dashboard.Dashboard;
 import jenkins.model.experimentalflags.NewAgentPageUserExperimentalFlag;
 import jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag;
 import jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag;
@@ -371,6 +372,11 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
             if (self instanceof Computer computer && new NewAgentPageUserExperimentalFlag().getFlagValue()) {
                 return computer.getAppBarActions();
+            }
+
+            if (self instanceof Jenkins && Dashboard.isEnabled()) {
+                // The root URL shows the dashboard, so its menu matches the dashboard's app bar
+                return Dashboard.get().getAppBarActions();
             }
 
             if (self instanceof ViewGroup viewGroup && new NewDashboardPageUserExperimentalFlag().getFlagValue()) {
