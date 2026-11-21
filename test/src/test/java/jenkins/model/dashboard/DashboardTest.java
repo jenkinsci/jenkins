@@ -446,6 +446,21 @@ class DashboardTest {
     }
 
     @Test
+    void recentRunsKeepTheHighestNumberedBuildWhenBuildsCompleteOutOfOrder() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("p");
+        FreeStyleBuild first = j.buildAndAssertSuccess(p);
+        FreeStyleBuild second = j.buildAndAssertSuccess(p);
+
+        // As if #1 completed after #2
+        RecentRuns.get().add(new RecentRuns.Ref("p", first.getNumber(), System.currentTimeMillis() + 60_000));
+        assertThat(RecentRuns.get().getCompleted(10), contains(second));
+
+        // Deleting it falls back to the build before it, as after a restart
+        second.delete();
+        assertThat(RecentRuns.get().getCompleted(10), contains(first));
+    }
+
+    @Test
     void recentRunsFollowRenamedAndDeletedJobs() throws Exception {
         MockFolder folder = j.createFolder("folder");
         FreeStyleProject inFolder = folder.createProject(FreeStyleProject.class, "p");

@@ -52,9 +52,11 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Remembers the latest completed run of the most recently active jobs, for {@link RecentTab}.
+ * Remembers the last completed build of the most recently active jobs, for {@link RecentTab}.
  *
- * <p>Each job has at most one entry, so a few busy jobs cannot push out everything else. Runs are held
+ * <p>Each job has at most one entry, so a few busy jobs cannot push out everything else. Like
+ * {@link Job#getLastCompletedBuild()}, the entry is the job's highest-numbered completed build, also when builds
+ * complete out of order. Runs are held
  * by job full name and build number rather than by reference, so this does not keep builds in memory.
  * The index starts empty. The first read fills it in the background from each job's last completed
  * build, so startup does not load any builds.
@@ -109,7 +111,7 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
     void add(Ref ref) {
         synchronized (refs) {
             Ref existing = refs.get(ref.job());
-            if (existing != null && existing.endTime() > ref.endTime()) {
+            if (existing != null && existing.number() > ref.number()) {
                 return;
             }
             refs.put(ref.job(), ref);
@@ -165,8 +167,16 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
             }
             // Null when the current user cannot read the job
             Job<?, ?> job = jenkins.getItemByFullNameOrNull(ref.job(), Job.class);
-            Run<?, ?> run = job == null ? null : job.getBuildByNumber(ref.number());
-            if (run != null && !run.isBuilding()) {
+            if (job == null) {
+                continue;
+            }
+            Run<?, ?> run = job.getBuildByNumber(ref.number());
+            if (run == null) {
+                // The build is gone, for example deleted while the index was being filled
+                synchronized (refs) {
+                    refs.remove(ref.job(), ref);
+                }
+            } else if (!run.isBuilding()) {
                 result.add(run);
             }
         }
@@ -186,22 +196,34 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
     @SuppressWarnings("rawtypes")
     void seed() {
         // Keeps only the newest CAPACITY entries; the head is the oldest
-        PriorityQueue<Ref> newest = new PriorityQueue<>(Comparator.comparingLong(Ref::endTime));
+        PriorityQueue<Candidate> newest = new PriorityQueue<>(Comparator.comparingLong(c -> c.ref().endTime()));
         try (ACLContext ignored = ACL.as2(ACL.SYSTEM2)) {
-            for (Job job : Jenkins.get().allItems(Job.class)) {
+            Jenkins jenkins = Jenkins.get();
+            for (Job job : jenkins.allItems(Job.class)) {
                 Run<?, ?> run = lastCompletedBuild(job);
                 if (run != null) {
-                    newest.add(Ref.of(run));
+                    newest.add(new Candidate(job, Ref.of(run)));
                     if (newest.size() > CAPACITY) {
                         newest.poll();
+                    }
+                }
+            }
+            // Jobs may have been renamed, moved or deleted since they were read. Holding the lock while checking
+            // means that a later change is applied by the item listener to what is added here.
+            synchronized (refs) {
+                for (Candidate candidate : newest) {
+                    String name = candidate.job().getFullName();
+                    if (jenkins.getItemByFullName(name, Job.class) == candidate.job()) {
+                        add(new Ref(name, candidate.ref().number(), candidate.ref().endTime()));
                     }
                 }
             }
         } catch (RuntimeException e) {
             LOGGER.log(Level.WARNING, "Failed to load recent runs", e);
         }
-        newest.forEach(this::add);
     }
+
+    private record Candidate(Job<?, ?> job, Ref ref) {}
 
     private static @CheckForNull Run<?, ?> lastCompletedBuild(Job<?, ?> job) {
         try {

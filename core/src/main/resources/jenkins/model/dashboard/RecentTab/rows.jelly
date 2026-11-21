@@ -58,15 +58,15 @@ THE SOFTWARE.
                     <j:set var="executor" value="${attrs.executor}" />
                     <j:choose>
                       <j:when test="${executor != null and !executor.likelyStuck and executor.progress ge 0}">
-                        ${%RunningDescription(run.timestampString, executor.estimatedRemainingTime)}
+                        ${%RunningDescription(it.startedAgo(run), executor.estimatedRemainingTime)}
                       </j:when>
                       <j:otherwise>
-                        ${%RunningDescriptionNoEstimate(run.timestampString)}
+                        ${%RunningDescriptionNoEstimate(it.startedAgo(run))}
                       </j:otherwise>
                     </j:choose>
                   </j:when>
                   <j:otherwise>
-                    ${%FinishedDescription(run.timestampString, run.durationString)}
+                    ${%FinishedDescription(it.startedAgo(run), run.durationString)}
                   </j:otherwise>
                 </j:choose>
                 <local:involvement value="${attrs.entry.involvement()}" />

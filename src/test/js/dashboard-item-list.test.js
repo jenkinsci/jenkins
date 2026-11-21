@@ -405,6 +405,52 @@ describe("dashboard recent tab", () => {
     expect(badge()).toBeNull();
   });
 
+  it("keeps keyboard focus on a row's link when the row changes", async () => {
+    const withLink = (description) =>
+      recent([
+        {
+          id: "running",
+          rows: [
+            `<div class="app-temporary-list__item" page-entry-id="a#1"><div class="app-build-item"><div class="details"><a class="label" href="/job/a/1/">a #1</a> ${description}</div><div class="actions"><button class="menu">…</button></div></div></div>`,
+          ],
+        },
+      ]);
+    await setUp(withLink("started 1 sec ago"), withLink("started 6 sec ago"));
+    const link = root.querySelector("a.label");
+    link.focus();
+
+    await recentTab.refresh();
+
+    // The details cell was replaced, and the new link has focus
+    expect(root.querySelector("a.label")).not.toBe(link);
+    expect(document.activeElement).toBe(root.querySelector("a.label"));
+  });
+
+  it("keeps keyboard focus on a section's toggle when its header changes", async () => {
+    const queued = (n) =>
+      recent([
+        {
+          id: "queued",
+          toggle: true,
+          rows: Array.from({ length: n }, (_, i) =>
+            row(`queue-${i}`, `waiting ${i}`, i >= 3),
+          ),
+        },
+      ]);
+    await setUp(queued(5), queued(6));
+    const toggle = root.querySelector(".app-dashboard-section__toggle");
+    toggle.focus();
+
+    await recentTab.refresh();
+
+    expect(root.querySelector(".app-dashboard-section__toggle")).not.toBe(
+      toggle,
+    );
+    expect(document.activeElement).toBe(
+      root.querySelector(".app-dashboard-section__toggle"),
+    );
+  });
+
   it("does nothing when the content is unchanged", async () => {
     const html = recent([{ id: "finished", rows: [row("b#1", "x")] }]);
     const applySubtree = await setUp(html, html);

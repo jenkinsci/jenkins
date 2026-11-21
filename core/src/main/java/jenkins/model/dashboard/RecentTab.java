@@ -26,6 +26,7 @@ package jenkins.model.dashboard;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Util;
 import hudson.model.Cause;
 import hudson.model.Computer;
 import hudson.model.Executor;
@@ -98,6 +99,15 @@ public class RecentTab extends Tab {
 
     public int getCollapsedQueueSize() {
         return COLLAPSED_QUEUE_SIZE;
+    }
+
+    /**
+     * How long ago a build started, such as "5 min 3 sec". Unlike {@link Run#getTimestampString()}, this
+     * leaves out the time the build spent waiting in the queue.
+     */
+    @Restricted(NoExternalUse.class)
+    public @NonNull String startedAgo(@NonNull Run<?, ?> run) {
+        return Util.getTimeSpanString(Math.max(0, System.currentTimeMillis() - run.getStartTimeInMillis()));
     }
 
     /**

@@ -97,7 +97,54 @@ export function initRecent(root, options = {}) {
     }
   }
 
+  /**
+   * Describes the focused control in a row or section header, so that the
+   * same control can be focused again if a refresh replaces it.
+   */
+  function focusedControl() {
+    const focused = document.activeElement;
+    if (!focused || focused === document.body || !root.contains(focused)) {
+      return null;
+    }
+    const entry = focused.closest("[page-entry-id]");
+    const section = focused.closest(SECTION);
+    return {
+      element: focused,
+      entryId: entry ? entry.getAttribute("page-entry-id") : null,
+      sectionId: section ? section.dataset.section : null,
+      href: focused.getAttribute("href"),
+      className: focused.className,
+    };
+  }
+
+  function restoreFocus(control) {
+    if (!control || control.element.isConnected) {
+      return;
+    }
+    const container = control.entryId
+      ? Array.from(root.querySelectorAll("[page-entry-id]")).find(
+          (e) => e.getAttribute("page-entry-id") === control.entryId,
+        )
+      : Array.from(root.querySelectorAll(SECTION)).find(
+          (e) => e.dataset.section === control.sectionId,
+        );
+    const replacement =
+      container &&
+      Array.from(container.querySelectorAll("a, button")).find(
+        (e) =>
+          e.getAttribute("href") === control.href &&
+          e.className === control.className,
+      );
+    replacement?.focus({ preventScroll: true });
+  }
+
   function update(html) {
+    const control = focusedControl();
+    updateContent(html);
+    restoreFocus(control);
+  }
+
+  function updateContent(html) {
     const template = document.createElement("template");
     template.innerHTML = html;
     const incoming = template.content.firstElementChild;
