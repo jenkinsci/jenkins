@@ -32,9 +32,13 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
 
 import hudson.model.Computer;
+import hudson.model.Descriptor;
+import hudson.model.Slave;
+import hudson.slaves.ComputerLauncher;
 import jenkins.model.Jenkins;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
@@ -208,5 +212,31 @@ class DeleteNodeCommandTest {
         assertThat(result, succeededSilently());
         assertThat(j.jenkins.getView("aNode1"), nullValue());
         assertThat(j.jenkins.getView("aNode2"), nullValue());
+    }
+
+    @Issue("JENKINS-27840")
+    @Test
+    void deleteNodeShouldSucceedWhenNodeHasNoComputer() throws Exception {
+        Slave slave = new NodeWithoutComputer("agentWithoutComputer", j.createTmpDir().getPath(), j.createComputerLauncher(null));
+        j.jenkins.addNode(slave);
+        assertThat(slave.toComputer(), nullValue());
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Computer.DELETE, Jenkins.READ)
+                .invokeWithArgs("agentWithoutComputer");
+
+        assertThat(result, succeededSilently());
+        assertThat(j.jenkins.getNode("agentWithoutComputer"), nullValue());
+    }
+
+    private static class NodeWithoutComputer extends Slave {
+        NodeWithoutComputer(String name, String remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, java.io.IOException {
+            super(name, remoteFS, launcher);
+        }
+
+        @Override
+        public Computer createComputer() {
+            return null;
+        }
     }
 }
