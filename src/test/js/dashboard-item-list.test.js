@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { initItemList } from "@/pages/dashboard/item-list";
+import { initRecent } from "@/pages/dashboard/recent";
 
 function page(names, nextStart) {
   const next = nextStart === undefined ? "" : ` data-next-start="${nextStart}"`;
@@ -219,3 +220,179 @@ describe("dashboard item list", () => {
     expect(labels(root)).toEqual(["new"]);
   });
 });
+
+function row(id, text, extra = false) {
+  return `<div class="app-temporary-list__item${extra ? " app-dashboard-section__extra" : ""}" page-entry-id="${id}"><div class="app-build-item"><div class="details">${text}</div><div class="actions"><button class="menu">…</button></div></div></div>`;
+}
+
+function recent(sections) {
+  return `<div class="app-dashboard-recent">${sections
+    .map(
+      ({ id, rows, toggle }) =>
+        `<section class="app-dashboard-section${toggle ? " app-dashboard-section--collapsible" : ""}" data-section="${id}"><div class="app-dashboard-section__header"><h2>${id} ${rows.length}</h2>${
+          toggle
+            ? `<button class="app-dashboard-section__toggle" data-show-text="Show all ${rows.length}" data-hide-text="Show fewer">Show all ${rows.length}</button>`
+            : ""
+        }</div><div class="app-dashboard-section__body"><div class="app-temporary-list">${rows.join("")}</div></div></section>`,
+    )
+    .join("")}</div>`;
+}
+
+describe("dashboard recent tab", () => {
+  let root;
+  let recentTab;
+
+  // The first fetch, on load, returns the page's own content; later ones `next`
+  async function setUp(html, next) {
+    document.body.innerHTML = `<div id="dashboard-recent" data-rows-url="/jenkins/defaultTab/rows">${html}</div>`;
+    root = document.querySelector("#dashboard-recent");
+    const applySubtree = vi.fn();
+    const fetch = vi
+      .fn()
+      .mockImplementationOnce(() => response(html))
+      .mockImplementation(() => response(next));
+    recentTab = initRecent(root, { fetch, applySubtree, interval: 60000 });
+    recentTab.fetch = fetch;
+    await recentTab.ready;
+    applySubtree.mockClear();
+    return applySubtree;
+  }
+
+  afterEach(() => recentTab && recentTab.stop());
+
+  it("only replaces the rows that changed", async () => {
+    const before = recent([
+      { id: "running", rows: [row("a#1", "started 1 sec ago")] },
+      { id: "finished", rows: [row("b#1", "took 2 sec")] },
+    ]);
+    const after = recent([
+      { id: "running", rows: [row("a#1", "started 6 sec ago")] },
+      {
+        id: "finished",
+        rows: [row("c#1", "took 1 sec"), row("b#1", "took 2 sec")],
+      },
+    ]);
+    const applySubtree = await setUp(before, after);
+    const finishedRow = root.querySelector('[page-entry-id="b#1"]');
+    const runningMenu = root.querySelector('[page-entry-id="a#1"] .actions');
+
+    await recentTab.refresh();
+
+    // The unchanged row is the same node, so anything open on it stays open
+    expect(root.querySelector('[page-entry-id="b#1"]')).toBe(finishedRow);
+    // Only the changed cell of the running row was swapped
+    expect(root.querySelector('[page-entry-id="a#1"] .actions')).toBe(
+      runningMenu,
+    );
+    expect(
+      root.querySelector('[page-entry-id="a#1"] .details').textContent,
+    ).toBe("started 6 sec ago");
+    expect(
+      Array.from(root.querySelectorAll("[page-entry-id]")).map((e) =>
+        e.getAttribute("page-entry-id"),
+      ),
+    ).toEqual(["a#1", "c#1", "b#1"]);
+    expect(applySubtree).toHaveBeenCalled();
+  });
+
+  it("replaces everything when sections come or go", async () => {
+    const before = recent([{ id: "finished", rows: [row("b#1", "x")] }]);
+    const after = recent([
+      { id: "running", rows: [row("a#1", "y")] },
+      { id: "finished", rows: [row("b#1", "x")] },
+    ]);
+    await setUp(before, after);
+
+    await recentTab.refresh();
+
+    expect(sectionsOf(root)).toEqual(["running", "finished"]);
+  });
+
+  it("leaves unchanged rows alone after replacing everything", async () => {
+    const before = recent([{ id: "finished", rows: [row("b#1", "x")] }]);
+    const after = recent([
+      { id: "running", rows: [row("a#1", "y")] },
+      { id: "finished", rows: [row("b#1", "x")] },
+    ]);
+    const later = recent([
+      { id: "running", rows: [row("a#1", "z")] },
+      { id: "finished", rows: [row("b#1", "x")] },
+    ]);
+    await setUp(before, after);
+    await recentTab.refresh();
+    const finishedRow = root.querySelector('[page-entry-id="b#1"]');
+    const runningMenu = root.querySelector('[page-entry-id="a#1"] .actions');
+
+    recentTab.fetch.mockImplementation(() => response(later));
+    await recentTab.refresh();
+
+    expect(root.querySelector('[page-entry-id="b#1"]')).toBe(finishedRow);
+    expect(root.querySelector('[page-entry-id="a#1"] .actions')).toBe(
+      runningMenu,
+    );
+  });
+
+  it("keeps an expanded section expanded across refreshes", async () => {
+    const queued = (n) =>
+      recent([
+        {
+          id: "queued",
+          toggle: true,
+          rows: Array.from({ length: n }, (_, i) =>
+            row(`queue-${i}`, `waiting ${i}`, i >= 3),
+          ),
+        },
+      ]);
+    await setUp(queued(5), queued(6));
+    const section = () => root.querySelector('[data-section="queued"]');
+    const toggle = () => root.querySelector(".app-dashboard-section__toggle");
+
+    expect(
+      section().classList.contains("app-dashboard-section--expanded"),
+    ).toBe(false);
+    toggle().click();
+    expect(
+      section().classList.contains("app-dashboard-section--expanded"),
+    ).toBe(true);
+    expect(toggle().textContent).toBe("Show fewer");
+
+    await recentTab.refresh();
+
+    // The header changed (6 queued), but the section stays expanded
+    expect(
+      section().classList.contains("app-dashboard-section--expanded"),
+    ).toBe(true);
+    expect(toggle().textContent).toBe("Show fewer");
+    expect(toggle().dataset.showText).toBe("Show all 6");
+
+    toggle().click();
+    expect(
+      section().classList.contains("app-dashboard-section--expanded"),
+    ).toBe(false);
+    expect(toggle().textContent).toBe("Show all 6");
+  });
+
+  it("starts only one refresh loop per element", async () => {
+    const html = recent([{ id: "finished", rows: [row("b#1", "x")] }]);
+    await setUp(html, html);
+    const fetch = vi.fn(() => response(html));
+
+    expect(initRecent(root, { fetch })).toBe(recentTab);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("does nothing when the content is unchanged", async () => {
+    const html = recent([{ id: "finished", rows: [row("b#1", "x")] }]);
+    const applySubtree = await setUp(html, html);
+
+    await recentTab.refresh();
+
+    expect(applySubtree).not.toHaveBeenCalled();
+  });
+});
+
+function sectionsOf(root) {
+  return Array.from(root.querySelectorAll("[data-section]")).map(
+    (s) => s.dataset.section,
+  );
+}

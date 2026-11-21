@@ -222,6 +222,67 @@ div.listview-jobs {
   }
 }
 
+.app-dashboard-recent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-padding);
+}
+
+.app-dashboard-section {
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+
+    .jenkins-section__title {
+      margin: 0;
+    }
+  }
+
+  &__count {
+    color: var(--text-color-secondary);
+    font-weight: normal;
+    margin-left: 0.25rem;
+  }
+
+  // Only the first few rows show until the section is expanded
+  &--collapsible:not(.app-dashboard-section--expanded) {
+    .app-dashboard-section__extra {
+      display: none;
+    }
+
+    .app-temporary-list__item:has(+ .app-dashboard-section__extra) {
+      border-bottom: none;
+      border-bottom-left-radius: calc(
+        var(--form-input-border-radius) - var(--jenkins-border-width)
+      ) !important;
+      border-bottom-right-radius: calc(
+        var(--form-input-border-radius) - var(--jenkins-border-width)
+      ) !important;
+    }
+  }
+}
+
+.app-dashboard-run-name {
+  color: var(--text-color-secondary);
+  font-weight: normal;
+  margin-left: 0.25rem;
+}
+
+.app-dashboard-involvement {
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.app-dashboard-why {
+  &::before {
+    content: "\00b7";
+    margin: 0 0.4rem;
+  }
+}
+
 .app-dashboard-items {
   display: flex;
   flex-direction: column;

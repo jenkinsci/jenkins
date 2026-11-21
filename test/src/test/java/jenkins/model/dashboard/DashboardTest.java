@@ -28,20 +28,32 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
+import hudson.model.Cause;
+import hudson.model.CauseAction;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.Items;
 import hudson.model.ListView;
+import hudson.model.Queue;
 import hudson.model.User;
+import hudson.util.OneShotEvent;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 import jenkins.model.Jenkins;
 import jenkins.model.Tab;
@@ -55,6 +67,7 @@ import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
@@ -70,6 +83,8 @@ class DashboardTest {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.ADMINISTER).everywhere().to("admin")
                 .grant(Jenkins.READ, Item.READ, Item.BUILD).everywhere().to("alice", "bob"));
+        // Tests that need seeding from existing builds ask for it
+        RecentRuns.get().reset(false);
     }
 
     @Test
@@ -98,11 +113,9 @@ class DashboardTest {
         enableFlag("alice");
         j.createFreeStyleProject("p");
         try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
-            // All is the only built-in tab, so it is also the default
             HtmlPage page = wc.goTo("");
-            assertThat(tabNames(page), contains("All"));
-            assertThat(currentTab(page), is("All"));
-            assertThat(rowLabels(page), contains("p"));
+            assertThat(tabNames(page), contains("Recent", "All"));
+            assertThat(currentTab(page), is("Recent"));
 
             HtmlPage all = wc.goTo("all/");
             assertThat(currentTab(all), is("All"));
@@ -216,13 +229,236 @@ class DashboardTest {
     }
 
     @Test
+    void recentTabShowsRunningQueuedAndFinishedBuilds() throws Exception {
+        enableFlag("alice");
+        enableFlag("admin");
+        FreeStyleProject finished = j.createFreeStyleProject("finished");
+        j.buildAndAssertSuccess(finished);
+
+        FreeStyleProject queued = j.createFreeStyleProject("queued");
+        queued.setAssignedLabel(j.jenkins.getLabel("no-such-agent"));
+        queued.scheduleBuild2(0);
+
+        FreeStyleProject running = j.createFreeStyleProject("running");
+        Blocker blocker = new Blocker();
+        running.getBuildersList().add(blocker);
+        FreeStyleBuild runningBuild = running.scheduleBuild2(0).waitForStart();
+        blocker.started.block(TimeUnit.SECONDS.toMillis(30));
+
+        try {
+            try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+                HtmlPage page = wc.goTo("");
+                assertThat(sectionLabels(page, "running"), contains(startsWith("running")));
+                assertThat(sectionLabels(page, "queued"), contains("queued"));
+                assertThat(sectionLabels(page, "finished"), contains(startsWith("finished")));
+                assertThat(page.querySelector("[data-testid=dashboard-tabs] .jenkins-badge").getTextContent().trim(), is("1"));
+
+                // alice may build but not cancel
+                assertThat(page.querySelector("[data-section=running] .stop-button-link"), nullValue());
+                assertThat(page.querySelector("[data-section=queued] .stop-button-link"), nullValue());
+                assertThat(page.querySelector("[data-section=finished] a[href$='job/finished/build?delay=0sec']"), notNullValue());
+                assertThat(page.querySelector("[data-section=finished] .jenkins-jumplist-link[data-href$='job/finished/1/']"), notNullValue());
+
+                // The refresh endpoint serves the same content. It is a fragment, whose scripts only run on the page.
+                wc.getOptions().setJavaScriptEnabled(false);
+                HtmlPage rows = (HtmlPage) wc.goTo("defaultTab/rows", null);
+                assertThat(sectionLabels(rows, "running"), contains(startsWith("running")));
+                assertThat(rows.querySelector("[data-section=finished] .app-build-item__icon svg"), notNullValue());
+            }
+            try (JenkinsRule.WebClient wc = j.createWebClient().login("admin")) {
+                HtmlPage page = wc.goTo("");
+                DomElement stop = page.querySelector("[data-section=running] .stop-button-link");
+                assertThat(stop.getAttribute("href"), endsWith("job/running/1/stop"));
+                DomElement cancel = page.querySelector("[data-section=queued] .stop-button-link");
+                assertThat(cancel.getAttribute("href"), containsString("queue/cancelItem?id="));
+            }
+        } finally {
+            blocker.release.signal();
+            j.waitForCompletion(runningBuild);
+            Queue.Item item = j.jenkins.getQueue().getItem(queued);
+            if (item != null) {
+                j.jenkins.getQueue().cancel(item);
+            }
+        }
+    }
+
+    @Test
+    void recentTabShowsTheFirstFewQueuedBuildsUntilExpanded() throws Exception {
+        enableFlag("alice");
+        for (int i = 0; i < 5; i++) {
+            FreeStyleProject p = j.createFreeStyleProject("queued-" + i);
+            p.setAssignedLabel(j.jenkins.getLabel("no-such-agent"));
+            p.scheduleBuild2(0);
+        }
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            HtmlPage page = wc.goTo("");
+            assertThat(sectionLabels(page, "queued"), hasSize(5));
+            assertThat(page.querySelectorAll("[data-section=queued] .app-dashboard-section__extra"), hasSize(5 - RecentTab.COLLAPSED_QUEUE_SIZE));
+            DomElement toggle = page.querySelector("[data-section=queued] .app-dashboard-section__toggle");
+            assertThat(toggle.getTextContent().trim(), is("Show all 5"));
+        } finally {
+            j.jenkins.getQueue().clear();
+        }
+    }
+
+    @Test
+    void recentTabCountsEveryQueuedBuildAndListsTheUsersFirst() throws Exception {
+        enableFlag("alice");
+        int total = RecentTab.LIMIT + 5;
+        for (int i = 0; i < total; i++) {
+            FreeStyleProject p = j.createFreeStyleProject("queued-" + i);
+            p.setAssignedLabel(j.jenkins.getLabel("no-such-agent"));
+            // The last one is alice's, so it would fall past the limit if it were not ranked first
+            Cause cause = i == total - 1 ? new Cause.UserIdCause("alice") : new Cause.UserIdCause("bob");
+            p.scheduleBuild2(0, new CauseAction(cause));
+        }
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            HtmlPage page = wc.goTo("");
+            List<String> labels = sectionLabels(page, "queued");
+            assertThat(labels, hasSize(RecentTab.LIMIT));
+            assertThat(labels.get(0), is("queued-" + (total - 1)));
+            assertThat(page.querySelector("[data-section=queued] .app-dashboard-section__count").getTextContent(), is(Integer.toString(total)));
+            assertThat(page.querySelector("[data-section=queued] .app-dashboard-section__toggle").getTextContent().trim(),
+                    is("Show the first " + RecentTab.LIMIT));
+        } finally {
+            j.jenkins.getQueue().clear();
+        }
+    }
+
+    @Test
+    void recentTabListsBuildsTheUserStartedFirst() throws Exception {
+        enableFlag("alice");
+        enableFlag("bob");
+        FreeStyleProject mine = j.createFreeStyleProject("mine");
+        FreeStyleProject other = j.createFreeStyleProject("other");
+        j.assertBuildStatusSuccess(mine.scheduleBuild2(0, new CauseAction(new Cause.UserIdCause("alice"))));
+        j.buildAndAssertSuccess(other);
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            HtmlPage page = wc.goTo("");
+            assertThat(sectionLabels(page, "finished"), contains(startsWith("mine"), startsWith("other")));
+            assertThat(page.getWebResponse().getContentAsString(), containsString("Started by you"));
+        }
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+            HtmlPage page = wc.goTo("");
+            assertThat(sectionLabels(page, "finished"), contains(startsWith("other"), startsWith("mine")));
+            assertThat(page.getWebResponse().getContentAsString(), not(containsString("Started by you")));
+        }
+    }
+
+    @Test
+    void recentTabHidesBuildsOfJobsTheUserCannotRead() throws Exception {
+        enableFlag("bob");
+        FreeStyleProject visible = j.createFreeStyleProject("visible");
+        FreeStyleProject hidden = j.createFreeStyleProject("hidden");
+        j.buildAndAssertSuccess(visible);
+        j.buildAndAssertSuccess(hidden);
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("bob")
+                .grant(Item.READ).onItems(visible).to("bob"));
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+            assertThat(sectionLabels(wc.goTo(""), "finished"), contains(startsWith("visible")));
+        }
+    }
+
+    @Test
+    void recentTabLoadsForUsersWhoCanOnlyDiscoverSomeJobs() throws Exception {
+        enableFlag("bob");
+        FreeStyleProject visible = j.createFreeStyleProject("visible");
+        FreeStyleProject discoverable = j.createFreeStyleProject("discoverable");
+        j.buildAndAssertSuccess(visible);
+        j.buildAndAssertSuccess(discoverable);
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("bob")
+                .grant(Item.READ).onItems(visible).to("bob")
+                .grant(Item.DISCOVER).onItems(discoverable).to("bob"));
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+            assertThat(sectionLabels(wc.goTo(""), "finished"), contains(startsWith("visible")));
+        }
+    }
+
+    @Test
+    void recentRunsKeepOneEntryPerJob() throws Exception {
+        int capacity = RecentRuns.CAPACITY;
+        RecentRuns.CAPACITY = 2;
+        try {
+            FreeStyleProject quiet = j.createFreeStyleProject("quiet");
+            FreeStyleProject busy = j.createFreeStyleProject("busy");
+            j.buildAndAssertSuccess(quiet);
+            for (int i = 0; i < 3; i++) {
+                j.buildAndAssertSuccess(busy);
+            }
+            assertThat(RecentRuns.get().getCompleted(10), contains(busy.getLastBuild(), quiet.getLastBuild()));
+
+            // Deleting the remembered build falls back to the one before it
+            busy.getLastBuild().delete();
+            assertThat(RecentRuns.get().getCompleted(10), contains(busy.getLastBuild(), quiet.getLastBuild()));
+        } finally {
+            RecentRuns.CAPACITY = capacity;
+        }
+    }
+
+    @Test
+    void recentRunsFollowRenamedAndDeletedJobs() throws Exception {
+        MockFolder folder = j.createFolder("folder");
+        FreeStyleProject inFolder = folder.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject renamed = j.createFreeStyleProject("before");
+        j.buildAndAssertSuccess(inFolder);
+        j.buildAndAssertSuccess(renamed);
+
+        renamed.renameTo("after");
+        folder.renameTo("moved");
+        assertThat(RecentRuns.get().getCompleted(10), contains(renamed.getLastBuild(), inFolder.getLastBuild()));
+
+        folder.delete();
+        assertThat(RecentRuns.get().getCompleted(10), contains(renamed.getLastBuild()));
+    }
+
+    @Test
+    void recentRunsAreBoundedAndForgetDeletedBuilds() throws Exception {
+        int capacity = RecentRuns.CAPACITY;
+        RecentRuns.CAPACITY = 3;
+        try {
+            FreeStyleProject[] projects = new FreeStyleProject[5];
+            for (int i = 0; i < projects.length; i++) {
+                projects[i] = j.createFreeStyleProject("p" + i);
+                j.buildAndAssertSuccess(projects[i]);
+            }
+            List<String> names = RecentRuns.get().getCompleted(10).stream().map(r -> r.getParent().getName()).toList();
+            assertThat(names, contains("p4", "p3", "p2"));
+
+            projects[4].getLastBuild().delete();
+            names = RecentRuns.get().getCompleted(10).stream().map(r -> r.getParent().getName()).toList();
+            assertThat(names, contains("p3", "p2"));
+        } finally {
+            RecentRuns.CAPACITY = capacity;
+        }
+    }
+
+    @Test
+    void recentRunsSeedFromExistingBuilds() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("p");
+        j.buildAndAssertSuccess(p);
+        // As after a restart: the first read starts filling the index in the background
+        RecentRuns.get().reset(true);
+        RecentRuns.get().getCompleted(10);
+        long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30);
+        while (RecentRuns.get().getCompleted(10).isEmpty() && System.currentTimeMillis() < deadline) {
+            Thread.sleep(100);
+        }
+        assertThat(RecentRuns.get().getCompleted(10), contains(p.getLastBuild()));
+    }
+
+    @Test
     void pluginsCanContributeTabs() throws Exception {
         enableFlag("alice");
         j.createFreeStyleProject("starred");
         j.createFreeStyleProject("plain");
         j.createFolder("team").createProject(FreeStyleProject.class, "starred");
         try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
-            assertThat(tabNames(wc.goTo("")), contains("All", "Starred"));
+            assertThat(tabNames(wc.goTo("")), contains("Recent", "All", "Starred"));
 
             // Items from inside folders are shown with their full names
             HtmlPage starred = wc.goTo("starred/");
@@ -277,9 +513,27 @@ class DashboardTest {
                 .toList();
     }
 
+    private static List<String> sectionLabels(HtmlPage page, String section) {
+        return page.querySelectorAll("[data-section=" + section + "] .app-temporary-list__item__label").stream()
+                .map(n -> n.getTextContent().trim().replaceAll("\\s+", " "))
+                .toList();
+    }
+
     private static String nextStart(HtmlPage page) {
         List<DomElement> pages = page.querySelectorAll(".app-dashboard-items__page").stream().map(DomElement.class::cast).toList();
         return pages.get(pages.size() - 1).getAttribute("data-next-start");
+    }
+
+    private static final class Blocker extends TestBuilder {
+        final OneShotEvent started = new OneShotEvent();
+        final OneShotEvent release = new OneShotEvent();
+
+        @Override
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+            started.signal();
+            release.block();
+            return true;
+        }
     }
 
     public static final class StarredTab extends ItemListTab {
