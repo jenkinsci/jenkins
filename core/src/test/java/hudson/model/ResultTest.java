@@ -33,6 +33,7 @@ import java.util.List;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.spi.FieldSetter;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
 
@@ -42,7 +43,7 @@ class ResultTest {
     @ValueSource(strings = {"SUCCESS", "UNSTABLE", "FAILURE", "NOT_BUILT", "ABORTED"})
     void optionHandlerAcceptsValidResults(String status) throws CmdLineException {
         List<Result> values = new ArrayList<>();
-        parse(status, values::add);
+        parse(status, setter(values));
 
         assertEquals(List.of(Result.fromString(status)), values);
     }
@@ -52,7 +53,7 @@ class ResultTest {
     void optionHandlerRejectsInvalidResults(String status) {
         List<Result> values = new ArrayList<>();
 
-        CmdLineException exception = assertThrows(CmdLineException.class, () -> parse(status, values::add));
+        CmdLineException exception = assertThrows(CmdLineException.class, () -> parse(status, setter(values)));
 
         assertTrue(exception.getMessage().startsWith("No such status '" + status + "'. Did you mean "));
         assertEquals(List.of(), values);
@@ -71,5 +72,34 @@ class ResultTest {
                 return 1;
             }
         });
+    }
+
+    private static Setter<Result> setter(List<Result> values) {
+        return new Setter<>() {
+            @Override
+            public void addValue(Result value) {
+                values.add(value);
+            }
+
+            @Override
+            public Class<Result> getType() {
+                return Result.class;
+            }
+
+            @Override
+            public boolean isMultiValued() {
+                return false;
+            }
+
+            @Override
+            public FieldSetter asFieldSetter() {
+                return null;
+            }
+
+            @Override
+            public java.lang.reflect.AnnotatedElement asAnnotatedElement() {
+                return null;
+            }
+        };
     }
 }
