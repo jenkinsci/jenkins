@@ -10,6 +10,8 @@ import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.Run;
+import hudson.model.View;
+import hudson.model.ViewGroup;
 import hudson.slaves.Cloud;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
@@ -21,9 +23,11 @@ import java.util.List;
 import jenkins.management.Badge;
 import jenkins.model.experimentalflags.NewAgentPageUserExperimentalFlag;
 import jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag;
+import jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag;
 import jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
+import jenkins.model.menu.action.BaseUrlAction;
 import jenkins.model.menu.event.ConfirmationEvent;
 import jenkins.model.menu.event.DropdownEvent;
 import jenkins.model.menu.event.Event;
@@ -39,6 +43,8 @@ import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkins.ui.symbol.Symbol;
 import org.jenkins.ui.symbol.SymbolRequest;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -148,6 +154,10 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             if (action.getEvent() instanceof DropdownEvent dropdownEvent) {
                 menuItem.subMenu = new ContextMenu();
                 menuItem.subMenu.addAll(dropdownEvent.getActions());
+            }
+
+            if (action instanceof BaseUrlAction baseUrlAction) {
+                menuItem.withBaseUrl(baseUrlAction.getBaseUrl());
             }
 
             // Set icon
@@ -297,19 +307,9 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest2 request, StaplerResponse2 response, String view) throws JellyException, IOException {
             // Use App Bar actions if the model supports them instead of pulling from sidepanel.jelly
-            if (shouldUseAppBarActions(self)) {
-                boolean menuOnly = Boolean.parseBoolean(request.getParameter("menu-only"));
-
-                List<Action> actions = ((Actionable) self).getAppBarActions().stream()
-                        .filter(action ->
-                                action.getIconFileName() != null
-                                        || (action instanceof IconSpec iconSpec && iconSpec.getIconClassName() != null)
-                        )
-                        .filter(action -> !menuOnly || action.getGroup().getOrder() >= Group.FIRST_IN_MENU.getOrder())
-                        .filter(action -> menuOnly || action.isVisibleInContextMenu())
-                        .toList();
-
-                return new ModelObjectWithContextMenu.ContextMenu().addAll(actions);
+            List<Action> appBarActions = getAppBarActions(self);
+            if (appBarActions != null) {
+                return addAppBarActions(appBarActions, request);
             }
 
             WebApp webApp = WebApp.getCurrent();
@@ -340,24 +340,49 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return this;
         }
 
-        private static boolean shouldUseAppBarActions(ModelObjectWithContextMenu self) {
-            if (!(self instanceof Actionable)) {
-                return false;
+        /**
+         * Adds the given app bar actions, or only those that belong in the overflow menu if the request has
+         * {@code menu-only=true}.
+         */
+        @Restricted(NoExternalUse.class)
+        public ContextMenu addAppBarActions(List<Action> appBarActions, StaplerRequest2 request) {
+            boolean menuOnly = Boolean.parseBoolean(request.getParameter("menu-only"));
+
+            List<Action> actions = appBarActions.stream()
+                    .filter(action ->
+                            action.getIconFileName() != null
+                                    || (action instanceof IconSpec iconSpec && iconSpec.getIconClassName() != null)
+                    )
+                    .filter(action -> !menuOnly || action.getGroup().getOrder() >= Group.FIRST_IN_MENU.getOrder())
+                    .filter(action -> menuOnly || action.isVisibleInContextMenu())
+                    .toList();
+
+            return addAll(actions);
+        }
+
+        private static List<Action> getAppBarActions(ModelObjectWithContextMenu self) {
+            if (self instanceof Job<?, ?> job && new NewJobPageUserExperimentalFlag().getFlagValue()) {
+                return job.getAppBarActions();
             }
 
-            if (self instanceof Job<?, ?>) {
-                return new NewJobPageUserExperimentalFlag().getFlagValue();
+            if (self instanceof Run<?, ?> run && new NewBuildPageUserExperimentalFlag().getFlagValue()) {
+                return run.getAppBarActions();
             }
 
-            if (self instanceof Run) {
-                return new NewBuildPageUserExperimentalFlag().getFlagValue();
+            if (self instanceof Computer computer && new NewAgentPageUserExperimentalFlag().getFlagValue()) {
+                return computer.getAppBarActions();
             }
 
-            if (self instanceof Computer) {
-                return new NewAgentPageUserExperimentalFlag().getFlagValue();
+            if (self instanceof ViewGroup viewGroup && new NewDashboardPageUserExperimentalFlag().getFlagValue()) {
+                View primaryView = viewGroup.getPrimaryView();
+                if (primaryView != null) {
+                    return primaryView.getAppBarActions().stream()
+                            .filter(Action::isVisibleInContextMenu)
+                            .toList();
+                }
             }
 
-            return false;
+            return null;
         }
     }
 
@@ -418,6 +443,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         private Semantic semantic;
 
+        private String baseUrl;
+
         /**
          * The type of menu item
          * @since 2.340
@@ -464,6 +491,29 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported
         public Semantic getSemantic() {
             return semantic;
+        }
+
+        /**
+         * The URL that this item's relative URLs resolve against, overriding the one of the menu it's shown in.
+         */
+        @Restricted(NoExternalUse.class)
+        @Exported
+        public String getBaseUrl() {
+            return baseUrl;
+        }
+
+        private void withBaseUrl(String baseUrl) {
+            this.baseUrl = baseUrl;
+
+            if (subMenu == null) {
+                return;
+            }
+
+            for (MenuItem item : subMenu.items) {
+                if (item.baseUrl == null) {
+                    item.withBaseUrl(baseUrl);
+                }
+            }
         }
 
         @Exported
