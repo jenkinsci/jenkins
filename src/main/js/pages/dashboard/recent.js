@@ -141,6 +141,8 @@ export function initRecent(root, options = {}) {
   function update(html) {
     const control = focusedControl();
     updateContent(html);
+    // Expand sections first, as a control in a collapsed section can't take focus
+    applyToggles();
     restoreFocus(control);
   }
 
@@ -199,7 +201,6 @@ export function initRecent(root, options = {}) {
         if (force || html !== last) {
           last = html;
           update(html);
-          applyToggles();
         }
       })
       .catch((e) => console.error(e));

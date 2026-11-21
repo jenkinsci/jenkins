@@ -172,9 +172,14 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
             }
             Run<?, ?> run = job.getBuildByNumber(ref.number());
             if (run == null) {
-                // The build is gone, for example deleted while the index was being filled
+                // The build is gone, for example deleted while the index was being filled. The job's current last
+                // completed build takes its place from the next read.
                 synchronized (refs) {
                     refs.remove(ref.job(), ref);
+                }
+                Run<?, ?> last = lastCompletedBuild(job);
+                if (last != null) {
+                    add(Ref.of(last));
                 }
             } else if (!run.isBuilding()) {
                 result.add(run);

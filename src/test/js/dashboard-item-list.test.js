@@ -451,6 +451,40 @@ describe("dashboard recent tab", () => {
     );
   });
 
+  it("expands a section before focusing a control in it again", async () => {
+    const queued = (extraSection) =>
+      recent([
+        ...(extraSection ? [{ id: "running", rows: [row("a#1", "x")] }] : []),
+        {
+          id: "queued",
+          toggle: true,
+          rows: Array.from({ length: 5 }, (_, i) =>
+            row(`queue-${i}`, `waiting ${i}`, i >= 3),
+          ),
+        },
+      ]);
+    // A section appearing replaces everything, with the queue collapsed as the server renders it
+    await setUp(queued(false), queued(true));
+    root.querySelector(".app-dashboard-section__toggle").click();
+    const menu = root.querySelector('[page-entry-id="queue-4"] .menu');
+    menu.focus();
+    let expandedWhenFocused;
+    const focus = vi
+      .spyOn(HTMLElement.prototype, "focus")
+      .mockImplementation(function () {
+        expandedWhenFocused = this.closest("[data-section]").classList.contains(
+          "app-dashboard-section--expanded",
+        );
+      });
+
+    await recentTab.refresh();
+
+    expect(sectionsOf(root)).toEqual(["running", "queued"]);
+    expect(focus).toHaveBeenCalled();
+    expect(expandedWhenFocused).toBe(true);
+    focus.mockRestore();
+  });
+
   it("does nothing when the content is unchanged", async () => {
     const html = recent([{ id: "finished", rows: [row("b#1", "x")] }]);
     const applySubtree = await setUp(html, html);

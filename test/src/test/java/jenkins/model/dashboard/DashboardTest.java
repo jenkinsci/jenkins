@@ -461,6 +461,17 @@ class DashboardTest {
     }
 
     @Test
+    void recentRunsRecoverWhenTheRememberedBuildIsGone() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("p");
+        FreeStyleBuild build = j.buildAndAssertSuccess(p);
+
+        // As if the first load remembered a build that was deleted before it was added
+        RecentRuns.get().add(new RecentRuns.Ref("p", build.getNumber() + 1, System.currentTimeMillis()));
+        RecentRuns.get().getCompleted(10);
+        assertThat(RecentRuns.get().getCompleted(10), contains(build));
+    }
+
+    @Test
     void recentRunsFollowRenamedAndDeletedJobs() throws Exception {
         MockFolder folder = j.createFolder("folder");
         FreeStyleProject inFolder = folder.createProject(FreeStyleProject.class, "p");
