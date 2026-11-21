@@ -46,6 +46,7 @@ import jenkins.model.Tab;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.experimentalflags.UserExperimentalFlagsProperty;
 import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -121,6 +122,17 @@ class DashboardTest {
             wc.goTo("newJob");
             wc.goTo("builds");
             wc.goTo("api/json", "application/json");
+        }
+    }
+
+    @Test
+    void emptyStateLinksWorkFromTheAllTabUrl() throws Exception {
+        enableFlag("admin");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("admin")) {
+            HtmlPage all = wc.goTo("all/");
+            HtmlAnchor createJob = all.getAnchorByHref(j.contextPath + "/newJob");
+            assertThat(createJob.click().getWebResponse().getStatusCode(), is(200));
+            assertThat(all.getAnchorByHref(j.contextPath + "/computer/new"), notNullValue());
         }
     }
 
