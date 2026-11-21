@@ -49,6 +49,7 @@ import hudson.tools.ToolProperty;
 import hudson.tools.ToolPropertyDescriptor;
 import hudson.util.DescribableList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
@@ -383,6 +384,26 @@ class MavenTest {
         HtmlPage htmlPage = wc.goTo("configureTools");
         HtmlForm configForm = htmlPage.getFormByName("config");
         j.assertGoodStatus(j.submit(configForm));
+    }
+
+    /**
+     * The help for these fields used to point to files only present in the Maven Integration plugin.
+     */
+    @Test
+    void helpLinksResolveWithoutMavenPlugin() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new Maven("clean verify", null));
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage page = wc.getPage(p, "configure");
+        assertNull(page.querySelector("a.jenkins-help-button[helpURL*='/plugin/maven-plugin/']"));
+
+        for (String field : List.of("pom", "jvmOptions", "usePrivateRepository")) {
+            String url = "descriptor/hudson.tasks.Maven/help/" + field;
+            assertNotNull(page.querySelector("a.jenkins-help-button[helpURL='" + j.contextPath + "/" + url + "']"), "help link for " + field);
+            String help = wc.goTo(url, "text/html").getWebResponse().getContentAsString();
+            assertFalse(help.isBlank(), "help content for " + field);
+        }
     }
 
     /**

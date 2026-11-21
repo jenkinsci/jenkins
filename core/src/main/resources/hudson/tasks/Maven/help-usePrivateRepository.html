@@ -1,0 +1,21 @@
+<div>
+  By default, all Maven builds on the same agent share one local repository,
+  usually the
+  <code>~/.m2/repository</code>
+  directory or the location set in the
+  <code>settings.xml</code>
+  file.
+  <p>
+    If checked, this build uses its own local repository in the
+    <code>.repository</code>
+    directory of the workspace, by passing
+    <code>-Dmaven.repo.local=$WORKSPACE/.repository</code>
+    to Maven. This isolates the build from other builds on the same agent, for
+    example SNAPSHOT artifacts installed by other jobs, or several Maven
+    processes writing to the same repository at once.
+  </p>
+  <p>
+    It uses more disk space, and dependencies are downloaded again for each
+    workspace. Wiping the workspace also deletes this repository.
+  </p>
+</div>
