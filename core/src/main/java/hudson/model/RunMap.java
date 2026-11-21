@@ -235,6 +235,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
     @Restricted(NoExternalUse.class)
     @Override
     protected IntPredicate createLoadAllower() {
+        Job<?, ?> job = this.job;
         if (job == null) {
             LOGGER.fine(() -> "deprecated constructor without Job used on " + dir);
             return buildNumber -> true;

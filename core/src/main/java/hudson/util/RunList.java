@@ -303,7 +303,10 @@ public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIte
      * @since 1.517
      */
     public RunList<R> overThresholdOnly(final Result threshold) {
-        return filter((Predicate<R>) r -> r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold));
+        return filter((Predicate<R>) r -> {
+            Result result = r.getResult();
+            return result != null && result.isBetterOrEqualTo(threshold);
+        });
     }
 
     /**
