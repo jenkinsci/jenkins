@@ -1,10 +1,17 @@
 <div>
-  The POM to build, as a path relative to the module root of the workspace,
-  for example <code>parent/pom.xml</code>. It is passed to Maven with the
-  <code>-f</code> option, so it can also point to a directory that contains a
-  <code>pom.xml</code>. Environment variables such as
-  <code>${WORKSPACE}</code> can be used.
+  The path of the POM to build, relative to the module root of the workspace.
+  For example
+  <code>parent/pom.xml</code>
+  builds the POM in the parent directory. The path is passed to Maven with the
+  <code>-f</code>
+  option, so it can also be a directory that contains a
+  <code>pom.xml</code>
+  file. Environment variables such as
+  <code>${WORKSPACE}</code>
+  can be used.
   <p>
-    If left empty, Maven uses the <code>pom.xml</code> in the module root.
+    If left empty, Maven uses the
+    <code>pom.xml</code>
+    file in the module root.
   </p>
 </div>
