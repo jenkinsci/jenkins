@@ -50,7 +50,7 @@ public class GetViewCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
 
-        view.checkPermission(View.READ);
+        view.checkPermission(View.EXTENDED_READ);
 
         if (view.hasPermission(View.CONFIGURE)) {
             view.writeXml(stdout);
