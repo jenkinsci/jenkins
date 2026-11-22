@@ -43,6 +43,7 @@ THE SOFTWARE.
         <j:if test="${currentView.hasPermission(currentView.CREATE)}">
           <a href="${rootURL}/${currentView.owner.url}newView" tooltip="${%New View}" class="jenkins-button jenkins-button--tertiary">
             <l:icon src="symbol-add" />
+            <span class="jenkins-visually-hidden">${%New View}</span>
           </a>
         </j:if>
       </div>

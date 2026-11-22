@@ -3,6 +3,7 @@ import Search from "@/api/search";
 import Templates from "@/components/dropdowns/templates";
 import behaviorShim from "@/util/behavior-shim";
 import Path from "@/util/path";
+import * as Symbols from "./symbols";
 
 const NON_ACTION_TYPES = ["HEADER", "SEPARATOR", "DISABLED", "CUSTOM"];
 
@@ -121,10 +122,12 @@ export const PageTabsSource = {
         return {
           label: label.textContent.trim(),
           url: tab.getAttribute("href"),
-          icon: tab.querySelector("svg")?.outerHTML ?? "",
+          icon: tab.querySelector("svg")?.outerHTML ?? Symbols.PLACEHOLDER,
         };
       })
-      .filter((tab) => tab.label.toLowerCase().includes(normalizedQuery))
+      .filter(
+        (tab) => tab.label && tab.label.toLowerCase().includes(normalizedQuery),
+      )
       .map((tab) =>
         LinkResult({
           icon: tab.icon,
