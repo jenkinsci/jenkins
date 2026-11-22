@@ -99,7 +99,7 @@ public interface ItemGroup<T extends Item> extends FullyNamed, FullyNamedModelOb
     /**
      * Like {@link #getItem(String)}, but returns null instead of throwing {@link AccessDeniedException}
      * when the current user has {@link Item#DISCOVER} but not {@link Item#READ}.
-     * @since TODO
+     * @since 2.591
      */
     default @CheckForNull T getItemOrNull(String name) {
         try {

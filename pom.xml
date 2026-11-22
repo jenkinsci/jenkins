@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3395.v6e5377b_0fb_3c</remoting.version>
+    <remoting.version>3396.ve02b_5cde31b_2</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
