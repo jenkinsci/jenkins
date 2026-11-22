@@ -11,6 +11,7 @@ import { xmlEscape } from "@/util/security";
  * @param {string | null} params.group
  * @param {boolean | undefined} params.isExternal
  * @param {string | null | undefined} params.semantic
+ * @param {{text: string, tooltip: string, severity: string} | null | undefined} params.badge
  * @param {(() => void) | undefined} params.onSelect
  */
 export function LinkResult(params) {
@@ -39,6 +40,7 @@ export function LinkResult(params) {
         ${params.type !== "image" ? `<div class="jenkins-dropdown__item__icon">${params.icon}</div>` : ""}
         <span class="jenkins-dropdown__item__label">${xmlEscape(params.label)}</span>
         ${params.description ? `<span class="jenkins-command-palette__results__item__description">${xmlEscape(params.description)}</span>` : ""}
+        ${params.badge ? `<span class="jenkins-dropdown__item__badge jenkins-badge jenkins-!-${xmlEscape(params.badge.severity)}-color" tooltip="${xmlEscape(params.badge.tooltip ?? "")}">${xmlEscape(params.badge.text)}</span>` : ""}
         ${params.isExternal ? Symbols.EXTERNAL_LINK : ""}
     </${tag}>`;
     },

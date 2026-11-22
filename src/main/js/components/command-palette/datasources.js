@@ -103,12 +103,25 @@ export const PageActionsSource = {
             url,
             group,
             semantic: item.semantic,
+            badge: item.badge,
             onSelect: url ? undefined : () => runAction(item, baseUrl),
           });
         }),
     );
   },
 };
+
+function tabBadge(element) {
+  if (!element || !element.textContent.trim()) {
+    return null;
+  }
+  const severity = element.className.match(/jenkins-!-(\w+)-color/)?.[1];
+  return {
+    text: element.textContent.trim(),
+    tooltip: element.getAttribute("tooltip") ?? "",
+    severity: severity ?? "info",
+  };
+}
 
 export const PageTabsSource = {
   execute(query) {
@@ -123,6 +136,7 @@ export const PageTabsSource = {
           label: label.textContent.trim(),
           url: tab.getAttribute("href"),
           icon: tab.querySelector("svg")?.outerHTML ?? Symbols.PLACEHOLDER,
+          badge: tabBadge(tab.querySelector(".jenkins-badge")),
         };
       })
       .filter(
@@ -135,6 +149,7 @@ export const PageTabsSource = {
           label: tab.label,
           url: tab.url,
           group,
+          badge: tab.badge,
         }),
       );
 
