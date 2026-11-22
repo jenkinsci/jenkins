@@ -461,6 +461,20 @@ class DashboardTest {
     }
 
     @Test
+    void recentRunsKeepTheHighestNumberedBuildWhenAJobIsRenamed() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("before");
+        j.buildAndAssertSuccess(p);
+        FreeStyleBuild second = j.buildAndAssertSuccess(p);
+
+        // As if #2 was recorded under the new name before the rename was
+        RecentRuns.get().reset(false);
+        RecentRuns.get().add(new RecentRuns.Ref("before", 1, System.currentTimeMillis()));
+        RecentRuns.get().add(new RecentRuns.Ref("after", second.getNumber(), System.currentTimeMillis()));
+        p.renameTo("after");
+        assertThat(RecentRuns.get().getCompleted(10), contains(second));
+    }
+
+    @Test
     void recentRunsRecoverWhenTheRememberedBuildIsGone() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("p");
         FreeStyleBuild build = j.buildAndAssertSuccess(p);

@@ -118,7 +118,14 @@ export function initRecent(root, options = {}) {
   }
 
   function restoreFocus(control) {
-    if (!control || control.element.isConnected) {
+    if (!control) {
+      return;
+    }
+    if (control.element.isConnected) {
+      // Moving a row to reorder it takes the focus from the control in it
+      if (document.activeElement !== control.element) {
+        control.element.focus({ preventScroll: true });
+      }
       return;
     }
     const container = control.entryId

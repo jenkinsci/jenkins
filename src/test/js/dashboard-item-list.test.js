@@ -485,6 +485,23 @@ describe("dashboard recent tab", () => {
     focus.mockRestore();
   });
 
+  it("keeps keyboard focus on a control in a row that moves", async () => {
+    const order = (ids) =>
+      recent([{ id: "running", rows: ids.map((id) => row(id, id)) }]);
+    await setUp(order(["a#1", "b#1"]), order(["b#1", "a#1"]));
+    const menu = root.querySelector('[page-entry-id="b#1"] .menu');
+    menu.focus();
+
+    await recentTab.refresh();
+
+    expect(
+      Array.from(root.querySelectorAll("[page-entry-id]"), (e) =>
+        e.getAttribute("page-entry-id"),
+      ),
+    ).toEqual(["b#1", "a#1"]);
+    expect(document.activeElement).toBe(menu);
+  });
+
   it("does nothing when the content is unchanged", async () => {
     const html = recent([{ id: "finished", rows: [row("b#1", "x")] }]);
     const applySubtree = await setUp(html, html);

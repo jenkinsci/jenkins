@@ -129,7 +129,8 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
                 if (isSelfOrDescendant(ref.job(), oldFullName)) {
                     refs.remove(ref.job());
                     String job = newFullName + ref.job().substring(oldFullName.length());
-                    refs.put(job, new Ref(job, ref.number(), ref.endTime()));
+                    // A build may already be recorded under the new name, so keep whichever is newer
+                    add(new Ref(job, ref.number(), ref.endTime()));
                 }
             }
         }
