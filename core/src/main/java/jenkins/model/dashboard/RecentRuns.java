@@ -151,10 +151,19 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
         snapshot.sort(Comparator.comparingLong(Ref::endTime).reversed());
 
         Jenkins jenkins = Jenkins.get();
+        // Whether the current user can read each folder, so that the jobs of a folder the user cannot read are
+        // skipped after one check. Users who can only see a few folders would otherwise check every job.
+        Map<String, Boolean> readableFolders = new HashMap<>();
         List<Run<?, ?>> result = new ArrayList<>();
         for (Ref ref : snapshot) {
             if (result.size() >= limit) {
                 break;
+            }
+            int slash = ref.job().lastIndexOf('/');
+            if (slash > 0
+                    && !readableFolders.computeIfAbsent(
+                            ref.job().substring(0, slash), folder -> jenkins.getItemByFullNameOrNull(folder) != null)) {
+                continue;
             }
             // Null when the current user cannot read the job
             Job<?, ?> job = jenkins.getItemByFullNameOrNull(ref.job(), Job.class);
