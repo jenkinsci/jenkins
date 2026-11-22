@@ -237,7 +237,8 @@ public class Search implements StaplerProxy {
                 r.hasMoreResults = true;
                 break;
             }
-            if (paths.add(i.getPath() + '\0' + i.getUrl()))
+            // Dedupe on name and URL
+            if (paths.add(i.getPath() + " " + i.getUrl()))
                 r.add(i);
         }
         return r;
