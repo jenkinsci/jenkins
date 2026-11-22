@@ -279,7 +279,7 @@ import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.install.InstallState;
 import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
-import jenkins.search.SearchGroup;
+import jenkins.search.SearchItemProvider;
 import jenkins.security.ClassFilterImpl;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
@@ -2426,41 +2426,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         }));
 
-        getManagementLinks().stream()
-                .filter(link -> link.getIconFileName() != null && link.getUrlName() != null)
-                .filter(link -> !link.getRequiresPOST() && !link.getRequiresConfirmation())
-                .filter(link -> !link.getUrlName().contains("://"))
-                .filter(ManagementLink::hasRequiredPermission)
-                .forEach(link -> builder.add(new SearchItem() {
-            @Override
-            public String getSearchName() {
-                return link.getDisplayName();
+        for (SearchItemProvider provider : SearchItemProvider.all()) {
+            try {
+                provider.getSearchItems().forEach(builder::add);
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.WARNING, "Failed to get search items from " + provider.getClass().getName(), e);
             }
-
-            @Override
-            public String getSearchUrl() {
-                String urlName = link.getUrlName();
-                if (urlName.startsWith("/")) {
-                    return urlName;
-                }
-                return "manage/" + urlName;
-            }
-
-            @Override
-            public String getSearchIcon() {
-                return link.getIconFileName();
-            }
-
-            @Override
-            public SearchGroup getSearchGroup() {
-                return SearchGroup.get(SearchGroup.ManagementLinkSearchGroup.class);
-            }
-
-            @Override
-            public SearchIndex getSearchIndex() {
-                return SearchIndex.EMPTY;
-            }
-        }));
+        }
 
         builder.add(new CollectionSearchIndex<TopLevelItem>() {
                     @Override
