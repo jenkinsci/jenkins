@@ -26,6 +26,7 @@ package jenkins.model.dashboard;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -219,13 +220,17 @@ class DashboardTest {
         enableFlag("alice");
         j.createFreeStyleProject("starred");
         j.createFreeStyleProject("plain");
+        j.createFolder("team").createProject(FreeStyleProject.class, "starred");
         try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
             assertThat(tabNames(wc.goTo("")), contains("All", "Starred"));
 
+            // Items from inside folders are shown with their full names
             HtmlPage starred = wc.goTo("starred/");
             assertThat(currentTab(starred), is("Starred"));
-            assertThat(rowLabels(starred), contains("starred"));
-            assertThat(rowLabels((HtmlPage) wc.goTo("starred/items?start=0", null)), contains("starred"));
+            assertThat(rowLabels(starred), containsInAnyOrder("starred", "team » starred"));
+            assertThat(
+                    rowLabels((HtmlPage) wc.goTo("starred/items?start=0", null)),
+                    containsInAnyOrder("starred", "team » starred"));
         }
     }
 
