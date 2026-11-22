@@ -165,6 +165,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Number of most recent builds considered when computing the build stability health report.
      * Set to 1 to reflect only the latest build.
+     * @since TODO
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static /* not final */ int BUILD_STABILITY_HEALTH_REPORT_BUILD_COUNT =
