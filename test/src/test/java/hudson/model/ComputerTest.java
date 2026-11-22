@@ -37,6 +37,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -125,6 +126,23 @@ class ComputerTest {
         assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode(), NOTE);
         assertThat(NOTE, page.getWebResponse().getContentAsString(),
                 containsString("Agent called ‘nodeA’ already exists"));
+    }
+
+    @Issue("JENKINS-72803")
+    @Test
+    void prohibitRenameToReservedName() throws Exception {
+        Node node = j.createSlave("node", null, null);
+
+        WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
+        HtmlForm form = wc.getPage(node, "configure").getFormByName("config");
+        form.getInputByName("_.name").setValue("(built-in)");
+
+        Page page = j.submit(form);
+        assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
+        assertThat(page.getWebResponse().getContentAsString(),
+                containsString("‘(built-in)’ is reserved for the built-in node"));
+        assertNotNull(j.jenkins.getNode("node"));
     }
 
     @Test
