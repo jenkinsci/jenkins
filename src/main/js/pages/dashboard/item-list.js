@@ -12,7 +12,8 @@ const SEARCH_DELAY = 300;
  *
  * The server renders the first page with the page. Each page is a
  * `.app-dashboard-items__page` element whose `data-next-start` says where the
- * next page starts; it is absent on the last page.
+ * next page starts; it is absent on the last page. Each request also names
+ * the last item shown, so the server continues after it.
  *
  * After a page fails to load, the next one is requested only when the end of
  * the list scrolls into view again.
@@ -48,8 +49,17 @@ export function initItemList(root, options = {}) {
     return last ? last.dataset.nextStart : undefined;
   }
 
-  function fetchPage(start, q) {
+  function lastShown() {
+    const rows = list.querySelectorAll("[data-id]");
+    return rows.length ? rows[rows.length - 1].dataset.id : undefined;
+  }
+
+  function fetchPage(start, q, after) {
     const params = new URLSearchParams({ start: String(start) });
+    if (after) {
+      // Continue after the last row shown, so removing an earlier item doesn't skip one
+      params.set("after", after);
+    }
     if (q) {
       params.set("search", q);
     }
@@ -105,7 +115,7 @@ export function initItemList(root, options = {}) {
     loading = true;
     const current = generation;
     let failed = false;
-    return fetchPage(start, query)
+    return fetchPage(start, query, lastShown())
       .then((page) => {
         if (current !== generation || !page) {
           return;

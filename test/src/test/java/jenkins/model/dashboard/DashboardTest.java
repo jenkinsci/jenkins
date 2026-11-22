@@ -36,6 +36,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.Items;
+import hudson.model.ListView;
 import hudson.model.User;
 import java.util.Collection;
 import java.util.List;
@@ -156,6 +157,38 @@ class DashboardTest {
             HtmlPage last = (HtmlPage) wc.goTo("all/items?start=100", null);
             assertThat(rowLabels(last), hasSize(20));
             assertThat(nextStart(last), is(""));
+        }
+    }
+
+    @Test
+    void allTabContinuesAfterTheLastItemShownWhenEarlierItemsAreDeleted() throws Exception {
+        enableFlag("alice");
+        for (int i = 0; i < 120; i++) {
+            j.createFreeStyleProject(String.format("job-%03d", i));
+        }
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            // The first page showed job-000 to job-049, then job-000 was deleted
+            j.jenkins.getItem("job-000").delete();
+            HtmlPage second = (HtmlPage) wc.goTo("all/items?start=50&after=job-049", null);
+            assertThat(rowLabels(second).get(0), is("job-050"));
+            assertThat(nextStart(second), is("99"));
+
+            // If the last item shown is gone too, the page starts at the position
+            j.jenkins.getItem("job-049").delete();
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?start=48&after=job-049", null)).get(0), is("job-050"));
+        }
+    }
+
+    @Test
+    void emptyAllTabShowsTheWelcomePageWhenAListViewIsPrimary() throws Exception {
+        enableFlag("admin");
+        ListView primary = new ListView("mine", j.jenkins);
+        j.jenkins.addView(primary);
+        j.jenkins.setPrimaryView(primary);
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("admin")) {
+            HtmlPage all = wc.goTo("all/");
+            assertThat(all.getAnchorByHref(j.contextPath + "/newJob"), notNullValue());
+            assertThat(all.getWebResponse().getContentAsString(), containsString("Welcome to Jenkins!"));
         }
     }
 

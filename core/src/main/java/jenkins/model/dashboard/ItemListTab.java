@@ -27,15 +27,17 @@ package jenkins.model.dashboard;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
+import hudson.model.AllView;
 import hudson.model.Item;
+import hudson.model.View;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.stream.StreamSupport;
+import jenkins.model.Jenkins;
 import jenkins.model.Tab;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
@@ -119,33 +121,70 @@ public abstract class ItemListTab extends Tab {
      *
      * Items the current user cannot read are left out, whatever the subclass returns.
      *
-     * @param start the index of the first item to return
+     * @param start the index of the first item to return, used when {@code after} is not listed
+     * @param after the full name of the last item already shown, or {@code null}. The page continues
+     *     after it, so items removed from earlier in the list don't shift the page past items not yet shown.
      * @param search a query, or {@code null} to list everything
      */
     @Restricted(NoExternalUse.class)
-    public @NonNull Page getPage(int start, @CheckForNull String search) {
+    public @NonNull Page getPage(int start, @CheckForNull String after, @CheckForNull String search) {
         String query = Util.fixEmptyAndTrim(search);
+        String anchor = Util.fixEmpty(after);
         Iterable<? extends Item> source = query == null ? getItems() : search(query);
         int from = Math.max(start, 0);
-        List<Item> items = new ArrayList<>(PAGE_SIZE);
-        Iterator<? extends Item> it = source.iterator();
+        // The page at the offset, used if the anchor isn't listed
+        List<Item> atOffset = new ArrayList<>(PAGE_SIZE + 1);
+        // The page after the anchor, once it has been seen
+        List<Item> afterAnchor = null;
+        int anchorIndex = -1;
         int index = 0;
-        boolean more = false;
-        while (it.hasNext()) {
-            Item item = it.next();
+        for (Item item : source) {
             if (!item.hasPermission(Item.READ)) {
                 continue;
             }
-            if (index++ < from) {
-                continue;
+            int i = index++;
+            if (afterAnchor != null) {
+                afterAnchor.add(item);
+                if (afterAnchor.size() > PAGE_SIZE) {
+                    break;
+                }
+            } else if (anchor != null && anchor.equals(item.getFullName())) {
+                afterAnchor = new ArrayList<>(PAGE_SIZE + 1);
+                anchorIndex = i;
+            } else if (i >= from && atOffset.size() <= PAGE_SIZE) {
+                atOffset.add(item);
+                if (anchor == null && atOffset.size() > PAGE_SIZE) {
+                    break;
+                }
             }
-            if (items.size() == PAGE_SIZE) {
-                more = true;
-                break;
-            }
-            items.add(item);
         }
-        return new Page(items, more ? from + items.size() : null, query != null);
+        List<Item> items = afterAnchor != null ? afterAnchor : atOffset;
+        int first = afterAnchor != null ? anchorIndex + 1 : from;
+        boolean more = items.size() > PAGE_SIZE;
+        if (more) {
+            items = items.subList(0, PAGE_SIZE);
+        }
+        return new Page(items, more ? first + items.size() : null, query != null);
+    }
+
+    /**
+     * Reads one page of items, by position only.
+     *
+     * @see #getPage(int, String, String)
+     */
+    @Restricted(NoExternalUse.class)
+    public @NonNull Page getPage(int start, @CheckForNull String search) {
+        return getPage(start, null, search);
+    }
+
+    /**
+     * The page shown when there is nothing to list: the welcome page of the root of Jenkins, whichever
+     * view is the primary one.
+     */
+    @Restricted(NoExternalUse.class)
+    public @NonNull View getEmptyStateView() {
+        Jenkins jenkins = Jenkins.get();
+        return jenkins.getPrimaryView() instanceof AllView all ? all : new AllView(AllView.DEFAULT_VIEW_NAME, jenkins);
     }
 
     /**
@@ -153,10 +192,11 @@ public abstract class ItemListTab extends Tab {
      */
     @GET
     @Restricted(NoExternalUse.class)
-    public void doItems(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String start, @QueryParameter String search)
+    public void doItems(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String start,
+            @QueryParameter String after, @QueryParameter String search)
             throws IOException, ServletException {
         rsp.setContentType("text/html;charset=UTF-8");
-        req.setAttribute("page", getPage(Util.tryParseNumber(start, 0).intValue(), search));
+        req.setAttribute("page", getPage(Util.tryParseNumber(start, 0).intValue(), after, search));
         req.getView(this, "rows.jelly").forward(req, rsp);
     }
 

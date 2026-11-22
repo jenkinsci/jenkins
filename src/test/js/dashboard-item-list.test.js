@@ -64,7 +64,7 @@ describe("dashboard item list", () => {
     await vi.waitFor(() => expect(labels(root)).toEqual(["a", "b", "c", "d"]));
 
     expect(fetch).toHaveBeenCalledWith(
-      "/jenkins/all/items?start=2",
+      "/jenkins/all/items?start=2&after=b",
       expect.anything(),
     );
     expect(applySubtree).toHaveBeenCalledTimes(1);
@@ -73,7 +73,7 @@ describe("dashboard item list", () => {
 
     await list.loadMore();
     expect(fetch).toHaveBeenLastCalledWith(
-      "/jenkins/all/items?start=4",
+      "/jenkins/all/items?start=4&after=d",
       expect.anything(),
     );
   });
@@ -113,7 +113,7 @@ describe("dashboard item list", () => {
     // Further pages keep the query
     await list.loadMore();
     expect(fetch).toHaveBeenLastCalledWith(
-      "/jenkins/all/items?start=1&search=deploy",
+      "/jenkins/all/items?start=1&after=team+%C2%BB+deploy&search=deploy",
       expect.anything(),
     );
   });
@@ -176,7 +176,7 @@ describe("dashboard item list", () => {
 
     expect(labels(root)).toEqual(["a", "b", "c"]);
     expect(fetch).toHaveBeenLastCalledWith(
-      "/jenkins/all/items?start=2",
+      "/jenkins/all/items?start=2&after=b",
       expect.anything(),
     );
   });

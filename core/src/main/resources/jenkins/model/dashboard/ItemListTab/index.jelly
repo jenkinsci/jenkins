@@ -33,7 +33,7 @@ THE SOFTWARE.
             <l:notice title="${it.emptyMessage}" icon="${it.iconFileName}" />
           </j:when>
           <j:otherwise>
-            <st:include it="${app.primaryView}" page="noJob.jelly" />
+            <st:include it="${it.emptyStateView}" page="noJob.jelly" />
           </j:otherwise>
         </j:choose>
       </j:when>
