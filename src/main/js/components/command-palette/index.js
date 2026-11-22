@@ -84,7 +84,7 @@ function init() {
           label: i18n.dataset.getHelp,
           url: document.querySelector("body").dataset.searchHelpUrl,
           isExternal: true,
-          group: i18n.dataset.help,
+          group: tabs.length + actions.length > 0 ? i18n.dataset.help : null,
         }),
       ]);
     } else {
