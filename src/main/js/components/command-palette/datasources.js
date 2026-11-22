@@ -111,7 +111,7 @@ export const PageActionsSource = {
 
 export const PageTabsSource = {
   execute(query) {
-    const group = document.getElementById("command-palette-i18n").dataset.pages;
+    const group = document.getElementById("command-palette-i18n").dataset.goTo;
     const normalizedQuery = query.toLowerCase();
 
     const tabs = Array.from(document.querySelectorAll(".app-build-tabs > a"))

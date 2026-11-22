@@ -30,7 +30,7 @@ THE SOFTWARE.
 
   <div id="command-palette-i18n" class="i18n"
        data-no-results-for="${%No results for}"
-       data-pages="${%Pages}"
+       data-go-to="${%Go to}"
        data-actions="${%Actions}"
        data-help="${%Help}"
        data-get-help="${%Get help using Jenkins search}"
