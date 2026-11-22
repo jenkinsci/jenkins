@@ -441,6 +441,7 @@ public class Search implements StaplerProxy {
      * @since 1.527
      */
     public static List<SuggestedItem> suggest(SearchIndex index, final String tokenList, SearchableModelObject searchContext) {
+        final boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
 
         class Tag implements Comparable<Tag> {
             final SuggestedItem item;
@@ -451,7 +452,7 @@ public class Search implements StaplerProxy {
             Tag(SuggestedItem i) {
                 item = i;
                 distance = EditDistance.editDistance(i.getPath(), tokenList);
-                prefixMatch = i.getPath().startsWith(tokenList) ? 1 : 0;
+                prefixMatch = i.getPath().regionMatches(caseInsensitive, 0, tokenList, 0, tokenList.length()) ? 1 : 0;
             }
 
             @Override
