@@ -600,13 +600,13 @@ THE SOFTWARE.
             <version>2.0.2</version>
             <executions>
               <execution>
-                <id>yarn lint</id>
+                <id>yarn lint:code</id>
                 <goals>
                   <goal>corepack</goal>
                 </goals>
                 <phase>test</phase>
                 <configuration>
-                  <arguments>yarn lint</arguments>
+                  <arguments>yarn lint:code</arguments>
                   <skip>${yarn.lint.skip}</skip>
                 </configuration>
               </execution>
