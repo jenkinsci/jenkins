@@ -98,7 +98,7 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
 
     @Override
     public void onCompleted(Run<?, ?> run, @NonNull TaskListener listener) {
-        add(Ref.of(run));
+        add(run);
     }
 
     @Override
@@ -113,7 +113,17 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
         }
         Run<?, ?> previous = run.getPreviousCompletedBuild();
         if (previous != null) {
-            add(Ref.of(previous));
+            add(previous);
+        }
+    }
+
+    /**
+     * Records a completed run. The job's name is read holding the lock, so that a rename that completes first has
+     * already moved the job's entry and the run is recorded under the new name.
+     */
+    private void add(Run<?, ?> run) {
+        synchronized (refs) {
+            add(Ref.of(run));
         }
     }
 
@@ -138,31 +148,39 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
         }
     }
 
+    /**
+     * Follows a renamed or moved item. Moving a folder notifies each item inside it too, so only the entry of the
+     * item itself is moved.
+     */
     private void moved(String oldFullName, String newFullName) {
         synchronized (refs) {
-            for (Ref ref : List.copyOf(refs.values())) {
-                if (isSelfOrDescendant(ref.job(), oldFullName)) {
-                    remove(ref);
-                    String job = newFullName + ref.job().substring(oldFullName.length());
-                    // A build may already be recorded under the new name, so keep whichever is newer
-                    add(new Ref(job, ref.number(), ref.endTime()));
-                }
+            Ref ref = refs.get(oldFullName);
+            if (ref != null) {
+                remove(ref);
+                // A build may already be recorded under the new name, so keep whichever is newer
+                add(new Ref(newFullName, ref.number(), ref.endTime()));
             }
         }
     }
 
-    private void deleted(String fullName) {
+    private void deleted(Item item) {
+        String fullName = item.getFullName();
         synchronized (refs) {
+            if (item instanceof Job) {
+                Ref ref = refs.get(fullName);
+                if (ref != null) {
+                    remove(ref);
+                }
+                return;
+            }
+            // Folders usually delete their items one by one first, but not every item group does
+            String prefix = fullName + '/';
             for (Ref ref : List.copyOf(refs.values())) {
-                if (isSelfOrDescendant(ref.job(), fullName)) {
+                if (ref.job().startsWith(prefix)) {
                     remove(ref);
                 }
             }
         }
-    }
-
-    private static boolean isSelfOrDescendant(String job, String fullName) {
-        return job.equals(fullName) || job.startsWith(fullName + '/');
     }
 
     /**
@@ -207,7 +225,7 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
                 }
                 Run<?, ?> last = lastCompletedBuild(job);
                 if (last != null) {
-                    add(Ref.of(last));
+                    add(last);
                 }
             } else if (!run.isBuilding()) {
                 result.add(run);
@@ -289,7 +307,7 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
 
         @Override
         public void onDeleted(Item item) {
-            get().deleted(item.getFullName());
+            get().deleted(item);
         }
     }
 }
