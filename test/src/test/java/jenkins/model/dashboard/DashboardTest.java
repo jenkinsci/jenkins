@@ -556,6 +556,52 @@ class DashboardTest {
     }
 
     @Test
+    void recentTabHidesRunningAndQueuedBuildsInFoldersTheUserCannotRead() throws Exception {
+        enableFlag("bob");
+        MockFolder open = j.createFolder("open");
+        FreeStyleProject openRunning = open.createProject(FreeStyleProject.class, "running");
+        FreeStyleProject openQueued = open.createProject(FreeStyleProject.class, "queued");
+        MockFolder closed = j.createFolder("closed");
+        FreeStyleProject closedRunning = closed.createProject(FreeStyleProject.class, "running");
+        FreeStyleProject closedQueued = closed.createProject(FreeStyleProject.class, "queued");
+        // bob can read every job, but not the folder "closed", so its jobs' pages are out of reach
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("bob")
+                .grant(Item.READ).onItems(open, openRunning, openQueued, closedRunning, closedQueued).to("bob"));
+
+        for (FreeStyleProject p : List.of(openQueued, closedQueued)) {
+            p.setAssignedLabel(j.jenkins.getLabel("no-such-agent"));
+            p.scheduleBuild2(0);
+        }
+        Blocker openBlocker = new Blocker();
+        Blocker closedBlocker = new Blocker();
+        openRunning.getBuildersList().add(openBlocker);
+        closedRunning.getBuildersList().add(closedBlocker);
+        FreeStyleBuild openBuild = openRunning.scheduleBuild2(0).waitForStart();
+        FreeStyleBuild closedBuild = closedRunning.scheduleBuild2(0).waitForStart();
+        openBlocker.started.block(TimeUnit.SECONDS.toMillis(30));
+        closedBlocker.started.block(TimeUnit.SECONDS.toMillis(30));
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+            HtmlPage page = wc.goTo("");
+            assertThat(sectionLabels(page, "running"), contains(startsWith("open » running")));
+            assertThat(sectionLabels(page, "queued"), contains("open » queued"));
+            assertThat(page.querySelector("[data-testid=dashboard-tabs] .jenkins-badge").getTextContent().trim(), is("1"));
+        } finally {
+            openBlocker.release.signal();
+            closedBlocker.release.signal();
+            j.waitForCompletion(openBuild);
+            j.waitForCompletion(closedBuild);
+            for (FreeStyleProject p : List.of(openQueued, closedQueued)) {
+                Queue.Item item = j.jenkins.getQueue().getItem(p);
+                if (item != null) {
+                    j.jenkins.getQueue().cancel(item);
+                }
+            }
+        }
+    }
+
+    @Test
     void recentRunsForgetDeletedBuilds() throws Exception {
         FreeStyleProject[] projects = new FreeStyleProject[3];
         for (int i = 0; i < projects.length; i++) {

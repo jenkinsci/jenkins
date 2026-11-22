@@ -38,7 +38,6 @@ import hudson.scm.ChangeLogSet;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -161,13 +160,35 @@ public class RecentTab extends Tab {
         User user = User.current();
         String userId = user == null ? null : user.getId();
         Map<Run<?, ?>, Executor> running = getRunningExecutors();
-        List<Queue.Item> queued = Arrays.asList(Jenkins.get().getQueue().getItems());
+        List<Queue.Item> queued = getQueued();
         return new Model(
                 rank(sortedByStart(running.keySet()), run -> involvement(run, userId)),
                 rank(queued, item -> startedBy(item.getCauses(), userId) ? Involvement.STARTED : Involvement.NONE),
                 queued.size(),
                 rank(RecentRuns.get().getCompleted(FINISHED_CANDIDATES), run -> involvement(run, userId)),
                 running);
+    }
+
+    /**
+     * Queued items the current user can see. The queue checks the permission of each task, but not of the folders
+     * containing it.
+     */
+    private static List<Queue.Item> getQueued() {
+        List<Queue.Item> result = new ArrayList<>();
+        for (Queue.Item item : Jenkins.get().getQueue().getItems()) {
+            if (!(item.task.getOwnerTask() instanceof Item owner) || canSee(owner)) {
+                result.add(item);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Whether the current user can see an item and every folder containing it, as needed to open its page.
+     * Not every item group checks the permission of the items it returns, so the item's own is checked too.
+     */
+    private static boolean canSee(Item item) {
+        return item.hasPermission(Item.READ) && Jenkins.get().getItemByFullNameOrNull(item.getFullName()) != null;
     }
 
     /**
@@ -199,7 +220,7 @@ public class RecentTab extends Tab {
                 if (run != null
                         && run.isBuilding()
                         && (executable == run || !runs.containsKey(run))
-                        && run.getParent().hasPermission(Item.READ)) {
+                        && canSee(run.getParent())) {
                     runs.put(run, executor);
                 }
             }
