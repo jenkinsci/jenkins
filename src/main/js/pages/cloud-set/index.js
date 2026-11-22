@@ -1,5 +1,3 @@
-import { registerSortableDragDrop } from "@/sortable-drag-drop";
-
 document.addEventListener("DOMContentLoaded", function () {
   const bottomStickerShadow = document.querySelector(
     ".jenkins-bottom-app-bar__shadow",
@@ -13,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Show the bottom sticker when clouds have been reordered
   const items = document.querySelector(".with-drag-drop");
-  registerSortableDragDrop(items, showBottomSticker);
+  window.registerSortableDragDrop(items, showBottomSticker);
 
   function showBottomSticker() {
     bottomStickerShadow.classList.remove("jenkins-hidden");
