@@ -240,13 +240,17 @@ public class Search implements StaplerProxy {
                 break;
             }
             // Dedupe on name and URL
-            if (!paths.add(i.getPath() + " " + i.getUrl())) {
+            String path = i.getPath() + " " + i.getUrl();
+            if (paths.contains(path)) {
                 continue;
             }
-            if (groupSizes.merge(i.item.getSearchGroup().getDisplayName(), 1, Integer::sum) > max) {
+            String group = i.item.getSearchGroup().getDisplayName();
+            if (groupSizes.getOrDefault(group, 0) >= max) {
                 r.hasMoreResults = true;
                 continue;
             }
+            paths.add(path);
+            groupSizes.merge(group, 1, Integer::sum);
             r.add(i);
         }
         return r;
