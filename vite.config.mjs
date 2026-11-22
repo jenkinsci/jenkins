@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import Handlebars from "handlebars";
-import { createLogger, defineConfig } from "vite";
+import { createLogger, defineConfig, minify } from "vite";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const js = (p) => path.join(__dirname, "src/main/js", p);
@@ -130,6 +130,74 @@ for (const method of ["warn", "warnOnce"]) {
   };
 }
 
+const legacyScripts = ["behavior.js", "hudson-behavior.js", "sortable.js"].map(
+  (file) => path.join(__dirname, "war/src/main/webapp/scripts", file),
+);
+
+function identityMap(file, code) {
+  const lines = code.split("\n").length;
+  return {
+    version: 3,
+    sources: [file],
+    sourcesContent: [code],
+    names: [],
+    mappings: ["AAAA", ...Array(lines - 1).fill("AACA")].join(";"),
+  };
+}
+
+function legacyScriptsPlugin(mode) {
+  return {
+    name: "jenkins-legacy-scripts",
+    buildStart() {
+      legacyScripts.forEach((file) => this.addWatchFile(file));
+    },
+    async generateBundle() {
+      const parts = await Promise.all(
+        legacyScripts.map(async (file) => {
+          const source = path.relative(__dirname, file);
+          const code = fs.readFileSync(file, "utf8");
+          if (mode !== "production") {
+            return { code, map: identityMap(source, code) };
+          }
+          const result = await minify(source, code, {
+            module: false,
+            sourcemap: true,
+          });
+          if (result.errors.length) {
+            this.error(`${source}: ${result.errors[0].message}`);
+          }
+          return {
+            code: result.code,
+            map: { ...result.map, sources: [source], sourcesContent: [code] },
+          };
+        }),
+      );
+      let line = 0;
+      const sections = parts.map((part) => {
+        const section = { offset: { line, column: 0 }, map: part.map };
+        line += part.code.split("\n").length;
+        return section;
+      });
+      const map = JSON.stringify({ version: 3, file: "legacy.js", sections });
+      const code = parts.map((part) => part.code).join("\n");
+      if (mode !== "production") {
+        this.emitFile({
+          type: "asset",
+          fileName: "legacy.js",
+          source: `${code}\n//# sourceMappingURL=data:application/json;base64,${Buffer.from(map).toString("base64")}\n`,
+        });
+        return;
+      }
+      this.emitFile({ type: "asset", fileName: "legacy.js.map", source: map });
+      this.emitFile({
+        type: "asset",
+        fileName: "legacy.js",
+        source: `${code}\n//# sourceMappingURL=legacy.js.map\n`,
+      });
+    },
+  };
+}
+
 export function entryConfig(name, mode) {
   return defineConfig({
     configFile: false,
@@ -141,6 +209,7 @@ export function entryConfig(name, mode) {
       entryPlugin(name),
       handlebarsPlugin(),
       removeEmptyScriptsPlugin(),
+      name === "app" && legacyScriptsPlugin(mode),
     ],
     resolve: {
       alias: [
