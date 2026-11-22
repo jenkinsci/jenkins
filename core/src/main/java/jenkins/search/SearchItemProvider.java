@@ -10,8 +10,6 @@ import java.util.Collection;
  * Contributes items to the root search index, so they can be found from the command palette
  * on any page.
  * <p>
- * {@link #getSearchItems()} is called for every search request, so it must be fast and must only
- * return items the current user is allowed to see.
  * Item URLs are resolved relative to the Jenkins root URL.
  *
  * @since TODO
