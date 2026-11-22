@@ -375,7 +375,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             }
 
             if (self instanceof Jenkins && Dashboard.isEnabled()) {
-                // The root URL shows the dashboard, so its menu matches the dashboard's app bar
+                // For these users the root URL shows the dashboard rather than the primary view, so the overflow
+                // menu, loaded from the root's contextMenu, matches the dashboard's app bar and its Views menu
                 return Dashboard.get().getAppBarActions();
             }
 

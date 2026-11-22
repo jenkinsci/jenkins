@@ -52,7 +52,7 @@ import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 
 /**
- * The home page of the experimental dashboard, shown at the root URL to users who enable
+ * The home page of the experimental dashboard, shown at the root URL to users who have enabled
  * {@link NewDashboardPageUserExperimentalFlag}.
  *
  * <p>The page is made of {@link Tab}s. Plugins can add a tab by implementing
