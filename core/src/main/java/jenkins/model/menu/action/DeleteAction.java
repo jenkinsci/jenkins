@@ -29,10 +29,14 @@ import hudson.model.Action;
 import hudson.model.Computer;
 import hudson.model.Job;
 import hudson.model.Run;
+import hudson.model.TransientViewActionFactory;
+import hudson.model.View;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag;
+import jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag;
 import jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
@@ -153,6 +157,30 @@ public final class DeleteAction implements Action {
             }
 
             return Set.of(new DeleteAction("Build", target.getDisplayName()));
+        }
+    }
+
+    /**
+     * Factory that contributes a {@link DeleteAction} to every {@link View} that its owner allows
+     * deleting and the current user has {@link View#DELETE} permission on when the new dashboard
+     * page experimental flag is enabled.
+     */
+    @Extension
+    @Restricted(Beta.class)
+    public static final class ViewFactory extends TransientViewActionFactory {
+
+        @Override
+        public List<Action> createFor(View target) {
+            // This condition can be removed when the flag has been removed
+            if (!new NewDashboardPageUserExperimentalFlag().getFlagValue()) {
+                return List.of();
+            }
+
+            if (!target.getOwner().canDelete(target) || !target.hasPermission(View.DELETE)) {
+                return List.of();
+            }
+
+            return List.of(new DeleteAction(Messages.DeleteAction_View(), target.getDisplayName()));
         }
     }
 

@@ -67,12 +67,9 @@ public class CspRecommendation extends AdministrativeMonitor {
     }
 
     @POST
-    public void doAct(@QueryParameter String setup, @QueryParameter String dismiss) throws IOException {
+    public void doAct(@QueryParameter String setup) throws IOException {
         if (setup != null) {
             throw HttpResponses.redirectViaContextPath("manage/configureSecurity/#contentSecurityPolicy");
-        }
-        if (dismiss != null) {
-            disable(true);
         }
         throw HttpResponses.redirectViaContextPath("manage/");
     }

@@ -140,19 +140,26 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     @Restricted(NoExternalUse.class)
     public List<Action> getAppBarActions() {
         return getAllActions().stream()
-                .filter(e -> !(e instanceof Tab))
-                .filter(e -> {
-                    String icon = e.getIconFileName();
-
-                    if (e instanceof IconSpec iconSpec && iconSpec.getIconClassName() != null) {
-                        icon = iconSpec.getIconClassName();
-                    }
-
-                    return Util.fixEmptyAndTrim(e.getDisplayName()) != null || Util.fixEmptyAndTrim(icon) != null;
-                })
-                .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
-                        .thenComparing(e -> Objects.requireNonNullElse(e.getDisplayName(), "")))
+                .filter(Actionable::isAppBarAction)
+                .sorted(APP_BAR_ORDER)
                 .collect(Collectors.toUnmodifiableList());
+    }
+
+    static final Comparator<Action> APP_BAR_ORDER = Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
+            .thenComparing(e -> Objects.requireNonNullElse(e.getDisplayName(), ""));
+
+    static boolean isAppBarAction(Action action) {
+        if (action instanceof Tab) {
+            return false;
+        }
+
+        String icon = action.getIconFileName();
+
+        if (action instanceof IconSpec iconSpec && iconSpec.getIconClassName() != null) {
+            icon = iconSpec.getIconClassName();
+        }
+
+        return Util.fixEmptyAndTrim(action.getDisplayName()) != null || Util.fixEmptyAndTrim(icon) != null;
     }
 
     private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {

@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import jenkins.model.Jenkins;
+import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -141,6 +142,16 @@ class FingerprinterTest {
 
         Fingerprinter.FingerprintAction action = build.getAction(Fingerprinter.FingerprintAction.class);
         assertThat(action.getRecords().keySet(), containsInAnyOrder(singleFiles2[0], singleFiles[0]));
+    }
+
+    @Issue("JENKINS-70724")
+    @Test
+    void fingerprintsPageHasTitle() throws Exception {
+        FreeStyleProject project = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
+
+        HtmlPage page = j.createWebClient().getPage(build, "fingerprints");
+        assertEquals(build.getFullDisplayName() + " Recorded Fingerprints - Jenkins", page.getTitleText());
     }
 
     @Test
