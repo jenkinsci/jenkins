@@ -10,10 +10,10 @@
   },
   "private": true,
   "scripts": {
-    "dev": "vite build --mode development",
-    "prod": "vite build",
+    "dev": "node build.mjs",
+    "prod": "node build.mjs --production",
     "build": "yarn prod",
-    "start": "vite build --mode development --watch",
+    "start": "node build.mjs --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint:js": "eslint . && prettier --check .",

@@ -1134,13 +1134,11 @@ function evalInnerHtmlScripts(text, callback) {
   var matchAll = new RegExp("<script([^>]*)>([\\S\\s]*?)</script>", "img");
   var matchOne = new RegExp("<script([^>]*)>([\\S\\s]*?)</script>", "im");
   var srcAttr = new RegExp("src=['\"]([^'\"]+)['\"]", "i");
-  var moduleAttr = new RegExp("type=['\"]module['\"]", "i");
   (text.match(matchAll) || []).map(function (s) {
     var m = s.match(srcAttr);
     if (m) {
-      var type = moduleAttr.test(s.match(matchOne)[1]) ? "module" : undefined;
       q.push(function (cont) {
-        loadScript(m[1], cont, type);
+        loadScript(m[1], cont);
       });
     } else {
       q.push(function (cont) {
@@ -2642,17 +2640,12 @@ window.addEventListener("load", function () {
  *      The URL of the script to load.
  * @param callback
  *      If specified, this function will be invoked after the script is loaded.
- * @param type
- *      Optional script type, such as "module".
  * @see http://stackoverflow.com/questions/4845762/onload-handler-for-script-tag-in-internet-explorer
  */
-function loadScript(href, callback, type) {
+function loadScript(href, callback) {
   var head =
     document.getElementsByTagName("head")[0] || document.documentElement;
   var script = document.createElement("script");
-  if (type) {
-    script.type = type;
-  }
   script.src = href;
 
   if (callback) {

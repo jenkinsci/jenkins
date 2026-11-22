@@ -16,5 +16,5 @@
     <h:actions />
   </header>
 
-  <script src="${resURL}/jsbundles/header.js" type="module" />
+  <script src="${resURL}/jsbundles/header.js" type="text/javascript" />
 </j:jelly>

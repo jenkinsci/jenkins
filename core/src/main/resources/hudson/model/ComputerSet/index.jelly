@@ -140,6 +140,6 @@ THE SOFTWARE.
     <template id="template-computer-icon-legend" data-title="${%Computer icon legend}">
       <st:include page="_legend.jelly"/>
     </template>
-    <script src="${resURL}/jsbundles/pages/computer-set.js" type="module" />
+    <script src="${resURL}/jsbundles/pages/computer-set.js" type="text/javascript" defer="true" />
   </l:settings-subpage>
 </j:jelly>

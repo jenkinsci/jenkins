@@ -24,7 +24,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
-  <script src="${resURL}/jsbundles/pages/project/builds-card-new.js" type="module" async="true" />
+  <script src="${resURL}/jsbundles/pages/project/builds-card-new.js" type="text/javascript" async="true" />
 
   <j:set var="page" value="${it.historyPageFilter}" />
 

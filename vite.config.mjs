@@ -87,66 +87,20 @@ function handlebarsPlugin() {
   };
 }
 
-const entryPrefix = "\0jenkins-entry:";
-
-function entryPlugin() {
+function entryPlugin(name) {
+  const id = `\0jenkins-entry:${name}`;
   return {
     name: "jenkins-entry",
     resolveId(source) {
-      return source.startsWith(entryPrefix) ? source : null;
+      return source === id ? id : null;
     },
     load(source) {
-      if (!source.startsWith(entryPrefix)) {
+      if (source !== id) {
         return null;
       }
-      return entries[source.slice(entryPrefix.length)]
+      return entries[name]
         .map((f) => `import ${JSON.stringify(f)};`)
         .join("\n");
-    },
-  };
-}
-
-function vendorChunkName(id) {
-  const match = id.match(/node_modules\/((?:@[^/]+\/)?[^/]+)/);
-  if (!match) {
-    return null;
-  }
-  if (match[1] === "@popperjs/core") {
-    return "tippy";
-  }
-  return match[1].replace(/\.js$/, "");
-}
-
-function hoistTransitiveImportsPlugin() {
-  return {
-    name: "jenkins-hoist-transitive-imports",
-    renderChunk(code, chunk, _, meta) {
-      if (!chunk.isEntry) {
-        return null;
-      }
-      const seen = new Set(chunk.imports);
-      const queue = [...chunk.imports];
-      while (queue.length) {
-        for (const file of meta.chunks[queue.shift()]?.imports ?? []) {
-          if (!seen.has(file)) {
-            seen.add(file);
-            queue.push(file);
-          }
-        }
-      }
-      const extra = [...seen]
-        .filter((file) => !chunk.imports.includes(file))
-        .map((file) => {
-          const relative = path.posix.relative(
-            path.posix.dirname(chunk.fileName),
-            file,
-          );
-          return `import ${JSON.stringify(relative.startsWith(".") ? relative : `./${relative}`)};`;
-        });
-      if (!extra.length) {
-        return null;
-      }
-      return { code: `${code}\n${extra.join("\n")}\n`, map: null };
     },
   };
 }
@@ -157,13 +111,7 @@ function removeEmptyScriptsPlugin() {
     enforce: "post",
     generateBundle(_, bundle) {
       for (const [file, chunk] of Object.entries(bundle)) {
-        if (chunk.type !== "chunk" || !chunk.isEntry) {
-          continue;
-        }
-        for (const css of chunk.viteMetadata?.importedCss ?? []) {
-          bundle[css].fileName = `${chunk.name}.css`;
-        }
-        if (!chunk.code.trim()) {
+        if (chunk.type === "chunk" && chunk.isEntry && !chunk.code.trim()) {
           delete bundle[file];
         }
       }
@@ -171,7 +119,7 @@ function removeEmptyScriptsPlugin() {
   };
 }
 
-const logger = createLogger("info");
+const logger = createLogger("warn");
 for (const method of ["warn", "warnOnce"]) {
   const original = logger[method];
   logger[method] = (msg, options) => {
@@ -182,55 +130,51 @@ for (const method of ["warn", "warnOnce"]) {
   };
 }
 
-export default defineConfig(({ mode }) => ({
-  customLogger: logger,
-  publicDir: false,
-  plugins: [
-    entryPlugin(),
-    handlebarsPlugin(),
-    hoistTransitiveImportsPlugin(),
-    removeEmptyScriptsPlugin(),
-  ],
-  resolve: {
-    alias: [
-      { find: "@", replacement: js("") },
-      { find: /^handlebars$/, replacement: "handlebars/runtime" },
+export function entryConfig(name, mode) {
+  return defineConfig({
+    configFile: false,
+    mode,
+    customLogger: logger,
+    logLevel: "warn",
+    publicDir: false,
+    plugins: [
+      entryPlugin(name),
+      handlebarsPlugin(),
+      removeEmptyScriptsPlugin(),
     ],
-  },
-  css: {
-    devSourcemap: true,
-    preprocessorOptions: {
-      scss: {
-        importer: { findFileUrl: () => null },
-      },
+    resolve: {
+      alias: [
+        { find: "@", replacement: js("") },
+        { find: /^handlebars$/, replacement: "handlebars/runtime" },
+      ],
     },
-  },
-  build: {
-    outDir: path.join(__dirname, "war/src/main/webapp/jsbundles"),
-    emptyOutDir: true,
-    sourcemap: mode === "production" ? true : "inline",
-    minify: mode === "production",
-    cssMinify: mode === "production",
-    reportCompressedSize: false,
-    rolldownOptions: {
-      input: Object.fromEntries(
-        Object.keys(entries).map((name) => [name, entryPrefix + name]),
-      ),
-      output: {
-        format: "es",
-        entryFileNames: "[name].js",
-        chunkFileNames: "chunks/[name].js",
-        assetFileNames: "[name][extname]",
-        codeSplitting: {
-          groups: [
-            {
-              name: vendorChunkName,
-              debugName: "vendor",
-              test: /node_modules/,
-            },
-          ],
+    css: {
+      devSourcemap: true,
+      preprocessorOptions: {
+        scss: {
+          importer: { findFileUrl: () => null },
         },
       },
     },
-  },
-}));
+    build: {
+      outDir: path.join(__dirname, "war/src/main/webapp/jsbundles"),
+      emptyOutDir: false,
+      sourcemap: mode === "production" ? true : "inline",
+      minify: mode === "production",
+      cssMinify: mode === "production",
+      cssCodeSplit: false,
+      reportCompressedSize: false,
+      rolldownOptions: {
+        input: { [name]: `\0jenkins-entry:${name}` },
+        output: {
+          format: "iife",
+          entryFileNames: "[name].js",
+          assetFileNames: (asset) =>
+            asset.names?.some((n) => n.endsWith(".css"))
+              ? `${name}.css`
+              : "fonts/[name][extname]",
+        },
+      },
+    },
+  });
+}
