@@ -138,17 +138,6 @@
     &__item {
       @include mixins.item($border: false);
 
-      --item-background--hover: color-mix(
-        in sRGB,
-        var(--text-color-secondary) 15%,
-        transparent
-      );
-      --item-background--active: color-mix(
-        in sRGB,
-        var(--text-color-secondary) 20%,
-        transparent
-      );
-
       display: flex;
       align-items: center;
       justify-content: flex-start;
@@ -159,7 +148,7 @@
       &--hover {
         &::before {
           background-color: var(--item-background--hover);
-          border: var(--jenkins-border--subtle) !important;
+          border: var(--jenkins-border) !important;
         }
       }
 
