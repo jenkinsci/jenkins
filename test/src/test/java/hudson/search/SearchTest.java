@@ -495,24 +495,24 @@ public class SearchTest {
 
     @Test
     void busyGroupDoesNotCrowdOutOtherGroups() throws Exception {
-        j.createFreeStyleProject("plugins-a");
-        j.createFreeStyleProject("plugins-b");
-        j.createFreeStyleProject("plugins-c");
+        j.createFreeStyleProject("script-a");
+        j.createFreeStyleProject("script-b");
+        j.createFreeStyleProject("script-c");
 
-        JSONArray suggestions = suggestions(j.createWebClient(), "plugins", 2);
+        JSONArray suggestions = suggestions(j.createWebClient(), "script", 2);
 
         assertEquals(2, namesInGroup(suggestions, "Items").size());
-        assertTrue(namesInGroup(suggestions, "Manage Jenkins").contains("Plugins"));
+        assertTrue(namesInGroup(suggestions, "Manage Jenkins").contains("Script Console"));
     }
 
     @Test
     void sameNameWithDifferentUrlsAreBothSuggested() throws Exception {
-        j.createFreeStyleProject("Plugins");
+        j.createFreeStyleProject("Script Console");
 
-        JSONArray suggestions = suggestions(j.createWebClient(), "Plugins", 100);
+        JSONArray suggestions = suggestions(j.createWebClient(), "Script%20Console", 100);
 
-        assertEquals(List.of("Plugins"), namesInGroup(suggestions, "Items"));
-        assertTrue(namesInGroup(suggestions, "Manage Jenkins").contains("Plugins"));
+        assertEquals(List.of("Script Console"), namesInGroup(suggestions, "Items"));
+        assertTrue(namesInGroup(suggestions, "Manage Jenkins").contains("Script Console"));
     }
 
     @Test
