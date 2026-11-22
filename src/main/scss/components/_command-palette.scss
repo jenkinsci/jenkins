@@ -1,6 +1,8 @@
 @use "../abstracts/mixins";
 @use "../base/breakpoints";
 
+$command-palette-padding: 0.375rem;
+
 .jenkins-command-palette__dialog {
   background: none;
   border: none;
@@ -122,7 +124,7 @@
   &__results {
     display: flex;
     flex-direction: column;
-    padding: 0.5rem;
+    padding: $command-palette-padding;
 
     &__heading {
       font-size: var(--font-size-sm);
@@ -142,7 +144,7 @@
       align-items: center;
       justify-content: flex-start;
       padding: 0.625rem;
-      border-radius: 0.5rem;
+      border-radius: calc(1rem - $command-palette-padding);
       color: var(--text-color) !important;
 
       &--hover {
