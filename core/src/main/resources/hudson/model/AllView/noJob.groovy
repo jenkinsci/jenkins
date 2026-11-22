@@ -86,7 +86,7 @@ div {
 
                 ul(class: "empty-state-section-list") {
                     li(class: "content-block") {
-                        a(href: "newJob", class: "content-block__link") {
+                        a(href: "${rootURL}/${my.owner.url}newJob", class: "content-block__link") {
                             span(_("createJob"))
                             span(class: "trailing-icon") {
                                 l.icon(src: "symbol-add")
