@@ -28,7 +28,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -51,6 +50,7 @@ import hudson.model.Queue;
 import hudson.model.User;
 import hudson.util.OneShotEvent;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -62,6 +62,7 @@ import jenkins.model.experimentalflags.UserExperimentalFlagsProperty;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
@@ -231,8 +232,8 @@ class DashboardTest {
 
     @Test
     void recentTabShowsRunningQueuedAndFinishedBuilds() throws Exception {
-        enableFlag("alice");
-        enableFlag("admin");
+        enableFlag("alice", "new-build-page.flag");
+        enableFlag("admin", "new-build-page.flag");
         FreeStyleProject finished = j.createFreeStyleProject("finished");
         j.buildAndAssertSuccess(finished);
 
@@ -254,11 +255,10 @@ class DashboardTest {
                 assertThat(sectionLabels(page, "finished"), contains(startsWith("finished")));
                 assertThat(page.querySelector("[data-testid=dashboard-tabs] .jenkins-badge").getTextContent().trim(), is("1"));
 
-                // alice may build but not cancel
-                assertThat(page.querySelector("[data-section=running] .stop-button-link"), nullValue());
+                // Rows show the run's app bar actions, and alice may not cancel
+                assertThat(rowActions(page, "running", "job/running/1/"), not(containsString("Cancel")));
                 assertThat(page.querySelector("[data-section=queued] .stop-button-link"), nullValue());
-                assertThat(page.querySelector("[data-section=finished] a[href$='job/finished/build?delay=0sec']"), notNullValue());
-                assertThat(page.querySelector("[data-section=finished] .jenkins-jumplist-link[data-href$='job/finished/1/']"), notNullValue());
+                assertThat(rowActions(page, "finished", "job/finished/1/"), notNullValue());
 
                 // The refresh endpoint serves the same content. It is a fragment, whose scripts only run on the page.
                 wc.getOptions().setJavaScriptEnabled(false);
@@ -272,8 +272,7 @@ class DashboardTest {
             }
             try (JenkinsRule.WebClient wc = j.createWebClient().login("admin")) {
                 HtmlPage page = wc.goTo("");
-                DomElement stop = page.querySelector("[data-section=running] .stop-button-link");
-                assertThat(stop.getAttribute("href"), endsWith("job/running/1/stop"));
+                assertThat(rowActions(page, "running", "job/running/1/"), containsString("\"displayName\":\"Cancel\""));
                 DomElement cancel = page.querySelector("[data-section=queued] .stop-button-link");
                 assertThat(cancel.getAttribute("href"), containsString("queue/cancelItem?id="));
             }
@@ -662,9 +661,22 @@ class DashboardTest {
         }
     }
 
-    private void enableFlag(String user) throws Exception {
-        User.getById(user, true)
-                .addProperty(new UserExperimentalFlagsProperty(Map.of("new-dashboard-page.flag", "true")));
+    private void enableFlag(String user, String... otherFlags) throws Exception {
+        Map<String, String> flags = new HashMap<>(Map.of("new-dashboard-page.flag", "true"));
+        for (String flag : otherFlags) {
+            flags.put(flag, "true");
+        }
+        User.getById(user, true).addProperty(new UserExperimentalFlagsProperty(flags));
+    }
+
+    /**
+     * The app bar actions of the run in a row of the given section, as sent to the overflow menu.
+     */
+    private static String rowActions(HtmlPage page, String section, String runUrl) {
+        DomElement overflow = page.querySelector(
+                "[data-section=" + section + "] [data-type=auto-overflow][data-href$='" + runUrl + "']");
+        assertThat(overflow, notNullValue());
+        return ((HtmlTemplate) overflow.getNextElementSibling()).getContent().getTextContent();
     }
 
     private static List<String> tabNames(HtmlPage page) {

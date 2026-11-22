@@ -74,42 +74,7 @@ THE SOFTWARE.
             </div>
           </div>
           <div class="app-temporary-list__item__actions">
-            <j:choose>
-              <j:when test="${run.building}">
-                <j:if test="${job.hasPermission(job.CANCEL)}">
-                  <l:stopButton href="${rootURL}/${run.url}stop" confirm="${%StopConfirm(run.fullDisplayName)}" alt="${%Stop}" />
-                </j:if>
-              </j:when>
-              <j:when test="${job.buildable and job.hasPermission(job.BUILD)}">
-                <!-- Works with the classic job list's build button script. The id is unique to the job and the
-                     same on every render, so a refresh leaves an unchanged row alone. -->
-                <j:set var="buildId" value="dashboard-build-${job.url}" />
-                <j:set var="buildUrl" value="${rootURL}/${job.url}build?delay=0sec" />
-                <j:choose>
-                  <j:when test="${job.parameterized}">
-                    <j:set var="buildTitle" value="${%BuildWithParameters(job.fullDisplayName, job.taskNoun)}" />
-                  </j:when>
-                  <j:otherwise>
-                    <span class="build-button-column-icon-reference-holder" data-id="${buildId}" data-url="${buildUrl}"
-                          data-notification="${%BuildScheduled(job.taskNoun)}"
-                          data-failure="${%BuildFailed(job.fullDisplayName)}" />
-                    <j:set var="buildTitle" value="${%Build(job.fullDisplayName, job.taskNoun)}" />
-                  </j:otherwise>
-                </j:choose>
-                <a id="${buildId}" href="${buildUrl}" tooltip="${buildTitle}"
-                   class="jenkins-button jenkins-button--tertiary jenkins-!-build-color">
-                  <l:icon src="symbol-play" />
-                </a>
-              </j:when>
-            </j:choose>
-            <button class="jenkins-button jenkins-button--tertiary jenkins-jumplist-link" type="button"
-                    data-href="${rootURL}/${run.url}" tooltip="${%More actions}">
-              <div class="jenkins-overflow-button__ellipsis">
-                <span />
-                <span />
-                <span />
-              </div>
-            </button>
+            <l:actions it="${run}" url="${rootURL}/${run.url}" compact="true" />
           </div>
         </div>
       </div>

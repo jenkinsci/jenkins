@@ -25,8 +25,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
   <l:dashboard-subpage>
-    <!-- Rows added by a refresh have build buttons too, even if none were on the page when it loaded -->
-    <st:adjunct includes="hudson.views.BuildButtonColumn.icon" />
     <div id="dashboard-recent" data-rows-url="${rootURL}/${it.urlName ?: 'defaultTab'}/rows">
       <st:include page="rows.jelly" />
     </div>
