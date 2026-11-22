@@ -41,6 +41,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,8 +76,19 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
         }
     }
 
-    /** Keyed by job full name. */
-    private final Map<String, Ref> refs = new HashMap<>();
+    private static final Comparator<Ref> NEWEST_FIRST = Comparator.comparingLong(Ref::endTime)
+            .reversed()
+            .thenComparing(Ref::job)
+            .thenComparingInt(Ref::number);
+
+    /** Keyed by job full name. Changes to it and {@link #newestFirst} are made together, holding its lock. */
+    private final Map<String, Ref> refs = new ConcurrentHashMap<>();
+
+    /**
+     * The same entries in the order they are read, so that reads neither copy nor sort the index. Reads
+     * iterate without the lock, and skip entries that {@link #refs} no longer holds.
+     */
+    private final NavigableSet<Ref> newestFirst = new ConcurrentSkipListSet<>(NEWEST_FIRST);
 
     private final AtomicBoolean seeded = new AtomicBoolean();
 
@@ -95,7 +109,7 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
             if (ref == null || ref.number() != run.getNumber()) {
                 return;
             }
-            refs.remove(job);
+            remove(ref);
         }
         Run<?, ?> previous = run.getPreviousCompletedBuild();
         if (previous != null) {
@@ -109,7 +123,18 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
             if (existing != null && existing.number() > ref.number()) {
                 return;
             }
+            if (existing != null) {
+                newestFirst.remove(existing);
+            }
             refs.put(ref.job(), ref);
+            newestFirst.add(ref);
+        }
+    }
+
+    /** Call holding the lock on {@link #refs}. */
+    private void remove(Ref ref) {
+        if (refs.remove(ref.job(), ref)) {
+            newestFirst.remove(ref);
         }
     }
 
@@ -117,7 +142,7 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
         synchronized (refs) {
             for (Ref ref : List.copyOf(refs.values())) {
                 if (isSelfOrDescendant(ref.job(), oldFullName)) {
-                    refs.remove(ref.job());
+                    remove(ref);
                     String job = newFullName + ref.job().substring(oldFullName.length());
                     // A build may already be recorded under the new name, so keep whichever is newer
                     add(new Ref(job, ref.number(), ref.endTime()));
@@ -128,7 +153,11 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
 
     private void deleted(String fullName) {
         synchronized (refs) {
-            refs.keySet().removeIf(job -> isSelfOrDescendant(job, fullName));
+            for (Ref ref : List.copyOf(refs.values())) {
+                if (isSelfOrDescendant(ref.job(), fullName)) {
+                    remove(ref);
+                }
+            }
         }
     }
 
@@ -144,20 +173,18 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
     @NonNull
     public List<Run<?, ?>> getCompleted(int limit) {
         seedOnce();
-        List<Ref> snapshot;
-        synchronized (refs) {
-            snapshot = new ArrayList<>(refs.values());
-        }
-        snapshot.sort(Comparator.comparingLong(Ref::endTime).reversed());
-
         Jenkins jenkins = Jenkins.get();
         // Whether the current user can read each folder, so that the jobs of a folder the user cannot read are
         // skipped after one check. Users who can only see a few folders would otherwise check every job.
         Map<String, Boolean> readableFolders = new HashMap<>();
         List<Run<?, ?>> result = new ArrayList<>();
-        for (Ref ref : snapshot) {
+        for (Ref ref : newestFirst) {
             if (result.size() >= limit) {
                 break;
+            }
+            if (refs.get(ref.job()) != ref) {
+                // Replaced or removed since the iteration started
+                continue;
             }
             int slash = ref.job().lastIndexOf('/');
             if (slash > 0
@@ -175,7 +202,7 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
                 // The build is gone, for example deleted while the index was being filled. The job's current last
                 // completed build takes its place from the next read.
                 synchronized (refs) {
-                    refs.remove(ref.job(), ref);
+                    remove(ref);
                 }
                 Run<?, ?> last = lastCompletedBuild(job);
                 if (last != null) {
@@ -243,6 +270,7 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
     void reset(boolean seed) {
         synchronized (refs) {
             refs.clear();
+            newestFirst.clear();
         }
         seeded.set(!seed);
     }
