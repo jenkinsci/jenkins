@@ -40,6 +40,7 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -231,15 +232,22 @@ public class Search implements StaplerProxy {
                 req.hasParameter("max") ? Integer.parseInt(req.getParameter("max")) : 100,
                 MAX_SEARCH_SIZE
         );
+        Map<String, Integer> groupSizes = new HashMap<>();
         SearchableModelObject smo = findClosestSearchableModelObject(req);
         for (SuggestedItem i : suggest(makeSuggestIndex(req), query, smo)) {
-            if (r.size() >= max) {
+            if (r.size() >= MAX_SEARCH_SIZE) {
                 r.hasMoreResults = true;
                 break;
             }
             // Dedupe on name and URL
-            if (paths.add(i.getPath() + " " + i.getUrl()))
-                r.add(i);
+            if (!paths.add(i.getPath() + " " + i.getUrl())) {
+                continue;
+            }
+            if (groupSizes.merge(i.item.getSearchGroup().getDisplayName(), 1, Integer::sum) > max) {
+                r.hasMoreResults = true;
+                continue;
+            }
+            r.add(i);
         }
         return r;
     }
