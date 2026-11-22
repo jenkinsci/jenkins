@@ -41,23 +41,23 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Remembers the last completed build of the most recently active jobs, for {@link RecentTab}.
+ * Remembers the last completed build of every job, for {@link RecentTab}.
  *
- * <p>Each job has at most one entry, so a few busy jobs cannot push out everything else. Like
+ * <p>Each job has one entry, so a few busy jobs cannot push out everything else, and users who can only see
+ * a few jobs still find their recent builds however busy the rest of the instance is. Like
  * {@link Job#getLastCompletedBuild()}, the entry is the job's highest-numbered completed build, also when builds
  * complete out of order. Runs are held
- * by job full name and build number rather than by reference, so this does not keep builds in memory.
+ * by job full name and build number rather than by reference, so this does not keep builds in memory, and an
+ * entry takes about a hundred bytes.
  * The index starts empty. The first read fills it in the background from each job's last completed
  * build, so startup does not load any builds.
  */
@@ -66,11 +66,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public final class RecentRuns extends RunListener<Run<?, ?>> {
 
     private static final Logger LOGGER = Logger.getLogger(RecentRuns.class.getName());
-
-    /**
-     * The maximum number of jobs remembered.
-     */
-    static /* non-final for Groovy */ int CAPACITY = SystemProperties.getInteger(RecentRuns.class.getName() + ".capacity", 200);
 
     record Ref(String job, int number, long endTime) {
         static Ref of(Run<?, ?> run) {
@@ -115,11 +110,6 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
                 return;
             }
             refs.put(ref.job(), ref);
-            if (refs.size() > CAPACITY) {
-                refs.values().stream()
-                        .min(Comparator.comparingLong(Ref::endTime))
-                        .ifPresent(oldest -> refs.remove(oldest.job()));
-            }
         }
     }
 
@@ -201,23 +191,19 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
      */
     @SuppressWarnings("rawtypes")
     void seed() {
-        // Keeps only the newest CAPACITY entries; the head is the oldest
-        PriorityQueue<Candidate> newest = new PriorityQueue<>(Comparator.comparingLong(c -> c.ref().endTime()));
+        List<Candidate> candidates = new ArrayList<>();
         try (ACLContext ignored = ACL.as2(ACL.SYSTEM2)) {
             Jenkins jenkins = Jenkins.get();
             for (Job job : jenkins.allItems(Job.class)) {
                 Run<?, ?> run = lastCompletedBuild(job);
                 if (run != null) {
-                    newest.add(new Candidate(job, Ref.of(run)));
-                    if (newest.size() > CAPACITY) {
-                        newest.poll();
-                    }
+                    candidates.add(new Candidate(job, Ref.of(run)));
                 }
             }
             // Jobs may have been renamed, moved or deleted since they were read. Holding the lock while checking
             // means that a later change is applied by the item listener to what is added here.
             synchronized (refs) {
-                for (Candidate candidate : newest) {
+                for (Candidate candidate : candidates) {
                     String name = candidate.job().getFullName();
                     if (jenkins.getItemByFullName(name, Job.class) == candidate.job()) {
                         add(new Ref(name, candidate.ref().number(), candidate.ref().endTime()));

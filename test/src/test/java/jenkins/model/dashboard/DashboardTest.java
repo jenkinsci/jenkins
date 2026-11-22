@@ -426,22 +426,51 @@ class DashboardTest {
 
     @Test
     void recentRunsKeepOneEntryPerJob() throws Exception {
-        int capacity = RecentRuns.CAPACITY;
-        RecentRuns.CAPACITY = 2;
-        try {
-            FreeStyleProject quiet = j.createFreeStyleProject("quiet");
-            FreeStyleProject busy = j.createFreeStyleProject("busy");
-            j.buildAndAssertSuccess(quiet);
-            for (int i = 0; i < 3; i++) {
-                j.buildAndAssertSuccess(busy);
-            }
-            assertThat(RecentRuns.get().getCompleted(10), contains(busy.getLastBuild(), quiet.getLastBuild()));
+        FreeStyleProject quiet = j.createFreeStyleProject("quiet");
+        FreeStyleProject busy = j.createFreeStyleProject("busy");
+        j.buildAndAssertSuccess(quiet);
+        for (int i = 0; i < 3; i++) {
+            j.buildAndAssertSuccess(busy);
+        }
+        assertThat(RecentRuns.get().getCompleted(10), contains(busy.getLastBuild(), quiet.getLastBuild()));
 
-            // Deleting the remembered build falls back to the one before it
-            busy.getLastBuild().delete();
-            assertThat(RecentRuns.get().getCompleted(10), contains(busy.getLastBuild(), quiet.getLastBuild()));
+        // Deleting the remembered build falls back to the one before it
+        busy.getLastBuild().delete();
+        assertThat(RecentRuns.get().getCompleted(10), contains(busy.getLastBuild(), quiet.getLastBuild()));
+    }
+
+    @Test
+    void recentTabShowsATeamsBuildsWhenOtherTeamsBuiltMoreRecently() throws Exception {
+        enableFlag("bob");
+        MockFolder mine = j.createFolder("mine");
+        MockFolder others = j.createFolder("others");
+        FreeStyleProject own = mine.createProject(FreeStyleProject.class, "own");
+        j.buildAndAssertSuccess(own);
+        int candidates = RecentTab.FINISHED_CANDIDATES;
+        RecentTab.FINISHED_CANDIDATES = 2;
+        try {
+            // More builds elsewhere since, than the tab ranks
+            for (int i = 0; i < 3; i++) {
+                j.buildAndAssertSuccess(others.createProject(FreeStyleProject.class, "other-" + i));
+            }
+            j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                    .grant(Jenkins.READ).everywhere().to("bob")
+                    .grant(Item.READ).onItems(mine, own).to("bob"));
+
+            try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+                assertThat(sectionLabels(wc.goTo(""), "finished"), contains(startsWith("mine » own")));
+
+                // Also after a restart, when the index is filled from existing builds
+                RecentRuns.get().reset(true);
+                RecentRuns.get().getCompleted(10);
+                long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30);
+                while (RecentRuns.get().getCompleted(10).size() < 4 && System.currentTimeMillis() < deadline) {
+                    Thread.sleep(100);
+                }
+                assertThat(sectionLabels(wc.goTo(""), "finished"), contains(startsWith("mine » own")));
+            }
         } finally {
-            RecentRuns.CAPACITY = capacity;
+            RecentTab.FINISHED_CANDIDATES = candidates;
         }
     }
 
@@ -502,24 +531,18 @@ class DashboardTest {
     }
 
     @Test
-    void recentRunsAreBoundedAndForgetDeletedBuilds() throws Exception {
-        int capacity = RecentRuns.CAPACITY;
-        RecentRuns.CAPACITY = 3;
-        try {
-            FreeStyleProject[] projects = new FreeStyleProject[5];
-            for (int i = 0; i < projects.length; i++) {
-                projects[i] = j.createFreeStyleProject("p" + i);
-                j.buildAndAssertSuccess(projects[i]);
-            }
-            List<String> names = RecentRuns.get().getCompleted(10).stream().map(r -> r.getParent().getName()).toList();
-            assertThat(names, contains("p4", "p3", "p2"));
-
-            projects[4].getLastBuild().delete();
-            names = RecentRuns.get().getCompleted(10).stream().map(r -> r.getParent().getName()).toList();
-            assertThat(names, contains("p3", "p2"));
-        } finally {
-            RecentRuns.CAPACITY = capacity;
+    void recentRunsForgetDeletedBuilds() throws Exception {
+        FreeStyleProject[] projects = new FreeStyleProject[3];
+        for (int i = 0; i < projects.length; i++) {
+            projects[i] = j.createFreeStyleProject("p" + i);
+            j.buildAndAssertSuccess(projects[i]);
         }
+        List<String> names = RecentRuns.get().getCompleted(10).stream().map(r -> r.getParent().getName()).toList();
+        assertThat(names, contains("p2", "p1", "p0"));
+
+        projects[2].getLastBuild().delete();
+        names = RecentRuns.get().getCompleted(10).stream().map(r -> r.getParent().getName()).toList();
+        assertThat(names, contains("p1", "p0"));
     }
 
     @Test

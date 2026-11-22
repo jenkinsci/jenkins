@@ -65,6 +65,12 @@ public class RecentTab extends Tab {
     static final int LIMIT = 50;
 
     /**
+     * How many of the most recently finished builds the user can see are ranked, so that their own builds are
+     * found before the list is capped at {@link #LIMIT}.
+     */
+    static /* non-final for Groovy */ int FINISHED_CANDIDATES = 200;
+
+    /**
      * How many queued builds show before the user expands the list.
      */
     static final int COLLAPSED_QUEUE_SIZE = 3;
@@ -160,8 +166,7 @@ public class RecentTab extends Tab {
                 rank(sortedByStart(running.keySet()), run -> involvement(run, userId)),
                 rank(queued, item -> startedBy(item.getCauses(), userId) ? Involvement.STARTED : Involvement.NONE),
                 queued.size(),
-                // All of the index, so that the user's own builds are ranked before the list is capped
-                rank(RecentRuns.get().getCompleted(RecentRuns.CAPACITY), run -> involvement(run, userId)),
+                rank(RecentRuns.get().getCompleted(FINISHED_CANDIDATES), run -> involvement(run, userId)),
                 running);
     }
 
