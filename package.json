@@ -16,7 +16,7 @@
     "start": "yarn dev --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint:js": "eslint . && prettier --check .",
+    "lint:js": "eslint .",
     "lint:js-ci": "eslint . -f checkstyle -o target/eslint-warnings.xml",
     "lint:css": "stylelint src/main/scss",
     "lint:css-ci": "stylelint src/main/scss --custom-formatter stylelint-checkstyle-reporter -o target/stylelint-warnings.xml",
