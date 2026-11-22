@@ -44,9 +44,11 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -161,6 +163,31 @@ class LabelExpressionTest {
         s.setLabelString("bar");
 
         assertSame("bar", s.getLabelString());
+    }
+
+    @Issue("JENKINS-69381")
+    @Test
+    void tiedJobCountWithUnnormalizedLabelString() throws Exception {
+        FreeStyleProject normalized = j.createFreeStyleProject();
+        normalized.setAssignedLabel(j.jenkins.getLabel("label1 && label2"));
+        // The job configuration form and config.xml keep the label string as entered
+        createProjectWithAssignedNode("expression", "label1 &amp;&amp; label2");
+        createProjectWithAssignedNode("quoted", "\"rhel 9\"");
+        // Adding an agent with these labels resets their cached tied job counts
+        j.createSlave("agent", "label1 label2 \"rhel 9\"", null);
+
+        Label expression = j.jenkins.getLabel("label1&&label2");
+        assertEquals(2, expression.getTiedJobs().size());
+        assertEquals(2, expression.getTiedJobCount());
+
+        Label atom = j.jenkins.getLabelAtom("rhel 9");
+        assertEquals(1, atom.getTiedJobs().size());
+        assertEquals(1, atom.getTiedJobCount());
+    }
+
+    private void createProjectWithAssignedNode(String name, String assignedNode) throws IOException {
+        String xml = "<project><assignedNode>" + assignedNode + "</assignedNode></project>";
+        j.jenkins.createProjectFromXML(name, new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
     }
 
     /**
