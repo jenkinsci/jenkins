@@ -531,6 +531,31 @@ class DashboardTest {
     }
 
     @Test
+    void recentTabChecksEachJobInAFolder() throws Exception {
+        enableFlag("bob");
+        MockFolder shared = j.createFolder("shared");
+        FreeStyleProject granted = shared.createProject(FreeStyleProject.class, "granted");
+        FreeStyleProject sibling = shared.createProject(FreeStyleProject.class, "sibling");
+        MockFolder closed = j.createFolder("closed");
+        FreeStyleProject inside = closed.createProject(FreeStyleProject.class, "inside");
+        for (FreeStyleProject p : List.of(granted, sibling, inside)) {
+            j.buildAndAssertSuccess(p);
+        }
+        // As with a pattern-based strategy granting single jobs: bob can read one job in each folder, but only
+        // the first folder
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("bob")
+                .grant(Item.READ).onItems(shared, granted, inside).to("bob"));
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+            assertThat(sectionLabels(wc.goTo(""), "finished"), contains(startsWith("shared » granted")));
+            // A job in a folder bob cannot read is not reachable anywhere else either
+            wc.setThrowExceptionOnFailingStatusCode(false);
+            assertThat(wc.goTo("job/closed/job/inside/").getWebResponse().getStatusCode(), is(404));
+        }
+    }
+
+    @Test
     void recentRunsForgetDeletedBuilds() throws Exception {
         FreeStyleProject[] projects = new FreeStyleProject[3];
         for (int i = 0; i < projects.length; i++) {
