@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.StreamSupport;
 import jenkins.model.Jenkins;
@@ -196,7 +197,7 @@ public abstract class ItemListTab extends Tab {
             @QueryParameter String after, @QueryParameter String search)
             throws IOException, ServletException {
         rsp.setContentType("text/html;charset=UTF-8");
-        req.setAttribute("page", getPage(Util.tryParseNumber(start, 0).intValue(), after, search));
+        req.setAttribute("page", getPage(Objects.requireNonNullElse(Util.tryParseNumber(start, 0), 0).intValue(), after, search));
         req.getView(this, "rows.jelly").forward(req, rsp);
     }
 
