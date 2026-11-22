@@ -240,13 +240,17 @@ public class Search implements StaplerProxy {
                 break;
             }
             // Dedupe on name and URL
-            if (!paths.add(i.getPath() + " " + i.getUrl())) {
+            String path = i.getPath() + " " + i.getUrl();
+            if (paths.contains(path)) {
                 continue;
             }
-            if (groupSizes.merge(i.item.getSearchGroup().getDisplayName(), 1, Integer::sum) > max) {
+            String group = i.item.getSearchGroup().getDisplayName();
+            if (groupSizes.getOrDefault(group, 0) >= max) {
                 r.hasMoreResults = true;
                 continue;
             }
+            paths.add(path);
+            groupSizes.merge(group, 1, Integer::sum);
             r.add(i);
         }
         return r;
@@ -441,6 +445,7 @@ public class Search implements StaplerProxy {
      * @since 1.527
      */
     public static List<SuggestedItem> suggest(SearchIndex index, final String tokenList, SearchableModelObject searchContext) {
+        final boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
 
         class Tag implements Comparable<Tag> {
             final SuggestedItem item;
@@ -451,7 +456,7 @@ public class Search implements StaplerProxy {
             Tag(SuggestedItem i) {
                 item = i;
                 distance = EditDistance.editDistance(i.getPath(), tokenList);
-                prefixMatch = i.getPath().startsWith(tokenList) ? 1 : 0;
+                prefixMatch = i.getPath().regionMatches(caseInsensitive, 0, tokenList, 0, tokenList.length()) ? 1 : 0;
             }
 
             @Override
