@@ -84,6 +84,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
@@ -93,9 +94,11 @@ import jenkins.model.Badgeable;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag;
 import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
+import jenkins.model.menu.action.BaseUrlAction;
 import jenkins.search.SearchGroup;
 import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.stapler.StaplerNotDispatchable;
@@ -595,6 +598,38 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public List<Action> getActions() {
         return TransientViewActionFactory.createAllFor(this);
+    }
+
+    /**
+     * Collects the actions to display in the app bar of this view, along with those of its owner if it's an item,
+     * e.g. a folder. Each action resolves its URLs against the object it belongs to.
+     */
+    @Restricted(NoExternalUse.class)
+    public List<Action> getAppBarActions() {
+        String viewUrl = getViewUrl();
+        Stream<Action> viewActions = getActions().stream()
+                .filter(Actionable::isAppBarAction)
+                .map(action -> new BaseUrlAction(action, viewUrl));
+
+        if (!(owner instanceof Actionable actionable)) {
+            return viewActions.sorted(Actionable.APP_BAR_ORDER).toList();
+        }
+
+        String ownerUrl = owner.getUrl();
+        Stream<Action> ownerActions = actionable.getAllActions().stream()
+                .filter(Actionable::isAppBarAction)
+                .map(action -> new BaseUrlAction(action, ownerUrl));
+
+        return Stream.concat(viewActions, ownerActions).sorted(Actionable.APP_BAR_ORDER).toList();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public ModelObjectWithContextMenu.ContextMenu doContextMenu(StaplerRequest2 request) {
+        if (!new NewDashboardPageUserExperimentalFlag().getFlagValue()) {
+            throw HttpResponses.notFound();
+        }
+
+        return new ModelObjectWithContextMenu.ContextMenu().addAppBarActions(getAppBarActions(), request);
     }
 
     /**
