@@ -167,6 +167,8 @@ public class Search implements StaplerProxy {
         Result r = new Result();
         for (SuggestedItem curItem : getSuggestions(req, query)) {
             String iconName = curItem.item.getSearchIcon();
+            String group = curItem.item.getSearchGroup().getDisplayName();
+            String description = curItem.item.getSearchDescription();
 
             if (iconName == null ||
                     (!iconName.startsWith("symbol-") && !iconName.startsWith("http"))
@@ -176,9 +178,9 @@ public class Search implements StaplerProxy {
 
             if (iconName.startsWith("symbol")) {
                 r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(),
-                        Symbol.get(new SymbolRequest.Builder().withRaw(iconName).build()), "symbol", curItem.item.getSearchGroup().getDisplayName()));
+                        Symbol.get(new SymbolRequest.Builder().withRaw(iconName).build()), "symbol", group, description));
             } else {
-                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(), iconName, "image", curItem.item.getSearchGroup().getDisplayName()));
+                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(), iconName, "image", group, description));
             }
         }
 
@@ -300,17 +302,23 @@ public class Search implements StaplerProxy {
 
         private final String group;
 
+        private final String description;
+
         public Item(String name) {
             this(name, null, null, "symbol", null);
         }
 
         public Item(String name, String url, String icon, String type, String group) {
+            this(name, url, icon, type, group, null);
+        }
+
+        public Item(String name, String url, String icon, String type, String group, String description) {
             this.name = name;
             this.url = url;
             this.icon = icon;
-            this.name = name;
             this.type = type;
             this.group = group;
+            this.description = description;
         }
 
         @Exported
@@ -331,6 +339,11 @@ public class Search implements StaplerProxy {
         @Exported
         public String getGroup() {
             return group;
+        }
+
+        @Exported
+        public String getDescription() {
+            return description;
         }
     }
 

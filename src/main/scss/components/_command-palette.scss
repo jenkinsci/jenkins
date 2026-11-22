@@ -173,7 +173,7 @@ $command-palette-padding: 0.375rem;
       }
 
       &__description {
-        opacity: 0.5;
+        color: var(--text-color-secondary);
         margin-left: 1ch;
       }
 

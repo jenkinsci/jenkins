@@ -44,6 +44,11 @@ public class ManagementLinkSearchItemProvider implements SearchItemProvider {
         }
 
         @Override
+        public String getSearchDescription() {
+            return link.getSearchDescription();
+        }
+
+        @Override
         public String getSearchIcon() {
             return link.getIconFileName();
         }
