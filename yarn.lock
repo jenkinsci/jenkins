@@ -2166,7 +2166,6 @@ __metadata:
     tippy.js: "npm:6.3.7"
     vite: "npm:8.3.8"
     vitest: "npm:5.1.0"
-    window-handle: "npm:1.0.1"
   languageName: unknown
   linkType: soft
 
@@ -3701,13 +3700,6 @@ __metadata:
   bin:
     why-is-node-running: cli.js
   checksum: 10c0/e3f82673aac2c0a330fdbcf4b282ecdf7e9c773fa82fb4217db5b8b3d374cbb51e708d928f5b17999bc65bc1a5a90fad0f6bd794641bd15fdd525949ccee5e39
-  languageName: node
-  linkType: hard
-
-"window-handle@npm:1.0.1":
-  version: 1.0.1
-  resolution: "window-handle@npm:1.0.1"
-  checksum: 10c0/128474ff9fe6699f88f74d64f7187e801165cfd9ad52160f1c8bb9841481b90b9b6a32106bbaa96c65d2275df8f47b74c46c3a271869b38661b7592c3be2cb5b
   languageName: node
   linkType: hard
 
