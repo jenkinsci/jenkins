@@ -1,5 +1,9 @@
 import { LinkResult } from "@/components/command-palette/models";
-import { JenkinsSearchSource } from "./datasources";
+import {
+  JenkinsSearchSource,
+  PageActionsSource,
+  PageTabsSource,
+} from "./datasources";
 import debounce from "lodash/debounce";
 import * as Symbols from "./symbols";
 import makeKeyboardNavigable from "@/util/keyboard";
@@ -7,7 +11,7 @@ import { xmlEscape } from "@/util/security";
 import { createElementFromHtml } from "@/util/dom";
 import { groupResultsByCategory } from "@/components/command-palette/utils";
 
-const datasources = [JenkinsSearchSource];
+const datasources = [PageTabsSource, PageActionsSource, JenkinsSearchSource];
 const MAX_RESULTS_PER_GROUP = 5;
 
 function startsWithQuery(result, query) {
@@ -39,7 +43,8 @@ function init() {
 
   makeKeyboardNavigable(
     searchResultsContainer,
-    () => searchResults.querySelectorAll("a"),
+    () =>
+      searchResults.querySelectorAll(".jenkins-command-palette__results__item"),
     hoverClass,
     () => {},
     () => commandPalette.open,
@@ -68,13 +73,18 @@ function init() {
 
     if (query.length === 0) {
       results = Promise.all([
+        PageTabsSource.execute(""),
+        PageActionsSource.execute(""),
+      ]).then(([tabs, actions]) => [
+        ...tabs,
+        ...actions,
         LinkResult({
           icon: Symbols.HELP,
           type: "symbol",
           label: i18n.dataset.getHelp,
           url: document.querySelector("body").dataset.searchHelpUrl,
           isExternal: true,
-          group: null,
+          group: i18n.dataset.help,
         }),
       ]);
     } else {
@@ -84,6 +94,10 @@ function init() {
     }
 
     results.then((results) => {
+      if (commandPaletteInput.value !== query) {
+        return;
+      }
+
       results = groupResultsByCategory(results);
 
       // Clear current search results
@@ -109,6 +123,12 @@ function init() {
             .forEach(function (obj) {
               const link = createElementFromHtml(obj.render());
               link.addEventListener("mouseenter", (e) => itemMouseEnter(e));
+              if (obj.onSelect) {
+                link.addEventListener("click", (e) => {
+                  e.preventDefault();
+                  hideCommandPalette(obj.onSelect);
+                });
+              }
               searchResults.append(link);
             });
         }
@@ -155,7 +175,7 @@ function init() {
     renderResults();
   }
 
-  function hideCommandPalette() {
+  function hideCommandPalette(afterClose) {
     commandPalette.setAttribute("closing", "");
 
     commandPalette.addEventListener(
@@ -163,6 +183,7 @@ function init() {
       () => {
         commandPalette.removeAttribute("closing");
         commandPalette.close();
+        afterClose?.();
       },
       { once: true },
     );
@@ -178,17 +199,17 @@ function init() {
   }
 
   function updateSelectedItem(index, scrollIntoView = false) {
-    const maxLength = searchResults.getElementsByTagName("a").length;
+    const items = searchResults.querySelectorAll(
+      ".jenkins-command-palette__results__item",
+    );
     const hoveredItem = document.querySelector("." + hoverClass);
 
     if (hoveredItem) {
       hoveredItem.classList.remove(hoverClass);
     }
 
-    if (index < maxLength) {
-      const element = Array.from(searchResults.getElementsByTagName("a"))[
-        index
-      ];
+    if (index < items.length) {
+      const element = items[index];
       element.classList.add(hoverClass);
 
       if (scrollIntoView) {

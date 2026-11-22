@@ -10,22 +10,37 @@ import { xmlEscape } from "@/util/security";
  * @param {string} params.url
  * @param {string | null} params.group
  * @param {boolean | undefined} params.isExternal
+ * @param {string | null | undefined} params.semantic
+ * @param {(() => void) | undefined} params.onSelect
  */
 export function LinkResult(params) {
   return {
     label: params.label,
     url: params.url,
     group: params.group,
+    onSelect: params.onSelect,
     render: () => {
-      return `<a class="jenkins-command-palette__results__item" href="${xmlEscape(
-        params.url,
-      )}">
-        ${params.type === "image" ? `<img alt="${xmlEscape(params.label)}" class="jenkins-command-palette__results__item__icon jenkins-avatar" src="${params.icon}" />` : ""}
-        ${params.type !== "image" ? `<div class="jenkins-command-palette__results__item__icon">${params.icon}</div>` : ""}
-        ${xmlEscape(params.label)}
+      const tag = params.onSelect ? "button" : "a";
+      const clazz = [
+        "jenkins-dropdown__item",
+        "jenkins-command-palette__results__item",
+        params.semantic
+          ? "jenkins-!-" + params.semantic.toLowerCase() + "-color"
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" ");
+      const attributes = params.onSelect
+        ? `type="button"`
+        : `href="${xmlEscape(params.url)}"`;
+
+      return `<${tag} class="${clazz}" ${attributes}>
+        ${params.type === "image" ? `<img alt="${xmlEscape(params.label)}" class="jenkins-dropdown__item__icon jenkins-avatar" src="${params.icon}" />` : ""}
+        ${params.type !== "image" ? `<div class="jenkins-dropdown__item__icon">${params.icon}</div>` : ""}
+        <span class="jenkins-dropdown__item__label">${xmlEscape(params.label)}</span>
         ${params.description ? `<span class="jenkins-command-palette__results__item__description">${xmlEscape(params.description)}</span>` : ""}
         ${params.isExternal ? Symbols.EXTERNAL_LINK : ""}
-    </a>`;
+    </${tag}>`;
     },
   };
 }
