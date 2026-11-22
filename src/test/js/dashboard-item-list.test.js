@@ -502,6 +502,33 @@ describe("dashboard recent tab", () => {
     expect(document.activeElement).toBe(menu);
   });
 
+  it("expands a section when the focused row moves into its hidden rows", async () => {
+    const queued = (ids) =>
+      recent([
+        {
+          id: "queued",
+          toggle: true,
+          rows: ids.map((id, i) => row(id, id, i >= 2)),
+        },
+      ]);
+    await setUp(queued(["a", "b", "c"]), queued(["new", "a", "b", "c"]));
+    const menu = root.querySelector('[page-entry-id="b"] .menu');
+    menu.focus();
+
+    await recentTab.refresh();
+
+    const section = root.querySelector('[data-section="queued"]');
+    expect(section.classList.contains("app-dashboard-section--expanded")).toBe(
+      true,
+    );
+    expect(
+      root
+        .querySelector('[page-entry-id="b"]')
+        .classList.contains("app-dashboard-section__extra"),
+    ).toBe(true);
+    expect(document.activeElement).toBe(menu);
+  });
+
   it("does nothing when the content is unchanged", async () => {
     const html = recent([{ id: "finished", rows: [row("b#1", "x")] }]);
     const applySubtree = await setUp(html, html);

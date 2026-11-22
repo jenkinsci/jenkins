@@ -6,6 +6,7 @@ const HEADER = ".app-dashboard-section__header";
 const BODY = ".app-dashboard-section__body";
 const TOGGLE = ".app-dashboard-section__toggle";
 const EXPANDED = "app-dashboard-section--expanded";
+const EXTRA = "app-dashboard-section__extra";
 const BADGE_TEMPLATE = "template.app-dashboard-recent__badge";
 const CURRENT_TAB = "[data-testid=dashboard-tabs] a[aria-current=page]";
 
@@ -145,9 +146,27 @@ export function initRecent(root, options = {}) {
     replacement?.focus({ preventScroll: true });
   }
 
+  /**
+   * Expands the section of the focused control's row if the row is now one of
+   * the rows a collapsed section hides, for example when a newer build is
+   * ranked above it.
+   */
+  function revealRowOf(control) {
+    if (!control || !control.entryId || !control.sectionId) {
+      return;
+    }
+    const row = Array.from(root.querySelectorAll("[page-entry-id]")).find(
+      (e) => e.getAttribute("page-entry-id") === control.entryId,
+    );
+    if (row && row.classList.contains(EXTRA)) {
+      expanded.add(control.sectionId);
+    }
+  }
+
   function update(html) {
     const control = focusedControl();
     updateContent(html);
+    revealRowOf(control);
     // Expand sections first, as a control in a collapsed section can't take focus
     applyToggles();
     restoreFocus(control);
