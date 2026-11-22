@@ -4382,7 +4382,7 @@ __metadata:
     handlebars: "npm:4.7.10"
     handlebars-loader: "npm:1.7.3"
     hotkeys-js: "npm:3.13.15"
-    jquery: "npm:4.0.0"
+    jquery: "npm:4.1.0"
     jsdom: "npm:31.0.1"
     lodash: "npm:4.18.1"
     mini-css-extract-plugin: "npm:2.10.2"
@@ -4462,10 +4462,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jquery@npm:4.0.0":
-  version: 4.0.0
-  resolution: "jquery@npm:4.0.0"
-  checksum: 10c0/06d8d0f51121af5a691f8b59c74823157bb5b60eea915b30eaa920d6c0ffd91e60ba81e9b97bd8203f331f9dd8d0ec9a4b010935ea314bdd2f15453c29bc780b
+"jquery@npm:4.1.0":
+  version: 4.1.0
+  resolution: "jquery@npm:4.1.0"
+  checksum: 10c0/e4fff455c4f604b64594e14b75ceeb89647bdcc79def4cbaa1d6089d9ae81bdcef6f4dab5a795a196939926e2b81e3fb0a7cd762c736ab4aaddaa308ed6a99d6
   languageName: node
   linkType: hard
 
