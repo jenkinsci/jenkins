@@ -192,9 +192,10 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
                             ref.job().substring(0, slash), folder -> jenkins.getItemByFullNameOrNull(folder) != null)) {
                 continue;
             }
-            // Null when the current user cannot read the job
+            // Null when the current user cannot read a folder containing the job. Not every item group checks
+            // the permission of the items it returns, so the job's own is checked too.
             Job<?, ?> job = jenkins.getItemByFullNameOrNull(ref.job(), Job.class);
-            if (job == null) {
+            if (job == null || !job.hasPermission(Item.READ)) {
                 continue;
             }
             Run<?, ?> run = job.getBuildByNumber(ref.number());
