@@ -486,11 +486,15 @@ public class SearchTest {
 
         Field declaredField = Search.class.getDeclaredField("MAX_SEARCH_SIZE");
         declaredField.setAccessible(true);
+        int original = (int) declaredField.get(null);
         declaredField.set(null, 2);
-
-        Page maximizedResult = wc.goTo("search/suggest?query=projectName", "application/json");
-        JSONArray maximizedSuggestions = getSearchJson(maximizedResult);
-        assertEquals(2, maximizedSuggestions.size());
+        try {
+            Page maximizedResult = wc.goTo("search/suggest?query=projectName", "application/json");
+            JSONArray maximizedSuggestions = getSearchJson(maximizedResult);
+            assertEquals(2, maximizedSuggestions.size());
+        } finally {
+            declaredField.set(null, original);
+        }
     }
 
     @Test
