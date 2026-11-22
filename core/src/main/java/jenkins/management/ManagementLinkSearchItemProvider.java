@@ -21,7 +21,6 @@ public class ManagementLinkSearchItemProvider implements SearchItemProvider {
         return ManagementLink.all().stream()
                 .filter(link -> link.getIconFileName() != null && link.getUrlName() != null)
                 .filter(link -> !link.getRequiresPOST() && !link.getRequiresConfirmation())
-                .filter(link -> !link.getUrlName().contains("://"))
                 .filter(ManagementLink::hasRequiredPermission)
                 .map(ManagementLinkSearchItem::new)
                 .toList();
