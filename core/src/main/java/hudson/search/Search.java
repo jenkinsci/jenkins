@@ -237,7 +237,7 @@ public class Search implements StaplerProxy {
                 r.hasMoreResults = true;
                 break;
             }
-            if (paths.add(i.getPath()))
+            if (paths.add(i.getPath() + '\0' + i.getUrl()))
                 r.add(i);
         }
         return r;
