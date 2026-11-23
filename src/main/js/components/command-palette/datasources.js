@@ -128,7 +128,9 @@ export const PageTabsSource = {
     const group = document.getElementById("command-palette-i18n").dataset.goTo;
     const normalizedQuery = query.toLowerCase();
 
-    const tabs = Array.from(document.querySelectorAll(".app-build-tabs > a"))
+    const tabs = Array.from(
+      document.querySelectorAll(".app-build-tabs > a.jenkins-button--tertiary"),
+    )
       .map((tab) => {
         const label = tab.cloneNode(true);
         label.querySelectorAll(".jenkins-badge").forEach((e) => e.remove());
