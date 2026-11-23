@@ -448,4 +448,9 @@ class RunTest  {
         }
     }
 
+    @Test
+    void artifactsPermissionImpliedByAdminister() {
+        assertEquals(jenkins.model.Jenkins.ADMINISTER, Run.ARTIFACTS.impliedBy);
+    }
+
 }

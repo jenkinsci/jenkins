@@ -33,13 +33,13 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.Job;
-import hudson.model.Run;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import jenkins.model.Jenkins;
+import jenkins.util.NonLocalizable;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +53,10 @@ import org.springframework.security.core.Authentication;
 
 @WithJenkins
 class ACLTest {
+
+    private static final PermissionGroup TEST_GROUP = new PermissionGroup(ACLTest.class, new NonLocalizable("Test"));
+    private static final Permission TEST_P1 = new Permission(TEST_GROUP, "P1", null, null, false, new PermissionScope[] {PermissionScope.JENKINS});
+    private static final Permission TEST_P2 = new Permission(TEST_GROUP, "P2", null, null, false, new PermissionScope[] {PermissionScope.JENKINS});
 
     private JenkinsRule r;
 
@@ -153,8 +157,8 @@ class ACLTest {
 
         try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
             Exception e = assertThrows(AccessDeniedException.class,
-                    () -> jenkins.getACL().checkAnyPermission(Item.WIPEOUT, Run.ARTIFACTS));
-            assertEquals("manager is missing a permission, one of Job/WipeOut, Run/Artifacts is required", e.getMessage());
+                    () -> jenkins.getACL().checkAnyPermission(TEST_P1, TEST_P2));
+            assertEquals("manager is missing a permission, one of Test/P1, Test/P2 is required", e.getMessage());
         }
     }
 
