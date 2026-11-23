@@ -55,10 +55,10 @@ THE SOFTWARE.
               <div class="app-temporary-list__item__description">
                 <j:choose>
                   <j:when test="${run.building}">
-                    <j:set var="executor" value="${attrs.executor}" />
+                    <j:set var="remaining" value="${it.remaining(run)}" />
                     <j:choose>
-                      <j:when test="${executor != null and !executor.likelyStuck and executor.progress ge 0}">
-                        ${%RunningDescription(it.startedAgo(run), executor.estimatedRemainingTime)}
+                      <j:when test="${remaining != null}">
+                        ${%RunningDescription(it.startedAgo(run), remaining)}
                       </j:when>
                       <j:otherwise>
                         ${%RunningDescriptionNoEstimate(it.startedAgo(run))}
@@ -84,7 +84,15 @@ THE SOFTWARE.
       <j:if test="${!empty(attrs.entries)}">
         <section class="app-dashboard-section" data-section="${attrs.id}">
           <div class="app-dashboard-section__header">
-            <h2 class="jenkins-section__title">${attrs.title}</h2>
+            <h2 class="jenkins-section__title">
+              ${attrs.title}
+              <j:if test="${attrs.count != null}">
+                <span class="app-dashboard-section__count">${attrs.count}</span>
+              </j:if>
+            </h2>
+            <j:if test="${attrs.count != null and attrs.count gt attrs.entries.size()}">
+              <p class="app-dashboard-section__note">${%ShowingSome(attrs.entries.size(), attrs.count)}</p>
+            </j:if>
           </div>
           <div class="app-dashboard-section__body">
             <div class="app-temporary-list">
@@ -101,7 +109,7 @@ THE SOFTWARE.
     <div class="app-dashboard-recent">
       <!-- The tab's badge, so that a refresh can update it in the tab bar -->
       <template class="app-dashboard-recent__badge">
-        <l:badge badge="${it.badge}" />
+        <l:badge badge="${it.badgeFor(model)}" />
       </template>
       <j:choose>
         <j:when test="${model.isEmpty()}">
@@ -110,9 +118,9 @@ THE SOFTWARE.
           </l:notice>
         </j:when>
         <j:otherwise>
-          <local:section id="running" title="${%Running}" entries="${model.running()}">
+          <local:section id="running" title="${%Running}" entries="${model.running()}" count="${model.runningCount()}">
             <j:forEach var="entry" items="${model.running()}">
-              <local:run entry="${entry}" executor="${model.executorOf(entry.value())}" />
+              <local:run entry="${entry}" />
             </j:forEach>
           </local:section>
 
@@ -150,7 +158,7 @@ THE SOFTWARE.
                           <div class="app-temporary-list__item__details__text">
                             <a class="app-temporary-list__item__label" href="${rootURL}/${item.task.url}">${item.task.fullDisplayName}</a>
                             <div class="app-temporary-list__item__description">
-                              ${%QueuedDescription(item.inQueueForString)}
+                              ${%QueuedDescription(it.waitingFor(item))}
                               <j:if test="${item.why != null}">
                                 <span class="app-dashboard-why">${item.why}</span>
                               </j:if>

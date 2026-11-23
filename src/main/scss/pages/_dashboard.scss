@@ -247,6 +247,11 @@ div.listview-jobs {
     margin-left: 0.25rem;
   }
 
+  &__note {
+    margin: 0;
+    color: var(--text-color-secondary);
+  }
+
   // Only the first few rows show until the section is expanded
   &--collapsible:not(.app-dashboard-section--expanded) {
     .app-dashboard-section__extra {

@@ -254,6 +254,8 @@ class DashboardTest {
                 assertThat(sectionLabels(page, "queued"), contains("queued"));
                 assertThat(sectionLabels(page, "finished"), contains(startsWith("finished")));
                 assertThat(page.querySelector("[data-testid=dashboard-tabs] .jenkins-badge").getTextContent().trim(), is("1"));
+                assertThat(page.querySelector("[data-section=running] .app-dashboard-section__count").getTextContent().trim(), is("1"));
+                assertThat(page.querySelector("[data-section=running] .app-dashboard-section__note"), nullValue());
 
                 // Rows show the run's app bar actions, and alice may not cancel
                 assertThat(rowActions(page, "running", "job/running/1/"), not(containsString("Cancel")));

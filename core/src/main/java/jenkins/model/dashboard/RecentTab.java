@@ -43,6 +43,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
@@ -95,7 +96,18 @@ public class RecentTab extends Tab {
 
     @Override
     public Badge getBadge() {
-        int running = getRunning().size();
+        return badge(getRunningExecutors().size());
+    }
+
+    /**
+     * The badge for a model, the same as {@link #getBadge()} without looking at the executors again.
+     */
+    @Restricted(NoExternalUse.class)
+    public @CheckForNull Badge badgeFor(@NonNull Model model) {
+        return badge(model.runningCount());
+    }
+
+    private static @CheckForNull Badge badge(int running) {
         if (running == 0) {
             return null;
         }
@@ -107,12 +119,61 @@ public class RecentTab extends Tab {
     }
 
     /**
-     * How long ago a build started, such as "5 min 3 sec". Unlike {@link Run#getTimestampString()}, this
+     * How long ago a build started, such as "5 min". Unlike {@link Run#getTimestampString()}, this
      * leaves out the time the build spent waiting in the queue.
      */
     @Restricted(NoExternalUse.class)
     public @NonNull String startedAgo(@NonNull Run<?, ?> run) {
-        return Util.getTimeSpanString(Math.max(0, System.currentTimeMillis() - run.getStartTimeInMillis()));
+        return roughTimeSpan(System.currentTimeMillis() - run.getStartTimeInMillis());
+    }
+
+    /**
+     * How long a running build is likely to take to finish, such as "5 min", or {@code null} if there is no
+     * estimate, or the build has taken so much longer than estimated that it may be stuck. This reads the
+     * estimate once, where {@link Executor#getEstimatedRemainingTime()}, {@link Executor#getProgress()} and
+     * {@link Executor#isLikelyStuck()} each read it from the job's earlier builds.
+     */
+    @Restricted(NoExternalUse.class)
+    public @CheckForNull String remaining(@NonNull Run<?, ?> run) {
+        long estimate = run.getEstimatedDuration();
+        long elapsed = System.currentTimeMillis() - run.getStartTimeInMillis();
+        if (estimate <= 0 || elapsed > estimate * 10) {
+            return null;
+        }
+        long remaining = estimate - elapsed;
+        return remaining > 0 ? roughTimeSpan(remaining) : null;
+    }
+
+    /**
+     * How long a queued item has waited, such as "5 min".
+     */
+    @Restricted(NoExternalUse.class)
+    public @NonNull String waitingFor(@NonNull Queue.Item item) {
+        return roughTimeSpan(System.currentTimeMillis() - item.getInQueueSince());
+    }
+
+    /**
+     * A time span like {@link Util#getTimeSpanString(long)}, in steps that grow with it: minutes up to ten minutes,
+     * then five minutes, then hours, then days. A row then reads the same for a while, which matters most for the
+     * many rows of builds that finished hours ago.
+     */
+    static @NonNull String roughTimeSpan(long duration) {
+        long millis = Math.max(0, duration);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+        if (minutes < 1) {
+            return Messages.RecentTab_LessThanAMinute();
+        }
+        if (minutes < 10) {
+            return hudson.Messages.Util_minute(minutes);
+        }
+        if (minutes < 60) {
+            return hudson.Messages.Util_minute(minutes - minutes % 5);
+        }
+        long hours = TimeUnit.MILLISECONDS.toHours(millis);
+        if (hours < 24) {
+            return hudson.Messages.Util_hour(hours);
+        }
+        return hudson.Messages.Util_day(TimeUnit.MILLISECONDS.toDays(millis));
     }
 
     /**
@@ -137,25 +198,24 @@ public class RecentTab extends Tab {
     /**
      * The groups shown on the tab, each capped at {@link #LIMIT} entries.
      *
+     * @param runningCount the number of running builds the user can see, which may exceed the entries shown
      * @param queuedCount the number of queued builds the user can see, which may exceed the entries shown
-     * @param executors the executor of each running build
      */
     @Restricted(NoExternalUse.class)
     public record Model(
             List<Entry<Run<?, ?>>> running,
+            int runningCount,
             List<Entry<Queue.Item>> queued,
             int queuedCount,
-            List<Entry<Run<?, ?>>> finished,
-            Map<Run<?, ?>, Executor> executors) {
+            List<Entry<Run<?, ?>>> finished) {
         public boolean isEmpty() {
             return running.isEmpty() && queued.isEmpty() && finished.isEmpty();
         }
-
-        public @CheckForNull Executor executorOf(Run<?, ?> run) {
-            return executors.get(run);
-        }
     }
 
+    /**
+     * What the tab shows, for the current user.
+     */
     public @NonNull Model getModel() {
         User user = User.current();
         String userId = user == null ? null : user.getId();
@@ -163,10 +223,10 @@ public class RecentTab extends Tab {
         List<Queue.Item> queued = getQueued();
         return new Model(
                 rank(sortedByStart(running.keySet()), run -> involvement(run, userId)),
+                running.size(),
                 rank(queued, item -> startedBy(item.getCauses(), userId) ? Involvement.STARTED : Involvement.NONE),
                 queued.size(),
-                rank(RecentRuns.get().getCompleted(FINISHED_CANDIDATES), run -> involvement(run, userId)),
-                running);
+                rank(RecentRuns.get().getCompleted(FINISHED_CANDIDATES), run -> involvement(run, userId)));
     }
 
     /**
@@ -189,14 +249,6 @@ public class RecentTab extends Tab {
      */
     private static boolean canSee(Item item) {
         return item.hasPermission(Item.READ) && Jenkins.get().getItemByFullNameOrNull(item.getFullName()) != null;
-    }
-
-    /**
-     * Running builds the current user can see, most recently started first.
-     */
-    @NonNull
-    List<Run<?, ?>> getRunning() {
-        return sortedByStart(getRunningExecutors().keySet());
     }
 
     private static List<Run<?, ?>> sortedByStart(Collection<Run<?, ?>> runs) {
