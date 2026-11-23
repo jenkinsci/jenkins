@@ -166,7 +166,7 @@ module.exports = (env, argv) => ({
       chunks: "async",
       cacheGroups: {
         commons: {
-          test: /[\\/]node_modules[\\/]/,
+          test: /[\\/]node_modules[\\/](?!(jquery|handlebars)[\\/])/,
           name: "vendors",
           chunks: "all",
         },
