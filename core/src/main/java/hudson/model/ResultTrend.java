@@ -130,21 +130,17 @@ public enum ResultTrend {
         }
 
         Run<?, ?> previousBuild = getPreviousNonAbortedBuild(run);
+        Result previousResult = previousBuild != null ? previousBuild.getResult() : null;
         if (result == Result.UNSTABLE) {
-            if (previousBuild == null) {
-                return UNSTABLE;
-            }
-
-
-            if (previousBuild.getResult() == Result.UNSTABLE) {
+            if (previousResult == Result.UNSTABLE) {
                 return STILL_UNSTABLE;
-            } else if (previousBuild.getResult() == Result.FAILURE) {
+            } else if (previousResult == Result.FAILURE) {
                 return NOW_UNSTABLE;
             } else {
                 return UNSTABLE;
             }
         } else if (result == Result.FAILURE) {
-            if (previousBuild != null && previousBuild.getResult() == Result.FAILURE) {
+            if (previousResult == Result.FAILURE) {
                 return STILL_FAILING;
             } else {
                 return FAILURE;
@@ -186,7 +182,8 @@ public enum ResultTrend {
 
         Run<?, ?> previousBuild = getPreviousNonAbortedBuild(build);
         if (previousBuild != null) {
-            return previousBuild.getResult().isWorseThan(Result.SUCCESS);
+            Result previousResult = previousBuild.getResult();
+            return previousResult != null && previousResult.isWorseThan(Result.SUCCESS);
         }
         return false;
     }

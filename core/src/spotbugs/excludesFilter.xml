@@ -100,7 +100,6 @@
           <Class name="hudson.model.queue.CauseOfBlockage$BecauseNodeIsOffline"/>
           <Class name="hudson.model.queue.MappingWorksheet$ExecutorChunk"/>
           <Class name="hudson.model.queue.WorkUnitContext"/>
-          <Class name="hudson.model.ResultTrend"/>
           <Class name="hudson.model.Run"/>
           <Class name="hudson.model.RunParameterValue"/>
           <Class name="hudson.model.Slave"/>
