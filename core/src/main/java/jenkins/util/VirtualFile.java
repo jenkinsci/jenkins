@@ -340,6 +340,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         List<TokenizedPattern> r = new ArrayList<>();
         if (patts != null) {
             for (String patt : patts.split(",")) {
+                patt = patt.trim();
                 if (patt.endsWith("/")) {
                     patt += SelectorUtils.DEEP_TREE_MATCH;
                 }

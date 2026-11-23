@@ -334,3 +334,9 @@ $collapsible-page-body: ".app-page-body:has(> .app-page-body__sidebar):not(:has(
     }
   }
 }
+
+// Bootstrap appends modal backdrops to body. Avoid trapping page modals
+// inside the page body's stacking context while a Bootstrap modal is open.
+body.modal-open .app-page-body {
+  isolation: auto;
+}

@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <div class="dashboard">
     <j:if test="${columnExtensions==null}">
         <j:invokeStatic var="columnExtensions" className="hudson.model.ListView" method="getDefaultColumns"/>
@@ -43,40 +43,7 @@ THE SOFTWARE.
           </j:if>
         </j:forEach>
         <j:forEach var="job" items="${jobs}">
-          <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
-          <j:set var="jobBaseUrl" value="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>
-          <div class="app-temporary-list__item">
-            <div class="app-build-item">
-              <div class="app-build-item__icon">
-                <j:choose>
-                  <j:when test="${job.iconColor.iconName != null}">
-                    <l:icon src="symbol-status-${job.iconColor.iconName}" alt="${job.iconColor.description}" />
-                  </j:when>
-                  <j:otherwise>
-                    <!-- This is for special conditions, such as folders -->
-                    <l:icon src="${job.iconColor.iconClassName}" />
-                  </j:otherwise>
-                </j:choose>
-              </div>
-
-              <div class="app-temporary-list__item__details" href="${jobBaseUrl}${job.shortUrl}">
-                <div class="app-temporary-list__item__details__text">
-                  <a class="app-temporary-list__item__label" href="${jobBaseUrl}${job.shortUrl}">${job.displayName}</a>
-
-                  <j:set var="lastBuild" value="${job.lastBuild}" />
-                  <j:if test="${lastBuild != null}">
-                    <div class="app-temporary-list__item__description">
-                      ${%Description(lastBuild.timestampString, lastBuild.durationString)}
-                    </div>
-                  </j:if>
-                </div>
-              </div>
-
-              <div class="app-temporary-list__item__actions">
-                <l:actions it="${job}" url="${rootURL}/${job.url}" compact="true" />
-              </div>
-            </div>
-          </div>
+          <t:jobListItem job="${job}" />
         </j:forEach>
       </div>
     </j:if>

@@ -145,6 +145,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TimeZone;
@@ -168,6 +169,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.SimplePageDecorator;
+import jenkins.model.Tab;
 import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DetailGroup;
@@ -184,6 +186,8 @@ import org.apache.commons.jexl.util.Introspector;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
+import org.jvnet.localizer.LocaleProvider;
+import org.jvnet.localizer.ResourceBundleHolder;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -540,6 +544,34 @@ public class Functions {
                 return head + n.getNumber() + rest;
             }
         }
+
+        /**
+         * Returns the URL of another run, relative to the context path, on the {@link Tab} the current page shows
+         * when that run has the same tab, and the run's own page otherwise.
+         * Links between related runs, such as to an upstream build, then keep the user on the view they are using.
+         *
+         * @param other the run to link to
+         * @return a URL relative to the context path, without a leading slash
+         * @since 2.591
+         */
+        public @NonNull String getSameTabUrl(@NonNull Run<?, ?> other) {
+            String tab = getTabUrlName();
+            if (tab != null) {
+                for (Action action : other.getAllActions()) {
+                    if (action instanceof Tab && tab.equals(action.getUrlName())) {
+                        return other.getUrl() + tab + '/';
+                    }
+                }
+            }
+            return other.getUrl();
+        }
+
+        private @CheckForNull String getTabUrlName() {
+            String path = rest.replaceFirst("^/+", "");
+            int slash = path.indexOf('/');
+            String segment = slash < 0 ? path : path.substring(0, slash);
+            return segment.isEmpty() ? null : segment;
+        }
     }
 
     public static Node.Mode[] getNodeModes() {
@@ -757,6 +789,41 @@ public class Functions {
 
     public static boolean isCollapsed(String paneId) {
         return PaneStatusProperties.forCurrentUser().isCollapsed(paneId);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static long getElapsedSince(long epochMillis) {
+        return System.currentTimeMillis() - epochMillis;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static @NonNull String formatTimeSpan(long duration) {
+        long wholeSeconds = Math.abs(duration) / 1000 * 1000;
+        if (wholeSeconds == 0) {
+            return Messages.Util_second(0);
+        }
+        return Util.getTimeSpanString(wholeSeconds);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static @NonNull String formatTimeSpanToMinute(long duration) {
+        long minutes = Math.abs(duration) / 60_000;
+        if (minutes < 60) {
+            return Messages.Util_minute(minutes);
+        }
+        return Util.getTimeSpanString(minutes * 60_000);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static @NonNull String getTimeSpanPatterns() {
+        Locale locale = LocaleProvider.getLocale();
+        ResourceBundle bundle = ResourceBundleHolder.get(Messages.class).get(locale);
+        JSONObject patterns = new JSONObject();
+        patterns.put("locale", locale.toLanguageTag());
+        for (String unit : List.of("second", "minute", "hour", "day", "month", "year")) {
+            patterns.put(unit, bundle.getString("Util." + unit).replace("{0}", "{0,number}"));
+        }
+        return patterns.toString();
     }
 
     @Restricted(NoExternalUse.class)
@@ -2845,5 +2912,10 @@ public class Functions {
         }
 
         return MessageFormat.format(format, args);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static String getActionEventType(Action action) {
+        return action.getEvent().getClass().getSimpleName();
     }
 }

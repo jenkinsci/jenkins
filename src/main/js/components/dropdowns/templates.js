@@ -136,6 +136,8 @@ function badge(opt) {
  * @return {Element}
  */
 function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
+  context = dropdownItem.baseUrl || context;
+
   /**
    * @type {DropdownItem}
    */
@@ -190,7 +192,11 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
       button,
       (instance) => {
         instance.setContent(
-          Utils.generateDropdownItems(dropdownItem.subMenu.items),
+          Utils.generateDropdownItems(
+            dropdownItem.subMenu.items,
+            false,
+            context,
+          ),
         );
         instance.loaded = true;
       },
@@ -227,9 +233,10 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
           id: itemOptions.id,
           tooltip: itemOptions.tooltip,
           type: tag === "button" ? "button" : null,
+          role: type === "jenkins-dropdown__item" ? "menuitem" : null,
         })}>
           ${icon(itemOptions, type)}
-          ${label}
+          ${label ? `<span class="jenkins-dropdown__item__label">${label}</span>` : ""}
           ${description}
           ${badge(itemOptions)}
           ${

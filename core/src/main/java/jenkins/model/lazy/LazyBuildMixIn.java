@@ -189,6 +189,8 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
      * Suitable for {@link SubTask#createExecutable}.
      */
     public final synchronized RunT newBuild() throws IOException {
+        // A concurrent rename would otherwise move the job between the build resolving its directory and creating it.
+        asJob().beginBuildCreation();
         try {
             RunT lastBuild = getBuildClass().getConstructor(asJob().getClass()).newInstance(asJob());
             var rootDir = lastBuild.getRootDir().toPath();
@@ -205,6 +207,8 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
             throw new LinkageError("A new build could not be created in " + asJob().getFullName() + ": " + e, e);
         } catch (IllegalStateException e) {
             throw new IOException("A new build could not be created in " + asJob().getFullName() + ": " + e, e);
+        } finally {
+            asJob().endBuildCreation();
         }
     }
 

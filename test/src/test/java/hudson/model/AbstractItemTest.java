@@ -5,6 +5,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -23,6 +25,7 @@ import java.nio.file.Path;
 import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
+import jenkins.model.RenameAction;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
@@ -138,6 +141,27 @@ class AbstractItemTest {
         try (ACLContext unused = ACL.as(User.getById("carol", true))) {
             AccessDeniedException3 e = assertThrows(AccessDeniedException3.class, () -> p.doCheckNewName("foo"));
             assertThat(e.permission, equalTo(Item.CREATE));
+        }
+    }
+
+    @Test
+    void renameActionRequiresRenamePermissions() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy mas = new MockAuthorizationStrategy();
+        mas.grant(Item.READ).everywhere().to("alice", "bob", "carol");
+        mas.grant(Item.CONFIGURE).everywhere().to("alice");
+        mas.grant(Item.CREATE, Item.DELETE).everywhere().to("carol");
+        j.jenkins.setAuthorizationStrategy(mas);
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+
+        try (ACLContext unused = ACL.as(User.getById("alice", true))) {
+            assertNotNull(p.getAction(RenameAction.class));
+        }
+        try (ACLContext unused = ACL.as(User.getById("bob", true))) {
+            assertNull(p.getAction(RenameAction.class));
+        }
+        try (ACLContext unused = ACL.as(User.getById("carol", true))) {
+            assertNotNull(p.getAction(RenameAction.class));
         }
     }
 

@@ -833,7 +833,7 @@ class PluginManagerTest {
             assertEquals(200, responseGet.statusCode(), "Bad response for crumb issuer");
             String body = responseGet.body();
             assertTrue(body.contains("crumbRequestField"), "crumbRequestField not in response");
-            org.json.JSONObject jsonObject = new org.json.JSONObject(body);
+            JSONObject jsonObject = JSONObject.fromObject(body);
             String crumb = (String) jsonObject.get("crumb");
             String crumbRequestField = (String) jsonObject.get("crumbRequestField");
 

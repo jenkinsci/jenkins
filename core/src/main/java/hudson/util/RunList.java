@@ -47,13 +47,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Predicate;
+import org.kohsuke.stapler.export.AlwaysIterate;
+import org.kohsuke.stapler.export.Range;
 
 /**
  * {@link List} of {@link Run}s, sorted in the descending date order.
+ * Implements {@link AlwaysIterate} so Stapler range exports avoid {@link Range#apply(java.util.List)},
+ * whose list overload calls {@link List#size()} and would load every build.
  *
  * @author Kohsuke Kawaguchi
  */
-public class RunList<R extends Run> extends AbstractList<R> {
+public class RunList<R extends Run> extends AbstractList<R> implements AlwaysIterate {
 
     private Iterable<R> base;
 
