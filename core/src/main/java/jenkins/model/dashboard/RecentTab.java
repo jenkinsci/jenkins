@@ -126,6 +126,14 @@ public class RecentTab extends Tab {
         return new Badge(Integer.toString(running), Messages.RecentTab_RunningBadge(running), Badge.Severity.INFO);
     }
 
+    /**
+     * Whether the recently finished builds may be missing some, as they are still being read after a restart.
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean isLoading() {
+        return RecentRuns.get().isLoading();
+    }
+
     public int getCollapsedQueueSize() {
         return COLLAPSED_QUEUE_SIZE;
     }
@@ -279,10 +287,9 @@ public class RecentTab extends Tab {
 
     /**
      * Whether the current user can see an item and every folder containing it, as needed to open its page.
-     * Not every item group checks the permission of the items it returns, so the item's own is checked too.
      */
     private static boolean canSee(Item item) {
-        return item.hasPermission(Item.READ) && Jenkins.get().getItemByFullNameOrNull(item.getFullName()) != null;
+        return Dashboard.visible(item.getFullName(), Item.class) != null;
     }
 
     private static List<Run<?, ?>> sortedByStart(Collection<Run<?, ?>> runs) {

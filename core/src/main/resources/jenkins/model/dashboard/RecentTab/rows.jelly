@@ -93,6 +93,9 @@ THE SOFTWARE.
             <j:if test="${attrs.count != null and attrs.count gt attrs.entries.size()}">
               <p class="app-dashboard-section__note">${%ShowingSome(attrs.entries.size(), attrs.count)}</p>
             </j:if>
+            <j:if test="${attrs.note != null}">
+              <p class="app-dashboard-section__note">${attrs.note}</p>
+            </j:if>
           </div>
           <div class="app-dashboard-section__body">
             <div class="app-temporary-list">
@@ -112,6 +115,9 @@ THE SOFTWARE.
         <l:badge badge="${it.badgeFor(model)}" />
       </template>
       <j:choose>
+        <j:when test="${model.isEmpty() and it.loading}">
+          <l:notice title="${%Looking for recent builds}" icon="symbol-clock" />
+        </j:when>
         <j:when test="${model.isEmpty()}">
           <l:notice title="${%Nothing has run recently}" icon="symbol-clock">
             <a href="${rootURL}/all/">${%Browse all items}</a>
@@ -182,7 +188,10 @@ THE SOFTWARE.
             </section>
           </j:if>
 
-          <local:section id="finished" title="${%Recently finished}" entries="${model.finished()}">
+          <j:if test="${it.loading}">
+            <j:set var="finishedNote" value="${%StillLooking}" />
+          </j:if>
+          <local:section id="finished" title="${%Recently finished}" entries="${model.finished()}" note="${finishedNote}">
             <j:forEach var="entry" items="${model.finished()}">
               <local:run entry="${entry}" />
             </j:forEach>

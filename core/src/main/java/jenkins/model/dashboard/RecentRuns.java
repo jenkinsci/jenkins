@@ -48,7 +48,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import jenkins.util.Timer;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -62,7 +61,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * by job full name and build number rather than by reference, so this does not keep builds in memory, and an
  * entry takes about a hundred bytes.
  * The index starts empty. The first read fills it in the background from each job's last completed
- * build, so startup does not load any builds.
+ * build, so startup does not load any builds. Reads see the jobs read so far while it fills.
  */
 @Extension
 @Restricted(NoExternalUse.class)
@@ -91,6 +90,9 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
     private final NavigableSet<Ref> newestFirst = new ConcurrentSkipListSet<>(NEWEST_FIRST);
 
     private final AtomicBoolean seeded = new AtomicBoolean();
+
+    /** Whether the index is being filled from existing builds. */
+    private volatile boolean loading;
 
     public static RecentRuns get() {
         return ExtensionList.lookupSingleton(RecentRuns.class);
@@ -191,29 +193,24 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
     @NonNull
     public List<Run<?, ?>> getCompleted(int limit) {
         seedOnce();
-        Jenkins jenkins = Jenkins.get();
-        // Whether the current user can read each folder, so that the jobs of a folder the user cannot read are
-        // skipped after one check. Users who can only see a few folders would otherwise check every job.
-        Map<String, Boolean> readableFolders = new HashMap<>();
+        ReadableFolders folders = new ReadableFolders();
         List<Run<?, ?>> result = new ArrayList<>();
         for (Ref ref : newestFirst) {
             if (result.size() >= limit) {
                 break;
             }
+            // The folder first, as it is remembered, and most entries are in folders the user cannot read or that
+            // they have seen already
+            int slash = ref.job().lastIndexOf('/');
+            if (slash > 0 && !folders.canRead(ref.job().substring(0, slash))) {
+                continue;
+            }
             if (refs.get(ref.job()) != ref) {
                 // Replaced or removed since the iteration started
                 continue;
             }
-            int slash = ref.job().lastIndexOf('/');
-            if (slash > 0
-                    && !readableFolders.computeIfAbsent(
-                            ref.job().substring(0, slash), folder -> jenkins.getItemByFullNameOrNull(folder) != null)) {
-                continue;
-            }
-            // Null when the current user cannot read a folder containing the job. Not every item group checks
-            // the permission of the items it returns, so the job's own is checked too.
-            Job<?, ?> job = jenkins.getItemByFullNameOrNull(ref.job(), Job.class);
-            if (job == null || !job.hasPermission(Item.READ)) {
+            Job<?, ?> job = Dashboard.visible(ref.job(), Job.class);
+            if (job == null) {
                 continue;
             }
             Run<?, ?> run = job.getBuildByNumber(ref.number());
@@ -234,43 +231,79 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
         return result;
     }
 
-    private void seedOnce() {
-        if (seeded.compareAndSet(false, true)) {
-            Timer.get().submit(this::seed);
+    /**
+     * Whether the current user can read folders, by full name, remembering the answer for each folder and the
+     * folders containing it, so that a user who can only see a few folders checks each folder once, and the
+     * folders inside a folder they cannot read not at all.
+     */
+    private static final class ReadableFolders {
+        private final Map<String, Boolean> readable = new HashMap<>();
+
+        boolean canRead(String folder) {
+            Boolean known = readable.get(folder);
+            if (known != null) {
+                return known;
+            }
+            int slash = folder.lastIndexOf('/');
+            boolean result = (slash <= 0 || canRead(folder.substring(0, slash)))
+                    && Jenkins.get().getItemByFullNameOrNull(folder) != null;
+            readable.put(folder, result);
+            return result;
         }
     }
 
     /**
-     * Fills the index from the last completed build of every job. Runs as the system user, because the
-     * index is shared by all users and each read filters by the reader's permissions.
+     * Whether the index is still being filled from existing builds, so that it may be missing older builds.
+     */
+    public boolean isLoading() {
+        return loading;
+    }
+
+    private void seedOnce() {
+        if (seeded.compareAndSet(false, true)) {
+            loading = true;
+            Thread thread = new Thread(this::seed, "Dashboard recent builds");
+            thread.setDaemon(true);
+            thread.setPriority(Thread.MIN_PRIORITY);
+            thread.start();
+        }
+    }
+
+    /**
+     * Fills the index from the last completed build of every job, adding each job as it is read. Runs as the
+     * system user, because the index is shared by all users and each read filters by the reader's permissions.
+     * If it fails, the next read tries again.
      */
     @SuppressWarnings("rawtypes")
     void seed() {
-        List<Candidate> candidates = new ArrayList<>();
+        boolean done = false;
         try (ACLContext ignored = ACL.as2(ACL.SYSTEM2)) {
             Jenkins jenkins = Jenkins.get();
             for (Job job : jenkins.allItems(Job.class)) {
                 Run<?, ?> run = lastCompletedBuild(job);
-                if (run != null) {
-                    candidates.add(new Candidate(job, Ref.of(run)));
+                if (run == null) {
+                    continue;
                 }
-            }
-            // Jobs may have been renamed, moved or deleted since they were read. Holding the lock while checking
-            // means that a later change is applied by the item listener to what is added here.
-            synchronized (refs) {
-                for (Candidate candidate : candidates) {
-                    String name = candidate.job().getFullName();
-                    if (jenkins.getItemByFullName(name, Job.class) == candidate.job()) {
-                        add(new Ref(name, candidate.ref().number(), candidate.ref().endTime()));
+                Ref ref = Ref.of(run);
+                // The job may have been renamed, moved or deleted since it was read. Holding the lock while
+                // checking means that a later change is applied by the item listener to what is added here.
+                synchronized (refs) {
+                    String name = job.getFullName();
+                    if (jenkins.getItemByFullName(name, Job.class) == job) {
+                        add(new Ref(name, ref.number(), ref.endTime()));
                     }
                 }
             }
+            done = true;
         } catch (RuntimeException e) {
             LOGGER.log(Level.WARNING, "Failed to load recent runs", e);
+        } finally {
+            if (!done) {
+                seeded.set(false);
+            }
+            loading = false;
         }
     }
-
-    private record Candidate(Job<?, ?> job, Ref ref) {}
 
     private static @CheckForNull Run<?, ?> lastCompletedBuild(Job<?, ?> job) {
         try {
