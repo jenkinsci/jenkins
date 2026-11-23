@@ -616,6 +616,54 @@ class FilePathTest {
             assertThrows(InterruptedException.class, () -> d.validateAntFileMask("**/*.js", 10));
     }
 
+    @Test
+    void validateAntFileMaskSecondHeuristicIsBounded() throws Exception {
+        File tmp = temp;
+        FilePath d = new FilePath(french, tmp.getPath());
+        FilePath d2 = d.child("d1/d2");
+        d2.mkdirs();
+        for (int i = 0; i < 100; i++) {
+            FilePath d3 = d2.child("d" + i);
+            d3.mkdirs();
+            d3.child("f.txt").touch(0);
+        }
+        // "nonexistent" is resolved cheaply on its own: Ant can prune the scan using the fixed,
+        // single-segment literal path, so it never needs to descend into "d1". But the "did the
+        // user mean a nested path?" heuristic retries it as "**/nonexistent", which forces a full
+        // scan of the same tree that the test above already shows exceeds a bound of 10 ticks. That
+        // must not fail the whole call: it should just give up on this particular suggestion and
+        // fall through to a generic message, the same as it would if no heuristic had matched.
+        assertEquals(Messages.FilePath_validateAntFileMask_doesntMatchAnything("nonexistent"),
+                d.validateAntFileMask("nonexistent", 10, true));
+    }
+
+    @Test
+    void validateAntFileMaskFallbackHonorsDefaultExcludes() throws Exception {
+        File tmp = temp;
+        FilePath d = new FilePath(french, tmp.getPath());
+        d.child(".git").mkdirs();
+        d.child(".git/config").touch(0);
+        // "config" doesn't exist anywhere outside of ".git". Ant's default excludes hide ".git"
+        // from the "**/" fallback scan, matching the FileSet-based scan it replaced, so the
+        // fallback must not suggest ".git/config".
+        assertEquals(Messages.FilePath_validateAntFileMask_doesntMatchAnything("config"),
+                d.validateAntFileMask("config", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, true));
+    }
+
+    @Test
+    void validateAntFileMaskFallbackRequiresFileMatch() throws Exception {
+        File tmp = temp;
+        FilePath d = new FilePath(french, tmp.getPath());
+        d.child("nested/foo").mkdirs();
+        d.child("nested/foo/foo.txt").touch(0);
+        // "nested/foo" itself matches "**/foo*" as a directory, but a directory match alone isn't
+        // a usable suggestion. Even with an ample, finite bound, the fallback must keep scanning
+        // past that directory match to find the file match underneath it, rather than stopping
+        // early and losing the suggestion.
+        assertEquals(Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest("foo*", "nested/foo*"),
+                d.validateAntFileMask("foo*", 1000, true));
+    }
+
     @Issue("JENKINS-5253")
     @Test
     void testValidateCaseSensitivity() throws Exception {
