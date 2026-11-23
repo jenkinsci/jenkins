@@ -22,11 +22,11 @@ public class ManagementLinkSearchItemProvider implements SearchItemProvider {
                 .filter(link -> link.getIconFileName() != null && link.getUrlName() != null)
                 .filter(link -> !link.getRequiresPOST() && !link.getRequiresConfirmation())
                 .filter(ManagementLink::hasRequiredPermission)
-                .map(ManagementLinkSearchItem::new)
+                .map(link -> new ManagementLinkSearchItem(link, link.getUrlName()))
                 .toList();
     }
 
-    private record ManagementLinkSearchItem(ManagementLink link) implements SearchItem {
+    private record ManagementLinkSearchItem(ManagementLink link, String urlName) implements SearchItem {
 
         @Override
         public String getSearchName() {
@@ -35,7 +35,6 @@ public class ManagementLinkSearchItemProvider implements SearchItemProvider {
 
         @Override
         public String getSearchUrl() {
-            String urlName = link.getUrlName();
             if (urlName.startsWith("/")) {
                 return urlName;
             }
