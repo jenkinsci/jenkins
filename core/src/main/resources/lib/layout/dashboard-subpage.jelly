@@ -31,7 +31,7 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:set var="dashboard" value="${it.object}" />
-  <l:layout title="${dashboard.displayName}">
+  <l:layout title="${dashboard.fullDisplayName}">
     <l:header>
       <script src="${resURL}/jsbundles/pages/dashboard/home.js" type="text/javascript" defer="true" />
     </l:header>
@@ -48,7 +48,7 @@ THE SOFTWARE.
             <j:forEach var="tab" items="${dashboard.dashboardTabs}">
               <!-- Tabs are created per request, so compare by type and URL rather than identity -->
               <j:set var="isCurrentTab" value="${tab.class == it.class and tab.urlName == it.urlName}" />
-              <a href="${rootURL}/${tab.urlName == null ? '' : tab.urlName + '/'}"
+              <a href="${rootURL}/${dashboard.url}${tab.urlName == null ? '' : tab.urlName + '/'}"
                  class="jenkins-button ${isCurrentTab ? '' : 'jenkins-button--tertiary'}"
                  aria-current="${isCurrentTab ? 'page' : null}">
                 <l:icon src="${tab.iconFileName}" />
@@ -60,16 +60,26 @@ THE SOFTWARE.
         </div>
 
         <div class="app-build-bar__controls">
-          <l:actions it="${dashboard}" url="${rootURL}/" />
+          <l:actions it="${dashboard}" url="${rootURL}/${dashboard.url}" />
         </div>
       </div>
 
       <div class="app-build-content" style="padding-top: var(--section-padding)">
-        <j:if test="${app.systemMessage != null}">
-          <div id="systemmessage" class="app-dashboard-system-message">
-            <j:out value="${app.markupFormatter.translate(app.systemMessage)}" />
-          </div>
-        </j:if>
+        <j:choose>
+          <j:when test="${dashboard.root}">
+            <j:if test="${app.systemMessage != null}">
+              <div id="systemmessage" class="app-dashboard-system-message">
+                <j:out value="${app.markupFormatter.translate(app.systemMessage)}" />
+              </div>
+            </j:if>
+          </j:when>
+          <!-- A folder's description, as on the folder page without the dashboard -->
+          <j:when test="${!empty(dashboard.owner.description)}">
+            <div id="description" class="app-dashboard-system-message">
+              <j:out value="${app.markupFormatter.translate(dashboard.owner.description)}" />
+            </div>
+          </j:when>
+        </j:choose>
         <d:invokeBody />
       </div>
     </l:main-panel>

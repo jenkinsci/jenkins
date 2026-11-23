@@ -544,11 +544,11 @@ class DashboardTest {
         for (int i = 0; i < 3; i++) {
             j.buildAndAssertSuccess(busy);
         }
-        assertThat(RecentRuns.get().getCompleted(10), contains(busy.getLastBuild(), quiet.getLastBuild()));
+        assertThat(RecentRuns.get().getCompleted(10, ""), contains(busy.getLastBuild(), quiet.getLastBuild()));
 
         // Deleting the remembered build falls back to the one before it
         busy.getLastBuild().delete();
-        assertThat(RecentRuns.get().getCompleted(10), contains(busy.getLastBuild(), quiet.getLastBuild()));
+        assertThat(RecentRuns.get().getCompleted(10, ""), contains(busy.getLastBuild(), quiet.getLastBuild()));
     }
 
     @Test
@@ -574,9 +574,9 @@ class DashboardTest {
 
                 // Also after a restart, when the index is filled from existing builds
                 RecentRuns.get().reset(true);
-                RecentRuns.get().getCompleted(10);
+                RecentRuns.get().getCompleted(10, "");
                 long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30);
-                while (RecentRuns.get().getCompleted(10).size() < 4 && System.currentTimeMillis() < deadline) {
+                while (RecentRuns.get().getCompleted(10, "").size() < 4 && System.currentTimeMillis() < deadline) {
                     Thread.sleep(100);
                 }
                 assertThat(sectionLabels(wc.goTo(""), "finished"), contains(startsWith("mine » own")));
@@ -594,11 +594,11 @@ class DashboardTest {
 
         // As if #1 completed after #2
         RecentRuns.get().add(new RecentRuns.Ref("p", first.getNumber(), System.currentTimeMillis() + 60_000));
-        assertThat(RecentRuns.get().getCompleted(10), contains(second));
+        assertThat(RecentRuns.get().getCompleted(10, ""), contains(second));
 
         // Deleting it falls back to the build before it, as after a restart
         second.delete();
-        assertThat(RecentRuns.get().getCompleted(10), contains(first));
+        assertThat(RecentRuns.get().getCompleted(10, ""), contains(first));
     }
 
     @Test
@@ -612,7 +612,7 @@ class DashboardTest {
         RecentRuns.get().add(new RecentRuns.Ref("before", 1, System.currentTimeMillis()));
         RecentRuns.get().add(new RecentRuns.Ref("after", second.getNumber(), System.currentTimeMillis()));
         p.renameTo("after");
-        assertThat(RecentRuns.get().getCompleted(10), contains(second));
+        assertThat(RecentRuns.get().getCompleted(10, ""), contains(second));
     }
 
     @Test
@@ -622,8 +622,8 @@ class DashboardTest {
 
         // As if the first load remembered a build that was deleted before it was added
         RecentRuns.get().add(new RecentRuns.Ref("p", build.getNumber() + 1, System.currentTimeMillis()));
-        RecentRuns.get().getCompleted(10);
-        assertThat(RecentRuns.get().getCompleted(10), contains(build));
+        RecentRuns.get().getCompleted(10, "");
+        assertThat(RecentRuns.get().getCompleted(10, ""), contains(build));
     }
 
     @Test
@@ -636,10 +636,10 @@ class DashboardTest {
 
         renamed.renameTo("after");
         folder.renameTo("moved");
-        assertThat(RecentRuns.get().getCompleted(10), contains(renamed.getLastBuild(), inFolder.getLastBuild()));
+        assertThat(RecentRuns.get().getCompleted(10, ""), contains(renamed.getLastBuild(), inFolder.getLastBuild()));
 
         folder.delete();
-        assertThat(RecentRuns.get().getCompleted(10), contains(renamed.getLastBuild()));
+        assertThat(RecentRuns.get().getCompleted(10, ""), contains(renamed.getLastBuild()));
     }
 
     @Test
@@ -720,11 +720,11 @@ class DashboardTest {
             projects[i] = j.createFreeStyleProject("p" + i);
             j.buildAndAssertSuccess(projects[i]);
         }
-        List<String> names = RecentRuns.get().getCompleted(10).stream().map(r -> r.getParent().getName()).toList();
+        List<String> names = RecentRuns.get().getCompleted(10, "").stream().map(r -> r.getParent().getName()).toList();
         assertThat(names, contains("p2", "p1", "p0"));
 
         projects[2].getLastBuild().delete();
-        names = RecentRuns.get().getCompleted(10).stream().map(r -> r.getParent().getName()).toList();
+        names = RecentRuns.get().getCompleted(10, "").stream().map(r -> r.getParent().getName()).toList();
         assertThat(names, contains("p1", "p0"));
     }
 
@@ -734,12 +734,12 @@ class DashboardTest {
         j.buildAndAssertSuccess(p);
         // As after a restart: the first read starts filling the index in the background
         RecentRuns.get().reset(true);
-        RecentRuns.get().getCompleted(10);
+        RecentRuns.get().getCompleted(10, "");
         long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30);
-        while (RecentRuns.get().getCompleted(10).isEmpty() && System.currentTimeMillis() < deadline) {
+        while (RecentRuns.get().getCompleted(10, "").isEmpty() && System.currentTimeMillis() < deadline) {
             Thread.sleep(100);
         }
-        assertThat(RecentRuns.get().getCompleted(10), contains(p.getLastBuild()));
+        assertThat(RecentRuns.get().getCompleted(10, ""), contains(p.getLastBuild()));
     }
 
     @Test
@@ -763,7 +763,7 @@ class DashboardTest {
         };
         try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
             RecentRuns.get().reset(true);
-            RecentRuns.get().getCompleted(10);
+            RecentRuns.get().getCompleted(10, "");
             assertThat(reachedB.await(30, TimeUnit.SECONDS), is(true));
 
             // Paused after a, so a is listed and the tab says it is still looking
@@ -776,7 +776,7 @@ class DashboardTest {
             awaitSeeded();
             page = wc.goTo("");
             assertThat(page.asNormalizedText(), not(containsString("Still looking")));
-            assertThat(RecentRuns.get().getCompleted(10), containsInAnyOrder(a.getLastBuild(), b.getLastBuild()));
+            assertThat(RecentRuns.get().getCompleted(10, ""), containsInAnyOrder(a.getLastBuild(), b.getLastBuild()));
         } finally {
             resume.countDown();
             RecentRuns.beforeSeeding = job -> {};
@@ -797,16 +797,16 @@ class DashboardTest {
         };
         try {
             RecentRuns.get().reset(true);
-            RecentRuns.get().getCompleted(10);
+            RecentRuns.get().getCompleted(10, "");
             long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30);
             while ((fail.get() || RecentRuns.get().isLoading()) && System.currentTimeMillis() < deadline) {
                 Thread.sleep(50);
             }
             // What was read before the failure stays, and the next read tries again
             assertThat(RecentRuns.get().isLoading(), is(false));
-            assertThat(RecentRuns.get().getCompleted(10), hasItem(a.getLastBuild()));
+            assertThat(RecentRuns.get().getCompleted(10, ""), hasItem(a.getLastBuild()));
             awaitSeeded();
-            assertThat(RecentRuns.get().getCompleted(10), containsInAnyOrder(a.getLastBuild(), b.getLastBuild()));
+            assertThat(RecentRuns.get().getCompleted(10, ""), containsInAnyOrder(a.getLastBuild(), b.getLastBuild()));
         } finally {
             RecentRuns.beforeSeeding = job -> {};
         }
@@ -832,7 +832,7 @@ class DashboardTest {
         };
         try {
             RecentRuns.get().reset(true);
-            RecentRuns.get().getCompleted(10);
+            RecentRuns.get().getCompleted(10, "");
             assertThat(reading.await(30, TimeUnit.SECONDS), is(true));
             RecentRuns.stop();
             release.countDown();
@@ -842,7 +842,7 @@ class DashboardTest {
             }
             assertThat(RecentRuns.get().isLoading(), is(false));
             // Neither the rest of the jobs nor another attempt
-            RecentRuns.get().getCompleted(10);
+            RecentRuns.get().getCompleted(10, "");
             assertThat(RecentRuns.get().isLoading(), is(false));
             assertThat(read.get(), is(1));
         } finally {
@@ -856,7 +856,7 @@ class DashboardTest {
     private static void awaitSeeded() throws InterruptedException {
         long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30);
         do {
-            RecentRuns.get().getCompleted(10);
+            RecentRuns.get().getCompleted(10, "");
             Thread.sleep(50);
         } while (RecentRuns.get().isLoading() && System.currentTimeMillis() < deadline);
         assertThat(RecentRuns.get().isLoading(), is(false));

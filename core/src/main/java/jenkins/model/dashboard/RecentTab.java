@@ -26,6 +26,7 @@ package jenkins.model.dashboard;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Functions;
 import hudson.Util;
 import hudson.model.Cause;
 import hudson.model.Computer;
@@ -68,11 +69,11 @@ import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.verb.GET;
 
 /**
- * Shows what is happening now: running builds, then queued builds, then recently finished builds.
- * Within each group, builds the current user started or contributed changes to come first.
+ * Shows what is happening now: running builds, then queued builds, then recently finished builds, of the jobs inside
+ * the owner of the dashboard. Within each group, builds the current user started or contributed changes to come first.
  */
 @Restricted(NoExternalUse.class)
-public class RecentTab extends Tab {
+public class RecentTab extends Tab implements Dashboard.ShownInFolders {
 
     static final int LIMIT = 50;
 
@@ -89,6 +90,13 @@ public class RecentTab extends Tab {
 
     public RecentTab(@NonNull Dashboard dashboard) {
         super(dashboard);
+    }
+
+    /**
+     * The dashboard this tab belongs to.
+     */
+    public @NonNull Dashboard getDashboard() {
+        return (Dashboard) getObject();
     }
 
     @Override
@@ -108,7 +116,7 @@ public class RecentTab extends Tab {
 
     @Override
     public Badge getBadge() {
-        return badge(getRunningExecutors().size());
+        return badge(getRunningExecutors(getDashboard()).size());
     }
 
     /**
@@ -136,6 +144,35 @@ public class RecentTab extends Tab {
 
     public int getCollapsedQueueSize() {
         return COLLAPSED_QUEUE_SIZE;
+    }
+
+    /**
+     * The name of a job inside the dashboard's folder, without the names of that folder and the folders
+     * containing it. At the root of Jenkins, its full display name.
+     */
+    @Restricted(NoExternalUse.class)
+    public @NonNull String nameOf(@NonNull Item item) {
+        String name = Functions.getRelativeDisplayNameFrom(item, getDashboard().getOwner());
+        return name != null ? name : item.getFullDisplayName();
+    }
+
+    /**
+     * The name of a queued task, like {@link #nameOf(Item)} for tasks that are items. A task that is part of a job,
+     * such as a Pipeline {@code node} block, is named like the job, followed by the rest of its own name.
+     */
+    @Restricted(NoExternalUse.class)
+    public @NonNull String nameOfTask(@NonNull Queue.Task task) {
+        if (task instanceof Item item) {
+            return nameOf(item);
+        }
+        String name = task.getFullDisplayName();
+        if (task.getOwnerTask() instanceof Item owner) {
+            String ownerName = owner.getFullDisplayName();
+            if (name.startsWith(ownerName)) {
+                return nameOf(owner) + name.substring(ownerName.length());
+            }
+        }
+        return name;
     }
 
     /**
@@ -171,8 +208,8 @@ public class RecentTab extends Tab {
 
     /**
      * A time span like {@link Util#getTimeSpanString(long)}, in steps that grow with it: minutes up to ten minutes,
-     * then five minutes, then hours, then days. A row then reads the same for a while, which matters most for the
-     * many rows of builds that finished hours ago.
+     * then five minutes, then hours, then days. A row then reads the same, and is not sent again, for a while, which
+     * matters most for the many rows of builds that finished hours ago.
      */
     static @NonNull String roughTimeSpan(long duration) {
         long millis = Math.max(0, duration);
@@ -242,14 +279,16 @@ public class RecentTab extends Tab {
     public @NonNull Model getModel() {
         User user = User.current();
         String userId = user == null ? null : user.getId();
-        Map<Run<?, ?>, Executor> running = getRunningExecutors();
-        List<Queue.Item> queued = getQueued();
+        Dashboard dashboard = getDashboard();
+        Map<Run<?, ?>, Executor> running = getRunningExecutors(dashboard);
+        List<Queue.Item> queued = getQueued(dashboard);
         return new Model(
                 rank(sortedByStart(running.keySet()), run -> involvement(run, userId)),
                 running.size(),
                 rank(queued, item -> startedBy(item.getCauses(), userId) ? Involvement.STARTED : Involvement.NONE),
                 queued.size(),
-                rank(RecentRuns.get().getCompleted(FINISHED_CANDIDATES), run -> involvement(run, userId)),
+                rank(RecentRuns.get().getCompleted(FINISHED_CANDIDATES, dashboard.getItemPrefix()),
+                        run -> involvement(run, userId)),
                 running);
     }
 
@@ -272,24 +311,27 @@ public class RecentTab extends Tab {
     }
 
     /**
-     * Queued items the current user can see. The queue checks the permission of each task, but not of the folders
-     * containing it.
-     */
-    private static List<Queue.Item> getQueued() {
-        List<Queue.Item> result = new ArrayList<>();
-        for (Queue.Item item : Jenkins.get().getQueue().getItems()) {
-            if (!(item.task.getOwnerTask() instanceof Item owner) || canSee(owner)) {
-                result.add(item);
-            }
-        }
-        return result;
-    }
-
-    /**
      * Whether the current user can see an item and every folder containing it, as needed to open its page.
      */
     private static boolean canSee(Item item) {
         return Dashboard.visible(item.getFullName(), Item.class) != null;
+    }
+
+    /**
+     * Queued items in the dashboard that the current user can see. The queue checks the permission of each task, but
+     * not of the folders containing it.
+     */
+    private static List<Queue.Item> getQueued(Dashboard dashboard) {
+        List<Queue.Item> result = new ArrayList<>();
+        for (Queue.Item item : Jenkins.get().getQueue().getItems()) {
+            // A task such as a Pipeline node block belongs to the job that owns it
+            if (item.task.getOwnerTask() instanceof Item owner
+                    ? dashboard.contains(owner) && canSee(owner)
+                    : dashboard.isRoot()) {
+                result.add(item);
+            }
+        }
+        return result;
     }
 
     private static List<Run<?, ?>> sortedByStart(Collection<Run<?, ?>> runs) {
@@ -299,11 +341,11 @@ public class RecentTab extends Tab {
     }
 
     /**
-     * Maps each running build the current user can see to its executor. A Pipeline build can occupy
-     * several executors; the one running the build itself is preferred over those running its
-     * {@code node} blocks.
+     * Maps each running build of a job inside the dashboard's owner that the current user can see to its executor.
+     * A Pipeline build can occupy several executors; the one running the build itself is preferred over those
+     * running its {@code node} blocks.
      */
-    private static Map<Run<?, ?>, Executor> getRunningExecutors() {
+    private static Map<Run<?, ?>, Executor> getRunningExecutors(Dashboard dashboard) {
         Map<Run<?, ?>, Executor> runs = new HashMap<>();
         for (Computer computer : Jenkins.get().getComputers()) {
             for (Executor executor : computer.getAllExecutors()) {
@@ -313,6 +355,7 @@ public class RecentTab extends Tab {
                 if (run != null
                         && run.isBuilding()
                         && (executable == run || !runs.containsKey(run))
+                        && dashboard.contains(run.getParent())
                         && canSee(run.getParent())) {
                     runs.put(run, executor);
                 }

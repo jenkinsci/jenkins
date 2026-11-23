@@ -24,14 +24,14 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <!-- Shows the default tab. Rendered from the primary view's page at the root URL. -->
+  <!-- Shows the default tab. Rendered from the page of the primary view of the owner, at the URL of the owner. -->
   <j:set var="defaultTab" value="${it.defaultTab}" />
   <j:choose>
     <j:when test="${defaultTab != null}">
       <st:include it="${defaultTab}" page="index.jelly" />
     </j:when>
     <j:otherwise>
-      <st:include it="${app.primaryView}" page="new-view-page.jelly" />
+      <st:include it="${it.owner.primaryView}" page="new-view-page.jelly" />
     </j:otherwise>
   </j:choose>
 </j:jelly>

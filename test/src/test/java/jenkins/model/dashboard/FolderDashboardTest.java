@@ -1,0 +1,524 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2026, Tim Jacomb
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+package jenkins.model.dashboard;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
+import hudson.model.ListView;
+import hudson.model.TopLevelItem;
+import hudson.model.TopLevelItemDescriptor;
+import hudson.model.User;
+import hudson.util.OneShotEvent;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import jenkins.model.Jenkins;
+import jenkins.model.Tab;
+import jenkins.model.TransientActionFactory;
+import jenkins.model.experimentalflags.UserExperimentalFlagsProperty;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlPage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
+
+/**
+ * The dashboard of a {@link DashboardItemGroup}, using a {@link MockFolder} that opts in.
+ */
+@WithJenkins
+class FolderDashboardTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().to("admin")
+                .grant(Jenkins.READ, Item.READ, Item.BUILD).everywhere().to("alice", "bob"));
+        RecentRuns.get().reset(false);
+    }
+
+    @Test
+    void folderShowsItsViewWithoutTheFlag() throws Exception {
+        DashboardFolder folder = createFolder(j.jenkins, "team");
+        folder.createProject(FreeStyleProject.class, "p");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            HtmlPage page = wc.goTo("job/team/");
+            assertThat(page.querySelector("[data-testid=dashboard-tabs]"), nullValue());
+            assertThat(page.querySelector("a[href$='job/p/']"), notNullValue());
+
+            wc.setThrowExceptionOnFailingStatusCode(false);
+            assertThat(wc.goTo("job/team/all/").getWebResponse().getStatusCode(), is(404));
+        }
+    }
+
+    @Test
+    void folderShowsTheDashboardWithTheFlag() throws Exception {
+        enableFlag("alice");
+        DashboardFolder folder = createFolder(j.jenkins, "team");
+        folder.createProject(FreeStyleProject.class, "p");
+        DashboardFolder nested = createFolder(folder, "nested");
+        nested.createProject(FreeStyleProject.class, "inner");
+        j.createFreeStyleProject("outside");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            HtmlPage page = wc.goTo("job/team/");
+            assertThat(tabNames(page), contains("Recent", "All"));
+            assertThat(currentTab(page), is("Recent"));
+            assertThat(page.querySelector("h1").getTextContent().trim(), is("team"));
+            assertThat(tabLinks(page), contains(j.contextPath + "/job/team/", j.contextPath + "/job/team/all/"));
+            // The refresh endpoint is the folder's
+            assertThat(((DomElement) page.querySelector("#dashboard-recent")).getAttribute("data-rows-url"),
+                    is(j.contextPath + "/job/team/defaultTab/rows"));
+
+            HtmlPage all = wc.goTo("job/team/all/");
+            assertThat(currentTab(all), is("All"));
+            assertThat(rowLabels(all), contains("nested", "p"));
+            assertThat(((DomElement) all.querySelector(".app-dashboard-items")).getAttribute("data-items-url"),
+                    is(j.contextPath + "/job/team/all/items"));
+            // The breadcrumbs lead back through the folder
+            assertThat(all.querySelector("#breadcrumbs a[href='" + j.contextPath + "/job/team/']"), notNullValue());
+
+            // A nested folder has its own dashboard
+            HtmlPage inner = wc.goTo("job/team/job/nested/all/");
+            assertThat(inner.querySelector("h1").getTextContent().trim(), is("nested"));
+            assertThat(rowLabels(inner), contains("inner"));
+            assertThat(inner.getTitleText(), startsWith("team » nested"));
+
+            // The root is unchanged
+            assertThat(rowLabels(wc.goTo("all/")), contains("outside", "team"));
+        }
+    }
+
+    @Test
+    void folderShowsTheDashboardWhereverItIsReachedFrom() throws Exception {
+        enableFlag("alice");
+        DashboardFolder folder = createFolder(j.jenkins, "team");
+        folder.createProject(FreeStyleProject.class, "p");
+        createFolder(folder, "nested").createProject(FreeStyleProject.class, "inner");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            // Views link to the items in them relative to the view
+            for (String url : List.of("view/all/job/team/", "view/all/job/team/job/nested/", "job/team/view/All/job/nested/")) {
+                assertThat(url, tabNames(wc.goTo(url)), contains("Recent", "All"));
+            }
+            assertThat(wc.goTo("job/team/view/All/").querySelector("[data-testid=dashboard-tabs]"), nullValue());
+        }
+    }
+
+    @Test
+    void foldersThatDoNotOptInShowTheirView() throws Exception {
+        enableFlag("alice");
+        MockFolder plain = j.createFolder("plain");
+        plain.createProject(FreeStyleProject.class, "p");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            assertThat(wc.goTo("job/plain/").querySelector("[data-testid=dashboard-tabs]"), nullValue());
+        }
+        assertThat(Dashboard.of(plain), nullValue());
+    }
+
+    @Test
+    void folderViewsAndOtherUrlsKeepWorkingWithTheFlag() throws Exception {
+        enableFlag("admin");
+        DashboardFolder folder = createFolder(j.jenkins, "team");
+        folder.createProject(FreeStyleProject.class, "p");
+        ListView mine = new ListView("mine", folder);
+        folder.addView(mine);
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("admin")) {
+            // The views' own URLs show the views, not the dashboard
+            for (String view : List.of("job/team/view/All/", "job/team/view/mine/")) {
+                HtmlPage page = wc.goTo(view);
+                assertThat(view, page.querySelector("[data-testid=dashboard-tabs]"), nullValue());
+            }
+            assertThat(wc.goTo("job/team/view/All/").querySelector("a[href$='job/p/']"), notNullValue());
+
+            // URLs served by the folder, and by the primary view through the fallback
+            wc.goTo("job/team/configure");
+            wc.goTo("job/team/newJob");
+            wc.goTo("job/team/builds");
+            wc.goTo("job/team/api/json", "application/json");
+            wc.goTo("job/team/job/p/");
+        }
+    }
+
+    @Test
+    void appBarHasTheFolderActionsAndViews() throws Exception {
+        enableFlag("admin");
+        DashboardFolder folder = createFolder(j.jenkins, "team");
+        folder.createProject(FreeStyleProject.class, "p");
+        folder.addView(new ListView("mine", folder));
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("admin")) {
+            String page = wc.goTo("job/team/").getWebResponse().getContentAsString();
+            assertThat(page, containsString("New Item"));
+            assertThat(page, containsString("data-href=\"" + j.contextPath + "/job/team/\""));
+
+            // The overflow menu lists the folder's views, by their URLs from the root
+            String menu = wc.goTo("job/team/contextMenu", "application/json").getWebResponse().getContentAsString();
+            assertThat(menu, containsString("\"displayName\":\"Views\""));
+            assertThat(menu, containsString("job/team/view/mine/"));
+            assertThat(menu, containsString("\"baseUrl\":\"" + j.contextPath + "/\""));
+        }
+    }
+
+    @Test
+    void emptyFolderShowsTheFolderEmptyState() throws Exception {
+        enableFlag("admin");
+        createFolder(j.jenkins, "empty");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("admin")) {
+            HtmlPage all = wc.goTo("job/empty/all/");
+            assertThat(all.getWebResponse().getContentAsString(), containsString("This folder is empty"));
+            assertThat(all.getWebResponse().getContentAsString(), not(containsString("Welcome to Jenkins!")));
+            HtmlAnchor createJob = all.getAnchorByHref(j.contextPath + "/job/empty/newJob");
+            assertThat(createJob.click().getWebResponse().getStatusCode(), is(200));
+
+            HtmlPage recent = wc.goTo("job/empty/");
+            assertThat(recent.getAnchorByHref(j.contextPath + "/job/empty/all/"), notNullValue());
+        }
+    }
+
+    @Test
+    void recentTabListsOnlyBuildsInsideTheFolder() throws Exception {
+        enableFlag("alice");
+        DashboardFolder team = createFolder(j.jenkins, "team");
+        FreeStyleProject web = team.createProject(FreeStyleProject.class, "web");
+        DashboardFolder backend = createFolder(team, "backend");
+        FreeStyleProject api = backend.createProject(FreeStyleProject.class, "api");
+        // Its name starts with the name of the other folder
+        DashboardFolder teamB = createFolder(j.jenkins, "team-b");
+        FreeStyleProject mobile = teamB.createProject(FreeStyleProject.class, "mobile");
+        FreeStyleProject root = j.createFreeStyleProject("root");
+        for (FreeStyleProject p : List.of(web, api, mobile, root)) {
+            j.buildAndAssertSuccess(p);
+        }
+
+        FreeStyleProject queuedInside = team.createProject(FreeStyleProject.class, "queued-inside");
+        queuedInside.setAssignedLabel(j.jenkins.getLabel("no-such-agent"));
+        queuedInside.scheduleBuild2(0);
+        FreeStyleProject queuedOutside = teamB.createProject(FreeStyleProject.class, "queued-outside");
+        queuedOutside.setAssignedLabel(j.jenkins.getLabel("no-such-agent"));
+        queuedOutside.scheduleBuild2(0);
+
+        FreeStyleProject soak = backend.createProject(FreeStyleProject.class, "soak");
+        Blocker blocker = new Blocker();
+        soak.getBuildersList().add(blocker);
+        FreeStyleBuild running = soak.scheduleBuild2(0).waitForStart();
+        blocker.started.block(TimeUnit.SECONDS.toMillis(30));
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            // Jobs are named from the folder down
+            HtmlPage page = wc.goTo("job/team/");
+            assertThat(sectionLabels(page, "running"), contains(startsWith("backend » soak")));
+            assertThat(sectionLabels(page, "queued"), contains("queued-inside"));
+            assertThat(page.querySelector("[data-section=queued] .app-dashboard-section__count").getTextContent(), is("1"));
+            assertThat(sectionLabels(page, "finished"), contains(startsWith("backend » api"), startsWith("web")));
+            assertThat(page.querySelector("[data-testid=dashboard-tabs] .jenkins-badge").getTextContent().trim(), is("1"));
+
+            HtmlPage nested = wc.goTo("job/team/job/backend/");
+            assertThat(sectionLabels(nested, "running"), contains(startsWith("soak")));
+            assertThat(sectionLabels(nested, "queued"), empty());
+            assertThat(sectionLabels(nested, "finished"), contains(startsWith("api")));
+
+            HtmlPage other = wc.goTo("job/team-b/");
+            assertThat(sectionLabels(other, "running"), empty());
+            assertThat(sectionLabels(other, "queued"), contains("queued-outside"));
+            assertThat(sectionLabels(other, "finished"), contains(startsWith("mobile")));
+            assertThat(other.querySelector("[data-testid=dashboard-tabs] .jenkins-badge"), nullValue());
+
+            // The refresh endpoint is filtered the same way
+            wc.getOptions().setJavaScriptEnabled(false);
+            HtmlPage rows = (HtmlPage) wc.goTo("job/team-b/defaultTab/rows", null);
+            assertThat(sectionLabels(rows, "finished"), contains(startsWith("mobile")));
+
+            // The root lists everything
+            HtmlPage home = wc.goTo("");
+            assertThat(sectionLabels(home, "finished"), contains(
+                    startsWith("root"), startsWith("team-b » mobile"), startsWith("team » backend » api"), startsWith("team » web")));
+        } finally {
+            blocker.release.signal();
+            j.waitForCompletion(running);
+            j.jenkins.getQueue().clear();
+        }
+    }
+
+    @Test
+    void recentRunsFilterByFolderBeforeCheckingPermissions() throws Exception {
+        DashboardFolder team = createFolder(j.jenkins, "team");
+        FreeStyleProject inside = team.createProject(FreeStyleProject.class, "inside");
+        FreeStyleProject outside = j.createFreeStyleProject("team-outside");
+        j.buildAndAssertSuccess(inside);
+        j.buildAndAssertSuccess(outside);
+        assertThat(RecentRuns.get().getCompleted(10, "team/"), contains(inside.getLastBuild()));
+        assertThat(RecentRuns.get().getCompleted(10, ""), contains(outside.getLastBuild(), inside.getLastBuild()));
+    }
+
+    @Test
+    void allTabSearchIsScopedToTheFolder() throws Exception {
+        enableFlag("bob");
+        DashboardFolder team = createFolder(j.jenkins, "team");
+        DashboardFolder infra = createFolder(team, "infra");
+        infra.createProject(FreeStyleProject.class, "deploy-prod");
+        FreeStyleProject secret = infra.createProject(FreeStyleProject.class, "deploy-secret");
+        team.createProject(FreeStyleProject.class, "build");
+        j.createFreeStyleProject("deploy-elsewhere");
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("bob")
+                .grant(Item.READ).onItems(team, infra, infra.getItem("deploy-prod"), team.getItem("build"),
+                        j.jenkins.getItem("deploy-elsewhere")).to("bob"));
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+            HtmlPage results = (HtmlPage) wc.goTo("job/team/all/items?start=0&search=deploy", null);
+            // Results are named from the folder down
+            assertThat(rowLabels(results), contains("infra » deploy-prod"));
+
+            // Names are matched from the folder down, so the folder's own name does not match everything in it
+            assertThat(rowLabels((HtmlPage) wc.goTo("job/team/all/items?start=0&search=team", null)), empty());
+            assertThat(rowLabels((HtmlPage) wc.goTo("job/team/all/items?start=0&search=infra", null)),
+                    contains("infra", "infra » deploy-prod"));
+
+            assertThat(rowLabels(wc.goTo("job/team/all/")), contains("build", "infra"));
+        }
+        assertThat(secret.hasPermission2(User.getById("bob", true).impersonate2(), Item.READ), is(false));
+    }
+
+    @Test
+    void recentTabHidesBuildsTheUserCannotRead() throws Exception {
+        enableFlag("bob");
+        DashboardFolder team = createFolder(j.jenkins, "team");
+        FreeStyleProject visible = team.createProject(FreeStyleProject.class, "visible");
+        FreeStyleProject hidden = team.createProject(FreeStyleProject.class, "hidden");
+        DashboardFolder closed = createFolder(j.jenkins, "closed");
+        closed.createProject(FreeStyleProject.class, "inside");
+        j.buildAndAssertSuccess(visible);
+        j.buildAndAssertSuccess(hidden);
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("bob")
+                .grant(Item.READ).onItems(team, visible).to("bob"));
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+            assertThat(sectionLabels(wc.goTo("job/team/"), "finished"), contains(startsWith("visible")));
+            assertThat(rowLabels(wc.goTo("job/team/all/")), contains("visible"));
+
+            wc.setThrowExceptionOnFailingStatusCode(false);
+            assertThat(wc.goTo("job/closed/").getWebResponse().getStatusCode(), is(404));
+            assertThat(wc.goTo("job/closed/all/").getWebResponse().getStatusCode(), is(404));
+        }
+    }
+
+    @Test
+    void pluginTabsShowOnFoldersWhenTheyOptIn() throws Exception {
+        enableFlag("alice");
+        DashboardFolder team = createFolder(j.jenkins, "team");
+        team.createProject(FreeStyleProject.class, "p");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            assertThat(tabNames(wc.goTo("")), contains("Recent", "All", "Root only", "Everywhere"));
+            assertThat(tabNames(wc.goTo("job/team/")), contains("Recent", "All", "Everywhere"));
+
+            HtmlPage everywhere = wc.goTo("job/team/everywhere/");
+            assertThat(currentTab(everywhere), is("Everywhere"));
+            assertThat(rowLabels(everywhere), contains("p"));
+
+            wc.setThrowExceptionOnFailingStatusCode(false);
+            assertThat(wc.goTo("job/team/root-only/").getWebResponse().getStatusCode(), is(404));
+        }
+    }
+
+    private DashboardFolder createFolder(ItemGroup<?> parent, String name) throws Exception {
+        if (parent instanceof MockFolder folder) {
+            return folder.createProject(DashboardFolder.class, name);
+        }
+        return j.jenkins.createProject(DashboardFolder.class, name);
+    }
+
+    private void enableFlag(String user) throws Exception {
+        User.getById(user, true)
+                .addProperty(new UserExperimentalFlagsProperty(Map.of("new-dashboard-page.flag", "true")));
+    }
+
+    private static List<String> tabNames(HtmlPage page) {
+        return page.querySelectorAll("[data-testid=dashboard-tabs] a").stream()
+                .map(n -> textWithoutBadge((DomElement) n))
+                .toList();
+    }
+
+    private static List<String> tabLinks(HtmlPage page) {
+        return page.querySelectorAll("[data-testid=dashboard-tabs] a").stream()
+                .map(n -> ((DomElement) n).getAttribute("href"))
+                .toList();
+    }
+
+    private static String currentTab(HtmlPage page) {
+        return textWithoutBadge((DomElement) page.querySelector("[data-testid=dashboard-tabs] a[aria-current=page]"));
+    }
+
+    private static String textWithoutBadge(DomElement tab) {
+        String text = tab.getTextContent();
+        DomElement badge = tab.querySelector(".jenkins-badge");
+        if (badge != null) {
+            text = text.replace(badge.getTextContent(), "");
+        }
+        return text.trim();
+    }
+
+    private static List<String> rowLabels(HtmlPage page) {
+        return page.querySelectorAll(".app-temporary-list__item__label").stream()
+                .map(n -> n.getTextContent().trim().replaceAll("\\s+", " "))
+                .toList();
+    }
+
+    private static List<String> sectionLabels(HtmlPage page, String section) {
+        return page.querySelectorAll("[data-section=" + section + "] .app-temporary-list__item__label").stream()
+                .map(n -> n.getTextContent().trim().replaceAll("\\s+", " "))
+                .toList();
+    }
+
+    private static final class Blocker extends TestBuilder {
+        final OneShotEvent started = new OneShotEvent();
+        final OneShotEvent release = new OneShotEvent();
+
+        @Override
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+            started.signal();
+            release.block();
+            return true;
+        }
+    }
+
+    /**
+     * A folder that shows the dashboard, wired up as {@link DashboardItemGroup} describes.
+     */
+    public static final class DashboardFolder extends MockFolder implements DashboardItemGroup {
+
+        DashboardFolder(ItemGroup<?> parent, String name) {
+            super(parent, name);
+        }
+
+        @Override
+        public Object getDynamic(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
+            Object result = super.getDynamic(token, req, rsp);
+            return result != null ? result : Dashboard.findTab(this, token);
+        }
+
+        @TestExtension
+        public static final class DescriptorImpl extends TopLevelItemDescriptor {
+            @Override
+            public TopLevelItem newInstance(ItemGroup parent, String name) {
+                return new DashboardFolder(parent, name);
+            }
+        }
+    }
+
+    public static final class RootOnlyTab extends ItemListTab {
+        RootOnlyTab(Dashboard dashboard) {
+            super(dashboard);
+        }
+
+        @Override
+        public String getIconFileName() {
+            return "symbol-list";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Root only";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "root-only";
+        }
+
+        @NonNull
+        @Override
+        public Iterable<? extends Item> getItems() {
+            return List.of();
+        }
+    }
+
+    public static final class EverywhereTab extends ItemListTab implements Dashboard.ShownInFolders {
+        EverywhereTab(Dashboard dashboard) {
+            super(dashboard);
+        }
+
+        @Override
+        public String getIconFileName() {
+            return "symbol-list";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Everywhere";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "everywhere";
+        }
+
+        @NonNull
+        @Override
+        public Iterable<? extends Item> getItems() {
+            return getDashboard().getOwner().getItems();
+        }
+    }
+
+    @TestExtension("pluginTabsShowOnFoldersWhenTheyOptIn")
+    public static final class PluginTabFactory extends TransientActionFactory<Dashboard> {
+        @Override
+        public Class<Dashboard> type() {
+            return Dashboard.class;
+        }
+
+        @NonNull
+        @Override
+        public Collection<? extends Tab> createFor(@NonNull Dashboard target) {
+            return List.of(new RootOnlyTab(target), new EverywhereTab(target));
+        }
+    }
+}

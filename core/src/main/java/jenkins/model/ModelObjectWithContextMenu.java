@@ -6,6 +6,7 @@ import hudson.Util;
 import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.Computer;
+import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Node;
@@ -374,10 +375,14 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 return computer.getAppBarActions();
             }
 
-            if (self instanceof Jenkins && Dashboard.isEnabled()) {
-                // For these users the root URL shows the dashboard rather than the primary view, so the overflow
-                // menu, loaded from the root's contextMenu, matches the dashboard's app bar and its Views menu
-                return Dashboard.get().getAppBarActions();
+            if (self instanceof ItemGroup<?> group && Dashboard.isEnabled()) {
+                // For these users the root URL and the URL of a folder show the dashboard rather than the primary
+                // view, so the overflow menu, loaded from their contextMenu, matches the dashboard's app bar and its
+                // Views menu
+                Dashboard dashboard = Dashboard.of(group);
+                if (dashboard != null) {
+                    return dashboard.getAppBarActions();
+                }
             }
 
             if (self instanceof ViewGroup viewGroup && new NewDashboardPageUserExperimentalFlag().getFlagValue()) {

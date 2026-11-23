@@ -30,8 +30,9 @@ THE SOFTWARE.
     <st:attribute name="job" use="required" type="hudson.model.Item">
       The item to show.
     </st:attribute>
-    <st:attribute name="showFullName" type="boolean">
-      If true, shows the item's full display name, including its folders.
+    <st:attribute name="relativeTo" type="hudson.model.ItemGroup">
+      If set, shows the item's name from this item group down, such as "folder » job" for an item inside a folder
+      inside it. Otherwise, shows the item's display name.
     </st:attribute>
   </st:documentation>
 
@@ -52,7 +53,7 @@ THE SOFTWARE.
 
       <div class="app-temporary-list__item__details" href="${rootURL}/${job.url}">
         <div class="app-temporary-list__item__details__text">
-          <a class="app-temporary-list__item__label" href="${rootURL}/${job.url}">${attrs.showFullName ? job.fullDisplayName : job.displayName}</a>
+          <a class="app-temporary-list__item__label" href="${rootURL}/${job.url}">${attrs.relativeTo != null ? h.getRelativeDisplayNameFrom(job, attrs.relativeTo) : job.displayName}</a>
 
           <j:set var="lastBuild" value="${job.lastBuild}" />
           <j:if test="${lastBuild != null}">
@@ -68,4 +69,5 @@ THE SOFTWARE.
       </div>
     </div>
   </div>
+
 </j:jelly>

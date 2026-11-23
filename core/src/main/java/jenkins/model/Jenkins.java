@@ -4069,10 +4069,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         for (Action a : getManagementLinks())
             if (Objects.equals(a.getUrlName(), token))
                 return a;
-        if (Dashboard.isEnabled()) {
-            return Dashboard.get().getTab(token);
-        }
-        return null;
+        return Dashboard.findTab(this, token);
     }
 
 

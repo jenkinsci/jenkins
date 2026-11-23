@@ -39,12 +39,14 @@ import hudson.model.listeners.RunListener;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -61,10 +63,10 @@ import org.springframework.security.access.AccessDeniedException;
  * <p>Each job has one entry, so a few busy jobs cannot push out everything else, and users who can only see
  * a few jobs still find their recent builds however busy the rest of the instance is. Like
  * {@link Job#getLastCompletedBuild()}, the entry is the job's highest-numbered completed build, also when builds
- * complete out of order. Runs are held
- * by job full name and build number rather than by reference, so this does not keep builds in memory, and an
- * entry takes about a hundred bytes.
- * The index starts empty. The first read fills it in the background from each job's last completed
+ * complete out of order. Runs are held by job full name and build number rather than by reference, so this does not
+ * keep builds in memory, and an entry takes about a hundred bytes.
+ *
+ * <p>The index starts empty. The first read fills it in the background from each job's last completed
  * build, so startup does not load any builds. Reads see the jobs read so far while it fills.
  */
 @Extension
@@ -84,8 +86,11 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
             .thenComparing(Ref::job)
             .thenComparingInt(Ref::number);
 
-    /** Keyed by job full name. Changes to it and {@link #newestFirst} are made together, holding its lock. */
-    private final Map<String, Ref> refs = new ConcurrentHashMap<>();
+    /**
+     * Keyed by job full name, in name order, so that the jobs inside a folder are next to each other. Changes to it
+     * and {@link #newestFirst} are made together, holding its lock.
+     */
+    private final ConcurrentNavigableMap<String, Ref> refs = new ConcurrentSkipListMap<>();
 
     /**
      * The same entries in the order they are read, so that reads neither copy nor sort the index. Reads
@@ -186,26 +191,40 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
                 return;
             }
             // Folders usually delete their items one by one first, but not every item group does
-            String prefix = fullName + '/';
-            for (Ref ref : List.copyOf(refs.values())) {
-                if (ref.job().startsWith(prefix)) {
-                    remove(ref);
-                }
+            for (Ref ref : List.copyOf(inside(fullName + '/'))) {
+                remove(ref);
             }
         }
     }
 
+    /** The entries of the jobs whose full names start with a prefix. */
+    private Collection<Ref> inside(String prefix) {
+        return refs.subMap(prefix, true, prefix + Character.MAX_VALUE, false).values();
+    }
+
     /**
-     * The most recently completed runs that the current user can see, newest first, one per job.
+     * The most recently completed runs of jobs inside a folder that the current user can see, newest first,
+     * one per job.
      *
      * @param limit the maximum number of runs to return
+     * @param prefix the prefix of the full names of the jobs to include, such as {@code folder/}, or empty for
+     *     every job
      */
     @NonNull
-    public List<Run<?, ?>> getCompleted(int limit) {
+    public List<Run<?, ?>> getCompleted(int limit, @NonNull String prefix) {
         seedOnce();
+        Iterable<Ref> candidates;
+        if (prefix.isEmpty()) {
+            candidates = newestFirst;
+        } else {
+            // Sorting the folder's own entries is cheaper than going through every job until enough are found
+            List<Ref> inside = new ArrayList<>(inside(prefix));
+            inside.sort(NEWEST_FIRST);
+            candidates = inside;
+        }
         ReadableFolders folders = new ReadableFolders();
         List<Run<?, ?>> result = new ArrayList<>();
-        for (Ref ref : newestFirst) {
+        for (Ref ref : candidates) {
             if (result.size() >= limit) {
                 break;
             }

@@ -29,7 +29,7 @@ THE SOFTWARE.
       <l:icon src="symbol-warning" />
       ${%RefreshFailed}
     </p>
-    <div id="dashboard-recent" data-rows-url="${rootURL}/${it.urlName ?: 'defaultTab'}/rows">
+    <div id="dashboard-recent" data-rows-url="${rootURL}/${it.dashboard.url}${it.urlName ?: 'defaultTab'}/rows">
       <st:include page="rows.jelly" />
     </div>
   </l:dashboard-subpage>

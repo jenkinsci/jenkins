@@ -49,7 +49,7 @@ THE SOFTWARE.
           <div class="app-temporary-list__item__details" href="${rootURL}/${run.url}">
             <div class="app-temporary-list__item__details__text">
               <a class="app-temporary-list__item__label" href="${rootURL}/${run.url}">
-                ${job.fullDisplayName}
+                ${it.nameOf(job)}
                 <span class="app-dashboard-run-name">${run.displayName}</span>
               </a>
               <div class="app-temporary-list__item__description">
@@ -111,7 +111,10 @@ THE SOFTWARE.
   </d:taglib>
 
   <l:ajax>
-    <j:set var="model" value="${it.model}" />
+    <!-- Set by the endpoint that serves the rows on their own -->
+    <j:if test="${model == null}">
+      <j:set var="model" value="${it.model}" />
+    </j:if>
     <div class="app-dashboard-recent">
       <!-- The tab's badge, so that a refresh can update it in the tab bar -->
       <template class="app-dashboard-recent__badge">
@@ -123,7 +126,7 @@ THE SOFTWARE.
         </j:when>
         <j:when test="${model.isEmpty()}">
           <l:notice title="${%Nothing has run recently}" icon="symbol-clock">
-            <a href="${rootURL}/all/">${%Browse all items}</a>
+            <a href="${rootURL}/${it.dashboard.url}all/">${%Browse all items}</a>
           </l:notice>
         </j:when>
         <j:otherwise>
@@ -168,7 +171,7 @@ THE SOFTWARE.
                         </div>
                         <div class="app-temporary-list__item__details">
                           <div class="app-temporary-list__item__details__text">
-                            <a class="app-temporary-list__item__label" href="${rootURL}/${item.task.url}">${item.task.fullDisplayName}</a>
+                            <a class="app-temporary-list__item__label" href="${rootURL}/${item.task.url}">${it.nameOfTask(item.task)}</a>
                             <div class="app-temporary-list__item__description">
                               ${%QueuedDescription(it.waitingFor(item))}
                               <j:if test="${item.why != null}">
