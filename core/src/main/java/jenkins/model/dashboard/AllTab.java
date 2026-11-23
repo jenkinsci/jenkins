@@ -66,6 +66,6 @@ public class AllTab extends ItemListTab {
     @NonNull
     @Override
     public Iterable<? extends Item> search(@NonNull String query) {
-        return Items.allItems(Jenkins.get(), TopLevelItem.class, matching(query)::test);
+        return rankedByName(query, Jenkins.get(), Items.allItems(Jenkins.get(), TopLevelItem.class));
     }
 }

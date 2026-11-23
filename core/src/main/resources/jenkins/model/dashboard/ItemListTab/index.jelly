@@ -39,10 +39,19 @@ THE SOFTWARE.
       </j:when>
       <j:otherwise>
         <div class="app-dashboard-items"
-             data-items-url="${rootURL}/${it.urlName ?: 'defaultTab'}/items">
-          <l:search-bar id="dashboard-items-search" placeholder="${%Search}" hasKeyboardShortcut="false" />
+             data-items-url="${rootURL}/${it.urlName ?: 'defaultTab'}/items"
+             data-load-failed="${%LoadFailed}"
+             data-try-again="${%Try again}"
+             data-results="${%Results}"
+             data-more-results="${%MoreResults}"
+             data-no-results="${%No results found}">
+          <l:search-bar id="dashboard-items-search" placeholder="${%Search}" ariaLabel="${%Search} ${it.displayName}"
+                        hasKeyboardShortcut="false" />
 
           <l:notice id="dashboard-items-no-results" icon="symbol-search" title="${%No results found}" clazz="jenkins-hidden" />
+
+          <!-- Tells screen reader users how many results a search found -->
+          <p class="jenkins-visually-hidden app-dashboard-items__status" role="status" aria-live="polite" />
 
           <div class="app-temporary-list app-dashboard-items__list">
             <st:include page="rows.jelly" />

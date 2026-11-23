@@ -330,4 +330,19 @@ div.listview-jobs {
   &__sentinel {
     height: 1px;
   }
+
+  &__list[aria-busy="true"] {
+    cursor: progress;
+  }
+
+  // Says that loading failed
+  &__error {
+    margin: 0;
+    padding: 0.75rem;
+    color: var(--warning-color);
+
+    .jenkins-button {
+      margin-inline-start: 0.25rem;
+    }
+  }
 }

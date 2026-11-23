@@ -238,6 +238,17 @@ class DashboardTest {
     }
 
     @Test
+    void allTabSearchListsItemsMatchingByTheirOwnNameFirst() throws Exception {
+        enableFlag("alice");
+        j.createFolder("alpha").createProject(FreeStyleProject.class, "x");
+        j.createFreeStyleProject("beta-alpha");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?start=0&search=alpha", null)),
+                    contains("alpha", "beta-alpha", "alpha » x"));
+        }
+    }
+
+    @Test
     void recentTabShowsRunningQueuedAndFinishedBuilds() throws Exception {
         enableFlag("alice", "new-build-page.flag");
         enableFlag("admin", "new-build-page.flag");

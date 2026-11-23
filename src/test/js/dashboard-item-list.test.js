@@ -7,7 +7,7 @@ function page(names, nextStart) {
   const rows = names
     .map(
       (name) =>
-        `<div class="app-temporary-list__item" data-id="${name}"><a class="app-temporary-list__item__label">${name}</a></div>`,
+        `<div class="app-temporary-list__item" data-id="${name}"><a class="app-temporary-list__item__label" href="#">${name}</a></div>`,
     )
     .join("");
   return `<div class="app-dashboard-items__page"${next} data-count="${names.length}">${rows}</div>`;
@@ -41,9 +41,12 @@ describe("dashboard item list", () => {
       }
     };
     document.body.innerHTML = `
-      <div class="app-dashboard-items" data-items-url="/jenkins/all/items">
+      <div class="app-dashboard-items" data-items-url="/jenkins/all/items"
+           data-load-failed="Couldn't load the items." data-try-again="Try again"
+           data-results="Results: {0}" data-more-results="Results: more than {0}" data-no-results="No results found">
         <div class="jenkins-search"><input class="jenkins-search__input" /></div>
         <div id="dashboard-items-no-results" class="jenkins-hidden"></div>
+        <p class="app-dashboard-items__status" role="status"></p>
         <div class="app-temporary-list app-dashboard-items__list">${page(["a", "b"], 2)}</div>
         <div class="app-dashboard-items__sentinel"></div>
       </div>`;
@@ -110,6 +113,9 @@ describe("dashboard item list", () => {
       expect.anything(),
     );
     expect(labels(root)).toEqual(["team » deploy"]);
+    expect(root.querySelector("[role=status]").textContent).toBe(
+      "Results: more than 1",
+    );
 
     // Further pages keep the query
     await list.loadMore();
@@ -135,6 +141,9 @@ describe("dashboard item list", () => {
         .querySelector(".app-dashboard-items__list")
         .classList.contains("jenkins-hidden"),
     ).toBe(true);
+    expect(root.querySelector("[role=status]").textContent).toBe(
+      "No results found",
+    );
   });
 
   it("waits for the list end to scroll into view again after a failure", async () => {
@@ -150,9 +159,11 @@ describe("dashboard item list", () => {
     await new Promise((resolve) => setTimeout(resolve));
     // Not re-observed, which would retry straight away
     expect(observers[0].observe).toHaveBeenCalledTimes(1);
+    expect(root.querySelector(".app-dashboard-items__error")).not.toBeNull();
 
     observers[0].intersect();
     await vi.waitFor(() => expect(labels(root)).toEqual(["a", "b", "c"]));
+    expect(root.querySelector(".app-dashboard-items__error")).toBeNull();
   });
 
   it("skips items already in the list", async () => {

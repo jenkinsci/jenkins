@@ -26,18 +26,23 @@ package jenkins.model.dashboard;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Functions;
 import hudson.Util;
 import hudson.model.AllView;
 import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.View;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.stream.StreamSupport;
 import jenkins.model.Jenkins;
 import jenkins.model.Tab;
 import jenkins.util.SystemProperties;
@@ -75,6 +80,11 @@ public abstract class ItemListTab extends Tab {
      */
     static /* non-final for Groovy */ int PAGE_SIZE = SystemProperties.getInteger(ItemListTab.class.getName() + ".pageSize", 50);
 
+    /**
+     * The longest search query, as each search looks at the name of every item.
+     */
+    static final int MAX_QUERY_LENGTH = 200;
+
     protected ItemListTab(@NonNull Dashboard dashboard) {
         super(dashboard);
     }
@@ -86,28 +96,67 @@ public abstract class ItemListTab extends Tab {
     public abstract @NonNull Iterable<? extends Item> getItems();
 
     /**
-     * The items matching a search query. By default, the items from {@link #getItems()} accepted by
-     * {@link #matching(String)}.
+     * The items matching a search query. By default, the items from {@link #getItems()} whose name or full display
+     * name contains the query, as ranked by {@link #rankedByName}.
      *
      * @param query a non-blank query
      */
     public @NonNull Iterable<? extends Item> search(@NonNull String query) {
-        Predicate<Item> matches = matching(query);
-        return () -> StreamSupport.stream(getItems().spliterator(), false)
-                .filter(matches)
-                .map(Item.class::cast)
-                .iterator();
+        return rankedByName(query, Jenkins.get(), getItems());
     }
 
     /**
-     * Accepts items whose name or full display name contains a query, ignoring case. The full display
-     * name includes the names of the folders containing the item, so a folder's name matches everything
-     * in it.
+     * The items of {@code items} whose name or display name relative to a group contains a query, ignoring case,
+     * those whose own name or display name matches first, in their order, then those that only match through the
+     * name of a folder between the group and the item, so that searching for a folder's name finds the folder
+     * before everything in it. Goes through {@code items} once, keeping the second kind until the first runs out.
      */
-    protected static @NonNull Predicate<Item> matching(@NonNull String query) {
+    protected static @NonNull Iterable<Item> rankedByName(@NonNull String query, @NonNull ItemGroup<?> base,
+            @NonNull Iterable<? extends Item> items) {
+        Predicate<Item> ownName = matchingOwnName(query);
+        String q = query.toLowerCase(Locale.ROOT);
+        return () -> new Iterator<>() {
+            private final Iterator<? extends Item> source = items.iterator();
+            private final Deque<Item> byFolderName = new ArrayDeque<>();
+            private Item next;
+
+            @Override
+            public boolean hasNext() {
+                while (next == null && source.hasNext()) {
+                    Item item = source.next();
+                    if (ownName.test(item)) {
+                        next = item;
+                    } else if (relativeName(item, base).contains(q)) {
+                        byFolderName.add(item);
+                    }
+                }
+                if (next == null) {
+                    next = byFolderName.poll();
+                }
+                return next != null;
+            }
+
+            @Override
+            public Item next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                Item item = next;
+                next = null;
+                return item;
+            }
+        };
+    }
+
+    private static Predicate<Item> matchingOwnName(String query) {
         String q = query.toLowerCase(Locale.ROOT);
         return item -> item.getName().toLowerCase(Locale.ROOT).contains(q)
-                || item.getFullDisplayName().toLowerCase(Locale.ROOT).contains(q);
+                || item.getDisplayName().toLowerCase(Locale.ROOT).contains(q);
+    }
+
+    private static String relativeName(Item item, ItemGroup<?> base) {
+        String name = Functions.getRelativeDisplayNameFrom(item, base);
+        return (name != null ? name : item.getFullDisplayName()).toLowerCase(Locale.ROOT);
     }
 
     /**
@@ -130,6 +179,9 @@ public abstract class ItemListTab extends Tab {
     @Restricted(NoExternalUse.class)
     public @NonNull Page getPage(int start, @CheckForNull String after, @CheckForNull String search) {
         String query = Util.fixEmptyAndTrim(search);
+        if (query != null && query.length() > MAX_QUERY_LENGTH) {
+            query = query.substring(0, MAX_QUERY_LENGTH);
+        }
         String anchor = Util.fixEmpty(after);
         Iterable<? extends Item> source = query == null ? getItems() : search(query);
         int from = Math.max(start, 0);

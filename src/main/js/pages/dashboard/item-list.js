@@ -1,6 +1,9 @@
 import debounce from "lodash/debounce";
 
 const PAGE_SELECTOR = ".app-dashboard-items__page";
+// Rows of the list
+const OWN_ROWS = `:scope > ${PAGE_SELECTOR} > [data-id]`;
+const ERROR_CLASS = "app-dashboard-items__error";
 // Start loading the next page this far before the end of the list scrolls into view
 const LOOKAHEAD = "600px";
 // Each search walks every folder on the server, so wait for typing to pause
@@ -15,8 +18,13 @@ const SEARCH_DELAY = 300;
  * next page starts; it is absent on the last page. Each request also names
  * the last item shown, so the server continues after it.
  *
- * After a page fails to load, the next one is requested only when the end of
- * the list scrolls into view again.
+ * A request that fails shows a message with a button to try again. Starting
+ * a new search aborts the requests of the previous one, and drops their
+ * responses. The `role="status"` element says how many results a search found.
+ *
+ * Relies on these elements from the server: `.app-dashboard-items__list`,
+ * `.app-dashboard-items__sentinel`, `.app-dashboard-items__status`, the
+ * `jenkins-search` input and `#dashboard-items-no-results`.
  *
  * @param {HTMLElement} root the `.app-dashboard-items` element
  * @param {{applySubtree?: function(Element): void, fetch?: typeof fetch}} [options]
@@ -32,29 +40,31 @@ export function initItemList(root, options = {}) {
   const url = root.dataset.itemsUrl;
   const list = root.querySelector(".app-dashboard-items__list");
   const sentinel = root.querySelector(".app-dashboard-items__sentinel");
+  const status = root.querySelector(".app-dashboard-items__status");
   const searchInput = root.querySelector(".jenkins-search__input");
   const search = searchInput && searchInput.closest(".jenkins-search");
   const noResults = root.querySelector("#dashboard-items-no-results");
 
   let query = "";
   let loading = false;
-  // Incremented on every new search, so responses to older ones are dropped
-  let generation = 0;
   // Aborts the requests of the current search when a new one starts
   let controller = new AbortController();
 
+  function lastShown(container) {
+    const rows = container.querySelectorAll(OWN_ROWS);
+    return rows.length ? rows[rows.length - 1].dataset.id : undefined;
+  }
+
   function nextStart() {
-    const pages = list.querySelectorAll(PAGE_SELECTOR);
+    const pages = list.querySelectorAll(`:scope > ${PAGE_SELECTOR}`);
     const last = pages[pages.length - 1];
     return last ? last.dataset.nextStart : undefined;
   }
 
-  function lastShown() {
-    const rows = list.querySelectorAll("[data-id]");
-    return rows.length ? rows[rows.length - 1].dataset.id : undefined;
-  }
-
-  function fetchPage(start, q, after) {
+  /**
+   * Fetches a page of rows.
+   */
+  function fetchPage({ start, after, q }, signal) {
     const params = new URLSearchParams({ start: String(start) });
     if (after) {
       // Continue after the last row shown, so removing an earlier item doesn't skip one
@@ -63,7 +73,7 @@ export function initItemList(root, options = {}) {
     if (q) {
       params.set("search", q);
     }
-    return fetchImpl(`${url}?${params}`, { signal: controller.signal })
+    return fetchImpl(`${url}?${params}`, { signal })
       .then((rsp) => {
         if (!rsp.ok) {
           throw new Error(`Failed to load items: ${rsp.status}`);
@@ -77,6 +87,43 @@ export function initItemList(root, options = {}) {
       });
   }
 
+  function isAbort(e) {
+    return e.name === "AbortError";
+  }
+
+  /**
+   * Says that something failed to load, with a button that removes the
+   * message and tries again.
+   *
+   * @param {function(): void} retry
+   * @param {function(Element): void} place adds the message to the page
+   */
+  function showError(retry, place) {
+    const error = document.createElement("p");
+    error.className = ERROR_CLASS;
+    error.setAttribute("role", "alert");
+    error.append(`${root.dataset.loadFailed} `);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "jenkins-button jenkins-button--tertiary";
+    button.textContent = root.dataset.tryAgain;
+    button.addEventListener("click", () => {
+      error.remove();
+      retry();
+    });
+    error.append(button);
+    place(error);
+  }
+
+  function clearListError() {
+    root.querySelector(`:scope > .${ERROR_CLASS}`)?.remove();
+  }
+
+  function showListError(retry) {
+    clearListError();
+    showError(retry, (error) => sentinel.before(error));
+  }
+
   function observe() {
     if (observer) {
       // Re-observing reports the sentinel's current state, so another page
@@ -86,19 +133,13 @@ export function initItemList(root, options = {}) {
     }
   }
 
-  function logError(e) {
-    if (e.name !== "AbortError") {
-      console.error(e);
-    }
-  }
-
   /**
    * Removes rows that are already in the list, which happens when items are
    * added between loading two pages.
    */
   function dropDuplicates(page) {
     const shown = new Set(
-      Array.from(list.querySelectorAll("[data-id]"), (row) => row.dataset.id),
+      Array.from(list.querySelectorAll(OWN_ROWS), (row) => row.dataset.id),
     );
     page.querySelectorAll("[data-id]").forEach((row) => {
       if (shown.has(row.dataset.id)) {
@@ -113,24 +154,31 @@ export function initItemList(root, options = {}) {
       return Promise.resolve();
     }
     loading = true;
-    const current = generation;
+    const { signal } = controller;
     let failed = false;
-    return fetchPage(start, query, lastShown())
+    list.setAttribute("aria-busy", "true");
+    return fetchPage({ start, q: query, after: lastShown(list) }, signal)
       .then((page) => {
-        if (current !== generation || !page) {
+        if (signal.aborted || !page) {
           return;
         }
+        clearListError();
         dropDuplicates(page);
         list.append(page);
         applySubtree(page);
       })
       .catch((e) => {
-        failed = true;
-        logError(e);
+        if (!isAbort(e)) {
+          failed = true;
+          console.error(e);
+          showListError(loadMore);
+        }
       })
       .then(() => {
-        if (current === generation) {
+        if (!signal.aborted) {
           loading = false;
+          list.removeAttribute("aria-busy");
+          // After a failure, the button tries again
           if (!failed) {
             observe();
           }
@@ -138,15 +186,37 @@ export function initItemList(root, options = {}) {
       });
   }
 
+  /**
+   * Says how many results a search found.
+   */
+  function announce(q, page) {
+    if (!status) {
+      return;
+    }
+    if (!q) {
+      status.textContent = "";
+      return;
+    }
+    const count = Number(page.dataset.count);
+    const more = page.dataset.nextStart;
+    if (count === 0) {
+      status.textContent = root.dataset.noResults;
+    } else {
+      const template = more ? root.dataset.moreResults : root.dataset.results;
+      status.textContent = template.replace("{0}", String(count));
+    }
+  }
+
   function runSearch(value) {
     const q = value.trim();
-    const current = ++generation;
     controller.abort();
     controller = new AbortController();
+    const { signal } = controller;
     loading = true;
-    return fetchPage(0, q)
+    clearListError();
+    return fetchPage({ start: 0, q }, signal)
       .then((page) => {
-        if (current !== generation || !page) {
+        if (signal.aborted || !page) {
           return;
         }
         query = q;
@@ -157,10 +227,16 @@ export function initItemList(root, options = {}) {
         if (noResults) {
           noResults.classList.toggle("jenkins-hidden", !empty);
         }
+        announce(q, page);
       })
-      .catch(logError)
+      .catch((e) => {
+        if (!isAbort(e)) {
+          console.error(e);
+          showListError(() => runSearch(value));
+        }
+      })
       .then(() => {
-        if (current === generation) {
+        if (!signal.aborted) {
           loading = false;
           if (search) {
             search.classList.remove("jenkins-search--loading");
