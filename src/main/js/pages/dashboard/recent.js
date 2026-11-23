@@ -1,4 +1,4 @@
-import { updateEntries } from "@/pages/project/build-entries";
+import { rememberEntries, updateEntries } from "@/pages/project/build-entries";
 
 const REFRESH_INTERVAL = 5000;
 const SECTION = "[data-section]";
@@ -6,9 +6,9 @@ const HEADER = ".app-dashboard-section__header";
 const BODY = ".app-dashboard-section__body";
 const TOGGLE = ".app-dashboard-section__toggle";
 const EXPANDED = "app-dashboard-section--expanded";
-const EXTRA = "app-dashboard-section__extra";
 const BADGE_TEMPLATE = "template.app-dashboard-recent__badge";
 const CURRENT_TAB = "[data-testid=dashboard-tabs] a[aria-current=page]";
+const ERROR = ".app-dashboard-recent__error";
 
 /**
  * Refreshes the Recent tab's content while the page is visible, and expands or
@@ -16,7 +16,12 @@ const CURRENT_TAB = "[data-testid=dashboard-tabs] a[aria-current=page]";
  *
  * A refresh only replaces the rows (and cells of rows) whose server-rendered
  * HTML changed, so menus and tooltips on the other rows stay open. Sections
- * the user expanded stay expanded.
+ * the user expanded stay expanded, and the server renders their extra rows
+ * only for a refresh that names them. When nothing is running, the server
+ * answers a refresh whose content hasn't changed with no content at all.
+ *
+ * A failed refresh shows the `.app-dashboard-recent__error` element next to
+ * the root until a refresh succeeds.
  *
  * @param {HTMLElement} root the element whose `data-rows-url` serves its content
  * @param {{applySubtree?: function(Element): void, fetch?: typeof fetch, interval?: number}} [options]
@@ -34,7 +39,8 @@ export function initRecent(root, options = {}) {
   const expanded = new Set();
   // The server-rendered HTML of each header, as the toggle's label changes client-side
   const headerHtml = new WeakMap();
-  let last = root.innerHTML.trim();
+  const error = root.parentElement?.querySelector(ERROR);
+  let etag = null;
   let timeout;
 
   function rememberHeaders(container) {
@@ -64,10 +70,10 @@ export function initRecent(root, options = {}) {
   function replaceAll(incoming) {
     // Inserting the rows through updateEntries records their HTML for the next refresh
     incoming.querySelectorAll(BODY).forEach((body) => {
-      const html = body.innerHTML.trim();
-      body.replaceChildren();
-      if (html) {
-        updateEntries(body, html);
+      const wrapper = body.firstElementChild;
+      if (wrapper) {
+        body.replaceChildren();
+        updateEntries(body, wrapper);
       }
     });
     root.replaceChildren(incoming);
@@ -146,27 +152,9 @@ export function initRecent(root, options = {}) {
     replacement?.focus({ preventScroll: true });
   }
 
-  /**
-   * Expands the section of the focused control's row if the row is now one of
-   * the rows a collapsed section hides, for example when a newer build is
-   * ranked above it.
-   */
-  function revealRowOf(control) {
-    if (!control || !control.entryId || !control.sectionId) {
-      return;
-    }
-    const row = Array.from(root.querySelectorAll("[page-entry-id]")).find(
-      (e) => e.getAttribute("page-entry-id") === control.entryId,
-    );
-    if (row && row.classList.contains(EXTRA)) {
-      expanded.add(control.sectionId);
-    }
-  }
-
   function update(html) {
     const control = focusedControl();
     updateContent(html);
-    revealRowOf(control);
     // Expand sections first, as a control in a collapsed section can't take focus
     applyToggles();
     restoreFocus(control);
@@ -201,49 +189,93 @@ export function initRecent(root, options = {}) {
         headerHtml.set(header, header.outerHTML);
       }
 
-      const inserted = updateEntries(
-        existing.querySelector(BODY),
-        section.querySelector(BODY).innerHTML.trim(),
-      );
-      inserted.forEach((element) => applySubtree(element));
+      const wrapper = section.querySelector(BODY).firstElementChild;
+      if (wrapper) {
+        const inserted = updateEntries(existing.querySelector(BODY), wrapper);
+        inserted.forEach((element) => applySubtree(element));
+      }
     });
   }
 
+  function showError(failed) {
+    error?.classList.toggle("jenkins-hidden", !failed);
+  }
+
+  function refreshUrl() {
+    if (!expanded.size) {
+      return url;
+    }
+    const separator = url.includes("?") ? "&" : "?";
+    const params = new URLSearchParams({ expanded: [...expanded].join(",") });
+    return `${url}${separator}${params}`;
+  }
+
   /**
-   * @param {boolean} [force] fetch even while the page is hidden, and update
-   *   even if the content is unchanged
+   * @param {boolean} [force] fetch even while the page is hidden
    */
   function refresh(force = false) {
     if (document.hidden && !force) {
       return Promise.resolve();
     }
-    return fetchImpl(url)
-      .then((rsp) => (rsp.ok ? rsp.text() : null))
-      .then((text) => {
-        if (text === null) {
-          return;
+    const headers = etag ? { "If-None-Match": etag } : {};
+    return fetchImpl(refreshUrl(), { headers })
+      .then((rsp) => {
+        if (rsp.status === 304) {
+          return null;
         }
-        const html = text.trim();
-        if (force || html !== last) {
-          last = html;
-          update(html);
+        if (!rsp.ok) {
+          throw new Error(`Failed to refresh: ${rsp.status}`);
+        }
+        etag = rsp.headers?.get("ETag") ?? null;
+        return rsp.text();
+      })
+      .then((text) => {
+        showError(false);
+        if (text !== null) {
+          update(text.trim());
         }
       })
-      .catch((e) => console.error(e));
+      .catch((e) => {
+        showError(true);
+        console.error(e);
+      });
   }
 
   // Whether a refresh is in progress, so that only one chain of refreshes runs
   let refreshing = false;
+  // Whether another refresh is wanted as soon as the current one completes
+  let again = false;
   let stopped = false;
 
   function tick(force = false) {
     refreshing = true;
+    again = false;
     return refresh(force).then(() => {
       refreshing = false;
-      if (!stopped) {
+      if (stopped) {
+        return;
+      }
+      if (again) {
+        tick(true);
+      } else {
         timeout = window.setTimeout(tick, interval);
       }
     });
+  }
+
+  /**
+   * Refreshes straight away, or as soon as the refresh in progress completes.
+   */
+  function refreshSoon() {
+    if (stopped) {
+      return;
+    }
+    if (refreshing) {
+      again = true;
+      return;
+    }
+    window.clearTimeout(timeout);
+    tick(true);
   }
 
   document.addEventListener("visibilitychange", () => {
@@ -263,19 +295,21 @@ export function initRecent(root, options = {}) {
       expanded.delete(id);
     } else {
       expanded.add(id);
+      // Loads the rows past the first few
+      refreshSoon();
     }
     applyToggles();
   });
 
   rememberHeaders(root);
+  // Rows are compared with the HTML the server last rendered for them, so
+  // refreshes leave unchanged rows, and anything open on them, alone
+  root.querySelectorAll(BODY).forEach(rememberEntries);
   applyToggles();
-  // Rows are compared with the HTML the server last sent for them, which only a
-  // refresh records, so load once straight away. Later refreshes then leave
-  // unchanged rows, and anything open on them, alone.
-  const ready = tick(true);
+  timeout = window.setTimeout(tick, interval);
   root.dashboardRecent = {
     refresh: () => refresh(),
-    ready,
+    ready: Promise.resolve(),
     stop: () => {
       stopped = true;
       window.clearTimeout(timeout);

@@ -270,6 +270,19 @@ div.listview-jobs {
   }
 }
 
+.app-dashboard-recent__error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  color: var(--warning-color);
+
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
 .app-dashboard-run-name {
   color: var(--text-color-secondary);
   font-weight: normal;

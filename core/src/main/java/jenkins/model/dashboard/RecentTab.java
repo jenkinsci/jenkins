@@ -36,8 +36,18 @@ import hudson.model.Run;
 import hudson.model.User;
 import hudson.scm.ChangeLogSet;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -51,6 +61,8 @@ import jenkins.model.Tab;
 import jenkins.scm.RunWithSCM;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.ResponseImpl;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.verb.GET;
@@ -234,6 +246,24 @@ public class RecentTab extends Tab {
     }
 
     /**
+     * Whether the user expanded a collapsible section, whose rows past the first few are only rendered then.
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean isExpanded(@NonNull String section) {
+        StaplerRequest2 request = Stapler.getCurrentRequest2();
+        String expanded = request == null ? null : request.getParameter("expanded");
+        return expanded != null && Arrays.asList(expanded.split(",")).contains(section);
+    }
+
+    /**
+     * The rows of a section to render: all of them if it is expanded, otherwise the first few.
+     */
+    @Restricted(NoExternalUse.class)
+    public @NonNull <T> List<T> shown(@NonNull String section, @NonNull List<T> entries) {
+        return isExpanded(section) || entries.size() <= COLLAPSED_QUEUE_SIZE ? entries : entries.subList(0, COLLAPSED_QUEUE_SIZE);
+    }
+
+    /**
      * Queued items the current user can see. The queue checks the permission of each task, but not of the folders
      * containing it.
      */
@@ -364,11 +394,76 @@ public class RecentTab extends Tab {
     }
 
     /**
-     * Renders the groups as an HTML fragment, for refreshing the page.
+     * Renders the groups as an HTML fragment, for refreshing the page. The response has an {@code ETag} from its
+     * content, and a request whose {@code If-None-Match} matches it gets an empty "304 Not Modified" response
+     * rather than the same rows again.
      */
     @GET
     public void doRows(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        BufferedResponse buffered = new BufferedResponse(rsp);
+        req.getView(this, "rows.jelly").forward(req, new ResponseImpl(Stapler.getCurrent(), buffered));
+        byte[] body = buffered.toByteArray();
+        String etag = '"' + Util.getDigestOf(new ByteArrayInputStream(body)) + '"';
+        rsp.setHeader("ETag", etag);
+        rsp.setHeader("Cache-Control", "no-cache");
+        if (etag.equals(req.getHeader("If-None-Match"))) {
+            rsp.setStatus(StaplerResponse2.SC_NOT_MODIFIED);
+            return;
+        }
         rsp.setContentType("text/html;charset=UTF-8");
-        req.getView(this, "rows.jelly").forward(req, rsp);
+        rsp.setContentLength(body.length);
+        rsp.getOutputStream().write(body);
+    }
+
+    /**
+     * Keeps what is written to a response, so that it can be sent or not once it is complete.
+     */
+    private static final class BufferedResponse extends HttpServletResponseWrapper {
+        private final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        private PrintWriter writer;
+
+        BufferedResponse(HttpServletResponse response) {
+            super(response);
+        }
+
+        @Override
+        public ServletOutputStream getOutputStream() {
+            return new ServletOutputStream() {
+                @Override
+                public void write(int b) {
+                    bytes.write(b);
+                }
+
+                @Override
+                public void write(byte[] b, int off, int len) {
+                    bytes.write(b, off, len);
+                }
+
+                @Override
+                public boolean isReady() {
+                    return true;
+                }
+
+                @Override
+                public void setWriteListener(WriteListener writeListener) {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+
+        @Override
+        public PrintWriter getWriter() {
+            if (writer == null) {
+                writer = new PrintWriter(new OutputStreamWriter(bytes, StandardCharsets.UTF_8));
+            }
+            return writer;
+        }
+
+        byte[] toByteArray() {
+            if (writer != null) {
+                writer.flush();
+            }
+            return bytes.toByteArray();
+        }
     }
 }

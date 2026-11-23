@@ -49,6 +49,7 @@ import hudson.model.ListView;
 import hudson.model.Queue;
 import hudson.model.User;
 import hudson.util.OneShotEvent;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -59,6 +60,8 @@ import jenkins.model.Jenkins;
 import jenkins.model.Tab;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.experimentalflags.UserExperimentalFlagsProperty;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
@@ -298,10 +301,16 @@ class DashboardTest {
         }
         try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
             HtmlPage page = wc.goTo("");
-            assertThat(sectionLabels(page, "queued"), hasSize(5));
-            assertThat(page.querySelectorAll("[data-section=queued] .app-dashboard-section__extra"), hasSize(5 - RecentTab.COLLAPSED_QUEUE_SIZE));
+            assertThat(sectionLabels(page, "queued"), hasSize(RecentTab.COLLAPSED_QUEUE_SIZE));
             DomElement toggle = page.querySelector("[data-section=queued] .app-dashboard-section__toggle");
             assertThat(toggle.getTextContent().trim(), is("Show all 5"));
+            assertThat(toggle.getAttribute("aria-controls"), is("dashboard-recent-queued"));
+
+            // The rows past the first few are rendered for a refresh of the expanded section
+            wc.getOptions().setJavaScriptEnabled(false);
+            HtmlPage rows = (HtmlPage) wc.goTo("defaultTab/rows?expanded=queued", null);
+            assertThat(sectionLabels(rows, "queued"), hasSize(5));
+            assertThat(rows.querySelectorAll("[data-section=queued] .app-dashboard-section__extra"), hasSize(5 - RecentTab.COLLAPSED_QUEUE_SIZE));
         } finally {
             j.jenkins.getQueue().clear();
         }
@@ -320,14 +329,40 @@ class DashboardTest {
         }
         try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
             HtmlPage page = wc.goTo("");
-            List<String> labels = sectionLabels(page, "queued");
-            assertThat(labels, hasSize(RecentTab.LIMIT));
-            assertThat(labels.get(0), is("queued-" + (total - 1)));
+            assertThat(sectionLabels(page, "queued").get(0), is("queued-" + (total - 1)));
             assertThat(page.querySelector("[data-section=queued] .app-dashboard-section__count").getTextContent(), is(Integer.toString(total)));
             assertThat(page.querySelector("[data-section=queued] .app-dashboard-section__toggle").getTextContent().trim(),
                     is("Show the first " + RecentTab.LIMIT));
+
+            wc.getOptions().setJavaScriptEnabled(false);
+            List<String> labels = sectionLabels((HtmlPage) wc.goTo("defaultTab/rows?expanded=queued", null), "queued");
+            assertThat(labels, hasSize(RecentTab.LIMIT));
+            assertThat(labels.get(0), is("queued-" + (total - 1)));
         } finally {
             j.jenkins.getQueue().clear();
+        }
+    }
+
+    @Test
+    void recentTabRefreshIsNotSentAgainWhileNothingChanges() throws Exception {
+        enableFlag("alice");
+        j.buildAndAssertSuccess(j.createFreeStyleProject("finished"));
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            wc.getOptions().setJavaScriptEnabled(false);
+            wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+            WebResponse first = wc.goTo("defaultTab/rows", null).getWebResponse();
+            String etag = first.getResponseHeaderValue("ETag");
+            assertThat(etag, notNullValue());
+
+            WebRequest again = new WebRequest(new URL(j.getURL(), "defaultTab/rows"));
+            again.setAdditionalHeader("If-None-Match", etag);
+            assertThat(wc.getPage(again).getWebResponse().getStatusCode(), is(304));
+
+            // A newly finished build changes the content
+            j.buildAndAssertSuccess(j.createFreeStyleProject("newer"));
+            WebResponse changed = wc.getPage(again).getWebResponse();
+            assertThat(changed.getStatusCode(), is(200));
+            assertThat(changed.getContentAsString(), containsString("newer"));
         }
     }
 

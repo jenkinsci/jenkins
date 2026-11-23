@@ -139,14 +139,17 @@ THE SOFTWARE.
                     </j:otherwise>
                   </j:choose>
                   <button type="button" class="jenkins-button jenkins-button--tertiary app-dashboard-section__toggle"
+                          aria-controls="dashboard-recent-queued" aria-expanded="${it.isExpanded('queued')}"
                           data-show-text="${showText}" data-hide-text="${%Show fewer}">
                     ${showText}
                   </button>
                 </j:if>
               </div>
-              <div class="app-dashboard-section__body">
+              <div class="app-dashboard-section__body" id="dashboard-recent-queued">
                 <div class="app-temporary-list">
-                  <j:forEach var="entry" items="${queued}" varStatus="status">
+                  <!-- The rows past the first few only when the section is expanded, as working out why each item is
+                       waiting can take a while -->
+                  <j:forEach var="entry" items="${it.shown('queued', queued)}" varStatus="status">
                     <j:set var="item" value="${entry.value()}" />
                     <div class="app-temporary-list__item ${status.index ge it.collapsedQueueSize ? 'app-dashboard-section__extra' : ''}"
                          page-entry-id="queue-${item.id}">
