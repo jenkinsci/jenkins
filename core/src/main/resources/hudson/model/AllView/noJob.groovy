@@ -8,6 +8,7 @@ import jenkins.model.Jenkins
 def l = namespace(lib.LayoutTagLib)
 
 def isTopLevelAllView = my.owner == Jenkins.get();
+// Links to root pages start from the root URL, so they work where this view is included on another page, such as the dashboard
 def canSetUpDistributedBuilds = Jenkins.get().hasPermission(Computer.CREATE) &&
         Jenkins.get().clouds.isEmpty() &&
         Jenkins.get().getNodes().isEmpty();
@@ -28,7 +29,7 @@ div {
 
                     ul(class: "empty-state-section-list") {
                         li(class: "content-block") {
-                            a(href: "newJob", class: "content-block__link") {
+                            a(href: "${rootURL}/newJob", class: "content-block__link") {
                                 span(_("createJob"))
                                 span(class: "trailing-icon") {
                                     l.icon(src: "symbol-add")
@@ -43,7 +44,7 @@ div {
                         h2(_("setUpDistributedBuilds"), class: "h4")
                         ul(class: "empty-state-section-list") {
                             li(class: "content-block") {
-                                a(href: "computer/new", class: "content-block__link") {
+                                a(href: "${rootURL}/computer/new", class: "content-block__link") {
                                     span(_("setUpAgent"))
                                     span(class: "trailing-icon") {
                                         l.icon(src: "symbol-computer")
@@ -53,7 +54,7 @@ div {
 
                             if (hasAdministerJenkinsPermission) {
                                 li(class: "content-block") {
-                                    a(href: "cloud/", class: "content-block__link") {
+                                    a(href: "${rootURL}/cloud/", class: "content-block__link") {
                                         span(_("setUpCloud"))
                                         span(class: "trailing-icon") {
                                             l.icon(src: "symbol-cloud")
@@ -124,7 +125,7 @@ div {
 
                     if (canSignUp) {
                         li(class: "content-block") {
-                            a(href: "signup", class: "content-block__link") {
+                            a(href: "${rootURL}/signup", class: "content-block__link") {
                                 span(_("Sign up for Jenkins"))
                                 span(class: "trailing-icon") {
                                     l.icon(
