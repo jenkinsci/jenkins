@@ -279,6 +279,7 @@ import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.install.InstallState;
 import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
+import jenkins.model.dashboard.Dashboard;
 import jenkins.security.ClassFilterImpl;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
@@ -4066,6 +4067,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         for (Action a : getManagementLinks())
             if (Objects.equals(a.getUrlName(), token))
                 return a;
+        if (Dashboard.isEnabled()) {
+            return Dashboard.get().getTab(token);
+        }
         return null;
     }
 

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import jenkins.management.Badge;
+import jenkins.model.dashboard.Dashboard;
 import jenkins.model.experimentalflags.NewAgentPageUserExperimentalFlag;
 import jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag;
 import jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag;
@@ -371,6 +372,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
             if (self instanceof Computer computer && new NewAgentPageUserExperimentalFlag().getFlagValue()) {
                 return computer.getAppBarActions();
+            }
+
+            if (self instanceof Jenkins && Dashboard.isEnabled()) {
+                // For these users the root URL shows the dashboard rather than the primary view, so the overflow
+                // menu, loaded from the root's contextMenu, matches the dashboard's app bar and its Views menu
+                return Dashboard.get().getAppBarActions();
             }
 
             if (self instanceof ViewGroup viewGroup && new NewDashboardPageUserExperimentalFlag().getFlagValue()) {
