@@ -317,8 +317,10 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
         @Override
         protected void handleClose() {
             ready();
-            if (runningThread != null) {
-                runningThread.interrupt();
+            synchronized (this) {
+                if (runningThread != null) {
+                    runningThread.interrupt();
+                }
             }
         }
 
@@ -356,7 +358,9 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
             command.setClientCharset(encoding);
             CLICommand orig = CLICommand.setCurrent(command);
             try {
-                runningThread = Thread.currentThread();
+                synchronized (this) {
+                    runningThread = Thread.currentThread();
+                }
                 int exit = command.main(args.subList(1, args.size()), locale, stdin, stdout, stderr);
                 stdout.flush();
                 sendExit(exit);
@@ -367,7 +371,12 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                 }
             } finally {
                 CLICommand.setCurrent(orig);
-                runningThread = null;
+                synchronized (this) {
+                    runningThread = null;
+                }
+                // handleClose may be called more than once, so an interrupt can arrive after the sleep above has returned.
+                // runningThread is a pooled servlet container thread, so do not let that interrupt leak into the next request it serves.
+                Thread.interrupted();
             }
         }
     }
