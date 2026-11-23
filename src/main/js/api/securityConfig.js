@@ -1,5 +1,4 @@
 import jenkins from "../util/jenkins";
-import { getWindow } from "window-handle";
 
 /**
  * Provides a wrapper to interact with the security configuration
@@ -15,7 +14,7 @@ function saveFirstUser($form, success, error) {
     function (response) {
       var crumbRequestField = response.data.crumbRequestField;
       if (crumbRequestField) {
-        getWindow().crumb.init(crumbRequestField, response.data.crumb);
+        window.crumb.init(crumbRequestField, response.data.crumb);
       }
       success(response);
     },
@@ -32,7 +31,7 @@ function saveConfigureInstance($form, success, error) {
     function (response) {
       var crumbRequestField = response.data.crumbRequestField;
       if (crumbRequestField) {
-        getWindow().crumb.init(crumbRequestField, response.data.crumb);
+        window.crumb.init(crumbRequestField, response.data.crumb);
       }
       success(response);
     },

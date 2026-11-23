@@ -210,3 +210,45 @@ div.listview-jobs {
     flex-direction: column;
   }
 }
+
+// Experimental dashboard home page
+.app-dashboard-system-message {
+  margin-bottom: var(--section-padding);
+  padding-bottom: var(--section-padding);
+  border-bottom: var(--jenkins-border);
+
+  & > :last-child {
+    margin-bottom: 0;
+  }
+}
+
+.app-dashboard-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  &__page {
+    display: contents;
+
+    // A page's last row gains its divider when the next page loads. Animating
+    // the border would start from the browser default, a thick dark line.
+    & > .app-temporary-list__item {
+      transition-property: background-color, box-shadow;
+    }
+
+    // Items are grouped by the page they loaded with; keep the dividers and
+    // corners continuous across those groups
+    &:not(:last-child) > .app-temporary-list__item:last-of-type {
+      border-bottom: var(--jenkins-border);
+      border-radius: 0 !important;
+    }
+
+    &:not(:first-child) > .app-temporary-list__item:first-of-type {
+      border-radius: 0 !important;
+    }
+  }
+
+  &__sentinel {
+    height: 1px;
+  }
+}
