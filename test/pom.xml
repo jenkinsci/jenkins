@@ -121,7 +121,7 @@ THE SOFTWARE.
         <!-- Required by workflow-support -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>scm-api</artifactId>
-        <version>728.vc30dcf7a_0df5</version>
+        <version>732.v830c71a_cfed3</version>
       </dependency>
       <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
@@ -244,7 +244,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1464.vece7e78fce08</version>
+      <version>1466.v0643b_53583d2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -262,7 +262,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>928.v1effc3f3a_236</version>
+      <version>954.v656d2cf610c4</version>
       <scope>test</scope>
     </dependency>
     <dependency>

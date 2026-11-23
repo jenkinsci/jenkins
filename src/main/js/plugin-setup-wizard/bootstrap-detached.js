@@ -1,12 +1,9 @@
-import { getWindow } from 'window-handle';
-
 /**
  * Manual replacement for the bootstrap-detached library. We cannot use that one due to the way JS-imports are set
  *
  * Contrary to the bootstrap-detached lib, this one polutes the received jQuery instance
  */
 export function enhanceJQueryWithBootstrap($) {
-  var window = getWindow();
   var _$ = window.$;
   var _jQuery = window.jQuery;
 
