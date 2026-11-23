@@ -34,8 +34,8 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Contributes the built-in {@link Dashboard} tab, {@link AllTab}. The highest ordinal puts it before tabs
- * from plugins, and makes it the default tab.
+ * Contributes the built-in {@link Dashboard} tabs, {@link RecentTab} then {@link AllTab}. The highest
+ * ordinal puts them before tabs from plugins, and makes {@link RecentTab} the default tab.
  */
 @Extension(ordinal = Integer.MAX_VALUE)
 @Restricted(NoExternalUse.class)
@@ -48,6 +48,6 @@ public final class BuiltInDashboardTabs extends TransientActionFactory<Dashboard
     @NonNull
     @Override
     public Collection<? extends Tab> createFor(@NonNull Dashboard target) {
-        return List.of(new AllTab(target));
+        return List.of(new RecentTab(target), new AllTab(target));
     }
 }
