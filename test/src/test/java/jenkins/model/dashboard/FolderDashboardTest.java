@@ -166,6 +166,21 @@ class FolderDashboardTest {
     }
 
     @Test
+    void folderDashboardExpandsOnlyFoldersInsideIt() throws Exception {
+        enableFlag("alice");
+        MockFolder team = createFolder(j.jenkins, "team");
+        createFolder(team, "nested").createProject(FreeStyleProject.class, "inner");
+        createFolder(j.jenkins, "other").createProject(FreeStyleProject.class, "elsewhere");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            assertThat(rowLabels((HtmlPage) wc.goTo("job/team/all/items?folder=team/nested", null)), contains("inner"));
+
+            wc.setThrowExceptionOnFailingStatusCode(false);
+            assertThat(wc.goTo("job/team/all/items?folder=other", null).getWebResponse().getStatusCode(), is(404));
+            assertThat(wc.goTo("job/team/all/items?folder=team", null).getWebResponse().getStatusCode(), is(404));
+        }
+    }
+
+    @Test
     void folderViewsAndOtherUrlsKeepWorkingWithTheFlag() throws Exception {
         enableFlag("admin");
         MockFolder folder = createFolder(j.jenkins, "team");

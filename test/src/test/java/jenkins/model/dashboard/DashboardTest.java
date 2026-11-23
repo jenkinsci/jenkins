@@ -184,6 +184,74 @@ class DashboardTest {
     }
 
     @Test
+    void allTabExpandsFoldersAPageAtATime() throws Exception {
+        enableFlag("alice");
+        MockFolder team = j.createFolder("team");
+        for (int i = 0; i < 25; i++) {
+            team.createProject(FreeStyleProject.class, String.format("job-%02d", i));
+        }
+        team.createProject(MockFolder.class, "nested");
+        j.createFreeStyleProject("top-job");
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            HtmlPage all = wc.goTo("all/");
+            // Folders expand when clicked, with a separate link to their page; jobs link to their page
+            DomElement toggle = all.querySelector("[data-id='team'] .app-dashboard-items__toggle");
+            assertThat(toggle, notNullValue());
+            assertThat(toggle.getAttribute("aria-expanded"), is("false"));
+            assertThat(all.querySelector("[data-id='team'] a[href$='job/team/']"), notNullValue());
+            assertThat(all.querySelector("[data-id='top-job'] .app-dashboard-items__toggle"), nullValue());
+            assertThat(all.querySelector("[data-id='team'] a[aria-label='Open team']"), notNullValue());
+
+            HtmlPage first = (HtmlPage) wc.goTo("all/items?folder=team&start=0", null);
+            List<String> labels = rowLabels(first);
+            assertThat(labels, hasSize(ItemListTab.CHILDREN_PAGE_SIZE));
+            // Items directly in the expanded folder are shown with their own names
+            assertThat(labels.get(0), is("job-00"));
+            assertThat(nextStart(first), is("20"));
+            DomElement more = first.querySelector(".app-dashboard-items__more");
+            assertThat(more.getTextContent().trim(), is("Show more (6 left)"));
+            assertThat(more.getAttribute("data-next-start"), is("20"));
+
+            HtmlPage second = (HtmlPage) wc.goTo("all/items?folder=team&start=20&after=team/job-19", null);
+            assertThat(rowLabels(second), contains("job-20", "job-21", "job-22", "job-23", "job-24", "nested"));
+            assertThat(nextStart(second), is(""));
+            assertThat(second.querySelector(".app-dashboard-items__more"), nullValue());
+            // Folders inside expanded folders expand too
+            assertThat(second.querySelector("[data-id='team/nested'] .app-dashboard-items__toggle"), notNullValue());
+            HtmlPage empty = (HtmlPage) wc.goTo("all/items?folder=team/nested", null);
+            assertThat(empty.querySelector(".app-dashboard-items__empty").getTextContent().trim(), is("This folder is empty"));
+
+            // Search results already list what is inside folders, so their folders don't expand
+            HtmlPage results = (HtmlPage) wc.goTo("all/items?start=0&search=team", null);
+            assertThat(rowLabels(results), hasItem("team"));
+            assertThat(results.querySelector(".app-dashboard-items__toggle"), nullValue());
+        }
+    }
+
+    @Test
+    void allTabExpandsOnlyFoldersTheUserCanRead() throws Exception {
+        enableFlag("bob");
+        MockFolder open = j.createFolder("open");
+        FreeStyleProject visible = open.createProject(FreeStyleProject.class, "visible");
+        open.createProject(FreeStyleProject.class, "hidden");
+        MockFolder closed = j.createFolder("closed");
+        closed.createProject(FreeStyleProject.class, "secret");
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("bob")
+                .grant(Item.READ).onItems(open, visible).to("bob"));
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?folder=open", null)), contains("visible"));
+
+            wc.setThrowExceptionOnFailingStatusCode(false);
+            assertThat(wc.goTo("all/items?folder=closed", null).getWebResponse().getStatusCode(), is(404));
+            assertThat(wc.goTo("all/items?folder=open/visible", null).getWebResponse().getStatusCode(), is(404));
+            assertThat(wc.goTo("all/items?folder=missing", null).getWebResponse().getStatusCode(), is(404));
+        }
+    }
+
+    @Test
     void allTabContinuesAfterTheLastItemShownWhenEarlierItemsAreDeleted() throws Exception {
         enableFlag("alice");
         for (int i = 0; i < 120; i++) {

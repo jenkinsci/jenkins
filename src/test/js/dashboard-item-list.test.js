@@ -372,6 +372,274 @@ describe("dashboard item list", () => {
 
     expect(labels(root)).toEqual(["new"]);
   });
+
+  describe("folders", () => {
+    function folderPage(names, nextStart) {
+      const next =
+        nextStart === undefined ? "" : ` data-next-start="${nextStart}"`;
+      const rows = names
+        .map(
+          (name) =>
+            `<div class="app-temporary-list__item" data-id="${name}"><button type="button" class="app-temporary-list__item__label app-dashboard-items__toggle" aria-expanded="false">${name}</button></div>`,
+        )
+        .join("");
+      return `<div class="app-dashboard-items__page"${next} data-count="${names.length}">${rows}</div>`;
+    }
+
+    function toggleOf(name) {
+      return root.querySelector(
+        `[data-id="${name}"] .app-dashboard-items__toggle`,
+      );
+    }
+
+    // A page of a folder's items, ending with a button if there are more
+    function childPage(names, nextStart) {
+      const html = page(names, nextStart);
+      if (nextStart === undefined) {
+        return html;
+      }
+      return html.replace(
+        /<\/div>$/,
+        `<button type="button" class="app-dashboard-items__more" data-next-start="${nextStart}">Show more</button></div>`,
+      );
+    }
+
+    beforeEach(() => {
+      root.dataset.loadFailed = "Couldn't load the items.";
+      root.dataset.tryAgain = "Try again";
+      root.querySelector(".app-dashboard-items__list").innerHTML = folderPage(
+        ["team"],
+        1,
+      );
+    });
+
+    it("loads a folder's items under its row when clicked", async () => {
+      const fetch = vi.fn(() => response(childPage(["team/a", "team/b"], 2)));
+      const applySubtree = vi.fn();
+      root.querySelector('[data-id="team"] button').innerHTML =
+        '<span class="app-dashboard-items__name">team</span>';
+      initItemList(root, { fetch, applySubtree });
+
+      toggleOf("team").click();
+      await vi.waitFor(() =>
+        expect(labels(root)).toEqual(["team", "team/a", "team/b"]),
+      );
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/jenkins/all/items?start=0&folder=team",
+        expect.anything(),
+      );
+      const group = root.querySelector(".app-dashboard-items__children");
+      expect(group.previousElementSibling.dataset.id).toBe("team");
+      expect(group.getAttribute("role")).toBe("group");
+      expect(group.getAttribute("aria-label")).toBe("team");
+      expect(group.style.getPropertyValue("--dashboard-items-depth")).toBe("1");
+      expect(toggleOf("team").getAttribute("aria-expanded")).toBe("true");
+      expect(toggleOf("team").getAttribute("aria-controls")).toBe(group.id);
+      expect(applySubtree).toHaveBeenCalledTimes(1);
+      expect(root.querySelector(".app-dashboard-items__more").textContent).toBe(
+        "Show more",
+      );
+    });
+
+    it("collapses and expands again without reloading", async () => {
+      const fetch = vi.fn(() => response(page(["team/a"])));
+      initItemList(root, { fetch });
+
+      toggleOf("team").click();
+      await vi.waitFor(() => expect(labels(root)).toEqual(["team", "team/a"]));
+      const group = root.querySelector(".app-dashboard-items__children");
+      // There are no more items, so there is no button to load them
+      expect(root.querySelector(".app-dashboard-items__more")).toBeNull();
+
+      toggleOf("team").click();
+      expect(group.hidden).toBe(true);
+      expect(toggleOf("team").getAttribute("aria-expanded")).toBe("false");
+
+      toggleOf("team").click();
+      expect(group.hidden).toBe(false);
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it("loads more of a folder's items after the last one shown", async () => {
+      const fetch = vi
+        .fn()
+        .mockReturnValueOnce(response(childPage(["team/a", "team/b"], 2)))
+        .mockReturnValueOnce(response(childPage(["team/c"])));
+      initItemList(root, { fetch });
+
+      toggleOf("team").click();
+      await vi.waitFor(() =>
+        expect(root.querySelector(".app-dashboard-items__more")).not.toBeNull(),
+      );
+      root.querySelector(".app-dashboard-items__more").click();
+      await vi.waitFor(() =>
+        expect(labels(root)).toEqual(["team", "team/a", "team/b", "team/c"]),
+      );
+
+      expect(fetch).toHaveBeenLastCalledWith(
+        "/jenkins/all/items?start=2&folder=team&after=team%2Fb",
+        expect.anything(),
+      );
+      expect(root.querySelector(".app-dashboard-items__more")).toBeNull();
+    });
+
+    it("indents folders inside expanded folders one more level", async () => {
+      const fetch = vi
+        .fn()
+        .mockReturnValueOnce(response(folderPage(["team/infra"])))
+        .mockReturnValueOnce(response(page(["team/infra/deploy"])));
+      initItemList(root, { fetch });
+
+      toggleOf("team").click();
+      await vi.waitFor(() => expect(toggleOf("team/infra")).not.toBeNull());
+      toggleOf("team/infra").click();
+      await vi.waitFor(() =>
+        expect(labels(root)).toEqual([
+          "team",
+          "team/infra",
+          "team/infra/deploy",
+        ]),
+      );
+
+      const depths = Array.from(
+        root.querySelectorAll(".app-dashboard-items__children"),
+        (group) => group.style.getPropertyValue("--dashboard-items-depth"),
+      );
+      expect(depths).toEqual(["1", "2"]);
+    });
+
+    it("continues the top-level list after its own last row, not a folder's", async () => {
+      const fetch = vi
+        .fn()
+        .mockReturnValueOnce(response(page(["team/a"])))
+        .mockReturnValueOnce(response(page(["zebra"])));
+      const list = initItemList(root, { fetch });
+
+      toggleOf("team").click();
+      await vi.waitFor(() => expect(labels(root)).toEqual(["team", "team/a"]));
+      await list.loadMore();
+
+      expect(fetch).toHaveBeenLastCalledWith(
+        "/jenkins/all/items?start=1&after=team",
+        expect.anything(),
+      );
+      expect(labels(root)).toEqual(["team", "team/a", "zebra"]);
+    });
+
+    it("leaves a folder collapsed when its items fail to load", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      const fetch = vi.fn(() => Promise.resolve({ ok: false, status: 404 }));
+      const list = initItemList(root, { fetch });
+
+      await list.toggle(toggleOf("team"));
+
+      expect(root.querySelector(".app-dashboard-items__children")).toBeNull();
+      expect(toggleOf("team").getAttribute("aria-expanded")).toBe("false");
+      expect(toggleOf("team").hasAttribute("aria-busy")).toBe(false);
+
+      // It says so, with a button that tries again
+      const error = root.querySelector(".app-dashboard-items__error");
+      expect(error.getAttribute("role")).toBe("alert");
+      fetch.mockImplementation(() => response(page(["team/a"])));
+      error.querySelector("button").click();
+      await vi.waitFor(() => expect(labels(root)).toEqual(["team", "team/a"]));
+      expect(root.querySelector(".app-dashboard-items__error")).toBeNull();
+    });
+
+    it("hands the focus back to the folder when a retry loads its items", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      const fetch = vi
+        .fn()
+        .mockReturnValueOnce(Promise.resolve({ ok: false, status: 500 }))
+        .mockReturnValueOnce(response(page(["team/a"])));
+      const list = initItemList(root, { fetch });
+
+      await list.toggle(toggleOf("team"));
+      const error = root.querySelector(".app-dashboard-items__error");
+      expect(error.classList).toContain("jenkins-alert");
+      const retry = error.querySelector("button");
+      retry.focus();
+      retry.click();
+
+      await vi.waitFor(() => expect(labels(root)).toEqual(["team", "team/a"]));
+      await vi.waitFor(() =>
+        expect(document.activeElement).toBe(toggleOf("team")),
+      );
+    });
+
+    it("hands the focus to the warning of the same folder when a retry fails again", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      const fetch = vi.fn(() => Promise.resolve({ ok: false, status: 500 }));
+      root.querySelector(".app-dashboard-items__list").innerHTML = folderPage(
+        ["alpha", "team"],
+        2,
+      );
+      const list = initItemList(root, { fetch });
+
+      await list.toggle(toggleOf("alpha"));
+      await list.toggle(toggleOf("team"));
+      const errors = root.querySelectorAll(".app-dashboard-items__error");
+      expect(errors).toHaveLength(2);
+      const retry = errors[1].querySelector("button");
+      retry.focus();
+      retry.click();
+
+      await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(3));
+      await vi.waitFor(() => {
+        const warning = document.activeElement.closest(
+          ".app-dashboard-items__error",
+        );
+        expect(warning?.previousElementSibling.dataset.id).toBe("team");
+      });
+    });
+
+    it("keeps the focus on Show more when it fails, and says so", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      const fetch = vi
+        .fn()
+        .mockReturnValueOnce(response(childPage(["team/a"], 1)))
+        .mockReturnValueOnce(Promise.resolve({ ok: false, status: 500 }));
+      initItemList(root, { fetch });
+
+      toggleOf("team").click();
+      await vi.waitFor(() =>
+        expect(root.querySelector(".app-dashboard-items__more")).not.toBeNull(),
+      );
+      const more = root.querySelector(".app-dashboard-items__more");
+      more.focus();
+      more.click();
+      await vi.waitFor(() =>
+        expect(
+          root.querySelector(".app-dashboard-items__error"),
+        ).not.toBeNull(),
+      );
+
+      expect(more.disabled).toBe(false);
+      expect(document.activeElement).toBe(more);
+    });
+
+    it("moves the focus from Show more to the first row it loads", async () => {
+      const fetch = vi
+        .fn()
+        .mockReturnValueOnce(response(childPage(["team/a"], 1)))
+        .mockReturnValueOnce(response(childPage(["team/b"])));
+      initItemList(root, { fetch });
+
+      toggleOf("team").click();
+      await vi.waitFor(() =>
+        expect(root.querySelector(".app-dashboard-items__more")).not.toBeNull(),
+      );
+      const more = root.querySelector(".app-dashboard-items__more");
+      more.focus();
+      more.click();
+      await vi.waitFor(() =>
+        expect(labels(root)).toEqual(["team", "team/a", "team/b"]),
+      );
+
+      expect(document.activeElement.textContent).toBe("team/b");
+    });
+  });
 });
 
 function row(id, text, extra = false) {

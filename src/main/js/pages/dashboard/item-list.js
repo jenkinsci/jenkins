@@ -1,10 +1,16 @@
 import debounce from "lodash/debounce";
 
 const PAGE_SELECTOR = ".app-dashboard-items__page";
-// Rows of the list
+// Rows of a list or group, leaving out those inside the folders expanded in it
 const OWN_ROWS = `:scope > ${PAGE_SELECTOR} > [data-id]`;
-const ERROR_CLASS = "app-dashboard-items__error";
+const ROW_SELECTOR = ".app-temporary-list__item";
 const LABEL_SELECTOR = ".app-temporary-list__item__label";
+const NAME_SELECTOR = ".app-dashboard-items__name";
+const TOGGLE_SELECTOR = ".app-dashboard-items__toggle";
+const CHILDREN_CLASS = "app-dashboard-items__children";
+const MORE_SELECTOR = ".app-dashboard-items__more";
+const ERROR_CLASS = "app-dashboard-items__error";
+const DEPTH_PROPERTY = "--dashboard-items-depth";
 // Start loading the next page this far before the end of the list scrolls into view
 const LOOKAHEAD = "600px";
 // Each search walks every folder on the server, so wait for typing to pause
@@ -19,6 +25,12 @@ const SEARCH_DELAY = 300;
  * next page starts; it is absent on the last page. Each request also names
  * the last item shown, so the server continues after it.
  *
+ * Clicking a folder's row expands it: the first page of the items inside it
+ * loads from the same endpoint, naming the folder, into a group under the
+ * row. A page of a folder that has more ends with a "Show more" button, which
+ * loads the next. Clicking the row again collapses the group, which keeps
+ * what it loaded.
+ *
  * A request that fails shows a warning with a button to try again: above the
  * search bar for a search, which also hides the results of the previous one,
  * and at the end of the list for the next page. Starting
@@ -27,11 +39,13 @@ const SEARCH_DELAY = 300;
  *
  * Relies on these elements from the server: `.app-dashboard-items__list`,
  * `.app-dashboard-items__sentinel`, `.app-dashboard-items__status`, the
- * `jenkins-search` input and `#dashboard-items-no-results`.
+ * `jenkins-search` input, `#dashboard-items-no-results`, and for each folder
+ * row, a `.app-dashboard-items__toggle` button holding the folder's
+ * `.app-dashboard-items__name`.
  *
  * @param {HTMLElement} root the `.app-dashboard-items` element
  * @param {{applySubtree?: function(Element): void, fetch?: typeof fetch}} [options]
- * @return {{loadMore: function(): Promise<void>, search: function(string): Promise<void>}}
+ * @return {{loadMore: function(): Promise<void>, search: function(string): Promise<void>, toggle: function(HTMLElement): Promise<void>}}
  */
 export function initItemList(root, options = {}) {
   // Behaviours can be applied to the same element again, which must not add more listeners
@@ -59,6 +73,7 @@ export function initItemList(root, options = {}) {
   let pageFailed = false;
   // Aborts the requests of the current search when a new one starts
   let controller = new AbortController();
+  let groups = 0;
 
   function lastShown(container) {
     const rows = container.querySelectorAll(OWN_ROWS);
@@ -72,10 +87,13 @@ export function initItemList(root, options = {}) {
   }
 
   /**
-   * Fetches a page of rows.
+   * Fetches a page of rows: of the list, or of the folder `folder` names.
    */
-  function fetchPage({ start, after, q }, signal) {
+  function fetchPage({ start, after, q, folder }, signal) {
     const params = new URLSearchParams({ start: String(start) });
+    if (folder) {
+      params.set("folder", folder);
+    }
     if (after) {
       // Continue after the last row shown, so removing an earlier item doesn't skip one
       params.set("after", after);
@@ -104,8 +122,8 @@ export function initItemList(root, options = {}) {
   /**
    * Says that something failed to load, with a button that removes the
    * warning and tries again. If the button had the focus, the focus moves to
-   * the warning of another failure, or to `focusAfter`, unless the user moved
-   * it elsewhere meanwhile.
+   * the warning of another failure in the same place, or to `focusAfter`,
+   * unless the user moved it elsewhere meanwhile.
    *
    * @param {function(): Promise<void>} retry
    * @param {function(Element): void} place adds the warning to the page
@@ -124,13 +142,21 @@ export function initItemList(root, options = {}) {
     button.textContent = root.dataset.tryAgain;
     button.addEventListener("click", () => {
       const hadFocus = error.contains(document.activeElement);
+      // Where a warning of another failure would go
+      const before = error.previousElementSibling;
+      const parent = error.parentElement;
       error.remove();
       retry().then(() => {
         const active = document.activeElement;
         if (!hadFocus || (active && active !== document.body)) {
           return;
         }
-        const again = root.querySelector(`.${ERROR_CLASS} button`);
+        const spot = before
+          ? before.nextElementSibling
+          : parent?.firstElementChild;
+        const again = spot?.classList.contains(ERROR_CLASS)
+          ? spot.querySelector("button")
+          : null;
         (again || focusAfter())?.focus();
       });
     });
@@ -318,6 +344,142 @@ export function initItemList(root, options = {}) {
       });
   }
 
+  /**
+   * Adds a page of a folder's items to its group. The server ends the page
+   * with a button that loads the next one, if there is one.
+   */
+  function appendChildren(group, page) {
+    group
+      .querySelector(`:scope > ${PAGE_SELECTOR} > ${MORE_SELECTOR}`)
+      ?.remove();
+    group.append(page);
+    applySubtree(page);
+  }
+
+  /**
+   * Expands or collapses the folder of a toggle. The first expansion loads the
+   * first page of its items.
+   */
+  function toggle(button) {
+    const row = button.closest(ROW_SELECTOR);
+    const existing = button.getAttribute("aria-controls");
+    const group = existing && document.getElementById(existing);
+    if (group) {
+      const expand = group.hidden;
+      group.hidden = !expand;
+      button.setAttribute("aria-expanded", String(expand));
+      return Promise.resolve();
+    }
+    if (button.getAttribute("aria-busy") === "true") {
+      return Promise.resolve();
+    }
+    // A message from an earlier failure is replaced if this one fails too
+    const next = row.nextElementSibling;
+    if (next?.classList.contains(ERROR_CLASS)) {
+      next.remove();
+    }
+    button.setAttribute("aria-busy", "true");
+    const { signal } = controller;
+    return fetchPage({ start: 0, folder: row.dataset.id }, signal)
+      .then((page) => {
+        if (signal.aborted || !page) {
+          return;
+        }
+        const created = document.createElement("div");
+        created.className = CHILDREN_CLASS;
+        created.id = `dashboard-items-children-${++groups}`;
+        created.setAttribute("role", "group");
+        const name = row.querySelector(NAME_SELECTOR);
+        if (name) {
+          created.setAttribute("aria-label", name.textContent.trim());
+        }
+        // Each level is indented further than the one containing it
+        const parent = row.parentElement.closest(`.${CHILDREN_CLASS}`);
+        const depth =
+          Number(parent?.style.getPropertyValue(DEPTH_PROPERTY) || 0) + 1;
+        created.style.setProperty(DEPTH_PROPERTY, String(depth));
+        appendChildren(created, page);
+        row.after(created);
+        button.setAttribute("aria-controls", created.id);
+        button.setAttribute("aria-expanded", "true");
+      })
+      .catch((e) => {
+        if (!isAbort(e)) {
+          console.error(e);
+          showError(
+            () => toggle(button),
+            (error) => row.after(error),
+            () => button,
+          );
+        }
+      })
+      .then(() => button.removeAttribute("aria-busy"));
+  }
+
+  /**
+   * Loads the next page of a folder's items into its group.
+   */
+  function showMore(button) {
+    const group = button.closest(`.${CHILDREN_CLASS}`);
+    const row = group.previousElementSibling;
+    const shown = group.querySelectorAll(OWN_ROWS).length;
+    // Disabling the button takes the focus from it
+    const focused = document.activeElement === button;
+    button.disabled = true;
+    const { signal } = controller;
+    return fetchPage(
+      {
+        start: button.dataset.nextStart,
+        after: lastShown(group),
+        folder: row.dataset.id,
+      },
+      signal,
+    )
+      .then((page) => {
+        if (signal.aborted || !page) {
+          return;
+        }
+        appendChildren(group, page);
+        if (focused) {
+          // The button is gone, so the first row it loaded takes the focus
+          group
+            .querySelectorAll(OWN_ROWS)
+            [shown]?.querySelector(LABEL_SELECTOR)
+            ?.focus();
+        }
+      })
+      .catch((e) => {
+        button.disabled = false;
+        if (focused) {
+          button.focus();
+        }
+        if (!isAbort(e)) {
+          console.error(e);
+          showError(
+            () => showMore(button),
+            (error) => button.before(error),
+            () =>
+              group
+                .querySelectorAll(OWN_ROWS)
+                [shown]?.querySelector(LABEL_SELECTOR) ||
+              row.querySelector(TOGGLE_SELECTOR),
+          );
+        }
+      });
+  }
+
+  list.addEventListener("click", (event) => {
+    const more = event.target.closest(MORE_SELECTOR);
+    if (more && list.contains(more)) {
+      showMore(more);
+      return;
+    }
+    const button = event.target.closest(TOGGLE_SELECTOR);
+    if (button && list.contains(button)) {
+      toggle(button);
+    }
+  });
+
   const observer =
     sentinel && "IntersectionObserver" in window
       ? new IntersectionObserver(
@@ -346,6 +508,6 @@ export function initItemList(root, options = {}) {
     });
   }
 
-  root.dashboardItemList = { loadMore, search: runSearch };
+  root.dashboardItemList = { loadMore, search: runSearch, toggle };
   return root.dashboardItemList;
 }
