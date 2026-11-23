@@ -620,21 +620,16 @@ class FilePathTest {
     void validateAntFileMaskSecondHeuristicIsBounded() throws Exception {
         File tmp = temp;
         FilePath d = new FilePath(french, tmp.getPath());
-        FilePath d2 = d.child("d1/d2");
-        d2.mkdirs();
-        for (int i = 0; i < 100; i++) {
-            FilePath d3 = d2.child("d" + i);
-            d3.mkdirs();
-            d3.child("f.txt").touch(0);
-        }
-        // "nonexistent" is resolved cheaply on its own: Ant can prune the scan using the fixed,
-        // single-segment literal path, so it never needs to descend into "d1". But the "did the
-        // user mean a nested path?" heuristic retries it as "**/nonexistent", which forces a full
-        // scan of the same tree that the test above already shows exceeds a bound of 10 ticks. That
-        // must not fail the whole call: it should just give up on this particular suggestion and
-        // fall through to a generic message, the same as it would if no heuristic had matched.
+        String nestedDirectory = "d/".repeat(30);
+        String nestedPath = nestedDirectory + "nonexistent";
+        d.child(nestedDirectory).mkdirs();
+        d.child(nestedPath).touch(0);
+        // The literal mask misses cheaply, but the fallback's only match lies beyond the small budget.
         assertEquals(Messages.FilePath_validateAntFileMask_doesntMatchAnything("nonexistent"),
                 d.validateAntFileMask("nonexistent", 10, true));
+        // With enough budget, the same fixture must produce a nested-path suggestion.
+        assertEquals(Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest("nonexistent", nestedPath),
+                d.validateAntFileMask("nonexistent", 10000, true));
     }
 
     @Test
