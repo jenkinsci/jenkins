@@ -269,10 +269,15 @@ public class RecentTab extends Tab {
         }
         if (run instanceof RunWithSCM<?, ?> withScm) {
             try {
+                // The culprits of a completed build are stored with it and include the authors of its changes,
+                // so they rule out most builds without reading the changes
+                if (!run.isBuilding() && !withScm.shouldCalculateCulprits() && !containsUser(withScm.getCulpritIds(), userId)) {
+                    return Involvement.NONE;
+                }
                 // The build's own changes, unlike culprits, which include changes from earlier failed builds
                 for (ChangeLogSet<? extends ChangeLogSet.Entry> changeSet : withScm.getChangeSets()) {
                     for (ChangeLogSet.Entry entry : changeSet) {
-                        if (userId.equals(entry.getAuthor().getId())) {
+                        if (sameUser(entry.getAuthor().getId(), userId)) {
                             return Involvement.CHANGES;
                         }
                     }
@@ -287,7 +292,19 @@ public class RecentTab extends Tab {
 
     private static boolean startedBy(List<Cause> causes, @CheckForNull String userId) {
         return userId != null && causes.stream()
-                .anyMatch(cause -> cause instanceof Cause.UserIdCause userIdCause && userId.equals(userIdCause.getUserId()));
+                .anyMatch(cause -> cause instanceof Cause.UserIdCause userIdCause && sameUser(userIdCause.getUserId(), userId));
+    }
+
+    /**
+     * Whether two user IDs name the same user. A cause records the name the user signed in with, which can differ
+     * in case from their ID with a security realm that ignores case.
+     */
+    private static boolean sameUser(@CheckForNull String a, @NonNull String b) {
+        return a != null && User.idStrategy().equals(a, b);
+    }
+
+    private static boolean containsUser(@CheckForNull Collection<String> ids, @NonNull String userId) {
+        return ids != null && ids.stream().anyMatch(id -> sameUser(id, userId));
     }
 
     /**
