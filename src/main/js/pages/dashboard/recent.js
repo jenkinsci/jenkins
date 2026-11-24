@@ -226,13 +226,16 @@ export function initRecent(root, options = {}) {
         if (!rsp.ok) {
           throw new Error(`Failed to refresh: ${rsp.status}`);
         }
-        etag = rsp.headers?.get("ETag") ?? null;
-        return rsp.text();
+        const tag = rsp.headers?.get("ETag") ?? null;
+        return rsp.text().then((text) => ({ text, tag }));
       })
-      .then((text) => {
+      .then((fresh) => {
         showError(false);
-        if (text !== null) {
-          update(text.trim());
+        if (fresh !== null) {
+          update(fresh.text.trim());
+          // Only once the rows are on the page, so that a response that
+          // fails part way is fetched in full again
+          etag = fresh.tag;
         }
       })
       .catch((e) => {

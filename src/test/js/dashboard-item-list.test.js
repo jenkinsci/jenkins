@@ -547,6 +547,28 @@ describe("dashboard recent tab", () => {
     expect(applySubtree).not.toHaveBeenCalled();
   });
 
+  it("doesn't send back the ETag of a response that failed to read", async () => {
+    const html = recent([{ id: "finished", rows: [row("b#1", "x")] }]);
+    await setUp(html, html);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    recentTab.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ ETag: '"abc"' }),
+        text: () => Promise.reject(new Error("connection lost")),
+      }),
+    );
+
+    await recentTab.refresh();
+    await recentTab.refresh();
+
+    expect(recentTab.fetch).toHaveBeenLastCalledWith(
+      "/jenkins/defaultTab/rows",
+      { headers: {} },
+    );
+  });
+
   it("says when a refresh fails until one succeeds", async () => {
     const html = recent([{ id: "finished", rows: [row("b#1", "x")] }]);
     await setUp(html, html);
