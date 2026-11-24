@@ -175,7 +175,7 @@ describe("dashboard item list", () => {
     expect(labels(root)).toEqual(["a", "b", "c"]);
   });
 
-  it("keeps the previous query when a search fails", async () => {
+  it("doesn't load more of the previous query after a search fails", async () => {
     const fetch = vi
       .fn()
       .mockImplementationOnce(() => Promise.resolve({ ok: false, status: 500 }))
@@ -184,13 +184,57 @@ describe("dashboard item list", () => {
     const list = initItemList(root, { fetch });
 
     await list.search("deploy");
+    // As when the sentinel scrolls into view
     await list.loadMore();
 
-    expect(labels(root)).toEqual(["a", "b", "c"]);
-    expect(fetch).toHaveBeenLastCalledWith(
-      "/jenkins/all/items?start=2&after=b",
-      expect.anything(),
-    );
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(root.querySelector(".app-dashboard-items__error")).not.toBeNull();
+  });
+
+  it("clears the busy state of a page load a search cut short", async () => {
+    const fetch = vi
+      .fn()
+      .mockImplementationOnce(
+        (url, { signal }) =>
+          new Promise((resolve, reject) => {
+            signal.addEventListener("abort", () =>
+              reject(new DOMException("aborted", "AbortError")),
+            );
+          }),
+      )
+      .mockImplementation(() => response(page(["deploy"])));
+    const list = initItemList(root, { fetch });
+    const items = root.querySelector(".app-dashboard-items__list");
+
+    const more = list.loadMore();
+    expect(items.getAttribute("aria-busy")).toBe("true");
+    await list.search("deploy");
+    await more;
+
+    expect(items.hasAttribute("aria-busy")).toBe(false);
+  });
+
+  it("ignores a superseded request that fails", async () => {
+    let rejectFirst;
+    const fetch = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve, reject) => {
+            rejectFirst = reject;
+          }),
+      )
+      .mockImplementation(() => response(page(["two"])));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const list = initItemList(root, { fetch });
+
+    const first = list.search("one");
+    await list.search("two");
+    rejectFirst(new Error("network"));
+    await first;
+
+    expect(labels(root)).toEqual(["two"]);
+    expect(root.querySelector(".app-dashboard-items__error")).toBeNull();
   });
 
   it("warns above the search bar when a search fails, and tries again", async () => {

@@ -49,6 +49,8 @@ export function initItemList(root, options = {}) {
 
   let query = "";
   let loading = false;
+  // Whether the last search failed, which stops paging until a search succeeds
+  let searchFailed = false;
   // Aborts the requests of the current search when a new one starts
   let controller = new AbortController();
 
@@ -167,7 +169,7 @@ export function initItemList(root, options = {}) {
 
   function loadMore() {
     const start = nextStart();
-    if (loading || start === undefined || start === "") {
+    if (loading || searchFailed || start === undefined || start === "") {
       return Promise.resolve();
     }
     loading = true;
@@ -185,7 +187,8 @@ export function initItemList(root, options = {}) {
         applySubtree(page);
       })
       .catch((e) => {
-        if (!isAbort(e)) {
+        // A request a new search superseded must not change the page
+        if (!isAbort(e) && !signal.aborted) {
           failed = true;
           console.error(e);
           showListError(loadMore);
@@ -230,8 +233,11 @@ export function initItemList(root, options = {}) {
     controller = new AbortController();
     const { signal } = controller;
     loading = true;
+    searchFailed = false;
     let failed = false;
     clearListError();
+    // A page that was loading is aborted, so it won't clear this itself
+    list.removeAttribute("aria-busy");
     return fetchPage({ start: 0, q }, signal)
       .then((page) => {
         if (signal.aborted || !page) {
@@ -248,8 +254,9 @@ export function initItemList(root, options = {}) {
         announce(q, page);
       })
       .catch((e) => {
-        if (!isAbort(e)) {
+        if (!isAbort(e) && !signal.aborted) {
           failed = true;
+          searchFailed = true;
           console.error(e);
           showSearchError(() => runSearch(value));
         }
