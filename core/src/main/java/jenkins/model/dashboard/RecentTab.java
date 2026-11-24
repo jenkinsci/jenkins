@@ -394,6 +394,30 @@ public class RecentTab extends Tab {
     }
 
     /**
+     * Whether an {@code If-None-Match} header names an entity tag, comparing weakly as for a {@code GET}: a list
+     * of tags matches if any of them does, a {@code W/} prefix is ignored, and {@code *} matches anything.
+     */
+    static boolean matchesAny(@CheckForNull String ifNoneMatch, @NonNull String etag) {
+        if (ifNoneMatch == null) {
+            return false;
+        }
+        String tag = etag.startsWith("W/") ? etag.substring(2) : etag;
+        for (String candidate : ifNoneMatch.split(",")) {
+            String c = candidate.trim();
+            if (c.equals("*")) {
+                return true;
+            }
+            if (c.startsWith("W/")) {
+                c = c.substring(2);
+            }
+            if (c.equals(tag)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Renders the groups as an HTML fragment, for refreshing the page. The response has an {@code ETag} from its
      * content, and a request whose {@code If-None-Match} matches it gets an empty "304 Not Modified" response
      * rather than the same rows again.
@@ -406,7 +430,7 @@ public class RecentTab extends Tab {
         String etag = '"' + Util.getDigestOf(new ByteArrayInputStream(body)) + '"';
         rsp.setHeader("ETag", etag);
         rsp.setHeader("Cache-Control", "no-cache");
-        if (etag.equals(req.getHeader("If-None-Match"))) {
+        if (matchesAny(req.getHeader("If-None-Match"), etag)) {
             rsp.setStatus(StaplerResponse2.SC_NOT_MODIFIED);
             return;
         }
