@@ -129,18 +129,15 @@ public class RecentTab extends Tab {
 
     /**
      * How long a running build is likely to take to finish, such as "5 min", or {@code null} if there is no
-     * estimate, or the build has taken so much longer than estimated that it may be stuck. This reads the
-     * estimate once, where {@link Executor#getEstimatedRemainingTime()}, {@link Executor#getProgress()} and
-     * {@link Executor#isLikelyStuck()} each read it from the job's earlier builds.
+     * estimate, or the build has taken so much longer than estimated that it may be stuck. Uses the estimate the
+     * executor read when the build started.
      */
     @Restricted(NoExternalUse.class)
-    public @CheckForNull String remaining(@NonNull Run<?, ?> run) {
-        long estimate = run.getEstimatedDuration();
-        long elapsed = System.currentTimeMillis() - run.getStartTimeInMillis();
-        if (estimate <= 0 || elapsed > estimate * 10) {
+    public @CheckForNull String remaining(@CheckForNull Executor executor) {
+        if (executor == null || executor.isLikelyStuck()) {
             return null;
         }
-        long remaining = estimate - elapsed;
+        long remaining = executor.getEstimatedRemainingTimeMillis();
         return remaining > 0 ? roughTimeSpan(remaining) : null;
     }
 
@@ -200,6 +197,7 @@ public class RecentTab extends Tab {
      *
      * @param runningCount the number of running builds the user can see, which may exceed the entries shown
      * @param queuedCount the number of queued builds the user can see, which may exceed the entries shown
+     * @param executors the executor of each running build
      */
     @Restricted(NoExternalUse.class)
     public record Model(
@@ -207,9 +205,14 @@ public class RecentTab extends Tab {
             int runningCount,
             List<Entry<Queue.Item>> queued,
             int queuedCount,
-            List<Entry<Run<?, ?>>> finished) {
+            List<Entry<Run<?, ?>>> finished,
+            Map<Run<?, ?>, Executor> executors) {
         public boolean isEmpty() {
             return running.isEmpty() && queued.isEmpty() && finished.isEmpty();
+        }
+
+        public @CheckForNull Executor executorOf(Run<?, ?> run) {
+            return executors.get(run);
         }
     }
 
@@ -226,7 +229,8 @@ public class RecentTab extends Tab {
                 running.size(),
                 rank(queued, item -> startedBy(item.getCauses(), userId) ? Involvement.STARTED : Involvement.NONE),
                 queued.size(),
-                rank(RecentRuns.get().getCompleted(FINISHED_CANDIDATES), run -> involvement(run, userId)));
+                rank(RecentRuns.get().getCompleted(FINISHED_CANDIDATES), run -> involvement(run, userId)),
+                running);
     }
 
     /**

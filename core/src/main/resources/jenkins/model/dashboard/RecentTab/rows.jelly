@@ -55,7 +55,7 @@ THE SOFTWARE.
               <div class="app-temporary-list__item__description">
                 <j:choose>
                   <j:when test="${run.building}">
-                    <j:set var="remaining" value="${it.remaining(run)}" />
+                    <j:set var="remaining" value="${it.remaining(attrs.executor)}" />
                     <j:choose>
                       <j:when test="${remaining != null}">
                         ${%RunningDescription(it.startedAgo(run), remaining)}
@@ -120,7 +120,7 @@ THE SOFTWARE.
         <j:otherwise>
           <local:section id="running" title="${%Running}" entries="${model.running()}" count="${model.runningCount()}">
             <j:forEach var="entry" items="${model.running()}">
-              <local:run entry="${entry}" />
+              <local:run entry="${entry}" executor="${model.executorOf(entry.value())}" />
             </j:forEach>
           </local:section>
 
