@@ -212,6 +212,9 @@ export function initRecent(root, options = {}) {
       if (wrapper) {
         const inserted = updateEntries(existing.querySelector(BODY), wrapper);
         inserted.forEach((element) => applySubtree(element));
+      } else {
+        // A section with a note but no rows yet
+        existing.querySelector(BODY).replaceChildren();
       }
     });
   }

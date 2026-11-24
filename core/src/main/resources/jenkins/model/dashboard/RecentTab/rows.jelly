@@ -81,7 +81,8 @@ THE SOFTWARE.
     </d:tag>
 
     <d:tag name="section">
-      <j:if test="${!empty(attrs.entries)}">
+      <!-- Shown when it has entries, or a note saying why it has none yet -->
+      <j:if test="${!empty(attrs.entries) or attrs.note != null}">
         <section class="app-dashboard-section" data-section="${attrs.id}">
           <div class="app-dashboard-section__header">
             <h2 class="jenkins-section__title">
@@ -98,9 +99,11 @@ THE SOFTWARE.
             </j:if>
           </div>
           <div class="app-dashboard-section__body">
-            <div class="app-temporary-list">
-              <d:invokeBody />
-            </div>
+            <j:if test="${!empty(attrs.entries)}">
+              <div class="app-temporary-list">
+                <d:invokeBody />
+              </div>
+            </j:if>
           </div>
         </section>
       </j:if>

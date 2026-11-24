@@ -233,7 +233,7 @@ function recent(sections) {
           toggle
             ? `<button class="app-dashboard-section__toggle" data-show-text="Show all ${rows.length}" data-hide-text="Show fewer">Show all ${rows.length}</button>`
             : ""
-        }</div><div class="app-dashboard-section__body"><div class="app-temporary-list">${rows.join("")}</div></div></section>`,
+        }</div><div class="app-dashboard-section__body">${rows.length ? `<div class="app-temporary-list">${rows.join("")}</div>` : ""}</div></section>`,
     )
     .join("")}</div>`;
 }
@@ -290,6 +290,19 @@ describe("dashboard recent tab", () => {
       ),
     ).toEqual(["a#1", "c#1", "b#1"]);
     expect(applySubtree).toHaveBeenCalled();
+  });
+
+  it("fills a section that had a note but no rows, and empties it again", async () => {
+    const empty = recent([{ id: "finished", rows: [] }]);
+    const filled = recent([{ id: "finished", rows: [row("b#1", "x")] }]);
+    await setUp(empty, filled);
+
+    await recentTab.refresh();
+    expect(root.querySelector('[page-entry-id="b#1"]')).not.toBeNull();
+
+    recentTab.fetch.mockImplementation(() => response(empty));
+    await recentTab.refresh();
+    expect(root.querySelector("[page-entry-id]")).toBeNull();
   });
 
   it("replaces everything when sections come or go", async () => {

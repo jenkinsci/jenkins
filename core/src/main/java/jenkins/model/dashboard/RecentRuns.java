@@ -298,10 +298,11 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
         } catch (RuntimeException e) {
             LOGGER.log(Level.WARNING, "Failed to load recent runs", e);
         } finally {
+            // Before another attempt can start, which sets it again
+            loading = false;
             if (!done) {
                 seeded.set(false);
             }
-            loading = false;
         }
     }
 
