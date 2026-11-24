@@ -26,6 +26,7 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -667,17 +668,10 @@ class AbstractProjectTest {
     private void testAutoCompleteResponse(JSONObject responseBody, String... projects) {
         assertThat(responseBody.containsKey("suggestions"), is(true));
         JSONArray suggestions = responseBody.getJSONArray("suggestions");
-        assertThat(suggestions.size(), is(projects.length));
-        List<JSONObject> expected = new ArrayList<>();
-        for (String p : projects) {
-            JSONObject o = new JSONObject();
-            o.put("name", p);
-            o.put("url", JSONObject.fromObject(null));
-            o.put("icon", JSONObject.fromObject(null));
-            o.put("type", "symbol");
-            o.put("group", JSONObject.fromObject(null));
-            expected.add(o);
+        List<String> names = new ArrayList<>();
+        for (int i = 0; i < suggestions.size(); i++) {
+            names.add(suggestions.getJSONObject(i).getString("name"));
         }
-        assertThat(suggestions.containsAll(expected), is(true));
+        assertThat(names, containsInAnyOrder(projects));
     }
 }

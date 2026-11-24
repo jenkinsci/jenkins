@@ -26,7 +26,18 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:userExperimentalFlag var="newDashboardPage" flagClassName="jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag" />
 
+  <j:if test="${newDashboardPage and it.owner == app}">
+    <j:invokeStatic var="dashboardRequest" className="jenkins.model.dashboard.Dashboard" method="isRootRequest">
+      <j:arg type="org.kohsuke.stapler.StaplerRequest2" value="${request2}" />
+    </j:invokeStatic>
+  </j:if>
+
   <j:choose>
+    <j:when test="${dashboardRequest}">
+      <!-- The root URL shows the dashboard home page; the view stays reachable at its own URL -->
+      <j:invokeStatic var="dashboard" className="jenkins.model.dashboard.Dashboard" method="get" />
+      <st:include it="${dashboard}" page="index.jelly" />
+    </j:when>
     <j:when test="${newDashboardPage}">
       <st:include page="new-view-page.jelly" />
     </j:when>

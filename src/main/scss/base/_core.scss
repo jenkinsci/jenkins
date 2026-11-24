@@ -3,9 +3,12 @@ html {
   -webkit-tap-highlight-color: transparent;
   color: var(--text-color);
   scroll-padding-top: calc(var(--header-height) + var(--section-padding));
-  overscroll-behavior: none;
   scrollbar-color: oklch(from var(--text-color-secondary) l c h / 0.35)
     oklch(from var(--text-color-secondary) l c h / 0.05);
+
+  @media (width >= 740px) {
+    overscroll-behavior: none;
+  }
 }
 
 body {
@@ -15,6 +18,10 @@ body {
   flex-direction: column;
   background: var(--header-background);
   background-attachment: fixed;
+
+  @media (width < 740px) {
+    background: var(--body-background-top);
+  }
 }
 
 *,

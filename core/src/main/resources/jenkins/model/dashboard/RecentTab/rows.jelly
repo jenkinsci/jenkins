@@ -1,0 +1,183 @@
+<!--
+The MIT License
+
+Copyright (c) 2026, Tim Jacomb
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:d="jelly:define" xmlns:st="jelly:stapler" xmlns:local="local">
+  <!-- The content of the Recent tab, also served on its own to refresh the page.
+       Rows carry page-entry-id so a refresh only replaces the rows that changed. -->
+  <d:taglib uri="local">
+    <d:tag name="involvement">
+      <j:switch on="${attrs.value.name()}">
+        <j:case value="STARTED">
+          <span class="jenkins-badge app-dashboard-involvement">${%Started by you}</span>
+        </j:case>
+        <j:case value="CHANGES">
+          <span class="jenkins-badge app-dashboard-involvement">${%Includes your changes}</span>
+        </j:case>
+      </j:switch>
+    </d:tag>
+
+    <d:tag name="run">
+      <j:set var="run" value="${attrs.entry.value()}" />
+      <j:set var="job" value="${run.parent}" />
+      <div class="app-temporary-list__item" page-entry-id="${run.externalizableId}">
+        <div class="app-build-item">
+          <a class="app-build-item__icon" href="${rootURL}/${run.url}console" tooltip="${run.iconColor.description}">
+            <l:icon src="symbol-status-${run.iconColor.iconName}" alt="${run.iconColor.description}" />
+          </a>
+          <div class="app-temporary-list__item__details" href="${rootURL}/${run.url}">
+            <div class="app-temporary-list__item__details__text">
+              <a class="app-temporary-list__item__label" href="${rootURL}/${run.url}">
+                ${job.fullDisplayName}
+                <span class="app-dashboard-run-name">${run.displayName}</span>
+              </a>
+              <div class="app-temporary-list__item__description">
+                <j:choose>
+                  <j:when test="${run.building}">
+                    <j:set var="executor" value="${attrs.executor}" />
+                    <j:choose>
+                      <j:when test="${executor != null and !executor.likelyStuck and executor.progress ge 0}">
+                        ${%RunningDescription(it.startedAgo(run), executor.estimatedRemainingTime)}
+                      </j:when>
+                      <j:otherwise>
+                        ${%RunningDescriptionNoEstimate(it.startedAgo(run))}
+                      </j:otherwise>
+                    </j:choose>
+                  </j:when>
+                  <j:otherwise>
+                    ${%FinishedDescription(it.startedAgo(run), run.durationString)}
+                  </j:otherwise>
+                </j:choose>
+                <local:involvement value="${attrs.entry.involvement()}" />
+              </div>
+            </div>
+          </div>
+          <div class="app-temporary-list__item__actions">
+            <l:actions it="${run}" url="${rootURL}/${run.url}" compact="true" />
+          </div>
+        </div>
+      </div>
+    </d:tag>
+
+    <d:tag name="section">
+      <j:if test="${!empty(attrs.entries)}">
+        <section class="app-dashboard-section" data-section="${attrs.id}">
+          <div class="app-dashboard-section__header">
+            <h2 class="jenkins-section__title">${attrs.title}</h2>
+          </div>
+          <div class="app-dashboard-section__body">
+            <div class="app-temporary-list">
+              <d:invokeBody />
+            </div>
+          </div>
+        </section>
+      </j:if>
+    </d:tag>
+  </d:taglib>
+
+  <l:ajax>
+    <j:set var="model" value="${it.model}" />
+    <div class="app-dashboard-recent">
+      <!-- The tab's badge, so that a refresh can update it in the tab bar -->
+      <template class="app-dashboard-recent__badge">
+        <l:badge badge="${it.badge}" />
+      </template>
+      <j:choose>
+        <j:when test="${model.isEmpty()}">
+          <l:notice title="${%Nothing has run recently}" icon="symbol-clock">
+            <a href="${rootURL}/all/">${%Browse all items}</a>
+          </l:notice>
+        </j:when>
+        <j:otherwise>
+          <local:section id="running" title="${%Running}" entries="${model.running()}">
+            <j:forEach var="entry" items="${model.running()}">
+              <local:run entry="${entry}" executor="${model.executorOf(entry.value())}" />
+            </j:forEach>
+          </local:section>
+
+          <j:set var="queued" value="${model.queued()}" />
+          <j:if test="${!empty(queued)}">
+            <section class="app-dashboard-section app-dashboard-section--collapsible" data-section="queued">
+              <div class="app-dashboard-section__header">
+                <h2 class="jenkins-section__title">${%Queued} <span class="app-dashboard-section__count">${model.queuedCount()}</span></h2>
+                <j:if test="${queued.size() gt it.collapsedQueueSize}">
+                  <j:choose>
+                    <j:when test="${model.queuedCount() gt queued.size()}">
+                      <j:set var="showText" value="${%ShowFirst(queued.size())}" />
+                    </j:when>
+                    <j:otherwise>
+                      <j:set var="showText" value="${%ShowAll(queued.size())}" />
+                    </j:otherwise>
+                  </j:choose>
+                  <button type="button" class="jenkins-button jenkins-button--tertiary app-dashboard-section__toggle"
+                          data-show-text="${showText}" data-hide-text="${%Show fewer}">
+                    ${showText}
+                  </button>
+                </j:if>
+              </div>
+              <div class="app-dashboard-section__body">
+                <div class="app-temporary-list">
+                  <j:forEach var="entry" items="${queued}" varStatus="status">
+                    <j:set var="item" value="${entry.value()}" />
+                    <div class="app-temporary-list__item ${status.index ge it.collapsedQueueSize ? 'app-dashboard-section__extra' : ''}"
+                         page-entry-id="queue-${item.id}">
+                      <div class="app-build-item">
+                        <div class="app-build-item__icon">
+                          <l:icon src="symbol-status-nobuilt" alt="${%Queued}" />
+                        </div>
+                        <div class="app-temporary-list__item__details">
+                          <div class="app-temporary-list__item__details__text">
+                            <a class="app-temporary-list__item__label" href="${rootURL}/${item.task.url}">${item.task.fullDisplayName}</a>
+                            <div class="app-temporary-list__item__description">
+                              ${%QueuedDescription(item.inQueueForString)}
+                              <j:if test="${item.why != null}">
+                                <span class="app-dashboard-why">${item.why}</span>
+                              </j:if>
+                              <local:involvement value="${entry.involvement()}" />
+                            </div>
+                          </div>
+                        </div>
+                        <div class="app-temporary-list__item__actions">
+                          <j:if test="${item.hasCancelPermission()}">
+                            <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" confirm="${%CancelConfirm(item.displayName)}" alt="${%Cancel}" />
+                          </j:if>
+                        </div>
+                      </div>
+                    </div>
+                  </j:forEach>
+                </div>
+              </div>
+            </section>
+          </j:if>
+
+          <local:section id="finished" title="${%Recently finished}" entries="${model.finished()}">
+            <j:forEach var="entry" items="${model.finished()}">
+              <local:run entry="${entry}" />
+            </j:forEach>
+          </local:section>
+        </j:otherwise>
+      </j:choose>
+    </div>
+  </l:ajax>
+</j:jelly>

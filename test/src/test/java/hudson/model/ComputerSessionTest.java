@@ -1,10 +1,14 @@
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
+import hudson.slaves.OfflineCause;
 import java.util.logging.Level;
 import jenkins.model.Nodes;
 import org.junit.jupiter.api.Test;
@@ -24,14 +28,15 @@ class ComputerSessionTest {
     void failToLoadNodeWithSerializedUserCause() throws Throwable {
         try (LogRecorder recorder = new LogRecorder().record(Nodes.class, Level.WARNING).capture(5)) {
             j.then(j -> {
-                assertThat(j.jenkins.getComputer("deserialized"), nullValue());
+                final Computer node = j.jenkins.getComputer("deserialized");
+                assertThat(node, not(nullValue()));
+                final OfflineCause cause = node.getOfflineCause();
+                assertThat(cause, instanceOf(OfflineCause.UserCause.class));
+                assertThat(((OfflineCause.UserCause) cause).getUser(), is(User.getUnknown()));
+                assertThat(cause.getReason(), equalTo("msg"));
+                assertThat(cause.toString(), equalTo("Disconnected by username : msg"));
             });
-            assertThat(recorder, LogRecorder.recorded(
-                    containsString("could not load"),
-                    hasProperty("cause",
-                            hasProperty("message",
-                                    containsString("Refusing to unmarshal PersistenceRoot subtype 'hudson.model.User' into field 'user' in 'hudson.slaves.OfflineCause$UserCause'. " +
-                                            "PersistenceRoot objects are document roots and must not appear as nested field values.")))));
+            assertThat(recorder.getMessages(), empty());
         }
     }
 }

@@ -279,6 +279,8 @@ import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.install.InstallState;
 import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
+import jenkins.model.dashboard.Dashboard;
+import jenkins.search.SearchItemProvider;
 import jenkins.security.ClassFilterImpl;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
@@ -2168,6 +2170,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @CheckForNull
     @Restricted(Beta.class)
+    @StaplerNotDispatchable
     public Node getOrLoadNode(String nodeName) {
         return getNodesObject().getOrLoad(nodeName);
     }
@@ -2424,6 +2427,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         }));
 
+        for (SearchItemProvider provider : SearchItemProvider.all()) {
+            try {
+                provider.getSearchItems().forEach(builder::add);
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.WARNING, "Failed to get search items from " + provider.getClass().getName(), e);
+            }
+        }
+
         builder.add(new CollectionSearchIndex<TopLevelItem>() {
                     @Override
                     protected SearchItem get(String key) { return getItemByFullName(key, TopLevelItem.class); }
@@ -2466,13 +2477,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
                     @Override
                     protected Collection<Computer> all() { return getComputersCollection(); }
-                })
-                .add(new CollectionSearchIndex() { // for users
-                    @Override
-                    protected User get(String key) { return User.get(key, false); }
-
-                    @Override
-                    protected Collection<User> all() { return User.getAll(); }
                 })
                 .add(new CollectionSearchIndex() { // for views
                     @Override
@@ -3142,6 +3146,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return null;
     }
 
+    /**
+     * Gets the item at the given path relative to the context, or null if there is no such item of the given type.
+     * @throws AccessDeniedException if the current user has {@link Item#DISCOVER} but not {@link Item#READ} on an item along the path
+     */
     public final <T extends Item> T getItem(String pathName, Item context, Class<T> type) {
         return getItem(pathName, context != null ? context.getParent() : null, type);
     }
@@ -3190,8 +3198,45 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
+    /**
+     * Gets the item with the given full name, or null if there is no such item.
+     * @throws AccessDeniedException as per {@link #getItemByFullName(String, Class)}
+     */
     public @CheckForNull Item getItemByFullName(String fullName) {
         return getItemByFullName(fullName, Item.class);
+    }
+
+    /**
+     * Like {@link #getItemByFullName(String, Class)}, but returns null instead of throwing {@link AccessDeniedException}.
+     * @since 2.591
+     */
+    public @CheckForNull <T extends Item> T getItemByFullNameOrNull(@NonNull String fullName, Class<T> type) {
+        try {
+            return getItemByFullName(fullName, type);
+        } catch (AccessDeniedException x) {
+            return null;
+        }
+    }
+
+    /**
+     * Like {@link #getItemByFullName(String)}, but returns null instead of throwing {@link AccessDeniedException}.
+     * @since 2.591
+     */
+    public @CheckForNull Item getItemByFullNameOrNull(@NonNull String fullName) {
+        return getItemByFullNameOrNull(fullName, Item.class);
+    }
+
+    /**
+     * Like {@link #getItem(String, Item, Class)}, but returns null instead of throwing {@link AccessDeniedException}.
+     * @since 2.591
+     */
+    public @CheckForNull <T extends Item> T getItemOrNull(
+            @NonNull String pathName, Item context, @NonNull Class<T> type) {
+        try {
+            return getItem(pathName, context, type);
+        } catch (AccessDeniedException x) {
+            return null;
+        }
     }
 
     /**
@@ -4024,6 +4069,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         for (Action a : getManagementLinks())
             if (Objects.equals(a.getUrlName(), token))
                 return a;
+        if (Dashboard.isEnabled()) {
+            return Dashboard.get().getTab(token);
+        }
         return null;
     }
 

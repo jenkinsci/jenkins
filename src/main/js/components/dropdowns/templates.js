@@ -136,6 +136,8 @@ function badge(opt) {
  * @return {Element}
  */
 function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
+  context = dropdownItem.baseUrl || context;
+
   /**
    * @type {DropdownItem}
    */
@@ -161,8 +163,17 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
     .filter(Boolean)
     .join(" ");
 
-  // If submenu
+  // If split button
   if (itemOptions.event && itemOptions.event.event) {
+    // In a dropdown, only show the primary action
+    if (type === "jenkins-dropdown__item") {
+      return menuItem(
+        Object.assign({}, dropdownItem, { event: dropdownItem.event.event }),
+        type,
+        context,
+      );
+    }
+
     const wrapper = createElementFromHtml(
       `<div class="jenkins-split-button"></div>`,
     );
@@ -181,7 +192,11 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
       button,
       (instance) => {
         instance.setContent(
-          Utils.generateDropdownItems(dropdownItem.subMenu.items),
+          Utils.generateDropdownItems(
+            dropdownItem.subMenu.items,
+            false,
+            context,
+          ),
         );
         instance.loaded = true;
       },
@@ -216,11 +231,12 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
           class: clazz,
           href: url,
           id: itemOptions.id,
-          "data-html-tooltip": itemOptions.tooltip,
+          tooltip: itemOptions.tooltip,
           type: tag === "button" ? "button" : null,
+          role: type === "jenkins-dropdown__item" ? "menuitem" : null,
         })}>
           ${icon(itemOptions, type)}
-          ${label}
+          ${label ? `<span class="jenkins-dropdown__item__label">${label}</span>` : ""}
           ${description}
           ${badge(itemOptions)}
           ${
