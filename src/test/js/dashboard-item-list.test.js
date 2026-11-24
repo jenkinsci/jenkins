@@ -214,6 +214,25 @@ describe("dashboard item list", () => {
     );
   });
 
+  it("hands the focus to the last row when a retried page is empty", async () => {
+    const fetch = vi
+      .fn()
+      .mockImplementationOnce(() => Promise.resolve({ ok: false, status: 500 }))
+      .mockImplementation(() => response(page([])));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const list = initItemList(root, { fetch });
+
+    await list.loadMore();
+    const retry = root.querySelector(".app-dashboard-items__error button");
+    retry.focus();
+    retry.click();
+
+    await vi.waitFor(() =>
+      expect(document.activeElement.textContent).toBe("b"),
+    );
+    expect(labels(root)).toEqual(["a", "b"]);
+  });
+
   it("doesn't load more of the previous query after a search fails", async () => {
     const fetch = vi
       .fn()

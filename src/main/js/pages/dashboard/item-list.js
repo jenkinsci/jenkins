@@ -149,8 +149,12 @@ export function initItemList(root, options = {}) {
     showError(
       retry,
       (error) => sentinel.before(error),
-      () =>
-        list.querySelectorAll(OWN_ROWS)[shown]?.querySelector(LABEL_SELECTOR),
+      () => {
+        const rows = list.querySelectorAll(OWN_ROWS);
+        // The last row there is when the retry loads none
+        const row = rows[shown] || rows[rows.length - 1];
+        return row?.querySelector(LABEL_SELECTOR) || searchInput;
+      },
     );
   }
 
