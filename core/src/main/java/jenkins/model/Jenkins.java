@@ -2469,13 +2469,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     @Override
                     protected Collection<Computer> all() { return getComputersCollection(); }
                 })
-                .add(new CollectionSearchIndex() { // for users
-                    @Override
-                    protected User get(String key) { return User.get(key, false); }
-
-                    @Override
-                    protected Collection<User> all() { return User.getAll(); }
-                })
                 .add(new CollectionSearchIndex() { // for views
                     @Override
                     protected View get(String key) { return getView(key); }
