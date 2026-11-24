@@ -169,6 +169,9 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         Jenkins.checkGoodName(name);
+        if (getLogRecorder(name) != null) {
+            throw new Failure(Messages.LogRecorderManager_AlreadyExists(name));
+        }
 
         recorders.add(new LogRecorder(name));
 
@@ -186,6 +189,9 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
             Jenkins.checkGoodName(name);
         } catch (Failure e) {
             return FormValidation.error(e.getMessage());
+        }
+        if (getLogRecorder(name) != null) {
+            return FormValidation.error(Messages.LogRecorderManager_AlreadyExists(name));
         }
         return FormValidation.ok();
     }

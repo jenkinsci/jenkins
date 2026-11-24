@@ -36,6 +36,7 @@ import hudson.XmlFile;
 import hudson.model.AbstractModelObject;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.Computer;
+import hudson.model.Failure;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.model.listeners.SaveableListener;
@@ -483,6 +484,9 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
         XmlFile oldFile = null;
         if (!name.equals(newName)) {
             Jenkins.checkGoodName(newName);
+            if (getParent().getLogRecorder(newName) != null) {
+                throw new Failure(Messages.LogRecorderManager_AlreadyExists(newName));
+            }
             oldFile = getConfigFile();
             // rename
             List<LogRecorder> recorders = getParent().getRecorders();
