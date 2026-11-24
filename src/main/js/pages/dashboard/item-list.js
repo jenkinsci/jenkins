@@ -18,7 +18,9 @@ const SEARCH_DELAY = 300;
  * next page starts; it is absent on the last page. Each request also names
  * the last item shown, so the server continues after it.
  *
- * A request that fails shows a message with a button to try again. Starting
+ * A request that fails shows a warning with a button to try again: above the
+ * search bar for a search, which also hides the results of the previous one,
+ * and at the end of the list for the next page. Starting
  * a new search aborts the requests of the previous one, and drops their
  * responses. The `role="status"` element says how many results a search found.
  *
@@ -93,16 +95,18 @@ export function initItemList(root, options = {}) {
 
   /**
    * Says that something failed to load, with a button that removes the
-   * message and tries again.
+   * warning and tries again.
    *
    * @param {function(): void} retry
-   * @param {function(Element): void} place adds the message to the page
+   * @param {function(Element): void} place adds the warning to the page
    */
   function showError(retry, place) {
-    const error = document.createElement("p");
-    error.className = ERROR_CLASS;
+    const error = document.createElement("div");
+    error.className = `jenkins-alert jenkins-alert-warning ${ERROR_CLASS}`;
     error.setAttribute("role", "alert");
-    error.append(`${root.dataset.loadFailed} `);
+    const message = document.createElement("span");
+    message.textContent = root.dataset.loadFailed;
+    error.append(message);
     const button = document.createElement("button");
     button.type = "button";
     button.className = "jenkins-button jenkins-button--tertiary";
@@ -122,6 +126,19 @@ export function initItemList(root, options = {}) {
   function showListError(retry) {
     clearListError();
     showError(retry, (error) => sentinel.before(error));
+  }
+
+  function showSearchError(retry) {
+    clearListError();
+    // The results on the page are for the previous query
+    list.classList.add("jenkins-hidden");
+    if (noResults) {
+      noResults.classList.add("jenkins-hidden");
+    }
+    if (status) {
+      status.textContent = "";
+    }
+    showError(retry, (error) => (search || list).before(error));
   }
 
   function observe() {
@@ -213,6 +230,7 @@ export function initItemList(root, options = {}) {
     controller = new AbortController();
     const { signal } = controller;
     loading = true;
+    let failed = false;
     clearListError();
     return fetchPage({ start: 0, q }, signal)
       .then((page) => {
@@ -231,8 +249,9 @@ export function initItemList(root, options = {}) {
       })
       .catch((e) => {
         if (!isAbort(e)) {
+          failed = true;
           console.error(e);
-          showListError(() => runSearch(value));
+          showSearchError(() => runSearch(value));
         }
       })
       .then(() => {
@@ -241,7 +260,10 @@ export function initItemList(root, options = {}) {
           if (search) {
             search.classList.remove("jenkins-search--loading");
           }
-          observe();
+          // After a failure, the list is hidden until the button tries again
+          if (!failed) {
+            observe();
+          }
         }
       });
   }

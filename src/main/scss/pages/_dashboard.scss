@@ -335,14 +335,22 @@ div.listview-jobs {
     cursor: progress;
   }
 
-  // Says that loading failed
+  // Says that loading failed, with a button to try again
   &__error {
-    margin: 0;
-    padding: 0.75rem;
-    color: var(--warning-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 0.5rem;
 
     .jenkins-button {
-      margin-inline-start: 0.25rem;
+      flex-shrink: 0;
+      color: inherit;
     }
+  }
+
+  // At the end of the list, for the next page
+  &__list + &__error {
+    margin-top: var(--section-padding);
   }
 }

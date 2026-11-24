@@ -193,6 +193,38 @@ describe("dashboard item list", () => {
     );
   });
 
+  it("warns above the search bar when a search fails, and tries again", async () => {
+    const fetch = vi
+      .fn()
+      .mockImplementationOnce(() => Promise.resolve({ ok: false, status: 500 }))
+      .mockImplementation(() => response(page(["deploy"])));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const list = initItemList(root, { fetch });
+
+    await list.search("deploy");
+
+    const error = root.querySelector(".app-dashboard-items__error");
+    expect(error.classList.contains("jenkins-alert")).toBe(true);
+    expect(error.nextElementSibling.classList.contains("jenkins-search")).toBe(
+      true,
+    );
+    // The rows on the page are for the previous query
+    expect(
+      root
+        .querySelector(".app-dashboard-items__list")
+        .classList.contains("jenkins-hidden"),
+    ).toBe(true);
+
+    error.querySelector("button").click();
+    await vi.waitFor(() => expect(labels(root)).toEqual(["deploy"]));
+    expect(root.querySelector(".app-dashboard-items__error")).toBeNull();
+    expect(
+      root
+        .querySelector(".app-dashboard-items__list")
+        .classList.contains("jenkins-hidden"),
+    ).toBe(false);
+  });
+
   it("aborts the requests of a superseded search", async () => {
     const signals = [];
     const fetch = vi.fn((url, { signal }) => {
