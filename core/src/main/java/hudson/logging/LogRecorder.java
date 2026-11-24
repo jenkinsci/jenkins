@@ -481,27 +481,30 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
         JSONObject src = req.getSubmittedForm();
 
         String newName = src.getString("name"), redirect = ".";
-        XmlFile oldFile = null;
-        if (!name.equals(newName)) {
-            Jenkins.checkGoodName(newName);
-            if (getParent().getLogRecorder(newName) != null) {
-                throw new Failure(Messages.LogRecorderManager_AlreadyExists(newName));
+        // lock the manager so concurrent renames and creations cannot claim the same name or delete each other's files
+        synchronized (getParent()) {
+            XmlFile oldFile = null;
+            if (!name.equals(newName)) {
+                Jenkins.checkGoodName(newName);
+                if (getParent().getLogRecorder(newName) != null) {
+                    throw new Failure(Messages.LogRecorderManager_AlreadyExists(newName));
+                }
+                oldFile = getConfigFile();
+                // rename
+                List<LogRecorder> recorders = getParent().getRecorders();
+                recorders.remove(new LogRecorder(name));
+                this.name = newName;
+                recorders.add(this);
+                redirect = "../" + Util.rawEncode(newName) + '/';
             }
-            oldFile = getConfigFile();
-            // rename
-            List<LogRecorder> recorders = getParent().getRecorders();
-            recorders.remove(new LogRecorder(name));
-            this.name = newName;
-            recorders.add(this);
-            redirect = "../" + Util.rawEncode(newName) + '/';
+
+            List<Target> previousTargets = List.copyOf(loggers);
+            List<Target> newTargets = req.bindJSONToList(Target.class, src.get("loggers"));
+            setLoggers(newTargets);
+
+            save(previousTargets);
+            if (oldFile != null) oldFile.delete();
         }
-
-        List<Target> previousTargets = List.copyOf(loggers);
-        List<Target> newTargets = req.bindJSONToList(Target.class, src.get("loggers"));
-        setLoggers(newTargets);
-
-        save(previousTargets);
-        if (oldFile != null) oldFile.delete();
         FormApply.success(redirect).generateResponse(req, rsp, null);
     }
 

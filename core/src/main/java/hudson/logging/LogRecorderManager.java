@@ -165,7 +165,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
      * Creates a new log recorder.
      */
     @RequirePOST
-    public HttpResponse doNewLogRecorder(@QueryParameter String name) {
+    public synchronized HttpResponse doNewLogRecorder(@QueryParameter String name) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         Jenkins.checkGoodName(name);
