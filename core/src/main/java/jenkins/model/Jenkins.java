@@ -280,6 +280,7 @@ import jenkins.install.InstallState;
 import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.model.dashboard.Dashboard;
+import jenkins.search.SearchItemProvider;
 import jenkins.security.ClassFilterImpl;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
@@ -2426,6 +2427,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         }));
 
+        for (SearchItemProvider provider : SearchItemProvider.all()) {
+            try {
+                provider.getSearchItems().forEach(builder::add);
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.WARNING, "Failed to get search items from " + provider.getClass().getName(), e);
+            }
+        }
+
         builder.add(new CollectionSearchIndex<TopLevelItem>() {
                     @Override
                     protected SearchItem get(String key) { return getItemByFullName(key, TopLevelItem.class); }
@@ -2468,13 +2477,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
                     @Override
                     protected Collection<Computer> all() { return getComputersCollection(); }
-                })
-                .add(new CollectionSearchIndex() { // for users
-                    @Override
-                    protected User get(String key) { return User.get(key, false); }
-
-                    @Override
-                    protected Collection<User> all() { return User.getAll(); }
                 })
                 .add(new CollectionSearchIndex() { // for views
                     @Override
