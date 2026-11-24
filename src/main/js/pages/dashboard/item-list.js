@@ -4,6 +4,7 @@ const PAGE_SELECTOR = ".app-dashboard-items__page";
 // Rows of the list
 const OWN_ROWS = `:scope > ${PAGE_SELECTOR} > [data-id]`;
 const ERROR_CLASS = "app-dashboard-items__error";
+const LABEL_SELECTOR = ".app-temporary-list__item__label";
 // Start loading the next page this far before the end of the list scrolls into view
 const LOOKAHEAD = "600px";
 // Each search walks every folder on the server, so wait for typing to pause
@@ -45,6 +46,8 @@ export function initItemList(root, options = {}) {
   const status = root.querySelector(".app-dashboard-items__status");
   const searchInput = root.querySelector(".jenkins-search__input");
   const search = searchInput && searchInput.closest(".jenkins-search");
+  // The search bar's outer wrapper, which the warning for a failed search goes before
+  const searchBar = search && (search.closest(".jenkins-search-container") || search);
   const noResults = root.querySelector("#dashboard-items-no-results");
 
   let query = "";
@@ -97,12 +100,15 @@ export function initItemList(root, options = {}) {
 
   /**
    * Says that something failed to load, with a button that removes the
-   * warning and tries again.
+   * warning and tries again. If the button had the focus, the focus moves to
+   * the warning of another failure, or to `focusAfter`, unless the user moved
+   * it elsewhere meanwhile.
    *
-   * @param {function(): void} retry
+   * @param {function(): Promise<void>} retry
    * @param {function(Element): void} place adds the warning to the page
+   * @param {function(): (HTMLElement|null|undefined)} focusAfter
    */
-  function showError(retry, place) {
+  function showError(retry, place, focusAfter) {
     const error = document.createElement("div");
     error.className = `jenkins-alert jenkins-alert-warning ${ERROR_CLASS}`;
     error.setAttribute("role", "alert");
@@ -114,8 +120,16 @@ export function initItemList(root, options = {}) {
     button.className = "jenkins-button jenkins-button--tertiary";
     button.textContent = root.dataset.tryAgain;
     button.addEventListener("click", () => {
+      const hadFocus = error.contains(document.activeElement);
       error.remove();
-      retry();
+      retry().then(() => {
+        const active = document.activeElement;
+        if (!hadFocus || (active && active !== document.body)) {
+          return;
+        }
+        const again = root.querySelector(`.${ERROR_CLASS} button`);
+        (again || focusAfter())?.focus();
+      });
     });
     error.append(button);
     place(error);
@@ -127,7 +141,13 @@ export function initItemList(root, options = {}) {
 
   function showListError(retry) {
     clearListError();
-    showError(retry, (error) => sentinel.before(error));
+    // The first row the retry loads
+    const shown = list.querySelectorAll(OWN_ROWS).length;
+    showError(
+      retry,
+      (error) => sentinel.before(error),
+      () => list.querySelectorAll(OWN_ROWS)[shown]?.querySelector(LABEL_SELECTOR),
+    );
   }
 
   function showSearchError(retry) {
@@ -140,7 +160,11 @@ export function initItemList(root, options = {}) {
     if (status) {
       status.textContent = "";
     }
-    showError(retry, (error) => (search || list).before(error));
+    showError(
+      retry,
+      (error) => (searchBar || list).before(error),
+      () => searchInput,
+    );
   }
 
   function observe() {
