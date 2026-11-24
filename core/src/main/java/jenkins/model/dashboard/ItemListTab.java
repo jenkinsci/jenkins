@@ -31,15 +31,18 @@ import hudson.Util;
 import hudson.model.AllView;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import hudson.model.Items;
 import hudson.model.View;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -110,12 +113,15 @@ public abstract class ItemListTab extends Tab {
      * those whose own name or display name matches first, in their order, then those that only match through the
      * name of a folder between the group and the item, so that searching for a folder's name finds the folder
      * before everything in it. Goes through {@code items} once, keeping the second kind until the first runs out.
+     * {@code items} may also contain items that don't match, but filtering them out first with
+     * {@link #matchingName}, as {@link Items#allItems(ItemGroup, Class, Predicate)} does before checking permissions,
+     * saves checking the permissions of every item when searching a large tree.
      */
     protected static @NonNull Iterable<Item> rankedByName(@NonNull String query, @NonNull ItemGroup<?> base,
             @NonNull Iterable<? extends Item> items) {
         Predicate<Item> ownName = matchingOwnName(query);
-        String q = query.toLowerCase(Locale.ROOT);
         return () -> new Iterator<>() {
+            private final Predicate<Item> name = matchingName(query, base);
             private final Iterator<? extends Item> source = items.iterator();
             private final Deque<Item> byFolderName = new ArrayDeque<>();
             private Item next;
@@ -126,7 +132,7 @@ public abstract class ItemListTab extends Tab {
                     Item item = source.next();
                     if (ownName.test(item)) {
                         next = item;
-                    } else if (relativeName(item, base).contains(q)) {
+                    } else if (name.test(item)) {
                         byFolderName.add(item);
                     }
                 }
@@ -146,6 +152,23 @@ public abstract class ItemListTab extends Tab {
                 return item;
             }
         };
+    }
+
+    /**
+     * Whether the name or display name of an item relative to a group contains a query, ignoring case, as
+     * {@link #rankedByName} matches items. Remembers whether each folder matches, so testing many items in the same
+     * folder costs little more than comparing their own names.
+     */
+    protected static @NonNull Predicate<Item> matchingName(@NonNull String query, @NonNull ItemGroup<?> base) {
+        Predicate<Item> ownName = matchingOwnName(query);
+        String q = query.toLowerCase(Locale.ROOT);
+        if (q.contains("\u00bb") || !q.equals(q.strip())) {
+            // A query that spans the separator between a folder's name and an item's name
+            return item -> ownName.test(item) || relativeName(item, base).contains(q);
+        }
+        Map<ItemGroup<?>, Boolean> folders = new HashMap<>();
+        return item -> ownName.test(item) || folders.computeIfAbsent(item.getParent(),
+                parent -> parent != base && parent instanceof Item folder && relativeName(folder, base).contains(q));
     }
 
     private static Predicate<Item> matchingOwnName(String query) {

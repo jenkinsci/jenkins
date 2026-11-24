@@ -250,6 +250,20 @@ class DashboardTest {
     }
 
     @Test
+    void allTabSearchFindsItemsByTheNameOfAFolderAnyLevelUp() throws Exception {
+        enableFlag("alice");
+        j.createFolder("alpha").createProject(MockFolder.class, "sub").createProject(FreeStyleProject.class, "y");
+        j.createFreeStyleProject("other");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?start=0&search=alph", null)),
+                    contains("alpha", "alpha \u00bb sub", "alpha \u00bb sub \u00bb y"));
+            // A query across the separator between a folder's name and an item's name
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?start=0&search=sub+%C2%BB+y", null)),
+                    contains("alpha \u00bb sub \u00bb y"));
+        }
+    }
+
+    @Test
     void recentTabShowsRunningQueuedAndFinishedBuilds() throws Exception {
         enableFlag("alice", "new-build-page.flag");
         enableFlag("admin", "new-build-page.flag");
