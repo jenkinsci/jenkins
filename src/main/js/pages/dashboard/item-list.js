@@ -47,7 +47,8 @@ export function initItemList(root, options = {}) {
   const searchInput = root.querySelector(".jenkins-search__input");
   const search = searchInput && searchInput.closest(".jenkins-search");
   // The search bar's outer wrapper, which the warning for a failed search goes before
-  const searchBar = search && (search.closest(".jenkins-search-container") || search);
+  const searchBar =
+    search && (search.closest(".jenkins-search-container") || search);
   const noResults = root.querySelector("#dashboard-items-no-results");
 
   let query = "";
@@ -148,7 +149,8 @@ export function initItemList(root, options = {}) {
     showError(
       retry,
       (error) => sentinel.before(error),
-      () => list.querySelectorAll(OWN_ROWS)[shown]?.querySelector(LABEL_SELECTOR),
+      () =>
+        list.querySelectorAll(OWN_ROWS)[shown]?.querySelector(LABEL_SELECTOR),
     );
   }
 
