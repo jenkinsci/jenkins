@@ -280,6 +280,7 @@ import jenkins.install.InstallState;
 import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.model.dashboard.Dashboard;
+import jenkins.search.SearchItemProvider;
 import jenkins.security.ClassFilterImpl;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
@@ -2425,6 +2426,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return SearchIndex.EMPTY;
             }
         }));
+
+        for (SearchItemProvider provider : SearchItemProvider.all()) {
+            try {
+                provider.getSearchItems().forEach(builder::add);
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.WARNING, "Failed to get search items from " + provider.getClass().getName(), e);
+            }
+        }
 
         builder.add(new CollectionSearchIndex<TopLevelItem>() {
                     @Override
