@@ -246,8 +246,9 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
                 return known;
             }
             int slash = folder.lastIndexOf('/');
+            // The folder's own permission too, as not every item group checks it for the items it returns
             boolean result = (slash <= 0 || canRead(folder.substring(0, slash)))
-                    && Jenkins.get().getItemByFullNameOrNull(folder) != null;
+                    && Dashboard.visible(folder, Item.class) != null;
             readable.put(folder, result);
             return result;
         }
