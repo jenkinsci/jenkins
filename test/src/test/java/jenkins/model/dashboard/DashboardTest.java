@@ -368,6 +368,29 @@ class DashboardTest {
     }
 
     @Test
+    void recentTabMatchesTheUserWhateverTheCaseOfTheirId() throws Exception {
+        // The dummy security realm ignores the case of user IDs, as LDAP and Active Directory do
+        enableFlag("alice");
+        FreeStyleProject started = j.createFreeStyleProject("started");
+        j.assertBuildStatusSuccess(started.scheduleBuild2(0, new CauseAction(new Cause.UserIdCause("ALICE"))));
+        FreeStyleProject withChanges = j.createFreeStyleProject("with-changes");
+        FakeChangeLogSCM scm = new FakeChangeLogSCM();
+        scm.addChange().withAuthor("Alice").withMsg("Fix the thing");
+        withChanges.setScm(scm);
+        j.buildAndAssertSuccess(withChanges);
+        j.buildAndAssertSuccess(j.createFreeStyleProject("other"));
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            HtmlPage page = wc.goTo("");
+            assertThat(sectionLabels(page, "finished"),
+                    contains(startsWith("with-changes"), startsWith("started"), startsWith("other")));
+            String content = page.getWebResponse().getContentAsString();
+            assertThat(content, containsString("Started by you"));
+            assertThat(content, containsString("Includes your changes"));
+        }
+    }
+
+    @Test
     void recentTabListsBuildsWithTheUsersChangesFirst() throws Exception {
         enableFlag("alice");
         enableFlag("bob");
