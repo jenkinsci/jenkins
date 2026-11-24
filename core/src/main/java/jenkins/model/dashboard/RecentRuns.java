@@ -45,6 +45,7 @@ import java.util.NavigableSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -280,6 +281,7 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
         try (ACLContext ignored = ACL.as2(ACL.SYSTEM2)) {
             Jenkins jenkins = Jenkins.get();
             for (Job job : jenkins.allItems(Job.class)) {
+                beforeSeeding.accept(job);
                 Run<?, ?> run = lastCompletedBuild(job);
                 if (run == null) {
                     continue;
@@ -314,6 +316,11 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
             return null;
         }
     }
+
+    /**
+     * Called with each job before it is read while the index fills. For tests, to pause or fail the fill.
+     */
+    static volatile Consumer<Job<?, ?>> beforeSeeding = job -> {};
 
     /**
      * Forgets everything. For tests.
