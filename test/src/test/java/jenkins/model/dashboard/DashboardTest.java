@@ -241,10 +241,11 @@ class DashboardTest {
     void allTabSearchListsItemsMatchingByTheirOwnNameFirst() throws Exception {
         enableFlag("alice");
         j.createFolder("alpha").createProject(FreeStyleProject.class, "x");
-        j.createFreeStyleProject("beta-alpha");
+        // Inside a folder that is walked after alpha, so it would come after alpha » x in walking order
+        j.createFolder("a-team").createProject(FreeStyleProject.class, "beta-alpha");
         try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
             assertThat(rowLabels((HtmlPage) wc.goTo("all/items?start=0&search=alpha", null)),
-                    contains("alpha", "beta-alpha", "alpha » x"));
+                    contains("alpha", "a-team » beta-alpha", "alpha » x"));
         }
     }
 

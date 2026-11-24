@@ -146,7 +146,7 @@ describe("dashboard item list", () => {
     );
   });
 
-  it("waits for the list end to scroll into view again after a failure", async () => {
+  it("only tries a failed page again from its button", async () => {
     const fetch = vi
       .fn()
       .mockImplementationOnce(() => Promise.resolve({ ok: false, status: 500 }))
@@ -161,7 +161,12 @@ describe("dashboard item list", () => {
     expect(observers[0].observe).toHaveBeenCalledTimes(1);
     expect(root.querySelector(".app-dashboard-items__error")).not.toBeNull();
 
+    // Scrolling doesn't retry, which would take away a focused button
     observers[0].intersect();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    root.querySelector(".app-dashboard-items__error button").click();
     await vi.waitFor(() => expect(labels(root)).toEqual(["a", "b", "c"]));
     expect(root.querySelector(".app-dashboard-items__error")).toBeNull();
   });

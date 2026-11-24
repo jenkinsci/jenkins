@@ -54,6 +54,8 @@ export function initItemList(root, options = {}) {
   let loading = false;
   // Whether the last search failed, which stops paging until a search succeeds
   let searchFailed = false;
+  // Whether loading the next page failed, which stops paging until its button tries again
+  let pageFailed = false;
   // Aborts the requests of the current search when a new one starts
   let controller = new AbortController();
 
@@ -193,7 +195,13 @@ export function initItemList(root, options = {}) {
 
   function loadMore() {
     const start = nextStart();
-    if (loading || searchFailed || start === undefined || start === "") {
+    if (
+      loading ||
+      searchFailed ||
+      pageFailed ||
+      start === undefined ||
+      start === ""
+    ) {
       return Promise.resolve();
     }
     loading = true;
@@ -214,8 +222,12 @@ export function initItemList(root, options = {}) {
         // A request a new search superseded must not change the page
         if (!isAbort(e) && !signal.aborted) {
           failed = true;
+          pageFailed = true;
           console.error(e);
-          showListError(loadMore);
+          showListError(() => {
+            pageFailed = false;
+            return loadMore();
+          });
         }
       })
       .then(() => {
@@ -258,6 +270,7 @@ export function initItemList(root, options = {}) {
     const { signal } = controller;
     loading = true;
     searchFailed = false;
+    pageFailed = false;
     let failed = false;
     clearListError();
     // A page that was loading is aborted, so it won't clear this itself
