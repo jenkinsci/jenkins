@@ -105,6 +105,8 @@ THE SOFTWARE.
     <skip.frontend>false</skip.frontend>
     <winstone.version>8.1055.v194fede4b_064</winstone.version>
     <node.version>24.22.3</node.version>
+    <!-- Corepack is no longer distributed with Node.js as of 25.0.0, so it is downloaded from the npm registry. -->
+    <corepack.version>0.36.0</corepack.version>
   </properties>
 
   <!--
@@ -474,6 +476,7 @@ THE SOFTWARE.
                 <phase>initialize</phase>
                 <configuration>
                   <nodeVersion>v${node.version}</nodeVersion>
+                  <corepackVersion>${corepack.version}</corepackVersion>
                   <nodeDownloadRoot>https://repo.jenkins-ci.org/nodejs-dist/</nodeDownloadRoot>
                   <skip>${skip.frontend}</skip>
                 </configuration>
