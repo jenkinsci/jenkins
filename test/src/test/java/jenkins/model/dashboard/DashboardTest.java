@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -249,6 +250,45 @@ class DashboardTest {
             assertThat(wc.goTo("all/items?folder=closed", null).getWebResponse().getStatusCode(), is(404));
             assertThat(wc.goTo("all/items?folder=open/visible", null).getWebResponse().getStatusCode(), is(404));
             assertThat(wc.goTo("all/items?folder=missing", null).getWebResponse().getStatusCode(), is(404));
+        }
+    }
+
+    @Test
+    void allTabFolderPagesGrowWithWhatIsShownUpToTheListPageSize() throws Exception {
+        enableFlag("alice");
+        MockFolder team = j.createFolder("team");
+        for (int i = 0; i < 20; i++) {
+            team.createProject(FreeStyleProject.class, String.format("job-%02d", i));
+        }
+        int childrenPageSize = ItemListTab.CHILDREN_PAGE_SIZE;
+        int pageSize = ItemListTab.PAGE_SIZE;
+        ItemListTab.CHILDREN_PAGE_SIZE = 2;
+        ItemListTab.PAGE_SIZE = 5;
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?folder=team&start=0", null)), hasSize(2));
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?folder=team&start=3&after=team/job-02", null)),
+                    contains("job-03", "job-04", "job-05"));
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?folder=team&start=10&after=team/job-09", null)),
+                    hasSize(5));
+        } finally {
+            ItemListTab.CHILDREN_PAGE_SIZE = childrenPageSize;
+            ItemListTab.PAGE_SIZE = pageSize;
+        }
+    }
+
+    @Test
+    void allTabSaysAFolderIsEmptyOnlyOnItsFirstPage() throws Exception {
+        enableFlag("alice");
+        MockFolder team = j.createFolder("team");
+        team.createProject(FreeStyleProject.class, "only");
+        j.createFolder("empty");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            assertThat(wc.goTo("all/items?folder=empty&start=0", null).getWebResponse().getContentAsString(),
+                    containsString("This folder is empty"));
+            // The items left after the previous page were removed meanwhile
+            HtmlPage later = (HtmlPage) wc.goTo("all/items?folder=team&start=1&after=team/only", null);
+            assertThat(rowLabels(later), empty());
+            assertThat(later.getWebResponse().getContentAsString(), not(containsString("This folder is empty")));
         }
     }
 

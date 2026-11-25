@@ -33,7 +33,8 @@ const SEARCH_DELAY = 300;
  *
  * A request that fails shows a warning with a button to try again: above the
  * search bar for a search, which also hides the results of the previous one,
- * and at the end of the list for the next page. Starting
+ * and at the end of the list for the next page. A folder that is gone, or that
+ * the user can no longer see, says so without the button. Starting
  * a new search aborts the requests of the previous one, and drops their
  * responses. The `role="status"` element says how many results a search found.
  *
@@ -104,7 +105,9 @@ export function initItemList(root, options = {}) {
     return fetchImpl(`${url}?${params}`, { signal })
       .then((rsp) => {
         if (!rsp.ok) {
-          throw new Error(`Failed to load items: ${rsp.status}`);
+          const error = new Error(`Failed to load items: ${rsp.status}`);
+          error.status = rsp.status;
+          throw error;
         }
         return rsp.text();
       })
@@ -125,17 +128,24 @@ export function initItemList(root, options = {}) {
    * the warning of another failure in the same place, or to `focusAfter`,
    * unless the user moved it elsewhere meanwhile.
    *
-   * @param {function(): Promise<void>} retry
+   * @param {(function(): Promise<void>)|null} retry, or `null` for a folder
+   *   that is gone, which trying again cannot load
    * @param {function(Element): void} place adds the warning to the page
-   * @param {function(): (HTMLElement|null|undefined)} focusAfter
+   * @param {function(): (HTMLElement|null|undefined)} [focusAfter]
    */
   function showError(retry, place, focusAfter) {
     const error = document.createElement("div");
     error.className = `jenkins-alert jenkins-alert-warning ${ERROR_CLASS}`;
     error.setAttribute("role", "alert");
     const message = document.createElement("span");
-    message.textContent = root.dataset.loadFailed;
+    message.textContent = retry
+      ? root.dataset.loadFailed
+      : root.dataset.folderGone;
     error.append(message);
+    if (!retry) {
+      place(error);
+      return;
+    }
     const button = document.createElement("button");
     button.type = "button";
     button.className = "jenkins-button jenkins-button--tertiary";
@@ -360,6 +370,14 @@ export function initItemList(root, options = {}) {
   }
 
   /**
+   * Whether a request failed as the folder it named is gone, or the user can
+   * no longer see it.
+   */
+  function isGone(e) {
+    return e.status === 404;
+  }
+
+  /**
    * Expands or collapses the folder of a toggle. The first expansion loads the
    * first page of its items.
    */
@@ -410,7 +428,7 @@ export function initItemList(root, options = {}) {
         if (!isAbort(e)) {
           console.error(e);
           showError(
-            () => toggle(button),
+            isGone(e) ? null : () => toggle(button),
             (error) => row.after(error),
             () => button,
           );
@@ -426,6 +444,16 @@ export function initItemList(root, options = {}) {
     const group = button.closest(`.${CHILDREN_CLASS}`);
     const row = group.previousElementSibling;
     const shown = group.querySelectorAll(OWN_ROWS).length;
+    // The first row a page loaded, else the last row, if none was left to
+    // load, else the folder's toggle
+    const firstLoaded = () => {
+      const rows = group.querySelectorAll(OWN_ROWS);
+      const loaded = rows[shown] || rows[rows.length - 1];
+      return (
+        loaded?.querySelector(LABEL_SELECTOR) ||
+        row.querySelector(TOGGLE_SELECTOR)
+      );
+    };
     // The warning of an earlier failure is replaced if this one fails too
     const previous = button.previousElementSibling;
     if (previous?.classList.contains(ERROR_CLASS)) {
@@ -458,30 +486,33 @@ export function initItemList(root, options = {}) {
         appendChildren(group, page);
         if (stillFocused()) {
           // The button is gone, so the first row it loaded takes the focus
-          group
-            .querySelectorAll(OWN_ROWS)
-            [shown]?.querySelector(LABEL_SELECTOR)
-            ?.focus();
+          firstLoaded()?.focus();
         }
       })
       .catch((e) => {
+        if (isAbort(e)) {
+          button.disabled = false;
+          return;
+        }
+        console.error(e);
         const refocus = stillFocused();
+        if (isGone(e)) {
+          // Trying again cannot load more of a folder that is gone
+          showError(null, (error) => button.replaceWith(error));
+          if (refocus) {
+            firstLoaded()?.focus();
+          }
+          return;
+        }
         button.disabled = false;
         if (refocus) {
           button.focus();
         }
-        if (!isAbort(e)) {
-          console.error(e);
-          showError(
-            () => showMore(button),
-            (error) => button.before(error),
-            () =>
-              group
-                .querySelectorAll(OWN_ROWS)
-                [shown]?.querySelector(LABEL_SELECTOR) ||
-              row.querySelector(TOGGLE_SELECTOR),
-          );
-        }
+        showError(
+          () => showMore(button),
+          (error) => button.before(error),
+          firstLoaded,
+        );
       });
   }
 

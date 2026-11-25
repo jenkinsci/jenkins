@@ -37,7 +37,8 @@ THE SOFTWARE.
       </j:forEach>
       <j:if test="${page.folder() != null}">
         <j:choose>
-          <j:when test="${empty(page.items())}">
+          <!-- A later page is empty if the items left were removed after the previous one -->
+          <j:when test="${empty(page.items()) and page.first()}">
             <p class="app-dashboard-items__empty">${%This folder is empty}</p>
           </j:when>
           <j:when test="${page.nextStart() != null}">

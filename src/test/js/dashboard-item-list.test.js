@@ -42,7 +42,7 @@ describe("dashboard item list", () => {
     };
     document.body.innerHTML = `
       <div class="app-dashboard-items" data-items-url="/jenkins/all/items"
-           data-load-failed="Couldn't load the items." data-try-again="Try again"
+           data-load-failed="Couldn't load the items." data-folder-gone="This folder is no longer available." data-try-again="Try again"
            data-results="Results: {0}" data-more-results="Results: more than {0}" data-no-results="No results found">
         <div class="jenkins-search-container"><div class="jenkins-search"><input class="jenkins-search__input" /></div></div>
         <div id="dashboard-items-no-results" class="jenkins-hidden"></div>
@@ -529,7 +529,7 @@ describe("dashboard item list", () => {
 
     it("leaves a folder collapsed when its items fail to load", async () => {
       vi.spyOn(console, "error").mockImplementation(() => {});
-      const fetch = vi.fn(() => Promise.resolve({ ok: false, status: 404 }));
+      const fetch = vi.fn(() => Promise.resolve({ ok: false, status: 500 }));
       const list = initItemList(root, { fetch });
 
       await list.toggle(toggleOf("team"));
@@ -545,6 +545,19 @@ describe("dashboard item list", () => {
       error.querySelector("button").click();
       await vi.waitFor(() => expect(labels(root)).toEqual(["team", "team/a"]));
       expect(root.querySelector(".app-dashboard-items__error")).toBeNull();
+    });
+
+    it("says a folder that is gone is no longer available, without trying again", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      const fetch = vi.fn(() => Promise.resolve({ ok: false, status: 404 }));
+      const list = initItemList(root, { fetch });
+
+      await list.toggle(toggleOf("team"));
+
+      const error = root.querySelector(".app-dashboard-items__error");
+      expect(error.textContent).toBe("This folder is no longer available.");
+      expect(error.querySelector("button")).toBeNull();
+      expect(toggleOf("team").getAttribute("aria-expanded")).toBe("false");
     });
 
     it("hands the focus back to the folder when a retry loads its items", async () => {
@@ -638,6 +651,55 @@ describe("dashboard item list", () => {
       );
 
       expect(document.activeElement.textContent).toBe("team/b");
+    });
+
+    it("replaces Show more with a notice when the folder is gone", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      const fetch = vi
+        .fn()
+        .mockReturnValueOnce(response(childPage(["team/a"], 1)))
+        .mockReturnValueOnce(Promise.resolve({ ok: false, status: 404 }));
+      initItemList(root, { fetch });
+
+      toggleOf("team").click();
+      await vi.waitFor(() =>
+        expect(root.querySelector(".app-dashboard-items__more")).not.toBeNull(),
+      );
+      const more = root.querySelector(".app-dashboard-items__more");
+      more.focus();
+      more.click();
+      await vi.waitFor(() =>
+        expect(
+          root.querySelector(".app-dashboard-items__error"),
+        ).not.toBeNull(),
+      );
+
+      expect(root.querySelector(".app-dashboard-items__more")).toBeNull();
+      expect(
+        root.querySelector(".app-dashboard-items__error button"),
+      ).toBeNull();
+      expect(document.activeElement.textContent).toBe("team/a");
+    });
+
+    it("moves the focus from Show more to the last row when nothing was left to load", async () => {
+      const fetch = vi
+        .fn()
+        .mockReturnValueOnce(response(childPage(["team/a"], 1)))
+        .mockReturnValueOnce(response(childPage([])));
+      initItemList(root, { fetch });
+
+      toggleOf("team").click();
+      await vi.waitFor(() =>
+        expect(root.querySelector(".app-dashboard-items__more")).not.toBeNull(),
+      );
+      const more = root.querySelector(".app-dashboard-items__more");
+      more.focus();
+      more.click();
+      await vi.waitFor(() =>
+        expect(root.querySelector(".app-dashboard-items__more")).toBeNull(),
+      );
+
+      expect(document.activeElement.textContent).toBe("team/a");
     });
 
     it("leaves out rows of a folder's next page that it already shows", async () => {

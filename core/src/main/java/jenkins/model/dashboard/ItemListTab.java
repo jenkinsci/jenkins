@@ -86,14 +86,9 @@ public abstract class ItemListTab extends Tab {
 
     /**
      * How many items of an expanded folder the first request returns. Each later request returns as many as are
-     * already shown, up to {@link #MAX_CHILDREN_PAGE_SIZE}, so that a large folder takes fewer requests.
+     * already shown, up to {@link #PAGE_SIZE}, so that a large folder takes fewer requests.
      */
     static /* non-final for Groovy */ int CHILDREN_PAGE_SIZE = SystemProperties.getInteger(ItemListTab.class.getName() + ".childrenPageSize", 20);
-
-    /**
-     * The most items of an expanded folder a request returns.
-     */
-    static /* non-final for Groovy */ int MAX_CHILDREN_PAGE_SIZE = 200;
 
     /**
      * The longest search query, as each search looks at the name of every item.
@@ -268,7 +263,7 @@ public abstract class ItemListTab extends Tab {
             return null;
         }
         ItemGroup<?> group = (ItemGroup<?>) item;
-        int size = Math.min(Math.max(start, CHILDREN_PAGE_SIZE), MAX_CHILDREN_PAGE_SIZE);
+        int size = Math.min(Math.max(start, CHILDREN_PAGE_SIZE), PAGE_SIZE);
         return slice(group.getItems(), start, after, size, false, group, folder);
     }
 
@@ -292,10 +287,10 @@ public abstract class ItemListTab extends Tab {
         List<Item> afterAnchor = null;
         int anchorIndex = -1;
         int index = 0;
-        // Whether the page is complete. The rest of a collection is still counted, to say how many items are left;
-        // its size cannot be used, as it may include items the user cannot read.
+        // Whether the page is complete. The rest of a folder's items is still counted, to say how many are left;
+        // the folder's size cannot be used, as it may include items the user cannot read.
         boolean complete = false;
-        boolean countRest = source instanceof Collection<?>;
+        boolean countRest = folder != null && source instanceof Collection<?>;
         for (Item item : source) {
             if (complete && !countRest) {
                 break;
@@ -326,7 +321,7 @@ public abstract class ItemListTab extends Tab {
         }
         int next = first + items.size();
         Integer remaining = more && countRest ? Math.max(index - next, 1) : null;
-        return new Page(items, more ? next : null, remaining, search, group, folder);
+        return new Page(items, more ? next : null, remaining, first == 0, search, group, folder);
     }
 
     /**
@@ -371,11 +366,12 @@ public abstract class ItemListTab extends Tab {
      * @param nextStart the {@code start} of the next page, or {@code null} if this is the last one
      * @param remaining how many items are left after this page, or {@code null} if this is the last page or
      *     it isn't known
+     * @param first whether this is the first page
      * @param search whether the page holds search results
      * @param group the item group from which items are named
      * @param folder the full name of the expanded folder whose items these are, or {@code null} for the list itself
      */
     @Restricted(NoExternalUse.class)
     public record Page(@NonNull List<Item> items, @CheckForNull Integer nextStart, @CheckForNull Integer remaining,
-            boolean search, @NonNull ItemGroup<?> group, @CheckForNull String folder) {}
+            boolean first, boolean search, @NonNull ItemGroup<?> group, @CheckForNull String folder) {}
 }
