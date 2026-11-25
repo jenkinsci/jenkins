@@ -292,24 +292,30 @@ public abstract class ItemListTab extends Tab {
         List<Item> afterAnchor = null;
         int anchorIndex = -1;
         int index = 0;
+        // Whether the page is complete. The rest of a collection is still counted, to say how many items are left;
+        // its size cannot be used, as it may include items the user cannot read.
+        boolean complete = false;
+        boolean countRest = source instanceof Collection<?>;
         for (Item item : source) {
+            if (complete && !countRest) {
+                break;
+            }
             if (!item.hasPermission(Item.READ)) {
                 continue;
             }
             int i = index++;
+            if (complete) {
+                continue;
+            }
             if (afterAnchor != null) {
                 afterAnchor.add(item);
-                if (afterAnchor.size() > size) {
-                    break;
-                }
+                complete = afterAnchor.size() > size;
             } else if (anchor != null && anchor.equals(item.getFullName())) {
                 afterAnchor = new ArrayList<>(size + 1);
                 anchorIndex = i;
             } else if (i >= from && atOffset.size() <= size) {
                 atOffset.add(item);
-                if (anchor == null && atOffset.size() > size) {
-                    break;
-                }
+                complete = anchor == null && atOffset.size() > size;
             }
         }
         List<Item> items = afterAnchor != null ? afterAnchor : atOffset;
@@ -319,8 +325,7 @@ public abstract class ItemListTab extends Tab {
             items = items.subList(0, size);
         }
         int next = first + items.size();
-        // How many are left, if the source knows how many items it has without reading them all again
-        Integer remaining = more && source instanceof Collection<?> all ? Math.max(all.size() - next, 1) : null;
+        Integer remaining = more && countRest ? Math.max(index - next, 1) : null;
         return new Page(items, more ? next : null, remaining, search, group, folder);
     }
 

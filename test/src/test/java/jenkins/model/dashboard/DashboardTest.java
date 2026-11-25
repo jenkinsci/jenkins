@@ -51,6 +51,7 @@ import hudson.model.Queue;
 import hudson.model.User;
 import hudson.util.OneShotEvent;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -248,6 +249,29 @@ class DashboardTest {
             assertThat(wc.goTo("all/items?folder=closed", null).getWebResponse().getStatusCode(), is(404));
             assertThat(wc.goTo("all/items?folder=open/visible", null).getWebResponse().getStatusCode(), is(404));
             assertThat(wc.goTo("all/items?folder=missing", null).getWebResponse().getStatusCode(), is(404));
+        }
+    }
+
+    @Test
+    void allTabCountsOnlyItemsTheUserCanReadAsLeftInAFolder() throws Exception {
+        enableFlag("bob");
+        MockFolder team = j.createFolder("team");
+        List<Item> readable = new ArrayList<>(List.of(team));
+        for (int i = 0; i < 4; i++) {
+            readable.add(team.createProject(FreeStyleProject.class, "job-" + i));
+            team.createProject(FreeStyleProject.class, "secret-" + i);
+        }
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("bob")
+                .grant(Item.READ).onItems(readable.toArray(Item[]::new)).to("bob"));
+        int pageSize = ItemListTab.CHILDREN_PAGE_SIZE;
+        ItemListTab.CHILDREN_PAGE_SIZE = 2;
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+            HtmlPage first = (HtmlPage) wc.goTo("all/items?folder=team&start=0", null);
+            assertThat(rowLabels(first), contains("job-0", "job-1"));
+            assertThat(first.querySelector(".app-dashboard-items__more").getTextContent().trim(), is("Show more (2 left)"));
+        } finally {
+            ItemListTab.CHILDREN_PAGE_SIZE = pageSize;
         }
     }
 
