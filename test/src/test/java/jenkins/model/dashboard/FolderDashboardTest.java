@@ -331,7 +331,7 @@ class FolderDashboardTest {
     }
 
     @Test
-    void recentRunsFilterByFolderBeforeCheckingPermissions() throws Exception {
+    void recentRunsAreScopedToTheFolder() throws Exception {
         DashboardFolder team = createFolder(j.jenkins, "team");
         FreeStyleProject inside = team.createProject(FreeStyleProject.class, "inside");
         FreeStyleProject outside = j.createFreeStyleProject("team-outside");

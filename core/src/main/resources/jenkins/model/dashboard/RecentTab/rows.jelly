@@ -111,10 +111,7 @@ THE SOFTWARE.
   </d:taglib>
 
   <l:ajax>
-    <!-- Set by the endpoint that serves the rows on their own -->
-    <j:if test="${model == null}">
-      <j:set var="model" value="${it.model}" />
-    </j:if>
+    <j:set var="model" value="${it.model}" />
     <div class="app-dashboard-recent">
       <!-- The tab's badge, so that a refresh can update it in the tab bar -->
       <template class="app-dashboard-recent__badge">

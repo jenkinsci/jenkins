@@ -42,9 +42,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
+import java.util.NoSuchElementException;
+import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -203,6 +206,30 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
     }
 
     /**
+     * The entries inside a folder, newest first. Rather than sorting them all, each is taken from a queue as it is
+     * read, as reading usually stops after the first few.
+     */
+    private Iterable<Ref> newestFirstInside(String prefix) {
+        PriorityQueue<Ref> queue = new PriorityQueue<>(NEWEST_FIRST);
+        queue.addAll(inside(prefix));
+        return () -> new Iterator<>() {
+            @Override
+            public boolean hasNext() {
+                return !queue.isEmpty();
+            }
+
+            @Override
+            public Ref next() {
+                Ref next = queue.poll();
+                if (next == null) {
+                    throw new NoSuchElementException();
+                }
+                return next;
+            }
+        };
+    }
+
+    /**
      * The most recently completed runs of jobs inside a folder that the current user can see, newest first,
      * one per job.
      *
@@ -213,15 +240,7 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
     @NonNull
     public List<Run<?, ?>> getCompleted(int limit, @NonNull String prefix) {
         seedOnce();
-        Iterable<Ref> candidates;
-        if (prefix.isEmpty()) {
-            candidates = newestFirst;
-        } else {
-            // Sorting the folder's own entries is cheaper than going through every job until enough are found
-            List<Ref> inside = new ArrayList<>(inside(prefix));
-            inside.sort(NEWEST_FIRST);
-            candidates = inside;
-        }
+        Iterable<Ref> candidates = prefix.isEmpty() ? newestFirst : newestFirstInside(prefix);
         ReadableFolders folders = new ReadableFolders();
         List<Run<?, ?>> result = new ArrayList<>();
         for (Ref ref : candidates) {

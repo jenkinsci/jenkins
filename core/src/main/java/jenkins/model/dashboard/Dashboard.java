@@ -87,15 +87,8 @@ public final class Dashboard extends Actionable {
     }
 
     /**
-     * The dashboard of the root of Jenkins.
-     */
-    public static @NonNull Dashboard get() {
-        return new Dashboard(Jenkins.get());
-    }
-
-    /**
-     * The dashboard of an item group: the {@linkplain #get() root dashboard} for {@link Jenkins}, a dashboard
-     * limited to the group for a {@link DashboardItemGroup}, otherwise {@code null}.
+     * The dashboard of an item group: the root dashboard for {@link Jenkins}, a dashboard limited to the group for
+     * a {@link DashboardItemGroup}, otherwise {@code null}.
      */
     public static @CheckForNull Dashboard of(@NonNull ItemGroup<?> group) {
         return group instanceof Jenkins || group instanceof DashboardItemGroup ? new Dashboard(group) : null;
