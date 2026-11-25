@@ -117,6 +117,7 @@ $collapsible-page-body: ".app-page-body:has(> .app-page-body__sidebar):not(:has(
 
 .app-main-panel {
   margin-bottom: var(--section-padding);
+  overflow-x: auto;
 
   &--narrow {
     max-width: 900px;
