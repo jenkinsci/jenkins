@@ -353,6 +353,8 @@ class DashboardTest {
             WebResponse first = wc.goTo("defaultTab/rows", null).getWebResponse();
             String etag = first.getResponseHeaderValue("ETag");
             assertThat(etag, notNullValue());
+            // The rows depend on the user and their permissions, so no cache may keep them
+            assertThat(first.getResponseHeaderValue("Cache-Control"), containsString("no-store"));
 
             WebRequest again = new WebRequest(new URL(j.getURL(), "defaultTab/rows"));
             again.setAdditionalHeader("If-None-Match", etag);

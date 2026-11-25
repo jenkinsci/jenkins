@@ -429,7 +429,6 @@ public class RecentTab extends Tab {
         byte[] body = buffered.toByteArray();
         String etag = '"' + Util.getDigestOf(new ByteArrayInputStream(body)) + '"';
         rsp.setHeader("ETag", etag);
-        rsp.setHeader("Cache-Control", "no-cache");
         if (matchesAny(req.getHeader("If-None-Match"), etag)) {
             rsp.setStatus(StaplerResponse2.SC_NOT_MODIFIED);
             return;
