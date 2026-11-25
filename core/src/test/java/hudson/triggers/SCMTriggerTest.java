@@ -41,4 +41,10 @@ class SCMTriggerTest {
         scmTrigger.run(null);
         scmTrigger.getProjectActions();
     }
+
+    @Test
+    void testClogCheckWithoutMonitor() {
+        SCMTrigger.DescriptorImpl descriptor = new SCMTrigger.DescriptorImpl();
+        descriptor.clogCheck();
+    }
 }
