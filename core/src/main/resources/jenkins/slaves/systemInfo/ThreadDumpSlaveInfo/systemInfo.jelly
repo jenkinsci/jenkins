@@ -36,4 +36,7 @@ THE SOFTWARE.
     </h2>
     <pre>${t.value}</pre>
   </j:forEach>
+  <l:isAdmin>
+    <p><a href="heapDump">${%heapDump}</a></p>
+  </l:isAdmin>
 </j:jelly>

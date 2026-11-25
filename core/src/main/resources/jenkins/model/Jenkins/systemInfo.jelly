@@ -99,6 +99,7 @@ THE SOFTWARE.
     <l:isAdmin>
       <l:tabPane title="${%Thread Dumps}">
         <p>${%threadDump_blurb('threadDump')}</p>
+        <p>${%heapDump_blurb('heapDump')}</p>
       </l:tabPane>
     </l:isAdmin>
   </l:settings-subpage>
