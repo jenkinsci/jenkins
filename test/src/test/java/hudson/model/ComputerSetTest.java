@@ -257,6 +257,6 @@ class ComputerSetTest {
         form.getInputByName("name").setValue("agent-1");
         form.getInputByValue("hudson.slaves.DumbSlave").setChecked(true);
         HtmlPage configPage = j.submit(form);
-        assertEquals("New node - Jenkins", configPage.getTitleText());
+        assertEquals("New node: agent-1 - Jenkins", configPage.getTitleText());
     }
 }

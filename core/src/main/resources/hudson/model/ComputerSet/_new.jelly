@@ -28,7 +28,16 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${it.CREATE}" type="one-column" title="${%New node}">
+  <j:set var="nodeName" value="${request2.getParameter('name')}"/>
+  <j:choose>
+    <j:when test="${!empty(nodeName)}">
+      <j:set var="pageTitle" value="${%title(nodeName)}"/>
+    </j:when>
+    <j:otherwise>
+      <j:set var="pageTitle" value="${%New node}"/>
+    </j:otherwise>
+  </j:choose>
+  <l:layout permission="${it.CREATE}" type="one-column" title="${pageTitle}">
     <l:main-panel>
       <f:form method="post" action="doCreateItem" name="config" class="jenkins-form">
         <f:entry title="${%Name}" help="${requestScope.descriptor.getHelpFile('name')}">
