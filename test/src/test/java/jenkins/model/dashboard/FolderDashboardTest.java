@@ -37,16 +37,27 @@ import static org.hamcrest.Matchers.startsWith;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractItem;
+import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import hudson.model.Job;
+import hudson.model.Label;
 import hudson.model.ListView;
+import hudson.model.Queue;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.User;
+import hudson.model.View;
+import hudson.security.ACL;
+import hudson.security.AccessControlled;
 import hudson.util.OneShotEvent;
+import hudson.views.DefaultViewsTabBar;
+import hudson.views.ViewsTabBar;
+import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +77,7 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 
@@ -288,6 +300,37 @@ class FolderDashboardTest {
     }
 
     @Test
+    void emptyGroupThatUsersCannotAddItemsToShowsNoNewItemLink() throws Exception {
+        enableFlag("admin");
+        j.jenkins.createProject(ComputedGroup.class, "computed");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("admin")) {
+            HtmlPage all = wc.goTo("job/computed/all/");
+            String content = all.getWebResponse().getContentAsString();
+            assertThat(content, containsString("Nothing to show yet"));
+            assertThat(content, not(containsString("newJob")));
+            assertThat(content, not(containsString("Welcome to Jenkins!")));
+        }
+    }
+
+    @Test
+    void queuedPartsOfJobsAreNamedFromTheFolderDown() throws Exception {
+        enableFlag("alice");
+        DashboardFolder team = createFolder(j.jenkins, "team");
+        DashboardFolder backend = createFolder(team, "backend");
+        FreeStyleProject api = backend.createProject(FreeStyleProject.class, "api");
+        DashboardFolder other = createFolder(j.jenkins, "other");
+        j.jenkins.getQueue().schedule2(new PartOfJob(api, j.jenkins.getLabel("no-such-agent")), 0);
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            assertThat(sectionLabels(wc.goTo("job/team/"), "queued"), contains("backend » api » part"));
+            assertThat(sectionLabels(wc.goTo("job/team/job/backend/"), "queued"), contains("api » part"));
+            assertThat(sectionLabels(wc.goTo("job/other/"), "queued"), empty());
+            assertThat(sectionLabels(wc.goTo(""), "queued"), contains("team » backend » api » part"));
+        } finally {
+            j.jenkins.getQueue().clear();
+        }
+    }
+
+    @Test
     void recentRunsFilterByFolderBeforeCheckingPermissions() throws Exception {
         DashboardFolder team = createFolder(j.jenkins, "team");
         FreeStyleProject inside = team.createProject(FreeStyleProject.class, "inside");
@@ -450,6 +493,173 @@ class FolderDashboardTest {
             @Override
             public TopLevelItem newInstance(ItemGroup parent, String name) {
                 return new DashboardFolder(parent, name);
+            }
+        }
+    }
+
+    /**
+     * A part of a job that is queued on its own, like a Pipeline {@code node} block, with the permissions of the job.
+     */
+    private static final class PartOfJob implements Queue.Task, AccessControlled {
+        private final FreeStyleProject owner;
+        private final Label label;
+
+        PartOfJob(FreeStyleProject owner, Label label) {
+            this.owner = owner;
+            this.label = label;
+        }
+
+        @Override
+        public Queue.Task getOwnerTask() {
+            return owner;
+        }
+
+        @Override
+        public Label getAssignedLabel() {
+            return label;
+        }
+
+        @Override
+        public String getName() {
+            return "part";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "part";
+        }
+
+        @Override
+        public String getFullDisplayName() {
+            return owner.getFullDisplayName() + " » part";
+        }
+
+        @Override
+        public String getUrl() {
+            return owner.getUrl();
+        }
+
+        @Override
+        public Queue.Executable createExecutable() {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public ACL getACL() {
+            return owner.getACL();
+        }
+    }
+
+    /**
+     * A group that shows the dashboard, whose items users cannot add themselves, and whose primary view is not an
+     * "All" view, like a multibranch project.
+     */
+    public static final class ComputedGroup extends AbstractItem
+            implements TopLevelItem, ItemGroup<TopLevelItem>, DashboardItemGroup, StaplerFallback {
+        private transient ListView view;
+
+        ComputedGroup(ItemGroup<?> parent, String name) {
+            super(parent, name);
+        }
+
+        private synchronized ListView view() {
+            if (view == null) {
+                view = new ListView("branches", this);
+            }
+            return view;
+        }
+
+        @Override
+        public Object getDynamic(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
+            Object result = super.getDynamic(token, req, rsp);
+            return result != null ? result : Dashboard.findTab(this, token);
+        }
+
+        @Override
+        public Object getStaplerFallback() {
+            return view();
+        }
+
+        @Override
+        public Collection<TopLevelItem> getItems() {
+            return List.of();
+        }
+
+        @Override
+        public String getUrlChildPrefix() {
+            return "job";
+        }
+
+        @Override
+        public TopLevelItem getItem(String name) {
+            return null;
+        }
+
+        @Override
+        public File getRootDirFor(TopLevelItem child) {
+            return new File(getRootDir(), child.getName());
+        }
+
+        @Override
+        public void onDeleted(TopLevelItem item) {}
+
+        @Override
+        public Collection<? extends Job> getAllJobs() {
+            return List.of();
+        }
+
+        @Override
+        public boolean canDelete(View view) {
+            return false;
+        }
+
+        @Override
+        public void deleteView(View view) {}
+
+        @Override
+        public Collection<View> getViews() {
+            return List.of(view());
+        }
+
+        @Override
+        public View getView(String name) {
+            return view().getViewName().equals(name) ? view() : null;
+        }
+
+        @Override
+        public View getPrimaryView() {
+            return view();
+        }
+
+        @Override
+        public void onViewRenamed(View view, String oldName, String newName) {}
+
+        @Override
+        public ViewsTabBar getViewsTabBar() {
+            return new DefaultViewsTabBar();
+        }
+
+        @Override
+        public ItemGroup<? extends TopLevelItem> getItemGroup() {
+            return this;
+        }
+
+        @Override
+        public List<Action> getViewActions() {
+            return List.of();
+        }
+
+        @Override
+        public TopLevelItemDescriptor getDescriptor() {
+            return (TopLevelItemDescriptor) Jenkins.get().getDescriptorOrDie(ComputedGroup.class);
+        }
+
+        @TestExtension("emptyGroupThatUsersCannotAddItemsToShowsNoNewItemLink")
+        public static final class DescriptorImpl extends TopLevelItemDescriptor {
+            @Override
+            public TopLevelItem newInstance(ItemGroup parent, String name) {
+                return new ComputedGroup(parent, name);
             }
         }
     }
