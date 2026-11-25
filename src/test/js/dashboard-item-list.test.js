@@ -639,6 +639,85 @@ describe("dashboard item list", () => {
 
       expect(document.activeElement.textContent).toBe("team/b");
     });
+
+    it("leaves out rows of a folder's next page that it already shows", async () => {
+      const fetch = vi
+        .fn()
+        .mockReturnValueOnce(response(childPage(["team/a"], 1)))
+        .mockReturnValueOnce(response(childPage(["team/a", "team/b"])));
+      initItemList(root, { fetch });
+
+      toggleOf("team").click();
+      await vi.waitFor(() =>
+        expect(root.querySelector(".app-dashboard-items__more")).not.toBeNull(),
+      );
+      root.querySelector(".app-dashboard-items__more").click();
+
+      await vi.waitFor(() =>
+        expect(labels(root)).toEqual(["team", "team/a", "team/b"]),
+      );
+    });
+
+    it("replaces the warning of a failed Show more when it is clicked again", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      const fetch = vi
+        .fn()
+        .mockReturnValueOnce(response(childPage(["team/a"], 1)))
+        .mockReturnValueOnce(Promise.resolve({ ok: false, status: 500 }))
+        .mockReturnValueOnce(Promise.resolve({ ok: false, status: 500 }))
+        .mockReturnValueOnce(response(childPage(["team/b"])));
+      initItemList(root, { fetch });
+
+      toggleOf("team").click();
+      await vi.waitFor(() =>
+        expect(root.querySelector(".app-dashboard-items__more")).not.toBeNull(),
+      );
+      const more = root.querySelector(".app-dashboard-items__more");
+      more.click();
+      await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+      await vi.waitFor(() => expect(more.disabled).toBe(false));
+      more.click();
+      await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(3));
+      await vi.waitFor(() => expect(more.disabled).toBe(false));
+      expect(root.querySelectorAll(".app-dashboard-items__error")).toHaveLength(
+        1,
+      );
+
+      more.click();
+      await vi.waitFor(() =>
+        expect(labels(root)).toEqual(["team", "team/a", "team/b"]),
+      );
+      expect(root.querySelector(".app-dashboard-items__error")).toBeNull();
+    });
+
+    it("leaves the focus where the user moved it while Show more loads", async () => {
+      let resolve;
+      const fetch = vi
+        .fn()
+        .mockReturnValueOnce(response(childPage(["team/a"], 1)))
+        .mockReturnValueOnce(
+          new Promise((r) => {
+            resolve = r;
+          }),
+        );
+      initItemList(root, { fetch });
+
+      toggleOf("team").click();
+      await vi.waitFor(() =>
+        expect(root.querySelector(".app-dashboard-items__more")).not.toBeNull(),
+      );
+      const more = root.querySelector(".app-dashboard-items__more");
+      more.focus();
+      more.click();
+      const toggle = toggleOf("team");
+      toggle.focus();
+      resolve(await response(childPage(["team/b"])));
+
+      await vi.waitFor(() =>
+        expect(labels(root)).toEqual(["team", "team/a", "team/b"]),
+      );
+      expect(document.activeElement).toBe(toggle);
+    });
   });
 });
 

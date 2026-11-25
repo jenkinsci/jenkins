@@ -211,12 +211,15 @@ export function initItemList(root, options = {}) {
   }
 
   /**
-   * Removes rows that are already in the list, which happens when items are
-   * added between loading two pages.
+   * Removes rows that are already in the list or folder, which happens when
+   * items are added between loading two pages.
+   *
+   * @param {Element} page
+   * @param {Element} container the list, or the group of a folder's items
    */
-  function dropDuplicates(page) {
+  function dropDuplicates(page, container) {
     const shown = new Set(
-      Array.from(list.querySelectorAll(OWN_ROWS), (row) => row.dataset.id),
+      Array.from(container.querySelectorAll(OWN_ROWS), (row) => row.dataset.id),
     );
     page.querySelectorAll("[data-id]").forEach((row) => {
       if (shown.has(row.dataset.id)) {
@@ -246,7 +249,7 @@ export function initItemList(root, options = {}) {
           return;
         }
         clearListError();
-        dropDuplicates(page);
+        dropDuplicates(page, list);
         list.append(page);
         applySubtree(page);
       })
@@ -423,8 +426,20 @@ export function initItemList(root, options = {}) {
     const group = button.closest(`.${CHILDREN_CLASS}`);
     const row = group.previousElementSibling;
     const shown = group.querySelectorAll(OWN_ROWS).length;
+    // The warning of an earlier failure is replaced if this one fails too
+    const previous = button.previousElementSibling;
+    if (previous?.classList.contains(ERROR_CLASS)) {
+      previous.remove();
+    }
     // Disabling the button takes the focus from it
     const focused = document.activeElement === button;
+    // Unless the user moved it elsewhere while the page loaded
+    const stillFocused = () => {
+      const active = document.activeElement;
+      return (
+        focused && (!active || active === document.body || active === button)
+      );
+    };
     button.disabled = true;
     const { signal } = controller;
     return fetchPage(
@@ -439,8 +454,9 @@ export function initItemList(root, options = {}) {
         if (signal.aborted || !page) {
           return;
         }
+        dropDuplicates(page, group);
         appendChildren(group, page);
-        if (focused) {
+        if (stillFocused()) {
           // The button is gone, so the first row it loaded takes the focus
           group
             .querySelectorAll(OWN_ROWS)
@@ -449,8 +465,9 @@ export function initItemList(root, options = {}) {
         }
       })
       .catch((e) => {
+        const refocus = stillFocused();
         button.disabled = false;
-        if (focused) {
+        if (refocus) {
           button.focus();
         }
         if (!isAbort(e)) {
