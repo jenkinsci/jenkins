@@ -499,6 +499,57 @@ describe("dashboard recent tab", () => {
     expect(document.activeElement).toBe(menu);
   });
 
+  it("asks for every queued row while one has focus, and expands the section when it moves past the first few", async () => {
+    const queued = (ids) =>
+      recent([
+        {
+          id: "queued",
+          toggle: true,
+          rows: ids.map((id, i) => row(id, id, i >= 2)),
+        },
+      ]);
+    await setUp(queued(["a", "b"]), queued(["new", "a", "b"]));
+    const menu = root.querySelector('[page-entry-id="b"] .menu');
+    menu.focus();
+
+    await recentTab.refresh();
+
+    expect(recentTab.fetch).toHaveBeenCalledWith(
+      "/jenkins/defaultTab/rows?expanded=queued",
+      expect.anything(),
+    );
+    const section = root.querySelector('[data-section="queued"]');
+    expect(section.classList.contains("app-dashboard-section--expanded")).toBe(
+      true,
+    );
+    expect(
+      root
+        .querySelector('[page-entry-id="b"]')
+        .classList.contains("app-dashboard-section__extra"),
+    ).toBe(true);
+    expect(document.activeElement).toBe(menu);
+  });
+
+  it("keeps a section collapsed while its focused row stays in the first few", async () => {
+    const html = recent([
+      {
+        id: "queued",
+        toggle: true,
+        rows: [row("a", "a"), row("b", "b"), row("c", "c", true)],
+      },
+    ]);
+    await setUp(html, html);
+    root.querySelector('[page-entry-id="a"] .menu').focus();
+
+    await recentTab.refresh();
+
+    expect(
+      root
+        .querySelector('[data-section="queued"]')
+        .classList.contains("app-dashboard-section--expanded"),
+    ).toBe(false);
+  });
+
   it("asks for the rows of expanded sections, and refreshes on expanding", async () => {
     const queued = recent([
       {

@@ -6,6 +6,7 @@ const HEADER = ".app-dashboard-section__header";
 const BODY = ".app-dashboard-section__body";
 const TOGGLE = ".app-dashboard-section__toggle";
 const EXPANDED = "app-dashboard-section--expanded";
+const EXTRA = "app-dashboard-section__extra";
 const BADGE_TEMPLATE = "template.app-dashboard-recent__badge";
 const CURRENT_TAB = "[data-testid=dashboard-tabs] a[aria-current=page]";
 const ERROR = ".app-dashboard-recent__error";
@@ -152,9 +153,27 @@ export function initRecent(root, options = {}) {
     replacement?.focus({ preventScroll: true });
   }
 
+  /**
+   * Expands the section of the focused control's row if the row is now one of
+   * the rows a collapsed section hides, for example when a newer build is
+   * ranked above it.
+   */
+  function revealRowOf(control) {
+    if (!control || !control.entryId || !control.sectionId) {
+      return;
+    }
+    const row = Array.from(root.querySelectorAll("[page-entry-id]")).find(
+      (e) => e.getAttribute("page-entry-id") === control.entryId,
+    );
+    if (row && row.classList.contains(EXTRA)) {
+      expanded.add(control.sectionId);
+    }
+  }
+
   function update(html) {
     const control = focusedControl();
     updateContent(html);
+    revealRowOf(control);
     // Expand sections first, as a control in a collapsed section can't take focus
     applyToggles();
     restoreFocus(control);
@@ -201,12 +220,32 @@ export function initRecent(root, options = {}) {
     error?.classList.toggle("jenkins-hidden", !failed);
   }
 
+  /**
+   * The sections to render in full: the expanded ones, and the collapsible one
+   * with the focused row, so that the row is still there if it moves past the
+   * first few.
+   */
+  function sectionsToRender() {
+    const sections = new Set(expanded);
+    const control = focusedControl();
+    if (control?.entryId && control.sectionId) {
+      const section = Array.from(root.querySelectorAll(SECTION)).find(
+        (e) => e.dataset.section === control.sectionId,
+      );
+      if (section?.querySelector(TOGGLE)) {
+        sections.add(control.sectionId);
+      }
+    }
+    return sections;
+  }
+
   function refreshUrl() {
-    if (!expanded.size) {
+    const sections = sectionsToRender();
+    if (!sections.size) {
       return url;
     }
     const separator = url.includes("?") ? "&" : "?";
-    const params = new URLSearchParams({ expanded: [...expanded].join(",") });
+    const params = new URLSearchParams({ expanded: [...sections].join(",") });
     return `${url}${separator}${params}`;
   }
 
