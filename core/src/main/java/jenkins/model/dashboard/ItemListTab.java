@@ -219,8 +219,7 @@ public abstract class ItemListTab extends Tab {
         if (query != null && query.length() > MAX_QUERY_LENGTH) {
             query = query.substring(0, MAX_QUERY_LENGTH);
         }
-        return slice(query == null ? getItems() : search(query), start, after, PAGE_SIZE, query != null,
-                getDashboard().getOwner());
+        return slice(query == null ? getItems() : search(query), start, after, PAGE_SIZE, getDashboard().getOwner());
     }
 
     /**
@@ -230,11 +229,10 @@ public abstract class ItemListTab extends Tab {
      * @param after the full name of the last item already shown, or {@code null}. The page continues
      *     after it, so items removed from earlier in the list don't shift the page past items not yet shown.
      * @param size the number of items on a page
-     * @param search whether the items are search results
      * @param group the item group from which items are named
      */
     private static @NonNull Page slice(@NonNull Iterable<? extends Item> source, int start, @CheckForNull String after,
-            int size, boolean search, @NonNull ItemGroup<?> group) {
+            int size, @NonNull ItemGroup<?> group) {
         String anchor = Util.fixEmpty(after);
         int from = Math.max(start, 0);
         // The page at the offset, used if the anchor isn't listed
@@ -269,7 +267,7 @@ public abstract class ItemListTab extends Tab {
         if (more) {
             items = items.subList(0, size);
         }
-        return new Page(items, more ? first + items.size() : null, search, group);
+        return new Page(items, more ? first + items.size() : null, group);
     }
 
     /**
@@ -305,9 +303,8 @@ public abstract class ItemListTab extends Tab {
      *
      * @param items the items on this page
      * @param nextStart the {@code start} of the next page, or {@code null} if this is the last one
-     * @param search whether the page holds search results
      * @param group the item group from which items are named
      */
     @Restricted(NoExternalUse.class)
-    public record Page(@NonNull List<Item> items, @CheckForNull Integer nextStart, boolean search, @NonNull ItemGroup<?> group) {}
+    public record Page(@NonNull List<Item> items, @CheckForNull Integer nextStart, @NonNull ItemGroup<?> group) {}
 }
