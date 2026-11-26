@@ -156,15 +156,19 @@ public abstract class ItemListTab extends Tab {
 
     /**
      * Whether the name or display name of an item relative to a group contains a query, ignoring case, as
-     * {@link #rankedByName} matches items. Remembers whether each folder matches, so testing many items in the same
+     * {@link #rankedByName} matches items. A query can name folders as shown, separated by "\u00bb", or with "/" as
+     * in full names. Remembers whether each folder matches, so testing many items in the same
      * folder costs little more than comparing their own names.
      */
     protected static @NonNull Predicate<Item> matchingName(@NonNull String query, @NonNull ItemGroup<?> base) {
         Predicate<Item> ownName = matchingOwnName(query);
         String q = query.toLowerCase(Locale.ROOT);
-        if (q.contains("\u00bb") || !q.equals(q.strip())) {
-            // A query that spans the separator between a folder's name and an item's name
-            return item -> ownName.test(item) || relativeName(item, base).contains(q);
+        if (q.contains("\u00bb") || q.contains("/") || !q.equals(q.strip())) {
+            // A query that spans the separator between a folder's name and an item's name, as shown, or written as
+            // in a full name, such as "folder/job"
+            return item -> ownName.test(item) || relativeName(item, base).contains(q)
+                    || relativeName(item, base).replace(" \u00bb ", "/").contains(q)
+                    || item.getRelativeNameFrom(base).toLowerCase(Locale.ROOT).contains(q);
         }
         Map<ItemGroup<?>, Boolean> folders = new HashMap<>();
         return item -> ownName.test(item) || folders.computeIfAbsent(item.getParent(),
