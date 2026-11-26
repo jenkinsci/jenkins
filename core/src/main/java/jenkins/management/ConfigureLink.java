@@ -26,8 +26,14 @@ package jenkins.management;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.model.AdministrativeMonitor;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
+import hudson.util.HudsonIsLoading;
+import hudson.util.HudsonIsRestarting;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -36,6 +42,8 @@ import org.jenkinsci.Symbol;
  */
 @Extension(ordinal = Integer.MAX_VALUE - 200) @Symbol("configure")
 public class ConfigureLink extends ManagementLink {
+
+    private static final Logger LOGGER = Logger.getLogger(ConfigureLink.class.getName());
 
     @Override
     public String getIconFileName() {
@@ -72,5 +80,57 @@ public class ConfigureLink extends ManagementLink {
     @Override
     public Category getCategory() {
         return Category.CONFIGURATION;
+    }
+
+    @Override
+    public Badge getBadge() {
+        if (!AdministrativeMonitor.hasPermissionToDisplay()) {
+            return null;
+        }
+
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
+        if (jenkins == null) {
+            return null;
+        }
+
+        var app = jenkins.getServletContext() != null ? jenkins.getServletContext().getAttribute("app") : null;
+        if (app instanceof HudsonIsLoading || app instanceof HudsonIsRestarting) {
+            return null;
+        }
+
+        List<AdministrativeMonitor> activeMonitors = jenkins.administrativeMonitors.stream()
+                .filter(ConfigureLink::isActive)
+                .toList();
+
+        int size = activeMonitors.size();
+        if (size > 0) {
+            int securityCount = (int) activeMonitors.stream().filter(AdministrativeMonitor::isSecurity).count();
+            Badge.Severity severity = securityCount > 0 ? Badge.Severity.DANGER : Badge.Severity.WARNING;
+
+            StringBuilder tooltip = new StringBuilder();
+            if (size == 1) {
+                tooltip.append(Messages.ConfigureLink_notificationAvailable());
+            } else {
+                tooltip.append(Messages.ConfigureLink_notificationsAvailable(size));
+            }
+
+            if (securityCount == 1) {
+                tooltip.append("\n").append(Messages.ConfigureLink_securityNotificationAvailable());
+            } else if (securityCount > 1) {
+                tooltip.append("\n").append(Messages.ConfigureLink_securityNotificationsAvailable(securityCount));
+            }
+
+            return new Badge(String.valueOf(size), tooltip.toString(), severity);
+        }
+        return null;
+    }
+
+    private static boolean isActive(AdministrativeMonitor m) {
+        try {
+            return !m.isActivationFake() && m.hasRequiredPermission() && m.isEnabled() && m.isActivated();
+        } catch (Throwable x) {
+            LOGGER.log(Level.WARNING, null, x);
+            return false;
+        }
     }
 }
