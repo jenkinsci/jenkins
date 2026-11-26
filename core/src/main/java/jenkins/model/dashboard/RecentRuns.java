@@ -78,9 +78,18 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
 
     private static final Logger LOGGER = Logger.getLogger(RecentRuns.class.getName());
 
-    record Ref(String job, int number, long endTime) {
+    /**
+     * An entry of the index, ordered newest first, so that a {@link PriorityQueue} of entries can be built in linear
+     * time.
+     */
+    record Ref(String job, int number, long endTime) implements Comparable<Ref> {
         static Ref of(Run<?, ?> run) {
             return new Ref(run.getParent().getFullName(), run.getNumber(), run.getStartTimeInMillis() + run.getDuration());
+        }
+
+        @Override
+        public int compareTo(Ref other) {
+            return NEWEST_FIRST.compare(this, other);
         }
     }
 
@@ -90,8 +99,8 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
             .thenComparingInt(Ref::number);
 
     /**
-     * Keyed by job full name, in name order, so that the jobs inside an item group are next to each other. Changes to it
-     * and {@link #newestFirst} are made together, holding its lock.
+     * Keyed by job full name, in name order, so that the jobs inside an item group are next to each other. Changes to
+     * it and {@link #newestFirst} are made together, holding its lock.
      */
     private final ConcurrentNavigableMap<String, Ref> refs = new ConcurrentSkipListMap<>();
 
@@ -206,12 +215,12 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
     }
 
     /**
-     * The entries inside an item group, newest first. Rather than sorting them all, each is taken from a queue as it is
-     * read, as reading usually stops after the first few.
+     * The entries inside an item group, newest first. Rather than sorting them all, they are put in a queue, which
+     * takes linear time, and each is taken from it as it is read, as reading usually stops after the first few.
      */
     private Iterable<Ref> newestFirstInside(String prefix) {
-        PriorityQueue<Ref> queue = new PriorityQueue<>(NEWEST_FIRST);
-        queue.addAll(inside(prefix));
+        // Built from the collection in one go, in the natural order of the entries, rather than one entry at a time
+        PriorityQueue<Ref> queue = new PriorityQueue<>(inside(prefix));
         return () -> new Iterator<>() {
             @Override
             public boolean hasNext() {

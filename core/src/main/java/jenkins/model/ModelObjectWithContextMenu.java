@@ -377,8 +377,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
             if (self instanceof ItemGroup<?> group && Dashboard.isEnabled()) {
                 // For these users the root URL and the URLs of other item groups show the dashboard rather than the
-                // primary view, so the overflow menu, loaded from their contextMenu, matches the dashboard's app bar and its
-                // Views menu
+                // primary view, so the overflow menu, loaded from their contextMenu, matches the dashboard's app bar
+                // and its Views menu
                 Dashboard dashboard = Dashboard.of(group);
                 if (dashboard != null) {
                     return dashboard.getAppBarActions();
