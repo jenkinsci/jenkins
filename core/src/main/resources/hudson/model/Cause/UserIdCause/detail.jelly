@@ -24,7 +24,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
   <j:choose>
-    <j:when test="${it.userId != null}">
+    <j:when test="${it.userUrl != null}">
       <a href="${rootURL + '/' + it.userUrl}" class="jenkins-details__item">
         <div class="jenkins-details__item__icon">
           <l:icon src="${it.userAvatar}" class="jenkins-avatar" />
