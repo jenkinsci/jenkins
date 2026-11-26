@@ -97,6 +97,7 @@ import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.bind.WithWellKnownURL;
 import org.kohsuke.stapler.jelly.JellyCompatibleFacet;
 import org.kohsuke.stapler.lang.Klass;
 
@@ -149,7 +150,7 @@ import org.kohsuke.stapler.lang.Klass;
  * @author Kohsuke Kawaguchi
  * @see Describable
  */
-public abstract class Descriptor<T extends Describable<T>> implements Loadable, Saveable, OnMaster {
+public abstract class Descriptor<T extends Describable<T>> implements Loadable, Saveable, OnMaster, WithWellKnownURL {
     /**
      * The class being described by this descriptor.
      */
@@ -371,6 +372,19 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
      */
     public String getDescriptorUrl() {
         return "descriptorByName/" + getId();
+    }
+
+    /**
+     * The URL of this descriptor from the root, so that binding it to JavaScript (as {@code <st:bind>} does, to call its
+     * {@link org.kohsuke.stapler.bind.JavaScriptMethod}s) uses that URL rather than an entry in the session's
+     * {@link org.kohsuke.stapler.bind.BoundObjectTable}. A request through it then needs no session, and may be
+     * answered by any server.
+     *
+     * @since TODO
+     */
+    @Override
+    public String getWellKnownUrl() {
+        return "/" + getDescriptorUrl();
     }
 
     /**
