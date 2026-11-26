@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +20,8 @@ import org.apache.tools.tar.TarOutputStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -28,6 +29,7 @@ import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 // thread-1 writes to <base>/subdir/file1.txt, thread-2 swaps subdir for a symlink to <outside>
 @Issue("SECURITY-4248")
 @WithJenkins
+@DisabledOnOs(value = OS.WINDOWS, disabledReason = "Requires features not available on Windows")
 class Security4248Test {
 
     private File base;
@@ -36,7 +38,6 @@ class Security4248Test {
 
     @BeforeEach
     void setUp(JenkinsRule r) {
-        assumeFalse(Functions.isWindows());
         var home = r.jenkins.getRootDir();
         base = new File(home, "base").getAbsoluteFile();
         outside = new File(home, "outside").getAbsoluteFile();
