@@ -119,7 +119,6 @@
           <Class name="hudson.tasks.Maven$MavenInstallation"/>
           <Class name="hudson.tools.DownloadFromUrlInstaller$DescriptorImpl"/>
           <Class name="hudson.tools.ToolInstallation"/>
-          <Class name="hudson.triggers.SCMTrigger$DescriptorImpl"/>
           <Class name="hudson.util.AtomicFileWriter"/>
           <Class name="hudson.util.DirScanner$Full"/>
           <Class name="hudson.util.KeyedDataStorage"/>
