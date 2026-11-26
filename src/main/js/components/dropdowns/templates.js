@@ -359,8 +359,19 @@ function tryPost(element, opt, context) {
     fetch(context + opt.event.url, {
       method: "post",
       headers: crumb.wrap({}),
+    }).then((rsp) => {
+      sessionStorage.setItem(
+        "jenkins-dropdown-notification",
+        JSON.stringify({
+          message: rsp.ok
+            ? opt.displayName + ": Done."
+            : opt.displayName + ": Failed.",
+          type: rsp.ok ? "SUCCESS" : "ERROR",
+        }),
+      );
+
+      window.location.href = ".";
     });
-    window.location.href = ".";
   });
 }
 
