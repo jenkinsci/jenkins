@@ -227,10 +227,12 @@ class DashboardTest {
             assertThat(empty.querySelector(".app-dashboard-items__empty").getTextContent().trim(),
                     is("This " + type + " is empty"));
 
-            // Search results already list what is inside folders, so their folders don't expand
+            // Folders in search results expand like any other, including folders inside other folders
             HtmlPage results = (HtmlPage) wc.goTo("all/items?start=0&search=team", null);
             assertThat(rowLabels(results), hasItem("team"));
-            assertThat(results.querySelector(".app-dashboard-items__toggle"), nullValue());
+            assertThat(results.querySelector("[data-id='team'] .app-dashboard-items__toggle"), notNullValue());
+            HtmlPage nested = (HtmlPage) wc.goTo("all/items?start=0&search=nested", null);
+            assertThat(nested.querySelector("[data-id='team/nested'] .app-dashboard-items__toggle"), notNullValue());
         }
     }
 

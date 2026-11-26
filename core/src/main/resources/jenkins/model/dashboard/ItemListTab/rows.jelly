@@ -27,13 +27,12 @@ THE SOFTWARE.
   <!-- One page of items, at the top of the list or inside an expanded folder. The wrapper carries where the next
        page starts, if there is one, and a page of an expanded folder ends with a button that loads the next one.
        Items are named from the dashboard's owner or the expanded folder down, so search results from inside other
-       item groups name those groups. Folders can be expanded, except in search results, which already list what is
-       inside them. -->
+       item groups name those groups. Folders can be expanded, in search results too. -->
   <l:ajax>
     <div class="app-dashboard-items__page" data-next-start="${page.nextStart()}" data-count="${page.items().size()}">
       <j:forEach var="item" items="${page.items()}">
         <t:jobListItem job="${item}" relativeTo="${page.group()}"
-                       expandable="${!page.search() and it.isExpandable(item)}" />
+                       expandable="${it.isExpandable(item)}" />
       </j:forEach>
       <j:if test="${page.folder() != null}">
         <j:choose>

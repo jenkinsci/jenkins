@@ -228,8 +228,8 @@ public abstract class ItemListTab extends Tab {
         if (query != null && query.length() > MAX_QUERY_LENGTH) {
             query = query.substring(0, MAX_QUERY_LENGTH);
         }
-        return slice(query == null ? getItems() : search(query), start, after, PAGE_SIZE, query != null,
-                getDashboard().getOwner(), null);
+        return slice(query == null ? getItems() : search(query), start, after, PAGE_SIZE, getDashboard().getOwner(),
+                null);
     }
 
     /**
@@ -273,7 +273,7 @@ public abstract class ItemListTab extends Tab {
         }
         ItemGroup<?> group = (ItemGroup<?>) item;
         int size = Math.min(Math.max(start, CHILDREN_PAGE_SIZE), PAGE_SIZE);
-        return slice(group.getItems(), start, after, size, false, group, folder);
+        return slice(group.getItems(), start, after, size, group, folder);
     }
 
     /**
@@ -287,7 +287,7 @@ public abstract class ItemListTab extends Tab {
      * @param folder the full name of the expanded folder whose items these are, or {@code null}
      */
     private static @NonNull Page slice(@NonNull Iterable<? extends Item> source, int start, @CheckForNull String after,
-            int size, boolean search, @NonNull ItemGroup<?> group, @CheckForNull String folder) {
+            int size, @NonNull ItemGroup<?> group, @CheckForNull String folder) {
         String anchor = Util.fixEmpty(after);
         int from = Math.max(start, 0);
         // The page at the offset, used if the anchor isn't listed
@@ -331,7 +331,7 @@ public abstract class ItemListTab extends Tab {
         }
         int next = first + items.size();
         Integer remaining = more && countRest ? Math.max(index - next, 1) : null;
-        return new Page(items, more ? next : null, remaining, first == 0, search, group, folder);
+        return new Page(items, more ? next : null, remaining, first == 0, group, folder);
     }
 
     /**
@@ -377,11 +377,10 @@ public abstract class ItemListTab extends Tab {
      * @param remaining how many items are left after this page, or {@code null} if this is the last page or
      *     it isn't known
      * @param first whether this is the first page
-     * @param search whether the page holds search results
      * @param group the item group from which items are named
      * @param folder the full name of the expanded folder whose items these are, or {@code null} for the list itself
      */
     @Restricted(NoExternalUse.class)
     public record Page(@NonNull List<Item> items, @CheckForNull Integer nextStart, @CheckForNull Integer remaining,
-            boolean first, boolean search, @NonNull ItemGroup<?> group, @CheckForNull String folder) {}
+            boolean first, @NonNull ItemGroup<?> group, @CheckForNull String folder) {}
 }

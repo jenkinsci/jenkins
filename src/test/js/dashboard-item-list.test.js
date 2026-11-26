@@ -442,6 +442,29 @@ describe("dashboard item list", () => {
       );
     });
 
+    it("expands a folder in search results with all of its items", async () => {
+      const fetch = vi.fn((url) =>
+        response(
+          url.includes("folder=")
+            ? childPage(["team/a", "team/b"])
+            : folderPage(["team"]),
+        ),
+      );
+      const list = initItemList(root, { fetch, applySubtree: () => {} });
+
+      await list.search("team");
+      toggleOf("team").click();
+      await vi.waitFor(() =>
+        expect(labels(root)).toEqual(["team", "team/a", "team/b"]),
+      );
+
+      // The folder's items, not only those matching the search
+      expect(fetch).toHaveBeenLastCalledWith(
+        "/jenkins/all/items?start=0&folder=team",
+        expect.anything(),
+      );
+    });
+
     it("collapses and expands again without reloading", async () => {
       const fetch = vi.fn(() => response(page(["team/a"])));
       initItemList(root, { fetch });
