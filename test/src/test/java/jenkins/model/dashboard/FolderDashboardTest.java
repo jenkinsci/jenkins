@@ -389,6 +389,18 @@ class FolderDashboardTest {
     }
 
     @Test
+    void groupsWithoutAPrimaryViewHaveNoDashboard() throws Exception {
+        enableFlag("alice");
+        ComputedGroup group = j.jenkins.createProject(ComputedGroup.class, "viewless");
+        group.viewless = true;
+        assertThat(Dashboard.of(group), nullValue());
+        // Its context menu falls back to the item's own menu, rather than the dashboard's
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            wc.goTo("job/viewless/contextMenu", "application/json");
+        }
+    }
+
+    @Test
     void pluginTabsShowOnFoldersWhenTheyOptIn() throws Exception {
         enableFlag("alice");
         MockFolder team = createFolder(j.jenkins, "team");
@@ -530,6 +542,9 @@ class FolderDashboardTest {
             implements TopLevelItem, ItemGroup<TopLevelItem>, ViewGroup, StaplerFallback {
         private transient ListView view;
 
+        // Whether it has no views at all
+        private transient boolean viewless;
+
         ComputedGroup(ItemGroup<?> parent, String name) {
             super(parent, name);
         }
@@ -584,17 +599,17 @@ class FolderDashboardTest {
 
         @Override
         public Collection<View> getViews() {
-            return List.of(view());
+            return viewless ? List.of() : List.of(view());
         }
 
         @Override
         public View getView(String name) {
-            return view().getViewName().equals(name) ? view() : null;
+            return !viewless && view().getViewName().equals(name) ? view() : null;
         }
 
         @Override
         public View getPrimaryView() {
-            return view();
+            return viewless ? null : view();
         }
 
         @Override
@@ -620,7 +635,7 @@ class FolderDashboardTest {
             return (TopLevelItemDescriptor) Jenkins.get().getDescriptorOrDie(ComputedGroup.class);
         }
 
-        @TestExtension("emptyGroupThatUsersCannotAddItemsToShowsNoNewItemLink")
+        @TestExtension({"emptyGroupThatUsersCannotAddItemsToShowsNoNewItemLink", "groupsWithoutAPrimaryViewHaveNoDashboard"})
         public static final class DescriptorImpl extends TopLevelItemDescriptor {
             @Override
             public TopLevelItem newInstance(ItemGroup parent, String name) {

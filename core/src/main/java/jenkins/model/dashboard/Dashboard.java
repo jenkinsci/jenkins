@@ -91,10 +91,10 @@ public final class Dashboard extends Actionable {
 
     /**
      * The dashboard of an item group: the root dashboard for {@link Jenkins}, a dashboard limited to the group for
-     * another item group with views, otherwise {@code null}.
+     * another item group with a primary view, otherwise {@code null}.
      */
     public static @CheckForNull Dashboard of(@NonNull ItemGroup<?> group) {
-        return group instanceof ViewGroup ? new Dashboard(group) : null;
+        return group instanceof ViewGroup viewGroup && viewGroup.getPrimaryView() != null ? new Dashboard(group) : null;
     }
 
     /**
