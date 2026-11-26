@@ -39,7 +39,13 @@ THE SOFTWARE.
         <j:choose>
           <!-- A later page is empty if the items left were removed after the previous one -->
           <j:when test="${empty(page.items()) and page.first()}">
-            <p class="app-dashboard-items__empty">${%This folder is empty}</p>
+            <j:set var="typeName" value="${it.typeName(page.group())}" />
+            <p class="app-dashboard-items__empty">
+              <j:choose>
+                <j:when test="${typeName != null}">${%IsEmpty(typeName)}</j:when>
+                <j:otherwise>${%Nothing in here yet}</j:otherwise>
+              </j:choose>
+            </p>
           </j:when>
           <j:when test="${page.nextStart() != null}">
             <button type="button" class="jenkins-button jenkins-button--tertiary app-dashboard-items__more"

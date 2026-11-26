@@ -29,6 +29,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.AllView;
+import hudson.model.Describable;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
@@ -240,6 +241,14 @@ public abstract class ItemListTab extends Tab {
     }
 
     /**
+     * The name of the type of an item group, such as "Folder", for messages about it, or {@code null} if it has none.
+     */
+    @Restricted(NoExternalUse.class)
+    public @CheckForNull String typeName(@NonNull ItemGroup<?> group) {
+        return group instanceof Describable<?> describable ? describable.getDescriptor().getDisplayName() : null;
+    }
+
+    /**
      * Whether an item is a folder that can be expanded. Jobs that hold other jobs, such as matrix projects, open
      * their own page.
      */
@@ -291,10 +300,11 @@ public abstract class ItemListTab extends Tab {
         // the folder's size cannot be used, as it may include items the user cannot read.
         boolean complete = false;
         boolean countRest = folder != null && source instanceof Collection<?>;
-        for (Item item : source) {
-            if (complete && !countRest) {
-                break;
-            }
+        // Checking whether the page is complete before asking for another item, as a lazy source such as a search
+        // may go through many items to find the next one
+        Iterator<? extends Item> it = source.iterator();
+        while ((!complete || countRest) && it.hasNext()) {
+            Item item = it.next();
             if (!item.hasPermission(Item.READ)) {
                 continue;
             }

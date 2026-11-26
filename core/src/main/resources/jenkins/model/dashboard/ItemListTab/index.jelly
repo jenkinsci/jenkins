@@ -44,7 +44,7 @@ THE SOFTWARE.
         <div class="app-dashboard-items"
              data-items-url="${rootURL}/${it.dashboard.url}${it.urlName ?: 'defaultTab'}/items"
              data-load-failed="${%LoadFailed}"
-             data-folder-gone="${%FolderGone}"
+             data-item-gone="${%ItemGone}"
              data-try-again="${%Try again}"
              data-results="${%Results}"
              data-more-results="${%MoreResults}"

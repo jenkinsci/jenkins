@@ -146,7 +146,7 @@ export function initItemList(root, options = {}) {
     const message = document.createElement("span");
     message.textContent = retry
       ? root.dataset.loadFailed
-      : root.dataset.folderGone;
+      : root.dataset.itemGone;
     error.append(message);
     if (!retry) {
       place(error);

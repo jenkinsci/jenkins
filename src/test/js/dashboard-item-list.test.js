@@ -42,7 +42,7 @@ describe("dashboard item list", () => {
     };
     document.body.innerHTML = `
       <div class="app-dashboard-items" data-items-url="/jenkins/all/items"
-           data-load-failed="Couldn't load the items." data-folder-gone="This folder is no longer available." data-try-again="Try again"
+           data-load-failed="Couldn't load the items." data-item-gone="This item is no longer available." data-try-again="Try again"
            data-results="Results: {0}" data-more-results="Results: more than {0}" data-no-results="No results found">
         <div class="jenkins-search-container"><div class="jenkins-search"><input class="jenkins-search__input" /></div></div>
         <div id="dashboard-items-no-results" class="jenkins-hidden"></div>
@@ -581,7 +581,7 @@ describe("dashboard item list", () => {
       await list.toggle(toggleOf("team"));
 
       const error = root.querySelector(".app-dashboard-items__error");
-      expect(error.textContent).toBe("This folder is no longer available.");
+      expect(error.textContent).toBe("This item is no longer available.");
       expect(error.querySelector("button")).toBeNull();
       expect(toggleOf("team").getAttribute("aria-expanded")).toBe("false");
     });

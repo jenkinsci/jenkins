@@ -222,7 +222,10 @@ class DashboardTest {
             // Folders inside expanded folders expand too
             assertThat(second.querySelector("[data-id='team/nested'] .app-dashboard-items__toggle"), notNullValue());
             HtmlPage empty = (HtmlPage) wc.goTo("all/items?folder=team/nested", null);
-            assertThat(empty.querySelector(".app-dashboard-items__empty").getTextContent().trim(), is("This folder is empty"));
+            // Named after the type of the item group
+            String type = j.jenkins.getDescriptorOrDie(MockFolder.class).getDisplayName();
+            assertThat(empty.querySelector(".app-dashboard-items__empty").getTextContent().trim(),
+                    is("This " + type + " is empty"));
 
             // Search results already list what is inside folders, so their folders don't expand
             HtmlPage results = (HtmlPage) wc.goTo("all/items?start=0&search=team", null);
@@ -284,11 +287,11 @@ class DashboardTest {
         j.createFolder("empty");
         try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
             assertThat(wc.goTo("all/items?folder=empty&start=0", null).getWebResponse().getContentAsString(),
-                    containsString("This folder is empty"));
+                    containsString(" is empty"));
             // The items left after the previous page were removed meanwhile
             HtmlPage later = (HtmlPage) wc.goTo("all/items?folder=team&start=1&after=team/only", null);
             assertThat(rowLabels(later), empty());
-            assertThat(later.getWebResponse().getContentAsString(), not(containsString("This folder is empty")));
+            assertThat(later.getWebResponse().getContentAsString(), not(containsString("app-dashboard-items__empty")));
         }
     }
 
