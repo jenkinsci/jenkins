@@ -63,7 +63,7 @@ import org.kohsuke.stapler.StaplerResponse2;
  * this one when the flag is on. Tabs are reachable at {@code /<urlName>/} through {@link Jenkins#getDynamic(String)},
  * which consults them only after its own actions, so a tab cannot hide a root action.
  *
- * @since TODO
+ * @since 2.592
  */
 @Extension
 @Restricted(Beta.class)

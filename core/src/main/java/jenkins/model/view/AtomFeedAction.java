@@ -39,7 +39,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * App bar action that exposes the Atom feeds of a {@link View} in a dropdown.
  *
- * @since TODO
+ * @since 2.592
  */
 @Restricted(Beta.class)
 public final class AtomFeedAction implements Action {
