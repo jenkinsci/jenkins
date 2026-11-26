@@ -509,6 +509,32 @@ describe("dashboard item list", () => {
       expect(depths).toEqual(["1", "2"]);
     });
 
+    it("indents rows by at most a few levels", async () => {
+      const fetch = vi
+        .fn()
+        .mockReturnValueOnce(response(folderPage(["team/infra"])))
+        .mockReturnValueOnce(response(page(["team/infra/deploy"])));
+      initItemList(root, { fetch });
+
+      toggleOf("team").click();
+      await vi.waitFor(() => expect(toggleOf("team/infra")).not.toBeNull());
+      // As if team were nested four levels down
+      root.querySelector(".app-dashboard-items__children").dataset.depth = "4";
+      toggleOf("team/infra").click();
+      await vi.waitFor(() =>
+        expect(labels(root)).toContain("team/infra/deploy"),
+      );
+
+      const nested = root.querySelectorAll(".app-dashboard-items__children")[1];
+      expect(nested.dataset.depth).toBe("5");
+      expect(nested.style.getPropertyValue("--dashboard-items-depth")).toBe(
+        "4",
+      );
+      expect(
+        nested.style.getPropertyValue("--dashboard-items-narrow-depth"),
+      ).toBe("2");
+    });
+
     it("continues the top-level list after its own last row, not a folder's", async () => {
       const fetch = vi
         .fn()

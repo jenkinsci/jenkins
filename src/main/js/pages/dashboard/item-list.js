@@ -11,6 +11,12 @@ const CHILDREN_CLASS = "app-dashboard-items__children";
 const MORE_SELECTOR = ".app-dashboard-items__more";
 const ERROR_CLASS = "app-dashboard-items__error";
 const DEPTH_PROPERTY = "--dashboard-items-depth";
+const NARROW_DEPTH_PROPERTY = "--dashboard-items-narrow-depth";
+// The most levels rows are indented by, so that deeply nested rows keep room
+// for their names and actions, on wide and on narrow screens. Set here, as the
+// stylesheet can't use min(), which HtmlUnit can't parse.
+const MAX_DEPTH = 4;
+const MAX_NARROW_DEPTH = 2;
 // Start loading the next page this far before the end of the list scrolls into view
 const LOOKAHEAD = "600px";
 // Each search walks every folder on the server, so wait for typing to pause
@@ -416,9 +422,16 @@ export function initItemList(root, options = {}) {
         }
         // Each level is indented further than the one containing it
         const parent = row.parentElement.closest(`.${CHILDREN_CLASS}`);
-        const depth =
-          Number(parent?.style.getPropertyValue(DEPTH_PROPERTY) || 0) + 1;
-        created.style.setProperty(DEPTH_PROPERTY, String(depth));
+        const depth = Number(parent?.dataset.depth || 0) + 1;
+        created.dataset.depth = String(depth);
+        created.style.setProperty(
+          DEPTH_PROPERTY,
+          String(Math.min(depth, MAX_DEPTH)),
+        );
+        created.style.setProperty(
+          NARROW_DEPTH_PROPERTY,
+          String(Math.min(depth, MAX_NARROW_DEPTH)),
+        );
         appendChildren(created, page);
         row.after(created);
         button.setAttribute("aria-controls", created.id);

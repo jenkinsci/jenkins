@@ -390,13 +390,12 @@ div.listview-jobs {
   // further for each level, up to a limit, so deeply nested rows keep room
   // for their names and actions
   &__children {
-    --dashboard-items-indent: calc(
-      min(var(--dashboard-items-depth, 1), 4) * 1.5rem
-    );
+    // The script caps both depths
+    --dashboard-items-indent: calc(var(--dashboard-items-depth, 1) * 1.5rem);
 
     @media (width <= 800px) {
       --dashboard-items-indent: calc(
-        min(var(--dashboard-items-depth, 1), 2) * 0.75rem
+        var(--dashboard-items-narrow-depth, 1) * 0.75rem
       );
     }
 
