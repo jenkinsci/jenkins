@@ -73,7 +73,7 @@ THE SOFTWARE.
               </div>
             </j:if>
           </j:when>
-          <!-- A folder's description, as on the folder page without the dashboard -->
+          <!-- The owner's description, as on its page without the dashboard -->
           <j:when test="${!empty(dashboard.owner.description)}">
             <div id="description" class="app-dashboard-system-message">
               <j:out value="${app.markupFormatter.translate(dashboard.owner.description)}" />

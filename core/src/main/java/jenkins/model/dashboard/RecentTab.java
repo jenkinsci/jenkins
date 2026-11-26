@@ -73,7 +73,7 @@ import org.kohsuke.stapler.verb.GET;
  * the owner of the dashboard. Within each group, builds the current user started or contributed changes to come first.
  */
 @Restricted(NoExternalUse.class)
-public class RecentTab extends Tab implements Dashboard.ShownInFolders {
+public class RecentTab extends Tab implements Dashboard.ShownInItemGroups {
 
     static final int LIMIT = 50;
 
@@ -147,7 +147,7 @@ public class RecentTab extends Tab implements Dashboard.ShownInFolders {
     }
 
     /**
-     * The name of a job inside the dashboard's folder, without the names of that folder and the folders
+     * The name of a job inside the dashboard's owner, without the names of the owner and the item groups
      * containing it. At the root of Jenkins, its full display name.
      */
     @Restricted(NoExternalUse.class)
@@ -319,7 +319,7 @@ public class RecentTab extends Tab implements Dashboard.ShownInFolders {
 
     /**
      * Queued items in the dashboard that the current user can see. The queue checks the permission of each task, but
-     * not of the folders containing it.
+     * not of the item groups containing it.
      */
     private static List<Queue.Item> getQueued(Dashboard dashboard) {
         List<Queue.Item> result = new ArrayList<>();

@@ -33,11 +33,11 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Lists the items of the owner of the dashboard, like its "All" view. Searching looks through every folder inside
- * the owner.
+ * Lists the items of the owner of the dashboard, like its "All" view. Searching looks through every item group
+ * inside the owner.
  */
 @Restricted(NoExternalUse.class)
-public class AllTab extends ItemListTab implements Dashboard.ShownInFolders {
+public class AllTab extends ItemListTab implements Dashboard.ShownInItemGroups {
 
     public AllTab(@NonNull Dashboard dashboard) {
         super(dashboard);

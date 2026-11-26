@@ -35,7 +35,7 @@ THE SOFTWARE.
 
   <j:choose>
     <j:when test="${dashboard != null}">
-      <!-- The root URL, and the URL of a folder, show the dashboard; the view stays reachable at its own URL -->
+      <!-- The URL of the owner shows the dashboard; the view stays reachable at its own URL -->
       <st:include it="${dashboard}" page="index.jelly" />
     </j:when>
     <j:when test="${newDashboardPage}">

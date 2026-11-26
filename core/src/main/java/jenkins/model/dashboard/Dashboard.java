@@ -52,25 +52,28 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * The home page of the experimental dashboard, shown to users who have enabled
- * {@link NewDashboardPageUserExperimentalFlag} at the root URL, and at the URL of each {@link DashboardItemGroup},
- * such as a folder.
+ * {@link NewDashboardPageUserExperimentalFlag} at the root URL, and at the URL of each item group with views whose
+ * page is its {@linkplain ViewGroup#getPrimaryView() primary view}.
  *
  * <p>The page is made of {@link Tab}s. Plugins can add a tab by implementing
  * {@link jenkins.model.TransientActionFactory} for this type, typically returning an {@link ItemListTab}.
- * A tab shows on the root dashboard only, unless it implements {@link ShownInFolders}, which means that it limits
+ * A tab shows on the root dashboard only, unless it implements {@link ShownInItemGroups}, which means that it limits
  * what it shows to {@link #getOwner()}.
  * A dashboard is created for each request, so actions added with {@link #addAction(Action)} are lost; contribute
  * them with a {@link jenkins.model.TransientActionFactory} instead.
  *
- * <p>The root URL belongs to the {@linkplain Jenkins#getPrimaryView() primary view}, whose page hands over to
- * this one when the flag is on. Tabs are reachable at {@code /<urlName>/} through {@link Jenkins#getDynamic(String)},
- * which consults them only after its own actions, so a tab cannot hide a root action. A {@link DashboardItemGroup}
- * works the same way, under its own URL.
+ * <p>The root URL belongs to the primary view of Jenkins, whose page hands over to this one when the flag is on.
+ * Tabs are reachable at {@code /<urlName>/} through {@link Jenkins#getDynamic(String)}, which consults them only
+ * after its own actions, so a tab cannot hide a root action. Another item group works the same way under its own
+ * URL, if it hands the URL over to its primary view, typically through
+ * {@link org.kohsuke.stapler.StaplerFallback}: its page is the view's, and its tabs are reachable through
+ * {@link View#getDynamic(String)}, after its own actions and the view's.
  *
  * @since TODO
  */
@@ -78,7 +81,7 @@ import org.kohsuke.stapler.StaplerResponse2;
 public final class Dashboard extends Actionable {
 
     /**
-     * The item group whose dashboard this is: {@link Jenkins} or a {@link DashboardItemGroup}.
+     * The item group whose dashboard this is: {@link Jenkins} or another item group with views.
      */
     private final @NonNull ItemGroup<?> owner;
 
@@ -88,14 +91,14 @@ public final class Dashboard extends Actionable {
 
     /**
      * The dashboard of an item group: the root dashboard for {@link Jenkins}, a dashboard limited to the group for
-     * a {@link DashboardItemGroup}, otherwise {@code null}.
+     * another item group with views, otherwise {@code null}.
      */
     public static @CheckForNull Dashboard of(@NonNull ItemGroup<?> group) {
-        return group instanceof Jenkins || group instanceof DashboardItemGroup ? new Dashboard(group) : null;
+        return group instanceof ViewGroup ? new Dashboard(group) : null;
     }
 
     /**
-     * Whether the current user sees the dashboard at the root URL and at the URL of each {@link DashboardItemGroup}.
+     * Whether the current user sees the dashboard at the root URL and at the URLs of other item groups.
      */
     public static boolean isEnabled() {
         return new NewDashboardPageUserExperimentalFlag().getFlagValue();
@@ -103,7 +106,6 @@ public final class Dashboard extends Actionable {
 
     /**
      * Finds a tab of the dashboard of an item group for a URL token, if the current user sees the dashboard.
-     * For use from {@code getDynamic} of a {@link DashboardItemGroup}, after its own actions.
      *
      * @return the tab, or {@code null} if there is none, or the current user does not see the dashboard
      * @see #getTab(String)
@@ -117,7 +119,23 @@ public final class Dashboard extends Actionable {
     }
 
     /**
-     * The item group whose items this dashboard shows: {@link Jenkins} or a {@link DashboardItemGroup}.
+     * Finds a tab of the dashboard of a view's owner for a URL token, when the current request reached the view
+     * through a URL of its owner, as the owner's page is then the view's.
+     *
+     * @return the tab, or {@code null} if there is none, the view was reached through its own URL, or the current
+     *     user does not see the dashboard
+     */
+    @Restricted(NoExternalUse.class)
+    public static @CheckForNull Tab findTab(@NonNull View view, @NonNull String token) {
+        StaplerRequest2 request = Stapler.getCurrentRequest2();
+        if (request == null || !(view.getOwner() instanceof ItemGroup<?> group) || !isShownAtOwnerUrl(view, request)) {
+            return null;
+        }
+        return findTab(group, token);
+    }
+
+    /**
+     * The item group whose items this dashboard shows: {@link Jenkins} or another item group with views.
      */
     public @NonNull ItemGroup<?> getOwner() {
         return owner;
@@ -131,7 +149,7 @@ public final class Dashboard extends Actionable {
     }
 
     /**
-     * The prefix of the full names of the items inside {@link #getOwner()}, such as {@code folder/}, or
+     * The prefix of the full names of the items inside {@link #getOwner()}, such as {@code team/}, or
      * empty for the root, which contains every item.
      */
     @Restricted(NoExternalUse.class)
@@ -168,7 +186,7 @@ public final class Dashboard extends Actionable {
     }
 
     /**
-     * The page title: the display name, including the folders containing the owner.
+     * The page title: the display name, including the item groups containing the owner.
      */
     @Restricted(NoExternalUse.class)
     public String getFullDisplayName() {
@@ -182,7 +200,7 @@ public final class Dashboard extends Actionable {
 
     /**
      * The URL of the page, relative to the root URL: empty for the root, otherwise the URL of the owner,
-     * such as {@code job/folder/}.
+     * such as {@code job/team/}.
      */
     public String getUrl() {
         return isRoot() ? "" : getOwner().getUrl();
@@ -205,7 +223,7 @@ public final class Dashboard extends Actionable {
         boolean root = isRoot();
         return getActions(Tab.class).stream()
                 .filter(e -> e.getIconFileName() != null)
-                .filter(e -> root || e instanceof ShownInFolders)
+                .filter(e -> root || e instanceof ShownInItemGroups)
                 .toList();
     }
 
@@ -260,9 +278,9 @@ public final class Dashboard extends Actionable {
 
     /**
      * The dashboard to show on a view's page: the dashboard of the view's owner, when the request is for a URL of
-     * the owner itself, such as the root URL or {@code /view/all/job/folder/}, which the owner serves through its
+     * the owner itself, such as the root URL or {@code /view/all/job/team/}, which the owner serves through its
      * primary view. Otherwise {@code null}, such as for the view's own URL, {@code /view/all/} or
-     * {@code /job/folder/view/all/}.
+     * {@code /job/team/view/all/}.
      */
     @Restricted(NoExternalUse.class)
     public static @CheckForNull Dashboard forViewPage(@NonNull View view, @NonNull StaplerRequest2 request) {
@@ -289,14 +307,14 @@ public final class Dashboard extends Actionable {
     }
 
     /**
-     * Marks a tab that also shows on the dashboard of a {@link DashboardItemGroup}, such as a folder. Other tabs
-     * show on the root dashboard only, so a tab that lists things from across Jenkins doesn't show them in a folder.
+     * Marks a tab that also shows on the dashboards of item groups other than {@link Jenkins}. Other tabs show on
+     * the root dashboard only, so a tab that lists things from across Jenkins doesn't show them in an item group.
      *
      * <p>Such a tab must show only what is inside {@link Dashboard#getOwner()} of the dashboard it was created for,
      * for example by checking each item with {@link Dashboard#contains(Item)}, and must check that the current user
-     * can see each item and the folders containing it. Nothing checks this for it.
+     * can see each item and the item groups containing it.
      */
-    public interface ShownInFolders {}
+    public interface ShownInItemGroups {}
 
     /**
      * Lists the views of the owner, so they are one click away from the dashboard.

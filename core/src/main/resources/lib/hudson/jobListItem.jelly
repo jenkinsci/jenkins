@@ -31,8 +31,8 @@ THE SOFTWARE.
       The item to show.
     </st:attribute>
     <st:attribute name="relativeTo" type="hudson.model.ItemGroup">
-      If set, shows the item's name from this item group down, such as "folder » job" for an item inside a folder
-      inside it. Otherwise, shows the item's display name.
+      If set, shows the item's name from this item group down, such as "team » job" for an item inside an item
+      group inside it. Otherwise, shows the item's display name.
     </st:attribute>
   </st:documentation>
 

@@ -94,6 +94,7 @@ import jenkins.model.Badgeable;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.model.dashboard.Dashboard;
 import jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag;
 import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
@@ -647,7 +648,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
             if (url.equals(token))
                 return a;
         }
-        return null;
+        // The tabs of the dashboard that the owner's page shows for some users
+        return Dashboard.findTab(this, token);
     }
 
     /**

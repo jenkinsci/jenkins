@@ -90,7 +90,7 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
             .thenComparingInt(Ref::number);
 
     /**
-     * Keyed by job full name, in name order, so that the jobs inside a folder are next to each other. Changes to it
+     * Keyed by job full name, in name order, so that the jobs inside an item group are next to each other. Changes to it
      * and {@link #newestFirst} are made together, holding its lock.
      */
     private final ConcurrentNavigableMap<String, Ref> refs = new ConcurrentSkipListMap<>();
@@ -206,7 +206,7 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
     }
 
     /**
-     * The entries inside a folder, newest first. Rather than sorting them all, each is taken from a queue as it is
+     * The entries inside an item group, newest first. Rather than sorting them all, each is taken from a queue as it is
      * read, as reading usually stops after the first few.
      */
     private Iterable<Ref> newestFirstInside(String prefix) {
@@ -230,11 +230,11 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
     }
 
     /**
-     * The most recently completed runs of jobs inside a folder that the current user can see, newest first,
+     * The most recently completed runs of jobs inside an item group that the current user can see, newest first,
      * one per job.
      *
      * @param limit the maximum number of runs to return
-     * @param prefix the prefix of the full names of the jobs to include, such as {@code folder/}, or empty for
+     * @param prefix the prefix of the full names of the jobs to include, such as {@code team/}, or empty for
      *     every job
      */
     @NonNull

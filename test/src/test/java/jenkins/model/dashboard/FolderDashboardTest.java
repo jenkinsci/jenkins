@@ -52,6 +52,7 @@ import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.User;
 import hudson.model.View;
+import hudson.model.ViewGroup;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.util.OneShotEvent;
@@ -78,11 +79,10 @@ import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.StaplerFallback;
-import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse2;
 
 /**
- * The dashboard of a {@link DashboardItemGroup}, using a {@link MockFolder} that opts in.
+ * The dashboard of an item group other than {@link Jenkins}, using {@link MockFolder}, which hands its URL over to
+ * its primary view like the folders of plugins do.
  */
 @WithJenkins
 class FolderDashboardTest {
@@ -101,7 +101,7 @@ class FolderDashboardTest {
 
     @Test
     void folderShowsItsViewWithoutTheFlag() throws Exception {
-        DashboardFolder folder = createFolder(j.jenkins, "team");
+        MockFolder folder = createFolder(j.jenkins, "team");
         folder.createProject(FreeStyleProject.class, "p");
         try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
             HtmlPage page = wc.goTo("job/team/");
@@ -116,9 +116,9 @@ class FolderDashboardTest {
     @Test
     void folderShowsTheDashboardWithTheFlag() throws Exception {
         enableFlag("alice");
-        DashboardFolder folder = createFolder(j.jenkins, "team");
+        MockFolder folder = createFolder(j.jenkins, "team");
         folder.createProject(FreeStyleProject.class, "p");
-        DashboardFolder nested = createFolder(folder, "nested");
+        MockFolder nested = createFolder(folder, "nested");
         nested.createProject(FreeStyleProject.class, "inner");
         j.createFreeStyleProject("outside");
         try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
@@ -153,7 +153,7 @@ class FolderDashboardTest {
     @Test
     void folderShowsTheDashboardWhereverItIsReachedFrom() throws Exception {
         enableFlag("alice");
-        DashboardFolder folder = createFolder(j.jenkins, "team");
+        MockFolder folder = createFolder(j.jenkins, "team");
         folder.createProject(FreeStyleProject.class, "p");
         createFolder(folder, "nested").createProject(FreeStyleProject.class, "inner");
         try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
@@ -166,20 +166,9 @@ class FolderDashboardTest {
     }
 
     @Test
-    void foldersThatDoNotOptInShowTheirView() throws Exception {
-        enableFlag("alice");
-        MockFolder plain = j.createFolder("plain");
-        plain.createProject(FreeStyleProject.class, "p");
-        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
-            assertThat(wc.goTo("job/plain/").querySelector("[data-testid=dashboard-tabs]"), nullValue());
-        }
-        assertThat(Dashboard.of(plain), nullValue());
-    }
-
-    @Test
     void folderViewsAndOtherUrlsKeepWorkingWithTheFlag() throws Exception {
         enableFlag("admin");
-        DashboardFolder folder = createFolder(j.jenkins, "team");
+        MockFolder folder = createFolder(j.jenkins, "team");
         folder.createProject(FreeStyleProject.class, "p");
         ListView mine = new ListView("mine", folder);
         folder.addView(mine);
@@ -190,6 +179,11 @@ class FolderDashboardTest {
                 assertThat(view, page.querySelector("[data-testid=dashboard-tabs]"), nullValue());
             }
             assertThat(wc.goTo("job/team/view/All/").querySelector("a[href$='job/p/']"), notNullValue());
+
+            // The tabs are not reachable under a view's own URL
+            wc.setThrowExceptionOnFailingStatusCode(false);
+            assertThat(wc.goTo("job/team/view/mine/all/").getWebResponse().getStatusCode(), is(404));
+            wc.setThrowExceptionOnFailingStatusCode(true);
 
             // URLs served by the folder, and by the primary view through the fallback
             wc.goTo("job/team/configure");
@@ -203,7 +197,7 @@ class FolderDashboardTest {
     @Test
     void appBarHasTheFolderActionsAndViews() throws Exception {
         enableFlag("admin");
-        DashboardFolder folder = createFolder(j.jenkins, "team");
+        MockFolder folder = createFolder(j.jenkins, "team");
         folder.createProject(FreeStyleProject.class, "p");
         folder.addView(new ListView("mine", folder));
         try (JenkinsRule.WebClient wc = j.createWebClient().login("admin")) {
@@ -238,12 +232,12 @@ class FolderDashboardTest {
     @Test
     void recentTabListsOnlyBuildsInsideTheFolder() throws Exception {
         enableFlag("alice");
-        DashboardFolder team = createFolder(j.jenkins, "team");
+        MockFolder team = createFolder(j.jenkins, "team");
         FreeStyleProject web = team.createProject(FreeStyleProject.class, "web");
-        DashboardFolder backend = createFolder(team, "backend");
+        MockFolder backend = createFolder(team, "backend");
         FreeStyleProject api = backend.createProject(FreeStyleProject.class, "api");
         // Its name starts with the name of the other folder
-        DashboardFolder teamB = createFolder(j.jenkins, "team-b");
+        MockFolder teamB = createFolder(j.jenkins, "team-b");
         FreeStyleProject mobile = teamB.createProject(FreeStyleProject.class, "mobile");
         FreeStyleProject root = j.createFreeStyleProject("root");
         for (FreeStyleProject p : List.of(web, api, mobile, root)) {
@@ -315,10 +309,10 @@ class FolderDashboardTest {
     @Test
     void queuedPartsOfJobsAreNamedFromTheFolderDown() throws Exception {
         enableFlag("alice");
-        DashboardFolder team = createFolder(j.jenkins, "team");
-        DashboardFolder backend = createFolder(team, "backend");
+        MockFolder team = createFolder(j.jenkins, "team");
+        MockFolder backend = createFolder(team, "backend");
         FreeStyleProject api = backend.createProject(FreeStyleProject.class, "api");
-        DashboardFolder other = createFolder(j.jenkins, "other");
+        MockFolder other = createFolder(j.jenkins, "other");
         j.jenkins.getQueue().schedule2(new PartOfJob(api, j.jenkins.getLabel("no-such-agent")), 0);
         try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
             assertThat(sectionLabels(wc.goTo("job/team/"), "queued"), contains("backend » api » part"));
@@ -332,7 +326,7 @@ class FolderDashboardTest {
 
     @Test
     void recentRunsAreScopedToTheFolder() throws Exception {
-        DashboardFolder team = createFolder(j.jenkins, "team");
+        MockFolder team = createFolder(j.jenkins, "team");
         FreeStyleProject inside = team.createProject(FreeStyleProject.class, "inside");
         FreeStyleProject outside = j.createFreeStyleProject("team-outside");
         j.buildAndAssertSuccess(inside);
@@ -344,8 +338,8 @@ class FolderDashboardTest {
     @Test
     void allTabSearchIsScopedToTheFolder() throws Exception {
         enableFlag("bob");
-        DashboardFolder team = createFolder(j.jenkins, "team");
-        DashboardFolder infra = createFolder(team, "infra");
+        MockFolder team = createFolder(j.jenkins, "team");
+        MockFolder infra = createFolder(team, "infra");
         infra.createProject(FreeStyleProject.class, "deploy-prod");
         FreeStyleProject secret = infra.createProject(FreeStyleProject.class, "deploy-secret");
         team.createProject(FreeStyleProject.class, "build");
@@ -373,10 +367,10 @@ class FolderDashboardTest {
     @Test
     void recentTabHidesBuildsTheUserCannotRead() throws Exception {
         enableFlag("bob");
-        DashboardFolder team = createFolder(j.jenkins, "team");
+        MockFolder team = createFolder(j.jenkins, "team");
         FreeStyleProject visible = team.createProject(FreeStyleProject.class, "visible");
         FreeStyleProject hidden = team.createProject(FreeStyleProject.class, "hidden");
-        DashboardFolder closed = createFolder(j.jenkins, "closed");
+        MockFolder closed = createFolder(j.jenkins, "closed");
         closed.createProject(FreeStyleProject.class, "inside");
         j.buildAndAssertSuccess(visible);
         j.buildAndAssertSuccess(hidden);
@@ -397,7 +391,7 @@ class FolderDashboardTest {
     @Test
     void pluginTabsShowOnFoldersWhenTheyOptIn() throws Exception {
         enableFlag("alice");
-        DashboardFolder team = createFolder(j.jenkins, "team");
+        MockFolder team = createFolder(j.jenkins, "team");
         team.createProject(FreeStyleProject.class, "p");
         try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
             assertThat(tabNames(wc.goTo("")), contains("Recent", "All", "Root only", "Everywhere"));
@@ -412,11 +406,11 @@ class FolderDashboardTest {
         }
     }
 
-    private DashboardFolder createFolder(ItemGroup<?> parent, String name) throws Exception {
+    private MockFolder createFolder(ItemGroup<?> parent, String name) throws Exception {
         if (parent instanceof MockFolder folder) {
-            return folder.createProject(DashboardFolder.class, name);
+            return folder.createProject(MockFolder.class, name);
         }
-        return j.jenkins.createProject(DashboardFolder.class, name);
+        return j.createFolder(name);
     }
 
     private void enableFlag(String user) throws Exception {
@@ -470,30 +464,6 @@ class FolderDashboardTest {
             started.signal();
             release.block();
             return true;
-        }
-    }
-
-    /**
-     * A folder that shows the dashboard, wired up as {@link DashboardItemGroup} describes.
-     */
-    public static final class DashboardFolder extends MockFolder implements DashboardItemGroup {
-
-        DashboardFolder(ItemGroup<?> parent, String name) {
-            super(parent, name);
-        }
-
-        @Override
-        public Object getDynamic(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
-            Object result = super.getDynamic(token, req, rsp);
-            return result != null ? result : Dashboard.findTab(this, token);
-        }
-
-        @TestExtension
-        public static final class DescriptorImpl extends TopLevelItemDescriptor {
-            @Override
-            public TopLevelItem newInstance(ItemGroup parent, String name) {
-                return new DashboardFolder(parent, name);
-            }
         }
     }
 
@@ -552,11 +522,12 @@ class FolderDashboardTest {
     }
 
     /**
-     * A group that shows the dashboard, whose items users cannot add themselves, and whose primary view is not an
-     * "All" view, like a multibranch project.
+     * A group whose items users cannot add themselves, and whose primary view is not an "All" view, like a
+     * multibranch project. Like a folder, it hands its URL over to its primary view, which is all it takes to show
+     * the dashboard.
      */
     public static final class ComputedGroup extends AbstractItem
-            implements TopLevelItem, ItemGroup<TopLevelItem>, DashboardItemGroup, StaplerFallback {
+            implements TopLevelItem, ItemGroup<TopLevelItem>, ViewGroup, StaplerFallback {
         private transient ListView view;
 
         ComputedGroup(ItemGroup<?> parent, String name) {
@@ -568,12 +539,6 @@ class FolderDashboardTest {
                 view = new ListView("branches", this);
             }
             return view;
-        }
-
-        @Override
-        public Object getDynamic(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
-            Object result = super.getDynamic(token, req, rsp);
-            return result != null ? result : Dashboard.findTab(this, token);
         }
 
         @Override
@@ -691,7 +656,7 @@ class FolderDashboardTest {
         }
     }
 
-    public static final class EverywhereTab extends ItemListTab implements Dashboard.ShownInFolders {
+    public static final class EverywhereTab extends ItemListTab implements Dashboard.ShownInItemGroups {
         EverywhereTab(Dashboard dashboard) {
             super(dashboard);
         }
