@@ -29,9 +29,11 @@ import jenkins.model.RenameAction;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.htmlunit.util.NameValuePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -192,6 +194,36 @@ class AbstractItemTest {
         assertThat(p.getName(), equalTo("bar"));
     }
 
+    @Issue("https://github.com/jenkinsci/jenkins/issues/27898")
+    @Test
+    void deleteStaysOnRefererWhenNoViewInPath() throws Exception {
+        j.createFreeStyleProject("foo");
+        WebResponse rsp = postDelete("foo", j.getURL() + "all/");
+        assertNull(j.jenkins.getItem("foo"));
+        assertEquals(HttpURLConnection.HTTP_MOVED_TEMP, rsp.getStatusCode());
+        assertEquals(j.getURL() + "all/", rsp.getResponseHeaderValue("Location"));
+    }
+
+    @Issue("https://github.com/jenkinsci/jenkins/issues/27898")
+    @Test
+    void deleteIgnoresRefererOfDeletedItem() throws Exception {
+        j.createFreeStyleProject("foo");
+        WebResponse rsp = postDelete("foo", j.getURL() + "job/foo/");
+        assertNull(j.jenkins.getItem("foo"));
+        assertEquals(HttpURLConnection.HTTP_MOVED_TEMP, rsp.getStatusCode());
+        assertTrue(rsp.getResponseHeaderValue("Location").endsWith(j.contextPath + "/"));
+    }
+
+    @Issue("https://github.com/jenkinsci/jenkins/issues/27898")
+    @Test
+    void deleteIgnoresForeignReferer() throws Exception {
+        j.createFreeStyleProject("foo");
+        WebResponse rsp = postDelete("foo", "https://evil.example.com/all/");
+        assertNull(j.jenkins.getItem("foo"));
+        assertEquals(HttpURLConnection.HTTP_MOVED_TEMP, rsp.getStatusCode());
+        assertTrue(rsp.getResponseHeaderValue("Location").endsWith(j.contextPath + "/"));
+    }
+
     private String checkNameAndReturnError(AbstractItem i, String newName) {
         FormValidation fv = i.doCheckNewName(newName);
         if (FormValidation.Kind.OK.equals(fv.kind)) {
@@ -199,6 +231,15 @@ class AbstractItemTest {
         } else {
             return fv.getMessage();
         }
+    }
+
+    private WebResponse postDelete(String jobName, String referer) throws Exception {
+        WebClient w = j.createWebClient();
+        w.getOptions().setRedirectEnabled(false);
+        w.setThrowExceptionOnFailingStatusCode(false);
+        WebRequest wr = new WebRequest(w.createCrumbedUrl("job/" + jobName + "/doDelete"), HttpMethod.POST);
+        wr.setAdditionalHeader("Referer", referer);
+        return w.getPage(wr).getWebResponse();
     }
 
     private String getPath(URL u) {
