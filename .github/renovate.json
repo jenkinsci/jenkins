@@ -66,6 +66,15 @@
     },
     {
       "customType": "regex",
+      "managerFilePatterns": ["/pom.xml/"],
+      "matchStrings": [
+        "<corepack.version>(?<currentValue>.*?)</corepack.version>"
+      ],
+      "depNameTemplate": "corepack",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
       "managerFilePatterns": ["/ath.sh/"],
       "matchStrings": ["export ATH_VERSION=(?<currentValue>.*?)\n"],
       "depNameTemplate": "jenkins/ath",

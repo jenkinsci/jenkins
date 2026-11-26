@@ -81,6 +81,16 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     }
 
     /**
+     * Short secondary text shown next to this link in search results.
+     *
+     * @return the text, or {@code null} for none
+     * @since TODO
+     */
+    public @CheckForNull String getSearchDescription() {
+        return null;
+    }
+
+    /**
      * {@inheritDoc}
      *
      * <p>

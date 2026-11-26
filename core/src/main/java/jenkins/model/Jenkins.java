@@ -279,6 +279,8 @@ import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.install.InstallState;
 import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
+import jenkins.model.dashboard.Dashboard;
+import jenkins.search.SearchItemProvider;
 import jenkins.security.ClassFilterImpl;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
@@ -2425,6 +2427,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         }));
 
+        for (SearchItemProvider provider : SearchItemProvider.all()) {
+            try {
+                provider.getSearchItems().forEach(builder::add);
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.WARNING, "Failed to get search items from " + provider.getClass().getName(), e);
+            }
+        }
+
         builder.add(new CollectionSearchIndex<TopLevelItem>() {
                     @Override
                     protected SearchItem get(String key) { return getItemByFullName(key, TopLevelItem.class); }
@@ -2467,13 +2477,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
                     @Override
                     protected Collection<Computer> all() { return getComputersCollection(); }
-                })
-                .add(new CollectionSearchIndex() { // for users
-                    @Override
-                    protected User get(String key) { return User.get(key, false); }
-
-                    @Override
-                    protected Collection<User> all() { return User.getAll(); }
                 })
                 .add(new CollectionSearchIndex() { // for views
                     @Override
@@ -3205,7 +3208,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Like {@link #getItemByFullName(String, Class)}, but returns null instead of throwing {@link AccessDeniedException}.
-     * @since TODO
+     * @since 2.591
      */
     public @CheckForNull <T extends Item> T getItemByFullNameOrNull(@NonNull String fullName, Class<T> type) {
         try {
@@ -3217,7 +3220,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Like {@link #getItemByFullName(String)}, but returns null instead of throwing {@link AccessDeniedException}.
-     * @since TODO
+     * @since 2.591
      */
     public @CheckForNull Item getItemByFullNameOrNull(@NonNull String fullName) {
         return getItemByFullNameOrNull(fullName, Item.class);
@@ -3225,7 +3228,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Like {@link #getItem(String, Item, Class)}, but returns null instead of throwing {@link AccessDeniedException}.
-     * @since TODO
+     * @since 2.591
      */
     public @CheckForNull <T extends Item> T getItemOrNull(
             @NonNull String pathName, Item context, @NonNull Class<T> type) {
@@ -4066,6 +4069,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         for (Action a : getManagementLinks())
             if (Objects.equals(a.getUrlName(), token))
                 return a;
+        if (Dashboard.isEnabled()) {
+            return Dashboard.get().getTab(token);
+        }
         return null;
     }
 

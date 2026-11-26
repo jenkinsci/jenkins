@@ -29,7 +29,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <l:layout>
+  <l:layout title="${it.run.fullDisplayName} ${%Recorded Fingerprints}">
     <st:include it="${it.run}" page="sidepanel.jelly"/>
     <l:main-panel>
       <h1>

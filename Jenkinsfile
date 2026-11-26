@@ -81,7 +81,7 @@ axes.values().combinations {
 
         def tmpDir = pwd(tmp: true)
         def changelistF = "${tmpDir}/changelist"
-        def m2repo = "${tmpDir}/m2repo"
+        def m2repo = "${env.HOME}/.m2/repository"
         def session
 
         // Now run the actual build.

@@ -22,6 +22,9 @@ module.exports = (env, argv) => ({
       path.join(__dirname, "src/main/js/pages/computer-set"),
     ],
     "pages/dashboard": [path.join(__dirname, "src/main/js/pages/dashboard")],
+    "pages/dashboard/home": [
+      path.join(__dirname, "src/main/js/pages/dashboard/home.js"),
+    ],
     "pages/manage-jenkins/system-information": [
       path.join(
         __dirname,
@@ -163,7 +166,7 @@ module.exports = (env, argv) => ({
       chunks: "async",
       cacheGroups: {
         commons: {
-          test: /[\\/]node_modules[\\/]/,
+          test: /[\\/]node_modules[\\/](?!(jquery|handlebars)[\\/])/,
           name: "vendors",
           chunks: "all",
         },

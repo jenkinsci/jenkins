@@ -173,6 +173,57 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     protected transient volatile int nextBuildNumber = 1;
 
     /**
+     * Guards read-modify-write access to {@link #nextBuildNumber}, instead of synchronizing on
+     * {@code this}. Build number assignment happens on every build, from {@link Executor#run}
+     * while it holds {@link Queue#lock}; synchronizing on the job's own monitor there would risk
+     * a lock-ordering deadlock against any code that acquires {@link Queue#lock} while already
+     * holding that monitor. This dedicated lock is never needed by anything
+     * that also needs {@link Queue#lock}, so it carries no equivalent risk -- but only as long as
+     * nothing to do with it ever has to fall back to synchronizing on {@code this}, which is why
+     * this is a field initializer (always run for normally-constructed jobs) rather than lazily
+     * created on first use: a lazy-init fallback would itself need to synchronize on {@code this}
+     * for a newly constructed job's first build, recreating the exact hazard this exists to avoid.
+     *
+     * <p>Deliberately not {@code final}: XStream deserialization (loading a job from
+     * {@code config.xml}, including {@link #onCopiedFrom}) bypasses the constructor and field
+     * initializers entirely, which would leave this {@code null} for existing jobs predating this
+     * field. {@link #onLoad} and {@link #onCopiedFrom} each fix it up with a plain, unsynchronized
+     * null check -- safe because neither runs concurrently with a build of the same job, the same
+     * way {@link #onLoad} already fixes up {@link #properties} for objects that predate that field.
+     *
+     * <p>Lock order: {@link AbstractItem#renameTo} takes this inside the job's own monitor (see
+     * {@link #getRenameLock}), so code holding this lock must never acquire the job's or its parent's
+     * monitor, nor {@link Queue#lock}.
+     *
+     * <p>{@code @XStreamNotDeserializable} even though {@code RobustReflectionConverter} already
+     * refuses by default to deserialize into any {@code Object}-typed field (it would throw rather
+     * than replace this instance, unless the site has opted into the {@code ALLOW_ALL_OBJECT_FIELDS}
+     * escape hatch): that default-refusal depends on a system property staying at its default, so
+     * this annotation is a second, independent line of defense -- consistent with the two counters
+     * below, which need it for the more direct reason that they aren't Object-typed and so have no
+     * such built-in refusal at all.
+     */
+    @XStreamNotDeserializable
+    private transient volatile Object nextBuildNumberLock = new Object();
+
+    /**
+     * Highest number handed out by {@link #assignBuildNumber} since this object was created or loaded,
+     * guarded by {@link #nextBuildNumberLock}. A build is not visible to {@link #getLastBuild} until
+     * after its number is assigned, so {@link #updateNextBuildNumber} also checks this to avoid
+     * rewinding onto a number that a build being created already holds.
+     */
+    @XStreamNotDeserializable
+    private transient int highestAssignedBuildNumber;
+
+    /**
+     * Builds currently inside {@link LazyBuildMixIn#newBuild}, guarded by {@link #nextBuildNumberLock}.
+     * Such a build has already resolved its directory from the job's name but may not have created it
+     * yet, so {@link #renameTo} refuses to move the job meanwhile.
+     */
+    @XStreamNotDeserializable
+    private transient int buildsBeingCreated;
+
+    /**
      * Newly copied jobs get this flag set, so that Hudson doesn't try to run the job until its configuration
      * is saved once.
      */
@@ -222,6 +273,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             throws IOException {
         super.onLoad(parent, name);
 
+        if (nextBuildNumberLock == null) { // XStream deserialization bypasses the field initializer
+            nextBuildNumberLock = new Object();
+        }
+
         // see https://github.com/jenkinsci/jenkins/pull/10456#issuecomment-2748112449
         // This code can be deleted after several Jenkins releases,
         // when it is likely that everyone is running a version equal or higher to this version.
@@ -236,19 +291,21 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         TextFile f = getNextBuildNumberFile();
         if (f.exists()) {
             try {
-                synchronized (this) {
+                synchronized (nextBuildNumberLock) {
                     this.nextBuildNumber = Integer.parseInt(f.readTrim());
                 }
             } catch (NumberFormatException e) {
                 LOGGER.log(Level.WARNING, "Corruption in {0}: {1}", new Object[] {f, e});
                 RunT lB = getLastBuild();
-                synchronized (this) {
+                synchronized (nextBuildNumberLock) {
                     this.nextBuildNumber = lB != null ? lB.getNumber() + 1 : 1;
                 }
                 saveNextBuildNumber();
             }
         } else if (nextBuildNumber == 0) {
-            nextBuildNumber = 1;
+            synchronized (nextBuildNumberLock) {
+                nextBuildNumber = 1;
+            }
         }
 
         if (properties == null) // didn't exist < 1.72
@@ -259,10 +316,18 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Override
+    @SuppressFBWarnings(
+            value = "ML_SYNC_ON_UPDATED_FIELD",
+            justification = "The field is only null right after XStream deserialization, and a copied job cannot be building yet; see nextBuildNumberLock.")
     public void onCopiedFrom(Item src) {
         super.onCopiedFrom(src);
-        synchronized (this) {
+        if (nextBuildNumberLock == null) { // XStream deserialization bypasses the field initializer
+            nextBuildNumberLock = new Object();
+        }
+        synchronized (nextBuildNumberLock) {
             this.nextBuildNumber = 1; // reset the next build number
+        }
+        synchronized (this) {
             this.holdOffBuildUntilUserSave = true;
             this.holdOffBuildUntilSave = this.holdOffBuildUntilUserSave;
         }
@@ -292,11 +357,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return holdOffBuildUntilSave;
     }
 
-    protected synchronized void saveNextBuildNumber() throws IOException {
-        if (nextBuildNumber == 0) { // JENKINS-3361
-            nextBuildNumber = 1;
+    protected void saveNextBuildNumber() throws IOException {
+        synchronized (nextBuildNumberLock) {
+            if (nextBuildNumber == 0) { // JENKINS-3361
+                nextBuildNumber = 1;
+            }
+            getNextBuildNumberFile().write(String.valueOf(nextBuildNumber) + '\n');
         }
-        getNextBuildNumberFile().write(String.valueOf(nextBuildNumber) + '\n');
     }
 
     @Exported
@@ -306,8 +373,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * If this job is in the build queue, return its item.
+     * @return the queue item, or {@code null} if this job is not queued
      */
     @Exported
+    @CheckForNull
     public Queue.Item getQueueItem() {
         return null;
     }
@@ -355,7 +424,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see BuildNumberAssigner
      */
     public int assignBuildNumber() throws IOException {
-        return ExtensionList.lookupFirst(BuildNumberAssigner.class).assignBuildNumber(this, this::saveNextBuildNumber);
+        BuildNumberAssigner assigner = ExtensionList.lookupFirst(BuildNumberAssigner.class);
+        // Held across the assigner so that updateNextBuildNumber can never observe a number that has
+        // been handed out but not yet recorded, whichever assigner is in use.
+        synchronized (nextBuildNumberLock) {
+            int r = assigner.assignBuildNumber(this, this::saveNextBuildNumber);
+            highestAssignedBuildNumber = Math.max(highestAssignedBuildNumber, r);
+            return r;
+        }
     }
 
     /**
@@ -365,6 +441,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public interface BuildNumberAssigner extends ExtensionPoint {
         /**
          * Implementation of {@link Job#assignBuildNumber}.
+         * Always called with the job's private build-number lock held (and normally, from an executor,
+         * with {@link Queue#lock} held too), so it must not call anything that synchronizes on the job
+         * or its parent (such as {@link Job#save}), or it can deadlock against a concurrent rename.
          */
         int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException;
 
@@ -383,7 +462,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public static final class DefaultBuildNumberAssigner implements BuildNumberAssigner {
         @Override
         public int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException {
-            synchronized (job) {
+            // Not synchronized on `job` itself: this runs from Executor#run while Queue#lock is
+            // held, and the job's own monitor can be held elsewhere (e.g. during doConfigSubmit)
+            // by code that in turn needs Queue#lock -- see Job#nextBuildNumberLock.
+            synchronized (job.nextBuildNumberLock) {
                 int r = job.nextBuildNumber++;
                 saveNextBuildNumber.call();
                 return r;
@@ -457,14 +539,21 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Much of Hudson assumes that the build number is unique and monotonic, so
      * this method can only accept a new value that's bigger than
      * {@link #getLastBuild()} returns. Otherwise it'll be no-op.
+     * It is likewise a no-op for any value not bigger than the highest number already handed out by
+     * {@link #assignBuildNumber} since this job was loaded, even if that build was never recorded.
      *
      * @since 1.199 (before that, this method was package private.)
      */
-    public synchronized void updateNextBuildNumber(int next) throws IOException {
+    public void updateNextBuildNumber(int next) throws IOException {
+        // Read outside the lock: it may lazy-load builds (running arbitrary onLoad code), and a stale
+        // value is harmless because every number assigned since load is covered by highestAssignedBuildNumber.
         RunT lb = getLastBuild();
-        if (lb != null ?  next > lb.getNumber() : next > 0) {
-            this.nextBuildNumber = next;
-            saveNextBuildNumber();
+        synchronized (nextBuildNumberLock) {
+            int floor = Math.max(lb != null ? lb.getNumber() : 0, highestAssignedBuildNumber);
+            if (next > floor) {
+                this.nextBuildNumber = next;
+                saveNextBuildNumber();
+            }
         }
     }
 
@@ -481,6 +570,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns the configured build discarder for this job, via {@link BuildDiscarderProperty}, or null if none.
      */
+    @CheckForNull
     public synchronized BuildDiscarder getBuildDiscarder() {
         BuildDiscarderProperty prop = _getProperty(BuildDiscarderProperty.class);
         return prop != null ? prop.getStrategy() : /* settings compatibility */ logRotator;
@@ -504,6 +594,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *      Use {@link #getBuildDiscarder()}.
      */
     @Deprecated
+    @CheckForNull
     public LogRotator getLogRotator() {
         BuildDiscarder buildDiscarder = getBuildDiscarder();
         return buildDiscarder instanceof LogRotator ? (LogRotator) buildDiscarder : null;
@@ -594,9 +685,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Removes the property of the given type.
      *
      * @return
-     *      The property that was just removed.
+     *      The property that was just removed, or {@code null} if no property of this type was configured.
      * @since 1.279
      */
+    @CheckForNull
     public <T extends JobProperty> T removeProperty(Class<T> clazz) throws IOException {
         for (JobProperty<? super JobT> p : properties) {
             if (clazz.isInstance(p)) {
@@ -632,6 +724,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Gets the specific property, or null if the property is not configured for
      * this job.
      */
+    @CheckForNull
     public <T extends JobProperty> T getProperty(Class<T> clazz) {
         if (clazz == BuildDiscarderProperty.class && logRotator != null) {
             return clazz.cast(new BuildDiscarderProperty(logRotator));
@@ -639,6 +732,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return _getProperty(clazz);
     }
 
+    @CheckForNull
     private <T extends JobProperty> T _getProperty(Class<T> clazz) {
         for (JobProperty p : properties) {
             if (clazz.isInstance(p))
@@ -650,8 +744,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Bind {@link JobProperty}s to URL spaces.
      *
+     * @return the property with the given class name, or {@code null} if none is configured
      * @since 1.403
      */
+    @CheckForNull
     public JobProperty getProperty(String className) {
         for (JobProperty p : properties)
             if (p.getClass().getName().equals(className))
@@ -710,6 +806,37 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
         }
     };
+
+    /**
+     * Build-number assignment writes {@code nextBuildNumber} into the root directory under
+     * {@link #nextBuildNumberLock} rather than this job's monitor, so a rename must also hold that
+     * lock while moving the directory, or its fallback copy could overwrite a freshly saved number.
+     */
+    @Override
+    Object getRenameLock() {
+        return nextBuildNumberLock;
+    }
+
+    @Override
+    void checkRootDirMovable() {
+        if (buildsBeingCreated > 0) {
+            throw new Failure(Messages.Job_NoRenameWhileBuilding());
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void beginBuildCreation() {
+        synchronized (nextBuildNumberLock) {
+            buildsBeingCreated++;
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void endBuildCreation() {
+        synchronized (nextBuildNumberLock) {
+            buildsBeingCreated--;
+        }
+    }
 
     /**
      * Renames a job.
@@ -825,8 +952,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Looks up a build by its ID.
+     * @return the build, or {@code null} if no build has this ID
      * @see LazyBuildMixIn#getBuild
      */
+    @CheckForNull
     public RunT getBuild(String id) {
         for (RunT r : _getRuns().values()) {
             if (r.getId().equals(id))
@@ -842,6 +971,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see Run#getNumber()
      * @see LazyBuildMixIn#getBuildByNumber
      */
+    @CheckForNull
     public RunT getBuildByNumber(int n) {
         return _getRuns().get(n);
     }
@@ -877,8 +1007,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
+     * @return the oldest build at or after {@code n}, or {@code null} if none exists
      * @see LazyBuildMixIn#getNearestBuild
      */
+    @CheckForNull
     public RunT getNearestBuild(int n) {
         SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n - 1); // the map should
                                                                           // include n, so n-1
@@ -892,8 +1024,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
+     * @return the newest build at or before {@code n}, or {@code null} if none exists
      * @see LazyBuildMixIn#getNearestOldBuild
      */
+    @CheckForNull
     public RunT getNearestOldBuild(int n) {
         SortedMap<Integer, ? extends RunT> m = _getRuns().tailMap(n);
         if (m.isEmpty())
@@ -905,6 +1039,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @since 2.475
      */
     @Override
+    @CheckForNull
     public Object getDynamic(String token, StaplerRequest2 req,
                              StaplerResponse2 rsp) {
         try {
@@ -966,11 +1101,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     protected abstract void removeRun(RunT run);
 
     /**
-     * Returns the newest build.
+     * Returns the newest build, or {@code null} if there are no builds.
      * @see LazyBuildMixIn#getLastBuild
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastBuild() {
         SortedMap<Integer, ? extends RunT> runs = _getRuns();
 
@@ -980,11 +1116,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Returns the oldest build in the record.
+     * Returns the oldest build in the record, or {@code null} if there are no builds.
      * @see LazyBuildMixIn#getFirstBuild
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getFirstBuild() {
         SortedMap<Integer, ? extends RunT> runs = _getRuns();
 
@@ -1001,6 +1138,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastSuccessfulBuild() {
         return (RunT) PeepholePermalink.LAST_SUCCESSFUL_BUILD.resolve(this);
     }
@@ -1011,6 +1149,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastUnsuccessfulBuild() {
         return (RunT) PeepholePermalink.LAST_UNSUCCESSFUL_BUILD.resolve(this);
     }
@@ -1021,6 +1160,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastUnstableBuild() {
         return (RunT) PeepholePermalink.LAST_UNSTABLE_BUILD.resolve(this);
     }
@@ -1031,6 +1171,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastStableBuild() {
         return (RunT) PeepholePermalink.LAST_STABLE_BUILD.resolve(this);
     }
@@ -1040,6 +1181,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastFailedBuild() {
         return (RunT) PeepholePermalink.LAST_FAILED_BUILD.resolve(this);
     }
@@ -1049,6 +1191,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastCompletedBuild() {
         return (RunT) PeepholePermalink.LAST_COMPLETED_BUILD.resolve(this);
     }
@@ -1333,6 +1476,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return reports;
     }
 
+    @CheckForNull
     private HealthReport getBuildStabilityHealthReport() {
         // we can give a simple view of build health from the last five builds
         int failCount = 0;
@@ -1489,7 +1633,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             // submission
             if (req.getParameter("description") != null) {
                 this.setDescription(req.getParameter("description"));
-                rsp.sendError(SC_NO_CONTENT);
+                rsp.setStatus(SC_NO_CONTENT);
                 return;
             }
         }

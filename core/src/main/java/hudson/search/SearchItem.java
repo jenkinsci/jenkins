@@ -24,6 +24,7 @@
 
 package hudson.search;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Build;
 import jenkins.search.SearchGroup;
 import org.jenkins.ui.icon.IconSpec;
@@ -55,6 +56,16 @@ public interface SearchItem {
      */
 
     String getSearchUrl();
+
+    /**
+     * Short secondary text shown after the name in search results.
+     *
+     * @return the description, or {@code null} for none
+     * @since TODO
+     */
+    default @CheckForNull String getSearchDescription() {
+        return null;
+    }
 
     default String getSearchIcon() {
         if (this instanceof IconSpec) {

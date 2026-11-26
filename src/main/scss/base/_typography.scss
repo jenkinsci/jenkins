@@ -31,14 +31,15 @@ select {
   }
 }
 
+/* stylelint-disable selector-no-deprecated, need to retain deprecated tt styling for plugins still using tt HTML tag */
 // Reset monospaced font-size, because browsers reduce it by default to ~81%
 pre,
 code,
 kbd,
-samp,
-tt {
+samp {
   font-size: var(--font-size-monospace);
 }
+/* stylelint-enable selector-no-deprecated */
 
 /*
  * Headings

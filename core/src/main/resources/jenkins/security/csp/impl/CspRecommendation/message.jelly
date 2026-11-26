@@ -26,7 +26,6 @@ THE SOFTWARE.
   <j:set var="controls">
     <form method="post" action="${rootURL}/manage/administrativeMonitor/jenkins.security.csp.impl.CspRecommendation/act">
       <f:submit name="setup" value="${%Go to Security configuration}"/>
-      <f:submit primary="false" name="dismiss" value="${%Dismiss}"/>
     </form>
   </j:set>
   <l:adminMonitor severity="info" controls="${controls}">

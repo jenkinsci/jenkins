@@ -486,11 +486,120 @@ public class SearchTest {
 
         Field declaredField = Search.class.getDeclaredField("MAX_SEARCH_SIZE");
         declaredField.setAccessible(true);
+        int original = (int) declaredField.get(null);
         declaredField.set(null, 2);
+        try {
+            Page maximizedResult = wc.goTo("search/suggest?query=projectName", "application/json");
+            JSONArray maximizedSuggestions = getSearchJson(maximizedResult);
+            assertEquals(2, maximizedSuggestions.size());
+        } finally {
+            declaredField.set(null, original);
+        }
+    }
 
-        Page maximizedResult = wc.goTo("search/suggest?query=projectName", "application/json");
-        JSONArray maximizedSuggestions = getSearchJson(maximizedResult);
-        assertEquals(2, maximizedSuggestions.size());
+    @Test
+    void busyGroupDoesNotCrowdOutOtherGroups() throws Exception {
+        j.createFreeStyleProject("script-a");
+        j.createFreeStyleProject("script-b");
+        j.createFreeStyleProject("script-c");
+
+        JSONArray suggestions = suggestions(j.createWebClient(), "script", 2);
+
+        assertEquals(2, namesInGroup(suggestions, "Items").size());
+        assertTrue(namesInGroup(suggestions, "Manage Jenkins").contains("Script Console"));
+    }
+
+    @Test
+    void sameNameWithDifferentUrlsAreBothSuggested() throws Exception {
+        j.createFreeStyleProject("Script Console");
+
+        JSONArray suggestions = suggestions(j.createWebClient(), "Script%20Console", 100);
+
+        assertEquals(List.of("Script Console"), namesInGroup(suggestions, "Items"));
+        assertTrue(namesInGroup(suggestions, "Manage Jenkins").contains("Script Console"));
+    }
+
+    @Test
+    void duplicatesDoNotCountTowardsGroupLimit() throws Exception {
+        j.createFreeStyleProject("dupe");
+        j.createFreeStyleProject("dupe-b");
+
+        JSONArray suggestions = suggestions(j.createWebClient(), "dupe", 2);
+
+        assertEquals(List.of("dupe", "dupe-b"), namesInGroup(suggestions, "Items"));
+    }
+
+    @Test
+    @Issue("SECURITY-2399")
+    void searchBoundAppliesAcrossGroups() throws Exception {
+        j.createFreeStyleProject("plugins-a");
+        j.createFreeStyleProject("plugins-b");
+
+        Field declaredField = Search.class.getDeclaredField("MAX_SEARCH_SIZE");
+        declaredField.setAccessible(true);
+        int original = (int) declaredField.get(null);
+        declaredField.set(null, 2);
+        try {
+            JSONArray suggestions = suggestions(j.createWebClient(), "plugins", 100);
+            assertEquals(2, suggestions.size());
+        } finally {
+            declaredField.set(null, original);
+        }
+    }
+
+    @Test
+    void prefixMatchesRankFirstIgnoringCase() throws Exception {
+        j.createFreeStyleProject("xsys");
+        j.createFreeStyleProject("System-tools");
+
+        JSONArray suggestions = suggestions(j.createWebClient(), "sys", 1);
+
+        assertEquals(List.of("System-tools"), namesInGroup(suggestions, "Items"));
+    }
+
+    @Test
+    void managementLinksRespectPermissions() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy mas = new MockAuthorizationStrategy();
+        mas.grant(Jenkins.READ).everywhere().to("alice");
+        mas.grant(Jenkins.ADMINISTER).everywhere().to("admin");
+        j.jenkins.setAuthorizationStrategy(mas);
+
+        JSONArray aliceSuggestions = suggestions(j.createWebClient().login("alice"), "Script", 100);
+        assertTrue(namesInGroup(aliceSuggestions, "Manage Jenkins").isEmpty());
+
+        WebClient admin = j.createWebClient().login("admin");
+        assertTrue(namesInGroup(suggestions(admin, "Script", 100), "Manage Jenkins").contains("Script Console"));
+        assertTrue(namesInGroup(suggestions(admin, "Reload", 100), "Manage Jenkins").isEmpty());
+
+        JSONObject about = findSuggestion(suggestions(admin, "About", 100), "Manage Jenkins", "About Jenkins");
+        assertNotNull(about);
+        assertEquals(Jenkins.VERSION, about.getString("description"));
+    }
+
+    private JSONArray suggestions(WebClient wc, String query, int max) throws Exception {
+        return getSearchJson(wc.goTo("search/suggest?query=" + query + "&max=" + max, "application/json"));
+    }
+
+    private List<String> namesInGroup(JSONArray suggestions, String group) {
+        List<String> names = new ArrayList<>();
+        for (Object o : suggestions) {
+            JSONObject suggestion = (JSONObject) o;
+            if (group.equals(suggestion.optString("group"))) {
+                names.add(suggestion.getString("name"));
+            }
+        }
+        return names;
+    }
+
+    private JSONObject findSuggestion(JSONArray suggestions, String group, String name) {
+        for (Object o : suggestions) {
+            JSONObject suggestion = (JSONObject) o;
+            if (group.equals(suggestion.optString("group")) && name.equals(suggestion.getString("name"))) {
+                return suggestion;
+            }
+        }
+        return null;
     }
 
     private JSONArray getSearchJson(Page page) {

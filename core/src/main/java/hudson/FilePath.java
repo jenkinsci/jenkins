@@ -3368,11 +3368,19 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     }
 
                     { // check the (2) above next as this is more expensive.
-                        // Try prepending "**/" to see if that results in a match
-                        FileSet fs = Util.createFileSet(dir, "**/" + fileMask);
-                        fs.setCaseSensitive(caseSensitive);
-                        DirectoryScanner ds = fs.getDirectoryScanner(new Project());
-                        if (ds.getIncludedFilesCount() != 0) {
+                        // Try prepending "**/" to see if that results in a match. This scan has no
+                        // early-exit on a directory match (see boundedFallbackScan), so it typically
+                        // needs more of the bound's budget than the other checks in this method; if
+                        // it exceeds the bound, give up on this suggestion rather than failing the
+                        // whole call, consistent with this heuristic never having been a hard
+                        // requirement for a precise answer.
+                        DirectoryScanner ds;
+                        try {
+                            ds = boundedFallbackScan(dir, "**/" + fileMask, caseSensitive);
+                        } catch (FileMaskNoMatchesFoundException x) {
+                            ds = null;
+                        }
+                        if (ds != null && ds.getIncludedFilesCount() != 0) {
                             // try shorter name first so that the suggestion results in the least amount of changes
                             String[] names = ds.getIncludedFiles();
                             Arrays.sort(names, SHORTER_STRING_FIRST);
@@ -3429,13 +3437,39 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             }
 
             private boolean hasMatch(File dir, String pattern, boolean bCaseSensitive) throws InterruptedException {
+                DirectoryScanner ds = boundedScan(dir, pattern, bCaseSensitive, false, false);
+                return ds.getIncludedFilesCount() != 0 || ds.getIncludedDirsCount() != 0;
+            }
+
+            /**
+             * Like {@link #boundedScan} but for the "did you mean a nested path?" fallback: applies
+             * Ant's default excludes, matching the {@code FileSet}-based scan this replaced (so e.g.
+             * {@code .git/config} isn't suggested), and only treats a matching file — not a matching
+             * directory — as a reason to stop early, since a directory match alone (e.g. {@code
+             * nested/foo} when looking for {@code foo*}) isn't a usable suggestion and stopping there
+             * would prevent the scan from continuing on to find a matching file underneath it (e.g.
+             * {@code nested/foo/foo.txt}).
+             */
+            private DirectoryScanner boundedFallbackScan(File dir, String pattern, boolean bCaseSensitive) throws FileMaskNoMatchesFoundException {
+                return boundedScan(dir, pattern, bCaseSensitive, true, true);
+            }
+
+            /**
+             * Scans {@code dir} for {@code pattern} using a {@link DirectoryScanner} that gives up
+             * (throwing {@link FileMaskNoMatchesFoundException}) once {@link #bound} negative operations
+             * have been performed without a match, rather than traversing the whole tree. Any caller that
+             * builds its own {@link DirectoryScanner} to probe for a match — instead of going through this
+             * method — bypasses the bound and can run unbounded over huge workspaces.
+             */
+            private DirectoryScanner boundedScan(File dir, String pattern, boolean bCaseSensitive, boolean useDefaultExcludes, boolean requireFileMatch) throws FileMaskNoMatchesFoundException {
                 class Cancel extends RuntimeException {}
 
                 DirectoryScanner ds = bound == Integer.MAX_VALUE ? new DirectoryScanner() : new DirectoryScanner() {
                     int ticks;
                     long start = System.currentTimeMillis();
                     @Override public synchronized boolean isCaseSensitive() {
-                        if (!filesIncluded.isEmpty() || !dirsIncluded.isEmpty() || ticks++ > bound || System.currentTimeMillis() - start > 5000) {
+                        boolean matched = !filesIncluded.isEmpty() || (!requireFileMatch && !dirsIncluded.isEmpty());
+                        if (matched || ticks++ > bound || System.currentTimeMillis() - start > 5000) {
                             throw new Cancel();
                         }
                         filesNotIncluded.clear();
@@ -3448,16 +3482,18 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 ds.setBasedir(dir);
                 ds.setIncludes(new String[] {pattern});
                 ds.setCaseSensitive(bCaseSensitive);
+                if (useDefaultExcludes) {
+                    ds.addDefaultExcludes();
+                }
                 try {
                     ds.scan();
                 } catch (Cancel c) {
-                    if (ds.getIncludedFilesCount() != 0 || ds.getIncludedDirsCount() != 0) {
-                        return true;
-                    } else {
+                    boolean found = ds.getIncludedFilesCount() != 0 || (!requireFileMatch && ds.getIncludedDirsCount() != 0);
+                    if (!found) {
                         throw (FileMaskNoMatchesFoundException) new FileMaskNoMatchesFoundException("no matches found within " + bound).initCause(c);
                     }
                 }
-                return ds.getIncludedFilesCount() != 0 || ds.getIncludedDirsCount() != 0;
+                return ds;
             }
 
             /**

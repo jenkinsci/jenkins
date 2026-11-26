@@ -1,6 +1,8 @@
 @use "../abstracts/mixins";
 @use "../base/breakpoints";
 
+$command-palette-padding: 0.375rem;
+
 .jenkins-command-palette__dialog {
   background: none;
   border: none;
@@ -122,7 +124,7 @@
   &__results {
     display: flex;
     flex-direction: column;
-    padding: 0.5rem;
+    padding: $command-palette-padding;
 
     &__heading {
       font-size: var(--font-size-sm);
@@ -138,28 +140,17 @@
     &__item {
       @include mixins.item($border: false);
 
-      --item-background--hover: color-mix(
-        in sRGB,
-        var(--text-color-secondary) 15%,
-        transparent
-      );
-      --item-background--active: color-mix(
-        in sRGB,
-        var(--text-color-secondary) 20%,
-        transparent
-      );
-
       display: flex;
       align-items: center;
       justify-content: flex-start;
       padding: 0.625rem;
-      border-radius: 0.5rem;
+      border-radius: calc(1rem - $command-palette-padding);
       color: var(--text-color) !important;
 
       &--hover {
         &::before {
           background-color: var(--item-background--hover);
-          border: var(--jenkins-border--subtle) !important;
+          border: var(--jenkins-border) !important;
         }
       }
 
@@ -182,7 +173,7 @@
       }
 
       &__description {
-        opacity: 0.5;
+        color: var(--text-color-secondary);
         margin-left: 1ch;
       }
 
