@@ -300,18 +300,16 @@ class RSSTest {
         // so that every failing build is a regression (worse than the previous build).
         List<FreeStyleProject> projects = new ArrayList<>();
         for (int i = 0; i < 12; i++) {
-            FreeStyleProject p = j.createFreeStyleProject();
-            p.getBuildersList().add(new FailureBuilder());
-            j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0, new Cause.UserIdCause(userId)).get());
-            projects.add(p);
+            projects.add(runFailingBuild(userId));
         }
 
-        // Backdate the oldest four failing builds beyond the 7-day RSS window
+        // Backdate the oldest four failing builds beyond the 7-day RSS window. Distinct
+        // timestamps keep their relative order, so the two oldest are the omitted ones.
         long eightDaysAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(8);
         Field timestampField = Run.class.getDeclaredField("timestamp");
         timestampField.setAccessible(true);
         for (int i = 0; i < 4; i++) {
-            timestampField.setLong(projects.get(i).getBuildByNumber(1), eightDaysAgo);
+            timestampField.setLong(projects.get(i).getBuildByNumber(1), eightDaysAgo + TimeUnit.SECONDS.toMillis(i));
         }
 
         XmlPage page = getRssFailedPage(wc, "user/alice");
@@ -319,6 +317,30 @@ class RSSTest {
         // The ten newest regression builds are always kept; the remaining builds are
         // older than the 7-day window and are omitted, as on the job and view feeds.
         assertEquals(10, items.getLength());
+
+        List<String> titles = new ArrayList<>();
+        for (int i = 0; i < items.getLength(); i++) {
+            titles.add(getSingleNode(items.item(i), "title").getTextContent());
+        }
+        assertThat(titles, containsInAnyOrder(projects.subList(2, 12).stream()
+                .map(p -> p.getFullDisplayName() + " #1 (broken since this build)")
+                .toArray(String[]::new)));
+    }
+
+    @Test
+    void checkUserRssFailedKeepsAllBuildsWithinTheWindow() throws Exception {
+        String userId = "alice";
+        JenkinsRule.WebClient wc = loginAsUser(userId);
+
+        // Builds from the last seven days are kept regardless of how many there are,
+        // so twelve recent builds must all be listed instead of only the ten newest.
+        for (int i = 0; i < 12; i++) {
+            runFailingBuild(userId);
+        }
+
+        XmlPage page = getRssFailedPage(wc, "user/alice");
+        NodeList items = page.getXmlDocument().getElementsByTagName("item");
+        assertEquals(12, items.getLength());
     }
 
     @Test
@@ -520,10 +542,11 @@ class RSSTest {
         j.buildAndAssertStatus(Result.FAILURE, p);
     }
 
-    private void runFailingBuild(String userId) throws Exception {
+    private FreeStyleProject runFailingBuild(String userId) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new FailureBuilder());
         j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0, new Cause.UserIdCause(userId)).get());
+        return p;
     }
 
     private void assertLatestRSSLinks(NodeList allLinks, String path) throws Exception {
