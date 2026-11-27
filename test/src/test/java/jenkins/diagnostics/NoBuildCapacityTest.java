@@ -99,7 +99,7 @@ class NoBuildCapacityTest {
 
         assertEquals(1, j.jenkins.getNumExecutors());
         assertFalse(monitor().isActivated());
-        assertThat(result.getUrl().toString(), not(containsString("configure")));
+        assertThat(result.getUrl().toString(), not(containsString("computer")));
         assertThat(result.getUrl().toString(), containsString("/manage"));
     }
 
