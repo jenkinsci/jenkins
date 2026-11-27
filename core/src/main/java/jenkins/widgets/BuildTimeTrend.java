@@ -36,7 +36,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-@Restricted(NoExternalUse.class) // only for buildTimeTrend.jelly and Job#doBuildTimeTrendData
+@Restricted(NoExternalUse.class) // only for index.jelly and Job#doBuildTimeTrendData
 public class BuildTimeTrend extends RunListData {
 
     public boolean isAbstractProject(Job<?, ?> job) {
