@@ -37,7 +37,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * App bar action that links to the project relationship page.
  *
- * @since TODO
+ * @since 2.592
  */
 @Restricted(Beta.class)
 public final class ProjectRelationshipAction implements Action {

@@ -40,7 +40,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * App bar action that links to the page for creating a new item in a {@link View}.
  *
- * @since TODO
+ * @since 2.592
  */
 @Restricted(Beta.class)
 public final class NewItemAction implements Action {

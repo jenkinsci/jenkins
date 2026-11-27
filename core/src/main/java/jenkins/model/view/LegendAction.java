@@ -39,7 +39,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * App bar action that opens the icon legend in a dialog.
  *
- * @since TODO
+ * @since 2.592
  */
 @Restricted(Beta.class)
 public final class LegendAction implements Action {

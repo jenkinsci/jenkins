@@ -41,7 +41,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * <p>Shown in the app bar, unless the view belongs to an item such as a folder,
  * in which case the item's own configuration takes that spot.
  *
- * @since TODO
+ * @since 2.592
  */
 @Restricted(Beta.class)
 public final class EditViewAction implements Action {
