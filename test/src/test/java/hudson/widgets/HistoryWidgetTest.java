@@ -1,7 +1,9 @@
 package hudson.widgets;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -13,18 +15,31 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Item;
 import hudson.model.Job;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.StringParameterDefinition;
+import hudson.model.User;
+import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import jenkins.model.HistoricalBuild;
+import jenkins.model.Jenkins;
+import jenkins.model.experimentalflags.UserExperimentalFlagsProperty;
 import jenkins.widgets.DescriptionHistoryPageEntryDecorator;
 import jenkins.widgets.HistoryPageEntry;
 import jenkins.widgets.HistoryPageEntryDecorator;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
+import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
@@ -117,6 +132,96 @@ class HistoryWidgetTest {
             assertThat(secondContexts.get(firstOnlyIndex), nullValue());
             return null;
         });
+    }
+
+    @Test
+    void emptyBuildsNoticeShowsBuildButtonForRegularJob() throws Exception {
+        enableNewJobPageFor("alice", true);
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            // HtmlUnit's Rhino cannot compile BigInt literals in builds-card-new.js
+            wc.setJavaScriptEnabled(false);
+            HtmlPage page = wc.goTo("job/" + p.getName() + "/");
+
+            DomElement notice = page.querySelector("#no-builds-yet");
+            assertThat(notice, notNullValue());
+
+            HtmlButton button = notice.querySelector("button[data-type='build-now']");
+            assertThat(button, notNullValue());
+            assertThat(button.getTextContent().trim(), is("Build Now"));
+            String baseUrl = button.getAttribute("data-base-url");
+            String href = button.getAttribute("data-href");
+            assertThat(baseUrl, endsWith("/job/" + p.getName() + "/"));
+            assertThat(href, is("build?delay=0sec"));
+
+            URI buildUri = j.getURL().toURI().resolve(baseUrl + href);
+            WebRequest request = wc.addCrumb(new WebRequest(buildUri.toURL(), HttpMethod.POST));
+            assertThat(wc.loadWebResponse(request).getStatusCode(), is(201));
+            j.waitUntilNoActivity();
+
+            assertThat(p.getLastBuild(), notNullValue());
+        }
+    }
+
+    @Test
+    void emptyBuildsNoticeShowsBuildButtonForParameterizedJob() throws Exception {
+        enableNewJobPageFor("alice", true);
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("PARAM", "default")));
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            wc.setJavaScriptEnabled(false);
+            HtmlPage page = wc.goTo("job/" + p.getName() + "/");
+
+            DomElement notice = page.querySelector("#no-builds-yet");
+            assertThat(notice, notNullValue());
+
+            HtmlButton button = notice.querySelector("button[data-type='dialog-opener']");
+            assertThat(button, notNullValue());
+            assertThat(button.getTextContent().trim(), is("Build with Parameters"));
+            String dialogUrl = button.getAttribute("data-dialog-url");
+            assertThat(dialogUrl, endsWith("/job/" + p.getName() + "/parametersDefinitionProperty/dialog"));
+
+            URI dialogUri = j.getURL().toURI().resolve(dialogUrl);
+            HtmlPage dialogPage = wc.getPage(dialogUri.toURL());
+            assertThat(dialogPage.querySelector("form[name='parameters']"), notNullValue());
+        }
+    }
+
+    @Test
+    void emptyBuildsNoticeHidesBuildButtonWhenDisabledOrUnauthorized() throws Exception {
+        enableNewJobPageFor("alice", true);
+        enableNewJobPageFor("bob", false);
+
+        FreeStyleProject disabledJob = j.createFreeStyleProject();
+        disabledJob.disable();
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            wc.setJavaScriptEnabled(false);
+            HtmlPage page = wc.goTo("job/" + disabledJob.getName() + "/");
+            assertThat(page.querySelector("#no-builds-yet button"), nullValue());
+        }
+
+        FreeStyleProject buildableJob = j.createFreeStyleProject();
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+            wc.setJavaScriptEnabled(false);
+            HtmlPage page = wc.goTo("job/" + buildableJob.getName() + "/");
+            assertThat(page.querySelector("#no-builds-yet button"), nullValue());
+        }
+    }
+
+    private void enableNewJobPageFor(String username, boolean allowBuild) throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User.getById(username, true)
+                .addProperty(new UserExperimentalFlagsProperty(Map.of("new-job-page.flag", "true")));
+        MockAuthorizationStrategy auth = (j.jenkins.getAuthorizationStrategy() instanceof MockAuthorizationStrategy existing)
+                ? existing
+                : new MockAuthorizationStrategy();
+        auth.grant(Jenkins.READ, Item.READ).everywhere().to(username);
+        if (allowBuild) {
+            auth.grant(Item.BUILD).everywhere().to(username);
+        }
+        j.jenkins.setAuthorizationStrategy(auth);
     }
 
     @TestExtension("entryDecorators")
