@@ -6,8 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.Action;
-import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.junit.jupiter.api.Test;
 
@@ -46,8 +44,6 @@ class MenuActionsTest {
 
     @Test
     void getIconTranslatesLegacyIconToSymbol() {
-        IconSet.icons.addIcon(new Icon("icon-help icon-md", "24x24/help.png", Icon.ICON_MEDIUM_STYLE));
-
         assertEquals("symbol-help-circle", MenuActions.getIcon(new FileIconAction("help.png")));
     }
 
@@ -61,24 +57,26 @@ class MenuActionsTest {
         assertNull(MenuActions.getIcon(new FileIconAction(null)));
     }
 
-    private record FileIconAction(String iconFileName) implements Action {
+    private interface ExampleAction extends Action {
         @Override
-        public String getIconFileName() {
-            return iconFileName;
-        }
-
-        @Override
-        public String getDisplayName() {
+        default String getDisplayName() {
             return "Example";
         }
 
         @Override
-        public String getUrlName() {
+        default String getUrlName() {
             return "example";
         }
     }
 
-    private record ClassIconAction(String iconFileName, String iconClassName) implements Action, IconSpec {
+    private record FileIconAction(String iconFileName) implements ExampleAction {
+        @Override
+        public String getIconFileName() {
+            return iconFileName;
+        }
+    }
+
+    private record ClassIconAction(String iconFileName, String iconClassName) implements ExampleAction, IconSpec {
         @Override
         public String getIconFileName() {
             return iconFileName;
@@ -87,16 +85,6 @@ class MenuActionsTest {
         @Override
         public String getIconClassName() {
             return iconClassName;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "Example";
-        }
-
-        @Override
-        public String getUrlName() {
-            return "example";
         }
     }
 }
