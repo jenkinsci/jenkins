@@ -80,7 +80,7 @@ THE SOFTWARE.
                   <div class="app-cloud-item__actions ignore-dirty-panel">
                     <a href="${it.getCloudUrl(request2,app,cloud)}configure"
                        class="jenkins-button jenkins-button--tertiary">
-                      <l:icon src="symbol-settings" />
+                      <l:icon src="symbol-settings" alt="${%configureName(cloud.displayName)}" />
                     </a>
                     <button type="button"
                             data-href="${it.getCloudUrl(request2,app,cloud)}"

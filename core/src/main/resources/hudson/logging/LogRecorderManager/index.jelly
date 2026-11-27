@@ -76,7 +76,7 @@ THE SOFTWARE.
             <l:isAdmin>
               <div class="jenkins-table__cell__button-wrapper">
                 <a href="${lr.searchUrl}/configure" class="jenkins-button jenkins-button--tertiary">
-                  <l:icon src="symbol-settings" />
+                  <l:icon src="symbol-settings" alt="${%configureName(lr.name)}" />
                 </a>
               </div>
             </l:isAdmin>
