@@ -24,16 +24,25 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.search.FixedSet;
+import hudson.search.Search;
+import hudson.search.SearchIndex;
+import hudson.search.SearchItem;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag;
+import jenkins.search.SearchGroup;
+import jenkins.search.SearchScope;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.StaplerFallback;
@@ -46,7 +55,7 @@ import org.kohsuke.stapler.StaplerResponse2;
  * @author Kohsuke Kawaguchi
  */
 @Extension(ordinal = 998) @Symbol("manageJenkins")
-public class ManageJenkinsAction implements RootAction, StaplerFallback {
+public class ManageJenkinsAction implements RootAction, StaplerFallback, SearchScope {
 
     private static final Logger LOGGER = Logger.getLogger(ManageJenkinsAction.class.getName());
 
@@ -71,6 +80,79 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback {
     @Override
     public boolean isPrimaryAction() {
         return true;
+    }
+
+    @Override
+    public String getSearchName() {
+        return getDisplayName();
+    }
+
+    @Override
+    public String getSearchUrl() {
+        return getUrlName();
+    }
+
+    @Override
+    public String getSearchIcon() {
+        return "symbol-settings";
+    }
+
+    @Override
+    public Search getSearch() {
+        return new Search();
+    }
+
+    @Override
+    public SearchIndex getSearchIndex() {
+        return SearchIndex.EMPTY;
+    }
+
+    @NonNull
+    @Override
+    public SearchIndex getScopedSearchIndex() {
+        List<SearchItem> items = new ArrayList<>();
+        Jenkins.get().getCategorizedManagementLinks().forEach((category, links) -> {
+            SearchGroup group = category::getLabel;
+            for (ManagementLink link : links) {
+                if (link.getRequiresPOST() || link.getRequiresConfirmation() || link.getUrlName() == null) {
+                    continue;
+                }
+                items.add(new ManagementLinkSearchItem(link, group));
+            }
+        });
+        return new FixedSet(items);
+    }
+
+    private record ManagementLinkSearchItem(ManagementLink link, SearchGroup group) implements SearchItem {
+        @Override
+        public String getSearchName() {
+            return link.getDisplayName();
+        }
+
+        @Override
+        public String getSearchUrl() {
+            return link.getUrlName();
+        }
+
+        @Override
+        public String getSearchIcon() {
+            return link.getIconFileName();
+        }
+
+        @Override
+        public String getSearchDescription() {
+            return link.getSearchDescription();
+        }
+
+        @Override
+        public SearchGroup getSearchGroup() {
+            return group;
+        }
+
+        @Override
+        public SearchIndex getSearchIndex() {
+            return SearchIndex.EMPTY;
+        }
     }
 
     public HttpRedirect doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {

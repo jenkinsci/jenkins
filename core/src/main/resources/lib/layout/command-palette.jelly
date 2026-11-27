@@ -34,7 +34,8 @@ THE SOFTWARE.
        data-get-help="${%Get help using Jenkins search}"
   />
 
-  <dialog id="command-palette" class="jenkins-command-palette__dialog">
+  <j:invokeStatic var="pageScopes" className="hudson.search.Search" method="getPageScopes" />
+  <dialog id="command-palette" class="jenkins-command-palette__dialog" data-scopes="${pageScopes}">
     <div class="jenkins-command-palette__wrapper">
       <div class="jenkins-command-palette">
         <l:search-bar id="command-bar" clazz="jenkins-command-palette__search" hasKeyboardShortcut="false" />

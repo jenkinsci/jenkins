@@ -14,6 +14,10 @@ function startsWithQuery(result, query) {
   return result.label.toLowerCase().startsWith(query.toLowerCase());
 }
 
+function withTrailingSlash(path) {
+  return path.endsWith("/") ? path : path + "/";
+}
+
 function init() {
   const i18n = document.getElementById("command-palette-i18n");
   const headerCommandPaletteButton = document.getElementById(
@@ -36,14 +40,98 @@ function init() {
   );
 
   const hoverClass = "jenkins-command-palette__results__item--hover";
+  const resultSelector = ".jenkins-command-palette__results__item";
+
+  const pageScopes = JSON.parse(commandPalette.dataset.scopes || "[]");
+  const defaultPlaceholder = commandPaletteInput.placeholder;
+  const scopes = [];
+  const renderedResults = new WeakMap();
+  let latestRequest = 0;
+  let highlightOnRender = null;
+
+  const scopesContainer = document.createElement("div");
+  scopesContainer.className = "jenkins-command-palette__scopes";
+  commandPaletteInput.before(scopesContainer);
 
   makeKeyboardNavigable(
     searchResultsContainer,
-    () => searchResults.querySelectorAll("a"),
+    () => searchResults.querySelectorAll(resultSelector),
     hoverClass,
-    () => {},
+    (selectedItem, key, e) => {
+      if (key !== "Tab" || e.shiftKey) {
+        return;
+      }
+
+      const result = selectedItem && renderedResults.get(selectedItem);
+      if (!result) {
+        return;
+      }
+
+      e.preventDefault();
+
+      if (!result.searchScope) {
+        fillQuery(result.label);
+        return;
+      }
+
+      drillInto(result);
+    },
     () => commandPalette.open,
+    updatePlaceholder,
   );
+
+  const selectedScopesClass = "jenkins-command-palette__scopes--selected";
+
+  function setScopesSelected(selected) {
+    scopesContainer.classList.toggle(selectedScopesClass, selected);
+  }
+
+  commandPaletteInput.addEventListener("keydown", (e) => {
+    const scopesSelected =
+      scopesContainer.classList.contains(selectedScopesClass);
+    const isDelete = e.key === "Backspace" || e.key === "Delete";
+
+    if (e.key.toLowerCase() === "a" && (e.metaKey || e.ctrlKey)) {
+      setScopesSelected(scopes.length > 0);
+      return;
+    }
+
+    if (scopesSelected && isDelete) {
+      e.preventDefault();
+      commandPaletteInput.value = "";
+      scopes.length = 0;
+      updateScopes();
+      return;
+    }
+
+    if (!["Shift", "Meta", "Control", "Alt"].includes(e.key)) {
+      setScopesSelected(false);
+    }
+
+    if (e.key !== "Backspace" || commandPaletteInput.value !== "") {
+      return;
+    }
+
+    if (scopes.length === 0) {
+      return;
+    }
+
+    e.preventDefault();
+    popScope();
+  });
+
+  commandPaletteInput.addEventListener("mousedown", () =>
+    setScopesSelected(false),
+  );
+
+  commandPalette.addEventListener("cancel", (e) => {
+    if (scopes.length === 0) {
+      return;
+    }
+
+    e.preventDefault();
+    popScope();
+  });
 
   // Events
   headerCommandPaletteButton.addEventListener("click", function () {
@@ -62,11 +150,85 @@ function init() {
     hideCommandPalette();
   });
 
+  function drillInto(result) {
+    scopes.push({
+      label: result.label,
+      url: withTrailingSlash(result.url),
+      icon: result.type === "image" ? null : result.icon,
+      parentQuery: commandPaletteInput.value,
+    });
+    commandPaletteInput.value = "";
+    updateScopes();
+  }
+
+  function popScope() {
+    goToScope(scopes.length - 2);
+  }
+
+  function goToScope(index) {
+    const left = scopes[index + 1];
+    if (!left) {
+      commandPaletteInput.focus();
+      return;
+    }
+
+    scopes.length = index + 1;
+    commandPaletteInput.value = left.parentQuery ?? "";
+    highlightOnRender = left.url;
+    updateScopes();
+    commandPaletteInput.focus();
+  }
+
+  function fillQuery(text) {
+    commandPaletteInput.value = text;
+    commandPaletteInput.focus();
+    commandPaletteInput.setSelectionRange(text.length, text.length);
+    debouncedLoad.cancel();
+    renderResults();
+  }
+
+  function updateScopes() {
+    updateScopeChips();
+    debouncedLoad.cancel();
+    renderResults();
+  }
+
+  function updateScopeChips() {
+    setScopesSelected(false);
+    scopesContainer.innerHTML = "";
+    scopes.forEach((scope, index) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "jenkins-command-palette__scope";
+      chip.addEventListener("click", () => goToScope(index));
+
+      if (scope.icon) {
+        const icon = document.createElement("span");
+        icon.className = "jenkins-command-palette__scope__icon";
+        icon.innerHTML = scope.icon;
+        chip.append(icon);
+      }
+
+      const label = document.createElement("span");
+      label.className = "jenkins-command-palette__scope__label";
+      label.textContent = scope.label;
+      chip.append(label);
+
+      scopesContainer.append(chip);
+    });
+  }
+
   function renderResults() {
     const query = commandPaletteInput.value;
+    const scope = scopes.at(-1);
+    const request = ++latestRequest;
     let results;
 
-    if (query.length === 0) {
+    if (scope) {
+      results = Promise.all(
+        datasources.map((ds) => ds.execute(query, scope)),
+      ).then((e) => e.flat());
+    } else if (query.length === 0) {
       results = Promise.all([
         LinkResult({
           icon: Symbols.HELP,
@@ -84,12 +246,17 @@ function init() {
     }
 
     results.then((results) => {
+      if (request !== latestRequest) {
+        return;
+      }
+
       results = groupResultsByCategory(results);
 
       // Clear current search results
       searchResults.innerHTML = "";
+      updatePlaceholder(null);
 
-      if (query.length === 0 || Object.keys(results).length > 0) {
+      if ((!scope && query.length === 0) || Object.keys(results).length > 0) {
         for (const [group, items] of Object.entries(results)) {
           if (group !== "null") {
             const heading = document.createElement("p");
@@ -105,15 +272,32 @@ function init() {
           );
 
           prioritisedItems
-            .slice(0, MAX_RESULTS_PER_GROUP)
+            .slice(0, scope ? undefined : MAX_RESULTS_PER_GROUP)
             .forEach(function (obj) {
               const link = createElementFromHtml(obj.render());
+              renderedResults.set(link, obj);
               link.addEventListener("mouseenter", (e) => itemMouseEnter(e));
+              link
+                .querySelector(".jenkins-command-palette__results__item__hint")
+                ?.addEventListener("click", (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  drillInto(obj);
+                  commandPaletteInput.focus();
+                });
               searchResults.append(link);
             });
         }
 
-        updateSelectedItem(0);
+        const rendered = Array.from(
+          searchResults.querySelectorAll(resultSelector),
+        );
+        const restored = rendered.findIndex(
+          (element) =>
+            withTrailingSlash(renderedResults.get(element)?.url ?? "") ===
+            highlightOnRender,
+        );
+        updateSelectedItem(Math.max(restored, 0), restored > 0);
       } else {
         const label = document.createElement("p");
         label.className = "jenkins-command-palette__info";
@@ -125,7 +309,9 @@ function init() {
         searchResults.append(label);
       }
 
-      searchResultsContainer.style.height = searchResults.offsetHeight + "px";
+      highlightOnRender = null;
+
+      syncResultsHeight();
       debouncedSpinner.cancel();
       commandPaletteSearchBarContainer.classList.remove(
         "jenkins-search--loading",
@@ -147,7 +333,31 @@ function init() {
   });
 
   // Helper methods for visibility of command palette
+  function syncResultsHeight() {
+    searchResultsContainer.style.height = searchResults.offsetHeight + "px";
+  }
+
+  function updateViewportHeight() {
+    const height = window.visualViewport?.height ?? window.innerHeight;
+    commandPalette.style.setProperty(
+      "--command-palette-viewport-height",
+      `${height}px`,
+    );
+
+    if (!commandPalette.open) {
+      return;
+    }
+    syncResultsHeight();
+  }
+
+  window.addEventListener("resize", updateViewportHeight);
+  window.visualViewport?.addEventListener("resize", updateViewportHeight);
+
   function showCommandPalette() {
+    updateViewportHeight();
+    scopes.length = 0;
+    scopes.push(...pageScopes);
+    updateScopeChips();
     commandPalette.showModal();
     commandPaletteInput.focus();
     commandPaletteInput.setSelectionRange(0, commandPaletteInput.value.length);
@@ -175,10 +385,16 @@ function init() {
     }
 
     item.target.classList.add(hoverClass);
+    updatePlaceholder(item.target);
+  }
+
+  function updatePlaceholder(element) {
+    const result = element && renderedResults.get(element);
+    commandPaletteInput.placeholder = result?.label ?? defaultPlaceholder;
   }
 
   function updateSelectedItem(index, scrollIntoView = false) {
-    const maxLength = searchResults.getElementsByTagName("a").length;
+    const maxLength = searchResults.querySelectorAll(resultSelector).length;
     const hoveredItem = document.querySelector("." + hoverClass);
 
     if (hoveredItem) {
@@ -186,13 +402,14 @@ function init() {
     }
 
     if (index < maxLength) {
-      const element = Array.from(searchResults.getElementsByTagName("a"))[
-        index
-      ];
+      const element = Array.from(
+        searchResults.querySelectorAll(resultSelector),
+      )[index];
       element.classList.add(hoverClass);
+      updatePlaceholder(element);
 
       if (scrollIntoView) {
-        element.scrollIntoView();
+        element.scrollIntoView({ block: "nearest" });
       }
     }
   }
