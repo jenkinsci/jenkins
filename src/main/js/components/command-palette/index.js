@@ -87,16 +87,15 @@ function init() {
   }
 
   commandPaletteInput.addEventListener("keydown", (e) => {
-    const scopesSelected =
-      scopesContainer.classList.contains(selectedScopesClass);
-    const isDelete = e.key === "Backspace" || e.key === "Delete";
-
     if (e.key.toLowerCase() === "a" && (e.metaKey || e.ctrlKey)) {
       setScopesSelected(scopes.length > 0);
       return;
     }
 
-    if (scopesSelected && isDelete) {
+    if (
+      scopesContainer.classList.contains(selectedScopesClass) &&
+      (e.key === "Backspace" || e.key === "Delete")
+    ) {
       e.preventDefault();
       commandPaletteInput.value = "";
       scopes.length = 0;
@@ -108,11 +107,11 @@ function init() {
       setScopesSelected(false);
     }
 
-    if (e.key !== "Backspace" || commandPaletteInput.value !== "") {
-      return;
-    }
-
-    if (scopes.length === 0) {
+    if (
+      e.key !== "Backspace" ||
+      commandPaletteInput.value !== "" ||
+      scopes.length === 0
+    ) {
       return;
     }
 
@@ -176,19 +175,22 @@ function init() {
     commandPaletteInput.value = left.parentQuery ?? "";
     highlightOnRender = left.url;
     updateScopes();
-    commandPaletteInput.focus();
   }
 
   function fillQuery(text) {
     commandPaletteInput.value = text;
     commandPaletteInput.focus();
     commandPaletteInput.setSelectionRange(text.length, text.length);
-    debouncedLoad.cancel();
-    renderResults();
+    renderNow();
   }
 
   function updateScopes() {
     updateScopeChips();
+    commandPaletteInput.focus();
+    renderNow();
+  }
+
+  function renderNow() {
     debouncedLoad.cancel();
     renderResults();
   }
@@ -222,13 +224,10 @@ function init() {
     const query = commandPaletteInput.value;
     const scope = scopes.at(-1);
     const request = ++latestRequest;
+    const showHelp = !scope && query.length === 0;
     let results;
 
-    if (scope) {
-      results = Promise.all(
-        datasources.map((ds) => ds.execute(query, scope)),
-      ).then((e) => e.flat());
-    } else if (query.length === 0) {
+    if (showHelp) {
       results = Promise.all([
         LinkResult({
           icon: Symbols.HELP,
@@ -240,9 +239,9 @@ function init() {
         }),
       ]);
     } else {
-      results = Promise.all(datasources.map((ds) => ds.execute(query))).then(
-        (e) => e.flat(),
-      );
+      results = Promise.all(
+        datasources.map((ds) => ds.execute(query, scope)),
+      ).then((e) => e.flat());
     }
 
     results.then((results) => {
@@ -256,7 +255,7 @@ function init() {
       searchResults.innerHTML = "";
       updatePlaceholder(null);
 
-      if ((!scope && query.length === 0) || Object.keys(results).length > 0) {
+      if (showHelp || Object.keys(results).length > 0) {
         for (const [group, items] of Object.entries(results)) {
           if (group !== "null") {
             const heading = document.createElement("p");
@@ -276,28 +275,33 @@ function init() {
             .forEach(function (obj) {
               const link = createElementFromHtml(obj.render());
               renderedResults.set(link, obj);
-              link.addEventListener("mouseenter", (e) => itemMouseEnter(e));
+              link.addEventListener("mouseenter", () => setHovered(link));
               link
                 .querySelector(".jenkins-command-palette__results__item__hint")
                 ?.addEventListener("click", (e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   drillInto(obj);
-                  commandPaletteInput.focus();
                 });
               searchResults.append(link);
             });
         }
 
-        const rendered = Array.from(
-          searchResults.querySelectorAll(resultSelector),
-        );
-        const restored = rendered.findIndex(
-          (element) =>
-            withTrailingSlash(renderedResults.get(element)?.url ?? "") ===
-            highlightOnRender,
-        );
-        updateSelectedItem(Math.max(restored, 0), restored > 0);
+        const rendered = searchResults.querySelectorAll(resultSelector);
+        const restored = highlightOnRender
+          ? Array.from(rendered).findIndex(
+              (element) =>
+                withTrailingSlash(renderedResults.get(element).url) ===
+                highlightOnRender,
+            )
+          : -1;
+        const index = Math.max(restored, 0);
+        if (rendered[index]) {
+          setHovered(rendered[index]);
+          if (restored > 0) {
+            rendered[index].scrollIntoView({ block: "nearest" });
+          }
+        }
       } else {
         const label = document.createElement("p");
         label.className = "jenkins-command-palette__info";
@@ -338,15 +342,15 @@ function init() {
   }
 
   function updateViewportHeight() {
+    if (!commandPalette.open) {
+      return;
+    }
+
     const height = window.visualViewport?.height ?? window.innerHeight;
     commandPalette.style.setProperty(
       "--command-palette-viewport-height",
       `${height}px`,
     );
-
-    if (!commandPalette.open) {
-      return;
-    }
     syncResultsHeight();
   }
 
@@ -354,11 +358,11 @@ function init() {
   window.visualViewport?.addEventListener("resize", updateViewportHeight);
 
   function showCommandPalette() {
-    updateViewportHeight();
     scopes.length = 0;
     scopes.push(...pageScopes);
     updateScopeChips();
     commandPalette.showModal();
+    updateViewportHeight();
     commandPaletteInput.focus();
     commandPaletteInput.setSelectionRange(0, commandPaletteInput.value.length);
 
@@ -378,40 +382,15 @@ function init() {
     );
   }
 
-  function itemMouseEnter(item) {
-    let hoveredItems = document.querySelector("." + hoverClass);
-    if (hoveredItems) {
-      hoveredItems.classList.remove(hoverClass);
-    }
-
-    item.target.classList.add(hoverClass);
-    updatePlaceholder(item.target);
+  function setHovered(element) {
+    searchResults.querySelector("." + hoverClass)?.classList.remove(hoverClass);
+    element.classList.add(hoverClass);
+    updatePlaceholder(element);
   }
 
   function updatePlaceholder(element) {
     const result = element && renderedResults.get(element);
     commandPaletteInput.placeholder = result?.label ?? defaultPlaceholder;
-  }
-
-  function updateSelectedItem(index, scrollIntoView = false) {
-    const maxLength = searchResults.querySelectorAll(resultSelector).length;
-    const hoveredItem = document.querySelector("." + hoverClass);
-
-    if (hoveredItem) {
-      hoveredItem.classList.remove(hoverClass);
-    }
-
-    if (index < maxLength) {
-      const element = Array.from(
-        searchResults.querySelectorAll(resultSelector),
-      )[index];
-      element.classList.add(hoverClass);
-      updatePlaceholder(element);
-
-      if (scrollIntoView) {
-        element.scrollIntoView({ block: "nearest" });
-      }
-    }
   }
 }
 

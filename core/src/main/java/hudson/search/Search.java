@@ -34,7 +34,7 @@ import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
-import hudson.model.Run;
+import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.util.EditDistance;
 import io.jenkins.servlet.ServletExceptionWrapper;
@@ -187,13 +187,12 @@ public class Search implements StaplerProxy {
                 iconName = "symbol-search";
             }
 
-            List<String> segments = getSegments(curItem, scope, scoped);
+            List<String> segments = getSegments(curItem, scope);
             String name = segments.removeLast();
 
             Item item;
             if (iconName.startsWith("symbol")) {
-                item = new Item(name, curItem.getUrl(),
-                        Symbol.get(new SymbolRequest.Builder().withRaw(iconName).build()), "symbol", group, description);
+                item = new Item(name, curItem.getUrl(), renderSymbol(iconName), "symbol", group, description);
             } else {
                 item = new Item(name, curItem.getUrl(), iconName, "image", group, description);
             }
@@ -278,23 +277,16 @@ public class Search implements StaplerProxy {
         return Boolean.parseBoolean(req.getParameter("scoped"));
     }
 
-    private static List<String> getSegments(SuggestedItem suggestedItem, @CheckForNull SearchableModelObject scope, boolean scoped) {
-        if (suggestedItem.item instanceof hudson.model.Item item) {
-            List<String> segments = new ArrayList<>();
-            segments.add(item.getDisplayName());
-            ItemGroup<?> group = item.getParent();
-            while (group instanceof hudson.model.Item parent && parent != scope) {
-                segments.addFirst(parent.getDisplayName());
-                group = parent.getParent();
-            }
-            return segments;
+    private static List<String> getSegments(SuggestedItem suggestedItem, @CheckForNull SearchableModelObject scope) {
+        List<String> segments = new ArrayList<>();
+        for (SuggestedItem s = suggestedItem; s != null && s.item != scope; s = s.getParent()) {
+            segments.addFirst(s.item instanceof hudson.model.Item item ? item.getDisplayName() : s.item.getSearchName());
         }
+        return segments;
+    }
 
-        if (scoped) {
-            return new ArrayList<>(List.of(suggestedItem.item.getSearchName()));
-        }
-
-        return new ArrayList<>(List.of(suggestedItem.getPath().split(" » ")));
+    private static String renderSymbol(String name) {
+        return Symbol.get(new SymbolRequest.Builder().withRaw(name).build());
     }
 
     @Restricted(NoExternalUse.class)
@@ -317,7 +309,7 @@ public class Search implements StaplerProxy {
             scope.put("url", a.getUrl() + "/");
             String icon = smo.getSearchIcon();
             if (icon != null && icon.startsWith("symbol-")) {
-                scope.put("icon", Symbol.get(new SymbolRequest.Builder().withRaw(icon).build()));
+                scope.put("icon", renderSymbol(icon));
             }
             scopes.add(scope);
         }
@@ -330,18 +322,17 @@ public class Search implements StaplerProxy {
 
     private static List<SuggestedItem> suggestScoped(SearchableModelObject scope, String query) {
         SearchIndex index;
-        if (scope instanceof Job<?, ?> job) {
-            index = new RunSearchIndex(job);
-        } else if (scope instanceof SearchScope searchScope) {
+        if (scope instanceof SearchScope searchScope) {
             index = searchScope.getScopedSearchIndex();
+        } else if (scope instanceof Job<?, ?> job) {
+            index = new RunSearchIndex(job);
+        } else if (scope instanceof View view) {
+            index = new ViewSearchIndex(view);
         } else {
             index = scope.getSearchIndex();
         }
         List<SearchItem> items = new ArrayList<>();
         index.suggest(query == null ? "" : query.trim(), items);
-        if (scope instanceof View) {
-            items.removeIf(item -> !(item instanceof hudson.model.Item));
-        }
 
         SuggestedItem scopeItem = SuggestedItem.build(null, scope);
         List<SuggestedItem> result = new ArrayList<>();
@@ -367,14 +358,30 @@ public class Search implements StaplerProxy {
         @Override
         public void suggest(String token, List<SearchItem> result) {
             SearchMatcher matcher = SearchMatcher.of(token);
-            int matches = 0;
-            for (Run<?, ?> run : job.getBuilds().limit(MAX_SEARCH_SIZE)) {
-                if (matches >= MAX_BUILD_RESULTS) {
-                    return;
-                }
-                if (matcher.matches(run.getDisplayName())) {
-                    result.add(run);
-                    matches++;
+            job.getBuilds().limit(MAX_SEARCH_SIZE).stream()
+                    .filter(run -> matcher.matches(run.getDisplayName()))
+                    .limit(MAX_BUILD_RESULTS)
+                    .forEach(result::add);
+        }
+    }
+
+    private static final class ViewSearchIndex implements SearchIndex {
+        private final View view;
+
+        ViewSearchIndex(View view) {
+            this.view = view;
+        }
+
+        @Override
+        public void find(String token, List<SearchItem> result) {
+        }
+
+        @Override
+        public void suggest(String token, List<SearchItem> result) {
+            SearchMatcher matcher = SearchMatcher.of(token);
+            for (TopLevelItem item : view.getItems()) {
+                if (matcher.matches(item.getName()) || matcher.matches(item.getDisplayName())) {
+                    result.add(item);
                 }
             }
         }
