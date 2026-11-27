@@ -63,6 +63,12 @@
     <Bug pattern="SF_SWITCH_NO_DEFAULT"/>
     <Class name="hudson.scheduler.CrontabParser"/>
   </Match>
+  <Match>
+    <!-- Incorrectly reports dead local store in getBuildTimeGraphSvg -->
+    <Bug pattern="DLS_DEAD_LOCAL_STORE"/>
+    <Class name="hudson.model.Job"/>
+    <Method name="getBuildTimeGraphSvg"/>
+  </Match>
   <!--
     Here lies technical debt. Exclusions in this section have not yet been triaged. When working on
     on this section, pick an exclusion to triage, then:
@@ -119,7 +125,6 @@
           <Class name="hudson.tasks.Maven$MavenInstallation"/>
           <Class name="hudson.tools.DownloadFromUrlInstaller$DescriptorImpl"/>
           <Class name="hudson.tools.ToolInstallation"/>
-          <Class name="hudson.triggers.SCMTrigger$DescriptorImpl"/>
           <Class name="hudson.util.AtomicFileWriter"/>
           <Class name="hudson.util.DirScanner$Full"/>
           <Class name="hudson.util.KeyedDataStorage"/>

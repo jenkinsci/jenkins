@@ -37,7 +37,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * App bar action that links to the page for checking a file fingerprint.
  *
- * @since TODO
+ * @since 2.592
  */
 @Restricted(Beta.class)
 public final class FingerprintCheckAction implements Action {

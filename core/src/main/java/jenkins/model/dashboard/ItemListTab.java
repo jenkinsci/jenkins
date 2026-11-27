@@ -65,7 +65,7 @@ import org.kohsuke.stapler.verb.GET;
  * }</pre>
  * and contribute it with a {@link jenkins.model.TransientActionFactory} for {@link Dashboard}.
  *
- * @since TODO
+ * @since 2.592
  */
 @Restricted(Beta.class)
 public abstract class ItemListTab extends Tab {
