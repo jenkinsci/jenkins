@@ -25,10 +25,14 @@
 package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -44,30 +48,37 @@ import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.security.InputManipulationException;
 import hudson.model.Saveable;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.xstream.CriticalXStreamException;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.tiger_types.Types;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 class RobustReflectionConverterTest {
     private final boolean originalRecordFailures = RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS;
+    private final boolean originalSkipFieldCheck = RobustReflectionConverter.SKIP_FIELD_VALUE_ELEMENT_TYPE_CHECK;
+    private final boolean originalAcceptNonIterable = RobustReflectionConverter.ACCEPT_NON_ITERABLE_COLLECTIONS;
 
     static {
         Logger.getLogger(RobustReflectionConverter.class.getName()).setLevel(Level.OFF);
@@ -76,11 +87,17 @@ class RobustReflectionConverterTest {
     @BeforeEach
     void before() {
         RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = true;
+        RobustReflectionConverter.SKIP_FIELD_VALUE_ELEMENT_TYPE_CHECK = false;
+        RobustReflectionConverter.ACCEPT_NON_ITERABLE_COLLECTIONS = false;
+        ConstructionDetector.wasConstructed.set(false);
     }
 
     @AfterEach
     void after() {
         RobustReflectionConverter.RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = originalRecordFailures;
+        RobustReflectionConverter.SKIP_FIELD_VALUE_ELEMENT_TYPE_CHECK = originalSkipFieldCheck;
+        RobustReflectionConverter.ACCEPT_NON_ITERABLE_COLLECTIONS = originalAcceptNonIterable;
+        ConstructionDetector.wasConstructed.set(false);
     }
 
     @Test
@@ -144,25 +161,10 @@ class RobustReflectionConverterTest {
         xs.alias("hold", Hold.class);
         xs.addImplicitCollection(Hold.class, "items", "item", String.class);
         Hold h = (Hold) xs.fromXML("<hold><item>a</item><item>b</item></hold>");
-        assertThat(h.items, Matchers.containsInAnyOrder("a", "b"));
+        assertThat(h.items, containsInAnyOrder("a", "b"));
         assertEquals("""
                 <hold>
                   <item>a</item>
-                  <item>b</item>
-                </hold>""", xs.toXML(h));
-    }
-
-    @Disabled("Throws an NPE in writeValueToImplicitCollection. Issue has existed since RobustReflectionConverter was created.")
-    @Test
-    void implicitCollectionsAllowNullElements() {
-        XStream2 xs = new XStream2();
-        xs.alias("hold", Hold.class);
-        xs.addImplicitCollection(Hold.class, "items", "item", String.class);
-        Hold h = (Hold) xs.fromXML("<hold><null/><item>b</item></hold>");
-        assertThat(h.items, Matchers.containsInAnyOrder(null, "b"));
-        assertEquals("""
-                <hold>
-                  <null/>
                   <item>b</item>
                 </hold>""", xs.toXML(h));
     }
@@ -461,5 +463,712 @@ class RobustReflectionConverterTest {
                 return new HashSet<>();
             }
         }
+    }
+
+    public static class ConstructionDetector implements Serializable {
+        static final AtomicBoolean wasConstructed = new AtomicBoolean(false);
+        String value;
+
+        @SuppressWarnings("unused")
+        private Object readResolve() {
+            wasConstructed.set(true);
+            return this;
+        }
+    }
+
+    public static class HoldTyped implements Saveable {
+        List<String> items;
+        Set<String> set;
+        Map<String, String> map;
+        CopyOnWriteList<String> cowl;
+
+        @Override
+        public void save() {}
+    }
+
+    private static XStream2 newXStream() {
+        XStream2 xs = new XStream2();
+        xs.alias("hold", HoldTyped.class);
+        xs.alias("detector", ConstructionDetector.class);
+        return xs;
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllRejectsWrongTypedElementInArrayList() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><items class='java.util.ArrayList'><detector><value>bad</value></detector></items></hold>");
+        assertNotNull(h.items, "RobustCollectionConverter already dropped the bad element; catch-all sees empty list");
+        assertTrue(h.items.isEmpty());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllRejectsWrongTypedElementInImmutableList() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><items class='com.google.common.collect.ImmutableList'><detector><value>bad</value></detector></items></hold>");
+        assertThat(h.items, nullValue());
+        assertTrue(ConstructionDetector.wasConstructed.get());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllRejectsWrongTypedElementInImmutableSet() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><set class='com.google.common.collect.ImmutableSet'><detector><value>bad</value></detector></set></hold>");
+        assertThat(h.set, nullValue());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllRejectsWrongTypedElementInImmutableSortedSet() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><set class='com.google.common.collect.ImmutableSortedSet'><detector><value>bad</value></detector></set></hold>");
+        assertThat(h.set, nullValue());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllRejectsWrongTypedElementInSingletonList() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><items class='java.util.Collections$SingletonList'><detector><value>bad</value></detector></items></hold>");
+        assertThat(h.items, nullValue());
+        assertTrue(ConstructionDetector.wasConstructed.get());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllRejectsWrongTypedValueInImmutableMap() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><map class='com.google.common.collect.ImmutableMap'>"
+                + "<entry><string>k</string><detector><value>bad</value></detector></entry>"
+                + "</map></hold>");
+        assertThat(h.map, nullValue());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllRejectsWrongTypedKeyInImmutableMap() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><map class='com.google.common.collect.ImmutableMap'>"
+                + "<entry><detector><value>bad</value></detector><string>v</string></entry>"
+                + "</map></hold>");
+        assertThat(h.map, nullValue());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllRejectsWrongTypedValueInCopyOnWriteMapHash() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><map class='hudson.util.CopyOnWriteMap$Hash'>"
+                + "<entry><string>k</string><detector><value>bad</value></detector></entry>"
+                + "</map></hold>");
+        assertThat(h.map, nullValue());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllRejectsWrongTypedValueInHashMap() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><map><entry><string>k</string><detector><value>bad</value></detector></entry></map></hold>");
+        assertNotNull(h.map);
+        assertTrue(h.map.isEmpty());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllRejectsWrongTypedValueInSingletonMap() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><map class='java.util.Collections$SingletonMap'>"
+                + "<entry><string>k</string><detector><value>bad</value></detector></entry>"
+                + "</map></hold>");
+        assertThat(h.map, nullValue());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void validDataAcceptedInImmutableList() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><items class='com.google.common.collect.ImmutableList'><string>abc</string></items></hold>");
+        assertThat(h.items, equalTo(List.of("abc")));
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void validDataAcceptedInImmutableSet() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><set class='com.google.common.collect.ImmutableSet'><string>abc</string></set></hold>");
+        assertThat(h.set, equalTo(Set.of("abc")));
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void validDataAcceptedInImmutableMap() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><map class='com.google.common.collect.ImmutableMap'>"
+                + "<entry><string>k</string><string>v</string></entry>"
+                + "</map></hold>");
+        assertThat(h.map, equalTo(Map.of("k", "v")));
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void validDataAcceptedInCopyOnWriteMapHash() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><map class='hudson.util.CopyOnWriteMap$Hash'>"
+                + "<entry><string>k</string><string>v</string></entry>"
+                + "</map></hold>");
+        assertNotNull(h.map);
+        assertThat(h.map.get("k"), equalTo("v"));
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void escapeHatchDisablesCatchAll() {
+        RobustReflectionConverter.SKIP_FIELD_VALUE_ELEMENT_TYPE_CHECK = true;
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><items class='com.google.common.collect.ImmutableList'><detector><value>bad</value></detector></items></hold>");
+        assertNotNull(h.items);
+        assertFalse(h.items.isEmpty());
+        assertTrue(ConstructionDetector.wasConstructed.get());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void escapeHatchDisablesCatchAllForSingletonList() {
+        RobustReflectionConverter.SKIP_FIELD_VALUE_ELEMENT_TYPE_CHECK = true;
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><items class='java.util.Collections$SingletonList'><detector><value>bad</value></detector></items></hold>");
+        assertNotNull(h.items);
+        assertTrue(ConstructionDetector.wasConstructed.get());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllRejectsEntireImmutableListWithMixedElements() {
+        var h = (HoldTyped) newXStream().fromXML(
+                """
+                <hold><items class='com.google.common.collect.ImmutableList'>
+                  <string>good</string>
+                  <detector><value>bad</value></detector>
+                  <string>also-good</string>
+                </items></hold>""");
+        assertThat(h.items, nullValue());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void perConverterCheckDropsIndividualBadElements() {
+        var h = (HoldTyped) newXStream().fromXML(
+                """
+                <hold><items class='java.util.ArrayList'>
+                  <string>good</string>
+                  <detector><value>bad</value></detector>
+                  <string>also-good</string>
+                </items></hold>""");
+        assertNotNull(h.items);
+        assertThat("RobustCollectionConverter drops the bad element individually", h.items, equalTo(List.of("good", "also-good")));
+        assertTrue(ConstructionDetector.wasConstructed.get(),
+                "RobustCollectionConverter constructs the object before checking its type");
+    }
+
+    public static class DecoupledList<T> extends ArrayList<String> {
+    }
+
+    @Test
+    void extractElementTypeResolvesClassHierarchyNotFieldTypeParam() {
+        // DecoupledList<T> extends ArrayList<String>: the element type is String, not T
+        assertThat(RobustReflectionConverter.extractElementType(
+                HoldDecoupled.class.getDeclaredFields()[0].getGenericType(), Collection.class),
+                equalTo(String.class));
+    }
+
+    public static class HoldDecoupled {
+        DecoupledList<Integer> items;
+    }
+
+    public static class ThreadedList<T> extends ArrayList<T> {
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void extractElementTypeResolvesThreadedTypeParam() {
+        // ThreadedList<T> extends ArrayList<T>: with field ThreadedList<String>, element type is String
+        assertThat(RobustReflectionConverter.extractElementType(
+                HoldThreaded.class.getDeclaredFields()[0].getGenericType(), Collection.class),
+                equalTo(String.class));
+    }
+
+    public static class HoldThreaded {
+        ThreadedList<String> items;
+    }
+
+    public static class HoldRawList implements Saveable {
+        @SuppressWarnings("rawtypes")
+        List items;
+
+        @Override
+        public void save() {}
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllSkipsRawTypeFields() {
+        XStream2 xs = newXStream();
+        xs.alias("hr", HoldRawList.class);
+        var h = (HoldRawList) xs.fromXML(
+                "<hr><items><int>42</int><string>abc</string></items></hr>");
+        assertNotNull(h.items);
+        assertThat(h.items.size(), equalTo(2));
+    }
+
+    public static class HoldNumbers implements Saveable {
+        List<Number> numbers;
+
+        @Override
+        public void save() {}
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllAcceptsSubtypesOfDeclaredElementType() {
+        XStream2 xs = newXStream();
+        xs.alias("hn", HoldNumbers.class);
+        var h = (HoldNumbers) xs.fromXML(
+                """
+                <hn><numbers>
+                  <int>1</int>
+                  <long>2</long>
+                  <double>3.0</double>
+                  <float>4.0</float>
+                  <short>5</short>
+                  <byte>6</byte>
+                </numbers></hn>""");
+        assertNotNull(h.numbers);
+        assertThat(h.numbers.size(), equalTo(6));
+        assertThat(h.numbers.get(0), instanceOf(Integer.class));
+        assertThat(h.numbers.get(1), instanceOf(Long.class));
+    }
+
+    public static class HoldSerializables implements Saveable {
+        List<Serializable> items;
+
+        @Override
+        public void save() {}
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllAcceptsInterfaceSubtypes() {
+        XStream2 xs = newXStream();
+        xs.alias("hs", HoldSerializables.class);
+        var h = (HoldSerializables) xs.fromXML(
+                "<hs><items><string>abc</string><int>42</int></items></hs>");
+        assertNotNull(h.items);
+        assertThat(h.items.size(), equalTo(2));
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllRejectsNonSerializable() {
+        XStream2 xs = newXStream();
+        xs.alias("hs", HoldSerializables.class);
+        xs.alias("non-ser", NonSerializableType.class);
+        var h = (HoldSerializables) xs.fromXML(
+                "<hs><items><non-ser/></items></hs>");
+        assertNotNull(h.items, "RobustCollectionConverter already dropped the bad element; catch-all sees empty list");
+        assertTrue(h.items.isEmpty());
+    }
+
+    public static class NonSerializableType {
+    }
+
+    public static class HoldNestedList implements Saveable {
+        List<List<String>> nested;
+
+        @Override
+        public void save() {}
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllChecksOuterElementTypeOnly() {
+        XStream2 xs = newXStream();
+        xs.alias("hn", HoldNestedList.class);
+        var h = (HoldNestedList) xs.fromXML(
+                """
+                <hn><nested>
+                  <list><int>1</int><int>2</int></list>
+                  <list><string>a</string></list>
+                </nested></hn>""");
+        assertNotNull(h.nested);
+        assertThat(h.nested.size(), equalTo(2));
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllRejectsNonListElementInNestedList() {
+        XStream2 xs = newXStream();
+        xs.alias("hn", HoldNestedList.class);
+        var h = (HoldNestedList) xs.fromXML(
+                "<hn><nested><string>not-a-list</string></nested></hn>");
+        assertNotNull(h.nested, "RobustCollectionConverter already dropped the non-List element");
+        assertTrue(h.nested.isEmpty());
+    }
+
+    public static class DecoupledMap<K, V> extends HashMap<String, Integer> {
+    }
+
+    public static class HoldDecoupledMap {
+        DecoupledMap<Long, Boolean> map;
+    }
+
+    public static class ThreadedMap<K, V> extends HashMap<K, V> {
+    }
+
+    public static class HoldThreadedMap {
+        ThreadedMap<String, Integer> map;
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void extractElementTypeResolvesDecoupledMapKeyType() throws Exception {
+        // DecoupledMap<Long, Boolean> extends HashMap<String, Integer>: key type is String, not Long
+        Type gt = HoldDecoupledMap.class.getDeclaredField("map").getGenericType();
+        var baseType = Types.getBaseClass(gt, Map.class);
+        assertThat(Types.erasure(Types.getTypeArgument(baseType, 0, Object.class)), equalTo(String.class));
+        assertThat(Types.erasure(Types.getTypeArgument(baseType, 1, Object.class)), equalTo(Integer.class));
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void extractElementTypeResolvesThreadedMapKeyType() throws Exception {
+        // ThreadedMap<String, Integer> extends HashMap<K, V>: key type is String, value type is Integer
+        Type gt = HoldThreadedMap.class.getDeclaredField("map").getGenericType();
+        var baseType = Types.getBaseClass(gt, Map.class);
+        assertThat(Types.erasure(Types.getTypeArgument(baseType, 0, Object.class)), equalTo(String.class));
+        assertThat(Types.erasure(Types.getTypeArgument(baseType, 1, Object.class)), equalTo(Integer.class));
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllSkipsRawMapFields() {
+        XStream2 xs = newXStream();
+        xs.alias("hrm", HoldRawMap.class);
+        var h = (HoldRawMap) xs.fromXML(
+                "<hrm><map><entry><int>1</int><boolean>true</boolean></entry></map></hrm>");
+        assertNotNull(h.map);
+        assertThat(h.map.size(), equalTo(1));
+    }
+
+    public static class HoldRawMap implements Saveable {
+        @SuppressWarnings("rawtypes")
+        Map map;
+
+        @Override
+        public void save() {}
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void cowlConverterDropsBadElement() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><cowl><detector><value>bad</value></detector></cowl></hold>");
+        assertNotNull(h.cowl, "CopyOnWriteList.ConverterImpl drops the bad element; catch-all sees empty COWL");
+        assertThat(h.cowl.getView(), equalTo(List.of()));
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void validDataAcceptedInCOWL() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><cowl><string>abc</string><string>def</string></cowl></hold>");
+        assertNotNull(h.cowl);
+        assertThat(h.cowl.getView(), equalTo(List.of("abc", "def")));
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void cowlConverterDropsBadElementFromMixed() {
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><cowl><string>good</string><detector><value>bad</value></detector></cowl></hold>");
+        assertNotNull(h.cowl, "CopyOnWriteList.ConverterImpl drops the bad element individually");
+        assertThat(h.cowl.getView(), equalTo(List.of("good")));
+    }
+
+    public static class DecoupledCOWL<T> extends CopyOnWriteList<String> {
+    }
+
+    public static class HoldDecoupledCOWL {
+        DecoupledCOWL<Integer> items;
+    }
+
+    public static class ThreadedCOWL<T> extends CopyOnWriteList<T> {
+    }
+
+    public static class HoldThreadedCOWL {
+        ThreadedCOWL<String> items;
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void extractElementTypeResolvesCOWLDecoupledType() {
+        // DecoupledCOWL<Integer> extends CopyOnWriteList<String>: element type is String, not Integer
+        assertThat(RobustReflectionConverter.extractElementType(
+                HoldDecoupledCOWL.class.getDeclaredFields()[0].getGenericType(), CopyOnWriteList.class),
+                equalTo(String.class));
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void extractElementTypeResolvesCOWLThreadedType() {
+        // ThreadedCOWL<String> extends CopyOnWriteList<T>: element type is String
+        assertThat(RobustReflectionConverter.extractElementType(
+                HoldThreadedCOWL.class.getDeclaredFields()[0].getGenericType(), CopyOnWriteList.class),
+                equalTo(String.class));
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void catchAllSkipsRawCOWLFields() {
+        XStream2 xs = newXStream();
+        xs.alias("hrc", HoldRawCOWL.class);
+        var h = (HoldRawCOWL) xs.fromXML(
+                "<hrc><items><int>42</int><string>abc</string></items></hrc>");
+        assertNotNull(h.items);
+        assertThat(h.items.getView().size(), equalTo(2));
+    }
+
+    public static class HoldRawCOWL implements Saveable {
+        @SuppressWarnings("rawtypes")
+        CopyOnWriteList items;
+
+        @Override
+        public void save() {}
+    }
+
+    /**
+     * A CopyOnWriteList subclass. Since no converter is registered for it, XStream uses
+     * RobustReflectionConverter which creates the object via reflection without calling
+     * CopyOnWriteList's constructor. The internal {@code core} field stays null, making
+     * the list non-iterable.
+     */
+    public static class BrokenCOWLSubclass<T> extends CopyOnWriteList<T> {
+    }
+
+    public static class HoldBrokenCOWL implements Saveable {
+        BrokenCOWLSubclass<String> items;
+
+        @Override
+        public void save() {}
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void nonIterableCollectionIsRejected() {
+        XStream2 xs = newXStream();
+        xs.alias("hb", HoldBrokenCOWL.class);
+        // The BrokenCOWLSubclass is deserialized by RobustReflectionConverter (no dedicated converter),
+        // leaving core=null. The catch-all cannot iterate it and rejects the field.
+        var h = (HoldBrokenCOWL) xs.fromXML("<hb><items/></hb>");
+        assertThat(h.items, nullValue());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void nonIterableCollectionAcceptedWithEscapeHatch() {
+        RobustReflectionConverter.ACCEPT_NON_ITERABLE_COLLECTIONS = true;
+        XStream2 xs = newXStream();
+        xs.alias("hb", HoldBrokenCOWL.class);
+        var h = (HoldBrokenCOWL) xs.fromXML("<hb><items/></hb>");
+        assertNotNull(h.items, "With escape hatch, broken collection is accepted");
+        assertThrows(NullPointerException.class, () -> h.items.size());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void nonIterableEscapeHatchDoesNotSuppressTypeMismatch() {
+        RobustReflectionConverter.ACCEPT_NON_ITERABLE_COLLECTIONS = true;
+        var h = (HoldTyped) newXStream().fromXML(
+                "<hold><items class='com.google.common.collect.ImmutableList'><detector><value>bad</value></detector></items></hold>");
+        assertThat("Type mismatch is still rejected even with the non-iterable escape hatch enabled",
+                h.items, nullValue());
+    }
+
+    public static class BrokenMap<K, V> implements Map<K, V> {
+        @Override public Set<K> keySet() {
+            throw new NullPointerException("broken");
+        }
+
+        @Override public Collection<V> values() {
+            throw new NullPointerException("broken");
+        }
+
+        @Override public int size() {
+            return 0;
+        }
+
+        @Override public boolean isEmpty() {
+            return true;
+        }
+
+        @Override public boolean containsKey(Object key) {
+            return false;
+        }
+
+        @Override public boolean containsValue(Object value) {
+            return false;
+        }
+
+        @Override public V get(Object key) {
+            return null;
+        }
+
+        @Override public V put(K key, V value) {
+            return null;
+        }
+
+        @Override public V remove(Object key) {
+            return null;
+        }
+
+        @Override public void putAll(Map<? extends K, ? extends V> m) {
+        }
+
+        @Override public void clear() {
+        }
+
+        @Override public Set<Entry<K, V>> entrySet() {
+            return Set.of();
+        }
+    }
+
+    public static class HoldBrokenMap implements Saveable {
+        BrokenMap<String, String> map;
+
+        @Override
+        public void save() {}
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void nonIterableMapIsRejected() {
+        XStream2 xs = newXStream();
+        xs.alias("hbm", HoldBrokenMap.class);
+        var h = (HoldBrokenMap) xs.fromXML("<hbm><map/></hbm>");
+        assertThat(h.map, nullValue());
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void nonIterableMapAcceptedWithEscapeHatch() {
+        RobustReflectionConverter.ACCEPT_NON_ITERABLE_COLLECTIONS = true;
+        XStream2 xs = newXStream();
+        xs.alias("hbm", HoldBrokenMap.class);
+        var h = (HoldBrokenMap) xs.fromXML("<hbm><map/></hbm>");
+        assertThat(h.map, not(nullValue()));
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void validationBudgetRejectsOversizedCollection() {
+        int originalLimit = RobustReflectionConverter.FIELD_VALUE_ELEMENT_CHECK_LIMIT;
+        try {
+            RobustReflectionConverter.FIELD_VALUE_ELEMENT_CHECK_LIMIT = 3;
+            XStream2 xs = newXStream();
+            // 5 valid elements, but budget is 3 — field must be rejected
+            assertThrows(CriticalXStreamException.class, () -> xs.fromXML(
+                    "<hold><items class='com.google.common.collect.ImmutableList'>"
+                    + "<string>a</string><string>b</string><string>c</string><string>d</string><string>e</string>"
+                    + "</items></hold>"));
+        } finally {
+            RobustReflectionConverter.FIELD_VALUE_ELEMENT_CHECK_LIMIT = originalLimit;
+        }
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void validationBudgetAcceptsWithinLimit() {
+        int originalLimit = RobustReflectionConverter.FIELD_VALUE_ELEMENT_CHECK_LIMIT;
+        try {
+            RobustReflectionConverter.FIELD_VALUE_ELEMENT_CHECK_LIMIT = 10;
+            XStream2 xs = newXStream();
+            var h = (HoldTyped) xs.fromXML(
+                    "<hold><items class='com.google.common.collect.ImmutableList'>"
+                    + "<string>a</string><string>b</string><string>c</string>"
+                    + "</items></hold>");
+            assertThat(h.items, equalTo(List.of("a", "b", "c")));
+        } finally {
+            RobustReflectionConverter.FIELD_VALUE_ELEMENT_CHECK_LIMIT = originalLimit;
+        }
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void validationBudgetIsCumulativeAcrossFields() {
+        int originalLimit = RobustReflectionConverter.FIELD_VALUE_ELEMENT_CHECK_LIMIT;
+        try {
+            RobustReflectionConverter.FIELD_VALUE_ELEMENT_CHECK_LIMIT = 5;
+            XStream2 xs = newXStream();
+            // Two fields: items (3 elements) + set (3 elements) = 6 total, budget is 5
+            assertThrows(CriticalXStreamException.class, () -> xs.fromXML(
+                    "<hold>"
+                    + "<items><string>a</string><string>b</string><string>c</string></items>"
+                    + "<set><string>x</string><string>y</string><string>z</string></set>"
+                    + "</hold>"));
+        } finally {
+            RobustReflectionConverter.FIELD_VALUE_ELEMENT_CHECK_LIMIT = originalLimit;
+        }
+    }
+
+    private static String immutableListXml(int count) {
+        var sb = new StringBuilder("<hold><items class='com.google.common.collect.ImmutableList'>");
+        for (int i = 0; i < count; i++) {
+            sb.append("<string>e").append(i).append("</string>");
+        }
+        sb.append("</items></hold>");
+        return sb.toString();
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void largeCollectionBelowDefaultLimitAccepted() {
+        var h = (HoldTyped) newXStream().fromXML(immutableListXml(999_999));
+        assertNotNull(h.items);
+        assertThat(h.items.size(), equalTo(999_999));
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void largeCollectionAboveDefaultLimitRejected() {
+        assertThrows(CriticalXStreamException.class, () -> newXStream().fromXML(immutableListXml(1_000_001)));
+    }
+
+    public static class ParentWithList implements Saveable {
+        List<Integer> items;
+
+        @Override
+        public void save() {}
+    }
+
+    public static class ChildHidingList extends ParentWithList implements Saveable {
+        List<String> items;
+
+        @Override
+        public void save() {}
+    }
+
+    @Test
+    @Issue("SECURITY-4225")
+    void hiddenFieldRoundTripPreservesParentFieldType() {
+        XStream2 xs = newXStream();
+        xs.alias("child", ChildHidingList.class);
+        var h = (ChildHidingList) xs.fromXML(
+                "<child>"
+                + "<items defined-in='hudson.util.RobustReflectionConverterTest$ParentWithList'><int>1</int><int>2</int></items>"
+                + "<items><string>a</string></items>"
+                + "</child>");
+        assertThat(((ParentWithList) h).items, equalTo(List.of(1, 2)));
+        assertThat(h.items, equalTo(List.of("a")));
     }
 }

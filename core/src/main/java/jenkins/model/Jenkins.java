@@ -115,7 +115,6 @@ import hudson.model.Label;
 import hudson.model.ListView;
 import hudson.model.LoadBalancer;
 import hudson.model.LoadStatistics;
-import hudson.model.ManageJenkinsAction;
 import hudson.model.ManagementLink;
 import hudson.model.Messages;
 import hudson.model.ModifiableViewGroup;
@@ -151,6 +150,7 @@ import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
+import hudson.search.UserSearchProperty;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
@@ -243,6 +243,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -279,6 +280,8 @@ import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.install.InstallState;
 import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
+import jenkins.model.dashboard.Dashboard;
+import jenkins.search.SearchItemProvider;
 import jenkins.security.ClassFilterImpl;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
@@ -680,6 +683,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * as much as possible, even though that's not a strict requirement.
      */
     private final transient ConcurrentHashMap<String, Label> labels = new ConcurrentHashMap<>();
+
+    /**
+     * Label expressions keyed by their canonical name, so that whitespace variants resolve to the same instance.
+     * Kept apart from {@link #labels} because a quoted {@link LabelAtom} may have the same name as an expression.
+     */
+    private final transient ConcurrentHashMap<String, Label> labelExpressions = new ConcurrentHashMap<>();
 
     /**
      * Load statistics of the entire system.
@@ -2026,14 +2035,22 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return l;
 
             // non-existent
+            Label parsed;
             try {
-                // For the record, this method creates temporary labels but there is a periodic task
-                // calling "trimLabels" to remove unused labels running every 5 minutes.
-                labels.putIfAbsent(expr, Label.parseExpression(expr));
+                parsed = Label.parseExpression(expr);
             } catch (IllegalArgumentException e) {
                 // laxly accept it as a single label atom for backward compatibility
                 return getLabelAtom(expr);
             }
+            if (!parsed.isAtom()) {
+                Label existing = labelExpressions.putIfAbsent(parsed.getName(), parsed);
+                if (existing != null) {
+                    parsed = existing;
+                }
+            }
+            // For the record, this method creates temporary labels but there is a periodic task
+            // calling "trimLabels" to remove unused labels running every 5 minutes.
+            labels.putIfAbsent(expr, parsed);
         }
     }
 
@@ -2154,6 +2171,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @CheckForNull
     @Restricted(Beta.class)
+    @StaplerNotDispatchable
     public Node getOrLoadNode(String nodeName) {
         return getNodesObject().getOrLoad(nodeName);
     }
@@ -2287,6 +2305,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     resetLabel(l);
                 } else {
                     itr.remove();
+                    labelExpressions.remove(l.getName(), l);
                 }
             }
         }
@@ -2416,6 +2435,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         }));
 
+        for (SearchItemProvider provider : SearchItemProvider.all()) {
+            try {
+                provider.getSearchItems().forEach(builder::add);
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.WARNING, "Failed to get search items from " + provider.getClass().getName(), e);
+            }
+        }
+
         builder.add(new CollectionSearchIndex<TopLevelItem>() {
                     @Override
                     protected SearchItem get(String key) { return getItemByFullName(key, TopLevelItem.class); }
@@ -2428,6 +2455,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     protected Iterable<TopLevelItem> allAsIterable() {
                         return allItems(TopLevelItem.class);
                     }
+
+                    @Override
+                    public void suggest(String token, List<SearchItem> result) {
+                        boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
+                        String searchToken = caseInsensitive ? token.toLowerCase(Locale.ROOT) : token;
+                        for (TopLevelItem item : allAsIterable()) {
+                            if (item != null && (contains(item.getName(), searchToken, caseInsensitive)
+                                    || contains(item.getDisplayName(), searchToken, caseInsensitive))) {
+                                result.add(item);
+                            }
+                        }
+                    }
+
+                    private boolean contains(String value, String token, boolean caseInsensitive) {
+                        if (value == null) {
+                            return false;
+                        }
+                        if (caseInsensitive) {
+                            value = value.toLowerCase(Locale.ROOT);
+                        }
+                        return value.contains(token);
+                    }
                 })
                 .add(getPrimaryView().makeSearchIndex())
                 .add(new CollectionSearchIndex() { // for computers
@@ -2436,13 +2485,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
                     @Override
                     protected Collection<Computer> all() { return getComputersCollection(); }
-                })
-                .add(new CollectionSearchIndex() { // for users
-                    @Override
-                    protected User get(String key) { return User.get(key, false); }
-
-                    @Override
-                    protected Collection<User> all() { return User.getAll(); }
                 })
                 .add(new CollectionSearchIndex() { // for views
                     @Override
@@ -3112,6 +3154,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return null;
     }
 
+    /**
+     * Gets the item at the given path relative to the context, or null if there is no such item of the given type.
+     * @throws AccessDeniedException if the current user has {@link Item#DISCOVER} but not {@link Item#READ} on an item along the path
+     */
     public final <T extends Item> T getItem(String pathName, Item context, Class<T> type) {
         return getItem(pathName, context != null ? context.getParent() : null, type);
     }
@@ -3160,8 +3206,45 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
+    /**
+     * Gets the item with the given full name, or null if there is no such item.
+     * @throws AccessDeniedException as per {@link #getItemByFullName(String, Class)}
+     */
     public @CheckForNull Item getItemByFullName(String fullName) {
         return getItemByFullName(fullName, Item.class);
+    }
+
+    /**
+     * Like {@link #getItemByFullName(String, Class)}, but returns null instead of throwing {@link AccessDeniedException}.
+     * @since 2.591
+     */
+    public @CheckForNull <T extends Item> T getItemByFullNameOrNull(@NonNull String fullName, Class<T> type) {
+        try {
+            return getItemByFullName(fullName, type);
+        } catch (AccessDeniedException x) {
+            return null;
+        }
+    }
+
+    /**
+     * Like {@link #getItemByFullName(String)}, but returns null instead of throwing {@link AccessDeniedException}.
+     * @since 2.591
+     */
+    public @CheckForNull Item getItemByFullNameOrNull(@NonNull String fullName) {
+        return getItemByFullNameOrNull(fullName, Item.class);
+    }
+
+    /**
+     * Like {@link #getItem(String, Item, Class)}, but returns null instead of throwing {@link AccessDeniedException}.
+     * @since 2.591
+     */
+    public @CheckForNull <T extends Item> T getItemOrNull(
+            @NonNull String pathName, Item context, @NonNull Class<T> type) {
+        try {
+            return getItem(pathName, context, type);
+        } catch (AccessDeniedException x) {
+            return null;
+        }
     }
 
     /**
@@ -3994,6 +4077,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         for (Action a : getManagementLinks())
             if (Objects.equals(a.getUrlName(), token))
                 return a;
+        if (Dashboard.isEnabled()) {
+            return Dashboard.get().getTab(token);
+        }
         return null;
     }
 
@@ -4431,6 +4517,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (isUseCrumbs() && !getCrumbIssuer().validateCrumb(req, p)) {
                 // TODO investigate whether this check can be removed
                 rsp.sendError(HttpServletResponse.SC_FORBIDDEN, "No crumb found");
+                return; // without this, the redirect below would write to the committed response and yield a 500 (IllegalStateException)
             }
             rsp.sendRedirect2(req.getContextPath() + "/fingerprint/" +
                 Util.getDigestOf(p.getFileItem2("name").getInputStream()) + '/');
@@ -4452,14 +4539,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public ContextMenu doContextMenu(StaplerRequest2 request, StaplerResponse2 response) throws IOException, JellyException {
-        ContextMenu menu = new ContextMenu().from(this, request, response);
-        for (MenuItem i : menu.items) {
-            if (i.url.equals(request.getContextPath() + "/manage")) {
-                // add "Manage Jenkins" subitems
-                i.subMenu = new ContextMenu().from(ExtensionList.lookupSingleton(ManageJenkinsAction.class), request, response, "index");
-            }
-        }
-        return menu;
+        return new ContextMenu().from(this, request, response);
     }
 
     @Override

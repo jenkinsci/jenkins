@@ -175,4 +175,17 @@ class ClassFilterImplTest {
         }
     }
 
+    @Test
+    void throwableImplementingHttpResponseIsRejected() {
+        ClassFilterImpl filter = new ClassFilterImpl();
+        assertEquals(true, filter.isBlacklisted(hudson.util.FormFillFailure.class));
+        assertEquals(true, filter.isBlacklisted(org.kohsuke.stapler.HttpRedirect.class));
+    }
+
+    @Test
+    void plainThrowableIsAllowed() {
+        ClassFilterImpl filter = new ClassFilterImpl();
+        assertEquals(false, filter.isBlacklisted(IOException.class));
+    }
+
 }

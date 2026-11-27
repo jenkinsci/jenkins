@@ -47,6 +47,9 @@ THE SOFTWARE.
       Config fragments from descriptors are rendered lazily by default, which means
       variables seen in the caller aren't visible to them. This attribute allows you
       to nominate additional variables and their values to be captured for descriptors.
+      Note that "readOnlyMode" is always captured automatically, so callers do not
+      need to (and should not need to) list it explicitly for read-only mode to be
+      propagated into the lazily rendered descriptor fragment.
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
@@ -61,7 +64,7 @@ THE SOFTWARE.
     <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
       <f:dropdownListBlock value="${loop.index}" title="${descriptor.displayName}"
         selected="${current.descriptor==descriptor || (current==null and descriptor==attrs.default)}" staplerClass="${descriptor.clazz.name}"
-        lazy="descriptor,it,${capture}">
+        lazy="descriptor,it,readOnlyMode,${capture}">
         <l:ajax>
           <j:set var="instance" value="${current.descriptor==descriptor ? current : null}" />
           <j:set var="help" value="${descriptor.helpFile}"/>

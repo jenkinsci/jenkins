@@ -40,7 +40,7 @@ public class QuietDownCommand extends CLICommand {
 
     private static final Logger LOGGER = Logger.getLogger(QuietDownCommand.class.getName());
 
-    @Option(name = "-block", usage = "Block until the system really quiets down and no builds are running")
+    @Option(name = "-block", usage = "Block until the system really quiets down and no builds are running. Note that running Pipeline jobs do not block the quiet down: they pause at the end of their current step")
     public boolean block = false;
 
     @Option(name = "-timeout", usage = "If non-zero, only block up to the specified number of milliseconds")

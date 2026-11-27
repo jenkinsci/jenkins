@@ -25,7 +25,10 @@
 package hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -611,6 +614,49 @@ class FilePathTest {
             assertNull(d.validateAntFileMask("d1/d2/**/f.txt", 10));
             assertEquals(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d.validateAntFileMask("**/*.js", 1000));
             assertThrows(InterruptedException.class, () -> d.validateAntFileMask("**/*.js", 10));
+    }
+
+    @Test
+    void validateAntFileMaskSecondHeuristicIsBounded() throws Exception {
+        File tmp = temp;
+        FilePath d = new FilePath(french, tmp.getPath());
+        String nestedDirectory = "d/".repeat(30);
+        String nestedPath = nestedDirectory + "nonexistent";
+        d.child(nestedDirectory).mkdirs();
+        d.child(nestedPath).touch(0);
+        // The literal mask misses cheaply, but the fallback's only match lies beyond the small budget.
+        assertEquals(Messages.FilePath_validateAntFileMask_doesntMatchAnything("nonexistent"),
+                d.validateAntFileMask("nonexistent", 10, true));
+        // With enough budget, the same fixture must produce a nested-path suggestion.
+        assertEquals(Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest("nonexistent", nestedPath),
+                d.validateAntFileMask("nonexistent", 10000, true));
+    }
+
+    @Test
+    void validateAntFileMaskFallbackHonorsDefaultExcludes() throws Exception {
+        File tmp = temp;
+        FilePath d = new FilePath(french, tmp.getPath());
+        d.child(".git").mkdirs();
+        d.child(".git/config").touch(0);
+        // "config" doesn't exist anywhere outside of ".git". Ant's default excludes hide ".git"
+        // from the "**/" fallback scan, matching the FileSet-based scan it replaced, so the
+        // fallback must not suggest ".git/config".
+        assertEquals(Messages.FilePath_validateAntFileMask_doesntMatchAnything("config"),
+                d.validateAntFileMask("config", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, true));
+    }
+
+    @Test
+    void validateAntFileMaskFallbackRequiresFileMatch() throws Exception {
+        File tmp = temp;
+        FilePath d = new FilePath(french, tmp.getPath());
+        d.child("nested/foo").mkdirs();
+        d.child("nested/foo/foo.txt").touch(0);
+        // "nested/foo" itself matches "**/foo*" as a directory, but a directory match alone isn't
+        // a usable suggestion. Even with an ample, finite bound, the fallback must keep scanning
+        // past that directory match to find the file match underneath it, rather than stopping
+        // early and losing the suggestion.
+        assertEquals(Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest("foo*", "nested/foo*"),
+                d.validateAntFileMask("foo*", 1000, true));
     }
 
     @Issue("JENKINS-5253")
@@ -1297,5 +1343,27 @@ class FilePathTest {
             throw new IOException("Couldn't create folders " + root);
         }
         return result;
+    }
+
+    @Test
+    void ancestorSymlinkCheck() throws Exception {
+        assumeFalse(Functions.isWindows());
+        File base = new File(temp, "base").getAbsoluteFile();
+        File outside = new File(temp, "outside").getAbsoluteFile();
+        assertTrue(base.mkdirs());
+        assertTrue(outside.mkdirs());
+        File parent = new File(base, "subdir");
+        assertTrue(parent.mkdirs());
+        assertDoesNotThrow(() -> FilePath.requireNoSymlinkInAncestors(parent, base, "crafted.tar", "subdir/file1.txt", "during write"));
+
+        Files.delete(parent.toPath());
+        Files.createSymbolicLink(parent.toPath(), outside.toPath());
+        IOException e = assertThrows(IOException.class,
+                () -> FilePath.requireNoSymlinkInAncestors(parent, base, "crafted.tar", "subdir/file1.txt", "during write"));
+        assertThat(e.getMessage(), allOf(
+                containsString("Tar crafted.tar"),
+                containsString("attempts to write to file with symlink in path"),
+                containsString("(during write)"),
+                containsString("subdir/file1.txt")));
     }
 }

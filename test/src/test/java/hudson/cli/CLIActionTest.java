@@ -4,7 +4,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import hudson.Functions;
 import hudson.Launcher;
@@ -32,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
@@ -270,6 +274,34 @@ class CLIActionTest {
             stdin(new NullInputStream(size)).
             stdout(baos).stderr(System.err).join());
         assertEquals("received " + size + " bytes", baos.toString(Charset.defaultCharset()).trim());
+    }
+
+    @Test
+    void handleCloseDoesNotLeakInterruptIntoRequestThread() throws Exception {
+        // The window in which a late interrupt can leak is narrow, so repeat the scenario.
+        for (int i = 0; i < 100; i++) {
+            CLIAction.ServerSideImpl connection = new CLIAction.ServerSideImpl(new PlainCLIProtocol.FramedOutput(OutputStream.nullOutputStream()), Jenkins.ANONYMOUS2);
+            connection.onArg("who-am-i");
+            connection.onStart();
+            AtomicReference<Throwable> failure = new AtomicReference<>();
+            AtomicBoolean interruptedAfterRun = new AtomicBoolean();
+            Thread requestThread = new Thread(() -> {
+                try {
+                    connection.run();
+                } catch (Throwable t) {
+                    failure.set(t);
+                }
+                interruptedAfterRun.set(Thread.currentThread().isInterrupted());
+            }, "simulated request thread");
+            requestThread.start();
+            // PlainCLIProtocol.FramedReader may call handleClose more than once, at any point relative to the request thread.
+            while (requestThread.isAlive()) {
+                connection.handleClose();
+            }
+            requestThread.join();
+            assertThat(failure.get(), nullValue());
+            assertFalse(interruptedAfterRun.get(), "request thread must not be left interrupted, or the next request it serves fails (iteration " + i + ")");
+        }
     }
 
     @TestExtension("largeTransferWebSocket")

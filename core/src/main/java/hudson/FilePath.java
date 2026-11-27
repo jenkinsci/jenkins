@@ -803,6 +803,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Creates a symlink to the specified target.
+     * <p>
+     * This method swallows symlink creation failures. Prefer
+     * {@link #symlinkToStrict(String, TaskListener)} for new call sites.
      *
      * @param target
      *      The file that the symlink should point to.
@@ -812,6 +815,28 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      */
     public void symlinkTo(final String target, final TaskListener listener) throws IOException, InterruptedException {
         act(new SymlinkTo(target, listener));
+    }
+
+    private void symlinkToStrict(final String target, final TaskListener listener) throws IOException, InterruptedException {
+        act(new SymlinkToStrict(target, listener));
+    }
+
+    private static class SymlinkToStrict extends MasterToSlaveFileCallable<Void> {
+        private final String target;
+        private final TaskListener listener;
+
+        SymlinkToStrict(String target, TaskListener listener) {
+            this.target = target;
+            this.listener = listener;
+        }
+
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public Void invoke(File f, VirtualChannel channel) throws IOException {
+            Util.createSymlinkStrict(f.getParentFile(), target, f.getName(), listener);
+            return null;
+        }
     }
 
     private static class SymlinkTo extends MasterToSlaveFileCallable<Void> {
@@ -3087,6 +3112,30 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return !trueIfPermissiveFlag;
     }
 
+    @VisibleForTesting
+    interface TarEntryHook {
+        void accept(File target) throws IOException;
+    }
+
+    /**
+     * Test hook invoked after the initial ancestor symlink check.
+     * Tests replace it to simulate race condition; defaults to a no-op.
+     */
+    @Restricted(NoExternalUse.class)
+    @VisibleForTesting
+    static TarEntryHook afterInitialAncestorCheck = target -> {};
+
+    @VisibleForTesting
+    static void requireNoSymlinkInAncestors(File parent, File absoluteBaseDir, String name, String entryName, String origin) throws IOException {
+        File current = parent;
+        while (current != null && !current.equals(absoluteBaseDir)) {
+            if (Util.isSymlink(current)) {
+                throw new IOException("Tar " + name + " attempts to write to file with symlink in path (" + origin + "): " + entryName);
+            }
+            current = current.getParentFile();
+        }
+    }
+
     /**
      * Reads from a tar stream and stores obtained files to the base dir.
      * Supports large files &gt; 10 GB since 1.627.
@@ -3124,14 +3173,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
                 if (requireReadFromTarPathTraversalValidation(ALLOW_UNTAR_SYMLINK_RESOLUTION)) {
                     // getCanonicalFile doesn't follow symlinks on Windows, so do this the hard way: Check each ancestor up to the base dir for whether it's a symlink
-                    File current = parent;
-                    while (current != null && !current.equals(absoluteBaseDir)) {
-                        if (Util.isSymlink(current)) {
-                            throw new IOException("Tar " + name + " attempts to write to file with symlink in path: " + entryName);
-                        }
-                        current = current.getParentFile();
-                    }
+                    requireNoSymlinkInAncestors(parent, absoluteBaseDir, name, entryName, "during initial ancestor check");
                 }
+                afterInitialAncestorCheck.accept(f);
 
                 if (te.isDirectory()) {
                     mkdirs(f);
@@ -3139,13 +3183,17 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     if (parent != null) mkdirs(parent);
 
                     if (te.isSymbolicLink()) {
-                        new FilePath(f).symlinkTo(te.getLinkName(), TaskListener.NULL);
+                        new FilePath(f).symlinkToStrict(te.getLinkName(), TaskListener.NULL);
                     } else {
                         if (requireReadFromTarPathTraversalValidation(ALLOW_UNTAR_SYMLINK_RESOLUTION)) {
                             if (Util.isSymlink(f)) {
                                 throw new IOException("Tar '" + name + "' entry '" + entryName + "' would write through existing symlink: " + f);
                             }
                         }
+                        if (requireReadFromTarPathTraversalValidation(ALLOW_UNTAR_SYMLINK_RESOLUTION)) {
+                            requireNoSymlinkInAncestors(parent, absoluteBaseDir, name, entryName, "during write");
+                        }
+
                         IOUtils.copy(t, f);
 
                         Files.setLastModifiedTime(Util.fileToPath(f), FileTime.from(te.getModTime().toInstant()));
@@ -3320,11 +3368,19 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     }
 
                     { // check the (2) above next as this is more expensive.
-                        // Try prepending "**/" to see if that results in a match
-                        FileSet fs = Util.createFileSet(dir, "**/" + fileMask);
-                        fs.setCaseSensitive(caseSensitive);
-                        DirectoryScanner ds = fs.getDirectoryScanner(new Project());
-                        if (ds.getIncludedFilesCount() != 0) {
+                        // Try prepending "**/" to see if that results in a match. This scan has no
+                        // early-exit on a directory match (see boundedFallbackScan), so it typically
+                        // needs more of the bound's budget than the other checks in this method; if
+                        // it exceeds the bound, give up on this suggestion rather than failing the
+                        // whole call, consistent with this heuristic never having been a hard
+                        // requirement for a precise answer.
+                        DirectoryScanner ds;
+                        try {
+                            ds = boundedFallbackScan(dir, "**/" + fileMask, caseSensitive);
+                        } catch (FileMaskNoMatchesFoundException x) {
+                            ds = null;
+                        }
+                        if (ds != null && ds.getIncludedFilesCount() != 0) {
                             // try shorter name first so that the suggestion results in the least amount of changes
                             String[] names = ds.getIncludedFiles();
                             Arrays.sort(names, SHORTER_STRING_FIRST);
@@ -3381,13 +3437,39 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             }
 
             private boolean hasMatch(File dir, String pattern, boolean bCaseSensitive) throws InterruptedException {
+                DirectoryScanner ds = boundedScan(dir, pattern, bCaseSensitive, false, false);
+                return ds.getIncludedFilesCount() != 0 || ds.getIncludedDirsCount() != 0;
+            }
+
+            /**
+             * Like {@link #boundedScan} but for the "did you mean a nested path?" fallback: applies
+             * Ant's default excludes, matching the {@code FileSet}-based scan this replaced (so e.g.
+             * {@code .git/config} isn't suggested), and only treats a matching file — not a matching
+             * directory — as a reason to stop early, since a directory match alone (e.g. {@code
+             * nested/foo} when looking for {@code foo*}) isn't a usable suggestion and stopping there
+             * would prevent the scan from continuing on to find a matching file underneath it (e.g.
+             * {@code nested/foo/foo.txt}).
+             */
+            private DirectoryScanner boundedFallbackScan(File dir, String pattern, boolean bCaseSensitive) throws FileMaskNoMatchesFoundException {
+                return boundedScan(dir, pattern, bCaseSensitive, true, true);
+            }
+
+            /**
+             * Scans {@code dir} for {@code pattern} using a {@link DirectoryScanner} that gives up
+             * (throwing {@link FileMaskNoMatchesFoundException}) once {@link #bound} negative operations
+             * have been performed without a match, rather than traversing the whole tree. Any caller that
+             * builds its own {@link DirectoryScanner} to probe for a match — instead of going through this
+             * method — bypasses the bound and can run unbounded over huge workspaces.
+             */
+            private DirectoryScanner boundedScan(File dir, String pattern, boolean bCaseSensitive, boolean useDefaultExcludes, boolean requireFileMatch) throws FileMaskNoMatchesFoundException {
                 class Cancel extends RuntimeException {}
 
                 DirectoryScanner ds = bound == Integer.MAX_VALUE ? new DirectoryScanner() : new DirectoryScanner() {
                     int ticks;
                     long start = System.currentTimeMillis();
                     @Override public synchronized boolean isCaseSensitive() {
-                        if (!filesIncluded.isEmpty() || !dirsIncluded.isEmpty() || ticks++ > bound || System.currentTimeMillis() - start > 5000) {
+                        boolean matched = !filesIncluded.isEmpty() || (!requireFileMatch && !dirsIncluded.isEmpty());
+                        if (matched || ticks++ > bound || System.currentTimeMillis() - start > 5000) {
                             throw new Cancel();
                         }
                         filesNotIncluded.clear();
@@ -3400,16 +3482,18 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 ds.setBasedir(dir);
                 ds.setIncludes(new String[] {pattern});
                 ds.setCaseSensitive(bCaseSensitive);
+                if (useDefaultExcludes) {
+                    ds.addDefaultExcludes();
+                }
                 try {
                     ds.scan();
                 } catch (Cancel c) {
-                    if (ds.getIncludedFilesCount() != 0 || ds.getIncludedDirsCount() != 0) {
-                        return true;
-                    } else {
+                    boolean found = ds.getIncludedFilesCount() != 0 || (!requireFileMatch && ds.getIncludedDirsCount() != 0);
+                    if (!found) {
                         throw (FileMaskNoMatchesFoundException) new FileMaskNoMatchesFoundException("no matches found within " + bound).initCause(c);
                     }
                 }
-                return ds.getIncludedFilesCount() != 0 || ds.getIncludedDirsCount() != 0;
+                return ds;
             }
 
             /**

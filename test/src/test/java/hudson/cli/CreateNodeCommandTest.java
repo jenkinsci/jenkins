@@ -172,7 +172,7 @@ class CreateNodeCommandTest {
 
         assertThat(result.stderr(), containsString(Messages.Hudson_UnsafeChar('/')));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(8));
 
         // ensure not side effects
         assertEquals(nodeListSizeBefore, j.jenkins.getNodes().size());
@@ -190,7 +190,7 @@ class CreateNodeCommandTest {
 
         assertThat(result.stderr(), containsString(Messages.Hudson_TrailingDot()));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(8));
 
         // ensure not side effects
         assertEquals(nodeListSizeBefore, j.jenkins.getNodes().size());
@@ -211,7 +211,7 @@ class CreateNodeCommandTest {
 
         assertThat(result.stderr(), containsString(Messages.Hudson_TrailingDot()));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(8));
 
         // ensure not side effects
         assertEquals(nodeListSizeBefore + 1, j.jenkins.getNodes().size());

@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.585</revision>
+    <revision>2.593</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2026-09-29T06:10:33Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-11-24T06:10:11Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3391.va_37fa_a_305d6d</remoting.version>
+    <remoting.version>3396.ve02b_5cde31b_2</remoting.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
@@ -103,8 +103,10 @@ THE SOFTWARE.
     <!-- Skips node installation, "yarn install" and "yarn build". Only safe when
          war/src/main/webapp/jsbundles is already populated from an earlier build. -->
     <skip.frontend>false</skip.frontend>
-    <winstone.version>8.1050.veb_a_0d2124285</winstone.version>
-    <node.version>24.21.0</node.version>
+    <winstone.version>8.1055.v194fede4b_064</winstone.version>
+    <node.version>26.13.1</node.version>
+    <!-- Corepack is no longer distributed with Node.js as of 25.0.0, so it is downloaded from the npm registry. -->
+    <corepack.version>0.36.0</corepack.version>
   </properties>
 
   <!--
@@ -274,7 +276,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>14.3.0</version>
+              <version>14.4.0</version>
             </dependency>
           </dependencies>
           <executions>
@@ -290,7 +292,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.15</version>
+          <version>0.8.16</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -474,6 +476,7 @@ THE SOFTWARE.
                 <phase>initialize</phase>
                 <configuration>
                   <nodeVersion>v${node.version}</nodeVersion>
+                  <corepackVersion>${corepack.version}</corepackVersion>
                   <nodeDownloadRoot>https://repo.jenkins-ci.org/nodejs-dist/</nodeDownloadRoot>
                   <skip>${skip.frontend}</skip>
                 </configuration>

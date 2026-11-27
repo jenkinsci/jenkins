@@ -84,6 +84,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
@@ -93,13 +94,16 @@ import jenkins.model.Badgeable;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.model.experimentalflags.NewDashboardPageUserExperimentalFlag;
 import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
+import jenkins.model.menu.action.BaseUrlAction;
 import jenkins.search.SearchGroup;
 import jenkins.security.ExtendedReadRedaction;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.xml.XMLUtils;
+import jenkins.widgets.BuildListTable;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.Icon;
@@ -108,6 +112,7 @@ import org.jenkins.ui.symbol.Symbol;
 import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -121,6 +126,7 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.GET;
 import org.kohsuke.stapler.verb.POST;
 import org.xml.sax.SAXException;
 
@@ -595,6 +601,38 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
+     * Collects the actions to display in the app bar of this view, along with those of its owner if it's an item,
+     * e.g. a folder. Each action resolves its URLs against the object it belongs to.
+     */
+    @Restricted(NoExternalUse.class)
+    public List<Action> getAppBarActions() {
+        String viewUrl = getViewUrl();
+        Stream<Action> viewActions = getActions().stream()
+                .filter(Actionable::isAppBarAction)
+                .map(action -> new BaseUrlAction(action, viewUrl));
+
+        if (!(owner instanceof Actionable actionable)) {
+            return viewActions.sorted(Actionable.APP_BAR_ORDER).toList();
+        }
+
+        String ownerUrl = owner.getUrl();
+        Stream<Action> ownerActions = actionable.getAllActions().stream()
+                .filter(Actionable::isAppBarAction)
+                .map(action -> new BaseUrlAction(action, ownerUrl));
+
+        return Stream.concat(viewActions, ownerActions).sorted(Actionable.APP_BAR_ORDER).toList();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public ModelObjectWithContextMenu.ContextMenu doContextMenu(StaplerRequest2 request) {
+        if (!new NewDashboardPageUserExperimentalFlag().getFlagValue()) {
+            throw HttpResponses.notFound();
+        }
+
+        return new ModelObjectWithContextMenu.ContextMenu().addAppBarActions(getAppBarActions(), request);
+    }
+
+    /**
      * No-op. Included to maintain backwards compatibility.
      * @deprecated This method does nothing and should not be used
      */
@@ -946,6 +984,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     public RunList getBuilds() {
         return new RunList(this);
+    }
+
+    /**
+     * Serves a page of {@link #getBuilds()} as JSON for {@code buildListTable.jelly}.
+     */
+    @GET
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doBuildList(@QueryParameter String olderThan, @QueryParameter String limit) {
+        return new BuildListTable().serve(getBuilds(), olderThan, limit);
     }
 
     @Deprecated

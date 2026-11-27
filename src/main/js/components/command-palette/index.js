@@ -8,6 +8,11 @@ import { createElementFromHtml } from "@/util/dom";
 import { groupResultsByCategory } from "@/components/command-palette/utils";
 
 const datasources = [JenkinsSearchSource];
+const MAX_RESULTS_PER_GROUP = 5;
+
+function startsWithQuery(result, query) {
+  return result.label.toLowerCase().startsWith(query.toLowerCase());
+}
 
 function init() {
   const i18n = document.getElementById("command-palette-i18n");
@@ -93,11 +98,19 @@ function init() {
             searchResults.append(heading);
           }
 
-          items.forEach(function (obj) {
-            const link = createElementFromHtml(obj.render());
-            link.addEventListener("mouseenter", (e) => itemMouseEnter(e));
-            searchResults.append(link);
-          });
+          const prioritisedItems = [...items].sort(
+            (a, b) =>
+              Number(startsWithQuery(b, query)) -
+              Number(startsWithQuery(a, query)),
+          );
+
+          prioritisedItems
+            .slice(0, MAX_RESULTS_PER_GROUP)
+            .forEach(function (obj) {
+              const link = createElementFromHtml(obj.render());
+              link.addEventListener("mouseenter", (e) => itemMouseEnter(e));
+              searchResults.append(link);
+            });
         }
 
         updateSelectedItem(0);

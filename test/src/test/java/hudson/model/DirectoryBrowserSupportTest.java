@@ -67,6 +67,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -74,7 +75,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -88,6 +91,8 @@ import org.apache.commons.io.IOUtils;
 import org.hamcrest.MatcherAssert;
 import org.htmlunit.Page;
 import org.htmlunit.UnexpectedPage;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlElementUtil;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.NameValuePair;
 import org.junit.jupiter.api.BeforeEach;
@@ -99,6 +104,7 @@ import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 
@@ -1558,4 +1564,219 @@ class DirectoryBrowserSupportTest {
         }
     }
 
+    private static final String EVIL_AGENT_URL = "security4232-evil-agent";
+    private static final String EVIL_NAME = "javascript:alert(document.domain)";
+
+    @Test
+    @Issue("SECURITY-4232")
+    void agentSuppliedHrefCannotRunScriptOnClick() throws Exception {
+        assertCraftedEntryIsInert(EVIL_AGENT_URL + "/");
+    }
+
+    @Test
+    @Issue("SECURITY-4232")
+    void agentSuppliedGlobMatchCannotRunScriptOnClick() throws Exception {
+        assertCraftedEntryIsInert(EVIL_AGENT_URL + "/**");
+    }
+
+    private void assertCraftedEntryIsInert(String url) throws Exception {
+        AtomicBoolean alerted = new AtomicBoolean();
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            wc.setAlertHandler((p, msg) -> alerted.set(true));
+            wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+            HtmlPage page = wc.goTo(url);
+            assertThat(page.getWebResponse().getContentAsString(), not(containsString("href=\"javascript:")));
+
+            HtmlAnchor anchor = page.getDocumentElement().getElementsByTagName("a").stream()
+                    .filter(HtmlAnchor.class::isInstance).map(HtmlAnchor.class::cast)
+                    .filter(a -> a.getHrefAttribute().contains("alert"))
+                    .findFirst().orElseThrow(() -> new AssertionError("the crafted entry should be listed"));
+            assertThat(anchor.getHrefAttribute(), not(containsString("javascript:")));
+            assertThat(anchor.getHrefAttribute(), containsString("javascript%3A"));
+
+            HtmlElementUtil.click(anchor);
+            wc.waitForBackgroundJavaScript(2000L);
+            assertFalse(alerted.get(), "clicking the workspace link must not execute script");
+        }
+    }
+
+    @Test
+    @Issue("SECURITY-4232")
+    void honestAgentListingRendersWorkingLinks() throws Exception {
+        var agent = j.createOnlineSlave();
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedNode(agent);
+        if (Functions.isWindows()) {
+            p.getBuildersList().add(new BatchFile("echo hello> README.md"));
+        } else {
+            p.getBuildersList().add(new Shell("echo hello > README.md"));
+        }
+        j.buildAndAssertSuccess(p);
+
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            HtmlPage page = wc.goTo("job/" + p.getName() + "/ws/");
+            HtmlAnchor anchor = page.getAnchorByText("README.md");
+            assertEquals("README.md", anchor.getHrefAttribute());
+            Page target = anchor.click();
+            assertEquals(200, target.getWebResponse().getStatusCode());
+            assertThat(target.getWebResponse().getContentAsString(), containsString("hello"));
+
+            HtmlPage globPage = wc.goTo("job/" + p.getName() + "/ws/**");
+            HtmlAnchor globAnchor = globPage.getAnchorByText("README.md");
+            assertEquals("./README.md", globAnchor.getHrefAttribute());
+            Page globTarget = globAnchor.click();
+            assertEquals(200, globTarget.getWebResponse().getStatusCode());
+            assertThat(globTarget.getWebResponse().getContentAsString(), containsString("hello"));
+        }
+    }
+
+    private static VirtualFile maliciousAgentRoot(Object craftedRunResult, Set<String> craftedGlobMatches) {
+        return new VirtualFile() {
+            @Override public String getName() {
+                return "";
+            }
+
+            @Override public URI toURI() {
+                return URI.create("evil:/");
+            }
+
+            @Override public VirtualFile getParent() {
+                return this;
+            }
+
+            @Override public boolean isDirectory() {
+                return true;
+            }
+
+            @Override public boolean isFile() {
+                return false;
+            }
+
+            @Override public boolean exists() {
+                return true;
+            }
+
+            @Override public VirtualFile[] list() {
+                return new VirtualFile[0];
+            }
+
+            @Override public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes) {
+                return craftedGlobMatches;
+            }
+
+            @Override public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes, OpenOption... openOptions) {
+                return craftedGlobMatches;
+            }
+
+            @Override public VirtualFile child(String name) {
+                VirtualFile root = this;
+                return new VirtualFile() {
+                    @Override public String getName() {
+                        return name;
+                    }
+
+                    @Override public URI toURI() {
+                        return URI.create("evil:/" + Util.rawEncode(name));
+                    }
+
+                    @Override public VirtualFile getParent() {
+                        return root;
+                    }
+
+                    @Override public boolean isDirectory() {
+                        return false;
+                    }
+
+                    @Override public boolean isFile() {
+                        return true;
+                    }
+
+                    @Override public boolean exists() {
+                        return craftedGlobMatches.contains(name);
+                    }
+
+                    @Override public VirtualFile[] list() {
+                        return new VirtualFile[0];
+                    }
+
+                    @Override public VirtualFile child(String childName) {
+                        return this;
+                    }
+
+                    @Override public long length() {
+                        return 0;
+                    }
+
+                    @Override public long lastModified() {
+                        return 0;
+                    }
+
+                    @Override public boolean canRead() {
+                        return true;
+                    }
+
+                    @Override public InputStream open() throws IOException {
+                        throw new FileNotFoundException();
+                    }
+                };
+            }
+
+            @Override public long length() {
+                return 0;
+            }
+
+            @Override public long lastModified() {
+                return 0;
+            }
+
+            @Override public boolean canRead() {
+                return true;
+            }
+
+            @Override public InputStream open() throws IOException {
+                throw new FileNotFoundException();
+            }
+
+            @Override
+            @SuppressWarnings("unchecked")
+            public <V> V run(hudson.remoting.Callable<V, IOException> callable) {
+                return (V) craftedRunResult;
+            }
+        };
+    }
+
+    @TestExtension({"agentSuppliedHrefCannotRunScriptOnClick", "agentSuppliedGlobMatchCannotRunScriptOnClick"})
+    public static class EvilAgentRootAction implements UnprotectedRootAction {
+        @Override public String getIconFileName() {
+            return null;
+        }
+
+        @Override public String getDisplayName() {
+            return null;
+        }
+
+        @Override public String getUrlName() {
+            return EVIL_AGENT_URL;
+        }
+
+        public HttpResponse doDynamic() throws ReflectiveOperationException {
+            ClassLoader cl = DirectoryBrowserSupport.class.getClassLoader();
+
+            Class<?> entryClass = Class.forName(
+                    "hudson.model.DirectoryBrowserSupport$ChildEntry", false, cl);
+            var entryCtor = entryClass.getDeclaredConstructor(
+                    String.class, boolean.class, long.class, boolean.class, long.class);
+            entryCtor.setAccessible(true);
+            Object entry = entryCtor.newInstance(EVIL_NAME, false, 6L, true, 0L);
+
+            Class<?> resultClass = Class.forName(
+                    "hudson.model.DirectoryBrowserSupport$BuildChildPathsResult", false, cl);
+            var resultCtor = resultClass.getDeclaredConstructor(List.class, boolean.class, boolean.class);
+            resultCtor.setAccessible(true);
+            Object crafted = resultCtor.newInstance(List.of(List.of(entry)), false, false);
+
+            return new DirectoryBrowserSupport(Jenkins.get(), maliciousAgentRoot(crafted, Set.of(EVIL_NAME)), "title", "", true);
+        }
+    }
 }

@@ -123,7 +123,7 @@ class CopyJobCommandTest {
 
         CLICommandInvoker.Result result = command.invokeWithArgs("job1", "job1.");
         assertThat(result.stderr(), containsString(hudson.model.Messages.Hudson_TrailingDot()));
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(8));
 
         assertThat(j.jenkins.getItems(), Matchers.hasSize(1));
     }

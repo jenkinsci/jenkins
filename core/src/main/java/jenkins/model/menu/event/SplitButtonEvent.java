@@ -35,7 +35,7 @@ public final class SplitButtonEvent extends DropdownEvent {
         return new SplitButtonEvent(event, actions);
     }
 
-    @Exported
+    @Exported(inline = true)
     public Event getEvent() {
         return event;
     }

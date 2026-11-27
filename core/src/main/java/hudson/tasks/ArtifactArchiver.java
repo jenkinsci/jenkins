@@ -77,12 +77,12 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     private static final Logger LOG = Logger.getLogger(ArtifactArchiver.class.getName());
 
     /**
-     * Comma- or space-separated list of patterns of files/directories to be archived.
+     * Comma-separated list of patterns of files/directories to be archived.
      */
     private String artifacts;
 
     /**
-     * Possibly null 'excludes' pattern as in Ant.
+     * Possibly null comma-separated 'excludes' pattern, using Ant-style wildcards.
      */
     private String excludes;
 

@@ -333,6 +333,111 @@ class HistoryPageFilterTest {
     }
 
     @Test
+    void test_status_filter_matches_completed_runs_by_result() throws IOException {
+        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
+        Iterable<ModelObject> runs =
+                Arrays.asList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+        historyPageFilter.setStatuses(Set.of(BuildStatusFilter.FAILURE.getValue()));
+
+        historyPageFilter.add(runs);
+
+        assertEquals(1, historyPageFilter.runs.size());
+        assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.getFirst().getEntryId());
+    }
+
+    @Test
+    void test_status_filter_matches_building_runs() throws IOException {
+        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
+        Iterable<ModelObject> runs = Arrays.asList(new MockBuildingRun(2), new MockRun(1, Result.SUCCESS));
+        historyPageFilter.setStatuses(Set.of(BuildStatusFilter.BUILDING.getValue()));
+
+        historyPageFilter.add(runs);
+
+        assertEquals(1, historyPageFilter.runs.size());
+        assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.getFirst().getEntryId());
+    }
+
+    @Test
+    void test_status_filter_excludes_queue_items_unless_building_selected() {
+        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
+        var queueItems = newQueueItems(1, 2);
+        historyPageFilter.setStatuses(Set.of(BuildStatusFilter.SUCCESS.getValue()));
+
+        historyPageFilter.add(Collections.emptyList(), queueItems);
+
+        assertTrue(historyPageFilter.queueItems.isEmpty());
+    }
+
+    @Test
+    void test_status_filter_includes_queue_items_when_building_selected() {
+        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
+        var queueItems = newQueueItems(1, 2);
+        historyPageFilter.setStatuses(Set.of(BuildStatusFilter.BUILDING.getValue()));
+
+        historyPageFilter.add(Collections.emptyList(), queueItems);
+
+        assertEquals(2, historyPageFilter.queueItems.size());
+    }
+
+    @Test
+    void test_search_and_status_filters_combined() throws IOException {
+        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
+        Iterable<ModelObject> runs = Arrays.asList(
+                new MockRun(3, Result.FAILURE), new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+        historyPageFilter.setSearchString("2");
+        historyPageFilter.setStatuses(Set.of(BuildStatusFilter.FAILURE.getValue()));
+
+        historyPageFilter.add(runs);
+
+        assertEquals(1, historyPageFilter.runs.size());
+        assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.getFirst().getEntryId());
+    }
+
+    /**
+     * With sparse matches, newerThan paging must look past non-matching builds so the page
+     * isn't left underfilled and the up/down flags reflect the matching entries only.
+     */
+    @Test
+    void test_status_filter_newerThan_with_sparse_matches() throws IOException {
+        HistoryPageFilter<ModelObject> historyPageFilter = newPage(3, 2L, null);
+        List<ModelObject> runItems = new ArrayList<>();
+        // Descending queue IDs 1-10, only odd-numbered builds are FAILUREs.
+        for (long queueId = 10; queueId >= 1; queueId--) {
+            runItems.add(new MockRun(queueId, queueId % 2 == 1 ? Result.FAILURE : Result.SUCCESS));
+        }
+        historyPageFilter.setStatuses(Set.of(BuildStatusFilter.FAILURE.getValue()));
+
+        historyPageFilter.add(runItems);
+
+        // Only build #3 is a newer, matching build; page filled with matching older builds.
+        assertEquals(3, historyPageFilter.runs.size());
+        for (var entry : historyPageFilter.runs) {
+            assertTrue(((Run) entry.getEntry()).getQueueId() % 2 == 1);
+        }
+        assertTrue(historyPageFilter.hasDownPage, "there are further matching builds below the page");
+    }
+
+    /**
+     * When no matching build remains in the given direction, the corresponding navigation
+     * flag must not be set, even though raw (non-matching) entries remain.
+     */
+    @Test
+    void test_status_filter_olderThan_no_further_matches() throws IOException {
+        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, 6L);
+        List<ModelObject> runItems = new ArrayList<>();
+        for (long queueId = 10; queueId >= 1; queueId--) {
+            // Only build #8 (which is above the olderThan cut-off) is a FAILURE.
+            runItems.add(new MockRun(queueId, queueId == 8 ? Result.FAILURE : Result.SUCCESS));
+        }
+        historyPageFilter.setStatuses(Set.of(BuildStatusFilter.FAILURE.getValue()));
+
+        historyPageFilter.add(runItems);
+
+        assertTrue(historyPageFilter.runs.isEmpty());
+        assertFalse(historyPageFilter.hasDownPage, "no matching builds remain below the page");
+    }
+
+    @Test
     @Issue("JENKINS-42645")
     void should_be_case_insensitive_by_default() throws IOException {
         Iterable<ModelObject> runs = Arrays.asList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
@@ -477,6 +582,23 @@ class HistoryPageFilterTest {
             return null;
         }
 
+    }
+
+    // A version of MockRun that reports as currently building, with no result yet.
+    private static class MockBuildingRun extends MockRun {
+        MockBuildingRun(long queueId) throws IOException {
+            super(queueId);
+        }
+
+        @Override
+        public boolean isBuilding() {
+            return true;
+        }
+
+        @Override
+        public Result getResult() {
+            return null;
+        }
     }
 
     // A version of MockRun that will throw an exception if getQueueId or getNumber is called

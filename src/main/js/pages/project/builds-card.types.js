@@ -2,6 +2,7 @@
  * @typedef QueryParameters
  * @type {object}
  * @property {string | undefined} search
+ * @property {string | undefined} status
  * @property {string | undefined} older-than
  * @property {string | undefined} newer-than
  */

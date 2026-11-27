@@ -58,7 +58,7 @@ THE SOFTWARE.
     </button>
 
     <template>
-      ${h.convertActionsToJson(url, attrs.it.appBarActions)}
+      ${h.convertActionsToJson(url, actions)}
     </template>
   </j:if>
 </j:jelly>

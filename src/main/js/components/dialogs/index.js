@@ -3,6 +3,11 @@ import { CLOSE } from "@/util/symbols";
 import behaviorShim from "@/util/behavior-shim";
 import jenkins from "@/util/jenkins";
 
+let restrictWidth = (width) => {
+  const restricted = `min(${width}, 100%)`;
+  return CSS.supports("max-width", restricted) ? restricted : width;
+};
+
 let _defaults = {
   title: null,
   message: null,
@@ -36,8 +41,8 @@ function Dialog(dialogType, options) {
 Dialog.prototype.init = function () {
   this.dialog = document.createElement("dialog");
   this.dialog.classList.add("jenkins-dialog");
-  this.dialog.style.maxWidth = this.options.maxWidth;
-  this.dialog.style.minWidth = this.options.minWidth;
+  this.dialog.style.maxWidth = restrictWidth(this.options.maxWidth);
+  this.dialog.style.minWidth = restrictWidth(this.options.minWidth);
   document.body.appendChild(this.dialog);
 
   // Append title element
@@ -258,10 +263,19 @@ function renderOnDemandDialog(dialogId) {
       window.location.hash = hash;
     }
 
+    const form =
+      content.tagName === "FORM" ? content : content.querySelector("form");
+    let hasCancelButton = false;
+    if (form !== null) {
+      hasCancelButton = wireCancelButton(form) !== null;
+    }
+
     behaviorShim.applySubtree(content, false);
     dialog.modal(content, {
       maxWidth: "550px",
       title: title,
+      preventCloseOnOutsideClick: hasCancelButton,
+      hideCloseButton: hasCancelButton,
     });
   }
 
@@ -347,8 +361,9 @@ function init() {
       element.addEventListener("click", () => {
         if (element.dataset.dialogUrl != null) {
           window.dialog.wizard(element.dataset.dialogUrl, {
-            minWidth: "min(550px, 100vw)",
+            minWidth: "550px",
             preventCloseOnOutsideClick: true,
+            hideCloseButton: element.dataset.hideCloseButton === "true",
           });
         } else {
           renderOnDemandDialog(element.dataset.dialogId);
@@ -507,11 +522,13 @@ function focusAutofocusField(form) {
 }
 
 function wireCancelButton(form) {
-  const dialog = form.closest("dialog");
-  form.querySelector("[data-id=cancel]")?.addEventListener("click", (e) => {
+  const cancelButton = form.querySelector("[data-id=cancel]");
+  cancelButton?.addEventListener("click", (e) => {
     e.preventDefault();
+    const dialog = form.closest("dialog");
     dialog?.dispatchEvent(new Event("cancel"));
   });
+  return cancelButton;
 }
 
 function navigateToNextPage(url) {

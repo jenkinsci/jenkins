@@ -30,6 +30,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.AbstractBuild;
 import hudson.model.Job;
 import hudson.model.ParameterValue;
+import hudson.model.Result;
 import hudson.search.UserSearchProperty;
 import hudson.util.Iterators;
 import hudson.widgets.HistoryWidget;
@@ -44,6 +45,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import jenkins.model.HistoricalBuild;
 import jenkins.model.queue.QueueItem;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * History page filter.
@@ -56,6 +59,7 @@ public class HistoryPageFilter<T> {
     private Long newerThan;
     private Long olderThan;
     private String searchString;
+    private Set<String> statuses;
 
     // Need to use different Lists for QueueItem and HistoricalBuilds because
     // we need access to them separately in the jelly files for rendering.
@@ -115,6 +119,19 @@ public class HistoryPageFilter<T> {
     }
 
     /**
+     * Set the build statuses to narrow the filtered set of builds to. A build matching any
+     * one of the given statuses is included (i.e. the statuses are OR'd together). Each
+     * status is one of the {@link hudson.model.Result} names (e.g. {@code SUCCESS},
+     * {@code FAILURE}), or {@code BUILDING} to match builds currently in progress. Queue
+     * items don't have a result yet, so they are only included when {@code BUILDING} is given.
+     * @param statuses The statuses to filter by.
+     */
+    @Restricted(NoExternalUse.class)
+    public void setStatuses(@NonNull Set<String> statuses) {
+        this.statuses = statuses;
+    }
+
+    /**
      * Add build items to the History page.
      *
      * @param runItems The items to be added. Assumes the items are in descending queue ID order i.e. newest first.
@@ -160,18 +177,25 @@ public class HistoryPageFilter<T> {
                     break;
                 }
             }
-            hasDownPage = iter.hasNext();
+            hasDownPage = hasMatchRemaining(iter);
         } else if (newerThan != null) {
             int toFillCount = getFillCount();
             if (toFillCount > 0) {
                 // Walk through the items and keep track of the oldest
-                // 'toFillCount' items until we reach an item older than
-                // 'newerThan' or the end of the list.
+                // 'toFillCount' matching items until we reach an item older than
+                // 'newerThan' or the end of the list. Items that don't match the
+                // search/status filters are skipped rather than counted towards
+                // the page, so paging reflects only the matching entries.
                 LinkedList<ItemT> itemsToAdd = new LinkedList<>();
                 Iterator<ItemT> iter = items.iterator();
+                int consumedCount = 0;
                 while (iter.hasNext()) {
                     ItemT item = iter.next();
-                    if (HistoryPageEntry.getEntryId(item) > newerThan) {
+                    if (HistoryPageEntry.getEntryId(item) <= newerThan) {
+                        break;
+                    }
+                    consumedCount++;
+                    if (matches(item)) {
                         itemsToAdd.addLast(item);
 
                         // Discard an item off the front of the list if we have
@@ -180,27 +204,27 @@ public class HistoryPageFilter<T> {
                             itemsToAdd.removeFirst();
                             hasUpPage = true;
                         }
-                    } else {
-                        break;
                     }
                 }
                 if (itemsToAdd.isEmpty()) {
-                    // All builds are older than newerThan ?
+                    // No matching builds newer than 'newerThan' ?
                     hasDownPage = true;
                 } else {
-                    // If there's less than a full page of items newer than
+                    // We have to restart the iterator and skip the items already walked
+                    // through above, so that we can keep looking for matching items to
+                    // fill the rest of the page (if needed) and then determine whether
+                    // any further matching items remain for the down page.
+                    Iterator<ItemT> skippedIter = items.iterator();
+                    Iterators.skip(skippedIter, consumedCount);
+                    // If there's less than a full page of matching items newer than
                     // 'newerThan', then it's ok to fill the page with older items.
-                    if (itemsToAdd.size() < toFillCount) {
-                        // We have to restart the iterator and skip the items that we added (because
-                        // we may have popped an extra item off the iterator that did not get added).
-                        Iterator<ItemT> skippedIter = items.iterator();
-                        Iterators.skip(skippedIter, itemsToAdd.size());
-                        for (int i = itemsToAdd.size(); i < toFillCount && skippedIter.hasNext(); i++) {
-                            ItemT item = skippedIter.next();
+                    while (itemsToAdd.size() < toFillCount && skippedIter.hasNext()) {
+                        ItemT item = skippedIter.next();
+                        if (matches(item)) {
                             itemsToAdd.addLast(item);
                         }
                     }
-                    hasDownPage = iter.hasNext();
+                    hasDownPage = hasMatchRemaining(skippedIter);
                     for (Object item : itemsToAdd) {
                         add(item);
                     }
@@ -209,13 +233,15 @@ public class HistoryPageFilter<T> {
         } else {
             Iterator<ItemT> iter = items.iterator();
             while (iter.hasNext()) {
-                Object item = iter.next();
+                ItemT item = iter.next();
                 if (HistoryPageEntry.getEntryId(item) >= olderThan) {
-                    hasUpPage = true;
-                } else {
+                    if (matches(item)) {
+                        hasUpPage = true;
+                    }
+                } else if (matches(item)) {
                     add(item);
                     if (isFull()) {
-                        hasDownPage = iter.hasNext();
+                        hasDownPage = hasMatchRemaining(iter);
                         break;
                     }
                 }
@@ -276,18 +302,66 @@ public class HistoryPageFilter<T> {
     private boolean add(Object entry) {
         // Purposely not calling isFull(). May need to add a greater number of entries
         // to the page initially, newerThan then cutting it back down to size using cutLeading()
+        if (!matches(entry)) {
+            return false;
+        }
+        if (entry instanceof QueueItem item) {
+            addQueueItem(item);
+            return true;
+        } else if (entry instanceof HistoricalBuild run) {
+            addRun(run);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Does the given entry fit the search string and status filters, regardless of whether
+     * the page is already full? Used both to decide whether to add an entry and, while paging,
+     * to determine page boundaries and navigation flags without actually adding the entry.
+     */
+    private boolean matches(Object entry) {
         if (entry instanceof QueueItem item) {
             if (searchString != null && !fitsSearchParams(item)) {
                 return false;
             }
-            addQueueItem(item);
-            return true;
+            // Queue items don't have a result yet, so they only match the in-progress filter.
+            return statuses == null || statuses.isEmpty() || statuses.contains(BuildStatusFilter.BUILDING.getValue());
         } else if (entry instanceof HistoricalBuild run) {
             if (searchString != null && !fitsSearchParams(run)) {
                 return false;
             }
-            addRun(run);
-            return true;
+            return statuses == null || statuses.isEmpty() || fitsStatus(run);
+        }
+        return false;
+    }
+
+    /**
+     * Look ahead through the remainder of an iterator to determine whether any later entry
+     * matches the search string and status filters, without adding any of those entries to
+     * the page. Used to compute accurate paging navigation flags when filters are in effect.
+     */
+    private boolean hasMatchRemaining(Iterator<?> iter) {
+        while (iter.hasNext()) {
+            if (matches(iter.next())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean fitsStatus(@NonNull HistoricalBuild run) {
+        for (String status : statuses) {
+            if (BuildStatusFilter.BUILDING.getValue().equals(status)) {
+                if (run.isBuilding()) {
+                    return true;
+                }
+            } else if (!run.isBuilding()) {
+                Result result = run.getResult();
+                if (result != null && status.equals(result.toString())) {
+                    return true;
+                }
+            }
         }
         return false;
     }

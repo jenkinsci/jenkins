@@ -90,10 +90,10 @@ THE SOFTWARE.
             <div class="jenkins-radio__children">
               <j:set var="descriptor" value="${it.descriptor}" />
               <div class="jenkins-search">
-                <s:textbox placeholder="${%Type for suggestions}" clazz="jenkins-search__input copy-field" name="from" field="copyNewItemFrom" />
                 <div class="jenkins-search__icon">
                   <l:icon src="symbol-search" />
                 </div>
+                <s:textbox placeholder="${%Type for suggestions}" clazz="jenkins-search__input copy-field" name="from" field="copyNewItemFrom" />
               </div>
             </div>
           </div>

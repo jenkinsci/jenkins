@@ -84,6 +84,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -111,6 +112,7 @@ import jenkins.security.HexStringConfidentialKey;
 import jenkins.security.XStreamNotDeserializable;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
+import jenkins.widgets.BuildTimeTrend;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -132,6 +134,8 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerOverridable;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -139,6 +143,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.GET;
 import org.kohsuke.stapler.verb.POST;
 
 /**
@@ -167,6 +172,57 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     // TODO Mark @XStreamNotDeserializable and review #onLoad
     protected transient volatile int nextBuildNumber = 1;
+
+    /**
+     * Guards read-modify-write access to {@link #nextBuildNumber}, instead of synchronizing on
+     * {@code this}. Build number assignment happens on every build, from {@link Executor#run}
+     * while it holds {@link Queue#lock}; synchronizing on the job's own monitor there would risk
+     * a lock-ordering deadlock against any code that acquires {@link Queue#lock} while already
+     * holding that monitor. This dedicated lock is never needed by anything
+     * that also needs {@link Queue#lock}, so it carries no equivalent risk -- but only as long as
+     * nothing to do with it ever has to fall back to synchronizing on {@code this}, which is why
+     * this is a field initializer (always run for normally-constructed jobs) rather than lazily
+     * created on first use: a lazy-init fallback would itself need to synchronize on {@code this}
+     * for a newly constructed job's first build, recreating the exact hazard this exists to avoid.
+     *
+     * <p>Deliberately not {@code final}: XStream deserialization (loading a job from
+     * {@code config.xml}, including {@link #onCopiedFrom}) bypasses the constructor and field
+     * initializers entirely, which would leave this {@code null} for existing jobs predating this
+     * field. {@link #onLoad} and {@link #onCopiedFrom} each fix it up with a plain, unsynchronized
+     * null check -- safe because neither runs concurrently with a build of the same job, the same
+     * way {@link #onLoad} already fixes up {@link #properties} for objects that predate that field.
+     *
+     * <p>Lock order: {@link AbstractItem#renameTo} takes this inside the job's own monitor (see
+     * {@link #getRenameLock}), so code holding this lock must never acquire the job's or its parent's
+     * monitor, nor {@link Queue#lock}.
+     *
+     * <p>{@code @XStreamNotDeserializable} even though {@code RobustReflectionConverter} already
+     * refuses by default to deserialize into any {@code Object}-typed field (it would throw rather
+     * than replace this instance, unless the site has opted into the {@code ALLOW_ALL_OBJECT_FIELDS}
+     * escape hatch): that default-refusal depends on a system property staying at its default, so
+     * this annotation is a second, independent line of defense -- consistent with the two counters
+     * below, which need it for the more direct reason that they aren't Object-typed and so have no
+     * such built-in refusal at all.
+     */
+    @XStreamNotDeserializable
+    private transient volatile Object nextBuildNumberLock = new Object();
+
+    /**
+     * Highest number handed out by {@link #assignBuildNumber} since this object was created or loaded,
+     * guarded by {@link #nextBuildNumberLock}. A build is not visible to {@link #getLastBuild} until
+     * after its number is assigned, so {@link #updateNextBuildNumber} also checks this to avoid
+     * rewinding onto a number that a build being created already holds.
+     */
+    @XStreamNotDeserializable
+    private transient int highestAssignedBuildNumber;
+
+    /**
+     * Builds currently inside {@link LazyBuildMixIn#newBuild}, guarded by {@link #nextBuildNumberLock}.
+     * Such a build has already resolved its directory from the job's name but may not have created it
+     * yet, so {@link #renameTo} refuses to move the job meanwhile.
+     */
+    @XStreamNotDeserializable
+    private transient int buildsBeingCreated;
 
     /**
      * Newly copied jobs get this flag set, so that Hudson doesn't try to run the job until its configuration
@@ -218,6 +274,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             throws IOException {
         super.onLoad(parent, name);
 
+        if (nextBuildNumberLock == null) { // XStream deserialization bypasses the field initializer
+            nextBuildNumberLock = new Object();
+        }
+
         // see https://github.com/jenkinsci/jenkins/pull/10456#issuecomment-2748112449
         // This code can be deleted after several Jenkins releases,
         // when it is likely that everyone is running a version equal or higher to this version.
@@ -232,19 +292,21 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         TextFile f = getNextBuildNumberFile();
         if (f.exists()) {
             try {
-                synchronized (this) {
+                synchronized (nextBuildNumberLock) {
                     this.nextBuildNumber = Integer.parseInt(f.readTrim());
                 }
             } catch (NumberFormatException e) {
                 LOGGER.log(Level.WARNING, "Corruption in {0}: {1}", new Object[] {f, e});
                 RunT lB = getLastBuild();
-                synchronized (this) {
+                synchronized (nextBuildNumberLock) {
                     this.nextBuildNumber = lB != null ? lB.getNumber() + 1 : 1;
                 }
                 saveNextBuildNumber();
             }
         } else if (nextBuildNumber == 0) {
-            nextBuildNumber = 1;
+            synchronized (nextBuildNumberLock) {
+                nextBuildNumber = 1;
+            }
         }
 
         if (properties == null) // didn't exist < 1.72
@@ -255,10 +317,18 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Override
+    @SuppressFBWarnings(
+            value = "ML_SYNC_ON_UPDATED_FIELD",
+            justification = "The field is only null right after XStream deserialization, and a copied job cannot be building yet; see nextBuildNumberLock.")
     public void onCopiedFrom(Item src) {
         super.onCopiedFrom(src);
-        synchronized (this) {
+        if (nextBuildNumberLock == null) { // XStream deserialization bypasses the field initializer
+            nextBuildNumberLock = new Object();
+        }
+        synchronized (nextBuildNumberLock) {
             this.nextBuildNumber = 1; // reset the next build number
+        }
+        synchronized (this) {
             this.holdOffBuildUntilUserSave = true;
             this.holdOffBuildUntilSave = this.holdOffBuildUntilUserSave;
         }
@@ -288,11 +358,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return holdOffBuildUntilSave;
     }
 
-    protected synchronized void saveNextBuildNumber() throws IOException {
-        if (nextBuildNumber == 0) { // JENKINS-3361
-            nextBuildNumber = 1;
+    protected void saveNextBuildNumber() throws IOException {
+        synchronized (nextBuildNumberLock) {
+            if (nextBuildNumber == 0) { // JENKINS-3361
+                nextBuildNumber = 1;
+            }
+            getNextBuildNumberFile().write(String.valueOf(nextBuildNumber) + '\n');
         }
-        getNextBuildNumberFile().write(String.valueOf(nextBuildNumber) + '\n');
     }
 
     @Exported
@@ -302,8 +374,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * If this job is in the build queue, return its item.
+     * @return the queue item, or {@code null} if this job is not queued
      */
     @Exported
+    @CheckForNull
     public Queue.Item getQueueItem() {
         return null;
     }
@@ -351,7 +425,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see BuildNumberAssigner
      */
     public int assignBuildNumber() throws IOException {
-        return ExtensionList.lookupFirst(BuildNumberAssigner.class).assignBuildNumber(this, this::saveNextBuildNumber);
+        BuildNumberAssigner assigner = ExtensionList.lookupFirst(BuildNumberAssigner.class);
+        // Held across the assigner so that updateNextBuildNumber can never observe a number that has
+        // been handed out but not yet recorded, whichever assigner is in use.
+        synchronized (nextBuildNumberLock) {
+            int r = assigner.assignBuildNumber(this, this::saveNextBuildNumber);
+            highestAssignedBuildNumber = Math.max(highestAssignedBuildNumber, r);
+            return r;
+        }
     }
 
     /**
@@ -361,6 +442,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public interface BuildNumberAssigner extends ExtensionPoint {
         /**
          * Implementation of {@link Job#assignBuildNumber}.
+         * Always called with the job's private build-number lock held (and normally, from an executor,
+         * with {@link Queue#lock} held too), so it must not call anything that synchronizes on the job
+         * or its parent (such as {@link Job#save}), or it can deadlock against a concurrent rename.
          */
         int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException;
 
@@ -379,7 +463,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public static final class DefaultBuildNumberAssigner implements BuildNumberAssigner {
         @Override
         public int assignBuildNumber(Job<?, ?> job, SaveNextBuildNumber saveNextBuildNumber) throws IOException {
-            synchronized (job) {
+            // Not synchronized on `job` itself: this runs from Executor#run while Queue#lock is
+            // held, and the job's own monitor can be held elsewhere (e.g. during doConfigSubmit)
+            // by code that in turn needs Queue#lock -- see Job#nextBuildNumberLock.
+            synchronized (job.nextBuildNumberLock) {
                 int r = job.nextBuildNumber++;
                 saveNextBuildNumber.call();
                 return r;
@@ -453,14 +540,21 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Much of Hudson assumes that the build number is unique and monotonic, so
      * this method can only accept a new value that's bigger than
      * {@link #getLastBuild()} returns. Otherwise it'll be no-op.
+     * It is likewise a no-op for any value not bigger than the highest number already handed out by
+     * {@link #assignBuildNumber} since this job was loaded, even if that build was never recorded.
      *
      * @since 1.199 (before that, this method was package private.)
      */
-    public synchronized void updateNextBuildNumber(int next) throws IOException {
+    public void updateNextBuildNumber(int next) throws IOException {
+        // Read outside the lock: it may lazy-load builds (running arbitrary onLoad code), and a stale
+        // value is harmless because every number assigned since load is covered by highestAssignedBuildNumber.
         RunT lb = getLastBuild();
-        if (lb != null ?  next > lb.getNumber() : next > 0) {
-            this.nextBuildNumber = next;
-            saveNextBuildNumber();
+        synchronized (nextBuildNumberLock) {
+            int floor = Math.max(lb != null ? lb.getNumber() : 0, highestAssignedBuildNumber);
+            if (next > floor) {
+                this.nextBuildNumber = next;
+                saveNextBuildNumber();
+            }
         }
     }
 
@@ -477,6 +571,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns the configured build discarder for this job, via {@link BuildDiscarderProperty}, or null if none.
      */
+    @CheckForNull
     public synchronized BuildDiscarder getBuildDiscarder() {
         BuildDiscarderProperty prop = _getProperty(BuildDiscarderProperty.class);
         return prop != null ? prop.getStrategy() : /* settings compatibility */ logRotator;
@@ -500,6 +595,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *      Use {@link #getBuildDiscarder()}.
      */
     @Deprecated
+    @CheckForNull
     public LogRotator getLogRotator() {
         BuildDiscarder buildDiscarder = getBuildDiscarder();
         return buildDiscarder instanceof LogRotator ? (LogRotator) buildDiscarder : null;
@@ -590,9 +686,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Removes the property of the given type.
      *
      * @return
-     *      The property that was just removed.
+     *      The property that was just removed, or {@code null} if no property of this type was configured.
      * @since 1.279
      */
+    @CheckForNull
     public <T extends JobProperty> T removeProperty(Class<T> clazz) throws IOException {
         for (JobProperty<? super JobT> p : properties) {
             if (clazz.isInstance(p)) {
@@ -628,6 +725,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Gets the specific property, or null if the property is not configured for
      * this job.
      */
+    @CheckForNull
     public <T extends JobProperty> T getProperty(Class<T> clazz) {
         if (clazz == BuildDiscarderProperty.class && logRotator != null) {
             return clazz.cast(new BuildDiscarderProperty(logRotator));
@@ -635,6 +733,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return _getProperty(clazz);
     }
 
+    @CheckForNull
     private <T extends JobProperty> T _getProperty(Class<T> clazz) {
         for (JobProperty p : properties) {
             if (clazz.isInstance(p))
@@ -646,8 +745,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Bind {@link JobProperty}s to URL spaces.
      *
+     * @return the property with the given class name, or {@code null} if none is configured
      * @since 1.403
      */
+    @CheckForNull
     public JobProperty getProperty(String className) {
         for (JobProperty p : properties)
             if (p.getClass().getName().equals(className))
@@ -706,6 +807,37 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
         }
     };
+
+    /**
+     * Build-number assignment writes {@code nextBuildNumber} into the root directory under
+     * {@link #nextBuildNumberLock} rather than this job's monitor, so a rename must also hold that
+     * lock while moving the directory, or its fallback copy could overwrite a freshly saved number.
+     */
+    @Override
+    Object getRenameLock() {
+        return nextBuildNumberLock;
+    }
+
+    @Override
+    void checkRootDirMovable() {
+        if (buildsBeingCreated > 0) {
+            throw new Failure(Messages.Job_NoRenameWhileBuilding());
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void beginBuildCreation() {
+        synchronized (nextBuildNumberLock) {
+            buildsBeingCreated++;
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void endBuildCreation() {
+        synchronized (nextBuildNumberLock) {
+            buildsBeingCreated--;
+        }
+    }
 
     /**
      * Renames a job.
@@ -821,8 +953,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Looks up a build by its ID.
+     * @return the build, or {@code null} if no build has this ID
      * @see LazyBuildMixIn#getBuild
      */
+    @CheckForNull
     public RunT getBuild(String id) {
         for (RunT r : _getRuns().values()) {
             if (r.getId().equals(id))
@@ -838,6 +972,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see Run#getNumber()
      * @see LazyBuildMixIn#getBuildByNumber
      */
+    @CheckForNull
     public RunT getBuildByNumber(int n) {
         return _getRuns().get(n);
     }
@@ -873,8 +1008,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
+     * @return the oldest build at or after {@code n}, or {@code null} if none exists
      * @see LazyBuildMixIn#getNearestBuild
      */
+    @CheckForNull
     public RunT getNearestBuild(int n) {
         SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n - 1); // the map should
                                                                           // include n, so n-1
@@ -888,8 +1025,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
+     * @return the newest build at or before {@code n}, or {@code null} if none exists
      * @see LazyBuildMixIn#getNearestOldBuild
      */
+    @CheckForNull
     public RunT getNearestOldBuild(int n) {
         SortedMap<Integer, ? extends RunT> m = _getRuns().tailMap(n);
         if (m.isEmpty())
@@ -901,6 +1040,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @since 2.475
      */
     @Override
+    @CheckForNull
     public Object getDynamic(String token, StaplerRequest2 req,
                              StaplerResponse2 rsp) {
         try {
@@ -962,11 +1102,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     protected abstract void removeRun(RunT run);
 
     /**
-     * Returns the newest build.
+     * Returns the newest build, or {@code null} if there are no builds.
      * @see LazyBuildMixIn#getLastBuild
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastBuild() {
         SortedMap<Integer, ? extends RunT> runs = _getRuns();
 
@@ -976,11 +1117,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Returns the oldest build in the record.
+     * Returns the oldest build in the record, or {@code null} if there are no builds.
      * @see LazyBuildMixIn#getFirstBuild
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getFirstBuild() {
         SortedMap<Integer, ? extends RunT> runs = _getRuns();
 
@@ -997,6 +1139,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastSuccessfulBuild() {
         return (RunT) PeepholePermalink.LAST_SUCCESSFUL_BUILD.resolve(this);
     }
@@ -1007,6 +1150,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastUnsuccessfulBuild() {
         return (RunT) PeepholePermalink.LAST_UNSUCCESSFUL_BUILD.resolve(this);
     }
@@ -1017,6 +1161,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastUnstableBuild() {
         return (RunT) PeepholePermalink.LAST_UNSTABLE_BUILD.resolve(this);
     }
@@ -1027,6 +1172,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastStableBuild() {
         return (RunT) PeepholePermalink.LAST_STABLE_BUILD.resolve(this);
     }
@@ -1036,6 +1182,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastFailedBuild() {
         return (RunT) PeepholePermalink.LAST_FAILED_BUILD.resolve(this);
     }
@@ -1045,6 +1192,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported
     @QuickSilver
+    @CheckForNull
     public RunT getLastCompletedBuild() {
         return (RunT) PeepholePermalink.LAST_COMPLETED_BUILD.resolve(this);
     }
@@ -1329,6 +1477,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return reports;
     }
 
+    @CheckForNull
     private HealthReport getBuildStabilityHealthReport() {
         // we can give a simple view of build health from the last five builds
         int failCount = 0;
@@ -1485,7 +1634,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             // submission
             if (req.getParameter("description") != null) {
                 this.setDescription(req.getParameter("description"));
-                rsp.sendError(SC_NO_CONTENT);
+                rsp.setStatus(SC_NO_CONTENT);
                 return;
             }
         }
@@ -1591,6 +1740,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
     }
 
+    /**
+     * Serves a page of {@link #getBuilds()} as JSON for {@code index.jelly}.
+     */
+    @GET
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doBuildTimeTrendData(@QueryParameter String olderThan, @QueryParameter String limit) {
+        return new BuildTimeTrend().serve(getBuilds(), olderThan, limit);
+    }
+
     public Graph getBuildTimeGraph() {
         return new Graph(getLastBuildTime(), 500, 400) {
             @Override
@@ -1647,6 +1805,186 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 return chart;
             }
         };
+    }
+
+    /**
+     * Builds an inline SVG bar chart of recent build durations for {@code buildTimeTrend.jelly}.
+     *
+     * <p>
+     * Each completed build is drawn as a vertical bar whose height is its duration. The bar links
+     * to the corresponding run and carries a {@code <title>} tooltip with the build's display name,
+     * the agent it ran on, and the duration; the x-axis label is just the build number. Colors
+     * reference CSS custom properties so the chart adapts to the active theme (e.g. dark mode), and
+     * the {@code viewBox} lets it scale with its container instead of being a fixed-size raster.
+     *
+     * <p>
+     * This is the inline replacement for the JFreeChart PNG produced by {@link #getBuildTimeGraph}
+     * (previously embedded as an {@code <img>} with a client-side image map).
+     */
+    @Restricted(NoExternalUse.class)
+    public String getBuildTimeGraphSvg() {
+        List<ChartLabel> labels = new ArrayList<>();
+        for (Run r : getNewBuilds()) {
+            if (r.isBuilding())
+                continue;
+            labels.add(new ChartLabel(r));
+        }
+        // getNewBuilds() is newest-first; draw oldest -> newest, left to right.
+        Collections.sort(labels);
+
+        // Logical coordinate system rendered at 2:1 scale: the SVG's width attribute is half the
+        // viewBox width, so 1 screen px = 2 viewBox units and the chart is 400px tall (800 / 2)
+        // via the preserved aspect ratio. The plot (bars) area has a fixed width (plotW); the
+        // total viewBox width is the variable left margin plus that fixed plot area, so only a
+        // wider y-axis label grows the chart - the plot area itself never changes size.
+        final int height = 800;
+        final double plotTop = 20;
+
+        int len = labels.size();
+
+        // Reserve only as much room below the axis as the rotated build-number labels need, so the
+        // common case of short build numbers gives the plot more height instead of wasting space.
+        // The estimate uses the largest (newest, hence most digits) build number at the largest
+        // responsive label font (~16 user units); rotated text hangs down by roughly its length.
+        // Capped so a pathologically long number cannot shrink the plot to nothing.
+        int maxLabelChars = 1 + (len == 0 ? 1 : Integer.toString(labels.get(len - 1).run.getNumber()).length());
+        final double plotBottom = height - Math.min(160, 8 + Math.ceil(maxLabelChars * 0.6 * 16) + 6);
+        final double plotH = plotBottom - plotTop;
+
+        // y-axis: build duration in minutes. Pick a "nice" step (1, 2 or 5 times a power of ten) so
+        // the gridlines land on round numbers, then round the upper bound up to a multiple of it.
+        double maxMinutes = 0;
+        for (ChartLabel label : labels)
+            maxMinutes = Math.max(maxMinutes, label.run.getDuration() / (1000.0 * 60));
+        long yStep = niceStep(maxMinutes, 10);
+        long yMax = Math.max(yStep, (long) Math.ceil(maxMinutes / yStep) * yStep);
+
+        // Size the left margin to fit the widest y-axis label plus the rotated axis title.
+        int widestLabel = 0;
+        for (long v = 0; v <= yMax; v += yStep)
+            widestLabel = Math.max(widestLabel, Long.toString(v).length());
+        double plotLeft = Math.max(48, widestLabel * 6.5 + 56);
+        final double plotW = 1202;
+        final double width = plotLeft + plotW + 12;
+        final double plotRight = plotLeft + plotW;
+
+        StringBuilder buf = new StringBuilder();
+        buf.append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"").append(svgFmt(width / 2))
+           .append("\" viewBox=\"0 0 ").append(svgFmt(width)).append(' ').append(height)
+           .append("\" preserveAspectRatio=\"xMidYMid meet\" role=\"img\">");
+
+        // Range gridlines + y-axis tick labels.
+        for (long v = 0; v <= yMax; v += yStep) {
+            double y = plotBottom - plotH * v / yMax;
+            buf.append("<line x1=\"").append(svgFmt(plotLeft)).append("\" y1=\"").append(svgFmt(y))
+               .append("\" x2=\"").append(svgFmt(plotRight)).append("\" y2=\"").append(svgFmt(y))
+               .append("\" stroke=\"var(--text-color-secondary, grey)\" stroke-opacity=\"0.25\" stroke-width=\"1\"/>");
+            buf.append("<text x=\"").append(svgFmt(plotLeft - 6)).append("\" y=\"").append(svgFmt(y + 4))
+               .append("\" text-anchor=\"end\" font-size=\"18\">")
+               .append(v).append("</text>");
+        }
+
+        // Rotated y-axis title (the duration unit).
+        double titleX = 26;
+        double titleY = plotTop + plotH / 2;
+        buf.append("<text tooltip=\"").append(Util.xmlEscape(Messages.Job_durationMinutes())).append("\" x=\"").append(svgFmt(titleX)).append("\" y=\"").append(svgFmt(titleY))
+           .append("\" text-anchor=\"middle\" transform=\"rotate(-90 ")
+           .append(svgFmt(titleX)).append(' ').append(svgFmt(titleY))
+           .append(")\" font-size=\"36\">")
+           .append(Util.xmlEscape(Messages.Job_minutes())).append("</text>");
+
+        // Axis lines.
+        buf.append("<line x1=\"").append(svgFmt(plotLeft)).append("\" y1=\"").append(svgFmt(plotTop))
+           .append("\" x2=\"").append(svgFmt(plotLeft)).append("\" y2=\"").append(svgFmt(plotBottom))
+           .append("\" stroke=\"var(--text-color-secondary, grey)\" stroke-width=\"1\"/>");
+        buf.append("<line x1=\"").append(svgFmt(plotLeft)).append("\" y1=\"").append(svgFmt(plotBottom))
+           .append("\" x2=\"").append(svgFmt(plotRight)).append("\" y2=\"").append(svgFmt(plotBottom))
+           .append("\" stroke=\"var(--text-color-secondary, grey)\" stroke-width=\"1\"/>");
+
+        if (len > 0) {
+            double slotW = plotW / len;
+            double barW = Math.max(1, slotW * 0.8);
+            // Show only every n-th build number so the labels do not overlap (e.g. every 4th at the
+            // 100-build maximum), mirroring the label thinning the old JFreeChart PNG applied.
+            int labelStep = Math.max(1, (int) Math.ceil(len / 25.0));
+
+            for (int i = 0; i < len; i++) {
+                ChartLabel label = labels.get(i);
+                Run r = label.run;
+                double minutes = r.getDuration() / (1000.0 * 60);
+                double barH = plotH * minutes / yMax;
+                double x = plotLeft + slotW * i + (slotW - barW) / 2;
+                double y = plotBottom - barH;
+
+                // Tooltip: the run's display name, the agent it ran on, and the duration. The
+                // display name can contain user-provided text, so the whole string is XML-escaped.
+                StringBuilder tooltip = new StringBuilder(r.getDisplayName());
+                tooltip.append(": ").append(r.getDurationString());
+                if (r instanceof AbstractBuild b) {
+                    String builtOn = b.getBuiltOnStr();
+                    if (builtOn != null && !builtOn.isEmpty())
+                        tooltip.append("\nAgent: ").append(builtOn);
+                }
+                buf.append("<a href=\"../").append(r.getNumber()).append("\" tooltip=\"");
+                buf.append(Util.xmlEscape(tooltip.toString()).replace("\"", "&quot;")).append("\">");
+                buf.append("<rect x=\"").append(svgFmt(x)).append("\" y=\"").append(svgFmt(y))
+                   .append("\" width=\"").append(svgFmt(barW)).append("\" height=\"").append(svgFmt(barH))
+                   .append("\" fill=\"").append(cssColor(label.getColor())).append("\"/>");
+                buf.append("</a>");
+
+                // x-axis label: the build number (e.g. "#48"), rotated 90° (reading bottom-to-top)
+                // so it hangs vertically below the axis instead of overflowing sideways.
+                if (i % labelStep == 0) {
+                    double lx = x + barW / 2;
+                    double ly = plotBottom + 8;
+                    buf.append("<text x=\"").append(svgFmt(lx)).append("\" y=\"").append(svgFmt(ly))
+                       .append("\" text-anchor=\"end\" dominant-baseline=\"central\" transform=\"rotate(-90 ")
+                       .append(svgFmt(lx)).append(' ').append(svgFmt(ly))
+                       .append(")\" font-size=\"18\">#")
+                       .append(r.getNumber()).append("</text>");
+                }
+            }
+        }
+
+        buf.append("</svg>");
+        return buf.toString();
+    }
+
+    private static String svgFmt(double d) {
+        return String.format(Locale.ROOT, "%.1f", d);
+    }
+
+    /**
+     * Picks a "nice" axis step: the value of the form 1, 2 or 5 times a power of ten closest to
+     * {@code range / targetTicks}, with a floor of 1 so the ticks stay whole numbers.
+     */
+    private static long niceStep(double range, int targetTicks) {
+        double raw = range / targetTicks;
+        if (raw <= 1) return 1;
+        double pow = Math.pow(10, Math.floor(Math.log10(raw)));
+        long best = Math.max(1, Math.round(pow));
+        double bestDist = Double.MAX_VALUE;
+        for (double mult : new double[] {1, 2, 5, 10}) {
+            double candidate = mult * pow;
+            double dist = Math.abs(candidate - raw);
+            if (dist < bestDist) {
+                bestDist = dist;
+                best = Math.max(1, Math.round(candidate));
+            }
+        }
+        return best;
+    }
+
+    /**
+     * Maps a build-result {@link Color} (from {@link ChartLabel#getColor}) to a theme-aware CSS
+     * color, so the bars follow the active theme; unknown colors fall back to their literal hex.
+     */
+    private static String cssColor(Color c) {
+        if (ColorPalette.RED.equals(c)) return "var(--error-color, red)";
+        if (ColorPalette.YELLOW.equals(c)) return "var(--warning-color, orange)";
+        if (ColorPalette.BLUE.equals(c)) return "var(--success-color, green)";
+        if (ColorPalette.DARK_GREY.equals(c)) return "var(--text-color-secondary, grey)";
+        return String.format(Locale.ROOT, "#%06x", c.getRGB() & 0xFFFFFF);
     }
 
     private Calendar getLastBuildTime() {

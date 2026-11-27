@@ -1,3 +1,4 @@
+@use "../abstracts/mixins";
 @use "../base/breakpoints";
 @use "../components/cards";
 @use "../components/dialogs";
@@ -12,7 +13,6 @@
 
 .app-build__grid {
   gap: calc(var(--section-padding) / 2);
-  margin-bottom: calc(var(--section-padding) * -0.5);
 
   & > * {
     height: 350px;
@@ -139,101 +139,78 @@
   }
 }
 
-body:has(.app-build-bar),
-body:has(.app-settings-container) {
-  --top: color-mix(in sRGB, var(--text-color-secondary) 4%, var(--background));
-  --bottom: color-mix(
-    in sRGB,
-    var(--text-color-secondary) 2%,
-    var(--background)
-  );
+@keyframes app-build-bar-border-on-scroll {
+  from {
+    border-bottom-color: color-mix(
+      in sRGB,
+      var(--jenkins-border-color),
+      transparent
+    );
+  }
 
-  background: linear-gradient(var(--top), var(--bottom));
-  background-attachment: fixed;
-}
-
-.app-settings-container {
-  --background: var(--card-background);
-  --top: color-mix(
-    in sRGB,
-    var(--text-color-secondary) 2%,
-    var(--card-background)
-  );
-
-  position: relative;
-  background-color: var(--card-background);
-  background-image: linear-gradient(var(--top), var(--card-background));
-  background-size: 100% 90vh;
-  background-repeat: no-repeat;
-  border: var(--jenkins-border);
-  border-radius: var(--form-input-border-radius);
-  z-index: 0;
-  min-height: calc(100vh - var(--header-height) - var(--section-padding));
-
-  &__inner {
-    max-width: 900px;
-    margin: auto;
-    padding: var(--section-padding);
-    display: flex;
-    flex-direction: column;
-
-    &--wide {
-      width: 70vw;
-      max-width: 1700px;
-    }
-
-    // TODO - this can be moved to app-bar.scss when Manage Jenkins flag is removed
-    .jenkins-app-bar--sticky {
-      padding: var(--section-padding) 0 !important;
-      margin: -1rem 0 0.5rem !important;
-
-      &::before,
-      &::after {
-        inset: 0 !important;
-      }
-
-      &::before {
-        background: color-mix(
-          in sRGB,
-          var(--text-color-secondary) 2%,
-          var(--card-background)
-        ) !important;
-        mask-image: linear-gradient(black 60%, transparent) !important;
-        opacity: 0.75 !important;
-      }
-
-      &::after {
-        left: calc(var(--section-padding) * -1) !important;
-        right: calc(var(--section-padding) * -1) !important;
-        mask-image: linear-gradient(black 65%, transparent) !important;
-      }
-    }
+  to {
+    border-bottom-color: var(--jenkins-border-color);
   }
 }
 
 .app-build-bar {
-  position: relative;
+  --app-build-bar-border-color: color-mix(
+    in sRGB,
+    var(--jenkins-border-color),
+    transparent
+  );
+
+  position: sticky;
+  top: calc(var(--header-height) + var(--jenkins-border-width));
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  align-items: start;
-  gap: 0.5rem 1.5rem;
-  min-height: 2.875rem;
-  margin-top: -5px;
-  padding-bottom: 0.75rem;
+  align-items: center;
+  min-height: var(--header-height);
+  background-color: color-mix(
+    in oklch,
+    transparent 25%,
+    var(--body-background-top)
+  );
+  padding-inline: var(--section-padding);
   z-index: 102;
+  border-bottom: var(--jenkins-border-width) solid
+    var(--app-build-bar-border-color);
+  margin-left: calc(var(--section-padding) * -1);
+  margin-right: calc(var(--section-padding) * -1);
+  border-top-left-radius: var(--form-input-border-radius);
+  border-top-right-radius: var(--form-input-border-radius);
 
-  @media (width <= 1200px) {
-    display: flex;
-    flex-direction: column;
+  @media (width >= 740px) {
+    gap: 0.5rem 1.5rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      backdrop-filter: blur(15px);
+      border-radius: inherit;
+    }
   }
 
-  &::before {
-    content: "";
-    position: absolute;
-    inset: -1000px calc(var(--section-padding) * -1) 0;
-    background-color: var(--background);
-    border-bottom: var(--jenkins-border-width) solid var(--card-border-color);
-    z-index: -1;
+  @supports (animation-timeline: scroll()) {
+    animation-name: app-build-bar-border-on-scroll;
+    animation-duration: 1s;
+    animation-fill-mode: both;
+    animation-timing-function: linear;
+    animation-timeline: scroll(nearest block);
+    animation-range: 0 var(--header-height);
+  }
+
+  @media (width < 740px) {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    padding-block: calc((var(--section-padding) / 2) + 0.125rem);
+    top: 0;
+    background-color: transparent;
   }
 
   .app-build-bar__content {
@@ -241,12 +218,48 @@ body:has(.app-settings-container) {
     align-items: center;
     justify-content: start;
     min-height: 38px;
+    grid-column: 1;
+
+    @media (width < 740px) {
+      display: flex;
+      width: 100%;
+    }
   }
 
   .app-build-bar__tabs {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    margin-block: 0.5rem;
+    grid-column: 2;
+
+    @media (width < 740px) {
+      @include mixins.overlay-surface($opacity: 75%);
+
+      position: fixed;
+      bottom: calc(var(--section-padding) / 2);
+      left: 50%;
+      translate: -50% 0;
+      max-width: calc(100% - (var(--section-padding) * 2) + 0.25rem);
+      border-radius: 100px;
+      overflow: hidden;
+
+      .app-build-tabs {
+        overflow-x: auto;
+        justify-content: start;
+        flex-wrap: nowrap;
+        min-width: 0;
+        padding: 0.25rem;
+
+        &::before {
+          display: none;
+        }
+      }
+
+      &:empty {
+        display: none;
+      }
+    }
   }
 
   .app-build-bar__controls {
@@ -254,10 +267,28 @@ body:has(.app-settings-container) {
     align-items: center;
     justify-content: end;
     flex: 1;
-    gap: 0.75rem;
+    grid-column: 3;
+    gap: 0.5rem;
 
-    @media (width <= 600px) {
+    .jenkins-jumplist-link {
+      flex: none;
+    }
+
+    @media (width < 740px) {
       justify-content: stretch;
+      flex-wrap: wrap;
+      width: 100%;
+      margin: 0.75rem 0 0.25rem;
+
+      & > * {
+        flex-grow: 1;
+        flex-basis: 0;
+      }
+
+      .jenkins-button:first-child {
+        width: 100%;
+        flex-basis: auto !important;
+      }
     }
   }
 }
@@ -273,37 +304,43 @@ body:has(.app-settings-container) {
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
-    margin-left: -0.25rem;
 
     svg {
-      width: 2rem;
-      height: 2rem;
+      width: 1.875rem;
+      height: 1.875rem;
+      flex-shrink: 0;
+
+      @media (width >= 740px) {
+        margin-left: -0.25rem;
+      }
     }
   }
 
   h1 {
     margin-bottom: 0;
-    font-size: 1.25rem;
+    font-size: 1.1875rem;
+    font-weight: 550;
+    font-variant-numeric: tabular-nums;
   }
 
   .jenkins-button {
-    border-radius: 100px;
     aspect-ratio: 1;
     padding: 0;
-    margin-inline: -1rem;
-    transition: translate var(--standard-transition);
+    width: 1.625rem;
+    height: 1.625rem;
+    min-height: 0;
+    border-radius: 100px;
 
     &:not(:hover) {
-      color: color-mix(
-        in sRGB,
-        var(--text-color-secondary) 75%,
-        transparent
-      ) !important;
+      color: var(--text-color-secondary) !important;
     }
 
-    &::before,
-    &::after {
-      inset: 7px;
+    &[disabled="true"] {
+      pointer-events: none;
+
+      svg {
+        opacity: 0.25;
+      }
     }
 
     svg {
@@ -316,12 +353,30 @@ body:has(.app-settings-container) {
     }
   }
 
-  .app-build__navigation-previous:hover {
-    translate: -0.0625rem 0;
-  }
+  .app-build__navigation {
+    display: flex;
+    gap: var(--jenkins-border-width);
+    margin-left: -0.25rem;
 
-  .app-build__navigation-next:hover {
-    translate: 0.0625rem 0;
+    @media (width < 740px) {
+      margin-left: auto;
+
+      .jenkins-button {
+        width: 2rem;
+        height: 2rem;
+      }
+    }
+  }
+}
+
+.app-page-body__contents:has(.app-build-bar) {
+  padding-top: 0;
+  min-width: 0;
+
+  @media (width < 740px) {
+    &:has(.app-build-bar__tabs:not(:empty)) {
+      padding-bottom: calc(var(--section-padding) + 3.125rem);
+    }
   }
 }
 

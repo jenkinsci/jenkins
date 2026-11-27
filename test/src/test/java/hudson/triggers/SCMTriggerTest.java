@@ -35,6 +35,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.AdministrativeMonitor;
 import hudson.model.BuildListener;
 import hudson.model.Cause;
 import hudson.model.FreeStyleBuild;
@@ -180,6 +181,16 @@ class SCMTriggerTest {
         List<BuildAction> ba = build.getActions(BuildAction.class);
 
         assertEquals(1, ba.size(), "There should only be one BuildAction.");
+    }
+
+    @Test
+    void clogCheck() {
+        SCMTrigger.DescriptorImpl descriptor = j.jenkins.getDescriptorByType(SCMTrigger.DescriptorImpl.class);
+        assertNotNull(descriptor);
+        descriptor.clogCheck();
+        SCMTrigger.AdministrativeMonitorImpl monitor = AdministrativeMonitor.all().get(SCMTrigger.AdministrativeMonitorImpl.class);
+        assertNotNull(monitor);
+        assertFalse(monitor.isActivated());
     }
 
     @TestExtension
