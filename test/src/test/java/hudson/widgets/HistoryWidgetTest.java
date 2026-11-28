@@ -1,8 +1,10 @@
 package hudson.widgets;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
@@ -14,13 +16,18 @@ import hudson.ExtensionList;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
+import hudson.model.User;
 import java.util.List;
+import java.util.Map;
 import jenkins.model.HistoricalBuild;
+import jenkins.model.experimentalflags.UserExperimentalFlagsProperty;
 import jenkins.widgets.DescriptionHistoryPageEntryDecorator;
 import jenkins.widgets.HistoryPageEntry;
 import jenkins.widgets.HistoryPageEntryDecorator;
+import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlPage;
+import org.jenkins.ui.icon.IconSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -117,6 +124,31 @@ class HistoryWidgetTest {
             assertThat(secondContexts.get(firstOnlyIndex), nullValue());
             return null;
         });
+    }
+
+    @Test
+    void emptyBuildsNoticeUsesBuildHistoryIconInsteadOfPlayIcon() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User.getById("alice", true)
+                .addProperty(new UserExperimentalFlagsProperty(Map.of("new-job-page.flag", "true")));
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            // HtmlUnit's Rhino cannot compile BigInt literals in builds-card-new.js
+            wc.setJavaScriptEnabled(false);
+            HtmlPage page = wc.goTo("job/" + p.getName() + "/");
+
+            DomElement notice = page.querySelector("#no-builds-yet");
+            assertThat(notice, notNullValue());
+            DomElement path = notice.querySelector("svg path");
+            assertThat(path, notNullValue());
+
+            String svgPath = path.getAttribute("d");
+            String buildHistorySymbol = IconSet.getSymbol("build-history", "", "", "", "", null, "");
+            String playSymbol = IconSet.getSymbol("play", "", "", "", "", null, "");
+            assertThat(buildHistorySymbol, containsString(svgPath));
+            assertThat(playSymbol, not(containsString(svgPath)));
+        }
     }
 
     @TestExtension("entryDecorators")
