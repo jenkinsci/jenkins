@@ -38,10 +38,10 @@ THE SOFTWARE.
       <t:actions actions="${it.transientActions}"/>
       <j:if test="${it.previousBuild!=null}">
         <l:task contextMenu="false" href="${buildUrl.previousBuildUrl}" icon="icon-previous icon-md"
-                title="${%Previous Build}"/>
+                title="${%Previous Build}" enabled="${buildUrl.previousBuildUrl != null}"/>
       </j:if>
       <j:if test="${it.nextBuild!=null}">
-        <l:task contextMenu="false" href="${buildUrl.nextBuildUrl}" icon="icon-next icon-md" title="${%Next Build}"/>
+        <l:task contextMenu="false" href="${buildUrl.nextBuildUrl}" icon="icon-next icon-md" title="${%Next Build}" enabled="${buildUrl.nextBuildUrl != null}"/>
       </j:if>
     </l:tasks>
   </l:side-panel>

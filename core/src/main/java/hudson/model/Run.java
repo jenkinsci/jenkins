@@ -849,10 +849,12 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
             ContextMenu menu = new ContextMenu().addHeader(title);
             for (Run<?, ?> b : builds) {
-                menu.add(new MenuItem()
-                        .withDisplayName(b.getDisplayName())
-                        .withIconClass("symbol-status-" + b.getIconColor().getIconName())
-                        .withContextRelativeUrl(b.getUrl() + subpage));
+                if (Functions.RunUrl.canResolveSubpage(b, subpage)) {
+                    menu.add(new MenuItem()
+                            .withDisplayName(b.getDisplayName())
+                            .withIconClass("symbol-status-" + b.getIconColor().getIconName())
+                            .withContextRelativeUrl(b.getUrl() + subpage));
+                }
             }
             return menu;
         }

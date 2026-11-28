@@ -114,6 +114,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
@@ -178,6 +179,7 @@ import jenkins.telemetry.impl.PasswordMasking;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
@@ -193,10 +195,15 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.RawHtmlArgument;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
+import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.jelly.JellyClassTearOff;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -538,10 +545,124 @@ public class Functions {
         }
 
         private String getUrl(Run n) {
-            if (n == null)
+            if (n == null || !canResolveSubpage(n, rest)) {
                 return null;
-            else {
-                return head + n.getNumber() + rest;
+            }
+            return head + n.getNumber() + rest;
+        }
+
+        @Restricted(NoExternalUse.class)
+        public static boolean canResolveSubpage(Run<?, ?> target, String rest) {
+            if (target == null) {
+                return false;
+            }
+            String path = rest == null ? "" : rest;
+            int queryIdx = path.indexOf('?');
+            if (queryIdx >= 0) {
+                path = path.substring(0, queryIdx);
+            }
+            path = path.replaceFirst("/+", "").replaceFirst("/+$", "");
+            if (path.isEmpty()) {
+                return true;
+            }
+            String[] tokens = path.split("/+");
+            StaplerRequest2 req = Stapler.getCurrentRequest2();
+            StaplerResponse2 rsp = Stapler.getCurrentResponse2();
+            WebApp webApp = WebApp.getCurrent();
+            Object current = target;
+            for (int i = 0; i < tokens.length; i++) {
+                String token;
+                try {
+                    token = URLDecoder.decode(tokens[i], StandardCharsets.UTF_8);
+                } catch (IllegalArgumentException e) {
+                    token = tokens[i];
+                }
+                if (token.isEmpty()) {
+                    continue;
+                }
+                if (current instanceof StaplerProxy proxy) {
+                    Object proxied = proxy.getTarget();
+                    if (proxied != null) {
+                        current = proxied;
+                    }
+                }
+                boolean isLast = (i == tokens.length - 1);
+                Object next = resolveAction(current, token);
+                if (next != null) {
+                    current = next;
+                    continue;
+                }
+                String cap = Character.toUpperCase(token.charAt(0)) + token.substring(1);
+                if (isLast && webApp != null) {
+                    try {
+                        MetaClass meta = webApp.getMetaClass(current);
+                        JellyClassTearOff tearOff = meta.getTearOff(JellyClassTearOff.class);
+                        if (tearOff != null && tearOff.findScript(token) != null) {
+                            return true;
+                        }
+                    } catch (JellyException ignored) {
+                    }
+                    for (Method method : current.getClass().getMethods()) {
+                        if (method.getName().equals("do" + cap)) {
+                            return true;
+                        }
+                    }
+                }
+                if (!"class".equals(token)) {
+                    Object prop = invokeGetter(current, "get" + cap);
+                    if (prop != null) {
+                        current = prop;
+                        continue;
+                    }
+                }
+                if (req != null && rsp != null) {
+                    Object dynamic = invokeGetDynamic(current, token, req, rsp);
+                    if (dynamic != null && !(dynamic instanceof Run.RedirectUp)) {
+                        current = dynamic;
+                        continue;
+                    }
+                }
+                return false;
+            }
+            return true;
+        }
+
+        private static Object resolveAction(Object current, String token) {
+            if (current instanceof Actionable actionable) {
+                for (Action a : actionable.getAllActions()) {
+                    if (a != null && token.equals(a.getUrlName())) {
+                        return a;
+                    }
+                }
+            }
+            if (current instanceof Run<?, ?> r) {
+                for (Action a : r.getTransientActions()) {
+                    if (a != null && token.equals(a.getUrlName())) {
+                        return a;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private static Object invokeGetter(Object current, String methodName) {
+            try {
+                Method m = current.getClass().getMethod(methodName);
+                if (m.getReturnType() == Void.TYPE) {
+                    return null;
+                }
+                return m.invoke(current);
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                return null;
+            }
+        }
+
+        private static Object invokeGetDynamic(Object current, String token, StaplerRequest2 req, StaplerResponse2 rsp) {
+            try {
+                Method m = current.getClass().getMethod("getDynamic", String.class, StaplerRequest2.class, StaplerResponse2.class);
+                return m.invoke(current, token, req, rsp);
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                return null;
             }
         }
 
