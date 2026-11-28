@@ -30,6 +30,7 @@ import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import hudson.slaves.DumbSlave;
@@ -145,5 +146,24 @@ class WaitNodeOfflineCommandTest {
 
         if (!timeoutOccurred)
             fail("Missing timeout for CLI call");
+    }
+
+    @Test
+    void waitNodeOfflineShouldSucceedForNodeWithoutExecutors() throws Exception {
+        createAgentWithoutExecutors("aNode");
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Jenkins.READ)
+                .invokeWithArgs("aNode");
+
+        assertThat(result, succeededSilently());
+    }
+
+    private DumbSlave createAgentWithoutExecutors(String name) throws Exception {
+        DumbSlave agent = new DumbSlave(name, j.createTmpDir().getPath(), j.createComputerLauncher(null));
+        agent.setNumExecutors(0);
+        j.jenkins.addNode(agent);
+        assertThat("a node without executors has no computer", agent.toComputer(), nullValue());
+        return agent;
     }
 }

@@ -30,6 +30,7 @@ import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import hudson.slaves.DumbSlave;
@@ -168,5 +169,26 @@ class WaitNodeOnlineCommandTest {
                 .invokeWithArgs("aNode");
         assertThat(result, succeededSilently());
         assertThat(slave.toComputer().isOnline(), equalTo(true));
+    }
+
+    @Test
+    void waitNodeOnlineShouldFailForNodeWithoutExecutors() throws Exception {
+        createAgentWithoutExecutors("aNode");
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Jenkins.READ)
+                .invokeWithArgs("aNode");
+
+        assertThat(result, failedWith(4));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("ERROR: Node 'aNode' has no executors, so it cannot come online"));
+    }
+
+    private DumbSlave createAgentWithoutExecutors(String name) throws Exception {
+        DumbSlave agent = new DumbSlave(name, j.createTmpDir().getPath(), j.createComputerLauncher(null));
+        agent.setNumExecutors(0);
+        j.jenkins.addNode(agent);
+        assertThat("a node without executors has no computer", agent.toComputer(), nullValue());
+        return agent;
     }
 }
