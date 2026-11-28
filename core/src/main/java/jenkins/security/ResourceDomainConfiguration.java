@@ -26,6 +26,7 @@ package jenkins.security;
 
 import static jenkins.security.ResourceDomainFilter.ERROR_RESPONSE;
 
+import com.google.common.net.InternetDomainName;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -42,6 +43,7 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.diagnostics.RootUrlNotSetMonitor;
@@ -91,12 +93,13 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
         return checkUrl(resourceRootUrlString, true);
     }
 
-    private FormValidation checkUrl(String resourceRootUrlString, boolean allowOnlineIdentityCheck) {
+    @Restricted(NoExternalUse.class)
+    FormValidation checkUrl(String resourceRootUrlString, boolean allowOnlineIdentityCheck) {
         String jenkinsRootUrlString = JenkinsLocationConfiguration.get().getUrl();
         if (ExtensionList.lookupSingleton(RootUrlNotSetMonitor.class).isActivated() || jenkinsRootUrlString == null) {
             // This is needed to round-trip expired resource URLs through regular URLs to refresh them,
             // so while it's not required in the strictest sense, it is required.
-            return FormValidation.warning(Messages.ResourceDomainConfiguration_NeedsRootURL());
+            return FormValidation.error(Messages.ResourceDomainConfiguration_NeedsRootURL());
         }
 
         resourceRootUrlString = Util.fixEmptyAndTrim(resourceRootUrlString);
@@ -120,15 +123,20 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
         }
 
         String resourceRootUrlHost = resourceRootUrl.getHost();
+        FormValidation sameSiteWarning = FormValidation.ok();
         try {
             String jenkinsRootUrlHost = new URI(jenkinsRootUrlString).getHost();
-            if (jenkinsRootUrlHost.equals(resourceRootUrlHost)) {
+            if (jenkinsRootUrlHost.equalsIgnoreCase(resourceRootUrlHost)) {
                 // We do not allow the same host for Jenkins and resource root URLs even if there's some other difference.
                 // This is a conservative choice and prohibits same host/different proto/different port/different path:
                 // - Different path still counts as the same origin for same-origin policy
                 // - Cookies are shared across ports, and non-Secure cookies get sent to HTTPS sites
                 return FormValidation.error(Messages.ResourceDomainConfiguration_SameAsJenkinsRoot());
             }
+
+            sameSiteWarning = isSameSite(jenkinsRootUrlHost, resourceRootUrlHost)
+                    ? FormValidation.warning(Messages.ResourceDomainConfiguration_SameSite())
+                    : FormValidation.ok();
         } catch (Exception ex) {
             LOGGER.log(Level.CONFIG, "Failed to create URL from the existing Jenkins URL", ex);
             return FormValidation.error(Messages.ResourceDomainConfiguration_InvalidRootURL(ex.getMessage()));
@@ -138,13 +146,13 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
         if (currentRequest != null) {
             String currentRequestHost = currentRequest.getServerName();
 
-            if (currentRequestHost.equals(resourceRootUrlHost)) {
+            if (currentRequestHost.equalsIgnoreCase(resourceRootUrlHost)) {
                 return FormValidation.error(Messages.ResourceDomainConfiguration_SameAsCurrent());
             }
         }
 
         if (!allowOnlineIdentityCheck) {
-            return FormValidation.ok();
+            return sameSiteWarning;
         }
 
         // Send a request to /instance-identity/ at the resource root URL and check whether it is this Jenkins
@@ -163,7 +171,8 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
                     if (publicKey != null) {
                         String identity = Base64.getEncoder().encodeToString(publicKey.getEncoded());
                         if (identity.equals(identityHeader)) {
-                            return FormValidation.ok(Messages.ResourceDomainConfiguration_ThisJenkins());
+                            FormValidation thisJenkins = FormValidation.ok(Messages.ResourceDomainConfiguration_ThisJenkins());
+                            return sameSiteWarning.kind == FormValidation.Kind.OK ? thisJenkins : FormValidation.aggregate(List.of(thisJenkins, sameSiteWarning));
                         }
                         return FormValidation.warning(Messages.ResourceDomainConfiguration_OtherJenkins());
                     } // the current instance has no public key
@@ -174,7 +183,8 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
                 if (responseCode == 404) {
                     String responseBody = String.join("", IOUtils.readLines(httpURLConnection.getErrorStream(), StandardCharsets.UTF_8));
                     if (responseMessage.contains(ERROR_RESPONSE) || responseBody.contains(ERROR_RESPONSE)) {
-                        return FormValidation.ok(Messages.ResourceDomainConfiguration_ResourceResponse());
+                        FormValidation resourceResponse = FormValidation.ok(Messages.ResourceDomainConfiguration_ResourceResponse());
+                        return sameSiteWarning.kind == FormValidation.Kind.OK ? resourceResponse : FormValidation.aggregate(List.of(resourceResponse, sameSiteWarning));
                     }
                 }
                 return FormValidation.error(Messages.ResourceDomainConfiguration_FailedIdentityCheck(responseCode, responseMessage));
@@ -190,13 +200,52 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
         }
     }
 
+    private boolean isSameSite(String host1, String host2) {
+        if (host1 == null || host2 == null) {
+            return false;
+        }
+
+        if (!InternetDomainName.isValid(host1) || !InternetDomainName.isValid(host2)) {
+            return false;
+        }
+
+        InternetDomainName domain1 = InternetDomainName.from(host1);
+        InternetDomainName domain2 = InternetDomainName.from(host2);
+
+        if (domain1.isUnderPublicSuffix() && domain2.isUnderPublicSuffix()) {
+            return domain1.topPrivateDomain().equals(domain2.topPrivateDomain());
+        }
+
+        if (!domain1.isUnderPublicSuffix() && !domain2.isUnderPublicSuffix()) {
+            if (!domain1.hasParent() || !domain2.hasParent()) {
+                return domain1.equals(domain2);
+            }
+            return registrableDomainUnderStar(domain1).equals(registrableDomainUnderStar(domain2));
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the 'site' level domain for the fallback rule (foo.bar.baz.corp -> baz.corp)
+     * @param domain the domain, e.g., foo.bar.baz.corp
+     * @return the site domain
+     */
+    private static InternetDomainName registrableDomainUnderStar(InternetDomainName domain) {
+        InternetDomainName current = domain;
+        while (current.hasParent() && current.parent().hasParent()) {
+            current = current.parent();
+        }
+        return current;
+    }
+
     @CheckForNull
     public String getUrl() {
         return url;
     }
 
     public void setUrl(@CheckForNull String url) {
-        if (checkUrl(url, false).kind == FormValidation.Kind.OK) {
+        if (checkUrl(url, false).kind != FormValidation.Kind.ERROR) {
             // only accept valid configurations, both with and without URL, but allow for networking issues
             url = Util.fixEmpty(url);
             if (url != null && !url.endsWith("/")) {
