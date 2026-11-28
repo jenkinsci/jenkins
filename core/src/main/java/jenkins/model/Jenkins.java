@@ -149,7 +149,7 @@ import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
-import hudson.search.UserSearchProperty;
+import hudson.search.SearchMatcher;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
@@ -242,7 +242,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -280,7 +279,6 @@ import jenkins.install.InstallState;
 import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.model.dashboard.Dashboard;
-import jenkins.search.SearchItemProvider;
 import jenkins.security.ClassFilterImpl;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
@@ -2427,14 +2425,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         }));
 
-        for (SearchItemProvider provider : SearchItemProvider.all()) {
-            try {
-                provider.getSearchItems().forEach(builder::add);
-            } catch (RuntimeException e) {
-                LOGGER.log(Level.WARNING, "Failed to get search items from " + provider.getClass().getName(), e);
-            }
-        }
-
         builder.add(new CollectionSearchIndex<TopLevelItem>() {
                     @Override
                     protected SearchItem get(String key) { return getItemByFullName(key, TopLevelItem.class); }
@@ -2450,24 +2440,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
                     @Override
                     public void suggest(String token, List<SearchItem> result) {
-                        boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
-                        String searchToken = caseInsensitive ? token.toLowerCase(Locale.ROOT) : token;
+                        SearchMatcher matcher = SearchMatcher.of(token);
                         for (TopLevelItem item : allAsIterable()) {
-                            if (item != null && (contains(item.getName(), searchToken, caseInsensitive)
-                                    || contains(item.getDisplayName(), searchToken, caseInsensitive))) {
+                            if (item != null && (matcher.matches(item.getName()) || matcher.matches(item.getDisplayName()))) {
                                 result.add(item);
                             }
                         }
-                    }
-
-                    private boolean contains(String value, String token, boolean caseInsensitive) {
-                        if (value == null) {
-                            return false;
-                        }
-                        if (caseInsensitive) {
-                            value = value.toLowerCase(Locale.ROOT);
-                        }
-                        return value.contains(token);
                     }
                 })
                 .add(getPrimaryView().makeSearchIndex())
@@ -4482,6 +4460,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void reload() throws IOException, InterruptedException, ReactorException {
         queue.save();
         executeReactor(null, loadTasks());
+        ItemUuids.reindex(); // the items are new objects, and their identities may have changed on disk
 
         // Ensure we reached the final initialization state. Log the error otherwise
         if (initLevel != InitMilestone.COMPLETED) {

@@ -223,7 +223,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
     }
   }
 
-  const url = tag === "a" ? context + xmlEscape(itemOptions.event.url) : null;
+  const url = tag === "a" ? context + itemOptions.event.url : null;
 
   const item = createElementFromHtml(`
       <${tag}
@@ -251,6 +251,7 @@ function menuItem(dropdownItem, type = "jenkins-dropdown__item", context = "") {
 
   // Handle special cases
   tryOnClickEvent(item, dropdownItem);
+  tryOnKeyPressEvent(item, dropdownItem);
   tryLoadScripts(item, dropdownItem, context);
   tryPost(item, dropdownItem, context);
   tryConfirmationPost(item, dropdownItem, context);
@@ -270,10 +271,25 @@ function tryOnClickEvent(element, opt) {
 }
 
 /**
+ * If the menu item has a custom onKeyPress handler, assign it to the element.
+ * Set as a DOM property (not a listener) so it is invoked as
+ * selectedItem.onkeypress(evt) by the dropdown keyboard-navigation callback
+ * registered in utils.js, which makeKeyboardNavigable (util/keyboard.js)
+ * dispatches to.
+ */
+function tryOnKeyPressEvent(element, opt) {
+  if (!opt.onKeyPress) {
+    return;
+  }
+
+  element.onkeypress = opt.onKeyPress;
+}
+
+/**
  * If scripts have been provided with the menu item, load them
  */
 function tryLoadScripts(element, opt, context) {
-  if (!opt.event || !opt.event.attributes || !opt.event.javascriptUrl) {
+  if (!opt.event || !opt.event.attributes) {
     return;
   }
 
@@ -286,6 +302,10 @@ function tryLoadScripts(element, opt, context) {
 
   // Dialog URLs should open relative to the context path, not the base URL
   element.dataset.dialogUrl = context + element.dataset.dialogUrl;
+
+  if (!opt.event.javascriptUrl) {
+    return;
+  }
 
   loadScriptIfNotLoaded(opt.event.javascriptUrl, element);
 }
@@ -309,9 +329,9 @@ function tryConfirmationPost(element, opt, context) {
           const form = document.createElement("form");
           form.setAttribute("method", "POST");
           if (opt.event.postTo.startsWith("/")) {
-            form.setAttribute("action", xmlEscape(opt.event.postTo));
+            form.setAttribute("action", opt.event.postTo);
           } else {
-            form.setAttribute("action", context + xmlEscape(opt.event.postTo));
+            form.setAttribute("action", context + opt.event.postTo);
           }
           crumb.appendToForm(form);
           document.body.appendChild(form);
@@ -336,11 +356,22 @@ function tryPost(element, opt, context) {
   }
 
   element.addEventListener("click", () => {
-    fetch(context + xmlEscape(opt.event.url), {
+    fetch(context + opt.event.url, {
       method: "post",
       headers: crumb.wrap({}),
+    }).then((rsp) => {
+      sessionStorage.setItem(
+        "jenkins-dropdown-notification",
+        JSON.stringify({
+          message: rsp.ok
+            ? opt.displayName + ": Done."
+            : opt.displayName + ": Failed.",
+          type: rsp.ok ? "SUCCESS" : "ERROR",
+        }),
+      );
+
+      window.location.href = ".";
     });
-    window.location.href = ".";
   });
 }
 

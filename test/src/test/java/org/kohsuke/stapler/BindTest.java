@@ -8,6 +8,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.ExtensionList;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Descriptor;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import org.apache.commons.lang3.Strings;
@@ -81,6 +83,27 @@ class BindTest {
             assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath + "/theWellKnownRoot',document.head.dataset.crumbValue,['annotatedJsMethod2','byName2']);"));
         }
         assertThat(root.invocations, is(1));
+    }
+
+    @Test
+    void bindDescriptor() throws Exception {
+        final RootActionWithDescriptor root = ExtensionList.lookupSingleton(RootActionWithDescriptor.class);
+        final Thing.DescriptorImpl descriptor = ExtensionList.lookupSingleton(Thing.DescriptorImpl.class);
+        final String url = j.contextPath + "/descriptorByName/" + descriptor.getId();
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            final HtmlPage htmlPage = wc.goTo(root.getUrlName());
+            final String scriptUrl = htmlPage
+                    .getElementsByTagName("script")
+                    .stream()
+                    .filter(it -> it.getAttribute("src").startsWith(j.contextPath + "/$stapler/bound/script" + url + "?"))
+                    .findFirst()
+                    .orElseThrow()
+                    .getAttribute("src");
+
+            final Page script = wc.goTo(Strings.CS.removeStart(scriptUrl, j.contextPath + "/"), "text/javascript");
+            assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + url + "',document.head.dataset.crumbValue,['annotatedJsMethod3','byName3']);"));
+        }
+        assertThat(descriptor.invocations, is(1));
     }
 
     @Test
@@ -217,6 +240,32 @@ class BindTest {
 
         public void jsByName2() {
             invocations++;
+        }
+    }
+
+    @TestExtension
+    public static class RootActionWithDescriptor extends InvisibleAction implements RootAction {
+        @Override
+        public String getUrlName() {
+            return "theDescriptorRoot";
+        }
+
+        public Thing.DescriptorImpl getBound() {
+            return ExtensionList.lookupSingleton(Thing.DescriptorImpl.class);
+        }
+    }
+
+    public static class Thing extends AbstractDescribableImpl<Thing> {
+        @TestExtension
+        public static class DescriptorImpl extends Descriptor<Thing> {
+            private int invocations;
+
+            @JavaScriptMethod
+            public void annotatedJsMethod3(String foo) {}
+
+            public void jsByName3() {
+                invocations++;
+            }
         }
     }
 }
