@@ -46,6 +46,10 @@ public class SuggestedItem {
         this.item = item;
     }
 
+    SuggestedItem getParent() {
+        return parent;
+    }
+
     public String getPath() {
         if (path != null)  return path;
         if (parent == null)

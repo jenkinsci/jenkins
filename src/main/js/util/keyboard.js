@@ -4,6 +4,7 @@
  * @param {string} selectedClass - the class to apply to the selected item
  * @param {function()} additionalBehaviours - add additional keyboard shortcuts to the focused item
  * @param hasKeyboardPriority - set if custom behaviour is needed to decide whether the element has keyboard priority
+ * @param {function(Element)} onSelect - called with the item after the keyboard selects it
  */
 export default function makeKeyboardNavigable(
   container,
@@ -12,6 +13,7 @@ export default function makeKeyboardNavigable(
   additionalBehaviours = () => {},
   hasKeyboardPriority = () =>
     window.getComputedStyle(container).visibility === "visible",
+  onSelect = () => {},
 ) {
   window.addEventListener("keyup", (e) => {
     let items = Array.from(itemsFunc());
@@ -24,6 +26,7 @@ export default function makeKeyboardNavigable(
           }
           selectedItem = document.activeElement;
           selectedItem.classList.add(selectedClass);
+          onSelect(selectedItem);
         }
       }
     }
@@ -50,7 +53,7 @@ export default function makeKeyboardNavigable(
           selectedItem = items[0];
         }
 
-        scrollAndSelect(selectedItem, selectedClass, items);
+        scrollAndSelect(selectedItem, selectedClass, items, onSelect);
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
 
@@ -67,7 +70,7 @@ export default function makeKeyboardNavigable(
           selectedItem = items[items.length - 1];
         }
 
-        scrollAndSelect(selectedItem, selectedClass, items);
+        scrollAndSelect(selectedItem, selectedClass, items, onSelect);
       } else if (e.key === "Enter") {
         if (selectedItem) {
           e.preventDefault();
@@ -80,10 +83,11 @@ export default function makeKeyboardNavigable(
   });
 }
 
-function scrollAndSelect(selectedItem, selectedClass, items) {
+function scrollAndSelect(selectedItem, selectedClass, items, onSelect) {
   if (selectedItem) {
     selectedItem.scrollIntoView({ block: "nearest", behavior: "smooth" });
     selectedItem.classList.add(selectedClass);
+    onSelect(selectedItem);
     // Move focus so screen readers announce the item, unless the user is typing in a field (e.g. search)
     if (
       items.includes(document.activeElement) ||

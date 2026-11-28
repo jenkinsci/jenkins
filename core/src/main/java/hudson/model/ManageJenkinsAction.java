@@ -24,16 +24,25 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.search.FixedSet;
+import hudson.search.SearchIndex;
+import hudson.search.SearchItem;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.management.Badge;
+import jenkins.management.ManagementLinkSearchItem;
 import jenkins.model.Jenkins;
 import jenkins.model.experimentalflags.NewManageJenkinsUserExperimentalFlag;
+import jenkins.search.SearchGroup;
+import jenkins.search.SearchScope;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.StaplerFallback;
@@ -46,7 +55,7 @@ import org.kohsuke.stapler.StaplerResponse2;
  * @author Kohsuke Kawaguchi
  */
 @Extension(ordinal = 998) @Symbol("manageJenkins")
-public class ManageJenkinsAction implements RootAction, StaplerFallback {
+public class ManageJenkinsAction implements RootAction, StaplerFallback, SearchScope {
 
     private static final Logger LOGGER = Logger.getLogger(ManageJenkinsAction.class.getName());
 
@@ -71,6 +80,36 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback {
     @Override
     public boolean isPrimaryAction() {
         return true;
+    }
+
+    @Override
+    public String getSearchName() {
+        return getDisplayName();
+    }
+
+    @Override
+    public String getSearchUrl() {
+        return getUrlName();
+    }
+
+    @Override
+    public String getSearchIcon() {
+        return getIconFileName();
+    }
+
+    @NonNull
+    @Override
+    public SearchIndex getScopedSearchIndex() {
+        List<SearchItem> items = new ArrayList<>();
+        Jenkins.get().getCategorizedManagementLinks().forEach((category, links) -> {
+            SearchGroup group = category::getLabel;
+            for (ManagementLink link : links) {
+                if (ManagementLinkSearchItem.isSearchable(link)) {
+                    items.add(new ManagementLinkSearchItem(link, link.getUrlName(), group));
+                }
+            }
+        });
+        return new FixedSet(items);
     }
 
     public HttpRedirect doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {

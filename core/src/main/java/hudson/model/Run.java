@@ -132,6 +132,7 @@ import jenkins.model.details.KeptForeverDetail;
 import jenkins.model.details.TimestampDetail;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
+import jenkins.search.SearchGroup;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.XStreamNotDeserializable;
 import jenkins.security.stapler.StaplerNotDispatchable;
@@ -1046,6 +1047,16 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     public final @NonNull String getSearchUrl() {
         return getNumber() + "/";
+    }
+
+    @Override
+    public String getSearchIcon() {
+        return "symbol-status-" + getIconColor().getIconName();
+    }
+
+    @Override
+    public SearchGroup getSearchGroup() {
+        return SearchGroup.get(SearchGroup.RunSearchGroup.class);
     }
 
     /**

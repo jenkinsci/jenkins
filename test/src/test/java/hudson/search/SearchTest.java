@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 import org.htmlunit.Page;
@@ -202,43 +203,16 @@ public class SearchTest {
     }
 
     @Test
-    void testGetSuggestionsHasBothNamesAndDisplayNames() throws Exception {
-        final String projectName = "project name";
-        final String displayName = "display name";
+    void testGetSuggestionsShowDisplayNameOnce() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject("project name");
+        project.setDisplayName("display name");
 
-        FreeStyleProject project1 = j.createFreeStyleProject(projectName);
-        project1.setDisplayName(displayName);
+        JSONArray suggestions = getSuggestions("search/suggest?query=name");
 
-        WebClient wc = j.createWebClient();
-        Page result = wc.goTo("search/suggest?query=name", "application/json");
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-
-        String content = result.getWebResponse().getContentAsString();
-        System.out.println(content);
-        JSONObject jsonContent = (JSONObject) JSONSerializer.toJSON(content);
-        assertNotNull(jsonContent);
-        JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
-        assertNotNull(jsonArray);
-
-        assertEquals(2, jsonArray.size());
-
-        boolean foundProjectName = false;
-        boolean foundDisplayName = false;
-        for (Object suggestion : jsonArray) {
-            JSONObject jsonSuggestion = (JSONObject) suggestion;
-
-            String name = (String) jsonSuggestion.get("name");
-            if (projectName.equals(name)) {
-                foundProjectName = true;
-            }
-            else if (displayName.equals(name)) {
-                foundDisplayName = true;
-            }
-        }
-
-        assertTrue(foundProjectName);
-        assertTrue(foundDisplayName);
+        assertEquals(1, suggestions.size());
+        JSONObject suggestion = suggestions.getJSONObject(0);
+        assertEquals("display name", suggestion.getString("name"));
+        assertEquals("/job/project%20name/", suggestion.getString("url"));
     }
 
     @Issue("JENKINS-24433")
@@ -258,30 +232,12 @@ public class SearchTest {
         FreeStyleProject project2 = myMockFolder.createProject(FreeStyleProject.class, projectName2);
         project2.setDisplayName(displayName2);
 
-        WebClient wc = j.createWebClient();
-        Page result = wc.goTo(myMockFolder.getUrl() + "search/suggest?query=" + projectName1, "application/json");
-        assertNotNull(result);
-        j.assertGoodStatus(result);
+        JSONArray suggestions = getSuggestions(myMockFolder.getUrl() + "search/suggest?query=" + projectName1);
 
-        String content = result.getWebResponse().getContentAsString();
-        JSONObject jsonContent = (JSONObject) JSONSerializer.toJSON(content);
-        assertNotNull(jsonContent);
-        JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
-        assertNotNull(jsonArray);
-
-        assertEquals(2, jsonArray.size());
-
-        boolean foundDisplayName = false;
-        for (Object suggestion : jsonArray) {
-            JSONObject jsonSuggestion = (JSONObject) suggestion;
-
-            String name = (String) jsonSuggestion.get("name");
-            if (projectName1.equals(name)) {
-                foundDisplayName = true;
-            }
-        }
-
-        assertTrue(foundDisplayName);
+        assertEquals(1, suggestions.size());
+        JSONObject suggestion = suggestions.getJSONObject(0);
+        assertEquals(displayName1, suggestion.getString("name"));
+        assertEquals(JSONNull.getInstance(), suggestion.get("parent"));
     }
 
     @Issue("JENKINS-24433")
@@ -301,31 +257,19 @@ public class SearchTest {
         FreeStyleProject project2 = myMockFolder.createProject(FreeStyleProject.class, projectName2);
         project2.setDisplayName(displayName2);
 
-        WebClient wc = j.createWebClient();
-        Page result = wc.goTo(myMockFolder.getUrl() + "search/suggest?query=" + projectName2, "application/json");
-        assertNotNull(result);
+        JSONArray suggestions = getSuggestions(myMockFolder.getUrl() + "search/suggest?query=" + projectName2);
+
+        assertEquals(1, suggestions.size());
+        JSONObject suggestion = suggestions.getJSONObject(0);
+        assertEquals(displayName2, suggestion.getString("name"));
+        assertEquals(List.of("my-folder-1"), suggestion.getJSONArray("parent"));
+    }
+
+    private JSONArray getSuggestions(String path) throws Exception {
+        Page result = j.createWebClient().goTo(path, "application/json");
         j.assertGoodStatus(result);
-
-        String content = result.getWebResponse().getContentAsString();
-        JSONObject jsonContent = (JSONObject) JSONSerializer.toJSON(content);
-        assertNotNull(jsonContent);
-        JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
-        assertNotNull(jsonArray);
-
-        assertEquals(1, jsonArray.size());
-
-        boolean foundDisplayName = false;
-        for (Object suggestion : jsonArray) {
-            JSONObject jsonSuggestion = (JSONObject) suggestion;
-
-            String name = (String) jsonSuggestion.get("name");
-
-            if ("my-folder-1 » job-2".equals(name)) {
-                foundDisplayName = true;
-            }
-        }
-
-        assertTrue(foundDisplayName);
+        JSONObject json = (JSONObject) JSONSerializer.toJSON(result.getWebResponse().getContentAsString());
+        return json.getJSONArray("suggestions");
     }
 
     /**

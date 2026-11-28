@@ -32,6 +32,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionComponent;
 import hudson.ExtensionList;
 import hudson.Util;
+import hudson.model.ItemGroup;
 import hudson.util.EditDistance;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
@@ -50,15 +51,19 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import jenkins.search.SearchGroup;
+import jenkins.search.SearchScope;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.jenkins.ui.symbol.Symbol;
 import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -166,6 +171,10 @@ public class Search implements StaplerProxy {
      */
     public void doSuggest(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String query) throws IOException, ServletException {
         Result r = new Result();
+        boolean scoped = isScoped(req);
+        SearchableModelObject scope = scoped ? findClosestSearchableModelObject(req) : null;
+        // The same item can be suggested more than once, e.g. matched by both its name and display name
+        Set<String> seen = new HashSet<>();
         for (SuggestedItem curItem : getSuggestions(req, query)) {
             String iconName = curItem.item.getSearchIcon();
             String group = curItem.item.getSearchGroup().getDisplayName();
@@ -177,12 +186,21 @@ public class Search implements StaplerProxy {
                 iconName = "symbol-search";
             }
 
+            List<String> segments = getSegments(curItem, scope);
+            String name = segments.removeLast();
+
+            Item item;
             if (iconName.startsWith("symbol")) {
-                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(),
-                        Symbol.get(new SymbolRequest.Builder().withRaw(iconName).build()), "symbol", group, description));
+                item = new Item(name, curItem.getUrl(), renderSymbol(iconName), "symbol", group, description);
             } else {
-                r.suggestions.add(new Item(curItem.getPath(), curItem.getUrl(), iconName, "image", group, description));
+                item = new Item(name, curItem.getUrl(), iconName, "image", group, description);
             }
+            item.setSearchScope(isSearchScope(curItem.item));
+            item.parent = segments.isEmpty() ? null : segments;
+            if (!seen.add(String.join("/", segments) + "/" + name + " " + item.getUrl())) {
+                continue;
+            }
+            r.suggestions.add(item);
         }
 
         // Sort results by group
@@ -193,11 +211,9 @@ public class Search implements StaplerProxy {
                         (k) -> k.getInstance().getDisplayName(),
                         ExtensionComponent::ordinal
                 ));
-        r.suggestions.sort(
-                Comparator.comparingDouble((Item item) -> searchGroupOrdinal.getOrDefault(item.getGroup(), Double.MAX_VALUE))
-                        .reversed()
-                        .thenComparing(item -> item.name)
-        );
+        Comparator<Item> byGroup = Comparator.comparingDouble((Item item) -> searchGroupOrdinal.getOrDefault(item.getGroup(), Double.MAX_VALUE))
+                .reversed();
+        r.suggestions.sort(scoped ? byGroup : byGroup.thenComparing(item -> item.parent == null ? item.name : String.join(" / ", item.parent) + " / " + item.name));
 
         rsp.serveExposedBean(req, r, new ExportConfig());
     }
@@ -234,7 +250,10 @@ public class Search implements StaplerProxy {
         );
         Map<String, Integer> groupSizes = new HashMap<>();
         SearchableModelObject smo = findClosestSearchableModelObject(req);
-        for (SuggestedItem i : suggest(makeSuggestIndex(req), query, smo)) {
+        List<SuggestedItem> suggestions = isScoped(req) && smo != null
+                ? suggestScoped(smo, query)
+                : suggest(makeSuggestIndex(req), query, smo);
+        for (SuggestedItem i : suggestions) {
             if (r.size() >= MAX_SEARCH_SIZE) {
                 r.hasMoreResults = true;
                 break;
@@ -254,6 +273,63 @@ public class Search implements StaplerProxy {
             r.add(i);
         }
         return r;
+    }
+
+    private static boolean isScoped(StaplerRequest2 req) {
+        return Boolean.parseBoolean(req.getParameter("scoped"));
+    }
+
+    private static List<String> getSegments(SuggestedItem suggestedItem, @CheckForNull SearchableModelObject scope) {
+        List<String> segments = new ArrayList<>();
+        for (SuggestedItem s = suggestedItem; s != null && s.item != scope; s = s.getParent()) {
+            segments.addFirst(s.item instanceof hudson.model.Item item ? item.getDisplayName() : s.item.getSearchName());
+        }
+        return segments;
+    }
+
+    private static String renderSymbol(String name) {
+        return Symbol.get(new SymbolRequest.Builder().withRaw(name).build());
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static String getPageScopes() {
+        StaplerRequest2 req = Stapler.getCurrentRequest2();
+        JSONArray scopes = new JSONArray();
+        if (req == null) {
+            return scopes.toString();
+        }
+
+        for (Ancestor a : req.getAncestors()) {
+            if (a.getObject() instanceof Jenkins || !(a.getObject() instanceof SearchableModelObject smo) || !isSearchScope(smo)) {
+                continue;
+            }
+            JSONObject scope = new JSONObject();
+            scope.put("label", smo.getDisplayName());
+            scope.put("url", a.getUrl() + "/");
+            String icon = smo.getSearchIcon();
+            if (icon != null && icon.startsWith("symbol-")) {
+                scope.put("icon", renderSymbol(icon));
+            }
+            scopes.add(scope);
+        }
+        return scopes.toString();
+    }
+
+    private static boolean isSearchScope(SearchItem item) {
+        return item instanceof ItemGroup || item instanceof SearchScope;
+    }
+
+    private static List<SuggestedItem> suggestScoped(SearchableModelObject scope, String query) {
+        SearchIndex index = scope instanceof SearchScope searchScope ? searchScope.getScopedSearchIndex() : scope.getSearchIndex();
+        List<SearchItem> items = new ArrayList<>();
+        index.suggest(query == null ? "" : query.trim(), items);
+
+        SuggestedItem scopeItem = SuggestedItem.build(null, scope);
+        List<SuggestedItem> result = new ArrayList<>();
+        for (SearchItem item : items) {
+            result.add(item instanceof hudson.model.Item ? SuggestedItem.build(scope, item) : new SuggestedItem(scopeItem, item));
+        }
+        return result;
     }
 
     public int getMaxSearchSize() {
@@ -307,6 +383,11 @@ public class Search implements StaplerProxy {
         @Exported
         public String name;
 
+        private boolean searchScope;
+
+        @Exported
+        public List<String> parent;
+
         private final String url;
 
         private final String type;
@@ -332,6 +413,16 @@ public class Search implements StaplerProxy {
             this.type = type;
             this.group = group;
             this.description = description;
+        }
+
+        @Exported
+        @Restricted(NoExternalUse.class)
+        public boolean isSearchScope() {
+            return searchScope;
+        }
+
+        void setSearchScope(boolean searchScope) {
+            this.searchScope = searchScope;
         }
 
         @Exported

@@ -52,6 +52,7 @@ import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
 import hudson.search.SearchItems;
+import hudson.search.SearchMatcher;
 import hudson.security.ACL;
 import hudson.tasks.LogRotator;
 import hudson.util.AlternativeUiTextProvider;
@@ -108,6 +109,7 @@ import jenkins.model.details.ProjectNameDetail;
 import jenkins.model.details.UpstreamProjectsDetail;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.RunWithSCM;
+import jenkins.search.SearchScope;
 import jenkins.security.HexStringConfidentialKey;
 import jenkins.security.XStreamNotDeserializable;
 import jenkins.security.stapler.StaplerNotDispatchable;
@@ -158,9 +160,11 @@ import org.kohsuke.stapler.verb.POST;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
-        extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren, HasWidgets {
+        extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren, HasWidgets, SearchScope {
 
     private static final Logger LOGGER = Logger.getLogger(Job.class.getName());
+
+    private static final int MAX_SCOPED_BUILD_RESULTS = 10;
 
     /**
      * Next build number. Kept in a separate file because this is the only
@@ -629,6 +633,26 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     public String getSearchIcon() {
         return "symbol-status-" +  this.getIconColor().getIconName();
+    }
+
+    @NonNull
+    @Override
+    @Restricted(Beta.class)
+    public SearchIndex getScopedSearchIndex() {
+        return new SearchIndex() {
+            @Override
+            public void find(String token, List<SearchItem> result) {
+            }
+
+            @Override
+            public void suggest(String token, List<SearchItem> result) {
+                SearchMatcher matcher = SearchMatcher.of(token);
+                getBuilds().limit(getSearch().getMaxSearchSize()).stream()
+                        .filter(run -> matcher.matches(run.getDisplayName()))
+                        .limit(MAX_SCOPED_BUILD_RESULTS)
+                        .forEach(result::add);
+            }
+        };
     }
 
     @Override
