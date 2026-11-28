@@ -27,6 +27,7 @@ package hudson.util;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -262,5 +263,33 @@ class ArgumentListBuilderTest {
         assertThat(args, containsString("one=one\\backslash"));
         assertThat(args, containsString("two=two\\\\backslashes"));
         assertThat(args, containsString("four=four\\\\\\\\backslashes"));
+    }
+
+    @Test
+    void toStringWithQuoteMasksMaskedArguments() {
+        ArgumentListBuilder builder = new ArgumentListBuilder();
+        builder.add("hg");
+        builder.add("--config");
+        builder.addMasked("auth.jenkins.password=s3cr3t");
+        builder.add("clone");
+
+        // This output goes to a build log, so a masked argument must not survive in it.
+        String rendered = builder.toStringWithQuote();
+        assertThat(rendered, is("hg --config ****** clone"));
+        assertThat(rendered, not(containsString("s3cr3t")));
+    }
+
+    @Test
+    void toStringWithQuoteQuotesTheSameWayAsToString() {
+        ArgumentListBuilder builder = new ArgumentListBuilder();
+        builder.add("cmd");
+        builder.add("has space");
+        builder.add("");
+        builder.addMasked("secret value");
+        builder.add("plain");
+
+        String rendered = builder.toStringWithQuote();
+        assertThat(rendered, is(builder.toString()));
+        assertThat(rendered, is("cmd \"has space\" \"\" ****** plain"));
     }
 }
