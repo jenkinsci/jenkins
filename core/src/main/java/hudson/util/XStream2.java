@@ -88,6 +88,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -284,7 +285,7 @@ public class XStream2 extends XStream {
                     if (type.isPrimitive()) {
                         // oddly not in com.thoughtworks.xstream.core.util.Primitives
                         v = ReflectionUtils.getVmDefaultValueForPrimitiveType(type);
-                        if (v.equals(value)) {
+                        if (Objects.equals(v, value)) {
                             return;
                         }
                     } else {
