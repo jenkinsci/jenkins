@@ -52,7 +52,7 @@ THE SOFTWARE.
         <l:icon src="symbol-play" />
         ${it.buildButtonText}
       </button>
-      <a href="./" class="jenkins-button">
+      <a href="./" class="jenkins-button" data-id="cancel">
         ${%Cancel}
       </a>
     </f:bottomButtonBar>
