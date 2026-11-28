@@ -196,7 +196,7 @@ public class Search implements StaplerProxy {
             } else {
                 item = new Item(name, curItem.getUrl(), iconName, "image", group, description);
             }
-            item.searchScope = isSearchScope(curItem.item);
+            item.setSearchScope(isSearchScope(curItem.item));
             item.parent = segments.isEmpty() ? null : segments;
             r.suggestions.add(item);
         }
@@ -438,8 +438,7 @@ public class Search implements StaplerProxy {
         @Exported
         public String name;
 
-        @Exported
-        public boolean searchScope;
+        private boolean searchScope;
 
         @Exported
         public List<String> parent;
@@ -469,6 +468,16 @@ public class Search implements StaplerProxy {
             this.type = type;
             this.group = group;
             this.description = description;
+        }
+
+        @Exported
+        @Restricted(NoExternalUse.class)
+        public boolean isSearchScope() {
+            return searchScope;
+        }
+
+        void setSearchScope(boolean searchScope) {
+            this.searchScope = searchScope;
         }
 
         @Exported
