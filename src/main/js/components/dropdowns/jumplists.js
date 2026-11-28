@@ -73,7 +73,8 @@ function generateDropdowns() {
           trigger: "click focus",
           offset: [-16, 10],
           animation: "tooltip",
-          touch: false,
+          touch: true,
+          interactive: true,
         },
       ),
   );
