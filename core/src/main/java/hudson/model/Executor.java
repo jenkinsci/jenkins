@@ -247,6 +247,20 @@ public class Executor extends Thread implements ModelObject, IExecutor {
         }
     }
 
+    /**
+     * Whether this executor has a pending interrupt result recorded, i.e. {@link #interrupt(Result)}
+     * (or a variant) was called. Distinguishes an executor-driven abort from an
+     * {@link InterruptedException} thrown by a build step for its own reasons.
+     */
+    boolean hasPendingInterruptStatus() {
+        lock.readLock().lock();
+        try {
+            return interruptStatus != null;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
     public Result abortResult() {
         // this method is almost always called as a result of the current thread being interrupted
         // as a result we need to clean the interrupt flag so that the lock's lock method doesn't
