@@ -210,9 +210,13 @@ class RunTest  {
     private void ensureXssIsPrevented(FreeStyleProject upProject, String validationPart, String dangerousPart) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage htmlPage = wc.goTo(upProject.getUrl());
+        String tooltipIcon = "#jenkins-build-history .app-temporary-list__item__description svg[tooltip]";
+        for (int i = 0; i < 50 && htmlPage.querySelector(tooltipIcon) == null; i++) {
+            wc.waitForBackgroundJavaScript(200);
+        }
 
         // trigger the tooltip display
-        htmlPage.executeJavaScript("document.querySelector('#jenkins-build-history .app-builds-container__item__inner__controls svg')._tippy.show()");
+        htmlPage.executeJavaScript("document.querySelector('" + tooltipIcon + "')._tippy.show()");
         wc.waitForBackgroundJavaScript(500);
         ScriptResult result = htmlPage.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
         Object jsResult = result.getJavaScriptResult();
