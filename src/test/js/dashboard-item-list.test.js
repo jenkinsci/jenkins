@@ -242,15 +242,12 @@ describe("dashboard recent tab", () => {
   let root;
   let recentTab;
 
-  // The first fetch, on load, returns the page's own content; later ones `next`
+  // The page renders with `html`, and each refresh fetches `next`
   async function setUp(html, next) {
-    document.body.innerHTML = `<div id="dashboard-recent" data-rows-url="/jenkins/defaultTab/rows">${html}</div>`;
+    document.body.innerHTML = `<div><p class="app-dashboard-recent__error jenkins-hidden"></p><div id="dashboard-recent" data-rows-url="/jenkins/defaultTab/rows">${html}</div></div>`;
     root = document.querySelector("#dashboard-recent");
     const applySubtree = vi.fn();
-    const fetch = vi
-      .fn()
-      .mockImplementationOnce(() => response(html))
-      .mockImplementation(() => response(next));
+    const fetch = vi.fn(() => response(next));
     recentTab = initRecent(root, { fetch, applySubtree, interval: 60000 });
     recentTab.fetch = fetch;
     await recentTab.ready;
@@ -502,7 +499,7 @@ describe("dashboard recent tab", () => {
     expect(document.activeElement).toBe(menu);
   });
 
-  it("expands a section when the focused row moves into its hidden rows", async () => {
+  it("asks for every queued row while one has focus, and expands the section when it moves past the first few", async () => {
     const queued = (ids) =>
       recent([
         {
@@ -511,12 +508,16 @@ describe("dashboard recent tab", () => {
           rows: ids.map((id, i) => row(id, id, i >= 2)),
         },
       ]);
-    await setUp(queued(["a", "b", "c"]), queued(["new", "a", "b", "c"]));
+    await setUp(queued(["a", "b"]), queued(["new", "a", "b"]));
     const menu = root.querySelector('[page-entry-id="b"] .menu');
     menu.focus();
 
     await recentTab.refresh();
 
+    expect(recentTab.fetch).toHaveBeenCalledWith(
+      "/jenkins/defaultTab/rows?expanded=queued",
+      expect.anything(),
+    );
     const section = root.querySelector('[data-section="queued"]');
     expect(section.classList.contains("app-dashboard-section--expanded")).toBe(
       true,
@@ -527,6 +528,112 @@ describe("dashboard recent tab", () => {
         .classList.contains("app-dashboard-section__extra"),
     ).toBe(true);
     expect(document.activeElement).toBe(menu);
+  });
+
+  it("keeps a section collapsed while its focused row stays in the first few", async () => {
+    const html = recent([
+      {
+        id: "queued",
+        toggle: true,
+        rows: [row("a", "a"), row("b", "b"), row("c", "c", true)],
+      },
+    ]);
+    await setUp(html, html);
+    root.querySelector('[page-entry-id="a"] .menu').focus();
+
+    await recentTab.refresh();
+
+    expect(
+      root
+        .querySelector('[data-section="queued"]')
+        .classList.contains("app-dashboard-section--expanded"),
+    ).toBe(false);
+  });
+
+  it("asks for the rows of expanded sections, and refreshes on expanding", async () => {
+    const queued = recent([
+      {
+        id: "queued",
+        toggle: true,
+        rows: [row("a", "a"), row("b", "b"), row("c", "c")],
+      },
+    ]);
+    await setUp(queued, queued);
+
+    root.querySelector(".app-dashboard-section__toggle").click();
+
+    await vi.waitFor(() =>
+      expect(recentTab.fetch).toHaveBeenCalledWith(
+        "/jenkins/defaultTab/rows?expanded=queued",
+        expect.anything(),
+      ),
+    );
+  });
+
+  it("sends the ETag back and leaves the page alone on 304", async () => {
+    const html = recent([{ id: "finished", rows: [row("b#1", "x")] }]);
+    const applySubtree = await setUp(html, html);
+    const changed = recent([{ id: "finished", rows: [row("c#1", "y")] }]);
+    recentTab.fetch
+      .mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: new Headers({ ETag: '"abc"' }),
+          text: () => Promise.resolve(html),
+        }),
+      )
+      .mockImplementationOnce(() =>
+        Promise.resolve({ ok: false, status: 304, text: () => changed }),
+      );
+
+    await recentTab.refresh();
+    await recentTab.refresh();
+
+    expect(recentTab.fetch).toHaveBeenLastCalledWith(
+      "/jenkins/defaultTab/rows",
+      { headers: { "If-None-Match": '"abc"' } },
+    );
+    expect(root.querySelector('[page-entry-id="b#1"]')).not.toBeNull();
+    expect(applySubtree).not.toHaveBeenCalled();
+  });
+
+  it("doesn't send back the ETag of a response that failed to read", async () => {
+    const html = recent([{ id: "finished", rows: [row("b#1", "x")] }]);
+    await setUp(html, html);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    recentTab.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ ETag: '"abc"' }),
+        text: () => Promise.reject(new Error("connection lost")),
+      }),
+    );
+
+    await recentTab.refresh();
+    await recentTab.refresh();
+
+    expect(recentTab.fetch).toHaveBeenLastCalledWith(
+      "/jenkins/defaultTab/rows",
+      { headers: {} },
+    );
+  });
+
+  it("says when a refresh fails until one succeeds", async () => {
+    const html = recent([{ id: "finished", rows: [row("b#1", "x")] }]);
+    await setUp(html, html);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const error = document.querySelector(".app-dashboard-recent__error");
+    recentTab.fetch.mockImplementationOnce(() =>
+      Promise.resolve({ ok: false, status: 500 }),
+    );
+
+    await recentTab.refresh();
+    expect(error.classList.contains("jenkins-hidden")).toBe(false);
+
+    await recentTab.refresh();
+    expect(error.classList.contains("jenkins-hidden")).toBe(true);
   });
 
   it("does nothing when the content is unchanged", async () => {

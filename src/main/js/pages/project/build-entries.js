@@ -17,16 +17,20 @@ const serverHtml = new WeakMap();
  * (or the whole entry, if its cells no longer line up), new ones are inserted,
  * and ones no longer on the page removed.
  *
- * Expects `responseText` to be a single wrapper element whose children are the
- * entries, and copies the wrapper's attributes onto the existing one.
+ * Expects `response` to be a single wrapper element whose children are the
+ * entries, or its HTML, and copies the wrapper's attributes onto the existing
+ * one. A wrapper element is moved into `contents` as needed.
  * @param {HTMLElement} contents
- * @param {string} responseText
+ * @param {string|Element} response
  * @return {Element[]} the entries and cells that were inserted, which need behaviours applied
  */
-export function updateEntries(contents, responseText) {
-  const template = document.createElement("template");
-  template.innerHTML = responseText;
-  const incoming = template.content.firstElementChild;
+export function updateEntries(contents, response) {
+  let incoming = response;
+  if (typeof response === "string") {
+    const template = document.createElement("template");
+    template.innerHTML = response;
+    incoming = template.content.firstElementChild;
+  }
   const incomingEntries = Array.from(incoming.children);
   incomingEntries.forEach(remember);
 
@@ -79,6 +83,19 @@ export function updateEntries(contents, responseText) {
   }
 
   return inserted;
+}
+
+/**
+ * Records the HTML of the entries already in `contents`, as rendered with the
+ * page, so that a later {@link updateEntries} leaves those that are unchanged
+ * alone.
+ * @param {HTMLElement} contents
+ */
+export function rememberEntries(contents) {
+  const wrapper = contents.firstElementChild;
+  if (wrapper) {
+    Array.from(wrapper.children).forEach(remember);
+  }
 }
 
 /**

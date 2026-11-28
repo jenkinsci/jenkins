@@ -254,8 +254,17 @@ export function observeBuildColumns(container) {
     }
   }).observe(container);
 
-  // The layout itself only touches attributes, so this won't retrigger itself
-  new MutationObserver(layout).observe(container, {
+  // Lays out once per frame however many changes a refresh makes. The layout
+  // itself only touches attributes, so this won't retrigger itself.
+  let mutationFrame;
+  new MutationObserver(() => {
+    if (mutationFrame === undefined) {
+      mutationFrame = requestAnimationFrame(() => {
+        mutationFrame = undefined;
+        layout();
+      });
+    }
+  }).observe(container, {
     childList: true,
     characterData: true,
     subtree: true,

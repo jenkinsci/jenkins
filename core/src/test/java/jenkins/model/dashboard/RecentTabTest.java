@@ -43,4 +43,15 @@ class RecentTabTest {
         assertThat(RecentTab.roughTimeSpan(TimeUnit.MINUTES.toMillis(119)), is("1 hr"));
         assertThat(RecentTab.roughTimeSpan(TimeUnit.HOURS.toMillis(49)), is("2 days"));
     }
+
+    @Test
+    void ifNoneMatchComparesEachTagWeakly() {
+        assertThat(RecentTab.matchesAny(null, "\"a\""), is(false));
+        assertThat(RecentTab.matchesAny("\"a\"", "\"a\""), is(true));
+        assertThat(RecentTab.matchesAny("W/\"a\"", "\"a\""), is(true));
+        assertThat(RecentTab.matchesAny("\"b\", W/\"a\"", "\"a\""), is(true));
+        assertThat(RecentTab.matchesAny("*", "\"a\""), is(true));
+        assertThat(RecentTab.matchesAny("\"b\"", "\"a\""), is(false));
+        assertThat(RecentTab.matchesAny("\"ab\"", "\"a\""), is(false));
+    }
 }

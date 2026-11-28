@@ -25,6 +25,10 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
   <l:dashboard-subpage>
+    <p class="app-dashboard-recent__error jenkins-hidden" role="status">
+      <l:icon src="symbol-warning" />
+      ${%RefreshFailed}
+    </p>
     <div id="dashboard-recent" data-rows-url="${rootURL}/${it.urlName ?: 'defaultTab'}/rows">
       <st:include page="rows.jelly" />
     </div>

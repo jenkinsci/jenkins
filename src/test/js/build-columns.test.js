@@ -116,7 +116,11 @@ describe("build columns", () => {
 
     observeBuildColumns(container);
     container.innerHTML = entry(1, summary());
+    container.append(document.createElement("div"));
     await Promise.resolve();
+    // Laid out in the next frame, once for all the changes made before it
+    expect(frames).toHaveLength(1);
+    frames.shift()();
     expect(columnBasis(container, 1)).toBe(`${MAX_WIDTH}px`);
 
     while (frames.length > 0) {
