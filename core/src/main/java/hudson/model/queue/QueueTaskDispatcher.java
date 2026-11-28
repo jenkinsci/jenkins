@@ -91,6 +91,11 @@ public abstract class QueueTaskDispatcher implements ExtensionPoint {
      * with elastic Jenkins deployments.
      *
      * <p>
+     * This method is not consulted for a {@link Queue.FlyweightTask}, such as the task of a Pipeline build itself:
+     * {@link Queue} runs it on a one-off executor of a node it picks with {@link Node#canTake(Queue.BuildableItem)},
+     * without asking dispatchers. To hold back any task, flyweight or not, use {@link #canRun(Queue.Item)}.
+     *
+     * <p>
      * Vetos are additive. When multiple {@link QueueTaskDispatcher}s are in the system,
      * the task won't run on the given node if any one of them returns a non-null value.
      * (This relationship is also the same with built-in check logic.)
@@ -110,7 +115,9 @@ public abstract class QueueTaskDispatcher implements ExtensionPoint {
      * Compared to {@link #canTake(Node, Queue.BuildableItem)}, this version tells Jenkins that the task is
      * simply not ready to execute, even if there's available executor. This is more efficient
      * than {@link #canTake(Node, Queue.BuildableItem)}, and it sends the right signal to Jenkins so that
-     * it won't use {@link Cloud} to try to provision new executors.
+     * it won't use {@link Cloud} to try to provision new executors. Unlike
+     * {@link #canTake(Node, Queue.BuildableItem)}, it is consulted for every task, including
+     * {@link Queue.FlyweightTask}s.
      *
      * <p>
      * Vetos are additive. When multiple {@link QueueTaskDispatcher}s are in the system,
