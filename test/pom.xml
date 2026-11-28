@@ -176,7 +176,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
-      <version>4.3.0</version>
+      <version>4.4.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
