@@ -1690,6 +1690,37 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
     }
 
     /**
+     * Prefix for the "configure HTTP proxy" link stored in connectivity-failure HTML.
+     *
+     * <p>The check runs off the request thread, often before the setup wizard stores a Jenkins URL.
+     * {@link Jenkins#getRootUrl()} is then null, and {@link java.text.MessageFormat} would persist the
+     * literal {@code null} (for example {@code nullmanage/configure}). That stored HTML is not rewritten
+     * after a URL is configured, so the prefix written here has to already be usable.
+     * A configured root URL is returned unchanged. Otherwise the servlet context path is used
+     * ({@code ""} becomes {@code /}, {@code /jenkins} becomes {@code /jenkins/}).
+     *
+     * @param rootUrl {@link Jenkins#getRootUrl()}, or null when the URL is unset off-request
+     * @param contextPath servlet context path ({@code ""} for the root context)
+     * @return href prefix that is never null
+     */
+    @VisibleForTesting
+    /* package */ static String proxyConfigLinkPrefix(@CheckForNull String rootUrl, @CheckForNull String contextPath) {
+        if (rootUrl != null) {
+            return rootUrl;
+        }
+        if (contextPath == null || contextPath.isEmpty()) {
+            return "/";
+        }
+        return contextPath.endsWith("/") ? contextPath : contextPath + "/";
+    }
+
+    /** Configured root URL, or the servlet context path when that URL is unset. */
+    private static String currentProxyConfigLinkPrefix() {
+        Jenkins jenkins = Jenkins.get();
+        return proxyConfigLinkPrefix(jenkins.getRootUrl(), jenkins.getServletContext().getContextPath());
+    }
+
+    /**
      * Tests the internet connectivity.
      */
     public final class ConnectionCheckJob extends UpdateCenterJob {
@@ -1725,7 +1756,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
                             if (e.getMessage().contains("Connection timed out")) {
                                 // Google can't be down, so this is probably a proxy issue
                                 connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.FAILED);
-                                statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(Functions.xmlEscape(connectionCheckUrl), Jenkins.get().getRootUrl()));
+                                statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(Functions.xmlEscape(connectionCheckUrl), currentProxyConfigLinkPrefix()));
                                 return;
                             }
                         }
@@ -1746,7 +1777,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
                 statuses.add(Messages.UpdateCenter_Status_Success());
             } catch (UnknownHostException e) {
                 connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.FAILED);
-                statuses.add(Messages.UpdateCenter_Status_UnknownHostException(Functions.xmlEscape(e.getMessage()), Jenkins.get().getRootUrl()));
+                statuses.add(Messages.UpdateCenter_Status_UnknownHostException(Functions.xmlEscape(e.getMessage()), currentProxyConfigLinkPrefix()));
                 addStatus(e);
                 error = e;
             } catch (Exception e) {
