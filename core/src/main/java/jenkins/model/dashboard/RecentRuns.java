@@ -28,7 +28,9 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.init.Terminator;
 import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -51,6 +53,7 @@ import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Remembers the last completed build of every job, for {@link RecentTab}.
@@ -94,6 +97,12 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
 
     /** Whether the index is being filled from existing builds. */
     private volatile boolean loading;
+
+    /** Set when Jenkins shuts down, to stop filling the index and not start again. */
+    private volatile boolean stopped;
+
+    /** The thread filling the index, if any. */
+    private volatile Thread seeder;
 
     public static RecentRuns get() {
         return ExtensionList.lookupSingleton(RecentRuns.class);
@@ -203,15 +212,15 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
             // The folder first, as it is remembered, and most entries are in folders the user cannot read or that
             // they have seen already
             int slash = ref.job().lastIndexOf('/');
-            if (slash > 0 && !folders.canRead(ref.job().substring(0, slash))) {
+            ItemGroup<?> parent = slash < 0 ? Jenkins.get() : folders.get(ref.job().substring(0, slash));
+            if (parent == null) {
                 continue;
             }
             if (refs.get(ref.job()) != ref) {
                 // Replaced or removed since the iteration started
                 continue;
             }
-            Job<?, ?> job = Dashboard.visible(ref.job(), Job.class);
-            if (job == null) {
+            if (!(ReadableFolders.readableItem(parent, ref.job().substring(slash + 1)) instanceof Job<?, ?> job)) {
                 continue;
             }
             Run<?, ?> run = job.getBuildByNumber(ref.number());
@@ -233,24 +242,38 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
     }
 
     /**
-     * Whether the current user can read folders, by full name, remembering the answer for each folder and the
-     * folders containing it, so that a user who can only see a few folders checks each folder once, and the
-     * folders inside a folder they cannot read not at all.
+     * The folders the current user can read, by full name, each found in the folder containing it and remembered,
+     * so that a user who can only see a few folders checks each folder once, and the folders inside a folder they
+     * cannot read not at all.
      */
     private static final class ReadableFolders {
-        private final Map<String, Boolean> readable = new HashMap<>();
+        /** Null for a folder the user cannot read. */
+        private final Map<String, ItemGroup<?>> folders = new HashMap<>();
 
-        boolean canRead(String folder) {
-            Boolean known = readable.get(folder);
-            if (known != null) {
-                return known;
+        @CheckForNull
+        ItemGroup<?> get(String fullName) {
+            if (folders.containsKey(fullName)) {
+                return folders.get(fullName);
             }
-            int slash = folder.lastIndexOf('/');
-            // The folder's own permission too, as not every item group checks it for the items it returns
-            boolean result = (slash <= 0 || canRead(folder.substring(0, slash)))
-                    && Dashboard.visible(folder, Item.class) != null;
-            readable.put(folder, result);
-            return result;
+            int slash = fullName.lastIndexOf('/');
+            ItemGroup<?> parent = slash < 0 ? Jenkins.get() : get(fullName.substring(0, slash));
+            ItemGroup<?> folder = parent != null
+                    && readableItem(parent, fullName.substring(slash + 1)) instanceof ItemGroup<?> group ? group : null;
+            folders.put(fullName, folder);
+            return folder;
+        }
+
+        /**
+         * An item in a group, if the current user can read it. Checks the item's own permission, as not every item
+         * group checks it for the items it returns.
+         */
+        static @CheckForNull Item readableItem(ItemGroup<?> group, String name) {
+            try {
+                Item item = group.getItem(name);
+                return item != null && item.hasPermission(Item.READ) ? item : null;
+            } catch (AccessDeniedException e) {
+                return null;
+            }
         }
     }
 
@@ -262,12 +285,26 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
     }
 
     private void seedOnce() {
-        if (seeded.compareAndSet(false, true)) {
+        if (!stopped && seeded.compareAndSet(false, true)) {
             loading = true;
             Thread thread = new Thread(this::seed, "Dashboard recent builds");
             thread.setDaemon(true);
             thread.setPriority(Thread.MIN_PRIORITY);
+            seeder = thread;
             thread.start();
+        }
+    }
+
+    /**
+     * Stops filling the index when Jenkins shuts down, before plugins are stopped.
+     */
+    @Terminator
+    public static void stop() {
+        RecentRuns recentRuns = ExtensionList.lookupSingleton(RecentRuns.class);
+        recentRuns.stopped = true;
+        Thread thread = recentRuns.seeder;
+        if (thread != null) {
+            thread.interrupt();
         }
     }
 
@@ -282,6 +319,9 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
         try (ACLContext ignored = ACL.as2(ACL.SYSTEM2)) {
             Jenkins jenkins = Jenkins.get();
             for (Job job : jenkins.allItems(Job.class)) {
+                if (stopped) {
+                    return;
+                }
                 beforeSeeding.accept(job);
                 Run<?, ?> run = lastCompletedBuild(job);
                 if (run == null) {
@@ -303,6 +343,7 @@ public final class RecentRuns extends RunListener<Run<?, ?>> {
         } finally {
             // Before another attempt can start, which sets it again
             loading = false;
+            seeder = null;
             if (!done) {
                 seeded.set(false);
             }

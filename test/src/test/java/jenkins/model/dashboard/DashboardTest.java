@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.StreamSupport;
 import jenkins.model.Jenkins;
 import jenkins.model.Tab;
@@ -759,6 +760,44 @@ class DashboardTest {
             assertThat(RecentRuns.get().getCompleted(10), hasItem(a.getLastBuild()));
             awaitSeeded();
             assertThat(RecentRuns.get().getCompleted(10), containsInAnyOrder(a.getLastBuild(), b.getLastBuild()));
+        } finally {
+            RecentRuns.beforeSeeding = job -> {};
+        }
+    }
+
+    @Test
+    void recentRunsStopFillingTheIndexOnShutdown() throws Exception {
+        FreeStyleProject a = j.createFreeStyleProject("a");
+        FreeStyleProject b = j.createFreeStyleProject("b");
+        j.buildAndAssertSuccess(a);
+        j.buildAndAssertSuccess(b);
+        CountDownLatch reading = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        AtomicInteger read = new AtomicInteger();
+        RecentRuns.beforeSeeding = job -> {
+            read.incrementAndGet();
+            reading.countDown();
+            try {
+                release.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        };
+        try {
+            RecentRuns.get().reset(true);
+            RecentRuns.get().getCompleted(10);
+            assertThat(reading.await(30, TimeUnit.SECONDS), is(true));
+            RecentRuns.stop();
+            release.countDown();
+            long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30);
+            while (RecentRuns.get().isLoading() && System.currentTimeMillis() < deadline) {
+                Thread.sleep(50);
+            }
+            assertThat(RecentRuns.get().isLoading(), is(false));
+            // Neither the rest of the jobs nor another attempt
+            RecentRuns.get().getCompleted(10);
+            assertThat(RecentRuns.get().isLoading(), is(false));
+            assertThat(read.get(), is(1));
         } finally {
             RecentRuns.beforeSeeding = job -> {};
         }
