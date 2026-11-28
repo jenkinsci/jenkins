@@ -30,6 +30,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.Action;
 import hudson.model.Actionable;
+import hudson.model.Item;
 import hudson.model.View;
 import hudson.search.Search;
 import hudson.search.SearchIndexBuilder;
@@ -78,6 +79,18 @@ public final class Dashboard extends Actionable {
      */
     public static boolean isEnabled() {
         return new NewDashboardPageUserExperimentalFlag().getFlagValue();
+    }
+
+    /**
+     * Finds an item that the current user can see, along with every folder containing it, as needed to open its
+     * page. Not every item group checks the permission of the items it returns, so the item's own is checked too.
+     *
+     * @return the item, or {@code null} if there is none of that type or the current user cannot see it
+     */
+    static <T extends Item> @CheckForNull T visible(@NonNull String fullName, @NonNull Class<T> type) {
+        // Null when the current user cannot read a folder containing the item
+        T item = Jenkins.get().getItemByFullNameOrNull(fullName, type);
+        return item != null && item.hasPermission(Item.READ) ? item : null;
     }
 
     @Override

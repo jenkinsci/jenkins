@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -54,7 +55,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.StreamSupport;
 import jenkins.model.Jenkins;
 import jenkins.model.Tab;
@@ -689,6 +693,126 @@ class DashboardTest {
             Thread.sleep(100);
         }
         assertThat(RecentRuns.get().getCompleted(10), contains(p.getLastBuild()));
+    }
+
+    @Test
+    void recentTabListsBuildsFoundSoFarWhileTheIndexFills() throws Exception {
+        enableFlag("alice");
+        FreeStyleProject a = j.createFreeStyleProject("a");
+        FreeStyleProject b = j.createFreeStyleProject("b");
+        j.buildAndAssertSuccess(a);
+        j.buildAndAssertSuccess(b);
+        CountDownLatch reachedB = new CountDownLatch(1);
+        CountDownLatch resume = new CountDownLatch(1);
+        RecentRuns.beforeSeeding = job -> {
+            if (job == b) {
+                reachedB.countDown();
+                try {
+                    resume.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        };
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            RecentRuns.get().reset(true);
+            RecentRuns.get().getCompleted(10);
+            assertThat(reachedB.await(30, TimeUnit.SECONDS), is(true));
+
+            // Paused after a, so a is listed and the tab says it is still looking
+            assertThat(RecentRuns.get().isLoading(), is(true));
+            HtmlPage page = wc.goTo("");
+            assertThat(rowLabels(page), contains("a #1"));
+            assertThat(page.asNormalizedText(), containsString("Still looking for older builds"));
+
+            resume.countDown();
+            awaitSeeded();
+            page = wc.goTo("");
+            assertThat(page.asNormalizedText(), not(containsString("Still looking")));
+            assertThat(RecentRuns.get().getCompleted(10), containsInAnyOrder(a.getLastBuild(), b.getLastBuild()));
+        } finally {
+            resume.countDown();
+            RecentRuns.beforeSeeding = job -> {};
+        }
+    }
+
+    @Test
+    void recentRunsTryAgainAfterFillingTheIndexFails() throws Exception {
+        FreeStyleProject a = j.createFreeStyleProject("a");
+        FreeStyleProject b = j.createFreeStyleProject("b");
+        j.buildAndAssertSuccess(a);
+        j.buildAndAssertSuccess(b);
+        AtomicBoolean fail = new AtomicBoolean(true);
+        RecentRuns.beforeSeeding = job -> {
+            if (job == b && fail.getAndSet(false)) {
+                throw new IllegalStateException("broken");
+            }
+        };
+        try {
+            RecentRuns.get().reset(true);
+            RecentRuns.get().getCompleted(10);
+            long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30);
+            while ((fail.get() || RecentRuns.get().isLoading()) && System.currentTimeMillis() < deadline) {
+                Thread.sleep(50);
+            }
+            // What was read before the failure stays, and the next read tries again
+            assertThat(RecentRuns.get().isLoading(), is(false));
+            assertThat(RecentRuns.get().getCompleted(10), hasItem(a.getLastBuild()));
+            awaitSeeded();
+            assertThat(RecentRuns.get().getCompleted(10), containsInAnyOrder(a.getLastBuild(), b.getLastBuild()));
+        } finally {
+            RecentRuns.beforeSeeding = job -> {};
+        }
+    }
+
+    @Test
+    void recentRunsStopFillingTheIndexOnShutdown() throws Exception {
+        FreeStyleProject a = j.createFreeStyleProject("a");
+        FreeStyleProject b = j.createFreeStyleProject("b");
+        j.buildAndAssertSuccess(a);
+        j.buildAndAssertSuccess(b);
+        CountDownLatch reading = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        AtomicInteger read = new AtomicInteger();
+        RecentRuns.beforeSeeding = job -> {
+            read.incrementAndGet();
+            reading.countDown();
+            try {
+                release.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        };
+        try {
+            RecentRuns.get().reset(true);
+            RecentRuns.get().getCompleted(10);
+            assertThat(reading.await(30, TimeUnit.SECONDS), is(true));
+            RecentRuns.stop();
+            release.countDown();
+            long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30);
+            while (RecentRuns.get().isLoading() && System.currentTimeMillis() < deadline) {
+                Thread.sleep(50);
+            }
+            assertThat(RecentRuns.get().isLoading(), is(false));
+            // Neither the rest of the jobs nor another attempt
+            RecentRuns.get().getCompleted(10);
+            assertThat(RecentRuns.get().isLoading(), is(false));
+            assertThat(read.get(), is(1));
+        } finally {
+            RecentRuns.beforeSeeding = job -> {};
+        }
+    }
+
+    /**
+     * Waits until filling the index has finished, reading it so that a failed attempt is tried again.
+     */
+    private static void awaitSeeded() throws InterruptedException {
+        long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30);
+        do {
+            RecentRuns.get().getCompleted(10);
+            Thread.sleep(50);
+        } while (RecentRuns.get().isLoading() && System.currentTimeMillis() < deadline);
+        assertThat(RecentRuns.get().isLoading(), is(false));
     }
 
     @Test
