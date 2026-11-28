@@ -24,7 +24,9 @@
 
 package hudson;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -57,9 +59,15 @@ class PluginManagerInstalledGUITest {
     private final RealJenkinsExtension rjr = new RealJenkinsExtension()
             .includeTestClasspathPlugins(false)
             .addPlugins("plugins/dependee-0.0.2.hpi", "plugins/depender-0.0.2.hpi", "plugins/mandatory-depender-0.0.2.hpi")
-            .addSyntheticPlugin(new RealJenkinsExtension.SyntheticPlugin(Marker.class.getPackage()).shortName("detached-test"));
+            .addSyntheticPlugin(new RealJenkinsExtension.SyntheticPlugin(Marker.class.getPackage()).shortName("detached-test"))
+            // chain-top depends on chain-middle, which depends on chain-bottom.
+            .addSyntheticPlugin(new RealJenkinsExtension.SyntheticPlugin(Marker.class.getPackage()).shortName("chain-bottom").version("1.0"))
+            .addSyntheticPlugin(new RealJenkinsExtension.SyntheticPlugin(Marker.class.getPackage()).shortName("chain-middle").version("1.0")
+                    .header("Plugin-Dependencies", "chain-bottom:1.0"))
+            .addSyntheticPlugin(new RealJenkinsExtension.SyntheticPlugin(Marker.class.getPackage()).shortName("chain-top").version("1.0")
+                    .header("Plugin-Dependencies", "chain-middle:1.0"));
 
-    @Issue("JENKINS-33843")
+    @Issue({"JENKINS-33843", "JENKINS-69347"})
     @Test
     void test_enable_disable_uninstall() throws Throwable {
         rjr.then(j -> {
@@ -125,6 +133,32 @@ class PluginManagerInstalledGUITest {
             detachedTestPlugin.assertNotEnabled();
             detachedTestPlugin.assertEnabledStateChangeable();
             detachedTestPlugin.assertUninstallable();
+        });
+    }
+
+    @Issue("JENKINS-69347")
+    @Test
+    void test_disabled_dependency_locks_plugins_further_up_a_chain() throws Throwable {
+        rjr.then(j -> {
+            // Disables chain-bottom and the plugins that depend on it, before the page renders.
+            j.jenkins.getPluginManager().getPlugin("chain-bottom").disable(PluginWrapper.PluginDisableStrategy.MANDATORY);
+
+            InstalledPlugins installedPlugins = new InstalledPlugins(j);
+            InstalledPlugin bottom = installedPlugins.get("chain-bottom");
+            InstalledPlugin middle = installedPlugins.get("chain-middle");
+            InstalledPlugin top = installedPlugins.get("chain-top");
+
+            // Nothing it depends on is disabled, so it can be enabled again.
+            bottom.assertNotEnabled();
+            bottom.assertEnabledStateChangeable();
+
+            // Rendered as disabled with dependents, but its own dependency is disabled too.
+            middle.assertNotEnabled();
+            middle.assertHasDependents();
+            middle.assertEnabledStateNotChangeable();
+
+            top.assertNotEnabled();
+            top.assertEnabledStateNotChangeable();
         });
     }
 
@@ -201,6 +235,7 @@ class PluginManagerInstalledGUITest {
         }
 
         public void assertEnabledStateChangeable() {
+            assertNotEquals("none", enableTogglePointerEvents(), "The enable toggle of plugin '" + getId() + "' cannot be clicked.");
             if (!hasDependents() && !hasDisabledDependency() && !allDependentsDisabled()) {
                 return;
             }
@@ -212,10 +247,12 @@ class PluginManagerInstalledGUITest {
         }
 
         public void assertEnabledStateNotChangeable() {
+            assertEquals("none", enableTogglePointerEvents(), "The enable toggle of plugin '" + getId() + "' can be clicked.");
             if (hasDependents() && !hasDisabledDependency() && !allDependentsDisabled()) {
                 return;
             }
-            if (!hasDependents() && hasDisabledDependency()) {
+            // A disabled dependency locks the toggle, whatever the plugin's dependents.
+            if (hasDisabledDependency()) {
                 return;
             }
 
@@ -236,6 +273,13 @@ class PluginManagerInstalledGUITest {
 
         public void assertHasNoDependents() {
             assertFalse(hasDependents(), "Plugin '" + getId() + "' is expected to have no dependents.");
+        }
+
+        /** The row classes only describe the intended state; the stylesheet decides whether the toggle takes clicks. */
+        private String enableTogglePointerEvents() {
+            HtmlPage page = (HtmlPage) pluginRow.getPage();
+            return page.executeJavaScript("getComputedStyle(document.querySelector('tr[data-plugin-id=\"" + getId()
+                    + "\"] .enable .jenkins-toggle-switch label')).pointerEvents").getJavaScriptResult().toString();
         }
 
         private boolean hasClassName(String className) {
