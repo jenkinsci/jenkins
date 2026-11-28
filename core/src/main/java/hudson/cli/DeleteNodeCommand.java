@@ -26,6 +26,7 @@ package hudson.cli;
 
 import hudson.AbortException;
 import hudson.Extension;
+import hudson.model.Computer;
 import hudson.model.Node;
 import java.util.HashSet;
 import java.util.List;
@@ -68,7 +69,13 @@ public class DeleteNodeCommand extends CLICommand {
                     throw new IllegalArgumentException("No such node '" + node_s + "'");
                 }
 
-                node.toComputer().doDoDelete();
+                Computer c = node.toComputer();
+                if (c != null) {
+                    c.doDoDelete();
+                } else {
+                    node.checkPermission(Computer.DELETE);
+                    jenkins.removeNode(node);
+                }
             } catch (Exception e) {
                 if (hs.size() == 1) {
                     throw e;

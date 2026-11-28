@@ -34,9 +34,11 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.Computer;
+import hudson.model.Descriptor;
 import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.Slave;
+import hudson.slaves.ComputerLauncher;
 import jenkins.model.Jenkins;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -148,5 +150,32 @@ class UpdateNodeCommandTest {
         assertEquals(okName, node.getNodeName());
         // ensure the other data were not saved
         assertEquals(defaultDescription, node.getNodeDescription());
+    }
+
+    @Issue("JENKINS-27840")
+    @Test
+    void updateNodeShouldFailWhenNodeHasNoComputer() throws Exception {
+        Slave slave = new NodeWithoutComputer("agentWithoutComputer", j.createTmpDir().getPath(), j.createComputerLauncher(null));
+        j.jenkins.addNode(slave);
+        assertThat(slave.toComputer(), nullValue());
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Computer.CONFIGURE, Jenkins.READ)
+                .withStdin(Computer.class.getResourceAsStream("node.xml"))
+                .invokeWithArgs("agentWithoutComputer");
+
+        assertThat(result, failedWith(1));
+        assertThat(result.stderr(), containsString("ERROR: No computer found for node 'agentWithoutComputer'"));
+    }
+
+    private static class NodeWithoutComputer extends Slave {
+        NodeWithoutComputer(String name, String remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, java.io.IOException {
+            super(name, remoteFS, launcher);
+        }
+
+        @Override
+        public Computer createComputer() {
+            return null;
+        }
     }
 }

@@ -24,7 +24,9 @@
 
 package hudson.cli;
 
+import hudson.AbortException;
 import hudson.Extension;
+import hudson.model.Computer;
 import hudson.model.Node;
 import org.kohsuke.args4j.Argument;
 
@@ -46,7 +48,11 @@ public class WaitNodeOfflineCommand extends CLICommand {
 
     @Override
     protected int run() throws Exception {
-        node.toComputer().waitUntilOffline();
+        Computer computer = node.toComputer();
+        if (computer == null) {
+            throw new AbortException("No computer found for node '" + node.getNodeName() + "'");
+        }
+        computer.waitUntilOffline();
         return 0;
     }
 }

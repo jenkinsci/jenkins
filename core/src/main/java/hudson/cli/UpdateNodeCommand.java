@@ -24,7 +24,9 @@
 
 package hudson.cli;
 
+import hudson.AbortException;
 import hudson.Extension;
+import hudson.model.Computer;
 import hudson.model.Node;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
@@ -48,8 +50,11 @@ public class UpdateNodeCommand extends CLICommand {
 
     @Override
     protected int run() throws IOException, ServletException {
-
-        node.toComputer().updateByXml(stdin);
+        Computer computer = node.toComputer();
+        if (computer == null) {
+            throw new AbortException("No computer found for node '" + node.getNodeName() + "'");
+        }
+        computer.updateByXml(stdin);
 
         return 0;
     }
