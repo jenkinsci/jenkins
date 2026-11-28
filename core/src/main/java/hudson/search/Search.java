@@ -33,7 +33,6 @@ import hudson.ExtensionComponent;
 import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.ItemGroup;
-import hudson.model.Job;
 import hudson.util.EditDistance;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
@@ -317,15 +316,13 @@ public class Search implements StaplerProxy {
     }
 
     private static boolean isSearchScope(SearchItem item) {
-        return item instanceof ItemGroup || item instanceof Job || item instanceof SearchScope;
+        return item instanceof ItemGroup || item instanceof SearchScope;
     }
 
     private static List<SuggestedItem> suggestScoped(SearchableModelObject scope, String query) {
         SearchIndex index;
         if (scope instanceof SearchScope searchScope) {
             index = searchScope.getScopedSearchIndex();
-        } else if (scope instanceof Job<?, ?> job) {
-            index = new RunSearchIndex(job);
         } else {
             index = scope.getSearchIndex();
         }
@@ -338,29 +335,6 @@ public class Search implements StaplerProxy {
             result.add(item instanceof hudson.model.Item ? SuggestedItem.build(scope, item) : new SuggestedItem(scopeItem, item));
         }
         return result;
-    }
-
-    private static final class RunSearchIndex implements SearchIndex {
-        private static final int MAX_BUILD_RESULTS = 10;
-
-        private final Job<?, ?> job;
-
-        RunSearchIndex(Job<?, ?> job) {
-            this.job = job;
-        }
-
-        @Override
-        public void find(String token, List<SearchItem> result) {
-        }
-
-        @Override
-        public void suggest(String token, List<SearchItem> result) {
-            SearchMatcher matcher = SearchMatcher.of(token);
-            job.getBuilds().limit(MAX_SEARCH_SIZE).stream()
-                    .filter(run -> matcher.matches(run.getDisplayName()))
-                    .limit(MAX_BUILD_RESULTS)
-                    .forEach(result::add);
-        }
     }
 
     public int getMaxSearchSize() {
