@@ -35,9 +35,7 @@ import hudson.model.Items;
 import hudson.model.View;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -112,7 +110,8 @@ public abstract class ItemListTab extends Tab {
      * The items of {@code items} whose name or display name relative to a group contains a query, ignoring case,
      * those whose own name or display name matches first, in their order, then those that only match through the
      * name of a folder between the group and the item, so that searching for a folder's name finds the folder
-     * before everything in it. Goes through {@code items} once, keeping the second kind until the first runs out.
+     * before everything in it. Goes through {@code items} twice, once for each kind, so it must give the same items
+     * each time it is iterated, and holds no more than one item at a time.
      * {@code items} may also contain items that don't match, but filtering them out first with
      * {@link #matchingName}, as {@link Items#allItems(ItemGroup, Class, Predicate)} does before checking permissions,
      * saves checking the permissions of every item when searching a large tree.
@@ -122,24 +121,27 @@ public abstract class ItemListTab extends Tab {
         Predicate<Item> ownName = matchingOwnName(query);
         return () -> new Iterator<>() {
             private final Predicate<Item> name = matchingName(query, base);
-            private final Iterator<? extends Item> source = items.iterator();
-            private final Deque<Item> byFolderName = new ArrayDeque<>();
+            private Iterator<? extends Item> source = items.iterator();
+            private boolean byFolderName;
             private Item next;
 
             @Override
             public boolean hasNext() {
-                while (next == null && source.hasNext()) {
+                while (next == null) {
+                    if (!source.hasNext()) {
+                        if (byFolderName) {
+                            return false;
+                        }
+                        byFolderName = true;
+                        source = items.iterator();
+                        continue;
+                    }
                     Item item = source.next();
-                    if (ownName.test(item)) {
+                    if (byFolderName ? !ownName.test(item) && name.test(item) : ownName.test(item)) {
                         next = item;
-                    } else if (name.test(item)) {
-                        byFolderName.add(item);
                     }
                 }
-                if (next == null) {
-                    next = byFolderName.poll();
-                }
-                return next != null;
+                return true;
             }
 
             @Override
