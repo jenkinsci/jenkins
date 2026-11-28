@@ -98,11 +98,13 @@ function init() {
             searchResults.append(heading);
           }
 
-          const prioritisedItems = [...items].sort(
-            (a, b) =>
-              Number(startsWithQuery(b, query)) -
-              Number(startsWithQuery(a, query)),
-          );
+          const prioritisedItems = items
+            .slice()
+            .sort(
+              (a, b) =>
+                Number(startsWithQuery(b, query)) -
+                Number(startsWithQuery(a, query)),
+            );
 
           prioritisedItems
             .slice(0, MAX_RESULTS_PER_GROUP)
