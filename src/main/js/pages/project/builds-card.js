@@ -7,6 +7,8 @@ const pageSearch = buildHistoryPage.querySelector(".jenkins-search");
 const pageSearchInput = buildHistoryPage.querySelector("input");
 const ajaxUrl = buildHistoryPage.getAttribute("page-ajax");
 const card = document.querySelector("#jenkins-builds");
+const foldButton = card.querySelector(".jenkins-builds-fold");
+const buildsContent = card.querySelector("#jenkins-builds-content");
 const contents = card.querySelector("#jenkins-build-history");
 const container = card.querySelector(".app-builds-container");
 const loadingBuilds = card.querySelector("#loading-builds");
@@ -146,6 +148,16 @@ const debouncedLoad = debounce(() => {
 }, 150);
 
 document.addEventListener("DOMContentLoaded", function () {
+  if (foldButton && buildsContent) {
+    foldButton.addEventListener("click", function () {
+      const expanded = foldButton.getAttribute("aria-expanded") === "true";
+      foldButton.setAttribute("aria-expanded", String(!expanded));
+      buildsContent.style.display = expanded ? "none" : "";
+      foldButton.querySelector("svg").style.rotate = expanded ? "180deg" : "";
+      card.classList.toggle("jenkins-builds--collapsed", expanded);
+    });
+  }
+
   pageSearchInput.addEventListener("input", function () {
     container.classList.add("app-builds-container--loading");
     pageSearch.classList.add("jenkins-search--loading");
