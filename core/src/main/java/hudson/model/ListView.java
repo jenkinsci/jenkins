@@ -597,7 +597,7 @@ public class ListView extends View implements DirectlyModifiableView {
                 Set<String> oldJobNames = new HashSet<>(lv.jobNames);
                 lv.jobNames.clear();
                 for (String oldName : oldJobNames) {
-                    lv.jobNames.add(Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, oldName, vg.getItemGroup()));
+                    lv.jobNames.add(Items.computeRelativeNameAfterRenaming(oldFullName, newFullName, oldName, vg.getItemGroup()));
                 }
                 needsSave = !oldJobNames.equals(lv.jobNames);
             }
