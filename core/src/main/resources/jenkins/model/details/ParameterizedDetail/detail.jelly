@@ -26,11 +26,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <l:dialog title="${it.displayName}" hash="parameters">
     <div class="app-parameters-dialog">
-      <j:invokeStatic var="currentThread" className="java.lang.Thread" method="currentThread" />
-      <j:invoke var="buildClass" on="${currentThread.contextClassLoader}" method="loadClass">
-        <j:arg value="hudson.model.Run" />
-      </j:invoke>
-      <j:set var="build" value="${request2.findAncestorObject(buildClass)}" />
+      <!-- This body is rendered on demand, in a request of its own, so the build is not among the ancestors of the request -->
+      <j:set var="build" value="${it.object}" />
       <j:set var="escapeEntryTitleAndDescription" value="true" /> <!-- SECURITY-353 defense unless overridden -->
       <j:set var="readOnlyMode" value="true"/>
       <j:forEach var="parameterValue" items="${it.action.parameters}">
