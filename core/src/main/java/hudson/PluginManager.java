@@ -2176,21 +2176,61 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     private FormValidation checkUpdatesServer() throws Exception {
+        // Check every update site and every downloadable, even when one of them fails (JENKINS-42896)
+        List<FormValidation> failures = new ArrayList<>();
         for (UpdateSite site : Jenkins.get().getUpdateCenter().getSites()) {
-            FormValidation v = site.updateDirectlyNow();
-            if (v.kind != FormValidation.Kind.OK) {
-                // Stop with an error
-                return v;
+            try {
+                FormValidation v = site.updateDirectlyNow();
+                if (v.kind != FormValidation.Kind.OK) {
+                    failures.add(v);
+                }
+            } catch (IOException | RuntimeException e) {
+                LOGGER.log(Level.WARNING, "Failed to check the update site " + site.getId(), e);
+                failures.add(checkUpdatesServerError(e));
             }
         }
         for (DownloadService.Downloadable d : DownloadService.Downloadable.all()) {
-            FormValidation v = d.updateNow();
-            if (v.kind != FormValidation.Kind.OK) {
-                // Stop with an error
-                return v;
+            try {
+                FormValidation v = d.updateNow();
+                if (v.kind != FormValidation.Kind.OK) {
+                    failures.add(v);
+                }
+            } catch (IOException | RuntimeException e) {
+                LOGGER.log(Level.WARNING, "Failed to update the downloadable " + d.getId(), e);
+                failures.add(checkUpdatesServerError(e));
             }
         }
-        return FormValidation.ok();
+        return combineCheckUpdatesServerFailures(failures);
+    }
+
+    /**
+     * Turns an exception thrown while checking an update site or a downloadable into an error,
+     * with the same message the retrier in {@link #doCheckUpdatesServer} reports for an exception.
+     */
+    private static FormValidation checkUpdatesServerError(Exception e) {
+        return FormValidation.errorWithMarkup(e.getClass().getSimpleName() + ": " + e.getLocalizedMessage());
+    }
+
+    /**
+     * Combines the failures of one check into a single result.
+     * {@link FormValidation#aggregate} is not used, because its result has no message,
+     * and {@link #doCheckUpdatesServer} logs and shows {@link FormValidation#getMessage}.
+     */
+    private static FormValidation combineCheckUpdatesServerFailures(List<FormValidation> failures) {
+        if (failures.isEmpty()) {
+            return FormValidation.ok();
+        }
+        if (failures.size() == 1) {
+            return failures.getFirst();
+        }
+        Set<String> messages = new LinkedHashSet<>();
+        boolean error = false;
+        for (FormValidation failure : failures) {
+            messages.add(failure.getMessage() != null ? failure.getMessage() : failure.renderHtml());
+            error |= failure.kind == FormValidation.Kind.ERROR;
+        }
+        String message = String.join("; ", messages);
+        return error ? FormValidation.errorWithMarkup(message) : FormValidation.warningWithMarkup(message);
     }
 
     /**
