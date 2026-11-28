@@ -61,6 +61,7 @@ BehaviorShim.specify(
       const params = Object.assign({}, options, {
         search: pageSearchInput.value,
         status: Array.from(selectedStatuses).join(","),
+        newUi: true,
       });
       const paginationOrFirst =
         buildHistoryPage.dataset.pageHasUp === "false" ||
