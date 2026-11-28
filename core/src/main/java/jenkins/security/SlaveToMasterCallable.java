@@ -1,6 +1,7 @@
 package jenkins.security;
 
 import hudson.remoting.Callable;
+import jenkins.agents.AgentToControllerCallable;
 import org.jenkinsci.remoting.RoleChecker;
 
 /**
@@ -8,7 +9,9 @@ import org.jenkinsci.remoting.RoleChecker;
  * Note that any serializable fields must either be defined in your plugin or included in the stock JEP-200 whitelist.
  * @author Kohsuke Kawaguchi
  * @since 1.587 / 1.580.1
+ * @deprecated Prefer {@link AgentToControllerCallable}.
  */
+@Deprecated
 public abstract class SlaveToMasterCallable<V, T extends Throwable> implements Callable<V, T> {
     @Override
     public void checkRoles(RoleChecker checker) throws SecurityException {
