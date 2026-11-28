@@ -26,17 +26,18 @@ package jenkins.model.dashboard;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.Items;
 import hudson.model.TopLevelItem;
-import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Lists the top-level items, like the "All" view. Searching looks through every folder.
+ * Lists the items of the owner of the dashboard, like its "All" view. Searching looks through every item group
+ * inside the owner.
  */
 @Restricted(NoExternalUse.class)
-public class AllTab extends ItemListTab {
+public class AllTab extends ItemListTab implements Dashboard.ShownInItemGroups {
 
     public AllTab(@NonNull Dashboard dashboard) {
         super(dashboard);
@@ -60,13 +61,14 @@ public class AllTab extends ItemListTab {
     @NonNull
     @Override
     public Iterable<? extends Item> getItems() {
-        return Jenkins.get().getItems();
+        return getDashboard().getOwner().getItems();
     }
 
     @NonNull
     @Override
     public Iterable<? extends Item> search(@NonNull String query) {
-        return rankedByName(query, Jenkins.get(),
-                Items.allItems(Jenkins.get(), TopLevelItem.class, matchingName(query, Jenkins.get())::test));
+        ItemGroup<?> owner = getDashboard().getOwner();
+        return rankedByName(query, owner,
+                Items.allItems(owner, TopLevelItem.class, matchingName(query, owner)::test));
     }
 }

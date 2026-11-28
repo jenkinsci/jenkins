@@ -32,7 +32,9 @@ import hudson.model.AllView;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
+import hudson.model.ModifiableItemGroup;
 import hudson.model.View;
+import hudson.model.ViewGroup;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,7 +46,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Predicate;
-import jenkins.model.Jenkins;
 import jenkins.model.Tab;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
@@ -59,7 +60,7 @@ import org.kohsuke.stapler.verb.GET;
  * A {@link Dashboard} tab that lists items, loading them a page at a time as the user scrolls,
  * with a search box.
  *
- * <p>Subclasses only provide the items. For example, a tab listing the current user's favourite jobs:
+ * <p>Subclasses only provide the items. For example, a tab listing the current user's favorite jobs:
  * <pre>{@code
  * public class FavoritesTab extends ItemListTab {
  *     public FavoritesTab(Dashboard dashboard) { super(dashboard); }
@@ -91,19 +92,26 @@ public abstract class ItemListTab extends Tab {
     }
 
     /**
+     * The dashboard this tab belongs to.
+     */
+    public @NonNull Dashboard getDashboard() {
+        return (Dashboard) getObject();
+    }
+
+    /**
      * The items to list, in display order, already filtered to those the current user can see.
      * Only the requested page is read from the returned {@link Iterable}, so it may be lazy.
      */
     public abstract @NonNull Iterable<? extends Item> getItems();
 
     /**
-     * The items matching a search query. By default, the items from {@link #getItems()} whose name or full display
-     * name contains the query, as ranked by {@link #rankedByName}.
+     * The items matching a search query. By default, the items from {@link #getItems()} whose name or display
+     * name relative to the dashboard's owner contains the query, as ranked by {@link #rankedByName}.
      *
      * @param query a non-blank query
      */
     public @NonNull Iterable<? extends Item> search(@NonNull String query) {
-        return rankedByName(query, Jenkins.get(), getItems());
+        return rankedByName(query, getDashboard().getOwner(), getItems());
     }
 
     /**
@@ -198,7 +206,7 @@ public abstract class ItemListTab extends Tab {
     /**
      * Reads one page of items.
      *
-     * Items the current user cannot read are left out, whatever the subclass returns.
+     * <p>Items the current user cannot read are left out, whatever the subclass returns.
      *
      * @param start the index of the first item to return, used when {@code after} is not listed
      * @param after the full name of the last item already shown, or {@code null}. The page continues
@@ -211,11 +219,24 @@ public abstract class ItemListTab extends Tab {
         if (query != null && query.length() > MAX_QUERY_LENGTH) {
             query = query.substring(0, MAX_QUERY_LENGTH);
         }
+        return slice(query == null ? getItems() : search(query), start, after, PAGE_SIZE, getDashboard().getOwner());
+    }
+
+    /**
+     * Reads one page from a list of items, leaving out those the current user cannot read.
+     *
+     * @param start the index of the first item to return, used when {@code after} is not listed
+     * @param after the full name of the last item already shown, or {@code null}. The page continues
+     *     after it, so items removed from earlier in the list don't shift the page past items not yet shown.
+     * @param size the number of items on a page
+     * @param group the item group from which items are named
+     */
+    private static @NonNull Page slice(@NonNull Iterable<? extends Item> source, int start, @CheckForNull String after,
+            int size, @NonNull ItemGroup<?> group) {
         String anchor = Util.fixEmpty(after);
-        Iterable<? extends Item> source = query == null ? getItems() : search(query);
         int from = Math.max(start, 0);
         // The page at the offset, used if the anchor isn't listed
-        List<Item> atOffset = new ArrayList<>(PAGE_SIZE + 1);
+        List<Item> atOffset = new ArrayList<>(size + 1);
         // The page after the anchor, once it has been seen
         List<Item> afterAnchor = null;
         int anchorIndex = -1;
@@ -227,46 +248,41 @@ public abstract class ItemListTab extends Tab {
             int i = index++;
             if (afterAnchor != null) {
                 afterAnchor.add(item);
-                if (afterAnchor.size() > PAGE_SIZE) {
+                if (afterAnchor.size() > size) {
                     break;
                 }
             } else if (anchor != null && anchor.equals(item.getFullName())) {
-                afterAnchor = new ArrayList<>(PAGE_SIZE + 1);
+                afterAnchor = new ArrayList<>(size + 1);
                 anchorIndex = i;
-            } else if (i >= from && atOffset.size() <= PAGE_SIZE) {
+            } else if (i >= from && atOffset.size() <= size) {
                 atOffset.add(item);
-                if (anchor == null && atOffset.size() > PAGE_SIZE) {
+                if (anchor == null && atOffset.size() > size) {
                     break;
                 }
             }
         }
         List<Item> items = afterAnchor != null ? afterAnchor : atOffset;
         int first = afterAnchor != null ? anchorIndex + 1 : from;
-        boolean more = items.size() > PAGE_SIZE;
+        boolean more = items.size() > size;
         if (more) {
-            items = items.subList(0, PAGE_SIZE);
+            items = items.subList(0, size);
         }
-        return new Page(items, more ? first + items.size() : null, query != null);
+        return new Page(items, more ? first + items.size() : null, group);
     }
 
     /**
-     * Reads one page of items, by position only.
-     *
-     * @see #getPage(int, String, String)
+     * The page shown when there is nothing to list: the empty state of the "All" view of the owner of the
+     * dashboard, whichever view is the primary one. For the root of Jenkins, that is the welcome page.
+     * Its empty state offers to create a job, so it is {@code null} for an owner that users cannot add items to
+     * themselves, such as a multibranch project, unless its primary view is an "All" view.
      */
     @Restricted(NoExternalUse.class)
-    public @NonNull Page getPage(int start, @CheckForNull String search) {
-        return getPage(start, null, search);
-    }
-
-    /**
-     * The page shown when there is nothing to list: the welcome page of the root of Jenkins, whichever
-     * view is the primary one.
-     */
-    @Restricted(NoExternalUse.class)
-    public @NonNull View getEmptyStateView() {
-        Jenkins jenkins = Jenkins.get();
-        return jenkins.getPrimaryView() instanceof AllView all ? all : new AllView(AllView.DEFAULT_VIEW_NAME, jenkins);
+    public @CheckForNull View getEmptyStateView() {
+        ViewGroup owner = (ViewGroup) getDashboard().getOwner();
+        if (owner.getPrimaryView() instanceof AllView all) {
+            return all;
+        }
+        return owner instanceof ModifiableItemGroup<?> ? new AllView(AllView.DEFAULT_VIEW_NAME, owner) : null;
     }
 
     /**
@@ -287,8 +303,8 @@ public abstract class ItemListTab extends Tab {
      *
      * @param items the items on this page
      * @param nextStart the {@code start} of the next page, or {@code null} if this is the last one
-     * @param search whether the page holds search results, which are shown with their full names
+     * @param group the item group from which items are named
      */
     @Restricted(NoExternalUse.class)
-    public record Page(@NonNull List<Item> items, @CheckForNull Integer nextStart, boolean search) {}
+    public record Page(@NonNull List<Item> items, @CheckForNull Integer nextStart, @NonNull ItemGroup<?> group) {}
 }

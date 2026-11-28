@@ -25,12 +25,15 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
   <l:dashboard-subpage>
-    <j:set var="page" value="${it.getPage(0, null)}" />
+    <j:set var="page" value="${it.getPage(0, null, null)}" />
     <j:choose>
       <j:when test="${empty(page.items())}">
         <j:choose>
           <j:when test="${it.emptyMessage != null}">
             <l:notice title="${it.emptyMessage}" icon="${it.iconFileName}" />
+          </j:when>
+          <j:when test="${it.emptyStateView == null}">
+            <l:notice title="${%Nothing to show yet}" icon="${it.iconFileName}" />
           </j:when>
           <j:otherwise>
             <st:include it="${it.emptyStateView}" page="noJob.jelly" />
@@ -39,7 +42,7 @@ THE SOFTWARE.
       </j:when>
       <j:otherwise>
         <div class="app-dashboard-items"
-             data-items-url="${rootURL}/${it.urlName ?: 'defaultTab'}/items"
+             data-items-url="${rootURL}/${it.dashboard.url}${it.urlName ?: 'defaultTab'}/items"
              data-load-failed="${%LoadFailed}"
              data-try-again="${%Try again}"
              data-results="${%Results}"
