@@ -25,7 +25,9 @@
 package hudson.model.labels;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -48,6 +50,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 import org.junit.jupiter.api.BeforeEach;
@@ -248,6 +251,8 @@ class LabelExpressionTest {
         l = j.jenkins.getLabel("label1||label2"); // create label expression
         l = j.jenkins.getLabel("\"label1||label2\"");
         assertEquals("label1||label2", l.getName());
+        assertThat(l, instanceOf(LabelAtom.class));
+        assertSame(l, j.jenkins.getLabelAtom("label1||label2"));
     }
 
     /**
@@ -353,7 +358,7 @@ class LabelExpressionTest {
     }
 
     @Test
-    @Issue("27403")
+    @Issue("#27403")
     void labelWhitespaceVariantsShareSameInstance() {
         String canonical = "linux&&ssd&&(rack1||rack2)&&!maintenance";
         String spacedNot = "linux&&ssd&&(rack1||rack2)&& !maintenance";
@@ -370,7 +375,7 @@ class LabelExpressionTest {
     }
 
     @Test
-    @Issue("27403")
+    @Issue("#27403")
     void labelWhitespaceVariantsShareSameInstanceWhenSpacedFirst() {
         String canonical = "win&&fast&&(zone1||zone2)&&!offline";
         String fullySpaced = "win && fast && (zone1 || zone2) && !offline";
@@ -387,7 +392,7 @@ class LabelExpressionTest {
     }
 
     @Test
-    @Issue("27403")
+    @Issue("#27403")
     void spacedExpressionDoesNotResolveToAtomWithCanonicalName() {
         LabelAtom atom = j.jenkins.getLabelAtom("a&&b");
 
@@ -399,7 +404,7 @@ class LabelExpressionTest {
     }
 
     @Test
-    @Issue("27403")
+    @Issue("#27403")
     void atomWithCanonicalNameCanBeCreatedAfterSpacedExpression() {
         Label expression = j.jenkins.getLabel("c && d");
 
@@ -407,6 +412,59 @@ class LabelExpressionTest {
 
         assertNotSame(expression, atom);
         assertSame(expression, j.jenkins.getLabel("c  &&  d"));
+    }
+
+    @Test
+    @Issue("#27452")
+    void unspacedExpressionDoesNotResolveToExistingAtom() {
+        LabelAtom atom = j.jenkins.getLabelAtom("a&&b");
+
+        Label expression = j.jenkins.getLabel("a&&b");
+
+        assertThat(expression, instanceOf(LabelExpression.And.class));
+        assertNotSame(atom, expression);
+        assertSame(expression, j.jenkins.getLabel("a && b"));
+        assertSame(atom, j.jenkins.getLabelAtom("a&&b"));
+    }
+
+    @Test
+    @Issue("#27452")
+    void quotedAtomDoesNotPolluteAtomCacheWithExpression() {
+        Label atomLabel = j.jenkins.getLabel("\"x&&y\"");
+
+        assertThat(atomLabel, instanceOf(LabelAtom.class));
+        assertEquals("x&&y", atomLabel.getName());
+
+        LabelAtom atom = j.jenkins.getLabelAtom("x&&y");
+        assertSame(atomLabel, atom);
+
+        Label expression = j.jenkins.getLabel("x&&y");
+        assertThat(expression, instanceOf(LabelExpression.And.class));
+        assertNotSame(atom, expression);
+        assertSame(expression, j.jenkins.getLabel("x && y"));
+    }
+
+    @Test
+    @Issue("#27452")
+    void getLabelsKeepsAtomAndExpressionWithSameName() throws Exception {
+        j.createSlave("agent", "\"a&&b\" a b", null);
+        LabelAtom atom = j.jenkins.getLabelAtom("a&&b");
+        Label expression = j.jenkins.getLabel("a&&b");
+        assertThat(expression, instanceOf(LabelExpression.And.class));
+
+        Set<Label> labels = j.jenkins.getLabels();
+        assertThat(labels, hasItem(sameInstance(atom)));
+        assertThat(labels, hasItem(sameInstance(expression)));
+    }
+
+    @Test
+    @Issue("JENKINS-17587")
+    void quotedAtomsJoinedByOperatorParseAsExpression() {
+        Label l = j.jenkins.getLabel("\"Slave1(box1)\"||\"Slave3(box3)\"");
+
+        assertThat(l, instanceOf(LabelExpression.Or.class));
+        assertSame(l, j.jenkins.getLabel("\"Slave1(box1)\" || \"Slave3(box3)\""));
+        assertTrue(l.matches(List.of(j.jenkins.getLabelAtom("Slave1(box1)"))));
     }
 
     private void parseShouldFail(String expr, String message) {
