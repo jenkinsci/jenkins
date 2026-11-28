@@ -767,6 +767,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
     }
 
     private void doDoDeleteImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, InterruptedException {
+        String deletedItemUrl = getUrl(); // must be read before delete()
         delete();
         if (req == null || rsp == null) { // CLI
             return;
@@ -774,14 +775,28 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
         List<Ancestor> ancestors = req.getAncestors();
         ListIterator<Ancestor> it = ancestors.listIterator(ancestors.size());
         String url = getParent().getUrl(); // fallback but we ought to get to Jenkins.instance at the root
+        boolean found = false;
         while (it.hasPrevious()) {
             Object a = it.previous().getObject();
             if (a instanceof View) {
                 url = ((View) a).getUrl();
+                found = true;
                 break;
             } else if (a instanceof ViewGroup && a != this) {
                 url = ((ViewGroup) a).getUrl();
                 break;
+            }
+        }
+        if (!found) {
+            // Request came straight to /job/NAME/doDelete (e.g. dashboard "..." menu), so no View
+            // is in the request path. Send the user back to where they were, if that is safe.
+            String referer = req.getHeader("Referer");
+            String rootUrl = Jenkins.get().getRootUrl();
+            if (referer != null && rootUrl != null
+                    && referer.startsWith(rootUrl)                          // same Jenkins only; prevents open redirect
+                    && !referer.startsWith(rootUrl + deletedItemUrl)) {     // not the page of the item we just deleted
+                rsp.sendRedirect2(referer);
+                return;
             }
         }
         rsp.sendRedirect2(req.getContextPath() + '/' + url);
