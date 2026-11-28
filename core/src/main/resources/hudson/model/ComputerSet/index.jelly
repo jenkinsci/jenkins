@@ -103,7 +103,7 @@ THE SOFTWARE.
             <j:if test="${c.hasPermission(extendedReadPermission)}">
               <div class="jenkins-table__cell__button-wrapper">
                 <a href="../${c.url}configure" class="jenkins-button jenkins-button--tertiary">
-                  <l:icon src="symbol-settings" />
+                  <l:icon src="symbol-settings" alt="${%configureName(c.displayName)}" />
                 </a>
               </div>
             </j:if>
