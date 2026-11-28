@@ -1480,6 +1480,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @since 1.349
      */
     public @NonNull InputStream getLogInputStream() throws IOException {
+        checkConsolePermission();
         File logFile = getLogFile();
 
         if (logFile.exists()) {
@@ -1501,6 +1502,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     public @NonNull Reader getLogReader() throws IOException {
+        checkConsolePermission();
         if (charset == null)  return new InputStreamReader(getLogInputStream(), Charset.defaultCharset());
         else                return new InputStreamReader(getLogInputStream(), charset);
     }
@@ -1551,6 +1553,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * The method does not close the {@link OutputStream}.
      */
     public void writeWholeLogTo(@NonNull OutputStream out) throws IOException, InterruptedException {
+        checkConsolePermission();
         long pos = 0;
         AnnotatedLargeText logText;
         logText = getLogText();
@@ -1570,7 +1573,20 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @return A {@link Run} log with annotations
      */
     public @NonNull AnnotatedLargeText getLogText() {
+        checkConsolePermission();
         return new AnnotatedLargeText(getLogFile(), getCharset(), !isLogUpdated(), this);
+    }
+
+    /**
+     * Checks the {@link #CONSOLE} permission if it has been enabled via the
+     * {@code jenkins.security.ConsolePermission} system property.
+     *
+     * @see Functions#isConsolePermissionEnabled()
+     */
+    private void checkConsolePermission() {
+        if (Functions.isConsolePermissionEnabled()) {
+            checkPermission(CONSOLE);
+        }
     }
 
     @Override
@@ -2295,6 +2311,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     private void doConsoleTextImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        checkConsolePermission();
         rsp.setContentType("text/plain;charset=UTF-8");
         try (InputStream input = getLogInputStream();
              OutputStream os = rsp.getOutputStream();
@@ -2626,6 +2643,9 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /** See {@link hudson.Functions#isArtifactsPermissionEnabled} */
     public static final Permission ARTIFACTS = new Permission(PERMISSIONS, "Artifacts", Messages._Run_ArtifactsPermission_Description(), null,
                                                               Functions.isArtifactsPermissionEnabled(), new PermissionScope[]{PermissionScope.RUN});
+    /** See {@link hudson.Functions#isConsolePermissionEnabled} */
+    public static final Permission CONSOLE = new Permission(PERMISSIONS, "Console", Messages._Run_ConsolePermission_Description(), Jenkins.ADMINISTER,
+                                                            Functions.isConsolePermissionEnabled(), new PermissionScope[]{PermissionScope.RUN});
 
     private static class DefaultFeedAdapter implements FeedAdapter<Run> {
         @Override

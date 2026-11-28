@@ -35,6 +35,8 @@ THE SOFTWARE.
 
   <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
 
+  <j:set var="hasConsole" value="${!h.isConsolePermissionEnabled() or it.object.hasPermission(it.object.CONSOLE)}" />
+
   <l:run-subpage>
     <l:app-bar title="${%Console}">
       <j:if test="${!newBuildPage and it.object.building}">
@@ -48,17 +50,26 @@ THE SOFTWARE.
           </j:if>
         </div>
       </j:if>
-      <a class="jenkins-button" href="consoleText" download="${it.object.displayName}.txt">
-        <l:icon src="symbol-download" />
-        ${%Download}
-      </a>
-      <l:copyButton ref="out" label="${%Copy}" />
-      <a class="jenkins-button" href="consoleText">
-        ${%View as plain text}
-      </a>
+      <j:if test="${hasConsole}">
+        <a class="jenkins-button" href="consoleText" download="${it.object.displayName}.txt">
+          <l:icon src="symbol-download" />
+          ${%Download}
+        </a>
+        <l:copyButton ref="out" label="${%Copy}" />
+        <a class="jenkins-button" href="consoleText">
+          ${%View as plain text}
+        </a>
+      </j:if>
     </l:app-bar>
 
     <j:set var="it" value="${it.object}" />
-    <st:include page="console-log.jelly" />
+    <j:choose>
+      <j:when test="${hasConsole}">
+        <st:include page="console-log.jelly" />
+      </j:when>
+      <j:otherwise>
+        <p>${%You do not have permission to view the console output of this build.}</p>
+      </j:otherwise>
+    </j:choose>
   </l:run-subpage>
 </j:jelly>
