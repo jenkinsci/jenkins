@@ -63,6 +63,7 @@ THE SOFTWARE.
         </d:tag>
     </d:taglib>
     <div id="api-token-add-template" class="jenkins-hidden">
+        <j:set var="maxLifetime" value="${descriptor.maxTokenLifetimeDays}"/>
         <div>
             <f:entry title="${%Name}">
                 <f:textbox name="tokenName"/>
@@ -71,15 +72,29 @@ THE SOFTWARE.
             <div class="token-expiration jenkins-!-margin-bottom-3">
                 <div class="jenkins-select">
                     <select class="jenkins-select__input" name="expirationDuration">
-                        <option value="7">7 Days</option>
-                        <option value="30" selected="true">30 Days</option>
-                        <option value="60">60 Days</option>
-                        <option value="90">90 Days</option>
+                        <j:if test="${maxLifetime == 0 || maxLifetime > 7}">
+                            <option value="7">7 Days</option>
+                        </j:if>
+                        <j:if test="${maxLifetime == 0 || maxLifetime > 30}">
+                            <option value="30" selected="true">30 Days</option>
+                        </j:if>
+                        <j:if test="${maxLifetime == 0 || maxLifetime > 60}">
+                            <option value="60">60 Days</option>
+                        </j:if>
+                        <j:if test="${maxLifetime == 0 || maxLifetime > 90}">
+                            <option value="90">90 Days</option>
+                        </j:if>
+                        <j:if test="${maxLifetime > 0}">
+                            <option value="${maxLifetime}" selected="${maxLifetime &lt;= 30 ? 'true' : null}">${%maximumLifetimeDays(maxLifetime)}</option>
+                        </j:if>
                         <option value="custom">Custom</option>
-                        <option value="never">No Expiration</option>
+                        <j:if test="${maxLifetime == 0}">
+                            <option value="never">No Expiration</option>
+                        </j:if>
                     </select>
                 </div>
-                <input type="date" name="tokenExpiration" class="jenkins-hidden jenkins-input token-expiration-date"/>
+                <input type="date" name="tokenExpiration" class="jenkins-hidden jenkins-input token-expiration-date"
+                       data-max-expiration="${descriptor.maxTokenExpirationDate}"/>
                 <div class="jenkins-hidden warning token-warning">
                     ${%It is not recommended to create tokens that never expire.}
                 </div>
@@ -249,7 +264,9 @@ THE SOFTWARE.
             <f:entry title="${%Legacy API Token}" field="apiToken">
                 <f:readOnlyTextbox id="apiToken" default="${descriptor.noLegacyToken}"/>
             </f:entry>
-            <f:validateButton title="${%Change API Token}" method="changeToken" clazz="ignore-dirty-panel"/>
+            <j:if test="${descriptor.maxTokenLifetimeDays == 0}">
+                <f:validateButton title="${%Change API Token}" method="changeToken" clazz="ignore-dirty-panel"/>
+            </j:if>
         </f:advanced>
     </j:if>
 </j:jelly>
