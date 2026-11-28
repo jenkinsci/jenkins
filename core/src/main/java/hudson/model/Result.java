@@ -216,10 +216,11 @@ public final class Result implements Serializable, CustomExportedBean {
         @Override
         public int parseArguments(Parameters params) throws CmdLineException {
             String param = params.getParameter(0);
-            Result v = fromString(param.replace('-', '_'));
-            if (v == FAILURE) {
+            String normalized = param.replace('-', '_');
+            Result v = fromString(normalized);
+            if (v == FAILURE && !normalized.equalsIgnoreCase(FAILURE.name)) {
                 throw new CmdLineException(owner, "No such status '" + param + "'. Did you mean " +
-                        EditDistance.findNearest(param.replace('-', '_').toUpperCase(), getNames()));
+                        EditDistance.findNearest(normalized.toUpperCase(), getNames()));
             }
             setter.addValue(v);
             return 1;
