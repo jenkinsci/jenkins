@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
-import org.jenkins.ui.icon.IconSpec;
+import jenkins.model.menu.MenuActions;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -84,7 +84,7 @@ public abstract class Header implements ExtensionPoint {
         return Jenkins.get()
                 .getActions()
                 .stream()
-                .filter(e -> e.getIconFileName() != null || (e instanceof IconSpec is && is.getIconClassName() != null) || hasLegacyView(e))
+                .filter(e -> MenuActions.hasIcon(e) || hasLegacyView(e))
                 .sorted(Comparator.comparingDouble(
                         a -> rootActionsOrdinal.getOrDefault(a.getClass().getName(), Double.MAX_VALUE)
                 ).reversed())

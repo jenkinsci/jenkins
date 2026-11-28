@@ -174,6 +174,7 @@ import jenkins.model.details.Detail;
 import jenkins.model.details.DetailFactory;
 import jenkins.model.details.DetailGroup;
 import jenkins.model.menu.Group;
+import jenkins.model.menu.MenuActions;
 import jenkins.telemetry.impl.PasswordMasking;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
@@ -185,7 +186,6 @@ import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
-import org.jenkins.ui.icon.IconSpec;
 import org.jvnet.localizer.LocaleProvider;
 import org.jvnet.localizer.ResourceBundleHolder;
 import org.jvnet.tiger_types.Types;
@@ -2833,10 +2833,8 @@ public class Functions {
         ModelObjectWithContextMenu.ContextMenu contextMenu = new ModelObjectWithContextMenu.ContextMenu();
         contextMenu.addAll(actions
                 .stream()
-                .filter(action ->
-                        action.getIconFileName() != null
-                                || (action instanceof IconSpec iconSpec && iconSpec.getIconClassName() != null)
-                ).filter(action -> action.getGroup().getOrder() < Group.FIRST_IN_MENU.getOrder())
+                .filter(MenuActions::hasIcon)
+                .filter(action -> action.getGroup().getOrder() < Group.FIRST_IN_MENU.getOrder())
                 .toList());
         JSONObject jsonObject = JSONObject.fromObject(contextMenu);
         jsonObject.put("url", Util.ensureEndsWith(baseUrl, "/"));
