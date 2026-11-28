@@ -1,6 +1,7 @@
 package jenkins.search;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.search.Search;
 import hudson.search.SearchIndex;
 import hudson.search.SearchableModelObject;
 import org.kohsuke.accmod.Restricted;
@@ -14,4 +15,14 @@ public interface SearchScope extends SearchableModelObject {
 
     @NonNull
     SearchIndex getScopedSearchIndex();
+
+    @Override
+    default Search getSearch() {
+        return new Search();
+    }
+
+    @Override
+    default SearchIndex getSearchIndex() {
+        return SearchIndex.EMPTY;
+    }
 }

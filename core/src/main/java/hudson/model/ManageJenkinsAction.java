@@ -27,7 +27,6 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.search.FixedSet;
-import hudson.search.Search;
 import hudson.search.SearchIndex;
 import hudson.search.SearchItem;
 import hudson.util.HudsonIsLoading;
@@ -96,16 +95,6 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, SearchS
     @Override
     public String getSearchIcon() {
         return getIconFileName();
-    }
-
-    @Override
-    public Search getSearch() {
-        return new Search();
-    }
-
-    @Override
-    public SearchIndex getSearchIndex() {
-        return SearchIndex.EMPTY;
     }
 
     @NonNull
