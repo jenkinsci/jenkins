@@ -1,13 +1,18 @@
 package hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.DownloadService;
 import hudson.model.RootAction;
 import hudson.model.UpdateSite;
 import hudson.model.UpdateSiteTest;
+import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.Retrier;
 import jakarta.servlet.ServletException;
@@ -19,6 +24,7 @@ import org.htmlunit.Page;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.TestExtension;
@@ -108,6 +114,63 @@ class PluginManagerCheckUpdateCenterTest {
         }
     }
 
+    @Test
+    @Issue("JENKINS-42896")
+    void checkUpdatesServerContinuesAfterFailingUpdateSite() throws Exception {
+        boolean oldValueSignatureCheck = DownloadService.signatureCheck;
+        try {
+            DownloadService.signatureCheck = false;
+            UpdateSite working = new UpdateSite("WorkingUpdateSite", Jenkins.get().getRootUrl() + "updateSiteRightJson/update-center.json");
+            Jenkins.get().getUpdateCenter().getSites().clear();
+            Jenkins.get().getUpdateCenter().getSites().add(new UpdateSite("BrokenUpdateSite", Jenkins.get().getRootUrl() + "updateSite502/getJson"));
+            Jenkins.get().getUpdateCenter().getSites().add(working);
+
+            Jenkins.get().getPluginManager().doCheckUpdatesServer();
+
+            assertNotNull(working.getData(), "the update site after the failing one is checked too");
+            assertThat(Jenkins.get().getPluginManager().getLastErrorCheckUpdateCenters(),
+                    containsString("IOException: Server returned HTTP response code: 502"));
+        } finally {
+            DownloadService.signatureCheck = oldValueSignatureCheck;
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-42896")
+    void checkUpdatesServerReportsEveryFailingUpdateSite() throws Exception {
+        Jenkins.get().getUpdateCenter().getSites().clear();
+        Jenkins.get().getUpdateCenter().getSites().add(new UpdateSite("BrokenUpdateSite", Jenkins.get().getRootUrl() + "updateSite502/getJson"));
+        Jenkins.get().getUpdateCenter().getSites().add(new UpdateSite("WrongJsonUpdateSite", Jenkins.get().getRootUrl() + "updateSiteWrongJson/getJson"));
+
+        Jenkins.get().getPluginManager().doCheckUpdatesServer();
+
+        assertThat(Jenkins.get().getPluginManager().getLastErrorCheckUpdateCenters(), allOf(
+                containsString("IOException: Server returned HTTP response code: 502"),
+                containsString("JSONException: Unquotted string 'wrongjson'")));
+    }
+
+    @Test
+    @Issue("JENKINS-42896")
+    void checkUpdatesServerContinuesAfterFailingDownloadable() throws Exception {
+        boolean oldValueSignatureCheck = DownloadService.signatureCheck;
+        try {
+            DownloadService.signatureCheck = false;
+            Jenkins.get().getUpdateCenter().getSites().clear();
+            Jenkins.get().getUpdateCenter().getSites().add(new UpdateSite("WorkingUpdateSite", Jenkins.get().getRootUrl() + "updateSiteRightJson/update-center.json"));
+
+            Jenkins.get().getPluginManager().doCheckUpdatesServer();
+
+            // Both downloadables fail, so whichever of them comes first, the other one is only updated if the check continues
+            assertTrue(ExtensionList.lookupSingleton(FirstFailingDownloadable.class).updated);
+            assertTrue(ExtensionList.lookupSingleton(SecondFailingDownloadable.class).updated);
+            assertThat(Jenkins.get().getPluginManager().getLastErrorCheckUpdateCenters(), allOf(
+                    containsString("IOException: first downloadable failed"),
+                    containsString("IOException: second downloadable failed")));
+        } finally {
+            DownloadService.signatureCheck = oldValueSignatureCheck;
+        }
+    }
+
     /**
      * Check the update site.
      * @param urlUpdateSite If null, use the default update site, otherwise, use this update site.
@@ -140,7 +203,29 @@ class PluginManagerCheckUpdateCenterTest {
         assertNotEquals(isSuccess, logging.getMessages().stream().anyMatch(m -> m.contains(Messages.PluginManager_UpdateSiteError(PluginManager.CHECK_UPDATE_ATTEMPTS, ""))));
     }
 
-    @TestExtension("updateSiteReturn502Test")
+    @TestExtension("checkUpdatesServerContinuesAfterFailingDownloadable")
+    public static final class FirstFailingDownloadable extends DownloadService.Downloadable {
+        private boolean updated;
+
+        @Override
+        public FormValidation updateNow() throws IOException {
+            updated = true;
+            throw new IOException("first downloadable failed");
+        }
+    }
+
+    @TestExtension("checkUpdatesServerContinuesAfterFailingDownloadable")
+    public static final class SecondFailingDownloadable extends DownloadService.Downloadable {
+        private boolean updated;
+
+        @Override
+        public FormValidation updateNow() throws IOException {
+            updated = true;
+            throw new IOException("second downloadable failed");
+        }
+    }
+
+    @TestExtension({"updateSiteReturn502Test", "checkUpdatesServerContinuesAfterFailingUpdateSite", "checkUpdatesServerReportsEveryFailingUpdateSite"})
     public static final class FailingWith502UpdateCenterAction implements RootAction {
 
         @Override
@@ -163,7 +248,7 @@ class PluginManagerCheckUpdateCenterTest {
         }
     }
 
-    @TestExtension({"updateSiteWrongJsonTest", "changeLogLevelInLog"})
+    @TestExtension({"updateSiteWrongJsonTest", "changeLogLevelInLog", "checkUpdatesServerReportsEveryFailingUpdateSite"})
     public static final class FailingWithWrongJsonUpdateCenterAction implements RootAction {
 
         @Override
@@ -188,7 +273,7 @@ class PluginManagerCheckUpdateCenterTest {
         }
     }
 
-    @TestExtension("updateSiteRightJsonTest")
+    @TestExtension({"updateSiteRightJsonTest", "checkUpdatesServerContinuesAfterFailingUpdateSite", "checkUpdatesServerContinuesAfterFailingDownloadable"})
     public static final class ReturnRightJsonUpdateCenterAction implements RootAction {
 
         @Override
