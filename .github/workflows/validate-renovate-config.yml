@@ -1,0 +1,40 @@
+name: Validate Renovate Configuration
+
+on:
+  pull_request:
+    paths:
+      - ".github/renovate.json"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - name: Validate Renovate Configuration
+        run: |
+          set -eu
+          CONFIG_FILE=".github/renovate.json"
+          if [ !  -f "$CONFIG_FILE" ]; then
+            echo "Error: Oops! $CONFIG_FILE is absent."
+            exit 1
+          fi
+          npx --yes --package renovate -c "renovate-config-validator --strict $CONFIG_FILE"
+        shell: bash
+
+      - name: Publish checks
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "Renovate configuration is valid!"
+            echo "### ✅ Renovate Configuration Valid" >> $GITHUB_STEP_SUMMARY
+            echo "The renovate configuration at \`.github/renovate.json\` has been validated successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Renovate configuration validation failed!"
+            echo "### ❌ Renovate Configuration Invalid" >> $GITHUB_STEP_SUMMARY
+            echo "The renovate configuration at \`.github/renovate.json\` failed validation." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please check the logs above for detailed error messages." >> $GITHUB_STEP_SUMMARY
+          fi
+        shell: bash
