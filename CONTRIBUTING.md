@@ -168,7 +168,7 @@ All proposed changes are submitted, and code reviewed, using a [GitHub pull requ
 To submit a pull request:
 
 1. Commit your changes and push them to your fork on GitHub.
-   It is a good practice is to create branches instead of pushing to master.
+   It is a good practice to create branches instead of pushing to master.
 2. In the GitHub Web UI, click the _New Pull Request_ button.
 3. Select `jenkinsci` as _base fork_ and `master` as `base`, then click _Create Pull Request_.
    - We integrate all changes into the master branch towards the Weekly releases.
