@@ -32,7 +32,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import hudson.PluginManager;
 import hudson.PluginWrapper;
@@ -40,6 +39,8 @@ import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -80,10 +81,6 @@ class EnablePluginCommandTest {
         PluginWrapper plugin = j.getPluginManager().getPlugin(name);
         assertThat(plugin, is(notNullValue()));
         assertFalse(plugin.isEnabled());
-    }
-
-    private void assumeNotWindows() {
-        assumeFalse(System.getProperty("os.name").startsWith("Windows"));
     }
 
     private void assertJenkinsInQuietMode() {
@@ -130,10 +127,10 @@ class EnablePluginCommandTest {
     }
 
     @Disabled("TODO calling restart seems to break Surefire")
+    // @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     @Test
     @Issue("JENKINS-52950")
     void enablePluginWithRestart() throws IOException {
-        assumeNotWindows();
         String name = "credentials";
         assertThat(installTestPlugin(name), succeeded());
         disablePlugin(name);
@@ -143,8 +140,8 @@ class EnablePluginCommandTest {
 
     @Test
     @Issue("JENKINS-52950")
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void enableNoPluginsWithRestartIsNoOp() {
-        assumeNotWindows();
         String name = "icon-shim";
         assertThat(installTestPlugin(name), succeeded());
         assertThat(enablePlugins("-restart", name), succeeded());

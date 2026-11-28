@@ -38,8 +38,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.sun.management.UnixOperatingSystemMXBean;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -97,6 +95,10 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.NameValuePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -161,9 +163,8 @@ class DirectoryBrowserSupportTest {
      */
     @Email("http://www.nabble.com/Status-Code-400-viewing-or-downloading-artifact-whose-filename-contains-two-consecutive-periods-tt21407604.html")
     @Test
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "can't test this on Windows")
     void doubleDots2() throws Exception {
-        assumeFalse(Functions.isWindows(), "can't test this on Windows");
-
         // create a problematic file name in the workspace
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new Shell("mkdir abc; touch abc/def.bin"));
@@ -258,9 +259,8 @@ class DirectoryBrowserSupportTest {
 
     @Test
     @Issue({"JENKINS-64632", "JENKINS-61121"})
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Relies on capabilities not available on Windows")
     void zipDownloadFileLeakMx() throws Exception {
-        assumeFalse(Functions.isWindows());
-
         int numOfClicks = 10;
         int totalRuns = 10;
         boolean freeFromLeak = false;
@@ -594,9 +594,8 @@ class DirectoryBrowserSupportTest {
 
     @Test
     @Issue("SECURITY-904")
+    @DisabledIfEnvironmentVariable(named = "DISABLE_SYMLINK_TESTS", matches = "true")
     void symlink_outsideWorkspace_areNotAllowed() throws Exception {
-        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
-
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
@@ -735,9 +734,8 @@ class DirectoryBrowserSupportTest {
      */
     @Test
     @Issue("SECURITY-904")
+    @DisabledIfEnvironmentVariable(named = "DISABLE_SYMLINK_TESTS", matches = "true")
     void symlink_avoidLeakingInformation_aboutIllegalFolder() throws Exception {
-        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
-
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
@@ -809,9 +807,9 @@ class DirectoryBrowserSupportTest {
     // to achieve that they should already have access to the system or the Script Console.
     @Test
     @Issue("SECURITY-904")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "Uses Windows-specific features")
+    @DisabledIfEnvironmentVariable(named = "DISABLE_SYMLINK_TESTS", matches = "true")
     void junctionAndSymlink_outsideWorkspace_areNotAllowed_windowsJunction() throws Exception {
-        assumeTrue(Functions.isWindows() && !"true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
-
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
@@ -1029,9 +1027,8 @@ class DirectoryBrowserSupportTest {
 
     @Test
     @Issue({"SECURITY-904", "SECURITY-1452"})
+    @DisabledIfEnvironmentVariable(named = "DISABLE_SYMLINK_TESTS", matches = "true")
     void symlink_insideWorkspace_areNotAllowedAnymore() throws Exception {
-        assumeFalse("true".equals(System.getenv("DISABLE_SYMLINK_TESTS")));
-
         FreeStyleProject p = j.createFreeStyleProject();
 
         // build once to have the workspace set up
@@ -1126,9 +1123,8 @@ class DirectoryBrowserSupportTest {
 
     @Test
     @Issue("SECURITY-2481")
+    @EnabledOnOs(value = OS.WINDOWS, disabledReason = "can only be tested on Windows")
     void windows_cannotViewAbsolutePath() throws Exception {
-        assumeTrue(Functions.isWindows(), "can only be tested this on Windows");
-
         Path targetTmpPath = Files.createTempFile("sec2481", "tmp");
         String content = "random data provided as fixed value";
         Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
