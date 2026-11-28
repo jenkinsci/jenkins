@@ -334,6 +334,10 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                     newNode.setNodeName(name);
                 }
 
+                if (isReservedName(newNode.getNodeName())) {
+                    throw new Failure(Messages.ComputerSet_ReservedName(newNode.getNodeName()));
+                }
+
                 if (app.getNode(newNode.getNodeName()) != null) {
                     throw new Failure("Node '" + newNode.getNodeName() + "' already exists");
                 }
@@ -389,11 +393,22 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         name = name.trim();
         Jenkins.checkGoodName(name);
 
+        if (isReservedName(name))
+            throw new Failure(Messages.ComputerSet_ReservedName(name));
+
         if (Jenkins.get().getNode(name) != null)
             throw new Failure(Messages.ComputerSet_SlaveAlreadyExists(name));
 
         // looks good
         return name;
+    }
+
+    /**
+     * Whether the name is one that {@link Jenkins#getComputer(String)} resolves to the built-in node,
+     * so an agent with that name could not be reached through its URL.
+     */
+    static boolean isReservedName(String name) {
+        return name.equals("(built-in)") || name.equals("(master)");
     }
 
     /**

@@ -1518,6 +1518,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             throw new ServletException("No such node " + nodeName);
         }
 
+        if (!proposedName.equals(nodeName) && ComputerSet.isReservedName(proposedName)) {
+            throw new FormException(Messages.ComputerSet_ReservedName(proposedName), "name");
+        }
+
         if (!proposedName.equals(nodeName)
                 && Jenkins.get().getNode(proposedName) != null) {
             throw new FormException(Messages.ComputerSet_SlaveAlreadyExists(proposedName), "name");

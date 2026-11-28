@@ -33,12 +33,15 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.cli.CLICommandInvoker;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.RetentionStrategy;
+import hudson.util.FormValidation;
 import java.net.HttpURLConnection;
+import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.widgets.ExecutorsWidget;
 import jenkins.widgets.HasWidgetHelper;
@@ -48,6 +51,7 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.NameValuePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -201,6 +205,35 @@ class ComputerSetTest {
     @Test
     void createItemFromXmlWithName() throws Exception {
         createItemTest("new-name");
+    }
+
+    @Issue("JENKINS-72803")
+    @Test
+    void reservedAgentNames() throws Exception {
+        ComputerSet computers = j.jenkins.getComputer();
+        for (String name : List.of("(built-in)", "(master)")) {
+            assertThat(computers.doCheckName(name).kind, is(FormValidation.Kind.ERROR));
+            Failure failure = assertThrows(Failure.class, () -> computers.checkName(name));
+            assertThat(failure.getMessage(), is("‘" + name + "’ is reserved for the built-in node"));
+        }
+
+        j.createSlave("agent", null, null);
+        try (JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false)) {
+            WebRequest copy = new WebRequest(wc.createCrumbedUrl("computer/createItem"), HttpMethod.POST);
+            copy.setRequestParameters(List.of(
+                    new NameValuePair("name", "(built-in)"),
+                    new NameValuePair("mode", "copy"),
+                    new NameValuePair("from", "agent")));
+            WebResponse rsp = wc.getPage(copy).getWebResponse();
+            assertThat(rsp.getContentAsString(), containsString("reserved for the built-in node"));
+
+            WebRequest xml = new WebRequest(wc.createCrumbedUrl("computer/createItem?name=(master)"), HttpMethod.POST);
+            xml.setAdditionalHeader("Content-Type", "application/xml");
+            xml.setRequestBody("<slave><remoteFS>/tmp</remoteFS><numExecutors>1</numExecutors><launcher class=\"hudson.slaves.JNLPLauncher\"/></slave>");
+            rsp = wc.getPage(xml).getWebResponse();
+            assertThat(rsp.getContentAsString(), containsString("reserved for the built-in node"));
+        }
+        assertThat(j.jenkins.getNodes().stream().map(Node::getNodeName).toList(), contains("agent"));
     }
 
     void createItemTest(String name) throws Exception {
