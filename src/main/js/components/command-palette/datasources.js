@@ -20,7 +20,6 @@ export const JenkinsSearchSource = {
             icon: e.icon,
             type: e.type,
             label: e.name,
-            description: e.description,
             url: correctAddress(e.url),
             group: e.group,
           }),
