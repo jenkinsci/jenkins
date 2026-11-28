@@ -330,4 +330,27 @@ div.listview-jobs {
   &__sentinel {
     height: 1px;
   }
+
+  &__list[aria-busy="true"] {
+    cursor: progress;
+  }
+
+  // Says that loading failed, with a button to try again
+  &__error {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 0.5rem;
+
+    .jenkins-button {
+      flex-shrink: 0;
+      color: inherit;
+    }
+  }
+
+  // At the end of the list, for the next page
+  &__list + &__error {
+    margin-top: var(--section-padding);
+  }
 }

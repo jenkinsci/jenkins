@@ -238,6 +238,53 @@ class DashboardTest {
     }
 
     @Test
+    void allTabSearchListsItemsMatchingByTheirOwnNameFirst() throws Exception {
+        enableFlag("alice");
+        j.createFolder("alpha").createProject(FreeStyleProject.class, "x");
+        // Inside a folder that is walked after alpha, so it would come after alpha » x in walking order
+        j.createFolder("a-team").createProject(FreeStyleProject.class, "beta-alpha");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?start=0&search=alpha", null)),
+                    contains("alpha", "a-team » beta-alpha", "alpha » x"));
+        }
+    }
+
+    @Test
+    void allTabSearchFindsItemsByTheNameOfAFolderAnyLevelUp() throws Exception {
+        enableFlag("alice");
+        j.createFolder("alpha").createProject(MockFolder.class, "sub").createProject(FreeStyleProject.class, "y");
+        j.createFreeStyleProject("other");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?start=0&search=alph", null)),
+                    contains("alpha", "alpha \u00bb sub", "alpha \u00bb sub \u00bb y"));
+            // A query across the separator between a folder's name and an item's name
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?start=0&search=sub+%C2%BB+y", null)),
+                    contains("alpha \u00bb sub \u00bb y"));
+        }
+    }
+
+    @Test
+    void allTabSearchFindsItemsByAPathWithSlashes() throws Exception {
+        enableFlag("alice");
+        MockFolder sub = j.createFolder("alpha").createProject(MockFolder.class, "sub");
+        sub.setDisplayName("Team Sub");
+        sub.createProject(FreeStyleProject.class, "y");
+        sub.createProject(FreeStyleProject.class, "release-1");
+        j.createFreeStyleProject("y-other");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            // As in full names
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?start=0&search=alpha/sub/rel", null)),
+                    contains("alpha \u00bb Team Sub \u00bb release-1"));
+            // Everything inside a folder
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?start=0&search=sub/", null)),
+                    containsInAnyOrder("alpha \u00bb Team Sub \u00bb y", "alpha \u00bb Team Sub \u00bb release-1"));
+            // With display names
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?start=0&search=team+sub/y", null)),
+                    contains("alpha \u00bb Team Sub \u00bb y"));
+        }
+    }
+
+    @Test
     void recentTabShowsRunningQueuedAndFinishedBuilds() throws Exception {
         enableFlag("alice", "new-build-page.flag");
         enableFlag("admin", "new-build-page.flag");

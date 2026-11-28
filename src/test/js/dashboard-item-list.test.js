@@ -7,7 +7,7 @@ function page(names, nextStart) {
   const rows = names
     .map(
       (name) =>
-        `<div class="app-temporary-list__item" data-id="${name}"><a class="app-temporary-list__item__label">${name}</a></div>`,
+        `<div class="app-temporary-list__item" data-id="${name}"><a class="app-temporary-list__item__label" href="#">${name}</a></div>`,
     )
     .join("");
   return `<div class="app-dashboard-items__page"${next} data-count="${names.length}">${rows}</div>`;
@@ -41,9 +41,12 @@ describe("dashboard item list", () => {
       }
     };
     document.body.innerHTML = `
-      <div class="app-dashboard-items" data-items-url="/jenkins/all/items">
-        <div class="jenkins-search"><input class="jenkins-search__input" /></div>
+      <div class="app-dashboard-items" data-items-url="/jenkins/all/items"
+           data-load-failed="Couldn't load the items." data-try-again="Try again"
+           data-results="Results: {0}" data-more-results="Results: more than {0}" data-no-results="No results found">
+        <div class="jenkins-search-container"><div class="jenkins-search"><input class="jenkins-search__input" /></div></div>
         <div id="dashboard-items-no-results" class="jenkins-hidden"></div>
+        <p class="app-dashboard-items__status" role="status"></p>
         <div class="app-temporary-list app-dashboard-items__list">${page(["a", "b"], 2)}</div>
         <div class="app-dashboard-items__sentinel"></div>
       </div>`;
@@ -110,6 +113,9 @@ describe("dashboard item list", () => {
       expect.anything(),
     );
     expect(labels(root)).toEqual(["team » deploy"]);
+    expect(root.querySelector("[role=status]").textContent).toBe(
+      "Results: more than 1",
+    );
 
     // Further pages keep the query
     await list.loadMore();
@@ -135,9 +141,12 @@ describe("dashboard item list", () => {
         .querySelector(".app-dashboard-items__list")
         .classList.contains("jenkins-hidden"),
     ).toBe(true);
+    expect(root.querySelector("[role=status]").textContent).toBe(
+      "No results found",
+    );
   });
 
-  it("waits for the list end to scroll into view again after a failure", async () => {
+  it("only tries a failed page again from its button", async () => {
     const fetch = vi
       .fn()
       .mockImplementationOnce(() => Promise.resolve({ ok: false, status: 500 }))
@@ -150,9 +159,16 @@ describe("dashboard item list", () => {
     await new Promise((resolve) => setTimeout(resolve));
     // Not re-observed, which would retry straight away
     expect(observers[0].observe).toHaveBeenCalledTimes(1);
+    expect(root.querySelector(".app-dashboard-items__error")).not.toBeNull();
 
+    // Scrolling doesn't retry, which would take away a focused button
     observers[0].intersect();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    root.querySelector(".app-dashboard-items__error button").click();
     await vi.waitFor(() => expect(labels(root)).toEqual(["a", "b", "c"]));
+    expect(root.querySelector(".app-dashboard-items__error")).toBeNull();
   });
 
   it("skips items already in the list", async () => {
@@ -164,7 +180,60 @@ describe("dashboard item list", () => {
     expect(labels(root)).toEqual(["a", "b", "c"]);
   });
 
-  it("keeps the previous query when a search fails", async () => {
+  it("clears the warning of a failed search when the next one succeeds", async () => {
+    const fetch = vi
+      .fn()
+      .mockImplementationOnce(() => Promise.resolve({ ok: false, status: 500 }))
+      .mockImplementation(() => response(page(["two"])));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const list = initItemList(root, { fetch });
+
+    await list.search("one");
+    await list.search("two");
+
+    expect(root.querySelector(".app-dashboard-items__error")).toBeNull();
+    expect(labels(root)).toEqual(["two"]);
+  });
+
+  it("hands the focus to the first row a retried page loads", async () => {
+    const fetch = vi
+      .fn()
+      .mockImplementationOnce(() => Promise.resolve({ ok: false, status: 500 }))
+      .mockImplementation(() => response(page(["c"])));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const list = initItemList(root, { fetch });
+
+    await list.loadMore();
+    const retry = root.querySelector(".app-dashboard-items__error button");
+    retry.focus();
+    retry.click();
+
+    await vi.waitFor(() => expect(labels(root)).toEqual(["a", "b", "c"]));
+    await vi.waitFor(() =>
+      expect(document.activeElement.textContent).toBe("c"),
+    );
+  });
+
+  it("hands the focus to the last row when a retried page is empty", async () => {
+    const fetch = vi
+      .fn()
+      .mockImplementationOnce(() => Promise.resolve({ ok: false, status: 500 }))
+      .mockImplementation(() => response(page([])));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const list = initItemList(root, { fetch });
+
+    await list.loadMore();
+    const retry = root.querySelector(".app-dashboard-items__error button");
+    retry.focus();
+    retry.click();
+
+    await vi.waitFor(() =>
+      expect(document.activeElement.textContent).toBe("b"),
+    );
+    expect(labels(root)).toEqual(["a", "b"]);
+  });
+
+  it("doesn't load more of the previous query after a search fails", async () => {
     const fetch = vi
       .fn()
       .mockImplementationOnce(() => Promise.resolve({ ok: false, status: 500 }))
@@ -173,13 +242,97 @@ describe("dashboard item list", () => {
     const list = initItemList(root, { fetch });
 
     await list.search("deploy");
+    // As when the sentinel scrolls into view
     await list.loadMore();
 
-    expect(labels(root)).toEqual(["a", "b", "c"]);
-    expect(fetch).toHaveBeenLastCalledWith(
-      "/jenkins/all/items?start=2&after=b",
-      expect.anything(),
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(root.querySelector(".app-dashboard-items__error")).not.toBeNull();
+  });
+
+  it("clears the busy state of a page load a search cut short", async () => {
+    const fetch = vi
+      .fn()
+      .mockImplementationOnce(
+        (url, { signal }) =>
+          new Promise((resolve, reject) => {
+            signal.addEventListener("abort", () =>
+              reject(new DOMException("aborted", "AbortError")),
+            );
+          }),
+      )
+      .mockImplementation(() => response(page(["deploy"])));
+    const list = initItemList(root, { fetch });
+    const items = root.querySelector(".app-dashboard-items__list");
+
+    const more = list.loadMore();
+    expect(items.getAttribute("aria-busy")).toBe("true");
+    await list.search("deploy");
+    await more;
+
+    expect(items.hasAttribute("aria-busy")).toBe(false);
+  });
+
+  it("ignores a superseded request that fails", async () => {
+    let rejectFirst;
+    const fetch = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve, reject) => {
+            rejectFirst = reject;
+          }),
+      )
+      .mockImplementation(() => response(page(["two"])));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const list = initItemList(root, { fetch });
+
+    const first = list.search("one");
+    await list.search("two");
+    rejectFirst(new Error("network"));
+    await first;
+
+    expect(labels(root)).toEqual(["two"]);
+    expect(root.querySelector(".app-dashboard-items__error")).toBeNull();
+  });
+
+  it("warns above the search bar when a search fails, and tries again", async () => {
+    const fetch = vi
+      .fn()
+      .mockImplementationOnce(() => Promise.resolve({ ok: false, status: 500 }))
+      .mockImplementation(() => response(page(["deploy"])));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const list = initItemList(root, { fetch });
+
+    await list.search("deploy");
+
+    const error = root.querySelector(".app-dashboard-items__error");
+    expect(error.classList.contains("jenkins-alert")).toBe(true);
+    expect(
+      error.nextElementSibling.classList.contains("jenkins-search-container"),
+    ).toBe(true);
+    // The rows on the page are for the previous query
+    expect(
+      root
+        .querySelector(".app-dashboard-items__list")
+        .classList.contains("jenkins-hidden"),
+    ).toBe(true);
+
+    const retry = error.querySelector("button");
+    retry.focus();
+    retry.click();
+    await vi.waitFor(() => expect(labels(root)).toEqual(["deploy"]));
+    expect(root.querySelector(".app-dashboard-items__error")).toBeNull();
+    // The button that had the focus is gone, so the search box takes it
+    await vi.waitFor(() =>
+      expect(document.activeElement).toBe(
+        root.querySelector(".jenkins-search__input"),
+      ),
     );
+    expect(
+      root
+        .querySelector(".app-dashboard-items__list")
+        .classList.contains("jenkins-hidden"),
+    ).toBe(false);
   });
 
   it("aborts the requests of a superseded search", async () => {

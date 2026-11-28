@@ -28,6 +28,9 @@ THE SOFTWARE.
     <st:attribute name="value" />
     <st:attribute name="placeholder" />
     <st:attribute name="id" />
+    <st:attribute name="ariaLabel" since="TODO">
+      The accessible name of the input, for when nothing else labels it.
+    </st:attribute>
     <st:attribute name="autofocus" />
     <st:attribute name="clazz" />
     <st:attribute name="hasKeyboardShortcut">
@@ -54,6 +57,7 @@ THE SOFTWARE.
              id="${attrs.id}"
              class="jenkins-input jenkins-search__input"
              placeholder="${attrs.placeholder ?: '%Search'}"
+             aria-label="${attrs.ariaLabel}"
              type="search"
              autofocus="${attrs.autofocus == 'true' ? 'true' : null}"
              autocomplete="off"
