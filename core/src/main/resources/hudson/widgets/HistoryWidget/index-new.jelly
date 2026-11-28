@@ -26,12 +26,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
   <script src="${resURL}/jsbundles/pages/project/builds-card-new.js" type="text/javascript" async="true" />
 
-  <j:set var="job" value="${it.owner}" />
-  <j:set var="canBuild" value="${job.buildable and job.hasPermission(job.BUILD)}" />
-  <j:if test="${canBuild and !job.parameterized}">
-    <script src="${resURL}/jsbundles/pages/project/build.js" type="text/javascript" defer="true" />
-  </j:if>
-
   <j:set var="page" value="${it.historyPageFilter}" />
 
   <div id="buildHistoryPage"
@@ -45,37 +39,6 @@ THE SOFTWARE.
               title="${%No builds yet}"
               clazz="jenkins-hidden">
       ${%Start the first build to see run history here.}
-
-      <j:if test="${canBuild}">
-        <div class="jenkins-!-margin-top-3">
-          <j:set var="buildNowText" value="${job.buildNowText}" />
-          <j:choose>
-            <j:when test="${job.parameterized}">
-              <j:set var="defaultBuildText" value="${%Build with Parameters}" />
-              <button type="button"
-                      class="jenkins-button jenkins-button--primary jenkins-!-build-color"
-                      data-type="dialog-opener"
-                      data-dialog-url="${rootURL}/${job.url}parametersDefinitionProperty/dialog">
-                <l:icon src="symbol-play" />
-                ${empty(buildNowText) ? defaultBuildText : buildNowText}
-              </button>
-            </j:when>
-            <j:otherwise>
-              <j:set var="defaultBuildText" value="${%Build Now}" />
-              <button type="button"
-                      class="jenkins-button jenkins-button--primary jenkins-!-build-color"
-                      data-type="build-now"
-                      data-base-url="${rootURL}/${job.url}"
-                      data-href="build?delay=0sec"
-                      data-build-success="${%Build scheduled}"
-                      data-build-failure="${%Failed to schedule build. Reload the page and try again.}">
-                <l:icon src="symbol-play" />
-                ${empty(buildNowText) ? defaultBuildText : buildNowText}
-              </button>
-            </j:otherwise>
-          </j:choose>
-        </div>
-      </j:if>
     </l:notice>
 
     <l:notice id="no-builds"
