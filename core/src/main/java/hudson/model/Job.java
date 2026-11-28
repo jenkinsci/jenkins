@@ -83,6 +83,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -94,6 +95,7 @@ import java.util.stream.Stream;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.BuildDiscarderProperty;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
+import jenkins.model.FallbackEstimatedDurationProvider;
 import jenkins.model.HistoricalBuild;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
@@ -1255,10 +1257,24 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return candidates;
     }
 
+    private static final ThreadLocal<Set<Job<?, ?>>> FALLBACK_ESTIMATED_DURATION_IN_PROGRESS = new ThreadLocal<>();
+
+    /**
+     * Returns the estimated duration for a build of this job in milliseconds,
+     * or {@code -1} if no estimate is available.
+     *
+     * <p>When this job has completed build history ({@link #getEstimatedDurationCandidates()} is non-empty),
+     * the estimate is computed from those candidate builds. Otherwise, registered
+     * {@link FallbackEstimatedDurationProvider} extensions are consulted.
+     *
+     * @return estimated duration in milliseconds, or {@code -1} if unknown
+     */
     public long getEstimatedDuration() {
         List<RunT> builds = getEstimatedDurationCandidates();
 
-        if (builds.isEmpty())     return -1;
+        if (builds.isEmpty()) {
+            return getFallbackEstimatedDuration();
+        }
 
         long totalDuration = 0;
         for (RunT b : builds) {
@@ -1267,6 +1283,46 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         if (totalDuration == 0) return -1;
 
         return Math.round((double) totalDuration / builds.size());
+    }
+
+    private long getFallbackEstimatedDuration() {
+        ExtensionList<FallbackEstimatedDurationProvider> providers = FallbackEstimatedDurationProvider.all();
+        if (providers.isEmpty()) {
+            return -1;
+        }
+
+        Set<Job<?, ?>> inProgress = FALLBACK_ESTIMATED_DURATION_IN_PROGRESS.get();
+        boolean owner = false;
+        if (inProgress == null) {
+            inProgress = Collections.newSetFromMap(new IdentityHashMap<>());
+            FALLBACK_ESTIMATED_DURATION_IN_PROGRESS.set(inProgress);
+            owner = true;
+        }
+        if (!inProgress.add(this)) {
+            return -1;
+        }
+
+        try {
+            for (FallbackEstimatedDurationProvider provider : providers) {
+                try {
+                    long duration = provider.getEstimatedDuration(this);
+                    if (duration > 0) {
+                        return duration;
+                    }
+                } catch (RuntimeException e) {
+                    LOGGER.log(
+                            Level.WARNING,
+                            "Failed to compute fallback estimated duration for " + getFullName() + " using " + provider,
+                            e);
+                }
+            }
+            return -1;
+        } finally {
+            inProgress.remove(this);
+            if (owner) {
+                FALLBACK_ESTIMATED_DURATION_IN_PROGRESS.remove();
+            }
+        }
     }
 
     /**
