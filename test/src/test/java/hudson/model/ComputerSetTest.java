@@ -248,4 +248,15 @@ class ComputerSetTest {
             assertThat(agent.getRetentionStrategy(), is(instanceOf(RetentionStrategy.Always.class)));
         }
     }
+
+    @Issue("27887")
+    @Test
+    void newNodeConfigurationPageHasTitle() throws Exception {
+        HtmlPage newPage = j.createWebClient().goTo("computer/new");
+        HtmlForm form = newPage.getFormByName("createItem");
+        form.getInputByName("name").setValue("agent-1");
+        form.getInputByValue("hudson.slaves.DumbSlave").setChecked(true);
+        HtmlPage configPage = j.submit(form);
+        assertEquals("New node: agent-1 - Jenkins", configPage.getTitleText());
+    }
 }
