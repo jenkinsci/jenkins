@@ -331,8 +331,100 @@ div.listview-jobs {
     height: 1px;
   }
 
+  // A folder's row is a button that expands it, styled like the rows that link
+  &__toggle {
+    appearance: none;
+    align-items: center;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    font-weight: var(--font-bold-weight);
+    text-align: start;
+    cursor: pointer;
+  }
+
+  // While a folder's items load
+  &__toggle[aria-busy="true"] {
+    cursor: progress;
+
+    .app-dashboard-items__chevron {
+      animation: pulse-skeleton 1s infinite alternate ease-in-out;
+    }
+  }
+
   &__list[aria-busy="true"] {
     cursor: progress;
+  }
+
+  &__more:disabled {
+    cursor: progress;
+  }
+
+  &__chevron {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    color: var(--text-color-secondary);
+    transition: rotate var(--standard-transition);
+
+    [aria-expanded="true"] > & {
+      rotate: 90deg;
+    }
+  }
+
+  .app-temporary-list__item:has(&__toggle) {
+    &:hover {
+      --tertiary-color: var(--text-color);
+
+      background: var(--button-background);
+    }
+
+    &:has(.app-dashboard-items__toggle:focus-visible) {
+      background: var(--button-background--hover);
+      box-shadow: var(--focus-ring--keyboard) !important;
+    }
+  }
+
+  // The items inside an expanded folder, under its row and indented one step
+  // further for each level, up to a limit, so deeply nested rows keep room
+  // for their names and actions
+  &__children {
+    // The script caps both depths
+    --dashboard-items-indent: calc(var(--dashboard-items-depth, 1) * 1.5rem);
+
+    @media (width <= 800px) {
+      --dashboard-items-indent: calc(
+        var(--dashboard-items-narrow-depth, 1) * 0.75rem
+      );
+    }
+
+    &:not(:last-child) {
+      border-bottom: var(--jenkins-border);
+    }
+
+    .app-temporary-list__item {
+      border-radius: 0 !important;
+    }
+
+    &
+      > .app-dashboard-items__page
+      > .app-temporary-list__item
+      > .app-build-item {
+      padding-inline-start: var(--dashboard-items-indent);
+    }
+  }
+
+  &__more {
+    margin: 0.375rem 0 0.375rem calc(0.375rem + var(--dashboard-items-indent));
+  }
+
+  // Says that an expanded folder is empty
+  &__empty {
+    margin: 0;
+    padding: 0.75rem 0.75rem 0.75rem
+      calc(0.75rem + var(--dashboard-items-indent, 0rem));
+    color: var(--text-color-secondary);
   }
 
   // Says that loading failed, with a button to try again
@@ -352,5 +444,24 @@ div.listview-jobs {
   // At the end of the list, for the next page
   &__list + &__error {
     margin-top: var(--section-padding);
+  }
+
+  // Inside an expanded folder, indented as its rows are
+  &__list &__error {
+    margin: 0.375rem 0.375rem 0.375rem
+      calc(0.375rem + var(--dashboard-items-indent, 0rem));
+  }
+
+  .app-temporary-list__item__details__text,
+  .app-temporary-list__item__label {
+    min-width: 0;
+  }
+
+  // Names stay on one line, cut short with an ellipsis when there's no room
+  &__name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }

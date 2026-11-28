@@ -24,13 +24,39 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <!-- One page of items. The wrapper carries where the next page starts, if there is one. Items are named from the
-       dashboard's owner down, so search results from inside other item groups name those groups. -->
+  <!-- One page of items, at the top of the list or inside an expanded folder. The wrapper carries where the next
+       page starts, if there is one, and a page of an expanded folder ends with a button that loads the next one.
+       Items are named from the dashboard's owner or the expanded folder down, so search results from inside other
+       item groups name those groups. Folders can be expanded, in search results too. -->
   <l:ajax>
     <div class="app-dashboard-items__page" data-next-start="${page.nextStart()}" data-count="${page.items().size()}">
       <j:forEach var="item" items="${page.items()}">
-        <t:jobListItem job="${item}" relativeTo="${page.group()}" />
+        <t:jobListItem job="${item}" relativeTo="${page.group()}"
+                       expandable="${it.isExpandable(item)}" />
       </j:forEach>
+      <j:if test="${page.folder() != null}">
+        <j:choose>
+          <!-- A later page is empty if the items left were removed after the previous one -->
+          <j:when test="${empty(page.items()) and page.first()}">
+            <j:set var="typeName" value="${it.typeName(page.group())}" />
+            <p class="app-dashboard-items__empty">
+              <j:choose>
+                <j:when test="${typeName != null}">${%IsEmpty(typeName)}</j:when>
+                <j:otherwise>${%Nothing in here yet}</j:otherwise>
+              </j:choose>
+            </p>
+          </j:when>
+          <j:when test="${page.nextStart() != null}">
+            <button type="button" class="jenkins-button jenkins-button--tertiary app-dashboard-items__more"
+                    data-next-start="${page.nextStart()}">
+              <j:choose>
+                <j:when test="${page.remaining() != null}">${%ShowMoreOf(page.remaining())}</j:when>
+                <j:otherwise>${%Show more}</j:otherwise>
+              </j:choose>
+            </button>
+          </j:when>
+        </j:choose>
+      </j:if>
     </div>
   </l:ajax>
 </j:jelly>

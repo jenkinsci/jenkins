@@ -64,6 +64,14 @@ public class AllTab extends ItemListTab implements Dashboard.ShownInItemGroups {
         return getDashboard().getOwner().getItems();
     }
 
+    /**
+     * Folders expand to list what is inside them, as they would in the owner's "All" view.
+     */
+    @Override
+    public boolean isExpandable(@NonNull Item item) {
+        return isFolder(item);
+    }
+
     @NonNull
     @Override
     public Iterable<? extends Item> search(@NonNull String query) {

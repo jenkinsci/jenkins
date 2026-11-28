@@ -29,15 +29,18 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.AllView;
+import hudson.model.Describable;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
+import hudson.model.Job;
 import hudson.model.ModifiableItemGroup;
 import hudson.model.View;
 import hudson.model.ViewGroup;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -81,6 +84,12 @@ public abstract class ItemListTab extends Tab {
      * How many items each request returns.
      */
     static /* non-final for Groovy */ int PAGE_SIZE = SystemProperties.getInteger(ItemListTab.class.getName() + ".pageSize", 50);
+
+    /**
+     * How many items of an expanded folder the first request returns. Each later request returns as many as are
+     * already shown, up to {@link #PAGE_SIZE}, so that a large folder takes fewer requests.
+     */
+    static /* non-final for Groovy */ int CHILDREN_PAGE_SIZE = SystemProperties.getInteger(ItemListTab.class.getName() + ".childrenPageSize", 20);
 
     /**
      * The longest search query, as each search looks at the name of every item.
@@ -219,7 +228,52 @@ public abstract class ItemListTab extends Tab {
         if (query != null && query.length() > MAX_QUERY_LENGTH) {
             query = query.substring(0, MAX_QUERY_LENGTH);
         }
-        return slice(query == null ? getItems() : search(query), start, after, PAGE_SIZE, getDashboard().getOwner());
+        return slice(query == null ? getItems() : search(query), start, after, PAGE_SIZE, getDashboard().getOwner(),
+                null);
+    }
+
+    /**
+     * Whether a row can be expanded to list all the items directly inside it. No row can by default, as the tab
+     * may list only some items, which expanding a folder would not respect.
+     */
+    public boolean isExpandable(@NonNull Item item) {
+        return false;
+    }
+
+    /**
+     * The name of the type of an item group, such as "Folder", for messages about it, or {@code null} if it has none.
+     */
+    @Restricted(NoExternalUse.class)
+    public @CheckForNull String typeName(@NonNull ItemGroup<?> group) {
+        return group instanceof Describable<?> describable ? describable.getDescriptor().getDisplayName() : null;
+    }
+
+    /**
+     * Whether an item is a folder that can be expanded. Jobs that hold other jobs, such as matrix projects, open
+     * their own page.
+     */
+    static boolean isFolder(@NonNull Item item) {
+        return item instanceof ItemGroup<?> && !(item instanceof Job<?, ?>);
+    }
+
+    /**
+     * Reads one page of the items directly inside an expanded folder.
+     *
+     * @param folder the full name of the folder
+     * @param start the index of the first item to return, used when {@code after} is not listed
+     * @param after the full name of the last item of the folder already shown, or {@code null}
+     * @return {@code null} if the folder is not inside the dashboard's owner, the current user cannot see it, or
+     *     it cannot be expanded
+     */
+    @Restricted(NoExternalUse.class)
+    public @CheckForNull Page getChildren(@NonNull String folder, int start, @CheckForNull String after) {
+        Item item = Dashboard.visible(folder, Item.class);
+        if (item == null || !getDashboard().contains(item) || !isExpandable(item)) {
+            return null;
+        }
+        ItemGroup<?> group = (ItemGroup<?>) item;
+        int size = Math.min(Math.max(start, CHILDREN_PAGE_SIZE), PAGE_SIZE);
+        return slice(group.getItems(), start, after, size, group, folder);
     }
 
     /**
@@ -230,9 +284,10 @@ public abstract class ItemListTab extends Tab {
      *     after it, so items removed from earlier in the list don't shift the page past items not yet shown.
      * @param size the number of items on a page
      * @param group the item group from which items are named
+     * @param folder the full name of the expanded folder whose items these are, or {@code null}
      */
     private static @NonNull Page slice(@NonNull Iterable<? extends Item> source, int start, @CheckForNull String after,
-            int size, @NonNull ItemGroup<?> group) {
+            int size, @NonNull ItemGroup<?> group, @CheckForNull String folder) {
         String anchor = Util.fixEmpty(after);
         int from = Math.max(start, 0);
         // The page at the offset, used if the anchor isn't listed
@@ -241,24 +296,31 @@ public abstract class ItemListTab extends Tab {
         List<Item> afterAnchor = null;
         int anchorIndex = -1;
         int index = 0;
-        for (Item item : source) {
+        // Whether the page is complete. The rest of a folder's items is still counted, to say how many are left;
+        // the folder's size cannot be used, as it may include items the user cannot read.
+        boolean complete = false;
+        boolean countRest = folder != null && source instanceof Collection<?>;
+        // Checking whether the page is complete before asking for another item, as a lazy source such as a search
+        // may go through many items to find the next one
+        Iterator<? extends Item> it = source.iterator();
+        while ((!complete || countRest) && it.hasNext()) {
+            Item item = it.next();
             if (!item.hasPermission(Item.READ)) {
                 continue;
             }
             int i = index++;
+            if (complete) {
+                continue;
+            }
             if (afterAnchor != null) {
                 afterAnchor.add(item);
-                if (afterAnchor.size() > size) {
-                    break;
-                }
+                complete = afterAnchor.size() > size;
             } else if (anchor != null && anchor.equals(item.getFullName())) {
                 afterAnchor = new ArrayList<>(size + 1);
                 anchorIndex = i;
             } else if (i >= from && atOffset.size() <= size) {
                 atOffset.add(item);
-                if (anchor == null && atOffset.size() > size) {
-                    break;
-                }
+                complete = anchor == null && atOffset.size() > size;
             }
         }
         List<Item> items = afterAnchor != null ? afterAnchor : atOffset;
@@ -267,7 +329,9 @@ public abstract class ItemListTab extends Tab {
         if (more) {
             items = items.subList(0, size);
         }
-        return new Page(items, more ? first + items.size() : null, group);
+        int next = first + items.size();
+        Integer remaining = more && countRest ? Math.max(index - next, 1) : null;
+        return new Page(items, more ? next : null, remaining, first == 0, group, folder);
     }
 
     /**
@@ -286,15 +350,22 @@ public abstract class ItemListTab extends Tab {
     }
 
     /**
-     * Renders one page of rows as an HTML fragment.
+     * Renders one page of rows as an HTML fragment: of the list, or of the items directly inside an expanded
+     * folder if {@code folder} names one, in which case the response is "404 Not Found" if it cannot be expanded.
      */
     @GET
     @Restricted(NoExternalUse.class)
-    public void doItems(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String start,
-            @QueryParameter String after, @QueryParameter String search)
+    public void doItems(StaplerRequest2 req, StaplerResponse2 rsp, @QueryParameter String folder,
+            @QueryParameter String start, @QueryParameter String after, @QueryParameter String search)
             throws IOException, ServletException {
+        int from = Objects.requireNonNullElse(Util.tryParseNumber(start, 0), 0).intValue();
+        Page page = folder == null ? getPage(from, after, search) : getChildren(folder, from, after);
+        if (page == null) {
+            rsp.sendError(StaplerResponse2.SC_NOT_FOUND);
+            return;
+        }
         rsp.setContentType("text/html;charset=UTF-8");
-        req.setAttribute("page", getPage(Objects.requireNonNullElse(Util.tryParseNumber(start, 0), 0).intValue(), after, search));
+        req.setAttribute("page", page);
         req.getView(this, "rows.jelly").forward(req, rsp);
     }
 
@@ -303,8 +374,13 @@ public abstract class ItemListTab extends Tab {
      *
      * @param items the items on this page
      * @param nextStart the {@code start} of the next page, or {@code null} if this is the last one
+     * @param remaining how many items are left after this page, or {@code null} if this is the last page or
+     *     it isn't known
+     * @param first whether this is the first page
      * @param group the item group from which items are named
+     * @param folder the full name of the expanded folder whose items these are, or {@code null} for the list itself
      */
     @Restricted(NoExternalUse.class)
-    public record Page(@NonNull List<Item> items, @CheckForNull Integer nextStart, @NonNull ItemGroup<?> group) {}
+    public record Page(@NonNull List<Item> items, @CheckForNull Integer nextStart, @CheckForNull Integer remaining,
+            boolean first, @NonNull ItemGroup<?> group, @CheckForNull String folder) {}
 }

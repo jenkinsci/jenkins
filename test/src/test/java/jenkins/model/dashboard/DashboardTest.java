@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -51,6 +52,7 @@ import hudson.model.Queue;
 import hudson.model.User;
 import hudson.util.OneShotEvent;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -180,6 +182,141 @@ class DashboardTest {
             HtmlPage last = (HtmlPage) wc.goTo("all/items?start=100", null);
             assertThat(rowLabels(last), hasSize(20));
             assertThat(nextStart(last), is(""));
+        }
+    }
+
+    @Test
+    void allTabExpandsFoldersAPageAtATime() throws Exception {
+        enableFlag("alice");
+        MockFolder team = j.createFolder("team");
+        for (int i = 0; i < 25; i++) {
+            team.createProject(FreeStyleProject.class, String.format("job-%02d", i));
+        }
+        team.createProject(MockFolder.class, "nested");
+        j.createFreeStyleProject("top-job");
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            HtmlPage all = wc.goTo("all/");
+            // Folders expand when clicked, with a separate link to their page; jobs link to their page
+            DomElement toggle = all.querySelector("[data-id='team'] .app-dashboard-items__toggle");
+            assertThat(toggle, notNullValue());
+            assertThat(toggle.getAttribute("aria-expanded"), is("false"));
+            assertThat(all.querySelector("[data-id='team'] a[href$='job/team/']"), notNullValue());
+            assertThat(all.querySelector("[data-id='top-job'] .app-dashboard-items__toggle"), nullValue());
+            assertThat(all.querySelector("[data-id='team'] a[aria-label='Open team']"), notNullValue());
+
+            HtmlPage first = (HtmlPage) wc.goTo("all/items?folder=team&start=0", null);
+            List<String> labels = rowLabels(first);
+            assertThat(labels, hasSize(ItemListTab.CHILDREN_PAGE_SIZE));
+            // Items directly in the expanded folder are shown with their own names
+            assertThat(labels.get(0), is("job-00"));
+            assertThat(nextStart(first), is("20"));
+            DomElement more = first.querySelector(".app-dashboard-items__more");
+            assertThat(more.getTextContent().trim(), is("Show more (6 left)"));
+            assertThat(more.getAttribute("data-next-start"), is("20"));
+
+            HtmlPage second = (HtmlPage) wc.goTo("all/items?folder=team&start=20&after=team/job-19", null);
+            assertThat(rowLabels(second), contains("job-20", "job-21", "job-22", "job-23", "job-24", "nested"));
+            assertThat(nextStart(second), is(""));
+            assertThat(second.querySelector(".app-dashboard-items__more"), nullValue());
+            // Folders inside expanded folders expand too
+            assertThat(second.querySelector("[data-id='team/nested'] .app-dashboard-items__toggle"), notNullValue());
+            HtmlPage empty = (HtmlPage) wc.goTo("all/items?folder=team/nested", null);
+            // Named after the type of the item group
+            String type = j.jenkins.getDescriptorOrDie(MockFolder.class).getDisplayName();
+            assertThat(empty.querySelector(".app-dashboard-items__empty").getTextContent().trim(),
+                    is("This " + type + " is empty"));
+
+            // Folders in search results expand like any other, including folders inside other folders
+            HtmlPage results = (HtmlPage) wc.goTo("all/items?start=0&search=team", null);
+            assertThat(rowLabels(results), hasItem("team"));
+            assertThat(results.querySelector("[data-id='team'] .app-dashboard-items__toggle"), notNullValue());
+            HtmlPage nested = (HtmlPage) wc.goTo("all/items?start=0&search=nested", null);
+            assertThat(nested.querySelector("[data-id='team/nested'] .app-dashboard-items__toggle"), notNullValue());
+        }
+    }
+
+    @Test
+    void allTabExpandsOnlyFoldersTheUserCanRead() throws Exception {
+        enableFlag("bob");
+        MockFolder open = j.createFolder("open");
+        FreeStyleProject visible = open.createProject(FreeStyleProject.class, "visible");
+        open.createProject(FreeStyleProject.class, "hidden");
+        MockFolder closed = j.createFolder("closed");
+        closed.createProject(FreeStyleProject.class, "secret");
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("bob")
+                .grant(Item.READ).onItems(open, visible).to("bob"));
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?folder=open", null)), contains("visible"));
+
+            wc.setThrowExceptionOnFailingStatusCode(false);
+            assertThat(wc.goTo("all/items?folder=closed", null).getWebResponse().getStatusCode(), is(404));
+            assertThat(wc.goTo("all/items?folder=open/visible", null).getWebResponse().getStatusCode(), is(404));
+            assertThat(wc.goTo("all/items?folder=missing", null).getWebResponse().getStatusCode(), is(404));
+        }
+    }
+
+    @Test
+    void allTabFolderPagesGrowWithWhatIsShownUpToTheListPageSize() throws Exception {
+        enableFlag("alice");
+        MockFolder team = j.createFolder("team");
+        for (int i = 0; i < 20; i++) {
+            team.createProject(FreeStyleProject.class, String.format("job-%02d", i));
+        }
+        int childrenPageSize = ItemListTab.CHILDREN_PAGE_SIZE;
+        int pageSize = ItemListTab.PAGE_SIZE;
+        ItemListTab.CHILDREN_PAGE_SIZE = 2;
+        ItemListTab.PAGE_SIZE = 5;
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?folder=team&start=0", null)), hasSize(2));
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?folder=team&start=3&after=team/job-02", null)),
+                    contains("job-03", "job-04", "job-05"));
+            assertThat(rowLabels((HtmlPage) wc.goTo("all/items?folder=team&start=10&after=team/job-09", null)),
+                    hasSize(5));
+        } finally {
+            ItemListTab.CHILDREN_PAGE_SIZE = childrenPageSize;
+            ItemListTab.PAGE_SIZE = pageSize;
+        }
+    }
+
+    @Test
+    void allTabSaysAFolderIsEmptyOnlyOnItsFirstPage() throws Exception {
+        enableFlag("alice");
+        MockFolder team = j.createFolder("team");
+        team.createProject(FreeStyleProject.class, "only");
+        j.createFolder("empty");
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            assertThat(wc.goTo("all/items?folder=empty&start=0", null).getWebResponse().getContentAsString(),
+                    containsString(" is empty"));
+            // The items left after the previous page were removed meanwhile
+            HtmlPage later = (HtmlPage) wc.goTo("all/items?folder=team&start=1&after=team/only", null);
+            assertThat(rowLabels(later), empty());
+            assertThat(later.getWebResponse().getContentAsString(), not(containsString("app-dashboard-items__empty")));
+        }
+    }
+
+    @Test
+    void allTabCountsOnlyItemsTheUserCanReadAsLeftInAFolder() throws Exception {
+        enableFlag("bob");
+        MockFolder team = j.createFolder("team");
+        List<Item> readable = new ArrayList<>(List.of(team));
+        for (int i = 0; i < 4; i++) {
+            readable.add(team.createProject(FreeStyleProject.class, "job-" + i));
+            team.createProject(FreeStyleProject.class, "secret-" + i);
+        }
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("bob")
+                .grant(Item.READ).onItems(readable.toArray(Item[]::new)).to("bob"));
+        int pageSize = ItemListTab.CHILDREN_PAGE_SIZE;
+        ItemListTab.CHILDREN_PAGE_SIZE = 2;
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("bob")) {
+            HtmlPage first = (HtmlPage) wc.goTo("all/items?folder=team&start=0", null);
+            assertThat(rowLabels(first), contains("job-0", "job-1"));
+            assertThat(first.querySelector(".app-dashboard-items__more").getTextContent().trim(), is("Show more (2 left)"));
+        } finally {
+            ItemListTab.CHILDREN_PAGE_SIZE = pageSize;
         }
     }
 

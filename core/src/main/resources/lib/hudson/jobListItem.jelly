@@ -30,6 +30,10 @@ THE SOFTWARE.
     <st:attribute name="job" use="required" type="hudson.model.Item">
       The item to show.
     </st:attribute>
+    <st:attribute name="expandable" type="boolean">
+      If true, the row is a folder that expands to list the items inside it when clicked, rather than linking to it.
+      The folder's page is linked from a button next to its actions.
+    </st:attribute>
     <st:attribute name="relativeTo" type="hudson.model.ItemGroup">
       If set, shows the item's name from this item group down, such as "team » job" for an item inside an item
       group inside it. Otherwise, shows the item's display name.
@@ -53,7 +57,21 @@ THE SOFTWARE.
 
       <div class="app-temporary-list__item__details" href="${rootURL}/${job.url}">
         <div class="app-temporary-list__item__details__text">
-          <a class="app-temporary-list__item__label" href="${rootURL}/${job.url}">${attrs.relativeTo != null ? h.getRelativeDisplayNameFrom(job, attrs.relativeTo) : job.displayName}</a>
+          <j:set var="name" value="${attrs.relativeTo != null ? h.getRelativeDisplayNameFrom(job, attrs.relativeTo) : job.displayName}" />
+          <j:choose>
+            <j:when test="${attrs.expandable}">
+              <button type="button" class="app-temporary-list__item__label app-dashboard-items__toggle"
+                      aria-expanded="false">
+                <l:icon src="symbol-chevron-forward" class="app-dashboard-items__chevron" />
+                <span class="app-dashboard-items__name" title="${name}">${name}</span>
+              </button>
+            </j:when>
+            <j:otherwise>
+              <a class="app-temporary-list__item__label" href="${rootURL}/${job.url}">
+                <span class="app-dashboard-items__name" title="${name}">${name}</span>
+              </a>
+            </j:otherwise>
+          </j:choose>
 
           <j:set var="lastBuild" value="${job.lastBuild}" />
           <j:if test="${lastBuild != null}">
@@ -65,6 +83,12 @@ THE SOFTWARE.
       </div>
 
       <div class="app-temporary-list__item__actions">
+        <j:if test="${attrs.expandable}">
+          <a class="jenkins-button jenkins-button--tertiary" href="${rootURL}/${job.url}" tooltip="${%Open(name)}"
+             aria-label="${%Open(name)}">
+            <l:icon src="symbol-arrow-right" />
+          </a>
+        </j:if>
         <l:actions it="${job}" url="${rootURL}/${job.url}" compact="true" />
       </div>
     </div>
