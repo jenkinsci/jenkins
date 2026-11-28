@@ -4,6 +4,9 @@ Behaviour.specify(
   0,
   function (copyButton) {
     if (isSecureContext) {
+      const isTertiary = copyButton.classList.contains(
+        "jenkins-button--tertiary",
+      );
       copyButton.addEventListener("click", () => {
         var text = copyButton.getAttribute("text");
         if (copyButton.hasAttribute("ref")) {
@@ -18,9 +21,20 @@ Behaviour.specify(
         navigator.clipboard
           .writeText(text)
           .then(() => {
-            copyButton.classList.add("jenkins-copy-button--copied");
+            copyButton.classList.add(
+              "jenkins-copy-button--copied",
+              "jenkins-!-success-color",
+            );
+            copyButton.classList.remove("jenkins-button--tertiary");
             setTimeout(() => {
-              copyButton.classList.remove("jenkins-copy-button--copied");
+              copyButton.classList.remove(
+                "jenkins-copy-button--copied",
+                "jenkins-!-success-color",
+              );
+              copyButton.classList.toggle(
+                "jenkins-button--tertiary",
+                isTertiary,
+              );
             }, 2000);
           })
           .catch(() => {
