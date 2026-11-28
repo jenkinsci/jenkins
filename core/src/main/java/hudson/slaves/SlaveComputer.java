@@ -56,6 +56,7 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.slaves.OfflineCause.ChannelTermination;
 import hudson.util.Futures;
+import hudson.util.HttpResponses;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamTaskListener;
 import hudson.util.VersionNumber;
@@ -885,6 +886,18 @@ public class SlaveComputer extends Computer {
                         + " through a supported API once available"
                         + " (https://www.jenkins.io/doc/book/operating/agents/).");
         return new EncryptedSlaveAgentJnlpFile(this, "jenkins-agent.jnlp.jelly", getName(), CONNECT);
+    }
+
+    @WebMethod(name = "agent-secret")
+    public HttpResponse doAgentSecret(StaplerRequest2 req, StaplerResponse2 rsp) throws  IOException {
+        checkPermission(CONNECT);
+        rsp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        rsp.setHeader("Pragma", "no-cache");
+        rsp.setHeader("Expires", "0");
+
+        rsp.setContentType("text/plain;charset=UTF-8");
+        rsp.getWriter().write(getJnlpMac());
+        return HttpResponses.ok();
     }
 
     class LowPermissionResponse {
