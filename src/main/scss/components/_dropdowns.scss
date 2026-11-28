@@ -3,6 +3,22 @@
 $dropdown-border-radius: 1rem;
 $dropdown-padding: 0.375rem;
 
+@property --dropdown-scroll-fade {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@keyframes dropdown-scroll-fade {
+  from {
+    --dropdown-scroll-fade: 2rem;
+  }
+
+  to {
+    --dropdown-scroll-fade: 0px;
+  }
+}
+
 .tippy-box[data-theme~="dropdown"] {
   @include mixins.overlay-surface($opacity: 85%);
 
@@ -23,6 +39,19 @@ $dropdown-padding: 0.375rem;
     padding: 0;
     overflow-y: auto;
     border-radius: inherit;
+
+    // Fade out the bottom edge while there is more to scroll to,
+    // so actions like "Delete" aren't silently clipped
+    @supports (animation-timeline: scroll()) {
+      mask-image: linear-gradient(
+        to bottom,
+        #000 calc(100% - var(--dropdown-scroll-fade)),
+        transparent
+      );
+      animation: dropdown-scroll-fade linear both;
+      animation-timeline: scroll(self);
+      animation-range: calc(100% - 2rem) 100%;
+    }
 
     .jenkins-spinner {
       margin: 1rem;
