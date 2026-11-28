@@ -103,7 +103,90 @@ function expectExpanded(expanded) {
   }
 }
 
+function createDialog(modal = true) {
+  const dialog = document.createElement("dialog");
+  dialog.open = true;
+  dialog.innerHTML = `<button id="cancel"><span>Cancel</span></button>`;
+  document.body.appendChild(dialog);
+  // jsdom does not implement showModal; browsers provide the :modal state.
+  const closest = Element.prototype.closest;
+  vi.spyOn(Element.prototype, "closest").mockImplementation(
+    function (selector) {
+      if (selector === "dialog:modal") {
+        return modal && dialog.contains(this) ? dialog : null;
+      }
+      return closest.call(this, selector);
+    },
+  );
+  return dialog;
+}
+
 describe("mobile sidebar", () => {
+  it.each(["button", "span"])(
+    "allows the first click on a modal's %s without dismissing the sidebar",
+    (target) => {
+      initialize();
+      mainToggle().click();
+      const dialog = createDialog();
+      const cancel = vi.fn();
+      dialog.querySelector("button").addEventListener("click", cancel);
+      dialog.querySelector(target).click();
+      expect(cancel).toHaveBeenCalledOnce();
+      expectExpanded(true);
+    },
+  );
+
+  it("allows a modal backdrop click without dismissing the sidebar", () => {
+    initialize();
+    mainToggle().click();
+    const dialog = createDialog();
+    const cancel = vi.fn();
+    dialog.addEventListener("click", cancel);
+    dialog.click();
+    expect(cancel).toHaveBeenCalledOnce();
+    expectExpanded(true);
+  });
+
+  it("allows a control inside a nonmodal dialog nested in a modal", () => {
+    initialize();
+    mainToggle().click();
+    const dialog = createDialog();
+    const nested = document.createElement("dialog");
+    nested.open = true;
+    nested.appendChild(dialog.querySelector("button"));
+    dialog.appendChild(nested);
+    const action = vi.fn();
+    nested.querySelector("button").addEventListener("click", action);
+    nested.querySelector("button").click();
+    expect(action).toHaveBeenCalledOnce();
+    expectExpanded(true);
+  });
+
+  it("retains outside dismissal for a nonmodal dialog", () => {
+    initialize();
+    mainToggle().click();
+    const dialog = createDialog(false);
+    const action = vi.fn();
+    dialog.querySelector("button").addEventListener("click", action);
+    dialog.querySelector("button").click();
+    expect(action).not.toHaveBeenCalled();
+    expectExpanded(false);
+  });
+
+  it("dismisses the sidebar on an outside click after a modal is removed", () => {
+    initialize();
+    mainToggle().click();
+    const dialog = createDialog();
+    dialog
+      .querySelector("button")
+      .addEventListener("click", () => dialog.remove());
+    dialog.querySelector("button").click();
+    expect(dialog.isConnected).toBe(false);
+    expectExpanded(true);
+    document.querySelector("#outside").click();
+    expectExpanded(false);
+  });
+
   it.each([740, 1100])(
     "allows the first main action after expanding at 739px and resizing to %ipx",
     (desktopWidth) => {
