@@ -112,6 +112,7 @@ import jenkins.security.HexStringConfidentialKey;
 import jenkins.security.XStreamNotDeserializable;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.triggers.SCMTriggerItem;
+import jenkins.util.SystemProperties;
 import jenkins.widgets.BuildTimeTrend;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONException;
@@ -161,6 +162,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren, HasWidgets {
 
     private static final Logger LOGGER = Logger.getLogger(Job.class.getName());
+
+    /**
+     * Number of most recent builds considered when computing the build stability health report.
+     * Set to 1 to reflect only the latest build.
+     * @since TODO
+     */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+    public static /* not final */ int BUILD_STABILITY_HEALTH_REPORT_BUILD_COUNT =
+            SystemProperties.getInteger(Job.class.getName() + ".buildStabilityHealthReportBuildCount", 5);
 
     /**
      * Next build number. Kept in a separate file because this is the only
@@ -1479,7 +1489,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     @CheckForNull
     private HealthReport getBuildStabilityHealthReport() {
-        // we can give a simple view of build health from the last five builds
+            // we can give a simple view of build health from the last N builds (default 5)
+        int maxBuilds = Math.max(1, BUILD_STABILITY_HEALTH_REPORT_BUILD_COUNT);
         int failCount = 0;
         int totalCount = 0;
         RunT i = getLastBuild();
@@ -1492,18 +1503,18 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             SortedMap<Integer, ? extends RunT> runs = _getRuns();
             if (runs instanceof RunMap) {
                 RunMap<RunT> runMap = (RunMap<RunT>) runs;
-                for (int index = i.getNumber(); index > u.getNumber() && totalCount < 5; index--) {
+               for (int index = i.getNumber(); index > u.getNumber() && totalCount < maxBuilds; index--) {
                     if (runMap.runExists(index)) {
                         totalCount++;
                     }
                 }
-                if (totalCount < 5) {
+                if (totalCount < maxBuilds) {
                     // start loading from the first failure as we counted the rest
                     i = u;
                 }
             }
         }
-        while (totalCount < 5 && i != null) {
+        while (totalCount < maxBuilds && i != null) {
             switch (i.getIconColor()) {
             case BLUE:
             case YELLOW:
