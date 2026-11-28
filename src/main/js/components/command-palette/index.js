@@ -99,7 +99,7 @@ function init() {
     ) {
       e.preventDefault();
       commandPaletteInput.value = "";
-      scopes.length = 0;
+      scopes = [];
       updateScopes();
       return;
     }

@@ -320,12 +320,7 @@ public class Search implements StaplerProxy {
     }
 
     private static List<SuggestedItem> suggestScoped(SearchableModelObject scope, String query) {
-        SearchIndex index;
-        if (scope instanceof SearchScope searchScope) {
-            index = searchScope.getScopedSearchIndex();
-        } else {
-            index = scope.getSearchIndex();
-        }
+        SearchIndex index = scope instanceof SearchScope searchScope ? searchScope.getScopedSearchIndex() : scope.getSearchIndex();
         List<SearchItem> items = new ArrayList<>();
         index.suggest(query == null ? "" : query.trim(), items);
 
