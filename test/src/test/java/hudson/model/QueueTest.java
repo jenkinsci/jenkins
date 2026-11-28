@@ -46,7 +46,6 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -131,6 +130,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -662,8 +662,10 @@ public class QueueTest {
 
     @Issue("JENKINS-28926")
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Low value, high cost on Windows")
     void upstreamDownstreamCycle() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         FreeStyleProject trigger = r.createFreeStyleProject();
         FreeStyleProject chain1 = r.createFreeStyleProject();
         FreeStyleProject chain2a = r.createFreeStyleProject();
@@ -1157,8 +1159,10 @@ public class QueueTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "WORKSPACE",   // Defined on CI agents
+                                   matches = "^[C-Z]:.*", // Windows CI workspace path
+                                   disabledReason = "Low value, high cost on Windows")
     void waitForStartAndCancelBeforeStart() throws Exception {
-        assumeFalse(Functions.isWindows() && System.getenv("CI") != null, "Low value, high cost on Windows");
         FreeStyleProject p = r.createFreeStyleProject();
 
         QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(30);
