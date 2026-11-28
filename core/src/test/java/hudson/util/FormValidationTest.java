@@ -67,6 +67,39 @@ class FormValidationTest {
         assertEquals(FormValidation.Kind.ERROR, actual.kind);
     }
 
+    @Test
+    void validateBase64Plain() {
+        assertEquals(FormValidation.ok(), FormValidation.validateBase64("aGVsbG8gd29ybGQ=", false, false, "bad"));
+    }
+
+    @Test
+    void validateBase64AllowsWrappedWhitespace() {
+        for (String v : new String[] {"aGVsbG8g\nd29ybGQ=", "aGVsbG8g\r\nd29ybGQ=", "aGVsbG8g\td29ybGQ=", " aGVsbG8g d29ybGQ= \n"}) {
+            assertEquals(FormValidation.ok(), FormValidation.validateBase64(v, true, false, "bad"), v);
+        }
+    }
+
+    @Test
+    void validateBase64RejectsWhitespaceWhenNotAllowed() {
+        for (String v : new String[] {"aGVsbG8g d29ybGQ=", "aGVsbG8g\nd29ybGQ=", "aGVsbG8g\r\nd29ybGQ=", "aGVsbG8g\td29ybGQ="}) {
+            assertEquals(FormValidation.Kind.ERROR, FormValidation.validateBase64(v, false, false, "bad").kind, v);
+        }
+    }
+
+    @Test
+    void validateBase64InvalidCharacters() {
+        assertEquals(FormValidation.Kind.ERROR, FormValidation.validateBase64("aGVs*G8=", true, false, "bad").kind);
+        assertEquals(FormValidation.Kind.ERROR, FormValidation.validateBase64("aGVs\n*G8=", true, false, "bad").kind);
+    }
+
+    @Test
+    void validateBase64EmptyAndNull() {
+        for (String v : new String[] {"", " \n\t", null}) {
+            assertEquals(FormValidation.ok(), FormValidation.validateBase64(v, true, true, "bad"));
+            assertEquals(FormValidation.Kind.ERROR, FormValidation.validateBase64(v, true, false, "bad").kind);
+        }
+    }
+
     // @Issue("JENKINS-7438")
     @Test
     void testMessage() {

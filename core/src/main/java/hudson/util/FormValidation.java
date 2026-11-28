@@ -58,6 +58,7 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
@@ -431,11 +432,16 @@ public abstract class FormValidation extends IOException implements HttpResponse
         return ok();
     }
 
+    private static final Pattern WHITESPACE = Pattern.compile("\\s");
+
     /**
      * Makes sure that the given string is a base64 encoded text.
      *
+     * @param value
+     *      the text to check; {@code null} is treated as an empty string
      * @param allowWhitespace
-     *      if you allow whitespace (CR,LF,etc) in base64 encoding
+     *      if you allow whitespace (CR,LF,etc) in base64 encoding.
+     *      Whitespace anywhere in the value is ignored when decoding.
      * @param allowEmpty
      *      Is empty string allowed?
      * @param errorMessage
@@ -444,12 +450,12 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     public static FormValidation validateBase64(String value, boolean allowWhitespace, boolean allowEmpty, String errorMessage) {
         try {
-            String v = value;
+            String v = value == null ? "" : value;
             if (!allowWhitespace) {
                 if (v.indexOf(' ') >= 0 || v.indexOf('\n') >= 0)
                     return error(errorMessage);
             }
-            v = v.trim();
+            v = allowWhitespace ? WHITESPACE.matcher(v).replaceAll("") : v.trim();
             if (!allowEmpty && v.isEmpty())
                 return error(errorMessage);
 
