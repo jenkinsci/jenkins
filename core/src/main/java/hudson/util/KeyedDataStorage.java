@@ -29,6 +29,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Fingerprint;
 import hudson.model.FingerprintMap;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.lang.ref.SoftReference;
 import java.text.MessageFormat;
 import java.util.concurrent.ConcurrentHashMap;
@@ -84,7 +85,7 @@ public abstract class KeyedDataStorage<T, P> {
          * Blocks until the value is {@link #set(Object)} by another thread
          * and returns the value.
          */
-        public synchronized @CheckForNull T get() {
+        public synchronized @CheckForNull T get() throws InterruptedIOException {
             try {
                 while (!set)
                     wait();
@@ -92,7 +93,9 @@ public abstract class KeyedDataStorage<T, P> {
             } catch (InterruptedException e) {
                 // assume the loading failed, but make sure we process interruption properly later
                 Thread.currentThread().interrupt();
-                return null;
+                InterruptedIOException ie = new InterruptedIOException("Interrupted while waiting for data to load");
+                ie.initCause(e);
+                throw ie;
             }
         }
     }
@@ -164,6 +167,7 @@ public abstract class KeyedDataStorage<T, P> {
                     if (t == null)
                         throw new IllegalStateException("Bug in the derived class"); // bug in the derived classes
                 }
+                return t;
             } catch (IOException e) {
                 loadFailure.incrementAndGet();
                 throw e;
@@ -171,15 +175,12 @@ public abstract class KeyedDataStorage<T, P> {
                 // let other threads know that the value is available now.
                 // when the original thread failed to load, this should set it to null.
                 l.set(t);
+                // the map needs to be updated to reflect the result of loading
+                if (t != null)
+                    core.replace(key, l, new SoftReference<>(t));
+                else
+                    core.remove(key, l);
             }
-
-            // the map needs to be updated to reflect the result of loading
-            if (t != null)
-                core.put(key, new SoftReference<>(t));
-            else
-                core.remove(key);
-
-            return t;
         }
 
     }
