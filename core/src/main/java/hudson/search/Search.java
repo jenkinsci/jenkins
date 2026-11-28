@@ -34,8 +34,6 @@ import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
-import hudson.model.TopLevelItem;
-import hudson.model.View;
 import hudson.util.EditDistance;
 import io.jenkins.servlet.ServletExceptionWrapper;
 import jakarta.servlet.ServletException;
@@ -176,6 +174,8 @@ public class Search implements StaplerProxy {
         Result r = new Result();
         boolean scoped = isScoped(req);
         SearchableModelObject scope = scoped ? findClosestSearchableModelObject(req) : null;
+        // The same item can be suggested more than once, e.g. matched by both its name and display name
+        Set<String> seen = new HashSet<>();
         for (SuggestedItem curItem : getSuggestions(req, query)) {
             String iconName = curItem.item.getSearchIcon();
             String group = curItem.item.getSearchGroup().getDisplayName();
@@ -198,6 +198,9 @@ public class Search implements StaplerProxy {
             }
             item.setSearchScope(isSearchScope(curItem.item));
             item.parent = segments.isEmpty() ? null : segments;
+            if (!seen.add(String.join("/", segments) + "/" + name + " " + item.getUrl())) {
+                continue;
+            }
             r.suggestions.add(item);
         }
 
@@ -301,9 +304,6 @@ public class Search implements StaplerProxy {
             if (a.getObject() instanceof Jenkins || !(a.getObject() instanceof SearchableModelObject smo) || !isSearchScope(smo)) {
                 continue;
             }
-            if (smo instanceof View && a.getPrev() != null && a.getPrev().getUrl().equals(a.getUrl())) {
-                continue;
-            }
             JSONObject scope = new JSONObject();
             scope.put("label", smo.getDisplayName());
             scope.put("url", a.getUrl() + "/");
@@ -317,7 +317,7 @@ public class Search implements StaplerProxy {
     }
 
     private static boolean isSearchScope(SearchItem item) {
-        return item instanceof ItemGroup || item instanceof Job || item instanceof View || item instanceof SearchScope;
+        return item instanceof ItemGroup || item instanceof Job || item instanceof SearchScope;
     }
 
     private static List<SuggestedItem> suggestScoped(SearchableModelObject scope, String query) {
@@ -326,8 +326,6 @@ public class Search implements StaplerProxy {
             index = searchScope.getScopedSearchIndex();
         } else if (scope instanceof Job<?, ?> job) {
             index = new RunSearchIndex(job);
-        } else if (scope instanceof View view) {
-            index = new ViewSearchIndex(view);
         } else {
             index = scope.getSearchIndex();
         }
@@ -362,28 +360,6 @@ public class Search implements StaplerProxy {
                     .filter(run -> matcher.matches(run.getDisplayName()))
                     .limit(MAX_BUILD_RESULTS)
                     .forEach(result::add);
-        }
-    }
-
-    private static final class ViewSearchIndex implements SearchIndex {
-        private final View view;
-
-        ViewSearchIndex(View view) {
-            this.view = view;
-        }
-
-        @Override
-        public void find(String token, List<SearchItem> result) {
-        }
-
-        @Override
-        public void suggest(String token, List<SearchItem> result) {
-            SearchMatcher matcher = SearchMatcher.of(token);
-            for (TopLevelItem item : view.getItems()) {
-                if (matcher.matches(item.getName()) || matcher.matches(item.getDisplayName())) {
-                    result.add(item);
-                }
-            }
         }
     }
 

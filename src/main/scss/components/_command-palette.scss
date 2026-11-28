@@ -196,7 +196,10 @@ $command-palette-padding: 0.375rem;
     flex-direction: column;
     flex-shrink: 0;
     max-height: calc(
-      var(--command-palette-viewport-height, 100dvh) - var(--inset) - 3rem -
+      var(--command-palette-viewport-height, 100dvh) - var(--inset) - var(
+          --command-palette-search-height,
+          3rem
+        ) -
         (2 * var(--section-padding))
     );
     overflow: hidden auto;

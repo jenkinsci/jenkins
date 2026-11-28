@@ -44,7 +44,7 @@ function init() {
 
   const pageScopes = JSON.parse(commandPalette.dataset.scopes || "[]");
   const defaultPlaceholder = commandPaletteInput.placeholder;
-  const scopes = [];
+  let scopes = [];
   const renderedResults = new WeakMap();
   let latestRequest = 0;
   let highlightOnRender = null;
@@ -76,7 +76,8 @@ function init() {
 
       drillInto(result);
     },
-    () => commandPalette.open,
+    () =>
+      commandPalette.open && !scopesContainer.contains(document.activeElement),
     updatePlaceholder,
   );
 
@@ -186,6 +187,7 @@ function init() {
 
   function updateScopes() {
     updateScopeChips();
+    updateViewportHeight();
     commandPaletteInput.focus();
     renderNow();
   }
@@ -351,6 +353,10 @@ function init() {
       "--command-palette-viewport-height",
       `${height}px`,
     );
+    commandPalette.style.setProperty(
+      "--command-palette-search-height",
+      `${commandPaletteSearchBarContainer.offsetHeight}px`,
+    );
     syncResultsHeight();
   }
 
@@ -358,8 +364,7 @@ function init() {
   window.visualViewport?.addEventListener("resize", updateViewportHeight);
 
   function showCommandPalette() {
-    scopes.length = 0;
-    scopes.push(...pageScopes);
+    scopes = pageScopes.slice();
     updateScopeChips();
     commandPalette.showModal();
     updateViewportHeight();
