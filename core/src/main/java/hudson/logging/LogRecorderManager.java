@@ -165,10 +165,13 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
      * Creates a new log recorder.
      */
     @RequirePOST
-    public HttpResponse doNewLogRecorder(@QueryParameter String name) {
+    public synchronized HttpResponse doNewLogRecorder(@QueryParameter String name) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         Jenkins.checkGoodName(name);
+        if (getLogRecorder(name) != null) {
+            throw new Failure(Messages.LogRecorderManager_AlreadyExists(name));
+        }
 
         recorders.add(new LogRecorder(name));
 
@@ -186,6 +189,9 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
             Jenkins.checkGoodName(name);
         } catch (Failure e) {
             return FormValidation.error(e.getMessage());
+        }
+        if (getLogRecorder(name) != null) {
+            return FormValidation.error(Messages.LogRecorderManager_AlreadyExists(name));
         }
         return FormValidation.ok();
     }

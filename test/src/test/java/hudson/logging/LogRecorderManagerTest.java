@@ -43,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Computer;
+import hudson.model.Failure;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.VirtualChannel;
@@ -443,6 +444,46 @@ class LogRecorderManagerTest {
         logRecorder.delete();
         assertThat(log.getRecorders(), empty());
         assertTrue(DeletingLogRecorderListener.recordDeletion);
+    }
+
+    @Issue("JENKINS-22598")
+    @Test
+    void renamingLogRecorderToExistingNameIsRejected() throws Exception {
+        LogRecorderManager log = j.jenkins.getLog();
+        LogRecorder foo = new LogRecorder("Foo");
+        foo.setLoggers(List.of(new LogRecorder.Target("hudson.model.Run", Level.ALL)));
+        LogRecorder bar = new LogRecorder("Bar");
+        bar.setLoggers(List.of(new LogRecorder.Target("hudson.model.Queue", Level.FINE)));
+        log.getRecorders().addAll(List.of(foo, bar));
+        foo.save();
+        bar.save();
+
+        HtmlPage page = j.createWebClient().goTo("log/Bar/configure");
+        HtmlForm form = page.getFormByName("config");
+        form.getInputsByName("_.name").get(0).setValue("Foo");
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> j.submit(form));
+        assertThat(e.getStatusCode(), equalTo(HttpURLConnection.HTTP_BAD_REQUEST));
+        assertThat(e.getResponse().getContentAsString(), containsString(Messages.LogRecorderManager_AlreadyExists("Foo")));
+
+        assertThat(log.getRecorders(), hasSize(2));
+        assertEquals("Bar", bar.getName());
+        assertEquals("hudson.model.Run", log.getLogRecorder("Foo").getLoggers().get(0).getName());
+        log.load();
+        assertEquals("hudson.model.Run", log.getLogRecorder("Foo").getLoggers().get(0).getName());
+        assertNotNull(log.getLogRecorder("Bar"));
+    }
+
+    @Issue("JENKINS-22598")
+    @Test
+    void creatingLogRecorderWithExistingNameIsRejected() {
+        LogRecorderManager log = j.jenkins.getLog();
+        log.getRecorders().add(new LogRecorder("Foo"));
+
+        assertEquals(FormValidation.Kind.ERROR, log.doCheckNewName("Foo").kind);
+        assertEquals(FormValidation.Kind.OK, log.doCheckNewName("Other").kind);
+        Failure e = assertThrows(Failure.class, () -> log.doNewLogRecorder("Foo"));
+        assertEquals(Messages.LogRecorderManager_AlreadyExists("Foo"), e.getMessage());
+        assertThat(log.getRecorders(), hasSize(1));
     }
 
     @TestExtension("deletingLogRecorder")
