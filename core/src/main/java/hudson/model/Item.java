@@ -324,7 +324,7 @@ public interface Item extends PersistenceRoot, FullyNamedModelObject, Searchable
                     PERMISSIONS,
                     "WipeOut",
                     Messages._AbstractProject_WipeOutPermission_Description(),
-                    null,
+                    Jenkins.ADMINISTER, // Changed the null value to Jenkins.ADMINISTER
                     Functions.isWipeOutPermissionEnabled(),
                     new PermissionScope[] {PermissionScope.ITEM});
     Permission CANCEL =

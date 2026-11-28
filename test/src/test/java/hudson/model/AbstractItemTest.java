@@ -251,4 +251,9 @@ class AbstractItemTest {
             }
         }
     }
+
+    @Test
+    void wipeOutPermissionImpliedByAdminister() {
+        assertEquals(jenkins.model.Jenkins.ADMINISTER, Item.WIPEOUT.impliedBy);
+    }
 }
