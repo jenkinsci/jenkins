@@ -13,9 +13,10 @@ import org.kohsuke.stapler.CompatibleFilter;
 import org.springframework.security.core.Authentication;
 
 /**
- * Record the current user authentication for later impersonation if the response is 404 Not Found.
+ * Record the current user authentication for later impersonation if the response is an error page.
  *
  * @see Jenkins#generateNotFoundResponse(org.kohsuke.stapler.StaplerRequest2, org.kohsuke.stapler.StaplerResponse2)
+ * @see hudson.init.impl.InstallUncaughtExceptionHandler
  */
 @Restricted(NoExternalUse.class)
 public class ErrorAttributeFilter implements CompatibleFilter {
